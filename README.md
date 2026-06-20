@@ -26,3 +26,7 @@ The **one missing girder**: the ordinal analysis of PA — `TI(ε₀) ⊢ Con(PA
 `Goodstein ⟹ TI(ε₀)`. Absent everywhere. That's the multi-month core.
 
 See `EXPEDITION-PLAN.md`.
+
+## License
+
+[Apache License 2.0](LICENSE), Copyright 2026 Trevor Morris
