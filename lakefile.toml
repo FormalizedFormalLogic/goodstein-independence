@@ -3,21 +3,21 @@
 # PA (`𝗣𝗔 = Peano : ArithmeticTheory`), Σ₁ arithmetization, and Gödel II. Track 1 (the
 # mathlib-only growth theory) lives in ~/src/lean-formalizations.
 #
-# Foundation is required by PATH (local sibling clone ~/src/Foundation), pinned at mathlib
-# v4.31.0 (the lean-universe base). Path > git URL here because:
-#   • it points at our LOCAL v4.31 Foundation, not upstream's stale v4.29.0;
-#   • it's offline-buildable — the lean-yolo box bind-mounts all of ~/src, so it sees the
-#     prebuilt Foundation .lake and never needs to lake-fetch;
-#   • it reuses Foundation's built oleans instead of rebuilding 1665 jobs.
-# (Scaffold un-vendored from the Foundation clone 2026-06-19; switch to a git/tag require only
-#  if this ever becomes a standalone published repo.)
+# Foundation comes from the lean-universe store (4.31.0). It was added as a universe package
+# 2026-06-21, so goodstein consumes it via a git require (gotrevor/Foundation@a5eda23, our v4.31
+# port; upstream is still v4.29.0) with the store's pre-built oleans CoW-cloned into this repo's
+# own .lake/packages by `lake-base link goodstein-independence --require Foundation`. That makes
+# goodstein self-contained + offline-buildable (no dependency on the ~/src/Foundation sibling
+# clone) and still Replays Foundation's 1671 jobs instead of rebuilding. The [[require]] block
+# below is appended/maintained by lake-base link — re-run it after a store re-pin.
 name = "GoodsteinPA"
 defaultTargets = ["GoodsteinPA"]
 srcDir = "src"
 
-[[require]]
-name = "Foundation"
-path = "../Foundation"
-
 [[lean_lib]]
 name = "GoodsteinPA"
+
+[[require]]
+name = "Foundation"
+git = "https://github.com/gotrevor/Foundation.git"
+rev = "a5eda23a4bd57517cefaab3c7d31cafc5e11d9c6"
