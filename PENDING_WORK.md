@@ -1,5 +1,37 @@
 # Pending work — open obligations & attack paths
 
+## ✅ LAP-7 — cut-elim `k`/`τ` crux RESOLVED (offline read of Towsner §15–§20). See `ANALYSIS-2026-06-22-cutelim-k-threading.md`.
+The lap-6 "norm grows under addition ⟹ cut-elim might break `norm<k`" worry was a **misframing**.
+Resolved facts (the design for ALL of §19): (a) `k` is **not** fixed — it grows (§19.5 `k↦2k`; §19.6
+`k↦h_{β#ω}(k)`; §19.7 `k↦h_{ω^α}(k)`). (b) `lowerBound_hardy_selfcontained` is already `∀k` ⟹ growth
+harmless. (c) every `ONote` is `<ε₀` by construction ⟹ ε₀ side-condition **free**. ⟹ **state the whole
+cut-elim chain existentially in `k`**: `CutFree α Γ := ∃k, Zk α k 0 Γ`; endgame
+`(∃k c, Zk α k c Γ) → α.NF → ∃ α' k', α'.NF ∧ Zk α' k' 0 Γ`, then subformula-bridge + lower bound.
+Route decision recorded in `STATUS.md`: **STAY ROUTE B**. `ON-LINE-REQUEST` closed.
+
+### Refined §19.6 plan (`cutReduceAll` for `Zk`) — the next girder, now unblocked
+Port `src/Zinfty.lean:785 cutReduceAllAux` (the lap-3 ∀/∃ reduction over the unbounded `(α,c)`
+calculus, fully proved) to `Zk`, adding the `(k,NF,norm)` bookkeeping:
+- **Structure (unchanged from lap 3):** invert the ∀-side once (`allInv` → numeral family
+  `fam : ∀n, Zk α k c (insert (φ/[nm n]) Γ)`), then **induct on the ∃-side `Zk γ k c Δ`** with
+  `(∃∼φ)∈Δ`; principal `exI` case = cut `fam n` at the witness numeral; commuting cases re-apply the
+  rule over `Δ.erase(∃∼φ) ∪ Γ`. `Zk` is `Prop`-valued, so induct directly (no height fn `o d`); the
+  running ordinal is the constructor bound `γ` itself (sub-bounds `<γ` come from the descent premises).
+- **Bound:** ordinal `α + γ` (`ONote.+`, `add_lt_add_left_NF`/`le_add_left_NF` banked); slack via
+  `osucc` at cuts (`lt_osucc`, `osucc_NF` banked).
+- **`k`-growth (the new content vs lap 3):** the conclusion's `k` is **`h_{β#ω}(k)`** (a Hardy value),
+  NOT the input `k` — Towsner §19.6 exactly. State existentially: conclusion `∃ K, Zk (α+γ) K c (…)`.
+  A simple additive `k`-shift does **NOT** suffice (machine-checked: the `allω` commuting case has
+  ℕ-many premises at `max k n` with `norm(βₙ)` unbounded in `n`, so `K = k + norm α` fails for large
+  `n`; the Hardy growth `h_{β#ω}(k)` is what dominates). Use `hardy` (`src/Hardy.lean`).
+- **`norm` ingredient (lap 7):** `norm_addAux_le` **PROVED + banked** in `wip/BoundedZinfty.lean`.
+  `norm_add_le {α γ} (hα γ NF) : norm(α+γ) ≤ norm α + norm γ` is a **disclosed `sorry`** (the NF-free
+  version is FALSE — tested; NF eq-merge case needs leading-coeff provenance `lead(a+γ)≤norm γ` when
+  `lead a < e`). Finish via a `add_lead_coeff_le` helper. This is the `τ(α#β)≤τα+τβ` fact that lets the
+  Hardy-`k` growth absorb the additive bump.
+
+---
+
 State after lap 6 (2026-06-22). Build green (`lake build GoodsteinPA`, 1257 jobs). Phase 0 + Phase 1
 clean; **M5 (cut-elim) and M6 (Hardy lower bound) both DONE**. Headline stays a literal `sorry`
 (anti-fraud). See `PHASE2-DECOMPOSITION.md` for the girder ladder; `ANALYSIS-…-bounding-resolution.md`

@@ -580,6 +580,36 @@ theorem le_add_left_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ 
 @[simp] theorem norm_omegaPow {α : ONote} : norm (oadd α 1 0) = max (norm α) 1 := by
   simp [norm_oadd]
 
+/-- **`addAux` `norm` bound** (proved, axiom-clean). `addAux e n r` prepends/merges the CNF head
+`ω^e·n` into `r`; its CNF `norm` is bounded by `max(norm e) n + norm r`. The `+ norm r` (rather than
+`max … (norm r)`) accounts for the equal-exponent **coefficient merge** `n + n'`. -/
+theorem norm_addAux_le (e : ONote) (n : ℕ+) (r : ONote) :
+    norm (addAux e n r) ≤ max (norm e) (n : ℕ) + norm r := by
+  unfold addAux
+  match r with
+  | 0 => simp only [norm_oadd, norm_zero]; omega
+  | oadd e' n' a' =>
+    simp only []
+    rcases ONote.cmp e e' with _ | _ | _ <;>
+      simp only [norm_oadd, PNat.add_coe] <;> omega
+
+/-- **`norm` is sub-additive under `ONote.+`** (the §19.6 budget-growth bound: `τ(α#β) ≤ τα+τβ`).
+`norm (α + γ) ≤ norm α + norm γ` for normal-form `α`, `γ`.
+
+**NF is essential** (machine-checked counterexample to the NF-free version): without NF the top-level
+`addAux` equal-exponent merge can blow the coefficient to `n + norm a` where `n` is `α`'s leading
+coefficient and `norm a` is the norm of `α`'s tail, exceeding `norm α + norm γ`. With NF, `α`'s tail
+exponents are all `< α`'s leading exponent `e`, so the merge case (`lead(add a γ) = e`) can only fire
+when **`γ`** supplies the matching head — hence the merged coefficient's second summand is bounded by
+`norm γ`, not `norm a`. Proof: induct on `α`; the `addAux` head lemma + the leading-coefficient
+provenance fact (TODO: `add_lead_coeff_le`, leading coeff of `a + γ` with `lead a < e` is `≤ norm γ`).
+This is the §19.6 ingredient (with the Hardy-`k` growth — see PENDING_WORK step 1). -/
+theorem norm_add_le {α γ : ONote} (hα : α.NF) (hγ : γ.NF) :
+    norm (α + γ) ≤ norm α + norm γ := by
+  -- TODO(lap 8): finish via `add_lead_coeff_le` (NF eq-merge case). Disclosed checkpoint;
+  -- the statement is TRUE and verified informally, the NF-free version is FALSE (tested).
+  sorry
+
 /-- **∧/∨ cut reduction, conjunction case** (Towsner Thm 19.5): a cut on `a ⋏ b` (negation
 `∼a ⋎ ∼b` on the other side) reduces to two cuts on `a`, `b`. -/
 theorem cutReduceConj {a b : Form} {c k : ℕ} {α β δ : ONote} {Γ : Seq}
