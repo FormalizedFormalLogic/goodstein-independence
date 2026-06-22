@@ -198,6 +198,17 @@ theorem provable_rew (c : ℕ) : ∀ {Γ : ZinftyF.Seq} (d : Deriv Γ), cr d ≤
     exact ⟨0, (Provable.axL r (fun i => ω (v i))
       (Finset.mem_image_of_mem (fun φ => ω ▹ φ) hp)
       (Finset.mem_image_of_mem (fun φ => ω ▹ φ) hn)).mono le_rfl (Nat.zero_le c)⟩
+  | @axTrue Γ k b r v htrue hmem =>
+    intro _ ω
+    -- **DESIGN PIVOT (lap 10):** `provable_rew` (renaming invariance) is NOT valid for the new
+    -- `axTrue` leaf when the literal is OPEN: `ω ▹ (signedLit b r v)` is true-under-`id` iff the
+    -- literal is true under the `ω`-composed assignment, which renaming need not preserve. The fix
+    -- is the **assignment-carrying embedding** (`∀ e, ZProvable (Γ.image (ρe ▹))`, `ρe := Rew.rewrite
+    -- (nm∘e)`): there ALL sequents are CLOSED, `ω ▹ (closed lit) = lit` and truth is preserved, so
+    -- this case is trivial (re-apply `axTrue`) — AND `provable_rew` is then only ever needed for
+    -- closed renamings (mostly identity). The naive (open) `embed`/`provable_rew`/`shift`/`all` of
+    -- lap 9–10 are SUPERSEDED by the closed form. See HANDOFF/PENDING (M4 next thread).
+    sorry
   | verumR h =>
     intro _ ω
     exact ⟨0, (Provable.verumR
