@@ -29,6 +29,15 @@ noncomputable def rk (n : ℕ) : Ordinal.{0} := IsWellFounded.rank lt n
 theorem rk_lt_of_rel {a b : ℕ} (h : lt a b) : rk lt a < rk lt b :=
   IsWellFounded.rank_lt_of_rel h
 
+/-- `|n|_≺ ≤ γ` whenever every `≺`-predecessor has rank `< γ` (the `Prog`/case-2 rank step:
+`|n|_≺ = sup{|m|_≺+1 : m ≺ n}`). -/
+theorem rk_le_of_forall {γ : Ordinal.{0}} {n : ℕ} (h : ∀ m, lt m n → rk lt m < γ) :
+    rk lt n ≤ γ := by
+  rw [rk, IsWellFounded.rank_eq]
+  apply Ordinal.iSup_le
+  rintro ⟨m, hm⟩
+  exact Order.succ_le_of_lt (h m hm)
+
 /-- `‖≺‖` — the order type, `sup{|n|_≺ + 1}`. -/
 noncomputable def orderType : Ordinal.{0} := ⨆ n : ℕ, Order.succ (rk lt n)
 
