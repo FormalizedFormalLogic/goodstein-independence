@@ -1,0 +1,9 @@
+# Lean build artifacts
+/.lake/
+
+# Literature for the box (read off-disk via bind-mount; never redistributed in git).
+# Per KB "never commit PDFs to eventually-public repos": keep PDFs local, commit only
+# papers/SOURCES.md (the tracked catalog + provenance + summaries).
+papers/**/*.pdf
+papers/**/*.djvu
+papers/**/*.ps

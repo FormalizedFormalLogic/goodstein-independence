@@ -30,15 +30,21 @@ Lean lemmas is exactly treadmill work. The phases (see `EXPEDITION-PLAN.md` for 
 Decompose with **disclosed sub-`sorry`s** — a named lemma held at `sorry` is honest, checkable
 progress. Bank green laps; chip the girder lemma by lemma.
 
-## OFFLINE literature requests — your lifeline for Phase 2 📥
+## Literature — on disk + offline requests 📚
 
-You are **network-isolated** (no web, no GitHub). When you need a proof-theory reference you
-can't derive — the exact PA_∞ cut-elimination bound, the ε₀ ordinal-assignment scheme, how
-Gentzen/Schütte structure the consistency proof, a specific lemma statement — **do not guess and
-do not stall.** Write an **`ON-LINE-REQUEST.md`** at the repo root with precise questions; a host
-fulfiller researches it and commits `ON-LINE-FINDINGS-*.md` for you to read next lap. This is the
-intended substitute for "look it up." Use it liberally for Phase 2 — getting the math right from
-the literature beats inventing a plausible-but-wrong decomposition.
+**On hand (read these FIRST):** `papers/` holds pre-downloaded proof-theory references (PDFs;
+gitignored, but present on your disk via the bind-mount). `papers/SOURCES.md` is the catalog —
+what each paper is and which phase it serves (Gentzen ordinal analysis, PA_∞ cut-elimination,
+Kirby–Paris, Goodstein/Cichoń, fast-growing hierarchy). **Ground the girder in these, not in
+memory** — infinitary proof theory is exactly where an LLM confabulates a plausible-but-wrong
+argument. Quote the source; don't reconstruct it.
+
+**For gaps:** you are network-isolated (no web, no GitHub). When you need a reference that isn't
+in `papers/` — a specific lemma statement, the exact ε₀ cut-elimination bound, a notation
+convention — **do not guess and do not stall.** Write an **`ON-LINE-REQUEST.md`** at the repo root
+with precise questions; a host fulfiller researches it and commits `ON-LINE-FINDINGS-*.md` (and
+may add a PDF to `papers/`) for you to read next lap. Getting the math right from the literature
+beats inventing a decomposition.
 
 ## M1 — the immediate residual
 
