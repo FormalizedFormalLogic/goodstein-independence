@@ -1,63 +1,46 @@
-# HANDOFF — 2026-06-22 (lap 19, F SEAM FULLY ASSEMBLED)
+# HANDOFF — 2026-06-22 (lap 20, C₂ GLUE DISCHARGED — Thm 5.6 axiom-clean modulo E+F)
 
-> **Branch** `plan` · HEAD `8d011e4` · build **green** (`lake build GoodsteinPA`, **1269 jobs**) ·
+> **Branch** `plan` · HEAD `24144a3` · build **green** (`lake build GoodsteinPA`, **1269 jobs**) ·
 > headline `peano_not_proves_goodstein` = honest `sorry` (anti-fraud intact). Working tree clean.
-> Deliverable: **girder F (the arithmetization seam) is FULLY ASSEMBLED** —
-> `SeamDefinability.seam : EpsilonOrder.Seam` is built; `#print axioms seam =
-> [propext, choice, Quot.sound, rePred_ltPull_natCode]` (ONE disclosed axiom). Both the dominant-risk
-> order-type half AND the definability half are discharged this lap.
+> Deliverable: **C₂ glue `hax_paLX` X-induction case is DISCHARGED** (`src/GoodsteinPA/EmbeddingX.lean`).
+> `#print axioms hax_paLX = #print axioms embedC_LX = [propext, choice, Quot.sound]`. ⟹ the
+> **entire Buchholz §5 girder from D back through C₂ is now machine-checked + axiom-clean**, so
+> **Thm 5.6 (`PA ⊬ TI(ε₀)`) is axiom-clean modulo the two remaining campaign walls E + F-φ**.
 
-## ✅ Lap-19 headline deliverable — F SEAM ASSEMBLED (`src/GoodsteinPA/SeamDefinability.lean`)
-- `codeOfREPred₂` + `codeOfREPred₂_spec` — binary `ℒₒᵣ` representability (port of Foundation's unary
-  `codeOfREPred`), axiom-clean.
-- `precφ := codeOfREPred₂ (natCode order)` + `precφ_spec : ℕ ⊧/![m,n] precφ ↔ natCode m < natCode n`.
-- `seam : EpsilonOrder.Seam` — `φ := emb precφ`, `hφ` via `eval_emb`+`precφ_spec`, `ge :=
-  epsilon0_le_orderType_natCode`; `hprec`/`hprecXPos` from `EpsilonOrder` (lap 18).
-- **ONE disclosed axiom** `rePred_ltPull_natCode` (CNF order is r.e.) = the **F-φ discharge target**:
-  true (decidable `NONote.cmp` + computable `natCode`), gap = mathlib's missing `Computable`/`Primrec`
-  for `ONote.cmp`. Bounded, Foundation-free, Aristotle-eligible. **`ON-LINE-REQUEST.md` filed.** NOT on
-  any headline-clean claim (F not yet wired to headline).
+## ✅ Lap-20 deliverable — C₂ glue `hax_paLX` (`src/GoodsteinPA/EmbeddingX.lean`)
+The X-induction case (was the lone open `sorry` below the headline, besides off-path Route-A) is closed:
+- **`subst1_comp_bShift`** : `(Rew.subst ![t]).comp Rew.bShift = Rew.bShift` (degree-1 subst fixes a bShifted term).
+- **`rew_subst1_comm_q`** : `g.q ▹ (φ/[t]) = (g.q ▹ φ)/[t]` for `g.q`-fixed `t` (the under-one-binder
+  analogue of the file's `rew_subst_term`).
+- **`rew_succInd`** : `g ▹ succInd ψ = succInd (g.q ▹ ψ)` (naturality of `succInd` under closed rewriting).
+- **assembly**: `asgX e ▹ ↑(univCl (succInd ψ))` = `∀⁰* (fixitr ▹ succInd ψ)` (via Foundation's
+  `coe_univCl_eq_univCl'` + `rew_univCl'`); `PXFc_allClosure` strips `∀⁰*` to per-`v` numeral instances;
+  each reduces (`← comp_app` + `rew_succInd`) to `succInd ψ_v` (`ψ_v := g_v.q ▹ ψ`, `g_v := subst(nm∘v)∘fixitr`);
+  `succInd_nnf` + `PXFc.orI`×2 break it into `metaInduction_cong`'s `{∼ψ_v(0), ∃(∼step_v), ∀ψ_v}` shape.
+  `succT_v n := Rew.subst ![nm n] ‘#0+1’` (value `n+1`; `hsval` via `Structure.One/Add` `haveI`s + `congr 1`;
+  `hstep` via `Rew.subst_comp_subst`). Complexity bridged by `complexity_rew` (`ψ_v.complexity = ψ.complexity`).
 
-## ✅ Lap-19 proof deliverable — `src/GoodsteinPA/Epsilon0Complete.lean` (NEW, all `#print axioms` clean)
-The order-type half of girder **F** (`ε₀ ≤ orderType ≺`), end-to-end:
-1. **`exists_NF_repr_eq`** `: ∀ o<ε₀, ∃ x:ONote, x.NF ∧ x.repr=o` — ε₀-completeness of CNF notations
-   (the surjectivity mathlib LACKS). CNF recursion via `WellFoundedLT.induction`; crux `log_omega0_lt_self`
-   (`log ω o < o` for `o<ε₀`, = no `ω^·` fixed point below ε₀).
-2. **`repr_lt_epsilon0`** (NF ⟹ `repr<ε₀`) + **`range_NONote_repr`** (`= Iio ε₀`).
-3. **`rk_ltPull_eq_repr`** (= seam-advice `note_rank_eq_repr`) + **`epsilon0_le_orderType_ltPull (e : ℕ≃NONote)`**
-   `: ε₀ ≤ orderType (ltPull e)` (= the `Seam.ge` field, for ANY coding `e`).
-4. **`encodeONote`/`decodeONote`** (COMPUTABLE structural `Encodable ONote`) + `Infinite`/`Denumerable NONote`
-   ⟹ **`natCode : ℕ ≃ NONote`** + **`epsilon0_le_orderType_natCode`** (concrete, hypothesis-free `Seam.ge`).
-
-**Two non-obvious points (carry forward):**
-- Proved `ε₀ ≤ orderType` by **naming `orderType`/`rk` itself as some `repr (e n₀)` via surjectivity** —
-  dodges the `NONote ≃o Iio ε₀` iso (which bumps universes: `Iio ε₀ : Type 1` ⟹ `Ordinal.{1}` ≠ the
-  project's `Ordinal.{0}` `orderType`). Stay in ℕ.
-- The coding MUST be **computable** (concurrent-session footgun): `ofCountable`/`Countable.toEncodable` use
-  choice and would pass `Seam.ge` but silently wall Worker B (`codeOfREPred₂` needs `REPred (ltPull natCode)`).
-  Verified `#eval (natCode 5)` and `ONote.cmp (natCode 3).1 (natCode 7).1` both compute.
-
-## 🎯 Open obligations (priority order)
-1. **Discharge `rePred_ltPull_natCode`** (`SeamDefinability.lean`) ⟹ F entirely axiom-clean. Needs
-   computable `ONote.cmp` (`Computable₂`/`Primrec`). Plan: `Primcodable NONote` is free
-   (`Primcodable.ofDenumerable`); `Computable natCode = Computable.ofNat NONote` (verified rfl); then
-   `Computable (fun q : NONote×NONote => decide (q.1 < q.2))` via relating `NONote.cmp`→`ONote.cmp` to a
-   `Primrec`/`Nat.rec` form (the recursion-framework lemma mathlib lacks). `ON-LINE-REQUEST.md` filed.
-   Aristotle-eligible (pure mathlib/computability, ZERO Foundation dep).
-2. **C₂ glue `hax_paLX`** X-induction case (`EmbeddingX.lean:705`) — closes **Thm 5.6 (`PA ⊬ TI(ε₀)`)**
-   axiom-clean modulo E+F. Recipe inlined (steps 1-7), all 4 helpers proven; friction = Foundation-DSL
-   Rew-pushing through `succInd`/`univCl`/`fixitr`. ALL-OR-NOTHING (can't partial-commit a sorry) ⟹ extract
-   step-4 `rew_succInd : g ▹ succInd ψ = succInd (g.q ▹ ψ)` as a standalone helper first.
-3. **E** Goodstein⟹TI_≺(`natCode` order) in PA — the last unstarted wall. Per seam-advice Reviewer-2 §3:
-   ONE order (`natCode`'s CNF order) for both F and E; E uses `Domination.toONote` as a descent MAP into it
-   (E's order need not be type ε₀, only a PA-provable `≺`-decreasing descent). Needs `papers/` reading.
+## 🎯 Open obligations (priority order) — TWO campaign walls left + the F-φ Aristotle job
+1. **E** — `PA ⊢ Goodstein → PA ⊢ TI_≺(natCode order)` (the bridge). **The dominant remaining wall, now
+   the top priority** (C₂ is done). Per seam-advice Reviewer-2 §3: ONE order (`natCode`'s CNF order) for
+   both F and E; E uses `Domination.toONote` as a descent MAP into it (E's order need not be type ε₀, only
+   a PA-provable strictly-`≺`-decreasing descent). **Needs `papers/` reading** (Cichoń/Rathjen/Agboola —
+   Goodstein↔ε₀-descent). Not yet started; map the wall, state it in Lean, formalize the first prerequisite.
+2. **F-φ** `rePred_ltPull_natCode` (`SeamDefinability.lean`, 1 disclosed axiom) ⟹ F entirely axiom-clean.
+   **SUBMITTED TO ARISTOTLE lap 20** (UUID `16c9fc79-ae8b-4b04-8b83-2e8e9e5f38db`, status RUNNING; project
+   `/tmp/aris_onotecmp/ONoteComp.lean` = self-contained mathlib-only port: structural `Encodable ONote` +
+   `Denumerable NONote` + `natCode`, goal `REPred (natCode · < natCode ·)`). On return: VERIFY in our kernel
+   + `#print axioms`, then port to discharge the axiom. Crux = `Primcodable ONote` from the STRUCTURAL
+   encoding (not `ofDenumerable`) + `Primrec₂ ONote.cmp`. Foundation-free, bounded.
+3. **G / assembly** — once Thm 5.6 + E + F land: `PA ⊢ Goodstein ⟹ (E) PA ⊢ TI_≺ ⟹ (Thm 5.6) False`,
+   discharge headline. Only if `#print axioms peano_not_proves_goodstein` is clean.
 
 ## ⚠️ Locked / notes
 - **LOCKED untouched:** `Defs.lean`, `Bridge.lean` RHS, `goodsteinTerminates`, headline `sorry`.
-- **src/ sorries (3):** `Statement.lean:22` (headline, locked), `Reduction.lean:50` (Route-A, off-path),
-  `EmbeddingX.lean:705` (`hax_paLX` glue). `Epsilon0Complete.lean` + `EpsilonOrder.lean` are sorry-free.
-- Coordination: `ARITHMETIZATION-SEAM-ADVICE-2026-06-22.md` comment log is current (Codex + me).
+- **src/ sorries (2):** `Statement.lean:22` (headline, locked, designated open target), `Reduction.lean:52`
+  (Route-A, off-path). EmbeddingX/Epsilon0Complete/EpsilonOrder are all sorry-free.
+- M1 (`goodsteinTerminates_re`) verified axiom-clean this lap (`[propext, choice, Quot.sound]`).
 
 ## 📊 Lap estimate to headline (updated)
-F-φ ~1-2 · C₂ glue ~1 · Thm 5.6 wiring ~0.5 · **E ~2-4 (now the dominant remaining risk)** · G ~1.
-**Total ~5-9 laps.** Everything from D back + F's order-type half is axiom-clean machine-checked.
+**E ~2-4 (the dominant remaining risk)** · F-φ ~0-1 (Aristotle in flight) · G assembly ~1. Everything from
+D back + C₂ (Thm 5.6) + F's order-type half is axiom-clean machine-checked. **Total ~3-6 laps.**
