@@ -5,15 +5,19 @@
 bridge [M7, scaffolded]).** · **Build**: 🟢 green (1258 jobs, `lake build GoodsteinPA`)
 · **Updated**: lap 11 · 2026-06-22 · `bb0488e`
 
-## ⏭️ Lap-11 headline — M4 EMBEDDING COMPLETE; headline gap isolated to B1 + the bridge
+## ⏭️ Lap-11 — M4 embedding COMPLETE (axiom-clean); + course-correction: the witness bound `k` is essential
 **M4 (`embedC`, `src/GoodsteinPA/Embedding.lean`) is DONE and axiom-clean** (`[propext, choice,
-Quot.sound]`), promoted to `src/` and in the build. `exs` fell to `Provable.exI_closed` (closed-witness
-∃-intro via the value-congruent EM `provable_em_cong_gen` + cut); `axm` fell to `provable_true`
-(ω-completeness — the ω-rule subsumes the Buchholz §5.5 meta-induction). The Route-B assembly
-`peano_not_proves_goodstein_routeB` (`wip/Bounding.lean`) is now PROVED modulo TWO typed sorries:
-**B1** `embed_lt_eps0` (embedC with ordinal `< ε₀` — paper-independent, DO FIRST) and the **bridge**
-`cutfree_lt_eps0_absurd` (a cut-free `<ε₀` derivation Hardy-bounds the witness, contradicting M6 —
-B2/B3/B4/B5, see PENDING_WORK). Headline `Statement.peano_not_proves_goodstein` still an honest `sorry`.
+Quot.sound]`), in the build. `exs` → `Provable.exI_closed` (value-congruent EM `provable_em_cong_gen`
++ cut); `axm` → `provable_true` (ω-completeness). **BUT** (lap-11 finding, Towsner §13–17, see
+`ANALYSIS-2026-06-22-witness-bound-gap.md`): the headline needs the **witness-bounded calculus `Zᵏ`**
+— Towsner's lower bound (17.1) bites only via the I∃ witness bound `value ≤ h_α(k)`, which M5's
+`Provable α c` (cut-rank `c`) DROPS. Without `k`, `provable_true` already gives a cut-free `< ε₀`
+derivation of `{↑gs}`, so `embedC` is the *unbounded* embedding (Towsner Thm 14.2) — correct + reusable
+but NOT the headline object, and the lap-11 `wip/Bounding.lean` bridge is FALSE as stated. The lap-9
+"bound directly on unbounded `Deriv`" reframe is retracted; the banked laps-6–8 witness-bounded thread
+(`Zekd`) is back on the critical path. Corrected path = lap-5 steps 1–4 (build `Zᵏ`, bounded embedding
+Thm 16.1/16.5/16.7 reusing the banked assets, `(α,k)`-cut-elim 19.9, subformula bridge to `B`).
+Headline `Statement.peano_not_proves_goodstein` still an honest `sorry`.
 
 ## ⏭️ Lap-10 headline — M5 `axTrue` truth-layer surgery DONE (read `ANALYSIS-2026-06-22-truth-layer-gap.md`)
 Uncovered + closed the **truth-layer gap**: M5's pure-logic `Z_∞` couldn't host the embedding (`axm`

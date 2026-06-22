@@ -3,8 +3,10 @@
 > **Branch** `plan` · **HEAD** `bb0488e` (+docs after) · 5 commits this lap · build **green**
 > (`lake build GoodsteinPA`, 1258 jobs) · headline `peano_not_proves_goodstein` = honest `sorry`
 > (0 math axioms) · working tree clean.
-> **Lap 11 COMPLETED M4 — the embedding (the 8-lap universal bottleneck) — and promoted it to
-> `src/`. The headline gap is now isolated to exactly TWO typed obligations (B1 + the bridge).**
+> **Lap 11 COMPLETED M4 — the embedding `embedC` (axiom-clean, promoted to `src/`) — AND uncovered
+> (via Towsner §13–17) that the headline needs the WITNESS-BOUNDED calculus `Zᵏ`: M5 drops the I∃
+> bound `k`, so `embedC` is the *unbounded* embedding (reusable, but not the headline object). The
+> `wip/Bounding.lean` bridge is FALSE as stated. See `ANALYSIS-2026-06-22-witness-bound-gap.md`.**
 
 ## 🎉 M4 — the embedding `embedC` — COMPLETE & axiom-clean (`src/GoodsteinPA/Embedding.lean`)
 `embedC : Derivation2 (𝗣𝗔:Schema) Γ → ∃ c, ∀ e:ℕ→ℕ, ∃ α, Provable α c (Γ.image (asg e ▹))`.
@@ -22,34 +24,34 @@ Reusable axiom-clean assets now in `src/Embedding.lean`: `provable_em`, `provabl
 `Provable.exI_closed`, `provable_true`. (Superseded naive `embed`/`provable_rew` dropped on
 promotion; history in `wip/Embedding.lean`.)
 
-## 🎯 NEXT LAP — the bounding bridge + B1 (`wip/Bounding.lean` — the assembly is scaffolded)
-`peano_not_proves_goodstein_routeB` (in `wip/Bounding.lean`) is **PROVED modulo two disclosed
-sorries** — it wires the whole Route-B chain (embedC → cutElim → `omegaTower_lt_epsilon0` →
-bridge). The headline reduces to:
+## 🎯 NEXT LAP — the WITNESS-BOUNDED calculus `Zᵏ` (read `ANALYSIS-2026-06-22-witness-bound-gap.md`)
+⚠️ **Course-correction finding (lap 11, grounded in Towsner §13–17).** The lap-11 bridge scaffold
+(`wip/Bounding.lean`, `cutfree_lt_eps0_absurd`) is **FALSE as stated**, and the lap-9 "bound directly
+on the unbounded cut-free `Deriv`" reframe is **not viable**. Reason: Towsner's lower bound (Thm 17.1)
+bites only via the **witness bound `k`** — the I∃ side condition `value(t) ≤ h_α(k)`. M5's
+`Provable α c` tracks the cut rank `c` but DROPS `k` (the lap-4 finding). Without `k`, `provable_true`
+gives a cut-free derivation of `{↑gs}` with ordinal `< ε₀` (bounded quantifiers cost `allω`=`ω`; `exI`
+costs `+1` regardless of witness VALUE) — so the ordinal alone does not bite. ⟹ **`embedC` is the
+*unbounded* embedding (Towsner Thm 14.2), subsumed by `provable_true`; it is correct + reusable but
+NOT the headline object.**
 
-1. **B1 — `embed_lt_eps0`** (the easier, paper-independent one — START HERE): `embedC` but with the
-   ordinal `α < ε₀`. This is a refinement of `embedC` that tracks the ordinal through the structural
-   induction. **The one subtlety:** the `all` case introduces `allω` whose ordinal is `(⨆ₙ βₙ)+1`;
-   need the `βₙ` UNIFORMLY bounded `< ε₀` (they are — the sub-derivation SHAPE is the same for every
-   numeral `n`, only the assignment differs, and the ordinal depends only on shape). Likely cleanest:
-   restructure `embedC` to return a *uniform* ordinal bound independent of the assignment `e`, OR a
-   bound `β(d)` computed from the `Derivation2` structure with `β(d) < ε₀` provable separately. Also
-   needs: `provable_em`'s and `provable_true`'s ordinals are `< ε₀` (they are — complexity-bounded
-   `allω` towers, `< ω^ω`). **Attack:** strengthen the `embedC` statement to `∃ α, α < ε₀ ∧ Provable
-   α c …` and re-run the induction, discharging each case's ordinal-`< ε₀` side goal (use
-   `omega0_opow_lt_epsilon0`, sups of `<ε₀` families bounded via `Ordinal.iSup_lt`/principal-`ε₀`).
+**The corrected critical path (= lap-5 plan steps 1–4, now confirmed essential):**
+1. **`Zᵏ`** — M5 `Deriv` + the `(α,k)` witness bound on `exI` (`value ≤ h_α k`). Revive the banked
+   laps-6–8 `wip/` thread (`Zekd`/`OperatorZinfty`; lap-8 worked §19.2–19.5 + control axis). Cleanest
+   carrier: a `Provable`-style wrapper `∃ α' ≤ α, α'.NF ∧ Zᵏ …` (lap-8 `ZekdProv` design).
+2. **Bounded embedding (Towsner Thm 16.1/16.5/16.7)** into `Zᵏ`, ordinal `< ε₀`, finite cut rank.
+   `axm`: universal axioms via **16.1** (`provable_true` on the quantifier-free matrix — bounded, no
+   `∃`); induction via **16.5** bounded meta-induction (ordinal `ω·4#2^{rk}#2`), reusing `provable_em`
+   + `Provable.exI_closed`. Structural cases: port `embedC`'s (and/or/cut/wk/shift/all) ~verbatim.
+3. **`(α,k)`-cut-elim (Thm 19.9)** preserving the bound — the `wip/` Zekd §19 grind, now correctly
+   motivated (`ANALYSIS-…-cutelim-k-threading.md` has the §19.6 plan + the `ZekdProv` wrapper design).
+4. **Subformula bridge to `B`** (M6): a cut-free `Zᵏ` derivation of `{↑gs}` has only `↑gs`-subformulas
+   = the `GForm` fragment, so it IS a `B`-derivation ⟹ contradiction with `lowerBound_hardy_selfcontained`.
+   Plus the Σ₁-arithmetization seam (M7a: `codeOfREPred` matrix ↔ `atomTrue`) and the ONote↔Ordinal seam.
 
-2. **The bridge — `cutfree_lt_eps0_absurd`** (B2–B5, the deep arithmetization core): no cut-free
-   `Z∞` derivation of `{↑goodsteinSentence}` has ordinal `< ε₀`. ⚠️ **`↑gs` is TRUE so it DOES have
-   a cut-free derivation (`provable_true`) — the contradiction is the ORDINAL `< ε₀`, not existence.**
-   Sub-pieces (see PENDING_WORK):
-   - **B2** cut-free ∀/∃ witness bound on the real `Deriv`: invert the outer `∀` (`Provable.allInv`,
-     already in M5) per numeral `m`; bound the Σ₁ `∃N` witness by a Hardy `H_α(m)` (Towsner
-     boundedness lemma — needs reading `papers/`).
-   - **B3** arithmetization (M7a): the Σ₁ `codeOfREPred goodsteinTerminates` matrix ↔ the semantic
-     `atomTrue m N` (`goodsteinSeq N m = 0`) used by M6. THE intractability-risk piece.
-   - **B4** ordinal seam: mathlib `Ordinal < ε₀` ↔ `ONote` NF (mathlib `ONote`/`Ordinal.lt_epsilon`).
-   - **B5** assembly vs `lowerBound_hardy_selfcontained` (M6, `hardy_lt_goodsteinLength`).
+**BANKED reusable assets (all axiom-clean, `src/Embedding.lean`):** `provable_true` (→16.1),
+`provable_em`/`provable_em_cong_gen`/`Provable.exI_closed` (→16.5/14.1), `embedC` structural cases,
+M5 `cutElim` template. Do NOT discard — they are the building blocks of the bounded embedding.
 
 ## State of the spine (Route B)
 - **M1, M2, Phase 0/1** — done, clean.

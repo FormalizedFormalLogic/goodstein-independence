@@ -5,6 +5,14 @@ Joins M4 (embedding `embedC`, DONE), M5 (ε₀ cut-elimination `Provable.cutElim
 (Hardy lower bound `lowerBound_hardy_selfcontained`, DONE) into the headline
 `𝗣𝗔 ⊬ ↑goodsteinSentence`.
 
+⚠️ **CORRECTED lap 11 — read `ANALYSIS-2026-06-22-witness-bound-gap.md` FIRST.** The bridge below
+(`cutfree_lt_eps0_absurd`) is FALSE over M5's `Provable` because M5 drops Towsner's **witness bound
+`k`** (the I∃ side condition `value(t) ≤ h_α(k)`). The ordinal `< ε₀` alone does not bite. The whole
+chain must be redone over the **witness-bounded calculus `Zᵏ`** (M5 `Deriv` + the `(α,k)` I∃ bound,
+the banked laps-6–8 `wip/` thread), with the bounded embedding (Towsner Thm 16.1/16.5/16.7) and
+`(α,k)`-cut-elim (Thm 19.9). This file is kept as the assembly SHAPE template + the marker for what
+went wrong; it is NOT a valid proof route as written.
+
 ## The shape of the argument (Towsner Route B)
 `↑goodsteinSentence = ↑(∀⁰ code)` is a TRUE closed Π₂ sentence (`∀m ∃N, code(m,N)`), so it *does*
 have a cut-free `Z∞` derivation (ω-completeness `provable_true`) — the contradiction is **not**
@@ -50,9 +58,13 @@ theorem embed_lt_eps0 {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     ∃ c : ℕ, ∀ e : ℕ → ℕ, ∃ α, α < ε₀ ∧ Provable α c (Γ.image (fun φ => asg e ▹ φ)) := by
   sorry
 
-/-- **The bridge (B2–B5, disclosed).** No cut-free `Z∞` derivation of the encoded Goodstein
-sentence has ordinal `< ε₀`: such a bound would dominate the Goodstein length, contradicting
-`lowerBound_hardy_selfcontained` (M6). -/
+/-- **⚠️ FALSE AS STATED — see `ANALYSIS-2026-06-22-witness-bound-gap.md`.** This bridge is NOT
+provable: `↑goodsteinSentence` is TRUE, so `provable_true` (ω-completeness) gives a cut-free
+derivation of `{↑gs}` whose M5 ordinal is `< ε₀` (bounded quantifiers → `allω` of ordinal `ω`
+regardless of bounds; `exI` adds `+1` regardless of witness VALUE). The ordinal alone does NOT bite —
+Towsner's lower bound (Thm 17.1) needs the **witness bound `k`** (`value(t) ≤ h_α(k)` in I∃), which
+M5's `Provable α c` (cut-rank `c`) DROPS. The correct bridge is over the witness-bounded calculus
+`Zᵏ` and reads `value ≤ h_α k`, not `α < ε₀`. Kept here ONLY as a marker; do not attempt to prove. -/
 theorem cutfree_lt_eps0_absurd :
     ¬ ∃ α, α < ε₀ ∧ Provable α 0 {(↑goodsteinSentence : SyntacticFormula ℒₒᵣ)} := by
   sorry
