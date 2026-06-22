@@ -1,44 +1,30 @@
 # STATUS — GoodsteinPA 📊
 
 **Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Gentzen/Buchholz ordinal analysis — witness-FREE `Z_∞` (embedding
-[M4 `embedC`, done] + ε₀ cut-elim [M5, done]) + **Boundedness** (Thm 5.4, NEW) ⟹ `𝗣𝗔 ⊬ TI(ε₀)`, then
-Goodstein⟹TI(ε₀).** · **Build**: 🟢 green (1258 jobs, `lake build GoodsteinPA`)
-· **Updated**: lap 12 · 2026-06-22 · `605d5ba`
+[M4 `embedC`, done] + ε₀ cut-elim [M5, done]) + **Boundedness** (Thm 5.4, DONE lap 14, axiom-clean) ⟹
+`𝗣𝗔 ⊬ TI(ε₀)`, then Goodstein⟹TI(ε₀).** · **Build**: 🟢 green (1264 jobs, `lake build GoodsteinPA`)
+· **Updated**: lap 15 (review) · 2026-06-22 · `f16d3be`
 
-## ⏭️ Lap-12 — TWO findings: (a) §19.6 norm-machinery PROVED; (b) **PIVOT to Buchholz's Boundedness route** (reuses M4+M5, avoids the wall)
-**(a)** Proved Towsner's §19.6 ∀/∃ cut-reduction core `cutReduceAllAux` on the witness-bounded `Zekd`
-calculus (`wip/OperatorZinfty.lean`, axiom-clean), cracking the **norm-budget** half of the 5-lap wall
-via a **norm-carrying `ZekdProv` wrapper** + threaded `norm γ<k+dd` + `+1` d-bump (ADDENDUM 6). **But**
-the **witness-budget** half (ADDENDUM 7) is provably NOT closable with any numeric control (single `k`,
-`(k,d)`, or single control ordinal `e`): `allInv` yields the ∀-family at index `max k₀ n`, and Towsner's
-commuting-ω bound `h_{βₙ#ω}(max{k,n}) ≤ max{h_{β#ω}(k),n}` is FALSE for large `n`. Closing it needs the
-Buchholz set-operator `H` — a multi-lap build. **(b) ⟹ PIVOT (see `ANALYSIS-2026-06-22-lap12-buchholz-
-pivot.md`).** Reading Buchholz "Beweistheorie" §5 shows the STANDARD Gentzen analysis bounds PA's ordinal
-via the **witness-FREE** `Z∞` + a **Boundedness** theorem on `TI_≺(X)` — exactly **M5 (cut-elim, done) +
-M4 `embedC` (done)** + one new clean induction (Thm 5.4). The lap-11 "embedC is the wrong object / need
-witness-bounded `Zᵏ`" verdict was a **conflation**: lap 11 killed naive *witness*-extraction (height ≠
-witness bound), but Buchholz's Boundedness bounds the **order type** of `≺` via the set variable `X` +
-X-positive truth semantics `⊨^α` — sidestepping witnesses entirely. **New critical path: Boundedness
-(Thm 5.4) + Goodstein⟹TI(ε₀); drop the witness-bounded wall + M6 (Hardy) off the critical path.** This
-returns to `DIRECTION.md`'s original Gentzen/TI(ε₀) plan. Headline still an honest `sorry`.
-
-## ⏭️ Lap-10 headline — M5 `axTrue` truth-layer surgery DONE (read `ANALYSIS-2026-06-22-truth-layer-gap.md`)
-Uncovered + closed the **truth-layer gap**: M5's pure-logic `Z_∞` couldn't host the embedding (`axm`
-needs *true closed atomic* axioms like `nm n + 0 = nm n`, which `Deriv` lacked). The fix is now
-**implemented and axiom-clean**: `Deriv.axTrue` (ω-logic atomic-truth leaf) + a truth-layer
-cut-elimination (`removeFalseLitAux`, `atomCutAux` truth split) — `cutElim` = `[propext, choice,
-Quot.sound]`, no `sorryAx`. **M5 now hosts the embedding.** Next: the **assignment-carrying (all-closed)
-embedding** (`∀ e, ZProvable (Γ.image (ρe ▹))`) — discharges `axm` (via `axTrue`) and `exs` (closed-term
-collapse); supersedes the naive open `provable_rew`. M4 enabler `rew_subst_nm` also discharged this lap.
+## ⏭️ Lap-15 focus — execute C₁/C₂, the connective tissue to Thm 5.6
+The Buchholz Boundedness route (lap-12 pivot) is **half-done**: the two textbook-hard pieces M4 `embedC`
++ M5 `cutElim` were already axiom-clean, and **lap 14 added the crux Boundedness (Thm 5.4) + corollary B,
+axiom-clean**. What remains to assemble **Thm 5.6 (`Z ⊢ TI_≺(X) ⟹ ‖≺‖ < ε₀` = `PA ⊬ TI(ε₀)`)** is the
+**connective tissue**: **C₁** port `ZinftyGen.cutElim` to an `XFreeAx`-tracking, cut-rank-carrying `PXFc`
+twin (reach cr=0 keeping `XFreeAx` — validated feasible lap 15, the `atomCut` truth-branch is vacuous on
+`XFreeAx` inputs) and **C₂** port `embedC` to generic `LX` (X-induction axioms via the meta-induction
+tower of cuts, NOT `provable_true` — would lone-X-`axTrue`). Then **E** Goodstein⟹TI bridge + **F** the
+arithmetization seam (`‖≺‖=ε₀`, discharge `hprec`/`hprecXPos`) ⟹ headline. See newest `HANDOFF`.
 
 ## Where it stands
-The two hardest pieces of the standard Gentzen/Buchholz analysis are **machine-checked and `#print
-axioms`-clean and ON the (lap-12-pivoted) critical path**: the **embedding** `PA ⊢ φ ⟹ Z∞ ⊢ φ` (M4
-`embedC`, `src/Embedding.lean` — Buchholz Thm 5.5) and the **ε₀ cut-elimination** for the witness-free
-infinitary calculus (M5, `src/Zinfty.lean` — Buchholz Thms 5.1/5.2/5.3). Phase 0 (encoding + faithfulness
-bridge, M1) and Phase 1 (Gödel II hook, M2) are landed and clean. The headline
-`Statement.peano_not_proves_goodstein` is **still a literal `sorry`** (anti-fraud — correct; `#print
-axioms` = `[propext, sorryAx, choice, Quot.sound]`, 0 math axioms). **Lap-12 pivot** (see route decision):
+**THREE of the four hard pieces of the Buchholz §5 analysis are now machine-checked and `#print
+axioms`-clean** and on the critical path: the **embedding** M4 `embedC` (Thm 5.5, `src/Embedding.lean`),
+the **ε₀ cut-elimination** M5 `cutElim` (Thms 5.1–5.3, `src/Zinfty.lean` + generic `src/ZinftyGen.lean`),
+and **lap 14's Boundedness** Thm 5.4 + corollary `Z∞⊢^β_1 TI ⟹ ‖≺‖≤2^β` (`src/Boundedness.lean`,
+`boundedness`/`orderType_le_of_TIderiv`). Phase 0 (M1, `goodsteinTerminates_re` clean) + Phase 1 (Gödel II
+hook) landed. The headline `Statement.peano_not_proves_goodstein` is **still a literal `sorry`** (anti-fraud
+— correct; `#print axioms` = `[propext, sorryAx, choice, Quot.sound]`, 0 math axioms). The connective
+tissue to assemble **Thm 5.6 = `PA ⊬ TI(ε₀)`** is C₁ (XFreeAx-preserving cutElim→cr=0) + C₂ (`embedC` over
+LX); then the bridge (E, Goodstein⟹TI) + arithmetization seam (F, `‖≺‖=ε₀`). **Lap-12 pivot** (see route decision):
 the project drifted (laps 4–11) into Towsner's witness-bounded variant and hit a genuine wall (§19.6
 witness-budget needs the operator `H`). Buchholz §5 shows the witness-FREE route — M4+M5 (done) +
 **Boundedness (Thm 5.4)** + Goodstein⟹TI(ε₀) — is the standard, shorter path. Next target = the truth
@@ -58,6 +44,37 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-22 (lap 15 — FRESH-MIND REVIEW: validated the lap-14 cr=0 design against a feared
+  obstruction; direction confirmed sound):** Took altitude. Re-derived the full Buchholz §5 chain and
+  stress-tested the lap-14 architecture. **Nearly flagged a wall:** Boundedness is implemented at
+  `d.cr = 0` (fully cut-free), whereas Buchholz states it at `⊢^β_1` (cut-rank ≤ 1, atomic cuts allowed,
+  his case 8 = the X-atomic cut). The worry: getting a cr=0 `XFreeAx` derivation of `{TI}` needs cutElim
+  to *eliminate X-atomic cuts*, and the truth-layer surgery (`removeFalseLit`) would emit `axTrue false
+  Xsym` leaves — breaking `XFreeAx`. **Resolved by reading `atomCutAux`:** our `Provable.axL` is the
+  *same-atom* EM axiom `{Xs,¬Xs}` (not Buchholz's value-matched `{Xs,¬Xt}`), so an X-atomic cut closes by
+  **set idempotence** (the `axL` branch, no truth), and the truth-surgery branch is **vacuous under
+  `XFreeAx`** (it fires only on an `axTrue` leaf *equal to* the cut atom — i.e. an X-`axTrue` leaf, which
+  `XFreeAx` forbids). So `atomCut` preserves `XFreeAx` when cutting X-atoms on `XFreeAx` inputs, and the
+  lap-14 C₁ plan (port cutElim to a `cr`-carrying `PXFc` twin, all the way to cr=0) is **feasible as
+  written**. No refactor; proceed to C₁. Verified ledger from real `#print axioms` (headline still honest
+  `sorry`; `boundedness`/`orderType_le_of_TIderiv`/inversion suite all `[propext,choice,Quot.sound]`).
+  Refreshed STATUS; M1 (`goodsteinTerminates_re`) reconfirmed axiom-clean (Phase-0 closed).
+- **2026-06-22 (lap 14 — CRUX CRACKED: Boundedness Thm 5.4 + the full corollary B, axiom-clean):**
+  Proved **`boundedness`** (Thm 5.4) — the 9-`Deriv`-case nested induction (outer strong-induction on the
+  ordinal height `o d`, inner structural), hardest **case 2** (`¬Prog` `∃⁰`-inversion + the `α→α+2^{β₀}`
+  rank bump) machine-checked — and **`orderType_le_of_TIderiv`**, the FULL corollary `Z∞ ⊢^β_1 TI_≺(X)
+  ⟹ ‖≺‖ ≤ 2^β` (invert TI's `🡒`/`∀` via the new `XFreeAx`-preserving inversion suite `andInv_xfree`/
+  `orInv_xfree`/`allInv_xfree`, feed Boundedness). Built the **`PXF`** carrier (cut-free `XFreeAx`-tracking
+  provability + smart constructors). All 17 deliverables `[propext,choice,Quot.sound]`, no math axioms,
+  modulo the two legitimate seam hypotheses `hprec`/`hprecXPos` (discharged at arithmetization, step F).
+  This is Buchholz's crux done. Remaining to Thm 5.6: C₁ (XFreeAx cutElim→cr=0) + C₂ (`embedC` over LX).
+- **2026-06-22 (lap 13 — Boundedness prerequisites; generic Z∞ over LX):** Read Buchholz §5 pp.26–31
+  end-to-end. Shipped (green, axiom-clean, `src/`): **`LangX`** (`structLX (S:ℕ→Prop) : Structure LX ℕ`,
+  the `⊨^S` carrier), **`ZinftyGen`** (M5 cut-elim **generalised over `{L}[ORing L][Structure L ℕ][DecEq…]`**,
+  `Provable.cutElim` axiom-clean — reused wholesale on the X-route, no cut-elim re-proof), **`TruthSem`**
+  (`rk`/`orderType`/`models (⊨^γ)`/`Sat` + X-free invariance `models_lMap`), **`XPositive`** (`XPos` +
+  `models_mono`, the Buchholz cases 2/3/4 monotonicity). Confirmed VERIFY-(a): the set variable `X` is
+  plumbing, not math. See `ANALYSIS-2026-06-22-lap13-boundedness-design.md`.
 - **2026-06-22 (lap 12 — §19.6 norm-machinery PROVED + PIVOT to Buchholz's Boundedness route):** Reviewed
   the whole spine fresh. **(a)** Cracked the **norm-budget** half of the 5-lap §19.6 wall: proved
   `cutReduceAllAux` (Towsner's ∀/∃ cut-reduction) on the witness-bounded `Zekd` calculus, axiom-clean
@@ -172,11 +189,8 @@ escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 - **2026-06-22 (lap 3):** Proved the ENTIRE Z_∞ cut-elimination (Towsner §19), zero sorries,
   axiom-clean: inversions + cut reductions §19.5 (∧/∨) & §19.6 (∀/∃) + `cutElimStep` §19.7 + `cutElim`
   §19.9. `Ordinal.nadd` ABSENT in mathlib v4.31.0 → ordinary `+` with `+1` slack (additive principality
-  of `ω^c`). Promoted `wip/ZinftyF.lean → src/GoodsteinPA/Zinfty.lean`. (M5 ✅)
-- **2026-06-22 (lap 2):** Built the real `Z_∞` calculus over Foundation's `SyntacticFormula ℒₒᵣ` with
-  set sequents; proved all three inversion lemmas (§19.2–19.4); reduced cut-elim to `cutElimStep`.
-- **2026-06-22 (lap 1):** M1 (`goodsteinTerminates_re`, Phase 0 axiom-clean), M2 (`Reduction.lean`
-  Gödel II hook), Phase-2 decomposition doc (Towsner-grounded ladder).
+  of `ω^c`). Promoted `wip/ZinftyF.lean → src/GoodsteinPA/Zinfty.lean`. (M5 ✅)  *(laps 1–2 trimmed —
+  M1/M2/Phase-0-1 landed + the real `Z_∞` calculus & inversions built; see git history.)*
 
 ## Outstanding
 **New route (Buchholz §5, lap-12 pivot).** M4 `embedC` (Embedding, Thm 5.5) and M5 `cutElim` (Thms
@@ -218,10 +232,14 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 ## Axiom ledger (per headline / landmark theorem — the fidelity spine)
 | theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
-| `peano_not_proves_goodstein` (headline) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` | 🔓 open `sorry` — M4 + M7a + bounding bridge + assembly remain; **0** real math axioms |
+| `peano_not_proves_goodstein` (headline) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` | 🔓 open `sorry` — C₁ (XFreeAx cutElim) + C₂ (`embedC`/LX) + E (Goodstein⟹TI) + F (arithmetization seam) remain; **0** real math axioms |
 | `goodsteinSentence_faithful` (bridge) | encoding correctness | `propext, choice, Quot.sound` | 🟢 clean (trust base) |
 | `goodsteinTerminates_re` (M1) | r.e. of termination | `propext, choice, Quot.sound` | 🟢 clean |
-| `Deriv.Provable.cutElim` (M5, §19.9) | ε₀ cut-elimination | `propext, choice, Quot.sound` | 🟢 clean — over real `ℒₒᵣ`, witness-FREE `(α,c)`; used **as-is** on the two-phase path (NO `k` retrofit) |
+| `Deriv.Provable.cutElim` (M5, §19.9, `src/Zinfty`) | ε₀ cut-elimination (ℒₒᵣ) | `propext, choice, Quot.sound` | 🟢 clean — witness-FREE `(α,c)` |
+| `ZinftyGen.…Provable.cutElim` (M5-generic, lap 13) | ε₀ cut-elim over `{L}` | `propext, choice, Quot.sound` | 🟢 clean — the X-route carrier (`L=LX`); reused wholesale, no re-proof |
+| `Boundedness.boundedness` (Thm 5.4, **lap 14**) | order-type Boundedness | `propext, choice, Quot.sound` | 🟢 clean — modulo seam hyps `hprec`/`hprecXPos` (discharged at F) |
+| `Boundedness.orderType_le_of_TIderiv` (Cor B, **lap 14**) | `Z∞⊢^β_1 TI ⟹ ‖≺‖≤2^β` | `propext, choice, Quot.sound` | 🟢 clean — modulo `hprec`/`hprecXPos`; consumes a cr=0 `XFreeAx` `⊢{TI}` (C₁+C₂ supply it) |
+| `embedC` (M4, `src/Embedding`) | PA⊢φ ⟹ Z∞⊢φ (ℒₒᵣ) | `propext, choice, Quot.sound` | 🟢 clean — needs C₂ generic-LX port for the X-route |
 | `hardy_le_of_lt` (M6, `src/Hardy`) | Hardy index monotonicity (Hmono) | `propext, choice, Quot.sound` | 🟢 clean |
 | `lowerBound_existential_hardy` (M6) | ∃-fragment 17.1, concrete Hardy/`G` | `propext, choice, Quot.sound` | 🟢 clean — zero abstract hyps |
 | `B.allInv` (M6) | ∀-inversion (I∀-frontier resolution) | `propext, choice, Quot.sound` | 🟢 clean |
