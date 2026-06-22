@@ -24,3 +24,4 @@ import GoodsteinPA.LowerBound
 import GoodsteinPA.Embedding
 
 import GoodsteinPA.EmbeddingX
+import GoodsteinPA.EpsilonOrder
