@@ -6,14 +6,35 @@
 ## Where it stands
 Phase 0 (encoding + faithfulness bridge) and Phase 1 (Gödel II hook) are landed and axiom-clean.
 The **deep core of Phase 2 — Gentzen-style cut-elimination for the infinitary `Z_∞` calculus
-(milestone M5, Towsner §19) — is now COMPLETE and `#print axioms`-clean**, living in
-`src/GoodsteinPA/Zinfty.lean` (promoted from `wip/` this lap). The headline
-`Statement.peano_not_proves_goodstein` is still a literal `sorry` (anti-fraud): it needs the
-remaining girders M4 (embedding `PA⁺ ↪ Z_∞`), M6 (cut-free lower bound), and M7 (assembly), none
-of which is started. A surprising win this lap: **no truth/soundness layer was needed** for the
-atomic/`⊥` cut cases — set sequents dissolve them.
+(milestone M5, Towsner §19) — is COMPLETE and `#print axioms`-clean** in `src/GoodsteinPA/Zinfty.lean`.
+The headline `Statement.peano_not_proves_goodstein` is still a literal `sorry` (anti-fraud).
+
+## ⚠️ LAP-4 ARCHITECTURAL FINDING — the witness bound is essential (course correction)
+The completed M5 cut-elimination is for a calculus whose `∃`-rule (`Deriv.exI`) puts **no bound on
+the witness numeral**, and whose ordinal measure `o` does **not** track Towsner's numeric index `k`.
+That calculus **cannot reach the headline**: its cut-free fragment *proves* the Goodstein sentence
+`∀x∃y g_y(x)=0` at ordinal **2** (witness = `G(n)` directly), so Towsner's lower bound (Thm 17.1) is
+**false** for it. The three-theorem sandwich (16.7 embed ⟹ 19.9 cut-elim ⟹ 17.1 lower bound) only
+closes if **all three** track the witness/Hardy bound `value(t) ≤ h_α(k)`. M5 dropped it (correct
+*for cut-elimination in isolation* — the prior lap's "k not needed" claim — but a dead end for the
+chain). **Machine-checked both directions this lap** in `wip/WitnessBound.lean`, axiom-clean:
+- `unbounded_proves_goodstein` : the witness-**unbounded** cut-free calculus derives `gAll` at `2`.
+- `lowerBound_existential` : the witness-**bounded** calculus *cannot* derive the `∀`-free existential
+  fragment once `h α k < G n` — the irreducible reason the bound bites.
+
+**Consequence for the roadmap:** the load-bearing girder is now the **witness-bounded, Hardy-indexed
+`(α,k)` calculus** `B` + the full lower bound (Thm 17.1). The `src/Zinfty.lean` cut-elimination stays
+as a verified *component* but is **off the headline path** until cut-elimination is redone tracking
+`k` (its inversion/reduction *strategy* ports; only the bound bookkeeping changes). The further gap:
+our headline is real-`ℒₒᵣ` PA with an **opaque Σ₁** `goodsteinSentence`, not Towsner's extended-language
+`∀x∃y g_y(x)=0`, so a PA↔PA⁺ arithmetization bridge is *also* needed (Towsner Remark 10.3 skips it).
 
 ## What's happened (newest first)
+- **2026-06-22 (lap 4):** Ground-truthed Towsner §10–§19 against the Lean. Found + machine-checked
+  (axiom-clean, `wip/WitnessBound.lean`) the **witness-bound gap** above: built the witness-bounded
+  Hardy-indexed calculus `B`, proved the existential-fragment lower bound, and proved the unbounded
+  calculus collapses. Identified an invariant subtlety in Towsner's *full* 17.1 (accumulating
+  existentials under the `I∀` ω-rule) — filed `ON-LINE-REQUEST.md` for the rigorous invariant.
 - **2026-06-22 (lap 3):** Proved the ENTIRE Z_∞ cut-elimination (Towsner §19), zero sorries,
   axiom-clean: inversions (done prior) + cut reductions §19.5 (∧/∨, via double-inversion) & §19.6
   (∀/∃, by induction on the ∃-side) + `cutElimStep` §19.7 (rank `c+1→c`, all 8 cases + 8-way cut
@@ -56,6 +77,8 @@ Headline discharged ⟺ M4 + M6 + M7 land AND `#print axioms peano_not_proves_go
 | `Deriv.Provable.cutElimStep` (§19.7) | rank reduction | `propext, choice, Quot.sound` | 🟢 clean |
 | `Deriv.Provable.atomCut` (§19.2 content) | atomic cut elim | `propext, choice, Quot.sound` | 🟢 clean |
 | `not_proves_of_implies_consistency` (Route A) | meta-reduction | `…, PA_delta1Definable` | 🟡 Foundation axiom; **Route A only** — Route B avoids it |
+| `unbounded_proves_goodstein` (lap-4, `wip/`) | gap demo: no lower bound w/o witness bound | `propext, choice, Quot.sound` | 🟢 clean — proves current `Zinfty` calc is a dead end |
+| `lowerBound_existential` (lap-4, `wip/`) | ∃-fragment of Thm 17.1 (witness-bounded) | `propext, choice, Quot.sound` | 🟢 clean — the witness-bound mechanism, proven |
 
 Math-axiom count on the (eventual) Route-B headline target: **0** beyond the trust base — every
 proven component is `[propext, Classical.choice, Quot.sound]`. The `sorryAx` on the headline is the

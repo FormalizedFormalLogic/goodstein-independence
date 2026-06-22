@@ -4,6 +4,33 @@ State after lap 2026-06-22. Build green (`lake build GoodsteinPA`, 1204 jobs). P
 faithfulness bridge) axiom-clean. Phase 1 (Gödel II hook) landed. The headline stays a literal
 `sorry` (anti-fraud). See `PHASE2-DECOMPOSITION.md` for the full girder ladder.
 
+## ⚠️ TOP PRIORITY (lap 4) — O0: re-architect on the witness-bounded calculus
+**Finding (machine-checked, axiom-clean, `wip/WitnessBound.lean`):** the completed M5 cut-elimination
+in `src/Zinfty.lean` is for a calculus with an **unbounded `∃`-witness** and **no numeric index `k`**.
+That calculus cannot reach the headline — `unbounded_proves_goodstein` derives the Goodstein sentence
+cut-free at ordinal 2, so Towsner's lower bound (17.1) is FALSE for it. The headline needs the
+**witness-bounded, Hardy-indexed `(α,k)` calculus** (Towsner §15), where `∃` carries `v ≤ h α k`,
+`True` carries `τ α < k`, and `∀`'s premises use `max k n`. See `STATUS.md` lap-4 finding.
+
+Attack paths (hardest-first; the crux is now the lower bound + the `k`-tracking cut-elim):
+1. **Finish the lower bound (M6 / Thm 17.1).** `wip/WitnessBound.lean` has the calculus `B` and the
+   `∀`-free fragment proved (`lowerBound_existential`). The remaining frontier is the `gAll`/`I∀`
+   case with *accumulating* existentials — Towsner's stated invariant looks insufficient there
+   (see `ON-LINE-REQUEST.md`). Either crack the refined invariant (likely a single-ordinal
+   `H`-controlled measure, Buchholz style) or get it from the literature, then discharge the abstract
+   Hardy hypotheses `Hmono`/`Hdom`/`HG` from a real `h_α`/`τ`/`G` (mathlib `ONote.fastGrowing`?).
+2. **Retrofit `k` into cut-elimination.** Redo `src/Zinfty.lean`'s inversions/reductions tracking the
+   numeric bound `k` (the *strategy* ports; only the bookkeeping changes). Needed so the cut-free
+   output of M5 still carries the `(α,k)` bound that 17.1 refutes.
+3. **Decide architecture:** Towsner two-index `(α,k)` vs. Buchholz single-ordinal `H`-controlled
+   derivations. The latter may formalize more cleanly (one well-founded measure, standard boundedness
+   theorem). Resolve via `ON-LINE-REQUEST.md` before sinking the cut-elim redo.
+
+Plus the **PA↔PA⁺ language gap**: our headline is real-`ℒₒᵣ` PA with an opaque Σ₁ `goodsteinSentence`,
+not Towsner's extended-language `∀x∃y g_y(x)=0`; the arithmetization bridge Towsner skips (Remark
+10.3) is a separate deep girder (M7-adjacent). Route A (via `Con(PA)`, O1) stays entirely in real PA
+and sidesteps this — re-evaluate Route A vs Route B in light of the language gap.
+
 ## Open obligations (toward a clean headline)
 
 ### O1 — `Reduction.goodstein_implies_consistency` (Route A girder) — `sorry`
