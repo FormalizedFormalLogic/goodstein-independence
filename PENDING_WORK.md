@@ -12,15 +12,23 @@ a closed witness to a numeral needs a **value-congruent EM**; for an X-atom body
 retrofit recon (5/8 ZinftyGen sites mechanical; `atomCutAux` = Buchholz Remark p.27 = the one hard spot;
 `removeFalseLit_x` X-free-restriction keeps `XFreeAx` safe; Boundedness case 1.2 = p.29).
 
-### NEXT (lap 17): the `axLv` retrofit — single-lap big-bang to ONE green checkpoint (no intermediate green)
-Generalise the literal axiom to value-congruent pairs (`Deriv.axLv (r) (v v') (hval) …`, generic over L).
-Three attack paths if the big-bang stalls:
-1. **(primary)** Drive the whole retrofit (ZinftyGen → XFreeCutElim → Boundedness → `exs` discharge) to
-   green in one lap per the HANDOFF step list. Recon says the leaf branches are mechanical.
-2. **(fallback A)** Land just the X-FREE `exs` sub-case first (case-split `XFreeForm` of the body; X-free
-   bodies need only `axTrue`, no retrofit) to narrow the `sorry` to X-bodies — a committable checkpoint.
-3. **(fallback B)** If `atomCutAux` value-congruence is a swamp, isolate it as a single disclosed
-   `axiom value_cong_xpair_cut` (NOT on the headline), let the rest of C₂ compile, discharge the axiom later.
+### LANDED (lap 16): the `axLv` retrofit — green across all 3 files, 1 disclosed `sorry` left
+`Deriv.axLv` (value-congruent literal axiom, Buchholz `AX(Z∞)` p.27) threaded through ZinftyGen
+(incl. `atomCutAux` Remark p.27 + 3-case `removeFalseLitAux`), Boundedness (case 1.2 p.29), and
+XFreeCutElim (7/8 `_x` sites). Remaining `sorry`: `PXFc.atomCutAux`'s value-cong **X-atom-cut** case
+(`XFreeCutElim.lean:1048`) — C₁/D carry it temporarily.
+
+### NEXT (lap 17): `nrel_value_subst` clears it; then `exs`; then `embedC_LX`
+1. **`PXFc.nrel_value_subst`** — `Δ` cut-free `XFreeAx`, `nrel r v ∈ Δ`, `|v|=|w|` ⟹
+   `PXFc d.o 0 (insert (nrel r w) (Δ.erase (nrel r v)))`. Mirror `removeFalseLitAux_x` with frame
+   `Γ.erase Lit → insert Lit' (Γ.erase Lit)`; leaves close via `PXFc.axLv`/X-free `axTrue`; matched
+   `axLv` leaf: extract via `congrArg (∼·)` not raw dependent `injection`. Then transport `hNC` in
+   `atomCut_x` Case `hrel`.
+   - **fallback** if the dependent leaf cases swamp: isolate as a disclosed `axiom` (NOT on headline)
+     to let `cutElim` go clean-modulo-that, OR keep the current `sorry` and move to `exs`/`embedC_LX`
+     (which don't depend on `nrel_value_subst`) to make orthogonal progress.
+2. **`exs`** (`EmbeddingX.lean:203`): `provable_em_cong_gen_x` (X-atoms via `axLv`) ⟹ `exI_closed`.
+3. **`embedC_LX`** = `embedC_LX_gen` at `↑paLX` + `hax` (X-free `provable_true_x`, X-ind `metaInduction`).
 
 ### C₂-axm discharge (after structural is sorry-free) — `paLX` + `hax`
 `paLX := Theory.lMap (ORing.embedding LX) 𝗣𝗔⁻ + InductionScheme LX Set.univ`. X-free axioms via
