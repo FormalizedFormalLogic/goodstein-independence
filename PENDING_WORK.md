@@ -1,6 +1,33 @@
 # Pending work — open obligations & attack paths
 
+## 🧭 LAP-9 DEEP-REFLECTION COURSE-CORRECTION (2026-06-22) — read this FIRST
+Full synthesis: `REFLECTION-2026-06-22.md`. STATUS refreshed. **The priority order below (A/B/…) is
+SUPERSEDED.** New order, hardest-first = **unavoidable-first**:
+
+1. **M4 — embedding `𝗣𝗔 ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}` = THE next target.** The *universal bottleneck*:
+   needed on Route A, two-phase Route B, AND the abandoned Zekd route — there is no headline path that
+   skips it. Untouched since lap-6 recon. **Plan:** read Foundation `Derivation` + recursor; write
+   `embed : 𝗣𝗔 ⊢ φ → ∃ α c, ZinftyF.Provable α c {φ-image}` by induction; structural cases
+   (axL/verumR/andI/orI/cut) mirror `src/Zinfty.lean:144–238`; isolate **finite-induction → ω-rule**
+   (`Provable.allω`) as the one disclosed crux = clean feasibility readout.
+2. **M7a — transparent arithmetization** = parallel/fallback (shovel-ready, faithfulness-gated):
+   `gAllReal = ∀x∃y[g_y(x)=0]` + `𝗣𝗔 ⊢ goodsteinSentence ↔ gAllReal`, gated by `Bridge.lean`.
+3. **Bounding bridge (small, downstream):** prove on M5's **real cut-free `Deriv`** directly
+   (`allInv` ∀ away, read `exI` numeral off, witness `≤ hardy(toONote α)N`), combine with M6's
+   `hardy_lt_goodsteinLength` (`src/LowerBound.lean:258`). **Reuse M6's ℕ-domination fact, NOT the
+   abstract `B` transport** — the `B` lower bound is the template, banked. Ordinal seam = one `toONote`
+   (check mathlib `ONote.repr` surjectivity onto `[0,ε₀)`).
+
+**DO NOT RESUME** the witness-bounded cut-elim thread: `cutReduceAllAux`, `Zekd`, any 4th index
+calculus. Proven off-critical-path (lap-8 findings: single-index Hardy inequality is FALSE; landscape
+memory: the Hardy `k` index was never needed for cut-elim). `wip/{BoundedZinfty,SplitZinfty,
+OperatorZinfty}.lean` = reference only. Everything below this block (the lap-7/8 A/B/Zekd plans) is
+**historical context**, not the live plan.
+
+---
+
 ## 🗺️ OPEN-OBLIGATION INVENTORY (lap-7 end) — full list + 3 attack paths each
+### ⚠️ SUPERSEDED by the lap-9 block above — kept for history/attack-path detail only.
 The headline `Statement.peano_not_proves_goodstein` is the only `src/` sorry (the designated open
 target; anti-fraud — do NOT fill until the chain genuinely closes axiom-clean). It is reached via the
 connecting spine. Open spine pieces, with attack paths:
