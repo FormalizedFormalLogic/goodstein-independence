@@ -24,11 +24,11 @@ calculus, fully proved) to `Zk`, adding the `(k,NF,norm)` bookkeeping:
   A simple additive `k`-shift does **NOT** suffice (machine-checked: the `allω` commuting case has
   ℕ-many premises at `max k n` with `norm(βₙ)` unbounded in `n`, so `K = k + norm α` fails for large
   `n`; the Hardy growth `h_{β#ω}(k)` is what dominates). Use `hardy` (`src/Hardy.lean`).
-- **`norm` ingredient (lap 7):** `norm_addAux_le` **PROVED + banked** in `wip/BoundedZinfty.lean`.
-  `norm_add_le {α γ} (hα γ NF) : norm(α+γ) ≤ norm α + norm γ` is a **disclosed `sorry`** (the NF-free
-  version is FALSE — tested; NF eq-merge case needs leading-coeff provenance `lead(a+γ)≤norm γ` when
-  `lead a < e`). Finish via a `add_lead_coeff_le` helper. This is the `τ(α#β)≤τα+τβ` fact that lets the
-  Hardy-`k` growth absorb the additive bump.
+- **`norm` ingredient (lap 7): BOTH PROVED + banked, axiom-clean** in `wip/BoundedZinfty.lean`:
+  `norm_addAux_le` (head-merge bound) and `norm_add_le {α γ NF} : norm(α+γ) ≤ norm α + norm γ` (the
+  `τ(α#β)≤τα+τβ` budget fact). NF is essential — the NF-free version is machine-checked FALSE; the
+  eq-merge case is discharged by additive-principality **absorption** (`a + γ = γ` when `repr a <
+  ω^(repr e) ≤ repr γ`, via `Ordinal.add_of_omega0_opow_le`). `wip/BoundedZinfty.lean` is **sorry-free**.
 
 ---
 

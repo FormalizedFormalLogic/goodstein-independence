@@ -600,15 +600,48 @@ theorem norm_addAux_le (e : ONote) (n : ℕ+) (r : ONote) :
 `addAux` equal-exponent merge can blow the coefficient to `n + norm a` where `n` is `α`'s leading
 coefficient and `norm a` is the norm of `α`'s tail, exceeding `norm α + norm γ`. With NF, `α`'s tail
 exponents are all `< α`'s leading exponent `e`, so the merge case (`lead(add a γ) = e`) can only fire
-when **`γ`** supplies the matching head — hence the merged coefficient's second summand is bounded by
-`norm γ`, not `norm a`. Proof: induct on `α`; the `addAux` head lemma + the leading-coefficient
-provenance fact (TODO: `add_lead_coeff_le`, leading coeff of `a + γ` with `lead a < e` is `≤ norm γ`).
-This is the §19.6 ingredient (with the Hardy-`k` growth — see PENDING_WORK step 1). -/
-theorem norm_add_le {α γ : ONote} (hα : α.NF) (hγ : γ.NF) :
+when **`γ`** supplies the matching head: by additive principality of `ω^(repr e)`, the tail `a`
+(`repr a < ω^(repr e)`) is **absorbed** (`a + γ = γ`), so the merged coefficient's second summand is
+bounded by `norm γ`, not `norm a`. **Proved axiom-clean** (induct on `α`; `norm_addAux_le` head lemma +
+`Ordinal.add_of_omega0_opow_le` absorption in the eq-merge case). This is the §19.6 budget-growth
+ingredient (`τ(α#β) ≤ τα+τβ`; combined with the Hardy-`k` growth — see PENDING_WORK step 1). -/
+theorem norm_add_le : ∀ {α : ONote}, α.NF → ∀ {γ : ONote}, γ.NF →
     norm (α + γ) ≤ norm α + norm γ := by
-  -- TODO(lap 8): finish via `add_lead_coeff_le` (NF eq-merge case). Disclosed checkpoint;
-  -- the statement is TRUE and verified informally, the NF-free version is FALSE (tested).
-  sorry
+  intro α
+  induction α with
+  | zero => intro _ γ _; simp
+  | oadd e n a ihe iha =>
+    intro hα γ hγ
+    have ha : a.NF := hα.snd
+    haveI := ha; haveI := hγ
+    have iha' : norm (a + γ) ≤ norm a + norm γ := iha ha hγ
+    rw [oadd_add]
+    rcases hr : a + γ with _ | ⟨e', n', a'⟩
+    · simp only [addAux, norm_oadd, norm_zero]; omega
+    · rw [hr] at iha'
+      simp only [norm_oadd] at iha'
+      simp only [addAux]
+      rcases hcmp : ONote.cmp e e' with _ | _ | _
+      · simp only [norm_oadd]; omega
+      · have hee : e = e' := eq_of_cmp_eq hcmp
+        have hge : Ordinal.omega0 ^ ONote.repr e ≤ ONote.repr (a + γ) := by
+          rw [hr, hee]; exact omega0_le_oadd e' n' a'
+        have hra : ONote.repr a < Ordinal.omega0 ^ ONote.repr e := hα.snd'.repr_lt
+        have hgγ : Ordinal.omega0 ^ ONote.repr e ≤ ONote.repr γ := by
+          by_contra hlt
+          push_neg at hlt
+          have : ONote.repr a + ONote.repr γ < Ordinal.omega0 ^ ONote.repr e :=
+            (Ordinal.isPrincipal_add_omega0_opow (ONote.repr e)) hra hlt
+          rw [repr_add] at hge
+          exact absurd (lt_of_le_of_lt hge this) (lt_irrefl _)
+        have habs : a + γ = γ := by
+          have : ONote.repr (a + γ) = ONote.repr γ := by
+            rw [repr_add]; exact Ordinal.add_of_omega0_opow_le hra hgγ
+          exact repr_inj.mp this
+        have hnγ : norm γ = max (norm e') (max (n':ℕ) (norm a')) := by
+          rw [← habs, hr]; simp [norm_oadd]
+        simp only [norm_oadd, PNat.add_coe]; omega
+      · simp only [norm_oadd]; omega
 
 /-- **∧/∨ cut reduction, conjunction case** (Towsner Thm 19.5): a cut on `a ⋏ b` (negation
 `∼a ⋎ ∼b` on the other side) reduces to two cuts on `a`, `b`. -/
