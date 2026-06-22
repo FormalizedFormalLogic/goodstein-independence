@@ -4,6 +4,26 @@ State after lap 2026-06-22. Build green (`lake build GoodsteinPA`, 1204 jobs). P
 faithfulness bridge) axiom-clean. Phase 1 (Gödel II hook) landed. The headline stays a literal
 `sorry` (anti-fraud). See `PHASE2-DECOMPOSITION.md` for the full girder ladder.
 
+## ✅ LAP-5 — O0 done + the I∀ frontier RESOLVED; TOP PRIORITY is now O0′ (port `Hdom`)
+The witness-bounded calculus `B` is now built over `ONote` with the **concrete** Hardy hierarchy
+(`src/GoodsteinPA/Hardy.lean`, ported from Track-1). `wip/LowerBoundHardy.lean` proves, axiom-clean:
+the ∃-fragment lower bound (`lowerBound_existential_hardy`, zero abstract hyps), `k`-monotonicity,
+**∀-inversion** (`B.allInv`), and the **full Thm 17.1 modulo domination** (`lowerBound_hardy`). The
+lap-4 "accumulating existentials" wall is resolved by inverting `gAll` away rather than carrying it
+(see `ANALYSIS-2026-06-22-bounding-resolution.md`).
+
+### O0′ (TOP) — discharge `Hdom : ∃ x, hardy α (max k x) < G x`
+`G = goodsteinLength`; Goodstein defs (`bump`/`base`/`goodsteinSeq`) are **byte-identical** to Track-1.
+Port `~/src/lean-formalizations Logic/Goodstein/{Length,Domination,DominationOmega,TowerDomination,
+GrowthStatement,DominationCorollary,GoodsteinLike,DominationBaseCases}.lean` →
+`goodsteinLength_dominates_fastGrowing {o}(ho:o.NF) : ∃ N, ∀ m≥N, fastGrowing o m ≤ goodsteinLength m+2`.
+Chain `hardy α m ≤ fastGrowing α m` (`hardy_le_fastGrowing`) + identify `G = goodsteinLength`. **Bridge
+the `+2` to strict `<`** (the one genuinely-open bit; fastGrowing's gap over hardy swallows +2 for
+large m — good Aristotle target). Then `lowerBound_hardy` becomes a self-contained Thm 17.1. NB the
+port carries documented `native_decide` finite-base-case axioms.
+
+<details><summary>Superseded lap-4 O0 (re-architect on the witness-bounded calculus) — DONE</summary>
+
 ## ⚠️ TOP PRIORITY (lap 4) — O0: re-architect on the witness-bounded calculus
 **Finding (machine-checked, axiom-clean, `wip/WitnessBound.lean`):** the completed M5 cut-elimination
 in `src/Zinfty.lean` is for a calculus with an **unbounded `∃`-witness** and **no numeric index `k`**.
@@ -30,6 +50,7 @@ Plus the **PA↔PA⁺ language gap**: our headline is real-`ℒₒᵣ` PA with a
 not Towsner's extended-language `∀x∃y g_y(x)=0`; the arithmetization bridge Towsner skips (Remark
 10.3) is a separate deep girder (M7-adjacent). Route A (via `Con(PA)`, O1) stays entirely in real PA
 and sidesteps this — re-evaluate Route A vs Route B in light of the language gap.
+</details>
 
 ## Open obligations (toward a clean headline)
 

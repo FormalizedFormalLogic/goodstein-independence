@@ -1,7 +1,21 @@
 # STATUS — GoodsteinPA 📊
 
 **Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Towsner's Route B (Z_∞ ω-rule calculus + ε₀ cut-elimination).**
-· **Build**: 🟢 green (1243 jobs) · **Updated**: lap 3 · 2026-06-22 · `4f08ed3`+promotion
+· **Build**: 🟢 green (1248 jobs) · **Updated**: lap 5 · 2026-06-22
+
+## ⚡ LAP-5 BREAKTHROUGH — the gAll/I∀ lower-bound frontier is RESOLVED (machine-checked)
+The lap-4 "accumulating existentials" wall (the hardest piece, Towsner Thm 17.1 `I∀` case) is down.
+- **Hardy hierarchy ported** to `src/GoodsteinPA/Hardy.lean` (from Track-1; mathlib revs identical):
+  `hardy`/`norm` = Towsner `h_α`/`τ`, `hardy_le_of_lt` = **Hmono**, `hardy_monotone` = **Hmono_n**.
+- **`lowerBound_existential_hardy`** (`wip/LowerBoundHardy.lean`): ∀-free lower bound, **zero abstract
+  hypotheses**, over the real Hardy hierarchy + real `G`. Calculus `B` re-stated over `ONote` (= `<ε₀`).
+- **`B.allInv`** (∀-inversion) + **`lowerBound_hardy`** = the **full Thm 17.1 modulo domination `Hdom`**.
+  Resolution: invert `gAll` away (don't carry it through the induction — a set-sequent `gAll` lets the
+  ω-rule re-expand at a small reachable index and `trueR`-close everything, breaking a direct
+  invariant). All axiom-clean. See `ANALYSIS-2026-06-22-bounding-resolution.md`.
+- **Next:** discharge `Hdom : ∃ x, hardy α (max k x) < G x` — `G = goodsteinLength`, Goodstein defs
+  byte-identical to Track-1, so PORT `goodsteinLength_dominates_fastGrowing` (+ `hardy ≤ fastGrowing`,
+  bridge the `+2` to strict). Then M4 embedding + M7 assembly remain for the headline.
 
 ## Where it stands
 Phase 0 (encoding + faithfulness bridge) and Phase 1 (Gödel II hook) are landed and axiom-clean.
@@ -79,6 +93,10 @@ Headline discharged ⟺ M4 + M6 + M7 land AND `#print axioms peano_not_proves_go
 | `not_proves_of_implies_consistency` (Route A) | meta-reduction | `…, PA_delta1Definable` | 🟡 Foundation axiom; **Route A only** — Route B avoids it |
 | `unbounded_proves_goodstein` (lap-4, `wip/`) | gap demo: no lower bound w/o witness bound | `propext, choice, Quot.sound` | 🟢 clean — proves current `Zinfty` calc is a dead end |
 | `lowerBound_existential` (lap-4, `wip/`) | ∃-fragment of Thm 17.1 (witness-bounded) | `propext, choice, Quot.sound` | 🟢 clean — the witness-bound mechanism, proven |
+| `hardy_le_of_lt` (lap-5, `src/Hardy`) | Hardy index monotonicity (Hmono) | `propext, choice, Quot.sound` | 🟢 clean — ported Track-1 |
+| `lowerBound_existential_hardy` (lap-5, `wip/`) | ∃-fragment 17.1, concrete Hardy/`G` | `propext, choice, Quot.sound` | 🟢 clean — **zero abstract hyps** |
+| `B.allInv` (lap-5, `wip/`) | ∀-inversion (the I∀-frontier resolution) | `propext, choice, Quot.sound` | 🟢 clean |
+| `lowerBound_hardy` (lap-5, `wip/`) | **full Thm 17.1** mod `Hdom` | `propext, choice, Quot.sound` | 🟢 clean — gAll case RESOLVED, modulo domination |
 
 Math-axiom count on the (eventual) Route-B headline target: **0** beyond the trust base — every
 proven component is `[propext, Classical.choice, Quot.sound]`. The `sorryAx` on the headline is the
