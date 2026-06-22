@@ -26,6 +26,15 @@ M7a (the PA↔PA⁺ arithmetization bridge); Route A trades those for the full G
 smaller. Revisit only if M7a proves intractable after sustained effort.
 
 ## What's happened (newest first)
+- **2026-06-22 (lap 7, cont. — §19.6 norm ingredient PROVED; commuting-case frontier mapped):**
+  Proved `norm_addAux_le` and `norm_add_le {α γ NF} : norm(α+γ) ≤ norm α + norm γ` (axiom-clean; the
+  `τ(α#β)≤τα+τβ` budget fact; NF essential — NF-free version machine-checked FALSE, eq-merge killed by
+  additive-principality absorption). `wip/BoundedZinfty.lean` now **sorry-free**. Then, starting
+  `cutReduceAll`, **uncovered a genuine §19.6 obstruction**: the `allω`-commuting case cannot preserve
+  the ω-rule's `max{k,n}` norm budget after adding `α` to the bound (`norm(α+βₙ)~norm α+n > max K n` for
+  large `n`). Towsner's "follows from IH" glosses this; the fix needs Buchholz operator-control or a
+  controlled `Zk.allω` index. Precisely characterized + 3 attack options in
+  `ANALYSIS-2026-06-22-cutelim-k-threading.md` ADDENDUM; `ON-LINE-REQUEST` re-filed (one layer down).
 - **2026-06-22 (lap 7 — cut-elim `k`/`τ` crux RESOLVED, offline):** Read Towsner §15–§20 on disk and
   answered the open `ON-LINE-REQUEST` directly. **Finding:** the lap-6 "norm grows under addition so
   cut-elim might break `norm<k`" worry was a misframing. (a) `k` is **not** fixed — it grows (§19.5

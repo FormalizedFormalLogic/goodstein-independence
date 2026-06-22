@@ -20,10 +20,19 @@ calculus, fully proved) to `Zk`, adding the `(k,NF,norm)` bookkeeping:
 - **Bound:** ordinal `α + γ` (`ONote.+`, `add_lt_add_left_NF`/`le_add_left_NF` banked); slack via
   `osucc` at cuts (`lt_osucc`, `osucc_NF` banked).
 - **`k`-growth (the new content vs lap 3):** the conclusion's `k` is **`h_{β#ω}(k)`** (a Hardy value),
-  NOT the input `k` — Towsner §19.6 exactly. State existentially: conclusion `∃ K, Zk (α+γ) K c (…)`.
-  A simple additive `k`-shift does **NOT** suffice (machine-checked: the `allω` commuting case has
-  ℕ-many premises at `max k n` with `norm(βₙ)` unbounded in `n`, so `K = k + norm α` fails for large
-  `n`; the Hardy growth `h_{β#ω}(k)` is what dominates). Use `hardy` (`src/Hardy.lean`).
+  NOT the input `k` — Towsner §19.6 exactly. ⚠️ **LAP-7 FINDING — the `allω`-commuting case is a REAL
+  obstruction, not mechanical.** Reconstructing the ω-rule after adding `α` to the bound needs
+  `norm(α+βₙ) < max K n`, but `norm(α+βₙ) ~ norm α + n` exceeds `max K n ~ n` for large `n`, for ANY
+  fixed `K` (norm is not `<`-monotone, so `βₙ<β` doesn't bound `norm βₙ`; natural sum + `τα<k` don't
+  save it). Towsner's "follows from IH" glosses this. **The numeric `(α,k)` form may genuinely need
+  either (1) Buchholz operator-controlled derivations, (2) a generalized `Zk.allω` with a controlled
+  premise-index `f n` (re-verify M6 lower bound survives — tension: cut-elim wants `f` to GROW to fit
+  `+α`, the lower bound wants witnesses `≤ h(f n) < G(n)` BOUNDED), or (3) re-derived Towsner 16.8–16.10
+  Hardy inequalities (likely insufficient per the `+α` analysis).** Full derivation +
+  attack options in `ANALYSIS-2026-06-22-cutelim-k-threading.md` ADDENDUM. `ON-LINE-REQUEST` re-filed.
+  **This is now the hardest-first crux of step 1 — the principal `exI` case is clean; the commuting
+  `allω` bounding is the live frontier.** Use `hardy` (`src/Hardy.lean`; `Reaches`/`fundamentalSequence`/
+  `hardy_le_of_reaches`/`hardy_monotone` already banked).
 - **`norm` ingredient (lap 7): BOTH PROVED + banked, axiom-clean** in `wip/BoundedZinfty.lean`:
   `norm_addAux_le` (head-merge bound) and `norm_add_le {α γ NF} : norm(α+γ) ≤ norm α + norm γ` (the
   `τ(α#β)≤τα+τβ` budget fact). NF is essential — the NF-free version is machine-checked FALSE; the

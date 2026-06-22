@@ -77,4 +77,57 @@ both already de-risked:
   **§19.9 `cutElim`** (iterate `c` times). All existential in `k`.
 - **Step 4 subformula bridge** then consumes `CutFree α' {gAll}` ⟹ `B α' k' {gAll}` ⟹ contradiction.
 
-No literature gap remains for the cut-elimination `k`/`τ` bookkeeping. `ON-LINE-REQUEST.md` closed.
+No literature gap remains for the cut-elimination `k`/`τ` bookkeeping itself (the original request is
+answered). **But see the ADDENDUM below** — the §19.6 *commuting* cases surfaced a deeper obstruction;
+`ON-LINE-REQUEST.md` is re-filed for that one layer down.
+
+---
+
+## ADDENDUM (lap 7, continued) — the §19.6 **I∀-commuting** obstruction (deeper than the headline crux)
+
+Starting the `cutReduceAll` port for `Zk` surfaced a genuine obstruction that Towsner's §19.6 ("the
+other cases follow immediately from the IH") glosses over. Recording it precisely so the next lap does
+not rediscover it.
+
+**Setup.** §19.6 inverts the ∀-side (`allInv` → family `fam : ∀n, Zk α (max k n) c (Γ,φ[n])`) and
+**inducts on the ∃-side** `Zk β k c (∆, ∃∼φ)`, framing the running conclusion over `α + βᵢ` (ordinal)
+at a grown `k`. The **principal `exI`** case is clean (cut `fam n` at witness `n ≤ hardy β k`, which is
+why Towsner's bound uses `β#ω`: `h_{β#ω}(k) > 2k ≥` the witness). The trouble is the **commuting `allω`
+case**: the ∃-side's last rule is an ω-rule introducing some `∀χ ∈ ∆`, premises
+`Zk βₙ (max k n) c (∆', χ[n], ∃∼φ)` with `norm βₙ < max k n`.
+
+**The obstruction (machine-analytic, not yet machine-checked).** Reconstructing the ω-rule on `χ` at
+the conclusion's grown index `K` requires the `n`-th premise to satisfy the `Zk.allω` side condition
+`norm(α + βₙ) < max K n`. But `norm(α+βₙ) ≤ norm α + norm βₙ` (our `norm_add_le`) and `norm βₙ` can be
+`~ n` (e.g. `βₙ = ofNat n < β = ω^ω`, `norm βₙ = n`, since `norm` is **not** monotone in `<`). So
+`norm(α+βₙ) ~ norm α + n`, which for large `n` **exceeds** `max K n ~ n` — for ANY fixed `K`, even with
+the existential-`k` design, even with natural sum (`τ(α#βₙ) = τα + τβₙ`), even using `τα < k` (the cut's
+own side condition). The additive constant `norm α` cannot fit under the ω-rule's `max{k,n} ~ n` budget
+for large `n`. **Adding `α` to the bound breaks the ω-rule norm budget in the commuting case.**
+
+**Why this isn't fatal — but needs the right machinery.** The standard rigorous fix is **Buchholz
+operator-controlled derivations** (`H` an operator on ordinal sets, written `H ⊢^α_c Γ`) instead of a
+numeric `k`: the ω-rule's premises are controlled by `H[{n}]` (the operator augmented by `n`), and the
+embedding/cut-elimination thread the *operator* (closed under the relevant ordinal functions), which
+absorbs a `+α` shift where a numeric `max{k,n}` cannot. Towsner's numeric `(α,k)` is a stripped-down
+presentation that works for the *principal* lower-bound argument (§17) but is too rigid for the
+*general* §19.6 commuting cases unless one re-derives the Hardy fundamental-sequence inequalities
+(Towsner 16.8–16.10) carefully — and even then the `max{k,n}`-vs-`+α` mismatch above suggests the
+numeric form genuinely needs either (i) the operator reformulation, or (ii) a per-`n` index on the
+reconstructed ω-rule that the `Zk.allω` shape would have to be generalized to permit.
+
+**Decision / next-lap options (hardest-first):**
+1. **Reformulate `Zk` operator-controlled** (Buchholz `beweistheorie` §9 "Boundedness", on disk;
+   Hardy-hierarchy §, on disk). Most robust; larger refactor of `wip/BoundedZinfty.lean`.
+2. **Generalize `Zk.allω`** to allow the `n`-th premise at index `f n` for a controlled `f` (not just
+   `max k n`), re-checking the lower bound (M6) still refutes — the lower bound is `∀k`, may extend to
+   `∀ controlled f`. Smaller change; verify §17 survives.
+3. **Re-derive Towsner 16.8–16.10** (Hardy fundamental-sequence bounds; partial machinery already in
+   `src/Hardy.lean`: `Reaches`, `fundamentalSequence`, `hardy_le_of_reaches`, `hardy_monotone`) and
+   prove the commuting-case inequality `h_{βₙ#ω}(max{k,n}) ≤ max{h_{β#ω}(k), n}` IF it holds — but the
+   `+α` analysis above suggests it does NOT hold in the naive form, so (1)/(2) are more promising.
+
+This is the true remaining depth of step 1. The conceptual `k`-crux (top of this doc) and the
+`norm`-subadditivity ingredient (`norm_add_le`, proved) are done; the §19.6 commuting-case bounding is
+the live frontier. `ON-LINE-REQUEST.md` re-filed for the operator-controlled / S-W bounding-lemma
+detail.
