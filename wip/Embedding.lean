@@ -167,7 +167,18 @@ fact the `allω`/`exI` cases of the renaming enabler need. Proof = `Rew`-substs 
 (`Rewriting.subst` ∘ `ω` = `ω.q` ∘ `Rewriting.subst`) + `ω ▹ nm n = nm n`. -/
 private lemma rew_subst_nm (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ) :
     ω ▹ (φ/[nm n]) = (ω.q ▹ φ)/[nm n] := by
-  sorry
+  -- `φ/[nm n] = Rew.subst ![nm n] ▹ φ`; push `ω` through and collapse the two `▹` into a
+  -- single composed `Rew`, reducing to a pointwise `Rew` identity.
+  show ω ▹ (Rew.subst ![nm n] ▹ φ) = Rew.subst ![nm n] ▹ (ω.q ▹ φ)
+  have heq : ω.comp (Rew.subst ![nm n]) = (Rew.subst ![nm n]).comp ω.q := by
+    ext x
+    · -- bound variable: only `#0`, sent to the closed numeral `nm n` (fixed by `ω`).
+      cases x using Fin.cases with
+      | zero => simp [Rew.comp_app, nm]
+      | succ i => exact Fin.elim0 i
+    · -- free variable: `ω.q &x = bShift (ω &x)`, killed by `subst_bShift_app`.
+      simp [Rew.comp_app]
+  rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, heq]
 
 /-- **(enabler, M4) Renaming invariance for `Z_∞`**, **cut-rank-preserving** (the ordinal may grow;
 existential `α`). The shared prerequisite for the embedding's `shift`/`all`/`exs` cases (the analogue
