@@ -117,14 +117,20 @@ theorem PXFcFin.allω_unif {c Γ} (φ : SyntacticSemiformula LX 1) (N : ℕ)
   have := PXFc.allω (β := fun _ => (N : Ordinal)) φ (Γ := Γ) h
   rwa [iSup_const_ord] at this
 
-/-- **The single transfinite jump.** The ω-rule over a *non*-constant finite family: each premise has
-some finite height `N n`, but `⨆ₙ (↑N n) ≤ ω < ε₀`, so the conclusion is `< ε₀`. -/
-theorem PXFcLt.allω_fin {c Γ} (φ : SyntacticSemiformula LX 1)
-    (h : ∀ n, PXFcFin c (insert (φ/[nm n]) Γ)) : PXFcLt c (insert (∀⁰ φ) Γ) := by
+/-- **The single transfinite jump**, explicit form: the ω-rule over a *non*-constant finite family
+lands uniformly at height `ω + 1` (each premise `↑N n ≤ ω`). This explicit `ω + 1` is independent of
+the family witnesses, so it survives being placed under further binders (`allClosure`). -/
+theorem PXFc.allω_omega {c : ℕ} {Γ : Seq LX} (φ : SyntacticSemiformula LX 1)
+    (h : ∀ n, PXFcFin c (insert (φ/[nm n]) Γ)) :
+    PXFc (Ordinal.omega0 + 1) c (insert (∀⁰ φ) Γ) := by
   choose N hN using h
-  refine ⟨(⨆ n, ((N n : ℕ) : Ordinal)) + 1, ?_, PXFc.allω (β := fun n => ((N n : ℕ) : Ordinal)) φ hN⟩
-  refine add_one_lt_epsilon0 (lt_of_le_of_lt ?_ omega0_lt_epsilon0)
+  refine (PXFc.allω (β := fun n => ((N n : ℕ) : Ordinal)) φ hN).mono ?_ le_rfl
+  gcongr
   exact Ordinal.iSup_le (fun n => (Ordinal.natCast_lt_omega0 (N n)).le)
+
+/-- `ω + 1 < ε₀`. -/
+theorem omega0_add_one_lt_epsilon0 : (Ordinal.omega0 : Ordinal.{0}) + 1 < ε₀ :=
+  add_one_lt_epsilon0 omega0_lt_epsilon0
 
 /-- **Bounded `Z∞` excluded middle over `LX`.** The cut-free `XFreeAx` derivation of `{φ, ∼φ}` has
 **finite** ordinal `≤ 2·complexity φ`. The bound is complexity-determined (not instantiation-determined),
@@ -533,7 +539,7 @@ theorem metaInduction_cong_bdd (ψ step : SyntacticSemiformula LX 1) {Γ : Seq L
     (succT : ℕ → SyntacticTerm LX)
     (hsval : ∀ n, Semiterm.valm ℕ ![] (id : ℕ → ℕ) (succT n) = n + 1)
     (hstep : ∀ n, (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT n])) :
-    PXFcLt (ψ.complexity + 1)
+    PXFc (Ordinal.omega0 + 1) (ψ.complexity + 1)
       (insert (∼(ψ/[nm 0])) (insert (∃⁰ (∼step)) (insert (∀⁰ ψ) Γ))) := by
   set c : ℕ := ψ.complexity + 1 with hc
   set Δ : Seq LX := insert (∼(ψ/[nm 0])) (insert (∃⁰ (∼step)) Γ) with hΔ
@@ -569,10 +575,52 @@ theorem metaInduction_cong_bdd (ψ step : SyntacticSemiformula LX 1) {Γ : Seq L
       have hcutd : PXFcFin c (insert (ψ/[succT n]) Δ) :=
         PXFcFin.cut (ψ/[nm n]) (hcut n) hL hexI
       exact subst_value_subst_bdd ψ (succT n) (nm (n+1)) (by rw [hsval, valm_nm]) hcc hcutd
-  obtain ⟨a, ha_lt, ha⟩ := PXFcLt.allω_fin (c := c) (Γ := Δ) ψ chain
-  refine ⟨a, ha_lt, ha.weakening ?_⟩
+  refine (PXFc.allω_omega (c := c) (Γ := Δ) ψ chain).weakening ?_
   rw [hΔ]; intro x hx
   simp only [Finset.mem_insert] at hx ⊢
   tauto
+
+/-! ## Bounded universal-closure stripping (explicit `B + n`) -/
+
+set_option maxHeartbeats 1000000 in
+/-- Bounded `EmbeddingX.PXFc_allClosure`: from a **uniform** bound `B` on every numeral
+instantiation, derive `∀⁰* χ` at the explicit height `B + n` (one `+1` per closure variable, all the
+ω-rule families constant at `B`). -/
+theorem PXFc_allClosure_omega : ∀ {n} (χ : Semiformula LX ℕ n) {c : ℕ} {Γ : Seq LX} (B : Ordinal.{0}),
+    (∀ (v : Fin n → ℕ), PXFc B c (insert (Rew.subst (fun i => nm (v i)) ▹ χ) Γ)) →
+    PXFc (B + (n : ℕ)) c (insert (∀⁰* χ) Γ) := by
+  intro n
+  induction n with
+  | zero =>
+    intro χ c Γ B h
+    have ha := h Fin.elim0
+    rw [show (∀⁰* χ) = χ from rfl]
+    have he : (Rew.subst (fun i : Fin 0 => nm (Fin.elim0 i)) ▹ χ) = χ := by simp [Matrix.empty_eq]
+    rw [he] at ha
+    simpa using ha
+  | succ n ih =>
+    intro χ c Γ B h
+    rw [allClosure_succ]
+    have key : ∀ v : Fin n → ℕ, PXFc (B + 1) c
+        (insert (Rew.subst (fun i => nm (v i)) ▹ (∀⁰ χ)) Γ) := by
+      intro v
+      rw [Rewriting.app_all]
+      have fam : ∀ m, PXFc B c
+          (insert (((Rew.subst (fun i => nm (v i))).q ▹ χ)/[nm m]) Γ) := by
+        intro m
+        rw [subst_q_cons_app (fun i => nm (v i)) m χ]
+        have hcons : ((nm m :> fun i => nm (v i)) : Fin (n+1) → Semiterm LX ℕ 0)
+            = (fun i => nm ((m :> v) i)) := by
+          funext i; cases i using Fin.cases with
+          | zero => simp
+          | succ j => simp
+        rw [hcons]; exact h (m :> v)
+      have hb := PXFc.allω (β := fun _ => B) ((Rew.subst (fun i => nm (v i))).q ▹ χ) fam
+      rwa [iSup_const_ord] at hb
+    have hres := ih (∀⁰ χ) (B + 1) key
+    have hcast : (B + 1) + (n : ℕ) = B + ((n + 1 : ℕ) : Ordinal) := by
+      rw [add_assoc]; congr 1
+      rw [← Nat.cast_one, ← Nat.cast_add]; congr 1; omega
+    rwa [hcast] at hres
 
 end GoodsteinPA.EmbeddingBound
