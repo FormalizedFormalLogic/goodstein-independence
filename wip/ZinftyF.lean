@@ -635,8 +635,25 @@ noncomputable def omegaTower : ℕ → Ordinal.{0} → Ordinal.{0}
 
 @[simp] theorem omegaTower_one (α : Ordinal.{0}) : omegaTower 1 α = Ordinal.omega0 ^ α := rfl
 
+/-- **Cut-reduction lemma** (Towsner §19.5–19.6) — the narrowed open core under `cutElimStep`,
+now that all three inversions (`orInv`/`andInv`/`allInv`) are proved. Combine two cut-rank-`≤ c`
+derivations of `insert φ Γ` and `insert (∼φ) Γ`, where the cut formula `φ` has `complexity ≤ c`,
+into a single cut-rank-`≤ c` derivation of `Γ` — i.e. *eliminate* the top cut rather than keep it.
+
+Proof (next lap): induction on the `insert (∼φ) Γ` derivation; when `∼φ` is principal, invert the
+*matching* connective in the `insert φ Γ` derivation (∨↔∧ via `orInv`/`andInv`, ∀↔∃ via `allInv` at
+the ∃-witness numeral), giving cuts on the strictly smaller subformulas (`complexity < c`), then
+recurse. NOTE: the honest ordinal bound is the **natural (Hessenberg) sum** `α ♯ β`
+(`Ordinal.nadd`), not `α + β`; revisit once the proof shape is fixed. Also decide whether a numeric
+Hardy `k` index must be threaded through `Provable` (Towsner carries `h_{ω^α}(k)` in 19.6/19.7). -/
+theorem Provable.cutReduce {α β : Ordinal.{0}} {c : ℕ} {φ : Form} {Γ : Seq}
+    (hc : φ.complexity ≤ c) (h₁ : Provable α c (insert φ Γ))
+    (h₂ : Provable β c (insert (∼φ) Γ)) : Provable (α + β) c Γ := by
+  sorry
+
 /-- **One level of cut elimination** (Towsner Thm 19.7). Reducing the cut rank by one raises the
-ordinal bound to `ω^α`. *(Open: §19 inversions 19.2–19.4 + reductions 19.5–19.6.)* -/
+ordinal bound to `ω^α`. *(Open: the principal `cut`-on-rank-`c` case calls `cutReduce`; the rest is
+a transfinite induction over the derivation.)* -/
 theorem Provable.cutElimStep {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
     (h : Provable α (c + 1) Γ) : Provable (Ordinal.omega0 ^ α) c Γ := by
   sorry
