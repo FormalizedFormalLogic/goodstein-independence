@@ -93,7 +93,7 @@ premise" property is then definitional. Well-defined by structural recursion on 
 (infinitely-branching) tree: each `d n` is a structural subterm. -/
 noncomputable def o : {Γ : Seq} → Deriv Γ → Ordinal.{0}
   | _, trueR _ _ => 0
-  | _, weak d _ => o d + 1
+  | _, weak d _ => o d
   | _, andI _ _ dφ dψ => max (o dφ) (o dψ) + 1
   | _, orI _ _ d => o d + 1
   | _, allI _ d => (⨆ n, o (d n)) + 1
@@ -126,6 +126,24 @@ theorem o_allI_gt {Γ : Seq} (f : ℕ → AForm) (d : (n : ℕ) → Deriv (f n :
   calc o (d n) ≤ ⨆ m, o (d m) := h
     _ < (⨆ m, o (d m)) + 1 := lt_add_of_pos_right _ one_pos
     _ = o (allI f d) := by simp only [o]
+
+/-- **Bound monotonicity (Towsner Lemma 16.4 analog).** Provability is monotone in both the
+ordinal bound and the cut rank — you may always relax the recorded bounds. -/
+theorem Provable.mono {α β : Ordinal.{0}} {c c' : ℕ} (hα : α ≤ β) (hc : c ≤ c') {Γ : Seq} :
+    Provable α c Γ → Provable β c' Γ := by
+  rintro ⟨d, ho, hcr⟩
+  exact ⟨d, ho.trans hα, hcr.trans (by exact_mod_cast hc)⟩
+
+/-- **Sequent weakening (Towsner Lemma 19.1 analog).** Enlarging the sequent (`Γ ≤ Δ` as
+multisets) preserves provability *without raising the ordinal bound or cut rank* — the `weak`
+rule is ordinal-free (`o (weak d _) = o d`), exactly as the cut-elimination ordinal arithmetic
+requires. -/
+theorem Provable.weakening {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Seq} (h : Γ ≤ Δ) :
+    Provable α c Γ → Provable α c Δ := by
+  rintro ⟨d, ho, hcr⟩
+  refine ⟨Deriv.weak d h, ?_, ?_⟩
+  · simpa [Deriv.o] using ho
+  · simpa [Deriv.cr] using hcr
 
 end Deriv
 
