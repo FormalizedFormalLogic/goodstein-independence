@@ -3,7 +3,15 @@
 **Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Towsner's Route B (two-phase: witness-FREE `Z_∞` ε₀
 cut-elimination [M5, done] + Hardy lower bound on the cut-free result [M6, done], joined by an
 embedding [M4] + a bounding bridge).** · **Build**: 🟢 green (1257 jobs, `lake build GoodsteinPA`)
-· **Updated**: lap 9 (deep-reflection) · 2026-06-22 · `1f32e49`
+· **Updated**: lap 10 · 2026-06-22 · `c253471`
+
+## ⏭️ Lap-10 headline (read `ANALYSIS-2026-06-22-truth-layer-gap.md`)
+M4 enabler `provable_rew`/`ZProvable.rew` **PROVED axiom-clean** (`rew_subst_nm` discharged); `embed`
+now **8/10** (`shift`+`all` proved — `all` is the ω-rule case). The deep finding: **M5's pure-logic
+`Z_∞` cannot host the embedding** — `axm` needs *true closed atomic* axioms (e.g. `nm n + 0 = nm n`),
+which M5's `Deriv` lacks, and adding them needs a **truth layer** M5 deliberately omitted (the sibling
+`LowerBound.B` already has `trueR`, so the architecture presupposes it). Next: the **M5 `axTrue`
+surgery** (contained to `Zinfty.lean`); its semantic core is banked green in `wip/ZinftyTrue.lean`.
 
 ## Where it stands
 Two of the three Phase-2 girders are **machine-checked and `#print axioms`-clean**: the ε₀

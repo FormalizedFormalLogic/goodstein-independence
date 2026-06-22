@@ -1,104 +1,88 @@
-# HANDOFF — 2026-06-22 (lap 9, deep-reflection lap)
+# HANDOFF — 2026-06-22 (lap 10)
 
-> **Branch** `plan` · **HEAD** `2fa3b32` (9 commits this lap) · build **green**
+> **Branch** `plan` · **HEAD** `c253471` (5 commits this lap) · build **green**
 > (`lake build GoodsteinPA`, 1257 jobs) · headline `peano_not_proves_goodstein` = honest `sorry`
-> (`#print axioms` = `[propext, sorryAx, choice, Quot.sound]`, 0 math axioms) · working tree clean.
-> **This was a deep-reflection lap: it COURSE-CORRECTED the campaign (off the witness-bounded
-> cut-elim detour, onto M4 — the universal embedding bottleneck) AND made machine-checked M4
-> progress. Read `REFLECTION-2026-06-22.md` first, then `STATUS.md`. Forward file:
-> `wip/Embedding.lean` (compiles; `provable_em` proved + axiom-clean; `embed` 6/10 cases).
-> Next target: the M4 enabler `Provable.rew` (see "Next lap" below).**
+> (0 math axioms) · working tree clean.
+> **Lap 10 finished the M4 renaming enabler axiom-clean, drove `embed` to 8/10, and UNCOVERED + banked
+> the campaign-critical "truth-layer gap": M5's pure-logic Z∞ cannot host the embedding as-is.**
+> Read `ANALYSIS-2026-06-22-truth-layer-gap.md` FIRST, then this file's "NEXT LAP".
 
-## ⏭️ NEXT LAP — FIRST ACTION (the course change)
+## ✅ Lap-10 results (all committed, green)
+1. **`rew_subst_nm` PROVED** (`9531777`) → the M4 enabler `provable_rew` + `ZProvable.rew` are now
+   **fully axiom-clean** (`[propext, choice, Quot.sound]`, 0 math axioms). `wip/Embedding.lean`.
+2. **`embed` `shift` + `all` PROVED** (`6eb1f03`) → **8/10 cases** (only `axm`, `exs` remain).
+   - `shift` = `ZProvable.rew Rew.shift`.
+   - `all` = the **ω-rule case**: `provable_rew` substitutes the freed var by each `nm n` (which
+     simultaneously undoes the `shift` on `Γ` via `Rew.rewrite_comp_shift_eq_id`), then `Provable.allω`.
+3. **ANALYSIS — the truth-layer gap** (`624933e`): `ANALYSIS-2026-06-22-truth-layer-gap.md`. The
+   finding (grounded in the code): every PA axiom embedding (`axm`) bottoms out at **true closed
+   atomics** (`nm n + 0 = nm n`; and the successor bridge `nm n + 1 = nm(n+1)`). M5's `Deriv` is pure
+   logic — only atomic leaf is `axL` (both polarities); its atomic cut-elimination is **deliberately
+   truth-free** (header line 15, `atomCutAux` docstring). Adding a one-polarity `axTrue` breaks that.
+   The sibling `LowerBound.B` calculus **already has `trueR`**, and the planned bounding bridge maps
+   `Deriv` leaves to `B.trueR` — so the architecture already presupposes `axTrue` on `Deriv`.
+4. **Truth-layer semantic core** (`c253471`): `wip/ZinftyTrue.lean`, axiom-clean. `LitTrue` (ℕ-truth
+   of a closed literal) + `litTrue_neg` (∼-duality, `@[simp]`) + `litTrue_or_neg` (totality) +
+   `not_litTrue_and_neg`. Constructor-independent; the surgery's leaf/atomic-cut cases consume these.
 
-**Read `REFLECTION-2026-06-22.md` + `STATUS.md` ("Where it stands" + Outstanding §1–4).** Then:
+## ⏭️ NEXT LAP — the M5 `axTrue` surgery (THE crux; contained to `src/GoodsteinPA/Zinfty.lean`)
+Plan in `ANALYSIS-2026-06-22-truth-layer-gap.md §Resolution`. Blast radius = **one file** (`Deriv` is
+used only in `Zinfty.lean`; `LowerBound.B` is separate). Adding the constructor reds **all 9** `Deriv`
+recursion sites at once → it is an all-or-nothing green push (do it in one focused lap; don't half-land
+it in `src/`). Steps:
+1. **Move `LitTrue` + lemmas from `wip/ZinftyTrue.lean` into `Zinfty.lean`** (before `Deriv`).
+2. **Add constructor** `axTrue {Γ} (L) (htrue : LitTrue L) (hmem : L ∈ Γ) : Deriv Γ`. `o = 0`, `cr = 0`.
+3. **Trivial mirror cases** (≈ the `axL` case — true literal survives every erase/insert, re-apply
+   `axTrue`): `o` (l.90), `cr` (l.104), `orInvAux` (l.244), `allInvAux` (l.377), `andInvAux` (l.498),
+   `cutReduceAllAux` (l.791), `cutElimStepAux` (l.1267).
+4. **The truth layer (the real work, concentrated):**
+   - **Generalize `removeFalsumAux` (l.1123, removes `⊥`) → `removeFalseLiteralAux`** (removes any
+     *false* closed literal `L`, `¬LitTrue L`, bound-preserving). Body ≈ copy of `removeFalsum` + two
+     leaf cases: `axTrue` (removed `L` false ≠ true axiom literal ⟹ survives) and `axL` (if `L` is one
+     clash polarity, the partner is *true* ⟹ close by `axTrue` on the partner). `verumR`: `⊤` is true
+     so `⊤ ≠ L`. Use `litTrue_neg`/`litTrue_or_neg`.
+   - **`atomCutAux` (l.1011): split on `litTrue_or_neg (rel r v)`.** True ⟹ `nrel r v` (=`∼`) is false
+     ⟹ `removeFalseLiteralAux` it off `hNC`. False ⟹ the existing set-idempotence argument. Plus an
+     `axTrue` case in the structural induction on `d` (mirror; the `L = rel r v` subcase routes through
+     `removeFalseLiteralAux` on `hNC`).
+5. **Re-verify**: `lake build GoodsteinPA` green; `#print axioms Provable.cutElim` (now also depends on
+   `Classical.choice` via `LitTrue` totality — that is fine/expected, NOT a math axiom). LowerBound
+   untouched.
 
-**Attack M4 — the embedding `𝗣𝗔 ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}`.** This is the highest-value target: the
-**universal bottleneck** (required on every route to the headline) and untouched since lap-6 recon.
+**Then `axm` becomes provable** (worked paper proof in `PENDING_WORK.md` lap-10 block):
+- `σ ∈ 𝗣𝗔⁻` (PeanoMinus, finite): strip `∀` via `allω` → each closed instance is a true atomic → `axTrue`.
+- `σ = univCl(succInd ψ)`: `allω`-stripped + meta-induction on `n` (`cut` on `ψ(n)`, `exI` witness,
+  `andI`, `provable_em`), with the `nm n+1 = nm(n+1)` step now dischargeable via `axTrue`.
 
-**Do NOT resume the witness-bounded cut-elim thread** (`cutReduceAllAux`, `Zekd`, any 4th index
-calculus). The lap-8 findings + the cross-lap landscape memory both prove it is **off the critical
-path** (single-index Hardy inequality is false; M5's witness-FREE cut-elim, done since lap 3, is what
-the headline path uses, as-is). `wip/{BoundedZinfty,SplitZinfty,OperatorZinfty}.lean` are now
-**reference only** — never the headline path.
+**Then `exs`** (last): the assignment-carrying reformulation `embed : ∀ e:ℕ→ℕ, ZProvable (Γ.image (ρe ▹))`,
+`ρe := Rew.rewrite (nm∘e)` (closes free vars to numerals); re-proves the 8 done cases (mechanical, ρe
+distributes); `exs` evaluates `ρe▹t` (closed) to its numeral via the `axTrue` closed-term collapse.
 
-### M4 — LAP-9 BUILT THE SCAFFOLD + PROVED `em` (`wip/Embedding.lean`, COMPILES)
-`embed : Derivation2 (𝗣𝗔:Schema ℒₒᵣ) Γ → ∃ α c, ZinftyF.Provable α c Γ` over the **same**
-`Finset (SyntacticFormula ℒₒᵣ)` substrate (no language translation). Verify: `lake env lean
-wip/Embedding.lean` (only message = the expected `embed` `sorry` warning). Connection chain (verified):
-`𝗣𝗔 ⊢ φ` —`provable_def`→ `(𝗣𝗔:Schema) ⊢ ↑φ` —`provable_iff_derivable2`→ `Nonempty (Derivation2
-(𝗣𝗔:Schema) {↑φ})`.
-- **`provable_em` FULLY PROVED, axiom-clean** (`[propext, choice, Quot.sound]`): the Z∞ excluded-middle
-  `∀ φ Γ, φ∈Γ → ∼φ∈Γ → ∃ a, Provable a 0 Γ`, incl. the ∀/∃ numeral ω-family. **Promotable to
-  `src/Zinfty.lean`.** Discharges the `closed` case.
-- **`embed`: 6/10 cases DONE** (verum/and/or/wk/cut/closed).
-
-**LAP-9 ALSO PROVED the shared enabler** `provable_rew` (all 8 `Deriv` cases, cut-rank-preserving) +
-`ZProvable.rew`. **Sole residue: `rew_subst_nm`** (`ω ▹ (φ/[nm n]) = (ω.q ▹ φ)/[nm n]`, a one-line-ish
-`Rew`-substs algebra fact). So the next-lap order is now short:
-
-**Next lap — chip in this order (each a focused, completable step):**
-1. **`rew_subst_nm`** (the enabler's only sorry) — `ω ▹ (φ/[nm n]) = (ω.q ▹ φ)/[nm n]`. Find Foundation's
-   `Rew`-substs composition lemma (`/[t] = Rewriting.subst ![t]`; the law `ω ▹ subst v φ = subst (ω∘v)
-   (ω.q ▹ φ)`) + `ω ▹ nm n = nm n` (`nm n` closed). Search `Rewriting.lean`/`Rew.lean` for the substs
-   commutation; it may already be `@[simp]`. **This finishes `provable_rew` axiom-clean.**
-2. **`embed.shift`** — `ZProvable.rew Rew.shift ih`, modulo `Γ.image Rewriting.shift = Γ.image (Rew.shift
-   ▹ ·)` (likely `rfl`/`simp`).
-3. **`embed.all`** — finitary ∀ (`free φ :: Γ.image shift`) → `allω`: use the enabler to substitute the
-   free var by each numeral, embed each premise.
-4. **`embed.exs`** — witness term `t` → its numeral value → `Provable.exI`.
-5. **`embed.axm`** (the deepest, save for last) — `φ ∈ (𝗣𝗔:Schema)` = `↑σ`, `σ ∈ 𝗣𝗔⁻ + InductionScheme
-   ℒₒᵣ Set.univ`. PeanoMinus = finite true ∀-sentences (finite ordinal); `univCl(succInd ψ)` via the
-   ω-rule `Provable.allω` (`src/Zinfty.lean:183`). Buchholz §5.5 / Towsner §16.
-**Fallback if `axm` stalls → M7a** (parallel, shovel-ready): transparent `gAllReal = ∀x∃y[g_y(x)=0]`
-(arithmetize `goodsteinSeq` via Foundation Σ₁ tools) + `𝗣𝗔 ⊢ goodsteinSentence ↔ gAllReal`, **gated by
-`Bridge.lean`'s spec** so faithfulness can't regress.
-
-> **PACING (lap-9 operator note):** keep driving the hardest open thing, but treat each *committed green
-> checkpoint* (a proved lemma) as a beat to consider wrapping to `/handoff` — don't auto-chain deep
-> lemmas indefinitely past budget. See memory `pacing-checkpoint-then-check-governor`.
-
-### Then (downstream, not next-lap)
-- **Bounding bridge** (small once M4 + M7a land): prove `cut-free Provable α 0 Γ` (Γ in the g-fragment)
-  ⟹ ∃-witness `≤ hardy (toONote α) N` by induction on the cut-free `Deriv` (`allInv` the ∀ away, read
-  the `exI` numeral off — no `+α` growth), combine with M6's `hardy_lt_goodsteinLength`
-  (`src/LowerBound.lean:258`) ⟹ `False`. **Prove on M5's real `Deriv` directly**; reuse M6's
-  ℕ-domination fact, NOT the abstract `B` transport (the `B` lower bound is the template, banked).
-- **Ordinal seam**: M5 cut-free `α : Ordinal.{0}` (`<ε₀`) → M6 `ONote` `hardy`. Either `∀ α<ε₀, ∃ o,
-  o.NF ∧ o.repr=α` (check mathlib for `ONote.repr` surjectivity onto `[0,ε₀)`) or restate the bounding
-  lemma's ordinal in `ONote`. Light — one `toONote` at the leaf, not a calculus rebuild.
-- **Assembly (M7b)** → discharge the headline `sorry` **only** when `#print axioms` is clean and it
-  genuinely chains (anti-fraud, `DIRECTION.md`).
-
-## State of the spine (Route B, two-phase, corrected priorities)
-- **M1, M2, Phase 0/1** — done, clean. (`Encoding`/`Bridge`/`Reduction`/`Computability`/`Defs`.)
-- **M5 — witness-FREE ε₀ cut-elim** (`src/Zinfty.lean`, `Deriv.Provable.cutElim`) — done, clean. Used
-  **as-is** on the two-phase path; the embedding skeleton's structural cases mirror its constructors.
+## State of the spine (Route B, two-phase)
+- **M1, M2, Phase 0/1** — done, clean. M1 (`Encoding.goodsteinTerminates_re` → `Computable bump`) is
+  **already discharged** (`Computability.lean` sorry-free) — the operator's "discharge M1" is done.
+- **M5 — ε₀ cut-elim** (`src/Zinfty.lean`) — done, BUT **pure-logic; needs the `axTrue` surgery above**
+  to host M4. (This is the lap-10 finding; M5's stated cut-elim theorem is fine, the calculus was
+  under-specified for the embedding.)
 - **M6 — Hardy lower bound** (`src/LowerBound.lean`, `lowerBound_hardy_selfcontained`) — done, clean.
-  Reusable core = `hardy_lt_goodsteinLength` (ℕ-domination). The `B` calculus = banked template.
-- **M4 — embedding** — THE live target. Untouched. Feasibility-gating.
-- **M7a — transparent arithmetization** — parallel/fallback thread, shovel-ready, faithfulness-gated.
-- **Bounding bridge + assembly (M7b)** — downstream, small once M4 + M7a land.
-- **BANKED, do NOT resume:** `wip/{BoundedZinfty,SplitZinfty,OperatorZinfty}.lean` (witness-bounded
-  cut-elim, off critical path). **Route A** (`Reduction.goodstein_implies_consistency`, via `Con(PA)`)
-  = escape hatch only; re-introduces `PA_delta1Definable` (🟡) and also needs M4.
+  Uses the **separate** abstract `B` calculus (which already has `trueR`); untouched by the surgery.
+- **M4 — embedding** (`wip/Embedding.lean`) — enabler axiom-clean; 8/10; `axm`/`exs` blocked on the
+  surgery. **`provable_em` still promotable to `src/Zinfty.lean`** (axiom-clean, lap-9).
+- **Bounding bridge + assembly (M7b)** — downstream.
 
 ## Notes
 - **LOCKED untouched:** `Defs.lean`, `Bridge.lean` RHS, `goodsteinTerminates`. Headline `sorry` intact.
-- **`WebFetch` dead in box; `WebSearch` works.** No open `ON-LINE-REQUEST.md` (all answered; the three
-  findings are harvested into `archive/findings/`). File a new one only for a genuine literature gap.
-- **Aristotle:** idle is correct — M4 needs Foundation's real `Derivation` internals (not cleanly
-  self-containable); M7a is arithmetization over Foundation's API (same). Feed only a genuinely-bounded,
-  self-contained open lemma if one arises (e.g. an isolated `ONote.repr`-surjectivity statement).
+- **`WebFetch` dead; `WebSearch` works.** No open `ON-LINE-REQUEST.md`.
+- **Aristotle:** idle is correct — the surgery is over M5's real `Deriv` internals (not cleanly
+  self-containable). Feed only a genuinely-bounded isolated lemma if one arises.
 - **Reference corpus** (`~/personal/claude/knowledge/core/projects/lean-journey/reference/`):
-  `goodstein-independence-landscape.md` (the campaign map), `foundation-encode-predicate-via-codeOfREPred.md`,
-  the ONote/Hardy gotcha files. `grep -rl <keyword>` before re-deriving any friction.
+  `goodstein-independence-landscape.md`, the ONote/Hardy gotcha files. `grep -rl <keyword>` first.
+- **Pacing:** lap wrapped at a clean green checkpoint (5 commits) rather than half-landing the
+  multi-hundred-line surgery in `src/` (per memory `pacing-checkpoint-then-check-governor`).
 
-## Lap-9 changes (this lap)
-- `REFLECTION-2026-06-22.md` — **NEW**: the deep-reflection synthesis (direction call, KEEP/STOP,
-  highest-value target = M4, architecture insights).
-- `STATUS.md` — refreshed (header lap 9, "Where it stands" course-correction, prepended dated bullet,
-  reordered Outstanding to unavoidable-first, ledger re-confirmed by real `#print axioms`).
-- `HANDOFF.md` — this rewrite (points next grind lap at M4; bans the Zekd thread).
-- `PENDING_WORK.md` — prepended the lap-9 course-correction at top.
-- No `src/` changes; build green (1257), headline `sorry` intact, ledger unchanged.
+## Lap-10 changes
+- `wip/Embedding.lean` — `rew_subst_nm` proved; `embed` `shift`+`all` proved (8/10); header refreshed.
+- `ANALYSIS-2026-06-22-truth-layer-gap.md` — NEW (the finding + resolution plan).
+- `wip/ZinftyTrue.lean` — NEW (truth-layer semantic core, axiom-clean).
+- `PENDING_WORK.md` — prepended lap-10 block (worked `axm` paper proof + the truth-layer gap).
+- `STATUS.md` / `HANDOFF.md` — refreshed. No `src/` changes; build green (1257), headline `sorry` intact.
