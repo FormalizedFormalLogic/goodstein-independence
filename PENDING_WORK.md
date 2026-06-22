@@ -31,9 +31,14 @@ Attack paths:
    `ONote.fastGrowing`. Reuse those for M6.1–M6.3; only M6.4 (Thm 17.1, the cut-free lower bound)
    is new here. (Does NOT block M3–M5 — parallelizable.)
 3. **Tackle cut-elimination (M5) on the prototype first**, before the embedding — it is the
-   self-contained heart (Towsner §19: inversions 19.2–19.4, reductions 19.5–19.6, the `ω^α`
-   step 19.7, iteration 19.9). If M5 proves tractable on the abstract `Deriv`, the whole route is
-   credible; if not, that's the signal to reconsider the encoding (E1 vs E2).
+   self-contained heart (Towsner §19). **STATUS: M5 is now structured down to ONE leaf.**
+   `wip/Zinfty.lean` has `Provable.cutElim` (Thm 19.9, full elimination) *proved* by induction on
+   cut rank, reducing entirely to the single open lemma **`Provable.cutElimStep`** (Thm 19.7, one
+   level). So the next concrete target is exactly `cutElimStep` = §19 inversions 19.2–19.4 +
+   reductions 19.5–19.6 + the principal-`Cut`-on-rank-`c` case. Proving it makes the whole
+   cut-elimination machine-checked (mod the embedding M4 and lower bound M6.4). NOTE: `cutElimStep`
+   likely needs the numeric/Hardy `k` bound that `Provable` currently elides — re-add a `k : ℕ`
+   index to `Provable`/`Deriv.o` first (it threads the `h_{ω^α}(k)` bound through 19.6/19.7).
 
 ### O3 — `PA_delta1Definable : 𝗣𝗔.Δ₁` (Foundation axiom) — only on Route A
 Needed to *state* Gödel II for `𝗣𝗔`; Foundation axiomatizes it (TODO in
