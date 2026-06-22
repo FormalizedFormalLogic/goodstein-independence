@@ -8,7 +8,7 @@
 > open target — anti-fraud, correct). **Next: §19.6 `cutReduceAll` on `Zekd`** — the ONE remaining
 > step-1 girder; all its infra (Hardy lemmas + `mono_e` + ordinal/norm helpers) is now banked.
 
-## What landed this lap (7 commits, all verified green/axiom-clean)
+## What landed this lap (11 commits, all verified green/axiom-clean)
 
 This lap RESOLVED the Hardy-infrastructure layer of the §19.6 crux and BUILT the operator calculus
 through §19.5 — turning the lap-7 "needs the operator, design open" state into "operator implemented
@@ -41,7 +41,20 @@ through §19.5, design validated, only `cutReduceAll` remains."
    - **lower bound survives** via `hardy_comp_lt_goodsteinLength` (nested control index dominated).
    So the full set-valued `H` is NOT needed for PA/ε₀. The `ON-LINE-REQUEST` is narrowed accordingly.
 
-## THE NEXT MOVE — §19.6 `cutReduceAll` on `Zekd`
+5. **NF-ified the `Zekd` leaf rules** (`trueRel`/`trueNrel` carry `hαNF` now) — the §19.6 leaf-case
+   prerequisite (`norm_add_le` is NF-essential). Threaded through `mono_k/d/c/e` + inversions.
+6. **Built the `ZekdProv` wrapper foundation** — `ZekdProv α e k d c Γ := ∃ α', α'≤α ∧ α'.NF ∧ Zekd α'…`
+   (bound-as-upper-bound + NF, so ordinal-raises like `wk`'s `γ↦osucc(α+γ)` have NF and `≤`-slack).
+   Lemmas: `mono` (α≤,k,d,c), `mono_e`, `weakening`, `cast`, `of`. This is the surface `cutReduceAll`
+   is stated over (see ADDENDUM 5 cont.).
+
+## THE NEXT MOVE — §19.6 `cutReduceAll` on `Zekd` (over `ZekdProv`)
+
+**Foundation is DONE** (leaves NF-ified; `ZekdProv` wrapper built). Remaining for §19.6:
+- **(a) `ZekdProv` rule lifts** — `axL`/`verumR` (at bound `0`, trivial), then `andI`/`orI`/`allω`/`exI`/
+  `cut` at the `ZekdProv` level with the norm side conditions (mirror `Zinfty.lean` `Provable.andI` etc.,
+  add the `norm β < k+d` carries). These are what the commuting cases of `cutReduceAllAux` reassemble with.
+- **(b) `cutReduceAllAux`** — port `Zinfty.lean:785` over `ZekdProv`; details below.
 
 Port `src/Zinfty.lean:785 cutReduceAllAux` (the lap-3 unbounded ∀/∃ reduction, fully proved) to `Zekd`,
 adding the bounded `(α, e, k, d)` bookkeeping:
