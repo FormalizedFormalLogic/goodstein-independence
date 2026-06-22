@@ -1,8 +1,8 @@
 # HANDOFF — 2026-06-22 (lap 12)
 
-> **Branch** `plan` · **HEAD** `605d5ba` (+ uncommitted doc updates this lap) · build **green**
+> **Branch** `plan` · **HEAD** `8ed1e28` · 7 commits this lap · working tree clean · build **green**
 > (`lake build GoodsteinPA`, 1258 jobs) · headline `peano_not_proves_goodstein` = honest `sorry`
-> (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms) · `wip/OperatorZinfty.lean` green, 0 sorries.
+> (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms) · `wip/{OperatorZinfty,LangX,GenericZinftyProbe}.lean` all green.
 > **Lap 12 = a REVIEW lap with two findings: (a) PROVED the §19.6 norm-budget half (`cutReduceAllAux`,
 > axiom-clean); (b) PIVOTED the whole route to Buchholz's witness-FREE Boundedness analysis, which reuses
 > the done M4+M5 and avoids the witness-bounded wall.** Read `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md`
