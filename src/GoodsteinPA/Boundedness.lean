@@ -938,6 +938,42 @@ theorem orderType_le_of_deriv (β : Ordinal.{0})
     exact lt_of_lt_of_le ((models_Xat_nm lt (2 ^ d.o) n).mp hmA)
       (Ordinal.opow_le_opow_right two_pos hdo)
 
+/-- **Boundedness Corollary, full form** `Z∞ ⊢^β_1 TI_≺(X) ⟹ ‖≺‖ ≤ 2^β`: from one cut-free
+`XFreeAx` derivation of `{TI_≺(X)}` at height `≤ β`, invert (`orInv_xfree` on the `🡒`, then
+`allInv_xfree` on the `∀x`) to a cut-free `XFreeAx` derivation of `{¬Prog_≺(X), X(nm n)}` for every
+`n`, then apply `orderType_le_of_deriv`. The `embedC`-supplied derivation of `TI` (Thm 5.5) feeds the
+hypothesis; this closes the corollary. -/
+theorem orderType_le_of_TIderiv (β : Ordinal.{0})
+    (hprec : ∀ (γ : Ordinal.{0}) (n : ℕ),
+      models lt γ ((hyp prec)/[nm n]) ↔ ∀ m : ℕ, lt m n → rk lt m < γ)
+    (hprecXPos : XPos (∼ prec))
+    (d : Deriv ({TI prec} : Seq LX)) (hdo : d.o ≤ β) (hdc : d.cr = 0) (hdx : XFreeAx d) :
+    orderType lt ≤ 2 ^ β := by
+  have hTIeq : TI prec = ∼(Prog prec) ⋎ (∀⁰ (Xat (#0))) := by simp [TI, Semiformula.imp_eq]
+  have hTImem : (∼(Prog prec) ⋎ (∀⁰ (Xat (#0)))) ∈ ({TI prec} : Seq LX) := by
+    rw [Finset.mem_singleton, hTIeq]
+  obtain ⟨d₁, hd₁o, hd₁c, hd₁x⟩ := orInv_xfree d hdx hdc hTImem
+  -- d₁ derives `{¬Prog, ∀x Xx}` (the `{TI}.erase TI` part is empty)
+  have hAllmem : (∀⁰ (Xat (#0))) ∈
+      insert (∼(Prog prec)) (insert (∀⁰ (Xat (#0))) (({TI prec} : Seq LX).erase
+        (∼(Prog prec) ⋎ (∀⁰ (Xat (#0)))))) :=
+    Finset.mem_insert_of_mem (Finset.mem_insert_self _ _)
+  refine orderType_le_of_deriv lt prec β hprec hprecXPos (fun n => ?_)
+  obtain ⟨d₂, hd₂o, hd₂c, hd₂x⟩ := allInv_xfree d₁ n hd₁x hd₁c hAllmem
+  -- reshape `d₂`'s sequent to `insert (¬Prog) {X(nm n)}`
+  have hseq : insert ((Xat (#0))/[nm n])
+      ((insert (∼(Prog prec)) (insert (∀⁰ (Xat (#0)))
+        (({TI prec} : Seq LX).erase (∼(Prog prec) ⋎ (∀⁰ (Xat (#0))))))).erase (∀⁰ (Xat (#0))))
+      ⊆ insert (∼(Prog prec)) ({Xat (nm n)} : Seq LX) := by
+    rw [xat_subst]
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_erase, Finset.mem_singleton, hTIeq,
+      Finset.erase_singleton, Finset.notMem_empty, or_false] at hx ⊢
+    tauto
+  obtain ⟨d₃, hd₃o, hd₃c, hd₃x⟩ :=
+    PXF.weakening hseq (⟨d₂, hd₂o, hd₂c, hd₂x⟩ : PXF d₁.o _)
+  exact ⟨d₃, le_trans hd₃o (le_trans hd₁o hdo), hd₃c, hd₃x⟩
+
 end Main
 
 end GoodsteinPA.Boundedness
