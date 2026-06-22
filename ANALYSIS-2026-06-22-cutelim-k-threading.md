@@ -244,3 +244,67 @@ controlled by `H[{n}]`, the True/∃ side conditions by `H`. Port §19.2–19.5 
 (mechanical: `max k ·` ⤳ `H`), then §19.6 with the witness index living in `H[{n}]` (closed under
 `hardy`, so the principal cut's `hardy(·)(·)` witness stays in `H`). The `d`-bump (norm budget) rides
 alongside. `ON-LINE-REQUEST` (PA operator-control spec) remains the literature ask.
+
+---
+
+## ADDENDUM 5 (lap 8) — the **control-ordinal `e`** form: obstruction 2 CLOSES, Hardy infra BANKED
+
+Lap 8 implemented the operator as a **single control ordinal `e : ONote`** (the numeric-`e` Buchholz
+form), not the full set-valued `H`. The witness bound is decoupled from the derivation ordinal `α`:
+
+> `exI` bound: `n ≤ hardy e (k + d)`  (was `hardy α (k + d)`).
+
+This is `wip/OperatorZinfty.lean` (`Zekd α e k d c Γ`), built sorry-free through §19.5 + the new
+control-axis monotonicity `mono_e`.
+
+### Why `e` closes the witness-index obstruction (the ADDENDUM-4 wall)
+
+ADDENDUM 4's wall was: under cut-elim `α ↦ α + γ`, a witness bound `hardy α (·)` GROWS, and through a
+commuting ω-rule the witness index becomes Hardy-super-linear, which `max k n` cannot pass. The fix:
+
+1. **Commuting cases keep `e` inert.** The witness bound `hardy e (k+d)` does not move when `α` grows;
+   the commuting ω-rule reconstructs with the *same* `e`, so no Hardy-super-linear index is ever forced
+   through `max k n`. The only index motion in commuting cases is the `d`-bump (`d ↦ d + norm α`,
+   norm-budget, already closed by `(k,d)`).
+2. **`e` is raised only at the top-level cut**, via `mono_e` (banked): combining the ∀-side (control
+   `e₁`) and ∃-side (control `e₂`) needs a common control `e = ` an NF ordinal `> e₁,e₂`; `mono_e` lifts
+   both via the banked index-monotonicity `hardy_le_of_lt` (budget side condition `norm eᵢ ≤ k+d`). The
+   witnesses then all sit under `hardy e`.
+3. **The lower bound survives.** In a cut-free `Zekd`-derivation of `{gAll}`, `e` is a FIXED `ONote`
+   `< ε₀`; witnesses `≤ hardy e (k+d)` and the I∀ inversion index is controlled. The nested-control
+   index `hardy α (hardy e (·))` that the bridge-to-`B` produces is Goodstein-dominated by the banked
+   **`hardy_comp_lt_goodsteinLength`** (lap 8). The control-side collapse `hardy (e+α) = hardy e ∘ hardy α`
+   is the banked **`hardy_add_collapse`** (lap 8).
+
+So the single control ordinal `e` suffices — the full set-valued `H` is NOT needed for PA/`ε₀`. The
+Hardy-closure that `H` was meant to provide is exactly `hardy_le_of_lt` (raise `e`) + the two
+composition lemmas (lower bound). **All three are banked and axiom-clean.**
+
+### Banked this lap (the Hardy layer of the design, both directions)
+- `hardy_add_comp` / `hardy_add_collapse` (`src/Hardy.lean`): `H_{γ+δ}=H_γ∘H_δ` for non-absorbing
+  `γ+δ` (δ below γ's least exponent). Control-side cut-elim collapse.
+- `hardy_comp_lt_goodsteinLength` (`src/LowerBound.lean`): `H_α(H_e(m)) < G(m)` eventually, ANY NF
+  `α,e`. Lower-bound side: the nested control index is still Goodstein-dominated (via `ω^Q·2`
+  exceeding both `α,e` + the coefficient law). Both axiom-clean (trust base + the documented Goodstein
+  `native_decide` base-cases).
+- `Zekd` calculus (`wip/OperatorZinfty.lean`): inductive + `mono_k/d/c/e` + full inversion suite
+  (orInv, andInvL/R, allInv) + §19.5 cutReduceConj/Disj + all §19.6/19.7 ordinal/norm helpers.
+  Sorry-free. Full §19.2–19.5 parity with `SplitZinfty` PLUS the control axis.
+
+### The remaining girder: §19.6 `cutReduceAll` on `Zekd` — and a NEWLY-SURFACED subtlety
+
+Structure (port `src/Zinfty.lean:785 cutReduceAllAux` + bounded bookkeeping): invert ∀-side → `fam`;
+induct on ∃-side; principal `exI` cuts `fam(witness)`; commuting cases reapply the rule at `α + γ`
+(`add_osucc_descent` banked); ordinal `osucc(α+γ)`, `d ↦ d + norm α`, `e` raised at the top cut.
+
+**NF-threading subtlety (surfaced lap 8, attempting the trueRel leaf):** the **leaf** rules
+(`axL`/`verumR`/`trueRel`/`trueNrel`) carry NO `hαNF` on the node ordinal `γ`, so in `cutReduceAll`'s
+leaf cases `γ` may be non-NF — and then `norm (α+γ) ≤ norm α + norm γ` (`norm_add_le`, **NF-essential**;
+NF-free version is machine-checked FALSE) does NOT apply, so the conclusion ordinal `osucc(α+γ)`'s norm
+budget can't be discharged directly. **Fix options for next lap:** (a) re-issue leaf conclusions at the
+node's own `γ` (norm `< k+d` already) via `weak` up to `osucc(α+γ)` — but `weak`/`γ ≤ α+γ` themselves
+need NF (`le_add_left_NF`); (b) add an `α.NF` invariant to the leaf rules of `Zekd` (cheap — the leaves
+are issued by the embedding M4 / the calculus's own rules, which always have NF α in practice); (c)
+carry an `NF γ` side-hypothesis through `cutReduceAllAux` (the ∃-side derivation's ordinal). Option (b)
+(NF-ify the leaves) is the cleanest and matches Towsner (every `Z_∞` node is `<ε₀` ⟹ NF). This is the
+concrete first task of the cut-elim grind, ahead of the commuting/principal bound bookkeeping.
