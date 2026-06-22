@@ -687,6 +687,32 @@ theorem boundedness
     have h1 : (↑φ.complexity + 1 : ℕ∞) ≤ 0 := hcr ▸ le_max_left _ _
     simp at h1
 
+/-- **Boundedness Corollary** `Z∞ ⊢^β_1 TI_≺(X) ⟹ ‖≺‖ ≤ 2^β`, reduced to its post-inversion core:
+from a cut-free `XFreeAx` derivation of `{¬Prog_≺(X), X(nm n)}` at height `≤ β` for **every** `n`
+(what `embedC` + `cutElim` + the TI/∀ inversions supply), Boundedness gives `⊨^{2^β} X(nm n)`, i.e.
+`|n|_≺ < 2^β` for all `n`, hence `‖≺‖ ≤ 2^β`. -/
+theorem orderType_le_of_deriv (β : Ordinal.{0})
+    (hprec : ∀ (γ : Ordinal.{0}) (n : ℕ),
+      models lt γ ((hyp prec)/[nm n]) ↔ ∀ m : ℕ, lt m n → rk lt m < γ)
+    (hprecXPos : XPos (∼ prec))
+    (h : ∀ n, ∃ d : Deriv (insert (∼(Prog prec)) {Xat (nm n)}), d.o ≤ β ∧ d.cr = 0 ∧ XFreeAx d) :
+    orderType lt ≤ 2 ^ β := by
+  refine orderType_le_of_forall lt (fun n => ?_)
+  obtain ⟨d, hdo, hdc, hdx⟩ := h n
+  have hpart : Partition lt prec 0 (insert (∼(Prog prec)) {Xat (nm n)}) := by
+    intro A hA
+    rcases Finset.mem_insert.mp hA with rfl | hA'
+    · exact Or.inl rfl
+    · rw [Finset.mem_singleton] at hA'; subst hA'; exact Or.inr (Or.inr (by simp [Xat, XPos]))
+  obtain ⟨A, hA, hposA, hmA⟩ :=
+    boundedness lt prec hprec hprecXPos d.o 0 d (le_refl _) hdc hdx hpart
+  rw [zero_add] at hmA
+  rcases Finset.mem_insert.mp hA with rfl | hA'
+  · exact absurd hposA (by simp [Prog, hyp, Xat, Xsym, XPos, Semiformula.imp_eq])
+  · rw [Finset.mem_singleton] at hA'; subst hA'
+    exact lt_of_lt_of_le ((models_Xat_nm lt (2 ^ d.o) n).mp hmA)
+      (Ordinal.opow_le_opow_right two_pos hdo)
+
 end Main
 
 end GoodsteinPA.Boundedness
