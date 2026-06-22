@@ -558,6 +558,28 @@ v4.31.0 — see `src/Zinfty.lean` — so this no-natural-sum route is the one th
 theorem lt_osucc {o : ONote} (h : o.NF) : o < osucc o :=
   lt_def.mpr (by rw [repr_osucc h]; exact lt_add_one _)
 
+/-! #### Ordinal/`norm` bookkeeping for the §19.6/§19.7 cut-elim bounds
+
+`§19.6` frames the running bound as `α + γ` (`ONote.add`); `§19.7` blows the bound up to
+`ω^α = oadd α 1 0`.  These are the facts that thread the premise-`<` conditions and keep the `norm<k`
+budget alive through that growth (`norm` is `max` over CNF components, `Hardy.lean`). -/
+
+/-- **ONote-add is strictly monotone in the right argument** (the §19.6 premise-`<` condition). -/
+theorem add_lt_add_left_NF {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
+    (h : γ' < γ) : α + γ' < α + γ := by
+  haveI := hαNF; haveI := hγ'NF; haveI := hγNF
+  exact lt_def.mpr (by rw [repr_add, repr_add]; exact (add_lt_add_iff_left _).mpr (lt_def.mp h))
+
+/-- `γ ≤ α + γ` (the §19.6 framing dominates the ∃-side bound). -/
+theorem le_add_left_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ α + γ := by
+  haveI := hαNF; haveI := hγNF
+  exact le_def.mpr (by rw [repr_add]; exact le_add_self)
+
+/-- `norm (ω^α) = max (norm α) 1` — the §19.7 blow-up bumps `norm` only to `max (norm α) 1`, so the
+`norm < k` budget survives whenever `k ≥ 2`. -/
+@[simp] theorem norm_omegaPow {α : ONote} : norm (oadd α 1 0) = max (norm α) 1 := by
+  simp [norm_oadd]
+
 /-- **∧/∨ cut reduction, conjunction case** (Towsner Thm 19.5): a cut on `a ⋏ b` (negation
 `∼a ⋎ ∼b` on the other side) reduces to two cuts on `a`, `b`. -/
 theorem cutReduceConj {a b : Form} {c k : ℕ} {α β δ : ONote} {Γ : Seq}
