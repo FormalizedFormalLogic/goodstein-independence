@@ -600,6 +600,10 @@ theorem le_add_left_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ 
   haveI := hαNF; haveI := hγNF
   exact le_def.mpr (by rw [repr_add]; exact le_add_self)
 
+theorem le_add_right_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : α ≤ α + γ := by
+  haveI := hαNF; haveI := hγNF
+  exact le_def.mpr (by rw [repr_add]; exact le_self_add)
+
 /-- **The §19.6 descent step**, assembled: `γ' < γ ⟹ osucc (α + γ') < osucc (α + γ)`. -/
 theorem add_osucc_descent {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
     (h : γ' < γ) : osucc (α + γ') < osucc (α + γ) :=
@@ -714,148 +718,286 @@ bound + the source's `NF`, so the `≤`-slack absorbs the `osucc`/`+1` bookkeepi
 `NF` is always available. This is the surface §19.6 `cutReduceAll` is stated over (matching the
 unbounded `Zinfty.lean Provable`). -/
 def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Seq) : Prop :=
-  ∃ α', α' ≤ α ∧ α'.NF ∧ Zekd α' e k d c Γ
+  ∃ α', α' ≤ α ∧ α'.NF ∧ norm α' < k + d ∧ Zekd α' e k d c Γ
 
 namespace ZekdProv
 
 /-- Monotonicity in `α` (≤), `k`, `d`, `c` (the control `e` is raised separately by `mono_e`,
-which carries a budget side condition). -/
+which carries a budget side condition). The carried norm bound `norm α' < k+d` rides up to `k'+d'`. -/
 theorem mono {α β e : ONote} {k d c k' d' c' : ℕ} {Γ : Seq}
     (hα : α ≤ β) (hk : k ≤ k') (hd : d ≤ d') (hc : c ≤ c') :
     ZekdProv α e k d c Γ → ZekdProv β e k' d' c' Γ := by
-  rintro ⟨α', hα', hNF, D⟩
-  exact ⟨α', le_trans hα' hα, hNF, ((D.mono_k hk).mono_d hd).mono_c hc⟩
+  rintro ⟨α', hα', hNF, hnorm, D⟩
+  exact ⟨α', le_trans hα' hα, hNF, by omega, ((D.mono_k hk).mono_d hd).mono_c hc⟩
 
 /-- Control-ordinal raising at the wrapper level. -/
 theorem mono_e {α e e' : ONote} {k d c : ℕ} {Γ : Seq}
     (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e') (hbudget : norm e ≤ k + d) :
     ZekdProv α e k d c Γ → ZekdProv α e' k d c Γ := by
-  rintro ⟨α', hα', hNF, D⟩
-  exact ⟨α', hα', hNF, D.mono_e heNF he'NF hlt hbudget⟩
+  rintro ⟨α', hα', hNF, hnorm, D⟩
+  exact ⟨α', hα', hNF, hnorm, D.mono_e heNF he'NF hlt hbudget⟩
 
 /-- Sequent weakening. -/
 theorem weakening {α e : ONote} {k d c : ℕ} {Γ Δ : Seq} (h : Γ ⊆ Δ) :
     ZekdProv α e k d c Γ → ZekdProv α e k d c Δ := by
-  rintro ⟨α', hα', hNF, D⟩
-  exact ⟨α', hα', hNF, D.wk h⟩
+  rintro ⟨α', hα', hNF, hnorm, D⟩
+  exact ⟨α', hα', hNF, hnorm, D.wk h⟩
 
 /-- Respect set-equality of sequents. -/
 theorem cast {α e : ONote} {k d c : ℕ} {Γ Δ : Seq} (e0 : Γ = Δ) :
     ZekdProv α e k d c Γ → ZekdProv α e k d c Δ := fun h => e0 ▸ h
 
-/-- Lift a raw `Zekd` derivation (with an NF ordinal) into the wrapper. -/
-theorem of {α e : ONote} {k d c : ℕ} {Γ : Seq} (hNF : α.NF) (D : Zekd α e k d c Γ) :
-    ZekdProv α e k d c Γ := ⟨α, le_refl _, hNF, D⟩
+/-- Lift a raw `Zekd` derivation (NF ordinal + norm bound) into the wrapper. -/
+theorem of {α e : ONote} {k d c : ℕ} {Γ : Seq} (hNF : α.NF) (hnorm : norm α < k + d)
+    (D : Zekd α e k d c Γ) : ZekdProv α e k d c Γ := ⟨α, le_refl _, hNF, hnorm, D⟩
 
 end ZekdProv
 
-/-! ### §19.6 ∀/∃ cut reduction `cutReduceAll` — SCAFFOLD (lap-8 checkpoint)
+/-! ### §19.6 ∀/∃ cut reduction `cutReduceAllAux` — **PROVED** (lap 12, axiom-clean)
 
-> 🧭 **STRATEGIC NOTE (ON-LINE-FINDINGS 2026-06-22, archived):** the §19.6 commuting bound is
-> **provably impossible to close in a single-numeric-`k` system** (the Hardy inequality
-> `h_{βₙ#ω}(max{k,n}) ≤ max{h_{β#ω}(k),n}` is FALSE; Towsner hand-waves it). The norm-boundary friction
-> hit in the commuting rule cases below is exactly this. The literature **never threads the witness index
-> through cut-elim**; it runs TWO PHASES — (1) pure-ordinal cut-elim (commuting cases are one-liners,
-> `α#βₙ < α#β`), (2) Hardy-bound the CUT-FREE result (no `+α` growth ⟹ no obstruction). **We already have
-> both phases banked: M5 `src/Zinfty.lean` cutElim (unbounded `(α,c)`, DONE) + M6 lower bound (DONE).**
-> The recommended headline path is now the **two-phase bridge** (cut-free `Z∞ {gAll}` → `B`-derivation via
-> subformula property + a Hardy bounding lemma → contradiction), NOT finishing this `cutReduceAllAux`. The
-> `e`-control form here remains a valid (~80%-confidence) alternative kept for reference; its §19.2–19.5
-> layer + `mono_e` + structural cases stand. See `PENDING_WORK.md` / `STATUS.md` (lap-8 two-phase entry).
+The induction core of Towsner §19.6, ported from `src/Zinfty.lean:854 cutReduceAllAux` to the
+control-ordinal witness-bounded calculus over the **norm-carrying** `ZekdProv` wrapper. Cut the
+∀-inversion family `fam` (over `φ`, control `e`, index `(k₀,dd₀)`) against an ∃-side derivation
+`D : Zekd γ e k dd c Δ` containing `∃∼φ`, producing a `Zekd`-derivation of `Δ.erase(∃∼φ) ∪ Γ` at
+ordinal `osucc(α+γ)`, control `e` (inert), index `(k, dd+norm α+1)`.
 
-The induction core. Port of `src/Zinfty.lean:785 cutReduceAllAux` to the control-ordinal calculus
-over the `ZekdProv` wrapper. The ∃-side ordinal's `NF` is **threaded through the induction goal**
-(`γ.NF →`), so each case's IH carries it (supplied from the constructors' own NF hyps; `wk` passes the
-same `γ`; leaves wrap at `0`/carry `hαNF`). Conclusion ordinal `osucc(α+γ)`; `d`-bump `dd ↦ dd+norm α`;
-`e` inert here (raised at the top-level cut, future `cutReduceAll`). `fam` is the ∀-inversion family,
-fixed over the outer `(α,e,k,dd,Γ)`; in the ω-rule commuting case it is raised via `mono_k`/`mono_d`.
+**Lap-11→12 resolution of the §19.6 wall (see `ANALYSIS-…-cutelim-k-threading.md` ADDENDUM 6).** The
+lap-11 finding retracted the lap-8 "two-phase escape": the *unbounded* cut-free `Z∞` of `{gAll}` has
+UNbounded witnesses, so the witness bound MUST survive cut-elim — `cutReduceAllAux` is on the critical
+path. The historical blocker (the commuting `allω` norm budget) is closed by THREE coupled moves:
+1. **norm-carrying wrapper** `ZekdProv α e k d c Γ := ∃ α', α'≤α ∧ α'.NF ∧ norm α'<k+d ∧ Zekd α' …`,
+   so the IH EXPOSES `norm α' < (its k)+(its d)` — exactly the `allω` premise's norm budget (a plain
+   `α'≤α` wrapper threw this away, since `norm` is not `≤`-monotone — the 5-lap wall);
+2. **thread `norm γ < k+dd`** through the induction (each case's child budget is supplied by that rule's
+   own `hτ` side-condition; used only to bound `norm(osucc(α+γ))` at the result);
+3. **d-bump `dd ↦ dd+norm α+1`** — the `+1` absorbs the `osucc`, giving STRICT budgets everywhere
+   (and killing the leaf `k+dd=0` edge). Control `e` stays inert (witnesses stay `≤ hardy e (·)`); it is
+   raised only at the top-level cut in `cutReduceAll` via `mono_e`.
 
-**Signature typechecks** (validated lap 8). Body is a disclosed `sorry` — next-lap focus.
-
-⚠️ **STRUCTURAL CHALLENGE for the body (surfaced lap 8):** `Zekd` is multi-indexed by `(α e k d c Γ)`
-(all are inductive indices), unlike the unbounded `Zinfty.lean Deriv` which is single-indexed by `Γ`
-(with `o`/`cr` as separate *measure functions*). So `induction D` here generalizes `e k d c` too — and
-the external `fam` (fixed over the outer `e,k,dd`) falls out of alignment with the per-case rebound
-indices (acutely in the `allω` case, premise `k ↦ max k n`). **SHARPER resolution (the `allInv` precedent):** the inversions ALREADY induct over multi-indexed
-`Zekd` with the `allω` `k ↦ max k n` variation — and succeed — *because they generalize `k` (and
-`α,d,c,Γ`) in the theorem statement* (`∀ {α k d c Γ}, Zekd α k d c Γ → …`), so `induction` hands back an
-IH at *every* index, incl. the premise's `max k n`. So `cutReduceAllAux` should likewise **generalize
-`k` and `dd` (and `γ,Δ`) in the induction statement** — NOT fix them to `fam`'s. The external `fam`
-(fixed at the outer `k₀,dd₀`) is then **raised per-case** to the case's `(k,dd)` via `mono_k`/`mono_d`
-(indices only grow: `allω` premise `k = max k₀ n ≥ k₀`; `dd` rides ≥). Concretely:
-  `∀ {γ : ONote} {k dd : ℕ} {Δ}, Zekd γ e k dd c Δ → γ.NF → k₀ ≤ k → dd₀ ≤ dd → (∃⁰∼φ)∈Δ →
-     ZekdProv (osucc (α+γ)) e k (dd + norm α) c (Δ.erase (∃⁰∼φ) ∪ Γ)`
-  with `fam : ∀ n, Zekd α e k₀ dd₀ c (insert (φ/[nm n]) Γ)` outside; use `(fam n).mono_k h.mono_d h'`
-  to align before each principal cut. This needs NO calculus reformulation — it's the `allInv` pattern
-  scaled to carry an external family. (A `Deriv`-style single-indexed `ZekdD` with `(ord,ctrl,nrm,cr)`
-  measures is the heavier fallback if the index-generalized induction proves unwieldy.) -/
+`induction D` generalizes `e k dd c Δ` (and reverts `fam`/`heNF`/`hφc`, re-supplied per-case via the
+IH), keeping `α k₀ dd₀ Γ φ hαNF` fixed — the `allInv` precedent scaled to carry the external family. -/
+set_option maxHeartbeats 1600000 in
 theorem cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Seq}
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (fam : ∀ n, Zekd α e k₀ dd₀ c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {k dd : ℕ} {Δ : Seq}, Zekd γ e k dd c Δ → γ.NF → k₀ ≤ k → dd₀ ≤ dd →
-      (∃⁰ ∼φ) ∈ Δ →
-      ZekdProv (osucc (α + γ)) e k (dd + norm α) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
+    ∀ {γ : ONote} {k dd : ℕ} {Δ : Seq}, Zekd γ e k dd c Δ → γ.NF → norm γ < k + dd →
+      k₀ ≤ k → dd₀ ≤ dd → (∃⁰ ∼φ) ∈ Δ →
+      ZekdProv (osucc (α + γ)) e k (dd + norm α + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   intro γ k dd Δ D
   induction D with
   | axL r v hp hn =>
-      intro hγNF hk hdd hmem
-      exact ⟨0, le_def.mpr (by simp), NF.zero, Zekd.axL r v
+      intro hγNF hγb hk hdd hmem
+      exact ⟨0, le_def.mpr (by simp), NF.zero, by simp only [norm_zero]; omega, Zekd.axL r v
         (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩))
         (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩))⟩
   | verumR h =>
-      intro hγNF hk hdd hmem
-      exact ⟨0, le_def.mpr (by simp), NF.zero, Zekd.verumR
+      intro hγNF hγb hk hdd hmem
+      exact ⟨0, le_def.mpr (by simp), NF.zero, by simp only [norm_zero]; omega, Zekd.verumR
         (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩))⟩
   | trueRel r v htrue hτ hαNF' hmemA =>
-      intro hγNF hk hdd hmem
+      intro hγNF hγb hk hdd hmem
       refine ⟨_, le_trans (Zekd.le_add_left_NF hαNF hγNF) (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))),
-        hγNF, Zekd.trueRel r v htrue (by omega) hγNF
+        hγNF, by omega, Zekd.trueRel r v htrue (by omega) hγNF
           (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemA⟩))⟩
   | trueNrel r v htrue hτ hαNF' hmemA =>
-      intro hγNF hk hdd hmem
+      intro hγNF hγb hk hdd hmem
       refine ⟨_, le_trans (Zekd.le_add_left_NF hαNF hγNF) (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))),
-        hγNF, Zekd.trueNrel r v htrue (by omega) hγNF
+        hγNF, by omega, Zekd.trueNrel r v htrue (by omega) hγNF
           (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemA⟩))⟩
   | @wk γ' e' k' dd' c' Δsub Δsup hsub D' ih =>
-      intro hγNF hk hdd hmem
+      intro hγNF hγb hk hdd hmem
       by_cases hd : (∃⁰ ∼φ) ∈ Δsub
-      · exact (ih hφc heNF fam hγNF hk hdd hd).weakening (by
+      · exact (ih hφc heNF fam hγNF hγb hk hdd hd).weakening (by
           intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)
       · refine ⟨γ', le_trans (Zekd.le_add_left_NF hαNF hγNF) (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))),
-          hγNF, (D'.mono_d (by omega)).wk (by
+          hγNF, by omega, (D'.mono_d (by omega)).wk (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
             exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
   | @weak γ' β e' k' dd' c' Δsub Δsup hβ hβNF hαNF' hτ hsub D' ih =>
-      intro hγNF hk hdd hmem
+      intro hγNF hγb hk hdd hmem
       by_cases hd : (∃⁰ ∼φ) ∈ Δsub
-      · exact ((ih hφc heNF fam hβNF hk hdd hd).weakening (by
+      · exact ((ih hφc heNF fam hβNF (by omega) hk hdd hd).weakening (by
           intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)).mono
           (le_of_lt (Zekd.add_osucc_descent hαNF hβNF hγNF hβ)) le_rfl le_rfl le_rfl
       · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (Zekd.le_add_left_NF hαNF hγNF)
-          (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))))), hβNF,
+          (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))))), hβNF, by omega,
           (D'.mono_d (by omega)).wk (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
             exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
   | @andI γ' βφ βψ e' k' dd' c' Γ₀ ψ₁ ψ₂ hβφ hβψ hβφNF hβψNF hαNF' hτφ hτψ dφ dψ ihφ ihψ =>
-      intro hγNF hk hdd hmem
-      sorry -- commuting ∧: reassemble Zekd.andI at osucc(α+γ); sub-results from ihφ/ihψ at osucc(α+βφ/βψ)
-  | @orI γ' β e' k' dd' c' Γ₀ ψ₁ ψ₂ hβ hβNF hαNF' hτ dd' ih =>
-      intro hγNF hk hdd hmem
-      sorry -- commuting ∨
-  | @allω γ' e' k' dd' c' Γ₀ χ β hβ hβNF hαNF' hτ dd' ih =>
-      intro hγNF hk hdd hmem
-      sorry -- commuting ω-rule: the witness-index obstruction's resolution (e inert, d-bump, raise fam via mono_k)
-  | @exI γ' β e' k' dd' c' Γ₀ χ n hβ hβNF hαNF' hτ hbound dd' ih =>
-      intro hγNF hk hdd hmem
-      sorry -- principal exI (χ=∼φ): cut fam(n) at the witness; + commuting exI (χ≠∼φ)
+      intro hγNF hγb hk hdd hmem
+      have hhead : (ψ₁ ⋏ ψ₂) ≠ (∃⁰ ∼φ) := by intro h; simp [Wedge.wedge, ExsQuantifier.exs] at h
+      have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      obtain ⟨aφ, haφle, haφNF, haφnorm, Dφ⟩ := ihφ hφc heNF fam hβφNF (by omega) hk hdd
+        (Finset.mem_insert_of_mem hmem0)
+      obtain ⟨aψ, haψle, haψNF, haψnorm, Dψ⟩ := ihψ hφc heNF fam hβψNF (by omega) hk hdd
+        (Finset.mem_insert_of_mem hmem0)
+      have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
+      have Dφ' : Zekd aφ e' k' (dd' + norm α + 1) c' (insert ψ₁ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Dφ.wk (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+      have Dψ' : Zekd aψ e' k' (dd' + norm α + 1) c' (insert ψ₂ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Dψ.wk (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+      have hAnd : Zekd (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
+          (insert (ψ₁ ⋏ ψ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zekd.andI ψ₁ ψ₂
+          (lt_of_le_of_lt haφle (Zekd.add_osucc_descent hαNF hβφNF hγNF hβφ))
+          (lt_of_le_of_lt haψle (Zekd.add_osucc_descent hαNF hβψNF hγNF hβψ))
+          haφNF haψNF hsuccNF haφnorm haψnorm Dφ' Dψ'
+      refine ZekdProv.of hsuccNF
+        (lt_of_le_of_lt norm_osucc_le (by have := Zekd.norm_add_le hαNF hγNF; omega))
+        (hAnd.wk (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+          rcases hx with rfl | hx
+          · exact Or.inl ⟨hhead, Or.inl rfl⟩
+          · tauto))
+  | @orI γ' β e' k' dd' c' Γ₀ ψ₁ ψ₂ hβ hβNF hαNF' hτ dχ ih =>
+      intro hγNF hγb hk hdd hmem
+      have hhead : (ψ₁ ⋎ ψ₂) ≠ (∃⁰ ∼φ) := by intro h; simp [Vee.vee, ExsQuantifier.exs] at h
+      have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      obtain ⟨a, hale, haNF, hanorm, Da⟩ := ih hφc heNF fam hβNF (by omega) hk hdd
+        (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))
+      have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
+      have Da' : Zekd a e' k' (dd' + norm α + 1) c'
+          (insert ψ₁ (insert ψ₂ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ))) :=
+        Da.wk (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+      have hOr : Zekd (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
+          (insert (ψ₁ ⋎ ψ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zekd.orI ψ₁ ψ₂ (lt_of_le_of_lt hale (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
+          haNF hsuccNF hanorm Da'
+      refine ZekdProv.of hsuccNF
+        (lt_of_le_of_lt norm_osucc_le (by have := Zekd.norm_add_le hαNF hγNF; omega))
+        (hOr.wk (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+          rcases hx with rfl | hx
+          · exact Or.inl ⟨hhead, Or.inl rfl⟩
+          · tauto))
+  | @allω γ' e' k' dd' c' Γ₀ χ β hβ hβNF hαNF' hτ dχ ih =>
+      intro hγNF hγb hk hdd hmem
+      have hhead : (∀⁰ χ) ≠ (∃⁰ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
+      have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
+      have ihn : ∀ n, ZekdProv (osucc (α + β n)) e' (max k' n) (dd' + norm α + 1) c'
+          (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
+        intro n
+        exact (ih n hφc heNF fam (hβNF n) (by have := hτ n; omega)
+          (le_trans hk (le_max_left _ _)) hdd (Finset.mem_insert_of_mem hmem0)).weakening (by
+            intro x hx
+            simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+      choose β' hβ'le hβ'NF hβ'norm Dβ' using ihn
+      have hAll : Zekd (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
+          (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zekd.allω χ β'
+          (fun n => lt_of_le_of_lt (hβ'le n) (Zekd.add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
+          hβ'NF hsuccNF hβ'norm Dβ'
+      refine ZekdProv.of hsuccNF
+        (lt_of_le_of_lt norm_osucc_le (by have := Zekd.norm_add_le hαNF hγNF; omega))
+        (hAll.wk (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+          rcases hx with rfl | hx
+          · exact Or.inl ⟨hhead, Or.inl rfl⟩
+          · tauto))
+  | @exI γ' β e' k' dd' c' Γ₀ χ n hβ hβNF hαNF' hτ hbound dχ ih =>
+      intro hγNF hγb hk hdd hmem
+      have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
+      by_cases hhd : (∃⁰ χ) = (∃⁰ ∼φ)
+      · -- principal exI: χ = ∼φ; cut `fam n` against the ∃-premise at the cut formula `φ/[nm n]`.
+        have hχ : χ = ∼φ := by have := hhd; simpa [ExsQuantifier.exs] using this
+        subst hχ
+        rw [Finset.erase_insert_eq_erase]
+        have hNeg : (∼φ)/[nm n] = ∼(φ/[nm n]) := by simp
+        have hcompl : (φ/[nm n]).complexity < c' := by simpa using hφc
+        have hαlt : α < osucc (α + γ') :=
+          lt_of_le_of_lt (Zekd.le_add_right_NF hαNF hγNF) (Zekd.lt_osucc (ONote.add_nf α γ'))
+        have famn : Zekd α e' k' (dd' + norm α + 1) c'
+            (insert (φ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          (((fam n).mono_k hk).mono_d (by omega)).wk (by
+            intro x hx
+            simp only [Finset.mem_insert, Finset.mem_union] at hx ⊢; tauto)
+        by_cases hd : (∃⁰ ∼φ) ∈ Γ₀
+        · obtain ⟨a, hale, haNF, hanorm, Da⟩ := ih hφc heNF fam hβNF (by omega) hk hdd
+            (Finset.mem_insert_of_mem hd)
+          have Da' : Zekd a e' k' (dd' + norm α + 1) c'
+              (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+            Da.wk (by
+              intro x hx
+              simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+          have hCut : Zekd (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
+            Zekd.cut (φ/[nm n]) hcompl hαlt
+              (lt_of_le_of_lt hale (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
+              hαNF haNF hsuccNF (by omega) hanorm famn Da'
+          exact ZekdProv.of hsuccNF
+            (lt_of_le_of_lt norm_osucc_le (by have := Zekd.norm_add_le hαNF hγNF; omega)) hCut
+        · have Dβ' : Zekd β e' k' (dd' + norm α + 1) c'
+              (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+            (dχ.mono_d (by omega)).wk (by
+              intro x hx
+              simp only [hNeg, Finset.mem_insert] at hx
+              simp only [Finset.mem_insert, Finset.mem_union, Finset.mem_erase]
+              rcases hx with rfl | hxΓ₀
+              · exact Or.inl rfl
+              · exact Or.inr (Or.inl ⟨fun e0 => hd (e0 ▸ hxΓ₀), hxΓ₀⟩))
+          have hCut : Zekd (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
+            Zekd.cut (φ/[nm n]) hcompl hαlt
+              (lt_of_lt_of_le hβ (le_trans (Zekd.le_add_left_NF hαNF hγNF)
+                (le_of_lt (Zekd.lt_osucc (ONote.add_nf α γ')))))
+              hαNF hβNF hsuccNF (by omega) (by omega) famn Dβ'
+          exact ZekdProv.of hsuccNF
+            (lt_of_le_of_lt norm_osucc_le (by have := Zekd.norm_add_le hαNF hγNF; omega)) hCut
+      · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+        obtain ⟨a, hale, haNF, hanorm, Da⟩ := ih hφc heNF fam hβNF (by omega) hk hdd
+          (Finset.mem_insert_of_mem hmem0)
+        have Da' : Zekd a e' k' (dd' + norm α + 1) c' (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          Da.wk (by
+            intro x hx
+            simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+        have hExI : Zekd (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
+            (insert (∃⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          Zekd.exI χ n (lt_of_le_of_lt hale (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
+            haNF hsuccNF hanorm (le_trans hbound (hardy_monotone _ (by omega))) Da'
+        refine ZekdProv.of hsuccNF
+          (lt_of_le_of_lt norm_osucc_le (by have := Zekd.norm_add_le hαNF hγNF; omega))
+          (hExI.wk (by
+            intro x hx
+            simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+            rcases hx with rfl | hx
+            · exact Or.inl ⟨hhd, Or.inl rfl⟩
+            · tauto))
   | @cut γ' βφ βψ e' k' dd' c' Γ₀ χ hχc hβφ hβψ hβφNF hβψNF hαNF' hτφ hτψ d₁ d₂ ih₁ ih₂ =>
-      intro hγNF hk hdd hmem
-      sorry -- commuting cut
+      intro hγNF hγb hk hdd hmem
+      obtain ⟨a₁, ha₁le, ha₁NF, ha₁norm, D₁⟩ := ih₁ hφc heNF fam hβφNF (by omega) hk hdd
+        (Finset.mem_insert_of_mem hmem)
+      obtain ⟨a₂, ha₂le, ha₂NF, ha₂norm, D₂⟩ := ih₂ hφc heNF fam hβψNF (by omega) hk hdd
+        (Finset.mem_insert_of_mem hmem)
+      have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
+      have D₁' : Zekd a₁ e' k' (dd' + norm α + 1) c' (insert χ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        D₁.wk (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+      have D₂' : Zekd a₂ e' k' (dd' + norm α + 1) c' (insert (∼χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        D₂.wk (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+      have hCut : Zekd (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
+        Zekd.cut χ hχc
+          (lt_of_le_of_lt ha₁le (Zekd.add_osucc_descent hαNF hβφNF hγNF hβφ))
+          (lt_of_le_of_lt ha₂le (Zekd.add_osucc_descent hαNF hβψNF hγNF hβψ))
+          ha₁NF ha₂NF hsuccNF ha₁norm ha₂norm D₁' D₂'
+      exact ZekdProv.of hsuccNF
+        (lt_of_le_of_lt norm_osucc_le (by have := Zekd.norm_add_le hαNF hγNF; omega)) hCut
 
 end GoodsteinPA.OperatorZinfty
