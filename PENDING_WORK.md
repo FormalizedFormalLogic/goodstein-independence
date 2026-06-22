@@ -150,7 +150,21 @@ Needed to *state* Gödel II for `𝗣𝗔`; Foundation axiomatizes it (TODO in
 3. Upstream: check whether a newer Foundation rev proves it (the TODO may get filled upstream);
    file an `ON-LINE-REQUEST.md` to check the latest Foundation `Incompleteness/Examples.lean`.
 
-## Done this lap
+## Done — lap 4 (2026-06-22)
+- **Witness-bound architectural finding** (machine-checked, axiom-clean, `wip/WitnessBound.lean`):
+  the `src/Zinfty.lean` `(α,c)` cut-elimination is OFF the headline path (its unbounded `∃` makes the
+  lower bound false). Built the corrected witness-bounded calculus `B`; proved the existential-fragment
+  lower bound (`lowerBound_existential[_real]`) grounded against the real `G`; decomposed the full
+  Thm 17.1 to the single `bounding` frontier (`True`/`W`/`I∃` cases machine-verified via `sat_mono_ord`,
+  `I∀` case the literature-gated frontier; `lowerBound` contradiction-extraction real). Goodstein-side
+  grounded: `G`, `goodstein_zero_succ`/`_mono`, `atomTrue_iff_G_le`. Filed `ON-LINE-REQUEST.md` for the
+  rigorous `bounding` invariant + architecture (Towsner `(α,k)` vs Buchholz `H`-controlled).
+- Next deep brick (architecture-independent, but gated on the notation/architecture decision):
+  the **Hardy / fast-growing hierarchy + τ-controlled monotonicity** to discharge `Hmono`/`Hmono_n`,
+  and **Goodstein domination** (Towsner §5–§9) to discharge `Hdom`. mathlib `ONote.fastGrowing`
+  exists but has NO monotonicity lemmas (deliberately minimal); proving them is net-new and finicky.
+
+## Done — lap 1
 - M1: `Encoding.goodsteinTerminates_re` proved (`Computability.lean`: `primrec_natLog`,
   `primrec_bump`, `primrec_goodsteinSeq`). Phase 0 axiom-clean.
 - M2: `Reduction.lean` — Gödel II hook + meta-reduction (axiom-clean mod `PA_delta1Definable`).
