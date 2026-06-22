@@ -221,6 +221,16 @@ Needed to *state* Gödel II for `𝗣𝗔`; Foundation axiomatizes it (TODO in
 3. Upstream: check whether a newer Foundation rev proves it (the TODO may get filled upstream);
    file an `ON-LINE-REQUEST.md` to check the latest Foundation `Incompleteness/Examples.lean`.
 
+**UPDATE (lap 6, cross-session news):** a separate session (`~/src/Foundation-delta1-burndown`,
+branch `feat/induction-scheme-delta1`) is **actively discharging** both `PA_delta1Definable` and
+`ISigma1_delta1Definable` (proving them in `InductionSchemeDelta1.lean`; reduced `PA.Δ₁` to 3 isolated
+obligations, build green, ~1–2 laps to PA-complete per that session). So path 3 is in progress
+**upstream** — do NOT duplicate it here. When it lands and our Foundation pin bumps to include it,
+Route A's `not_proves_of_implies_consistency` becomes axiom-clean (no `PA_delta1Definable`). This is a
+**fallback de-risk only**: our headline stays on **Route B** (Towsner direct, avoids `Con(PA)` and this
+axiom). `goodstein_implies_consistency` (the `TI(ε₀)⊢Con(PA)`-inside-PA girder of Route A) remains
+deeply blocked regardless, so the Δ₁ news doesn't make Route A the preferred path.
+
 ## Done — lap 4 (2026-06-22)
 - **Witness-bound architectural finding** (machine-checked, axiom-clean, `wip/WitnessBound.lean`):
   the `src/Zinfty.lean` `(α,c)` cut-elimination is OFF the headline path (its unbounded `∃` makes the
