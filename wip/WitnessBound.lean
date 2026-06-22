@@ -260,25 +260,59 @@ def sat (α : Ordinal.{0}) (k : ℕ) : GForm → Prop
   | .gEx n    => G n ≤ h α (max k n)
   | .atom m n => G n ≤ m
 
-/-- **Bounding lemma — THE FRONTIER (disclosed `sorry`).**  A cut-free, witness-bounded derivation
-of `Γ` makes *some* formula of `Γ` bounded-true.  Provable cleanly for `True`/`W`/`I∃` (and the
-`I∀` sub-cases that return the fresh existential, a recursive `gAll`, or a true atom); the open
-sub-case is `I∀` returning an *accumulated* old existential at the grown numeric bound — exactly the
-invariant subtlety in `ON-LINE-REQUEST.md`.  Held at `sorry` per the anti-fraud charter (no fake
-proof of the load-bearing inequality). -/
-theorem bounding (Hmono : ∀ {a b : Ordinal.{0}} {j : ℕ}, a < b → τ a < j → h a j ≤ h b j) :
+/-- Ordinal-monotonicity of `sat` (same numeric bound `k`): from `sat` at `(a,k)` to `(b,k)` for
+`a < b` with `τ a < k`.  Atoms are bound-independent; `gEx`/`gAll` lift by `Hmono`. -/
+theorem sat_mono_ord (Hmono : ∀ {a b : Ordinal.{0}} {j : ℕ}, a < b → τ a < j → h a j ≤ h b j)
+    {a b : Ordinal.{0}} {k : ℕ} {f : GForm} (hab : a < b) (hτ : τ a < k) (hs : sat h a k f) :
+    sat h b k f := by
+  cases f with
+  | atom m n => exact hs
+  | gEx n => exact le_trans hs (Hmono hab (lt_of_lt_of_le hτ (le_max_left k n)))
+  | gAll => exact fun x => le_trans (hs x) (Hmono hab (lt_of_lt_of_le hτ (le_max_left k x)))
+
+/-- **Bounding lemma — frontier isolated to the `I∀` case.**  A cut-free, witness-bounded derivation
+of `Γ` makes *some* formula of `Γ` bounded-true.  The `True`/`W`/`I∃` cases are **machine-verified**
+below; the lone `sorry` is the `I∀` (ω-rule) case with *accumulated* existentials — exactly the
+invariant subtlety in `ON-LINE-REQUEST.md`.  Held at `sorry` per the anti-fraud charter.
+
+`Hmono_n` (numeric monotonicity of the Hardy hierarchy `h a j ≤ h a j'` for `j ≤ j'`) is a standard
+§6 fact, used in `I∃` to lift a witness bounded by `h α k` to the input-adjusted `h α (max k n)`. -/
+theorem bounding (Hmono : ∀ {a b : Ordinal.{0}} {j : ℕ}, a < b → τ a < j → h a j ≤ h b j)
+    (Hmono_n : ∀ (a : Ordinal.{0}) {j j' : ℕ}, j ≤ j' → h a j ≤ h a j') :
     ∀ {α : Ordinal.{0}} {k : ℕ} {Γ : Seq}, B h τ α k Γ → ∃ f ∈ Γ, sat h α k f := by
-  sorry
+  intro α
+  induction α using WellFoundedLT.induction with
+  | _ α IH =>
+    intro k Γ hB
+    cases hB with
+    | trueR hmem htrue hτ =>
+      rename_i m n
+      exact ⟨atom m n, hmem, G_le_of_atomTrue htrue⟩
+    | weak hβ hτ hsub d =>
+      obtain ⟨f, hfΔ, hsat⟩ := IH _ hβ d
+      exact ⟨f, hsub hfΔ, sat_mono_ord h τ Hmono hβ hτ hsat⟩
+    | exI hβ hτ hbound hmem d =>
+      rename_i β n v
+      obtain ⟨f, hf, hsat⟩ := IH _ hβ d
+      rcases Finset.mem_insert.mp hf with rfl | hfΓ
+      · -- IH returned the introduced (false) atom `g_v(n)=0`: hence `gEx n` is bounded-true at `(α,k)`.
+        refine ⟨gEx n, hmem, ?_⟩
+        exact le_trans hsat (le_trans hbound (Hmono_n α (le_max_left k n)))
+      · exact ⟨f, hfΓ, sat_mono_ord h τ Hmono hβ hτ hsat⟩
+    | allI βfn hmem hβ hτ d =>
+      -- FRONTIER: the ω-rule with accumulated existentials (see ON-LINE-REQUEST.md).
+      sorry
 
 /-- **The full Goodstein lower bound (Towsner Thm 17.1), modulo `bounding`** — machine-checked
 contradiction-extraction.  Goodstein domination (`Hdom`: some input `x` whose Goodstein length `G x`
 outruns the Hardy bound `h α (max k x)`, Towsner Thm 7.2/9.8) rules out any cut-free witness-bounded
 derivation of the Goodstein sentence.  This is the headline-relevant shape of M6. -/
 theorem lowerBound (Hmono : ∀ {a b : Ordinal.{0}} {j : ℕ}, a < b → τ a < j → h a j ≤ h b j)
+    (Hmono_n : ∀ (a : Ordinal.{0}) {j j' : ℕ}, j ≤ j' → h a j ≤ h a j')
     (α : Ordinal.{0}) (k : ℕ) (Hdom : ∃ x, h α (max k x) < G x) :
     ¬ B h τ α k ({gAll} : Seq) := by
   intro hB
-  obtain ⟨f, hf, hsat⟩ := bounding h τ Hmono hB
+  obtain ⟨f, hf, hsat⟩ := bounding h τ Hmono Hmono_n hB
   rw [Finset.mem_singleton] at hf
   subst hf
   obtain ⟨x, hx⟩ := Hdom
