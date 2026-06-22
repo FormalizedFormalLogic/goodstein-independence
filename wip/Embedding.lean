@@ -363,56 +363,87 @@ noncomputable def asg (e : ℕ → ℕ) : Rew ℒₒᵣ ℕ 0 ℕ 0 := Rew.rewri
 `all`/`exs`/`axm` are the disclosed deep obligations (the latter two now unblocked by `axTrue`). -/
 theorem embedC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     (d : Derivation2 (𝗣𝗔 : Schema ℒₒᵣ) Γ) :
-    ∀ e : ℕ → ℕ, ZProvable (Γ.image (fun φ => asg e ▹ φ)) := by
+    ∃ c : ℕ, ∀ e : ℕ → ℕ, ∃ α, Provable α c (Γ.image (fun φ => asg e ▹ φ)) := by
   induction d with
   | closed Γ φ hp hn =>
-    intro e
-    obtain ⟨a, hd⟩ := provable_em (asg e ▹ φ) (Finset.mem_image_of_mem _ hp)
-      (by have := Finset.mem_image_of_mem (fun φ => asg e ▹ φ) hn; simpa using this)
-    exact ⟨a, 0, hd⟩
+    exact ⟨0, fun e => provable_em (asg e ▹ φ) (Finset.mem_image_of_mem _ hp)
+      (by have := Finset.mem_image_of_mem (fun φ => asg e ▹ φ) hn; simpa using this)⟩
   | axm φ hφ hΓ =>
     -- closed PA axiom `↑σ` (assignment-immaterial): `𝗣𝗔⁻` instance → `axTrue`; induction → ω-rule.
     sorry
   | verum hΓ =>
-    intro e
-    exact ⟨0, 0, Provable.verumR (by have := Finset.mem_image_of_mem (fun φ => asg e ▹ φ) hΓ; simpa using this)⟩
+    exact ⟨0, fun e => ⟨0, Provable.verumR
+      (by have := Finset.mem_image_of_mem (fun φ => asg e ▹ φ) hΓ; simpa using this)⟩⟩
   | @and Γ φ ψ h _dp _dq ihp ihq =>
-    intro e
-    obtain ⟨a1, c1, h1⟩ := ihp e
-    obtain ⟨a2, c2, h2⟩ := ihq e
+    obtain ⟨c1, ihp⟩ := ihp; obtain ⟨c2, ihq⟩ := ihq
+    refine ⟨max c1 c2, fun e => ?_⟩
+    obtain ⟨a1, h1⟩ := ihp e; obtain ⟨a2, h2⟩ := ihq e
     rw [Finset.image_insert] at h1 h2
-    refine ⟨max a1 a2 + 1, max c1 c2, ?_⟩
     have h1' := h1.mono (le_refl a1) (le_max_left c1 c2)
     have h2' := h2.mono (le_refl a2) (le_max_right c1 c2)
     have hand := Provable.andI (asg e ▹ φ) (asg e ▹ ψ) h1' h2'
     have hmem : (asg e ▹ φ ⋏ asg e ▹ ψ) ∈ Γ.image (fun φ => asg e ▹ φ) := by
       have := Finset.mem_image_of_mem (fun φ => asg e ▹ φ) h; simpa using this
     rw [Finset.insert_eq_self.mpr hmem] at hand
-    exact hand
+    exact ⟨_, hand⟩
   | @or Γ φ ψ h _d ih =>
-    intro e
-    obtain ⟨a, c, hd⟩ := ih e
+    obtain ⟨c, ih⟩ := ih
+    refine ⟨c, fun e => ?_⟩
+    obtain ⟨a, hd⟩ := ih e
     rw [Finset.image_insert, Finset.image_insert] at hd
-    refine ⟨a + 1, c, ?_⟩
     have hor := Provable.orI (asg e ▹ φ) (asg e ▹ ψ) hd
     have hmem : (asg e ▹ φ ⋎ asg e ▹ ψ) ∈ Γ.image (fun φ => asg e ▹ φ) := by
       have := Finset.mem_image_of_mem (fun φ => asg e ▹ φ) h; simpa using this
     rw [Finset.insert_eq_self.mpr hmem] at hor
-    exact hor
+    exact ⟨_, hor⟩
   | @all Γ φ h _d ih =>
-    -- `∀⁰φ ∈ Γ`. Introduce by `allω`: for each `n`, use `ih (n :>ₙ e)` — the freed var ↦ `nm n`,
-    -- the shifted `Γ` ↦ the `asg e` image. The clean ω-rule case (no `provable_rew`). DEEP next chip.
-    sorry
+    -- `∀⁰φ ∈ Γ`. Introduce by `allω`: for each `n`, use `ih (n :>ₙ e)` — the freed var `&0 ↦ nm n`
+    -- (A), the shifted `Γ` collapses to the `asg e` image (B). The clean ω-rule case (uniform `c`).
+    obtain ⟨c, ih⟩ := ih
+    refine ⟨c, fun e => ?_⟩
+    have hfam : ∀ n, ∃ a, Provable a c
+        (insert (((asg e).q ▹ φ)/[nm n]) (Γ.image (fun ψ => asg e ▹ ψ))) := by
+      intro n
+      obtain ⟨a, hd⟩ := ih (n :>ₙ e)
+      rw [Finset.image_insert] at hd
+      have hA : asg (n :>ₙ e) ▹ (Rewriting.free φ) = ((asg e).q ▹ φ)/[nm n] := by
+        have hRew : (asg (n :>ₙ e)).comp Rew.free = (Rew.subst ![nm n]).comp (asg e).q := by
+          ext x
+          · refine Fin.cases ?_ (fun i => Fin.elim0 i) x
+            simp [asg, Rew.comp_app]
+          · simp [asg, Rew.comp_app]
+        show asg (n :>ₙ e) ▹ (Rew.free ▹ φ) = Rew.subst ![nm n] ▹ ((asg e).q ▹ φ)
+        rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, hRew]
+      have hB : (Γ.image Rewriting.shift).image (fun ψ => asg (n :>ₙ e) ▹ ψ)
+          = Γ.image (fun ψ => asg e ▹ ψ) := by
+        have hcompB : (asg (n :>ₙ e)).comp Rew.shift = asg e := by
+          ext x
+          · exact Fin.elim0 x
+          · simp [asg, Rew.comp_app]
+        rw [Finset.image_image]
+        refine Finset.image_congr (fun ψ _ => ?_)
+        show asg (n :>ₙ e) ▹ (Rew.shift ▹ ψ) = asg e ▹ ψ
+        rw [← TransitiveRewriting.comp_app, hcompB]
+      rw [hA, hB] at hd
+      exact ⟨a, hd⟩
+    choose β hβ using hfam
+    have hall := Provable.allω ((asg e).q ▹ φ) hβ
+    have hmem : (asg e ▹ (∀⁰ φ)) ∈ Γ.image (fun ψ => asg e ▹ ψ) := Finset.mem_image_of_mem _ h
+    rw [show (asg e ▹ (∀⁰ φ)) = ∀⁰ ((asg e).q ▹ φ) by simp] at hmem
+    rw [Finset.insert_eq_self.mpr hmem] at hall
+    exact ⟨_, hall⟩
   | @exs Γ φ h t _d _ih =>
     -- `asg e ▹ t` is now CLOSED → collapse to its numeral value `nm m` (`axTrue` term eval) → `exI`. DEEP.
     sorry
   | @wk Δ Γ _d h ih =>
-    intro e
-    exact (ih e).weakening (Finset.image_subset_image h)
+    obtain ⟨c, ih⟩ := ih
+    refine ⟨c, fun e => ?_⟩
+    obtain ⟨α, hα⟩ := ih e
+    exact ⟨α, hα.weakening (Finset.image_subset_image h)⟩
   | @shift Γ _d ih =>
-    -- re-index the assignment: `asg e ∘ Rew.shift = asg (e ∘ succ)`, so the shifted sequent at `e`
-    -- is the original sequent at `e ∘ succ`. No `provable_rew`.
-    intro e
+    -- re-index the assignment: `asg e ∘ Rew.shift = asg (e ∘ succ)`.
+    obtain ⟨c, ih⟩ := ih
+    refine ⟨c, fun e => ?_⟩
     have hcomp : (asg e).comp Rew.shift = asg (e ∘ Nat.succ) := by
       ext x
       · exact Fin.elim0 x
@@ -425,21 +456,20 @@ theorem embedC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
       rw [← TransitiveRewriting.comp_app, hcomp]
     rw [key]; exact ih (e ∘ Nat.succ)
   | @cut Γ φ _d _dn ihd ihdn =>
-    intro e
-    obtain ⟨a1, c1, h1⟩ := ihd e
-    obtain ⟨a2, c2, h2⟩ := ihdn e
+    obtain ⟨c1, ihd⟩ := ihd; obtain ⟨c2, ihdn⟩ := ihdn
+    refine ⟨max (φ.complexity + 1) (max c1 c2), fun e => ?_⟩
+    obtain ⟨a1, h1⟩ := ihd e; obtain ⟨a2, h2⟩ := ihdn e
     rw [Finset.image_insert] at h1 h2
     rw [show (asg e ▹ (∼φ)) = ∼(asg e ▹ φ) by simp] at h2
-    refine ⟨max a1 a2 + 1, max ((asg e ▹ φ).complexity + 1) (max c1 c2), ?_⟩
     have h1' := h1.mono (le_refl a1)
-      (show c1 ≤ max ((asg e ▹ φ).complexity + 1) (max c1 c2) from
+      (show c1 ≤ max (φ.complexity + 1) (max c1 c2) from
         le_trans (le_max_left c1 c2) (le_max_right _ _))
     have h2' := h2.mono (le_refl a2)
-      (show c2 ≤ max ((asg e ▹ φ).complexity + 1) (max c1 c2) from
+      (show c2 ≤ max (φ.complexity + 1) (max c1 c2) from
         le_trans (le_max_right c1 c2) (le_max_right _ _))
     have hc : (((asg e ▹ φ).complexity + 1 : ℕ) : ℕ∞)
-        ≤ ((max ((asg e ▹ φ).complexity + 1) (max c1 c2) : ℕ) : ℕ∞) := by
-      exact_mod_cast Nat.le_max_left _ _
-    exact Provable.cut (asg e ▹ φ) hc h1' h2'
+        ≤ ((max (φ.complexity + 1) (max c1 c2) : ℕ) : ℕ∞) := by
+      rw [Semiformula.complexity_rew]; exact_mod_cast Nat.le_max_left _ _
+    exact ⟨_, Provable.cut (asg e ▹ φ) hc h1' h2'⟩
 
 end GoodsteinPA.Embedding
