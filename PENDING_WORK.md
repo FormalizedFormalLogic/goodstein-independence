@@ -60,8 +60,14 @@ Goodstein [E].** Co-design, or make `EpsilonOrder` expose the E-hook (standard C
 Goodstein-descent-embeds-into-it).
 
 ### Corrected F work order
-1. `hprec_of_lMap_defined` (tractable, Foundation-side, unblocks definability).
-2. `codeOfREPred₂` + spec (Foundation-side).
+1. ✅ **DONE (lap 18, `src/GoodsteinPA/EpsilonOrder.lean`, axiom-clean):** `hprec_of_lMap_defined`
+   (+ `hprec_of_eval`, `eval_lMap_structLX`). Discharges the exact Boundedness `hprec` for ANY
+   `lMap`-definable `lt`. **TODO leftover:** `xpos_lMap` (⟹ `hprecXPos` automatic — mechanical;
+   `nrel` case needs `Sum.isLeft ((ORing.embedding LX).rel r) = true`, i.e. case `ℒₒᵣ.Rel` = eq/lt),
+   and the `EpsilonOrder` structure (carry `φ`, field `ge : ε₀ ≤ orderType lt`).
+2. `codeOfREPred₂` + spec (Foundation-side). NOTE the `Semisentence ℒₒᵣ 2 = Semiformula ℒₒᵣ Empty 2`
+   ⟹ need `Empty→ℕ` embedding (`Rew.emptyMap`/`Semiformula.emb`) to feed `hprec_of_lMap_defined`'s
+   `φ : Semiformula ℒₒᵣ ℕ 2`. (Or restate `hprec_of_lMap_defined` for `Semisentence` directly.)
 3. **ε₀-completeness `∀ o<ε₀, ∃ x:ONote, NF x ∧ repr x = o`** (the real girder; mathlib-only; Aristotle).
 4. Bijective ℕ↔NONote coding + transfer order type.
 5. Instantiate `EpsilonOrder` with `ε₀ ≤ orderType lt`.
