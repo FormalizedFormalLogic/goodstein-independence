@@ -83,6 +83,32 @@ Attack paths:
    *(Resolved lap 3: the `k` index turned out NOT to be needed for cut-elimination.)*
 </details>
 
+### O2′ — M4 DESIGN DECISION (scouted lap 3, execute lap 4) ⭐
+The embedding needs Z_∞ to derive PA's **true defining axioms** (e.g. `n+(m+1)=(n+m)+1`), which the
+current calculus CANNOT: `axL` is the clash-based identity (`rel r v ∧ nrel r v ∈ Γ`) and `verumR`
+is only `⊤`. Towsner's "True" rule is a **truth-based atomic axiom**. So M4 requires extending the
+calculus. Concrete plan:
+1. **Atomic truth predicate** — reuse Foundation `Semiformula.Evalm ℕ ![] ε` (the `standardModel`
+   instance for `ℒₒᵣ` over `ℕ`; `=`/`<` decidable). For embedding-substituted formulas (free vars
+   replaced by numerals) truth is `ε`-independent. (`Foundation/.../Semantics/Semantics.lean:241`,
+   `Arithmetic/Basic/Model.lean:25`.)
+2. **Add `trueAtom` constructor** to `Deriv`: `(φ : Form) → (φ atomic) → Evalm ℕ … φ → φ ∈ Γ →
+   Deriv Γ`, with `o = 0`, `cr = 0`. ⚠️ **This touches the completed cut-elimination**: every
+   induction (`orInvAux`, `allInvAux`, `andInvAux`, `cutReduceAllAux`, `atomCutAux`,
+   `removeFalsumAux`, `cutElimStepAux`) gains one new leaf case — mostly trivial (like `verumR`),
+   EXCEPT `atomCutAux`: a `trueAtom` on the cut atom `rel r v` means `rel r v` is true ⇒ `nrel r v`
+   is false ⇒ must remove it from the other premise. So `atomCut` needs a **truth-based false-atomic
+   removal** (the genuine §19.2 content, now unavoidable, but only for atomics — decidable ℕ
+   arithmetic). Do this extension on a `wip/` copy first; re-green; re-promote.
+3. **ε₀** is `ε_ 0` in `Mathlib.SetTheory.Ordinal.Veblen` (first fixed point of `ω^·`); `omegaTower
+   c α < ε₀` for `α < ε₀` is the closure fact M5.4/M7 need (ε₀ closed under `ω^·`).
+4. Then M4.1 (Lemma 16.1) → M4.2 (Cor 16.6) → M4.3 (Thm 16.7), inducting over a `Peano`-proof
+   (`𝗣𝗔⁻ + InductionScheme ℒₒᵣ Set.univ`), reusing Foundation's finitary `Derivation`.
+
+**Caveat on the clean state:** cut-elimination is currently truth-free and axiom-clean precisely
+because of clash-`axL`. Adding `trueAtom` re-introduces a (decidable, atomic-only) truth layer.
+This is the standard Schütte setup and is correct; just do it carefully so the §19 proofs stay green.
+
 ### O3 — `PA_delta1Definable : 𝗣𝗔.Δ₁` (Foundation axiom) — only on Route A
 Needed to *state* Gödel II for `𝗣𝗔`; Foundation axiomatizes it (TODO in
 `Incompleteness/Examples.lean`). Route B avoids it. Attack paths:
