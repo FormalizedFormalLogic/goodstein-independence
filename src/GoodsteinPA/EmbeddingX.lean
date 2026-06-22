@@ -21,7 +21,7 @@ import Foundation.FirstOrder.Arithmetic.Schemata
 
 namespace GoodsteinPA.EmbeddingX
 
-open LO LO.FirstOrder
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic
 open GoodsteinPA.ZinftyGen GoodsteinPA.LangX GoodsteinPA.XFreeCutElim
 
 set_option linter.unusedSectionVars false
@@ -568,6 +568,98 @@ lemma litTrue_lMap_axiom (τ : Sentence ℒₒᵣ) (hτ : ℕ ⊧ₘ τ) (e : �
   rw [Semiformula.eval_lMap, ambient_lMap_eq]
   rw [models_iff] at hτ
   simpa using hτ
+
+/-- **Value-congruent formula renaming.** A derivation containing the instance `ψ/[s]` yields one
+with `ψ/[t]` for any value-equal `t` (`|s| = |t|`), at the same cut rank, `XFreeAx`-preserving — one
+`cut` against the value-congruent EM `provable_em_cong_gen_x`. The compound-formula analogue of
+`nrel_value_subst`; the bridge from `succInd`'s `nm n + 1` to `metaInduction`'s `nm (n+1)`. -/
+theorem PXFc.subst_value_subst {α : Ordinal.{0}} {c : ℕ} {Γ : Seq LX}
+    (ψ : SyntacticSemiformula LX 1) (s t : SyntacticTerm LX)
+    (hval : Semiterm.valm ℕ ![] (id : ℕ → ℕ) s = Semiterm.valm ℕ ![] (id : ℕ → ℕ) t)
+    (hc : (ψ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞))
+    (h : PXFc α c (insert (ψ/[s]) Γ)) :
+    ∃ β, PXFc β c (insert (ψ/[t]) Γ) := by
+  have h₁ : PXFc α c (insert (ψ/[s]) (insert (ψ/[t]) Γ)) :=
+    h.weakening (Finset.insert_subset_insert _ (Finset.subset_insert _ _))
+  obtain ⟨b, h₂⟩ := provable_em_cong_gen_x ψ.complexity ![t] ![s] ψ le_rfl
+    (by intro i; cases i using Fin.cases with
+        | zero => simpa using hval.symm
+        | succ j => exact j.elim0)
+    (Γ := insert (∼(ψ/[s])) (insert (ψ/[t]) Γ))
+    (by show (Rew.subst ![t] ▹ ψ) ∈ _; simp)
+    (by show (∼(Rew.subst ![s] ▹ ψ)) ∈ _; simp)
+  have hcc : (((ψ/[s]).complexity : ℕ) + 1 : ℕ∞) ≤ (c : ℕ∞) := by
+    have : (ψ/[s]).complexity = ψ.complexity := by simp
+    rw [this]; exact hc
+  exact ⟨_, PXFc.cut (ψ/[s]) hcc h₁ (h₂.mono le_rfl (Nat.zero_le c))⟩
+
+/-- **Value-congruent meta-induction (Buchholz Thm 5.5).** Generalises `XFreeCutElim.metaInduction`
+to a *value-congruent* successor: the step's `∃`-side `(∼step)/[nm n] = ψ(n) ⋏ ∼ψ(succT n)` may use
+any term `succT n` with `|succT n| = n + 1` (e.g. `nm n + 1`, the form `succInd` produces) — not just
+the numeral `nm (n+1)`. The chain's `ψ(succT n)` is bridged back to `ψ(nm (n+1))` by
+`subst_value_subst`. This is what makes the embedding's X-induction case match Foundation's `succInd`
+syntax (where the successor is `#0 + 1`, value- but not syntactically-equal to the next numeral). -/
+theorem metaInduction_cong (ψ step : SyntacticSemiformula LX 1) {Γ : Seq LX}
+    (succT : ℕ → SyntacticTerm LX)
+    (hsval : ∀ n, Semiterm.valm ℕ ![] (id : ℕ → ℕ) (succT n) = n + 1)
+    (hstep : ∀ n, (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT n])) :
+    ∃ a, PXFc a (ψ.complexity + 1)
+      (insert (∼(ψ/[nm 0])) (insert (∃⁰ (∼step)) (insert (∀⁰ ψ) Γ))) := by
+  set c : ℕ := ψ.complexity + 1 with hc
+  set Δ : Seq LX := insert (∼(ψ/[nm 0])) (insert (∃⁰ (∼step)) Γ) with hΔ
+  have hcut : ∀ n, ((ψ/[nm n]).complexity + 1 : ℕ∞) ≤ (c : ℕ∞) := by
+    intro n; rw [hc]; simp
+  have hcc : (ψ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞) := by rw [hc]; push_cast; exact le_rfl
+  have hEx : ∀ n, (∃⁰ (∼step)) ∈ (insert (∼(ψ/[nm n])) (insert (ψ/[succT n]) Δ)) := by
+    intro n; rw [hΔ]
+    exact Finset.mem_insert_of_mem (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
+      (Finset.mem_insert_self _ _)))
+  have chain : ∀ n, ∃ a, PXFc a c (insert (ψ/[nm n]) Δ) := by
+    intro n
+    induction n with
+    | zero =>
+      obtain ⟨a, ha⟩ := provable_em_x (ψ/[nm 0]) (Γ := insert (ψ/[nm 0]) Δ)
+        (Finset.mem_insert_self _ _)
+        (Finset.mem_insert_of_mem (by rw [hΔ]; exact Finset.mem_insert_self _ _))
+      exact ⟨a, ha.mono le_rfl (Nat.zero_le c)⟩
+    | succ n ih =>
+      obtain ⟨aL, hL0⟩ := ih
+      have hL : PXFc aL c (insert (ψ/[nm n]) (insert (ψ/[succT n]) Δ)) :=
+        hL0.weakening (Finset.insert_subset_insert _ (Finset.subset_insert _ _))
+      obtain ⟨aA, hA0⟩ := provable_em_x (ψ/[nm n])
+        (Γ := insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) (insert (ψ/[succT n]) Δ)))
+        (Finset.mem_insert_self _ _)
+        (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
+      obtain ⟨aB, hB0⟩ := provable_em_x (ψ/[succT n])
+        (Γ := insert (∼(ψ/[succT n]))
+          (insert (∼(ψ/[nm n])) (insert (ψ/[succT n]) Δ)))
+        (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _)))
+        (Finset.mem_insert_self _ _)
+      have hand := PXFc.andI (c := c) (ψ/[nm n]) (∼(ψ/[succT n]))
+        (hA0.mono le_rfl (Nat.zero_le c)) (hB0.mono le_rfl (Nat.zero_le c))
+      rw [← hstep n] at hand
+      have hexI := PXFc.exI (∼step) n hand
+      rw [Finset.insert_eq_self.mpr (hEx n)] at hexI
+      have hcutd : PXFc _ c (insert (ψ/[succT n]) Δ) :=
+        PXFc.cut (ψ/[nm n]) (hcut n) hL hexI
+      obtain ⟨γ, hγ⟩ := PXFc.subst_value_subst ψ (succT n) (nm (n+1))
+        (by rw [hsval, valm_nm]) hcc hcutd
+      exact ⟨γ, hγ⟩
+  choose β hβ using chain
+  have hall := PXFc.allω (β := β) ψ (Γ := Δ) hβ
+  refine ⟨_, hall.weakening ?_⟩
+  rw [hΔ]; intro x hx
+  simp only [Finset.mem_insert] at hx ⊢
+  tauto
+
+/-- The NNF of Foundation's `succInd ψ` (`ψ(0) → (∀x, ψx → ψ(x+1)) → ∀x ψx`): a disjunction of the
+induction-axiom's three Tait components, matching `metaInduction_cong`'s `{∼ψ(0), ∃(∼step), ∀ψ}`. -/
+lemma succInd_nnf (ψ : Semiformula LX ℕ 1) :
+    succInd ψ = (∼ψ/[(↑(0:ℕ) : Semiterm LX ℕ 0)]) ⋎
+      ((∃⁰ ∼((∼ψ/[(#0 : Semiterm LX ℕ 1)]) ⋎ ψ/[(‘(#0 + 1)’ : Semiterm LX ℕ 1)])) ⋎
+        (∀⁰ ψ/[(#0 : Semiterm LX ℕ 1)])) := by
+  conv_lhs => unfold succInd
+  simp only [Semiformula.imp_eq, Semiformula.neg_all]
 
 /-- **C₂-axm: the `axm` discharge for `paLX`.** Each `paLX` axiom appearing in `Γ` yields a
 cut-rank-bounded `XFreeAx` `Z∞`-derivation of the image sequent. **X-free base axioms** (`𝗣𝗔⁻` image)
