@@ -66,28 +66,38 @@ The option-1 design was not just recommended — it was instantiated and validat
   the move that defeated both naive single-index swaps;
 - §19.5 `cutReduceConj`/`cutReduceDisj` (+ `lt_osucc`), index `(k,d)` preserved.
 
-This is full parity with the old single-index `wip/BoundedZinfty.lean` §19.2–19.5, but on the design that
-can complete §19.6. **`wip/BoundedZinfty.lean` is now superseded by `wip/SplitZinfty.lean`** for the
-forward path (keep it as the single-index reference / history).
+This is full parity with the old single-index `wip/BoundedZinfty.lean` §19.2–19.5, on a design that
+closes the §19.6 *norm-budget* obstruction (the `d`-bump). **However — see ADDENDUM 4 / the corrected
+NEXT MOVE below — `(k,d)` does NOT close §19.6's *witness-index* obstruction; the full Buchholz operator
+is needed.** `SplitZinfty.lean` is the correct §19.2–19.5 stepping stone the operator calculus ports
+from; `wip/BoundedZinfty.lean` is the older single-index reference.
 
-### THE NEXT MOVE — §19.6 `cutReduceAll` on `Zkd` (the d-bump payoff)
-Port `src/Zinfty.lean:785 cutReduceAllAux` (lap-3, fully proved for the unbounded calculus) to `Zkd`:
-- invert the ∀-side via `allInv` → `fam : ∀ n, Zkd α (max k n) d c (insert (φ/[nm n]) Γ)`;
-- induct on the ∃-side `Zkd γ k d c (Δ, ∃⁰∼φ)` (Prop-valued — induct directly; running ordinal = the
-  constructor bound `γ`); ordinal framing `α + γ` (helpers to copy from `BoundedZinfty`:
-  `add_lt_add_left_NF`, `le_add_left_NF`; `norm_add_le` already proved there) + `osucc` slack at cuts;
-- **principal `exI`**: cut `fam n` (witness `n`) against the ∃-premise (`mono_d`/`mono_k` to unify indices);
-- **commuting `allω` (THE PAYOFF):** reconstruct the ω-rule bumping `d ↦ d + norm α`. The premise budget
-  check `norm(α+βₙ) ≤ norm α + norm βₙ < norm α + (max k n + d) = max k n + (d + norm α)` ✓ — the `+norm α`
-  shift lands exactly in the bumped `d`. This is the obstruction (ADDENDA 1–2) closed by the design.
-- conclusion: `Zkd (osucc (α+γ)) k (d + norm α) c (Δ.erase(∃⁰∼φ) ∪ Γ)`, then `cutReduceAll` wraps it.
+### THE NEXT MOVE — the Buchholz **operator** calculus (⚠️ `(k,d)` is NOT enough for §19.6)
+⚠️ **CORRECTION (ADDENDUM 4, end of lap 7):** setting up `cutReduceAll` revealed §19.6 has **two**
+obstructions; `(k,d)` closes only one:
+1. **norm-budget** (`norm(α+βₙ) < budget`) — **CLOSED by the `d`-bump** (`d ↦ d + norm α`). ✓
+2. **witness-index** (NEW) — the principal `exI` cut pulls the k-part up to the witness
+   `w ≤ hardy γ (k'+d)`; in the **commuting `allω`** case the IH runs at `k' = max k n` (grows with `n`),
+   so the cut index grows like `hardy(·)(n)` — **super-linear**. The reconstructed ω-rule needs premise
+   `n` at `max k_c n` (linear), which CANNOT absorb a Hardy-growing index (`mono_k` only raises). ✗
 
-Then **§19.7 `cutElimStep`** (`c+1↦c`, ordinal `ω^α`, `norm_omegaPow` — copy from `BoundedZinfty`; `d`
-grows by the `ω^α` blow-up but stays finite — track existentially) + **§19.9 `cutElim`**. Finally re-prove
-**`lowerBound_hardy_selfcontained` for the `(k,d)` calculus** (or its `B`-analogue): I∀ case discharged by
-`hardy α (max k n + d) ≤ hardy α (n + (k+d)) < G n` via `hardy_shift_lt_goodsteinLength (c := k+d)`
-(`src/LowerBound.lean`, proved). Then the **subformula bridge** connects cut-free `Zkd` of `{gAll}` to the
-lower bound ⟹ headline.
+So **`cutReduceAll` is NOT completable on `Zkd`** — `max k n` premise shape can't pass a Hardy-growing
+witness index. This needs the **full Buchholz operator** `H` (a set/predicate on the witness index,
+*closed under `hardy`*), so the principal cut's `hardy(·)(·)` witness stays in `H[{n}]` uniformly. Plan:
+- Define `Hkd α H d c Γ` (or `H ⊢^α_{d,c}`): ω-premise `n` controlled by `H[{n}]` (closed under `hardy`/
+  the ordinal functions); True/∃ side conditions by `H`; keep the additive `d` (norm budget) alongside.
+- **Port §19.2–19.5 from `wip/SplitZinfty.lean`** — mechanical, `max k ·` ⤳ `H` (the inversions/§19.5
+  proofs there are the template and were the point of building `SplitZinfty`).
+- §19.6 `cutReduceAll`: principal cut's witness `hardy γ (·) ∈ H` (closure), commuting `allω` premise
+  index in `H[{n}]` (closure) — both obstructions close. Ordinal framing `α+γ` + `osucc` (descent
+  lemmas `add_osucc_descent` etc. already in `SplitZinfty`); `d`-bump for the norm budget.
+- §19.7 `cutElimStep` (`ω^α`, `norm_omegaPow` banked) + §19.9 `cutElim`.
+- Lower bound for the operator calculus: I∀ case via `hardy_shift_lt_goodsteinLength` (proved) — the
+  controlled index stays slope-1 in `n` once `H`'s base is fixed. Then the subformula bridge ⟹ headline.
+
+`SplitZinfty.lean` is a **correct stepping stone** (§19.2–19.5 done on the `(k,d)` split; the operator
+generalizes its `max(k,·)`-part to a `hardy`-closed `H`, keeping `d`). `ON-LINE-REQUEST` (PA
+operator-control spec — Buchholz §9) remains the literature ask.
 
 <details><summary>Superseded: the abstract option-1 recommendation (now implemented above)</summary>
 ## (superseded) §19.6 attack **option 1** (function/operator-valued `allω` index)

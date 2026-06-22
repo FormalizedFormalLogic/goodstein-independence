@@ -204,3 +204,43 @@ inversion suite (`d` inert, `k`-juggling unchanged), the ∧/∨ cut-reductions 
 `cutElim`; re-prove `lowerBound_hardy_selfcontained` (I∀ case via `hardy_shift_lt_goodsteinLength`).
 `hardy_add_ofNat` + `hardy_shift_lt_goodsteinLength` are the banked domination ingredients. Sanity-check
 the principal `exI` case threads the witness bound under `(k,d)`.
+
+---
+
+## ADDENDUM 4 (lap 7) — the `(k,d)` split solves §19.2–19.5 but NOT §19.6 (a SECOND, witness-index obstruction)
+
+Implementing `wip/SplitZinfty.lean` (calculus + §19.2–19.5 on the `(k,d)` split, all sorry-free) and then
+setting up `cutReduceAll` exposed that §19.6 has **two independent** obstructions, and the `(k,d)` split
+only closes one:
+
+1. **Norm-budget obstruction (ADDENDUM 1):** reconstructed commuting-`allω` premise `n` needs
+   `norm(α+βₙ) < (premise budget)`. **CLOSED by the `d`-bump** (`d ↦ d + norm α`): budget
+   `max(k,n)+(d+norm α)` absorbs the `+norm α`. ✓ (This part of ADDENDUM 3 is correct.)
+
+2. **Witness-index obstruction (NEW, ADDENDUM 4):** `cutReduceAllAux`'s **principal `exI` cut** cuts the
+   ∀-family `fam w` (at index `(max k' w, d)`, from `allInv` at the witness `w`) against the ∃-side. The
+   witness `w ≤ hardy γ (k'+d)`, so the cut pulls the **k-part up to `~ w ~ hardy γ (k'+d)`**. At the
+   *top level* `k' = k` is fixed, so this is a constant — fine. But in the **commuting `allω` case** the
+   IH is invoked at `k' = max k n` (the ω-premise's k, which grows with `n`), so the IH's output k-part
+   grows like `hardy(·)(n)` — **super-linearly in `n`**. Reconstructing the ω-rule then needs premise `n`
+   at `max k_c n` (linear in `n`), which **cannot absorb** a `hardy(·)(n)` index (`mono_k` only raises,
+   and `max k_c n ~ n < hardy(·)(n)` for large `n`). **The `max k n` ω-premise shape is fundamentally
+   incompatible with a Hardy-growing witness index passing through it.**
+
+This is exactly why Towsner's conclusion index is the **Hardy value `h_{β#ω}(k)`** and the ω-rule premise
+is `max{conclusion-k, n}` — and why even that needs the **full Buchholz operator `H`** (a SET closed
+under the Hardy/ordinal functions) rather than any numeric or `(k,d)` index: only a function-closed
+operator can satisfy `h_{βₙ#ω}(max{k,n}) ∈ H[{n}]` uniformly. A single numeric k-part (even `max k n`)
+or the `(k,d)` split cannot.
+
+**Honest status:** `(k,d)` is a **correct and reusable stepping stone** — it carries §19.2–19.5 and the
+§19.6 norm-budget, and the operator `H` generalizes its `max(k,·)`-part to a function-closed `H`-part
+(keeping the additive `d`). The inversions/§19.5 proofs in `SplitZinfty.lean` will largely port to the
+operator calculus. But **§19.6 `cutReduceAll` is NOT completable on `(k,d)`**; it needs the operator.
+
+**Revised next step:** implement the **Buchholz operator-controlled calculus** `H ⊢^α_{d,c} Γ` (operator
+`H : Set ℕ → Set ℕ` or a concrete "closed-under-`hardy`" predicate on the witness index), ω-premise `n`
+controlled by `H[{n}]`, the True/∃ side conditions by `H`. Port §19.2–19.5 from `SplitZinfty.lean`
+(mechanical: `max k ·` ⤳ `H`), then §19.6 with the witness index living in `H[{n}]` (closed under
+`hardy`, so the principal cut's `hardy(·)(·)` witness stays in `H`). The `d`-bump (norm budget) rides
+alongside. `ON-LINE-REQUEST` (PA operator-control spec) remains the literature ask.
