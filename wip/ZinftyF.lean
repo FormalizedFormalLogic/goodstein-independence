@@ -61,8 +61,8 @@ inductive Deriv : Seq → Type
   | orI {Γ : Seq} (φ ψ : Form) (d : Deriv (insert φ (insert ψ Γ))) : Deriv (insert (φ ⋎ ψ) Γ)
   | allω {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
       (d : (n : ℕ) → Deriv (insert (φ/[nm n]) Γ)) : Deriv (insert (∀⁰ φ) Γ)
-  | exI {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1) (t : Semiterm ℒₒᵣ ℕ 0)
-      (d : Deriv (insert (φ/[t]) Γ)) : Deriv (insert (∃⁰ φ) Γ)
+  | exI {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ)
+      (d : Deriv (insert (φ/[nm n]) Γ)) : Deriv (insert (∃⁰ φ) Γ)
   | cut {Γ : Seq} (φ : Form) (d₁ : Deriv (insert φ Γ)) (d₂ : Deriv (insert (∼φ) Γ)) : Deriv Γ
 
 namespace Deriv
@@ -148,12 +148,16 @@ theorem Provable.orI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : Form)
   exact ⟨Deriv.orI φ ψ d, by simpa [Deriv.o] using add_le_add_right ho 1,
     by simpa [Deriv.cr] using hcr⟩
 
-/-- Predicate-level `∃`-introduction (witness rule). -/
+/-- Predicate-level `∃`-introduction (witness rule). The witness is a **numeral** `nm n`: in the
+arithmetic term model every closed term denotes a numeral, and numeral witnesses are what the
+ω-rule inversion (`allInv`) produces, so the ∀/∃ cut-reduction (§19.6) can match the witness
+against the inverted ∀-family. (The embedding §16 supplies a numeral by evaluating PA's witness
+term — deferred to M4.) -/
 theorem Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
-    (t : Semiterm ℒₒᵣ ℕ 0) (h : Provable α c (insert (φ/[t]) Γ)) :
+    (n : ℕ) (h : Provable α c (insert (φ/[nm n]) Γ)) :
     Provable (α + 1) c (insert (∃⁰ φ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
-  exact ⟨Deriv.exI φ t d, by simpa [Deriv.o] using add_le_add_right ho 1,
+  exact ⟨Deriv.exI φ n d, by simpa [Deriv.o] using add_le_add_right ho 1,
     by simpa [Deriv.cr] using hcr⟩
 
 /-- **Predicate-level ω-rule.** From a uniform-cut-rank family of premises with ordinal bounds
@@ -295,14 +299,14 @@ theorem orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cr d ≤ (c : ℕ∞
       fun n => (ih n (le_trans (le_iSup (fun m => cr (d m)) n) hcr)
         (Finset.mem_insert_of_mem hmem0)).weakening (invPush (χ/[nm n]) Γ₀)
     exact (Provable.allω χ key).weakening (invPull hhead Γ₀)
-  | @exI Γ₀ χ t d ih =>
+  | @exI Γ₀ χ n d ih =>
     intro hcr hmem
     simp only [Deriv.cr] at hcr
     simp only [Deriv.o]
     have hhead : (∃⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [Vee.vee] at h
     have hmem0 : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have P := (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (invPush (χ/[t]) Γ₀)
-    exact (Provable.exI χ t P).weakening (invPull hhead Γ₀)
+    have P := (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (invPush (χ/[nm n]) Γ₀)
+    exact (Provable.exI χ n P).weakening (invPull hhead Γ₀)
   | @cut Γ₀ χ d₁ d₂ ih₁ ih₂ =>
     intro hcr hmem
     simp only [Deriv.cr] at hcr
@@ -428,14 +432,14 @@ theorem allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cr d ≤ 
         (ih m (le_trans (le_iSup (fun j => cr (d' j)) m) hcr)
           (Finset.mem_insert_of_mem hmem0)).weakening (invPush1 _ (χ'/[nm m]) _ Γ₀)
       exact (Provable.allω χ' key).weakening (invPull1 _ hhd Γ₀)
-  | @exI Γ₀ χ' t d' ih =>
+  | @exI Γ₀ χ' n d' ih =>
     intro hcr hmem
     simp only [Deriv.cr] at hcr
     simp only [Deriv.o]
     have hhead : (∃⁰ χ') ≠ (∀⁰ χ) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
     have hmem0 : (∀⁰ χ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have P := (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (invPush1 _ (χ'/[t]) _ Γ₀)
-    exact (Provable.exI χ' t P).weakening (invPull1 _ hhead Γ₀)
+    have P := (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (invPush1 _ (χ'/[nm n]) _ Γ₀)
+    exact (Provable.exI χ' n P).weakening (invPull1 _ hhead Γ₀)
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
     intro hcr hmem
     simp only [Deriv.cr] at hcr
@@ -585,17 +589,17 @@ theorem andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cr d ≤ (c : ℕ�
         (Finset.mem_insert_of_mem hmem0)).1
     · exact (ih m (le_trans (le_iSup (fun j => cr (d' j)) m) hcr)
         (Finset.mem_insert_of_mem hmem0)).2
-  | @exI Γ₀ χ' t d' ih =>
+  | @exI Γ₀ χ' n d' ih =>
     intro hcr hmem
     simp only [Deriv.cr] at hcr
     simp only [Deriv.o]
     have hhead : (∃⁰ χ') ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
     have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     refine ⟨?_, ?_⟩
-    · have P := ((ih hcr (Finset.mem_insert_of_mem hmem0)).1).weakening (invPush1 _ (χ'/[t]) _ Γ₀)
-      exact (Provable.exI χ' t P).weakening (invPull1 _ hhead Γ₀)
-    · have P := ((ih hcr (Finset.mem_insert_of_mem hmem0)).2).weakening (invPush1 _ (χ'/[t]) _ Γ₀)
-      exact (Provable.exI χ' t P).weakening (invPull1 _ hhead Γ₀)
+    · have P := ((ih hcr (Finset.mem_insert_of_mem hmem0)).1).weakening (invPush1 _ (χ'/[nm n]) _ Γ₀)
+      exact (Provable.exI χ' n P).weakening (invPull1 _ hhead Γ₀)
+    · have P := ((ih hcr (Finset.mem_insert_of_mem hmem0)).2).weakening (invPush1 _ (χ'/[nm n]) _ Γ₀)
+      exact (Provable.exI χ' n P).weakening (invPull1 _ hhead Γ₀)
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
     intro hcr hmem
     simp only [Deriv.cr] at hcr
