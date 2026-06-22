@@ -32,6 +32,7 @@ Self-contained over an abstract atomic base (`atom m n` = "`g_m(n)=0`", true iff
 `goodsteinSeq n m = 0`), exactly the standard Schütte/Tait setup.  WIP — not in the build target.
 -/
 import Mathlib.SetTheory.Ordinal.Arithmetic
+import Mathlib.Order.Lattice.Nat
 import GoodsteinPA.Defs
 
 namespace GoodsteinPA.WitnessBound
@@ -61,6 +62,28 @@ instance (m n : ℕ) : Decidable (atomTrue m n) := by unfold atomTrue; infer_ins
 end GForm
 
 open GForm
+
+/-! ### The Goodstein function `G` and the atomic facts (grounded, no abstract hypotheses)
+
+These discharge the `HG` hypothesis of `lowerBound_existential` *concretely*, and record the
+monotonicity ("once `0`, stays `0`") that makes `G` the genuine first-zero step. -/
+
+/-- `bump b 0 = 0`: `0` is the fixed point that makes a Goodstein sequence absorb at `0`. -/
+@[simp] theorem bump_zero (b : ℕ) : bump b 0 = 0 := by rw [bump]; simp
+
+/-- **Once zero, stays zero.**  `g_{m+1}(n) = bump (base m) (g_m(n)) - 1`, and `bump _ 0 - 1 = 0`. -/
+theorem goodstein_zero_succ {n m : ℕ} (h : goodsteinSeq n m = 0) :
+    goodsteinSeq n (m + 1) = 0 := by
+  simp [goodsteinSeq, h]
+
+/-- The Goodstein function `G n`: the first step at which the sequence seeded at `n` reaches `0`
+(Towsner Def 7.1).  `Nat.sInf` of the zero-set (`0` if never — but Goodstein's theorem says always). -/
+noncomputable def G (n : ℕ) : ℕ := sInf {m | goodsteinSeq n m = 0}
+
+/-- **`HG`, concretely.**  A true atom `g_m(n)=0` forces `m ≥ G n` — `G n` is the *least* zero step.
+This discharges the abstract `HG` hypothesis of `lowerBound_existential` against the real `G`. -/
+theorem G_le_of_atomTrue {m n : ℕ} (h : atomTrue m n) : G n ≤ m :=
+  Nat.sInf_le h
 
 /-- A sequent is a finite **set** of fragment formulas (Tait one-sided, set-based ⇒ contraction is
 free, no explicit `C` rule). -/
@@ -189,5 +212,16 @@ theorem lowerBound_existential
       rcases hcond _ hmem with ⟨_, hf, _⟩ | ⟨_, _, hf, _⟩ <;> exact absurd hf (by simp)
 
 end Bounded
+
+/-- `lowerBound_existential` against the **real** Goodstein function `G` (its `HG` least-zero
+property discharged by `G_le_of_atomTrue`).  Only the Hardy monotonicity `Hmono` — a Towsner §6
+fact about a concrete `h_α` — remains abstract; that is the next brick (mathlib `ONote.fastGrowing`
+or a bespoke Hardy hierarchy + `τ` over `ONote`). -/
+theorem lowerBound_existential_real (h : Ordinal.{0} → ℕ → ℕ) (τ : Ordinal.{0} → ℕ)
+    (Hmono : ∀ {β α : Ordinal.{0}} {k : ℕ}, β < α → τ β < k → h β k ≤ h α k) :
+    ∀ (α : Ordinal.{0}) (k : ℕ) (Γ : Seq),
+      (∀ f ∈ Γ, (∃ n, f = gEx n ∧ h α k < G n) ∨ (∃ m n, f = atom m n ∧ m < G n)) →
+      ¬ B h τ α k Γ :=
+  lowerBound_existential h τ G Hmono @G_le_of_atomTrue
 
 end GoodsteinPA.WitnessBound
