@@ -1,10 +1,13 @@
 # HANDOFF — 2026-06-22 (lap 9, deep-reflection lap)
 
-> **Branch** `plan` · **HEAD** `1f32e49` (+ this lap's reflection commit) · build **green**
+> **Branch** `plan` · **HEAD** `7e71a4a` (6 commits this lap) · build **green**
 > (`lake build GoodsteinPA`, 1257 jobs) · headline `peano_not_proves_goodstein` = honest `sorry`
 > (`#print axioms` = `[propext, sorryAx, choice, Quot.sound]`, 0 math axioms) · working tree clean.
-> **This was a deep-reflection lap: it COURSE-CORRECTED the campaign. Read `REFLECTION-2026-06-22.md`
-> first, then `STATUS.md`.**
+> **This was a deep-reflection lap: it COURSE-CORRECTED the campaign (off the witness-bounded
+> cut-elim detour, onto M4 — the universal embedding bottleneck) AND made machine-checked M4
+> progress. Read `REFLECTION-2026-06-22.md` first, then `STATUS.md`. Forward file:
+> `wip/Embedding.lean` (compiles; `provable_em` proved + axiom-clean; `embed` 6/10 cases).
+> Next target: the M4 enabler `Provable.rew` (see "Next lap" below).**
 
 ## ⏭️ NEXT LAP — FIRST ACTION (the course change)
 
