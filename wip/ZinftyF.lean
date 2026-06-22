@@ -978,20 +978,150 @@ private theorem sup_opow_add_one_le (f : ℕ → Ordinal.{0}) :
     (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr (lt_add_of_pos_right _ one_pos)
   exact le_of_lt (Ordinal.isPrincipal_add_omega0_opow _ (lt_of_le_of_lt hsup hlt) (one_lt_opow_succ _))
 
+/-! ### Atomic cut elimination (Towsner Thm 19.2, the false-atomic inversion content)
+
+The cut formula is atomic (`rel r v`), so it is **never principal in a logical rule** — it only
+enters via `axL` or weakening. No truth layer is needed: set sequents dissolve the key case. If an
+`axL` clashes exactly on the cut atom `(rel r v, nrel r v)`, then `nrel r v ∈ Γ`, so the *other*
+premise (`⊢ nrel r v, Γ`) already proves `Γ` (set idempotence). Every other case is incidental. -/
+
+/-- Induction core: cut a `rel r v` derivation (`d`) against a fixed `nrel r v` derivation (`hNC`). -/
+theorem Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {B : Ordinal.{0}} {Γ : Seq}
+    (hNC : Provable B 0 (insert (Semiformula.nrel r v) Γ)) :
+    ∀ {Δ : Seq} (d : Deriv Δ), cr d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
+      Provable (B + o d + 1) 0 (Δ.erase (Semiformula.rel r v) ∪ Γ) := by
+  intro Δ d
+  induction d with
+  | @axL Δ k' r' v' hp hn =>
+    intro _ _
+    simp only [Deriv.o]
+    have hnn : (Semiformula.nrel r' v' : Form) ∈ Δ.erase (Semiformula.rel r v) :=
+      Finset.mem_erase.mpr ⟨by intro h; exact absurd h (by simp), hn⟩
+    by_cases hrel : (Semiformula.rel r' v' : Form) = Semiformula.rel r v
+    · -- the clash's positive member IS the cut atom ⇒ `nrel r v ∈ Γ`-part, use `hNC`
+      have hnrv : (Semiformula.nrel r' v' : Form) = Semiformula.nrel r v := by
+        rw [← Semiformula.neg_rel r' v', hrel, Semiformula.neg_rel]
+      refine (hNC.weakening ?_).mono ?_ le_rfl
+      · intro x hx
+        simp only [Finset.mem_insert] at hx
+        rcases hx with rfl | hxΓ
+        · exact Finset.mem_union_left _ (hnrv ▸ hnn)
+        · exact Finset.mem_union_right _ hxΓ
+      · exact le_trans le_self_add (le_of_lt (lt_add_of_pos_right _ one_pos))
+    · -- clash avoids the cut atom ⇒ it survives the erase, close by `axL`
+      have hpp : (Semiformula.rel r' v' : Form) ∈ Δ.erase (Semiformula.rel r v) :=
+        Finset.mem_erase.mpr ⟨hrel, hp⟩
+      exact (Provable.axL r' v' (Finset.mem_union_left _ hpp)
+        (Finset.mem_union_left _ hnn)).mono zero_le le_rfl
+  | @verumR Δ h =>
+    intro _ _
+    simp only [Deriv.o]
+    have ht : (⊤ : Form) ∈ Δ.erase (Semiformula.rel r v) :=
+      Finset.mem_erase.mpr ⟨by simp, h⟩
+    exact (Provable.verumR (Finset.mem_union_left _ ht)).mono zero_le le_rfl
+  | @weak Δ' Δ d' hsub ih =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    by_cases hd : (Semiformula.rel r v) ∈ Δ'
+    · exact (ih hcr hd).weakening (by
+        intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
+        rcases hx with ⟨hne, hxΔ'⟩ | hxΓ
+        · exact Or.inl ⟨hne, hsub hxΔ'⟩
+        · exact Or.inr hxΓ)
+    · refine (show Provable (o d') 0 Δ' from ⟨d', le_rfl, hcr⟩).weakening ?_ |>.mono ?_ le_rfl
+      · intro x hx
+        exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩)
+      · exact le_trans (CanonicallyOrderedAdd.le_add_self (o d') B)
+          (le_of_lt (lt_add_of_pos_right _ one_pos))
+  | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    have hhead : (χ₀ ⋏ χ₁) ≠ (Semiformula.rel r v) := by intro h; simp [Wedge.wedge] at h
+    have hmem0 : (Semiformula.rel r v) ∈ Γ₀ :=
+      (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have hcr0 : cr d₀ ≤ (0 : ℕ∞) := le_trans (le_max_left _ _) hcr
+    have hcr1 : cr d₁ ≤ (0 : ℕ∞) := le_trans (le_max_right _ _) hcr
+    have P0 : Provable (B + o d₀ + 1) 0 (insert χ₀ (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
+      (ih₀ hcr0 (Finset.mem_insert_of_mem hmem0)).weakening (frame_in χ₀ _ Γ₀ Γ)
+    have P1 : Provable (B + o d₁ + 1) 0 (insert χ₁ (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
+      (ih₁ hcr1 (Finset.mem_insert_of_mem hmem0)).weakening (frame_in χ₁ _ Γ₀ Γ)
+    exact ((Provable.andI χ₀ χ₁ P0 P1).weakening (frame_out hhead Γ₀ Γ)).mono
+      (cutAux_bnd B (o d₀) (o d₁)) le_rfl
+  | @orI Γ₀ χ₀ χ₁ d' ih =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    have hhead : (χ₀ ⋎ χ₁) ≠ (Semiformula.rel r v) := by intro h; simp [Vee.vee] at h
+    have hmem0 : (Semiformula.rel r v) ∈ Γ₀ :=
+      (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have P : Provable (B + o d' + 1) 0 (insert χ₀ (insert χ₁ (Γ₀.erase (Semiformula.rel r v) ∪ Γ))) :=
+      (ih hcr (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))).weakening (by
+        intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+    exact ((Provable.orI χ₀ χ₁ P).weakening (frame_out hhead Γ₀ Γ)).mono (cutAux_bnd1 B (o d')) le_rfl
+  | @allω Γ₀ χ' d' ih =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    have hhead : (∀⁰ χ') ≠ (Semiformula.rel r v) := by intro h; simp [UnivQuantifier.all] at h
+    have hmem0 : (Semiformula.rel r v) ∈ Γ₀ :=
+      (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have key : ∀ n, Provable (B + o (d' n) + 1) 0
+        (insert (χ'/[nm n]) (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) := fun n =>
+      (ih n (le_trans (le_iSup (fun m => cr (d' m)) n) hcr)
+        (Finset.mem_insert_of_mem hmem0)).weakening (frame_in (χ'/[nm n]) _ Γ₀ Γ)
+    exact ((Provable.allω χ' key).weakening (frame_out hhead Γ₀ Γ)).mono
+      (cutAux_bnd_sup B (fun n => o (d' n))) le_rfl
+  | @exI Γ₀ χ' n d' ih =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    have hhead : (∃⁰ χ') ≠ (Semiformula.rel r v) := by intro h; simp [ExsQuantifier.exs] at h
+    have hmem0 : (Semiformula.rel r v) ∈ Γ₀ :=
+      (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have P : Provable (B + o d' + 1) 0 (insert (χ'/[nm n]) (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
+      (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (frame_in (χ'/[nm n]) _ Γ₀ Γ)
+    exact ((Provable.exI χ' n P).weakening (frame_out hhead Γ₀ Γ)).mono (cutAux_bnd1 B (o d')) le_rfl
+  | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
+    intro hcr _
+    simp only [Deriv.cr] at hcr
+    exact absurd ((le_max_left _ _).trans hcr) (by simp)
+
+/-- **Atomic cut elimination** (the Thm 19.2 content for the final cut-free step). -/
+theorem Provable.atomCut {k} (r : (ℒₒᵣ).Rel k) (v) {A B : Ordinal.{0}} {Γ : Seq}
+    (hC : Provable A 0 (insert (Semiformula.rel r v) Γ))
+    (hNC : Provable B 0 (insert (Semiformula.nrel r v) Γ)) :
+    Provable (B + A + 1) 0 Γ := by
+  rcases hC with ⟨d, ho, hcr⟩
+  refine ((Provable.atomCutAux r v hNC d hcr (Finset.mem_insert_self _ _)).weakening
+    (show (insert (Semiformula.rel r v) Γ).erase (Semiformula.rel r v) ∪ Γ ⊆ Γ from by
+      intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢;
+      tauto)).mono ?_ le_rfl
+  exact add_le_add_left ((add_le_add_iff_left B).mpr ho) 1
+
 /-- **Principal cut on a rank-`c` formula** — the heart of Thm 19.7. After both premises are
 cut-free-at-`c` (bound `ω^A`, `ω^B`), a cut on `ξ` with `complexity ξ = c` is eliminated by the
-matching reduction (∧/∨ → `cutReduceConj/Disj`; ∀/∃ → `cutReduceAll`), staying below `ω^(max A B+1)`.
-The atomic cases (`complexity ξ = 0 = c`) need an atomic-truth layer (see HANDOFF) — left `sorry`. -/
+matching reduction (∧/∨ → `cutReduceConj/Disj`; ∀/∃ → `cutReduceAll`; atomic → `atomCut`),
+staying below `ω^(max A B+1)`. The `⊤`/`⊥` cases reduce to a `removeFalsum` lemma (see HANDOFF). -/
 theorem Provable.cutElimPrincipal {c : ℕ} {ξ : Form} {A B : Ordinal.{0}} {Γ : Seq}
     (hξeq : ξ.complexity = c)
     (hC : Provable (Ordinal.omega0 ^ A) c (insert ξ Γ))
     (hNC : Provable (Ordinal.omega0 ^ B) c (insert (∼ξ) Γ)) :
     Provable (Ordinal.omega0 ^ (max A B + 1)) c Γ := by
   cases ξ with
-  | verum => sorry          -- ⊤: needs atomic-truth layer (only when c = 0)
-  | falsum => sorry         -- ⊥: needs atomic-truth layer
-  | rel r v => sorry        -- atomic: needs false-atomic inversion (Towsner Thm 19.2)
-  | nrel r v => sorry
+  | verum => sorry          -- ⊤: reduces to `removeFalsum` (next lap)
+  | falsum => sorry         -- ⊥: reduces to `removeFalsum` (next lap)
+  | rel r v =>
+      have hc0 : c = 0 := hξeq.symm
+      subst hc0
+      refine (Provable.atomCut r v hC hNC).mono ?_ le_rfl
+      rw [max_comm A B]; exact opow_add_opow_add_one_le B A
+  | nrel r v =>
+      have hc0 : c = 0 := hξeq.symm
+      subst hc0
+      have hNC' : Provable (Ordinal.omega0 ^ B) 0 (insert (Semiformula.rel r v) Γ) := hNC
+      exact (Provable.atomCut r v hNC' hC).mono (opow_add_opow_add_one_le A B) le_rfl
   | and a b =>
       have hM : max a.complexity b.complexity + 1 = c := hξeq
       have han : a.complexity + 1 ≤ c := by have := le_max_left a.complexity b.complexity; omega
