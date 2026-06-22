@@ -1,6 +1,6 @@
 # HANDOFF — 2026-06-22 (lap 9, deep-reflection lap)
 
-> **Branch** `plan` · **HEAD** `5a2c36e` (8 commits this lap) · build **green**
+> **Branch** `plan` · **HEAD** `2fa3b32` (9 commits this lap) · build **green**
 > (`lake build GoodsteinPA`, 1257 jobs) · headline `peano_not_proves_goodstein` = honest `sorry`
 > (`#print axioms` = `[propext, sorryAx, choice, Quot.sound]`, 0 math axioms) · working tree clean.
 > **This was a deep-reflection lap: it COURSE-CORRECTED the campaign (off the witness-bounded
