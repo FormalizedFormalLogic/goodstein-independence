@@ -88,10 +88,15 @@ The embedding needs Z_∞ to derive PA's **true defining axioms** (e.g. `n+(m+1)
 current calculus CANNOT: `axL` is the clash-based identity (`rel r v ∧ nrel r v ∈ Γ`) and `verumR`
 is only `⊤`. Towsner's "True" rule is a **truth-based atomic axiom**. So M4 requires extending the
 calculus. Concrete plan:
-1. **Atomic truth predicate** — reuse Foundation `Semiformula.Evalm ℕ ![] ε` (the `standardModel`
+1. **Atomic truth predicate** — reuse Foundation `Semiformula.Evalm ℕ` (the `standardModel`
    instance for `ℒₒᵣ` over `ℕ`; `=`/`<` decidable). For embedding-substituted formulas (free vars
-   replaced by numerals) truth is `ε`-independent. (`Foundation/.../Semantics/Semantics.lean:241`,
-   `Arithmetic/Basic/Model.lean:25`.)
+   replaced by numerals) truth is assignment-independent. **VALIDATED (lap 3)** — this typechecks
+   (imports `Foundation.FirstOrder.Arithmetic.Basic.Model`):
+   ```
+   noncomputable def atomTrue (φ : SyntacticFormula ℒₒᵣ) : Prop :=
+     Semiformula.Evalm ℕ (fun _ => 0) (fun _ => 0) φ
+   ```
+   (`Foundation/.../Semantics/Semantics.lean:241`, `Arithmetic/Basic/Model.lean:25`.)
 2. **Add `trueAtom` constructor** to `Deriv`: `(φ : Form) → (φ atomic) → Evalm ℕ … φ → φ ∈ Γ →
    Deriv Γ`, with `o = 0`, `cr = 0`. ⚠️ **This touches the completed cut-elimination**: every
    induction (`orInvAux`, `allInvAux`, `andInvAux`, `cutReduceAllAux`, `atomCutAux`,
