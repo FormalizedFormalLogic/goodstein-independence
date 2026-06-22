@@ -6,4 +6,5 @@ Track 2 of the Goodstein effort: the *syntactic* `𝗣𝗔 ⊬ γ`, built on Fou
 `~/src/lean-formalizations`.) See `DIRECTION.md` at the repo root.
 -/
 import GoodsteinPA.Encoding
+import GoodsteinPA.Bridge
 import GoodsteinPA.Statement
