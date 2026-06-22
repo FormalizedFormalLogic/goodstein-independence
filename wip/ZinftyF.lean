@@ -639,6 +639,51 @@ noncomputable def omegaTower : ℕ → Ordinal.{0} → Ordinal.{0}
 
 @[simp] theorem omegaTower_one (α : Ordinal.{0}) : omegaTower 1 α = Ordinal.omega0 ^ α := rfl
 
+/-- Bound bookkeeping for a binary commuting case: a rule reassembled at `max (α+a+1) (α+b+1) + 1`
+fits the target `α + (max a b + 1) + 1`. -/
+private theorem cutAux_bnd (α a b : Ordinal.{0}) :
+    max (α + a + 1) (α + b + 1) + 1 ≤ α + (max a b + 1) + 1 := by
+  refine add_le_add_left (max_le ?_ ?_) 1
+  · calc α + a + 1 = α + (a + 1) := add_assoc α a 1
+      _ ≤ α + (max a b + 1) := (add_le_add_iff_left α).mpr (add_le_add_left (le_max_left a b) 1)
+  · calc α + b + 1 = α + (b + 1) := add_assoc α b 1
+      _ ≤ α + (max a b + 1) := (add_le_add_iff_left α).mpr (add_le_add_left (le_max_right a b) 1)
+
+/-- Bound bookkeeping for a unary commuting case (∨/∃): `α + a + 1 + 1 = α + (a + 1) + 1`. -/
+private theorem cutAux_bnd1 (α a : Ordinal.{0}) : α + a + 1 + 1 ≤ α + (a + 1) + 1 :=
+  le_of_eq (by rw [add_assoc α a 1])
+
+/-- Frame subset: push an `insert` out of the `erase`/`∪`-framed context (`ih`-result → canonical).
+Explicit (not `tauto`) to avoid `whnf` blow-ups on negated atoms. -/
+private theorem frame_in (a e : Form) (s t : Seq) :
+    (insert a s).erase e ∪ t ⊆ insert a (s.erase e ∪ t) := by
+  intro x hx
+  simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+  rcases hx with ⟨hne, hxa | hxs⟩ | hxt
+  · exact Or.inl hxa
+  · exact Or.inr (Or.inl ⟨hne, hxs⟩)
+  · exact Or.inr (Or.inr hxt)
+
+/-- Frame subset: pull an `insert` back into the `erase`/`∪`-framed context (canonical → goal),
+valid when the head `a` is not the erased formula. -/
+private theorem frame_out {a e : Form} (hne : a ≠ e) (s t : Seq) :
+    insert a (s.erase e ∪ t) ⊆ (insert a s).erase e ∪ t := by
+  intro x hx
+  simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+  rcases hx with rfl | (⟨hne', hxs⟩ | hxt)
+  · exact Or.inl ⟨hne, Or.inl rfl⟩
+  · exact Or.inl ⟨hne', Or.inr hxs⟩
+  · exact Or.inr hxt
+
+/-- Bound bookkeeping for the ω-rule commuting case. -/
+private theorem cutAux_bnd_sup (α : Ordinal.{0}) (f : ℕ → Ordinal.{0}) :
+    (⨆ n, (α + f n + 1)) + 1 ≤ α + ((⨆ n, f n) + 1) + 1 := by
+  refine add_le_add_left ?_ 1
+  apply Ordinal.iSup_le
+  intro n
+  calc α + f n + 1 = α + (f n + 1) := add_assoc α (f n) 1
+    _ ≤ α + ((⨆ m, f m) + 1) := (add_le_add_iff_left α).mpr (add_le_add_left (Ordinal.le_iSup f n) 1)
+
 /-! ### Cut reduction, ∧/∨ principal (Towsner §19.5)
 
 ⭐ **Design note (this lap).** Natural (Hessenberg) sum `α ♯ β` is **absent from mathlib v4.31.0**
@@ -709,9 +754,183 @@ theorem Provable.cutReduceDisj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ 
     exact max_eq_left (le_trans (le_max_right α β) (le_of_lt (lt_add_of_pos_right _ one_pos)))
   exact he ▸ cutB
 
+/-! ### Cut reduction, ∀/∃ principal (Towsner §19.6)
+
+Unlike ∧/∨, the existential is **not invertible**, so there is no double-inversion shortcut. We
+invert the ∀-side once (`allInv` → the numeral-indexed family `φ/[nm n]`) and then **induct on the
+∃-side derivation**, cutting at the witness numeral when `∃∼φ` is principal. To keep the inverted
+family available unchanged through the induction, it is a *fixed* hypothesis (over a fixed ambient
+`Γ`, weakened up at each use) and the running conclusion is framed over `Δ.erase (∃∼φ) ∪ Γ`. -/
+
+/-- The induction core of the ∀/∃ reduction. `fam` is the ∀-inversion family; induct on the
+∃-side derivation `d`. -/
+theorem Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α : Ordinal.{0}}
+    {Γ : Seq} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
+    (fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ)) :
+    ∀ {Δ : Seq} (d : Deriv Δ), cr d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
+      Provable (α + o d + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
+  intro Δ d
+  induction d with
+  | @axL Δ k r v hp hn =>
+    intro _ _
+    simp only [Deriv.o]
+    refine (Provable.axL r v ?_ ?_).mono zero_le (Nat.zero_le c)
+    · exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩)
+    · exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩)
+  | @verumR Δ h =>
+    intro _ _
+    simp only [Deriv.o]
+    refine (Provable.verumR ?_).mono zero_le (Nat.zero_le c)
+    exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩)
+  | @weak Δ' Δ d' hsub ih =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    by_cases hd : (∃⁰ ∼φ) ∈ Δ'
+    · exact (ih hcr hd).weakening (by
+        intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
+        rcases hx with ⟨hne, hxΔ'⟩ | hxΓ
+        · exact Or.inl ⟨hne, hsub hxΔ'⟩
+        · exact Or.inr hxΓ)
+    · refine (show Provable (o d') c Δ' from ⟨d', le_rfl, hcr⟩).weakening ?_ |>.mono ?_ le_rfl
+      · intro x hx
+        exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩)
+      · exact le_trans (CanonicallyOrderedAdd.le_add_self (o d') α)
+          (le_of_lt (lt_add_of_pos_right _ one_pos))
+  | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    have hhead : (χ₀ ⋏ χ₁) ≠ (∃⁰ ∼φ) := by intro h; simp [Wedge.wedge, ExsQuantifier.exs] at h
+    have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have hcr0 : cr d₀ ≤ (c : ℕ∞) := le_trans (le_max_left _ _) hcr
+    have hcr1 : cr d₁ ≤ (c : ℕ∞) := le_trans (le_max_right _ _) hcr
+    have P0 : Provable (α + o d₀ + 1) c (insert χ₀ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+      (ih₀ hcr0 (Finset.mem_insert_of_mem hmem0)).weakening (by
+        intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+    have P1 : Provable (α + o d₁ + 1) c (insert χ₁ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+      (ih₁ hcr1 (Finset.mem_insert_of_mem hmem0)).weakening (by
+        intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+    refine ((Provable.andI χ₀ χ₁ P0 P1).weakening (show
+        insert (χ₀ ⋏ χ₁) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) ⊆ (insert (χ₀ ⋏ χ₁) Γ₀).erase (∃⁰ ∼φ) ∪ Γ from by
+      intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+      rcases hx with rfl | hx
+      · exact Or.inl ⟨hhead, Or.inl rfl⟩
+      · tauto)).mono (cutAux_bnd α (o d₀) (o d₁)) le_rfl
+  | @orI Γ₀ χ₀ χ₁ d' ih =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    have hhead : (χ₀ ⋎ χ₁) ≠ (∃⁰ ∼φ) := by intro h; simp [Vee.vee, ExsQuantifier.exs] at h
+    have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have P : Provable (α + o d' + 1) c (insert χ₀ (insert χ₁ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ))) :=
+      (ih hcr (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))).weakening (by
+        intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+    refine ((Provable.orI χ₀ χ₁ P).weakening (show
+        insert (χ₀ ⋎ χ₁) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) ⊆ (insert (χ₀ ⋎ χ₁) Γ₀).erase (∃⁰ ∼φ) ∪ Γ from by
+      intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+      rcases hx with rfl | hx
+      · exact Or.inl ⟨hhead, Or.inl rfl⟩
+      · tauto)).mono (cutAux_bnd1 α (o d')) le_rfl
+  | @allω Γ₀ χ' d' ih =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    have hhead : (∀⁰ χ') ≠ (∃⁰ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
+    have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have key : ∀ n, Provable (α + o (d' n) + 1) c (insert (χ'/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+      fun n => (ih n (le_trans (le_iSup (fun m => cr (d' m)) n) hcr)
+        (Finset.mem_insert_of_mem hmem0)).weakening (by
+          intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+    refine ((Provable.allω χ' key).weakening (show
+        insert (∀⁰ χ') (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) ⊆ (insert (∀⁰ χ') Γ₀).erase (∃⁰ ∼φ) ∪ Γ from by
+      intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+      rcases hx with rfl | hx
+      · exact Or.inl ⟨hhead, Or.inl rfl⟩
+      · tauto)).mono (cutAux_bnd_sup α (fun n => o (d' n))) le_rfl
+  | @exI Γ₀ χ' n d' ih =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    by_cases hhd : (∃⁰ χ') = (∃⁰ ∼φ)
+    · -- principal: χ' = ∼φ, cut at witness numeral `n`.
+      have hχ : χ' = ∼φ := by
+        have := hhd; simpa [ExsQuantifier.exs] using this
+      subst hχ
+      rw [Finset.erase_insert_eq_erase]
+      have hsubcomp : (((∼φ)/[nm n]).complexity + 1 : ℕ∞) ≤ c := by simpa using hφc
+      have hcutfml : (((φ/[nm n]).complexity + 1 : ℕ∞)) ≤ c := by simpa using hφc
+      -- the ∃-premise gives `∼(φ/[nm n])` in the context; combine with `fam n`.
+      have hNeg : (∼φ)/[nm n] = ∼(φ/[nm n]) := by simp
+      have famn := (fam n).weakening (show insert (φ/[nm n]) Γ
+          ⊆ insert (φ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) from by
+        intro x hx; simp only [Finset.mem_insert, Finset.mem_union] at hx ⊢; tauto)
+      by_cases hd : (∃⁰ ∼φ) ∈ Γ₀
+      · have Premise : Provable (α + o d' + 1) c (insert ((∼φ)/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          (ih hcr (Finset.mem_insert_of_mem hd)).weakening (by
+            intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+        have hctx : insert ((∼φ)/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)
+            = insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) := by rw [hNeg]
+        have hcut := Provable.cut (φ/[nm n]) hcutfml famn (Premise.cast hctx)
+        refine hcut.mono ?_ le_rfl
+        refine add_le_add_left ?_ 1
+        exact max_le le_self_add (le_of_eq (add_assoc α (o d') 1))
+      · have base : Provable (o d') c (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
+          refine (show Provable (o d') c (insert ((∼φ)/[nm n]) Γ₀) from ⟨d', le_rfl, hcr⟩).weakening ?_
+          intro x hx
+          simp only [Finset.mem_insert, Finset.mem_union, Finset.mem_erase] at hx ⊢
+          rcases hx with rfl | hxΓ₀
+          · left; rw [hNeg]
+          · exact Or.inr (Or.inl ⟨fun e => hd (e ▸ hxΓ₀), hxΓ₀⟩)
+        have hcut := Provable.cut (φ/[nm n]) hcutfml famn base
+        refine hcut.mono ?_ le_rfl
+        refine add_le_add_left ?_ 1
+        exact max_le le_self_add
+          (le_trans (le_of_lt (lt_add_of_pos_right _ one_pos))
+            (CanonicallyOrderedAdd.le_add_self (o d' + 1) α))
+    · -- commuting: ∃χ' ≠ ∃∼φ.
+      have hhead : (∃⁰ χ') ≠ (∃⁰ ∼φ) := hhd
+      have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have P : Provable (α + o d' + 1) c (insert (χ'/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (by
+          intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+      refine ((Provable.exI χ' n P).weakening (show
+          insert (∃⁰ χ') (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) ⊆ (insert (∃⁰ χ') Γ₀).erase (∃⁰ ∼φ) ∪ Γ from by
+        intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+        rcases hx with rfl | hx
+        · exact Or.inl ⟨hhead, Or.inl rfl⟩
+        · tauto)).mono (cutAux_bnd1 α (o d')) le_rfl
+  | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
+    intro hcr hmem
+    simp only [Deriv.cr] at hcr
+    simp only [Deriv.o]
+    have hcξ : (ξ.complexity + 1 : ℕ∞) ≤ c := (le_max_left _ _).trans hcr
+    have hcr1 : cr d₁ ≤ (c : ℕ∞) := (le_max_left (cr d₁) (cr d₂)).trans ((le_max_right _ _).trans hcr)
+    have hcr2 : cr d₂ ≤ (c : ℕ∞) := (le_max_right (cr d₁) (cr d₂)).trans ((le_max_right _ _).trans hcr)
+    have P1 := (ih₁ hcr1 (Finset.mem_insert_of_mem hmem)).weakening (frame_in ξ (∃⁰ ∼φ) Γ₀ Γ)
+    have P2 := (ih₂ hcr2 (Finset.mem_insert_of_mem hmem)).weakening (frame_in (∼ξ) (∃⁰ ∼φ) Γ₀ Γ)
+    exact (Provable.cut ξ hcξ P1 P2).mono (cutAux_bnd α (o d₁) (o d₂)) le_rfl
+
+/-- **Cut reduction, ∀/∃ principal** (Towsner Thm 19.6). A cut on `∀⁰ φ` (complexity `≤ c`) is
+eliminated by inverting the ∀-side and inducting on the ∃-side. -/
+theorem Provable.cutReduceAll {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α β : Ordinal.{0}}
+    {Γ : Seq} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
+    (hC : Provable α c (insert (∀⁰ φ) Γ)) (hNC : Provable β c (insert (∃⁰ ∼φ) Γ)) :
+    Provable (α + β + 1) c Γ := by
+  -- ∀-inversion → the numeral family.
+  have fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ) := fun n =>
+    (hC.allInv (Finset.mem_insert_self _ _) n).weakening (by
+      intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
+  rcases hNC with ⟨d, ho, hcr⟩
+  have haux := Provable.cutReduceAllAux hφc fam d hcr (Finset.mem_insert_self _ _)
+  refine (haux.weakening (show (insert (∃⁰ ∼φ) Γ).erase (∃⁰ ∼φ) ∪ Γ ⊆ Γ from by
+    intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)).mono ?_ le_rfl
+  exact add_le_add_left ((add_le_add_iff_left α).mpr ho) 1
+
 /-- **One level of cut elimination** (Towsner Thm 19.7). Reducing the cut rank by one raises the
-ordinal bound to `ω^α`. *(Open: the principal `cut`-on-rank-`c` case calls `cutReduce`; the rest is
-a transfinite induction over the derivation.)* -/
+ordinal bound to `ω^α`. *(Open: the principal `cut`-on-rank-`c` case calls the reductions; the rest
+is a transfinite induction over the derivation. The atomic principal case needs an atomic-truth
+layer — a scope discovery, see HANDOFF.)* -/
 theorem Provable.cutElimStep {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
     (h : Provable α (c + 1) Γ) : Provable (Ordinal.omega0 ^ α) c Γ := by
   sorry
