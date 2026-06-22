@@ -59,6 +59,16 @@ Needed to *state* Gödel II for `𝗣𝗔`; Foundation axiomatizes it (TODO in
   `.exI`, `.allI` — the ω-rule with the supremum ordinal bound, machine-checked against the
   `Deriv` measures via `Classical.choice`).
 
+## Design note — `Provable.cut` + the `ℕ∞` cut-rank (next lap, read before refactoring)
+`cr : Deriv Γ → ℕ∞` (cut rank can be `⊤` for pathological infinite families). A predicate-level
+`Provable.cut` is the one rule still missing: from `Provable α c (φ ::ₘ Γ)` and
+`Provable β c (φ.neg ::ₘ Γ)` it should give `Provable (max α β + 1) c' (Γ)` where
+`c' ≥ rk φ + 1`. But `rk φ : ℕ∞` may be `⊤`, so you can't pick a finite `c' : ℕ` in general —
+`Provable`'s `c : ℕ`. **Fix:** when `AForm` gets the real free-variable + numeral-substitution
+layer (the M3.1 refinement), `rk φ` becomes provably finite (`rk φ ≠ ⊤`) for genuine formulas, so
+`Provable.cut` and the Hardy-bounded `cutElimStep` both become stateable with finite `c`. So the
+substitution-layer refactor is a prerequisite for *both* `cut` and `cutElimStep` — do it first.
+
 ## Gotcha noted (for the corpus)
 For `Ordinal`, `add_le_add_right h c` elaborates to `c + a ≤ c + b` (adds on the *left*) — use
 `add_le_add h le_rfl` to get `a + 1 ≤ b + 1` from `a ≤ b`. `gcongr` on `⨆`-bounds spawns a
