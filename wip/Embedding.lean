@@ -15,9 +15,13 @@ a pure rule-by-rule map with **no language translation**.
   allω/cut/weakening/mono/cast` (`src/Zinfty.lean:116–208`).
 
 ## Status of the cases (lap 9 — scaffold compiles, `lake env lean wip/Embedding.lean`)
-- **DONE (structural, 5/10):** `verum`, `wk`, `or`, `and`, `cut` — pure rule map + cut-rank alignment,
-  all typecheck against the real Foundation `Derivation2` + M5 `Provable` APIs (the rule-map is
-  VALIDATED end-to-end). Only `embed` carries `sorry` (the 5 deep cases); no `axiom` declarations.
+- **`embed`: 6/10 cases DONE** — `verum`, `and`, `or`, `wk`, `cut` (structural rule map + cut-rank
+  alignment) + **`closed`** (now via `provable_em`). All typecheck against the real Foundation
+  `Derivation2` + M5 `Provable` APIs. Remaining `sorry`s: `axm`, `all`, `exs`, `shift`.
+- **`provable_em` (the `closed`-case lemma): propositional fragment PROVED** — rel/nrel (`axL`),
+  verum/falsum (`verumR`), and/or (`andI`+`orI`, via complexity-bound induction), all machine-checked.
+  Remaining `sorry`s: the **∀/∃ cases** (need M5's numeral ω-family — see the lemma docstring).
+- No `axiom` declarations; the open obligations are honest `sorry`s.
 - **DISCLOSED `sorry` (the real content), hardest-first:**
   - `axm` — each PA axiom Z∞-derivable. `𝗣𝗔 = 𝗣𝗔⁻ + InductionScheme ℒₒᵣ Set.univ`: PeanoMinus is a
     finite set of true ∀-sentences (finite ordinal); `univCl (succInd ψ)` is derived **via the ω-rule**
@@ -56,15 +60,81 @@ theorem of_insert_mem {Γ : ZinftyF.Seq} {X : ZinftyF.Form} (h : X ∈ Γ) :
 
 end ZProvable
 
+/-- **Identity / law of excluded middle for `Z_∞`** (the `closed` case). For any `φ`, a sequent
+containing both `φ` and `∼φ` is `Z_∞`-derivable cut-free. Proved by induction on a `complexity`
+bound (the standard Tait `em`, cf. Foundation `Derivation.em`, `Calculus.lean:164`). The atomic /
+propositional cases are discharged here; the **∀/∃ cases** need M5's numeral ω-family (`allω` over
+all `nm n`, each premise closed by `exI` + the IH at the substitution instance `φ/[nm n]`, whose
+`complexity` equals `φ`'s) — disclosed `sorry`, the next chip. -/
+theorem provable_em (φ : ZinftyF.Form) {Γ : ZinftyF.Seq} (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+    ∃ a, Provable a 0 Γ := by
+  have key : ∀ (k : ℕ) (φ : ZinftyF.Form), φ.complexity ≤ k →
+      ∀ {Γ : ZinftyF.Seq}, φ ∈ Γ → ∼φ ∈ Γ → ∃ a, Provable a 0 Γ := by
+    intro k
+    induction k with
+    | zero =>
+      intro φ hk Γ hp hn
+      cases φ using Semiformula.cases' with
+      | hverum => exact ⟨0, Provable.verumR hp⟩
+      | hfalsum => exact ⟨0, Provable.verumR (by simpa using hn)⟩
+      | hrel r v => exact ⟨0, Provable.axL r v hp (by simpa using hn)⟩
+      | hnrel r v => exact ⟨0, Provable.axL r v (by simpa using hn) hp⟩
+      | hand φ ψ => simp at hk
+      | hor φ ψ => simp at hk
+      | hall φ => simp at hk
+      | hexs φ => simp at hk
+    | succ k ih =>
+      intro φ hk Γ hp hn
+      cases φ using Semiformula.cases' with
+      | hverum => exact ⟨0, Provable.verumR hp⟩
+      | hfalsum => exact ⟨0, Provable.verumR (by simpa using hn)⟩
+      | hrel r v => exact ⟨0, Provable.axL r v hp (by simpa using hn)⟩
+      | hnrel r v => exact ⟨0, Provable.axL r v (by simpa using hn) hp⟩
+      | hand φ ψ =>
+        have hφk : φ.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
+        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
+        obtain ⟨a1, h1⟩ := ih φ hφk (Γ := insert φ (insert (∼φ) (insert (∼ψ) Γ)))
+          (by simp) (by simp)
+        obtain ⟨a2, h2⟩ := ih ψ hψk (Γ := insert ψ (insert (∼φ) (insert (∼ψ) Γ)))
+          (by simp) (by simp)
+        have hand := Provable.andI φ ψ h1 h2
+        rw [Finset.insert_eq_self.mpr
+          (show (φ ⋏ ψ) ∈ insert (∼φ) (insert (∼ψ) Γ) by simp [hp])] at hand
+        have hor := Provable.orI (∼φ) (∼ψ) hand
+        rw [Finset.insert_eq_self.mpr (show (∼φ ⋎ ∼ψ) ∈ Γ by simpa using hn)] at hor
+        exact ⟨_, hor⟩
+      | hor φ ψ =>
+        have hn' : (∼φ ⋏ ∼ψ) ∈ Γ := by simpa using hn
+        have hφk : φ.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
+        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
+        obtain ⟨a1, h1⟩ := ih φ hφk (Γ := insert (∼φ) (insert φ (insert ψ Γ)))
+          (by simp) (by simp)
+        obtain ⟨a2, h2⟩ := ih ψ hψk (Γ := insert (∼ψ) (insert φ (insert ψ Γ)))
+          (by simp) (by simp)
+        have hand := Provable.andI (∼φ) (∼ψ) h1 h2
+        rw [Finset.insert_eq_self.mpr
+          (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hn'))] at hand
+        have hor := Provable.orI φ ψ hand
+        rw [Finset.insert_eq_self.mpr (show (φ ⋎ ψ) ∈ Γ by simp [hp])] at hor
+        exact ⟨_, hor⟩
+      | hall φ =>
+        -- M5 ∀-case: `allω` over `nm n`; each premise `{φ/[nm n], ∃⁰∼φ}` closed by `exI (∼φ) n`
+        -- + IH at `φ/[nm n]` (complexity = `φ`'s < `(∀⁰φ)`'s). DISCLOSED — next chip.
+        sorry
+      | hexs φ =>
+        -- dual of `hall` (∼(∃⁰φ) = ∀⁰∼φ). DISCLOSED — next chip.
+        sorry
+  exact key φ.complexity φ le_rfl hp hn
+
 /-- **The embedding (M4), Finset form.** Every Foundation `Derivation2` from the `𝗣𝗔` schema embeds
-into the infinitary `Z_∞` calculus. Structural rules are mapped; the five non-structural cases
-(`axm`/`all`/`exs`/`closed`/`shift`) are the disclosed deep obligations (see header). -/
+into the infinitary `Z_∞` calculus. Structural rules are mapped; the four remaining non-structural
+cases (`axm`/`all`/`exs`/`shift`) are the disclosed deep obligations (see header). -/
 theorem embed {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     (d : Derivation2 (𝗣𝗔 : Schema ℒₒᵣ) Γ) : ZProvable Γ := by
   induction d with
   | closed Γ φ hp hn =>
-    -- M5 `em`: derive `{φ, ∼φ}` by induction on `φ.complexity` (finite ordinal). DEEP (finite).
-    sorry
+    obtain ⟨a, hd⟩ := provable_em φ hp hn
+    exact ⟨a, 0, hd⟩
   | axm φ hφ hΓ =>
     -- `φ ∈ (𝗣𝗔 : Schema)`, i.e. `φ = ↑σ`, `σ ∈ 𝗣𝗔⁻ + InductionScheme`. Each Z∞-derivable:
     --   PeanoMinus = finite true ∀-sentences; `univCl (succInd ψ)` via the ω-rule. THE deep case.
