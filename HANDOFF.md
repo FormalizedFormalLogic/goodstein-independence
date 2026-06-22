@@ -1,6 +1,6 @@
 # HANDOFF — 2026-06-22 (lap 13)
 
-> **Branch** `plan` · 8 commits this lap · working tree clean · build **green**
+> **Branch** `plan` · HEAD `2c9f625` · 10 commits this lap · working tree clean · build **green**
 > (`lake build GoodsteinPA`, 1264 jobs) · headline `peano_not_proves_goodstein` = honest `sorry`
 > (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms — anti-fraud guard intact).
 > **Lap 13 EXECUTED the Buchholz Boundedness route: read §5 end-to-end and built ALL the
