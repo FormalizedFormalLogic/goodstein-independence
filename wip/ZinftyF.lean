@@ -30,6 +30,7 @@ import Foundation.FirstOrder.Incompleteness.Second
 import Foundation.FirstOrder.Arithmetic.R0.Representation
 import Mathlib.SetTheory.Ordinal.Arithmetic
 import Mathlib.SetTheory.Ordinal.Exponential
+import Mathlib.SetTheory.Ordinal.Principal
 import Mathlib.SetTheory.Ordinal.Family
 import Mathlib.Data.ENat.Lattice
 
@@ -926,6 +927,56 @@ theorem Provable.cutReduceAll {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} 
   refine (haux.weakening (show (insert (∃⁰ ∼φ) Γ).erase (∃⁰ ∼φ) ∪ Γ ⊆ Γ from by
     intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)).mono ?_ le_rfl
   exact add_le_add_left ((add_le_add_iff_left α).mpr ho) 1
+
+/-! ### Ordinal bound bookkeeping for cut-rank elimination
+
+All cases keep the new bound below `ω^(·+1)`, exploiting that `ω^c` is **additively principal**
+(`isPrincipal_add_omega0_opow`): finite `+`-combinations of things `< ω^c` stay `< ω^c`. -/
+
+private theorem one_lt_opow_succ (c : Ordinal.{0}) : (1 : Ordinal) < Ordinal.omega0 ^ (c + 1) := by
+  calc (1 : Ordinal) < Ordinal.omega0 := Ordinal.one_lt_omega0
+    _ = Ordinal.omega0 ^ (1 : Ordinal) := (Ordinal.opow_one _).symm
+    _ ≤ Ordinal.omega0 ^ (c + 1) :=
+        Ordinal.opow_le_opow_right Ordinal.omega0_pos (CanonicallyOrderedAdd.le_add_self 1 c)
+
+private theorem opow_lt_opow_succ_of_le_max {a b x : Ordinal.{0}}
+    (hx : x ≤ max (Ordinal.omega0 ^ a) (Ordinal.omega0 ^ b)) :
+    x < Ordinal.omega0 ^ (max a b + 1) := by
+  refine lt_of_le_of_lt hx (max_lt ?_ ?_)
+  · exact (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr
+      (lt_of_le_of_lt (le_max_left a b) (lt_add_of_pos_right _ one_pos))
+  · exact (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr
+      (lt_of_le_of_lt (le_max_right a b) (lt_add_of_pos_right _ one_pos))
+
+private theorem max_opow_add_one_le (a b : Ordinal.{0}) :
+    max (Ordinal.omega0 ^ a) (Ordinal.omega0 ^ b) + 1 ≤ Ordinal.omega0 ^ (max a b + 1) :=
+  le_of_lt (Ordinal.isPrincipal_add_omega0_opow _ (opow_lt_opow_succ_of_le_max le_rfl) (one_lt_opow_succ _))
+
+private theorem max_opow_add_two_le (a b : Ordinal.{0}) :
+    max (Ordinal.omega0 ^ a) (Ordinal.omega0 ^ b) + 1 + 1 ≤ Ordinal.omega0 ^ (max a b + 1) := by
+  have hP := Ordinal.isPrincipal_add_omega0_opow (max a b + 1)
+  exact le_of_lt (hP (hP (opow_lt_opow_succ_of_le_max le_rfl) (one_lt_opow_succ _))
+    (one_lt_opow_succ _))
+
+private theorem opow_add_opow_add_one_le (a b : Ordinal.{0}) :
+    Ordinal.omega0 ^ a + Ordinal.omega0 ^ b + 1 ≤ Ordinal.omega0 ^ (max a b + 1) := by
+  have hP := Ordinal.isPrincipal_add_omega0_opow (max a b + 1)
+  exact le_of_lt (hP (hP (opow_lt_opow_succ_of_le_max (le_max_left _ _))
+    (opow_lt_opow_succ_of_le_max (le_max_right _ _))) (one_lt_opow_succ _))
+
+private theorem opow_add_one_le' (a : Ordinal.{0}) :
+    Ordinal.omega0 ^ a + 1 ≤ Ordinal.omega0 ^ (a + 1) := by
+  have hP := Ordinal.isPrincipal_add_omega0_opow (a + 1)
+  exact le_of_lt (hP ((Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr
+    (lt_add_of_pos_right _ one_pos)) (one_lt_opow_succ _))
+
+private theorem sup_opow_add_one_le (f : ℕ → Ordinal.{0}) :
+    (⨆ n, Ordinal.omega0 ^ (f n)) + 1 ≤ Ordinal.omega0 ^ ((⨆ n, f n) + 1) := by
+  have hsup : (⨆ n, Ordinal.omega0 ^ (f n)) ≤ Ordinal.omega0 ^ (⨆ n, f n) :=
+    Ordinal.iSup_le fun n => Ordinal.opow_le_opow_right Ordinal.omega0_pos (Ordinal.le_iSup f n)
+  have hlt : Ordinal.omega0 ^ (⨆ n, f n) < Ordinal.omega0 ^ ((⨆ n, f n) + 1) :=
+    (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr (lt_add_of_pos_right _ one_pos)
+  exact le_of_lt (Ordinal.isPrincipal_add_omega0_opow _ (lt_of_le_of_lt hsup hlt) (one_lt_opow_succ _))
 
 /-- **One level of cut elimination** (Towsner Thm 19.7). Reducing the cut rank by one raises the
 ordinal bound to `ω^α`. *(Open: the principal `cut`-on-rank-`c` case calls the reductions; the rest
