@@ -1,9 +1,12 @@
 # HANDOFF — 2026-06-22 (lap 7)
 
 > **NEXT LAP FIRST ACTION:** read this + `STATUS.md` + `ANALYSIS-2026-06-22-cutelim-k-threading.md`
-> (the whole thing, incl. the ADDENDUM) + `PENDING_WORK.md` step 1. Build is **green**
-> (`lake build GoodsteinPA`, 1257 jobs). `wip/BoundedZinfty.lean` compiles standalone **sorry-free**
-> (`lake env lean wip/BoundedZinfty.lean`). Headline still a literal `sorry` (anti-fraud, correct).
+> (the WHOLE thing — ADDENDA 1–4 are the design story; ADDENDUM 4 + the "NEXT MOVE" below are the live
+> plan) + `PENDING_WORK.md` (the A–F inventory at the top). Build is **green** (`lake build GoodsteinPA`,
+> 1257 jobs). Forward file: **`wip/SplitZinfty.lean`** (§19.2–19.5 on the `(k,d)` split, sorry-free;
+> `lake env lean wip/SplitZinfty.lean`). Headline `peano_not_proves_goodstein` still a literal `sorry`
+> (designated open target — anti-fraud, correct). **Next:** the control-ordinal operator calculus (§19.6
+> needs it; `(k,d)` carries §19.2–19.5 but not §19.6's witness-index — ADDENDUM 4).
 
 ## What landed this lap (21 commits, all verified)
 
