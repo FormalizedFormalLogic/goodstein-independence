@@ -777,11 +777,73 @@ IH at *every* index, incl. the premise's `max k n`. So `cutReduceAllAux` should 
   to align before each principal cut. This needs NO calculus reformulation — it's the `allInv` pattern
   scaled to carry an external family. (A `Deriv`-style single-indexed `ZekdD` with `(ord,ctrl,nrm,cr)`
   measures is the heavier fallback if the index-generalized induction proves unwieldy.) -/
-theorem cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c k dd : ℕ} {α e : ONote} {Γ : Seq}
+theorem cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Seq}
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
-    (fam : ∀ n, Zekd α e k dd c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {Δ : Seq}, Zekd γ e k dd c Δ → γ.NF → (∃⁰ ∼φ) ∈ Δ →
+    (fam : ∀ n, Zekd α e k₀ dd₀ c (insert (φ/[nm n]) Γ)) :
+    ∀ {γ : ONote} {k dd : ℕ} {Δ : Seq}, Zekd γ e k dd c Δ → γ.NF → k₀ ≤ k → dd₀ ≤ dd →
+      (∃⁰ ∼φ) ∈ Δ →
       ZekdProv (osucc (α + γ)) e k (dd + norm α) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
-  sorry
+  intro γ k dd Δ D
+  induction D with
+  | axL r v hp hn =>
+      intro hγNF hk hdd hmem
+      exact ⟨0, le_def.mpr (by simp), NF.zero, Zekd.axL r v
+        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩))
+        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩))⟩
+  | verumR h =>
+      intro hγNF hk hdd hmem
+      exact ⟨0, le_def.mpr (by simp), NF.zero, Zekd.verumR
+        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩))⟩
+  | trueRel r v htrue hτ hαNF' hmemA =>
+      intro hγNF hk hdd hmem
+      refine ⟨_, le_trans (Zekd.le_add_left_NF hαNF hγNF) (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))),
+        hγNF, Zekd.trueRel r v htrue (by omega) hγNF
+          (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemA⟩))⟩
+  | trueNrel r v htrue hτ hαNF' hmemA =>
+      intro hγNF hk hdd hmem
+      refine ⟨_, le_trans (Zekd.le_add_left_NF hαNF hγNF) (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))),
+        hγNF, Zekd.trueNrel r v htrue (by omega) hγNF
+          (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemA⟩))⟩
+  | @wk γ' e' k' dd' c' Δsub Δsup hsub D' ih =>
+      intro hγNF hk hdd hmem
+      by_cases hd : (∃⁰ ∼φ) ∈ Δsub
+      · exact (ih hφc heNF fam hγNF hk hdd hd).weakening (by
+          intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
+          rcases hx with ⟨hne, hxs⟩ | hxΓ
+          · exact Or.inl ⟨hne, hsub hxs⟩
+          · exact Or.inr hxΓ)
+      · refine ⟨γ', le_trans (Zekd.le_add_left_NF hαNF hγNF) (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))),
+          hγNF, (D'.mono_d (by omega)).wk (by
+            intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
+            exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
+  | @weak γ' β e' k' dd' c' Δsub Δsup hβ hβNF hαNF' hτ hsub D' ih =>
+      intro hγNF hk hdd hmem
+      by_cases hd : (∃⁰ ∼φ) ∈ Δsub
+      · exact ((ih hφc heNF fam hβNF hk hdd hd).weakening (by
+          intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
+          rcases hx with ⟨hne, hxs⟩ | hxΓ
+          · exact Or.inl ⟨hne, hsub hxs⟩
+          · exact Or.inr hxΓ)).mono
+          (le_of_lt (Zekd.add_osucc_descent hαNF hβNF hγNF hβ)) le_rfl le_rfl le_rfl
+      · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (Zekd.le_add_left_NF hαNF hγNF)
+          (le_of_lt (Zekd.lt_osucc (ONote.add_nf α _))))), hβNF,
+          (D'.mono_d (by omega)).wk (by
+            intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
+            exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
+  | @andI γ' βφ βψ e' k' dd' c' Γ₀ ψ₁ ψ₂ hβφ hβψ hβφNF hβψNF hαNF' hτφ hτψ dφ dψ ihφ ihψ =>
+      intro hγNF hk hdd hmem
+      sorry -- commuting ∧: reassemble Zekd.andI at osucc(α+γ); sub-results from ihφ/ihψ at osucc(α+βφ/βψ)
+  | @orI γ' β e' k' dd' c' Γ₀ ψ₁ ψ₂ hβ hβNF hαNF' hτ dd' ih =>
+      intro hγNF hk hdd hmem
+      sorry -- commuting ∨
+  | @allω γ' e' k' dd' c' Γ₀ χ β hβ hβNF hαNF' hτ dd' ih =>
+      intro hγNF hk hdd hmem
+      sorry -- commuting ω-rule: the witness-index obstruction's resolution (e inert, d-bump, raise fam via mono_k)
+  | @exI γ' β e' k' dd' c' Γ₀ χ n hβ hβNF hαNF' hτ hbound dd' ih =>
+      intro hγNF hk hdd hmem
+      sorry -- principal exI (χ=∼φ): cut fam(n) at the witness; + commuting exI (χ≠∼φ)
+  | @cut γ' βφ βψ e' k' dd' c' Γ₀ χ hχc hβφ hβψ hβφNF hβψNF hαNF' hτφ hτψ d₁ d₂ ih₁ ih₂ =>
+      intro hγNF hk hdd hmem
+      sorry -- commuting cut
 
 end GoodsteinPA.OperatorZinfty
