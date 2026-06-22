@@ -69,6 +69,29 @@ The `Zekd` witness-bounded cut-elim (below) is now a **banked alternative, NOT t
 §19.2–19.5 + `mono_e` + 6/11 `cutReduceAllAux` structural cases stand for reference. The findings give it
 ~80% odds if pursued, but the two-phase route reuses DONE work and sidesteps the false-in-single-`k` wall.
 
+### The bridge — concrete first steps (next lap)
+The bridge crosses from M5's **real-`ℒₒᵣ`** cut-free `Deriv` (`src/Zinfty.lean`, sequents of
+`SyntacticFormula ℒₒᵣ`) to M6's **abstract `GForm`** `B` calculus (`src/LowerBound.lean`: `atom m n`,
+`gEx n`, `gAll`). It subsumes the M7a language gap, so scope it carefully:
+1. **Bounding lemma (the heart, witness-index-free → bounded):** prove a cut-free `Provable α 0 Γ`
+   (cut-rank 0) whose sequent is in the `GForm` image yields `B α' k Γ'` with `α'`-related ordinal and
+   `k` reading off the numerals in `Γ`. On a CUT-FREE derivation the `∃`-witness in each `exI` is an
+   explicit numeral `n`, and the ω-rule premises descend — so the witness bound `v ≤ hardy α k` is read
+   off structurally (no `+α` growth, the whole point). Induct on the cut-free `Deriv`.
+2. **Subformula property:** a cut-free `Deriv` of `{gAll_real}` mentions only subformulas of `gAll_real`
+   — establish these are exactly (the real images of) `gAll`, `gEx n`, `atom m n`. mathlib/Foundation may
+   give a subformula-property lemma for the Tait calculus; else prove it by induction (cut-free ⟹ every
+   formula in every sequent is a subformula of the endsequent).
+3. **Language identification (M7a):** fix the real `gAll_real = ∀⁰∃⁰ (g-atom)` and an explicit
+   `GForm ↪ SyntacticFormula ℒₒᵣ` (`atom m n ↦` the closed atom `g_m(n)=0`, etc.), and show the cut-free
+   real derivation transports across it to a `B`-derivation. Gate by `Bridge.lean`'s spec so faithfulness
+   can't regress.
+4. **Assembly:** `M4-embed` (PA ⊢ gAll_real → `Provable α c {gAll_real}`) + `M5 cutElim` (→ `Provable α' 0`)
+   + bounding/subformula bridge (→ `B α' k {gAll}`) + `lowerBound_hardy_selfcontained` (`¬ B …`) ⟹ `False`
+   ⟹ discharge the headline `sorry`. M4 (embedding) is the other big remaining girder (recon done lap 6).
+Tractability: step 1 (bounding on cut-free) is the genuinely new lemma the findings says is EASY (no
+commuting obstruction); steps 2–3 are structural/definitional; step 4 + M4 are the assembly.
+
 ---
 
 ## (banked alternative) §19.6 `cutReduceAll` on `Zekd` (over `ZekdProv`)
