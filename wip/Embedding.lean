@@ -183,6 +183,20 @@ private lemma rew_subst_nm (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : SyntacticSemif
       simp [Rew.comp_app]
   rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, heq]
 
+/-- **General substitution–rewriting commutation** (the `exs`/`axm` version of `rew_subst_nm`, for an
+arbitrary witness term `t`): `ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t]`. In the assignment embedding `ω = asg e`
+closes `t`, so `ω t = asg e ▹ t` is a closed term whose numeral value feeds `Provable.exI`. -/
+lemma rew_subst_term (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : SyntacticSemiformula ℒₒᵣ 1)
+    (t : SyntacticTerm ℒₒᵣ) : ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t] := by
+  show ω ▹ (Rew.subst ![t] ▹ φ) = Rew.subst ![ω t] ▹ (ω.q ▹ φ)
+  have heq : ω.comp (Rew.subst ![t]) = (Rew.subst ![ω t]).comp ω.q := by
+    ext x
+    · cases x using Fin.cases with
+      | zero => simp [Rew.comp_app]
+      | succ i => exact Fin.elim0 i
+    · simp [Rew.comp_app]
+  rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, heq]
+
 /-- **(enabler, M4) Renaming invariance for `Z_∞`**, **cut-rank-preserving** (the ordinal may grow;
 existential `α`). The shared prerequisite for the embedding's `shift`/`all`/`exs` cases (the analogue
 of Foundation's `Derivation.rewrite`, `Calculus.lean:255`). Preserving the cut rank `c` exactly is
@@ -432,8 +446,18 @@ theorem embedC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     rw [show (asg e ▹ (∀⁰ φ)) = ∀⁰ ((asg e).q ▹ φ) by simp] at hmem
     rw [Finset.insert_eq_self.mpr hmem] at hall
     exact ⟨_, hall⟩
-  | @exs Γ φ h t _d _ih =>
-    -- `asg e ▹ t` is now CLOSED → collapse to its numeral value `nm m` (`axTrue` term eval) → `exI`. DEEP.
+  | @exs Γ φ h t _d ih =>
+    -- `∃⁰φ ∈ Γ`, witness `t`. `rew_subst_term` turns the IH's `asg e ▹ (φ/[t])` into
+    -- `((asg e).q ▹ φ)/[asg e t]` with `asg e t` CLOSED. The remaining `sorry` is the **closed-term
+    -- collapse** `Provable (insert (ψ/[s]) Γ) → Provable (insert (∃⁰ψ) Γ)` for closed `s` (value `m`):
+    -- a `Provable.exI_closed` derived from `Provable.exI` + Z∞ equality-congruence (`s = nm m` via
+    -- `axTrue`, then Leibniz). The term-evaluation content — next chip.
+    obtain ⟨c, ih⟩ := ih
+    refine ⟨c, fun e => ?_⟩
+    obtain ⟨a, hd⟩ := ih e
+    rw [Finset.image_insert, rew_subst_term (asg e) φ t] at hd
+    -- hd : Provable a c (insert (((asg e).q ▹ φ)/[asg e t]) (Γ.image (asg e ▹)))
+    -- want : ∃ α, Provable α c (Γ.image (asg e ▹)), introducing `∃⁰((asg e).q ▹ φ) = asg e ▹ ∃⁰φ ∈ Γ`.
     sorry
   | @wk Δ Γ _d h ih =>
     obtain ⟨c, ih⟩ := ih

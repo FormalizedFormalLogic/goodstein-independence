@@ -7,31 +7,27 @@
 > atomic-truth axiom + a truth-layer cut-elimination, axiom-clean. M5 can now host the embedding.**
 > Read `ANALYSIS-2026-06-22-truth-layer-gap.md` for context, then "NEXT LAP" below.
 
-## 🎯 NEXT LAP — the assignment-carrying (all-closed) embedding
-The surgery exposed that the *naive open* embedding is the wrong frame: `provable_rew` (renaming
-invariance) is **false for `axTrue` with open literals** (`ω ▹` can flip a true-under-`id` literal to
-false). The fix — needed for `exs` ANYWAY — is the **assignment-carrying embedding**, where every
-sequent is CLOSED:
+## 🎯 NEXT LAP — `embedC` `axm` + `exs` (the last two cases; both unblocked by `axTrue`)
+The **assignment-carrying embedding `embedC`** (`wip/Embedding.lean`) is the correct frame and is
+**8/10 DONE** (lap 10): `∃ c, ∀ e:ℕ→ℕ, ∃ α, Provable α c (Γ.image (asg e ▹))`, `asg e := Rew.rewrite
+(nm∘e)` closes all free vars → every sequent CLOSED. The cut rank `c` is hoisted out of `∀ e` (uniform
+since `(asg e ▹ φ).complexity = φ.complexity`), which the `allω` ω-rule needs. **PROVED:** all 7
+structural cases + **`all`** (the ω-rule, via `ih (n :>ₙ e)` + the `free → subst∘q` Rew identity).
+Headline use: `embedC d` then `(fun _=>0)`; `↑gs` closed so `asg _ ▹ ↑gs = ↑gs`.
 
-```
-embed : Derivation2 (𝗣𝗔:Schema) Γ → ∀ e : ℕ → ℕ, ZProvable (Γ.image (ρ e ▹))
-   where  ρ e := Rew.rewrite (fun x => nm (e x))   -- closes all free vars to numerals
-```
-Headline use: `↑goodsteinSentence` is closed, so `ρe ▹ ↑gs = ↑gs`; `embed d (fun _=>0)` gives
-`ZProvable {↑gs}`. Under this form (all literals closed):
-- **structural cases** (closed/verum/and/or/wk/cut): re-prove (mechanical, `ρe` distributes over
-  connectives; the 8 done naive cases port).
-- **`all`**: `allω` with the numeral-extended assignment `n :>ₙ e` — the freed var ↦ `nm n`, the
-  shifted `Γ` ↦ `ρe`-image. (Like the lap-10 `all` proof but via the assignment, NOT `provable_rew`.)
-- **`shift`**: re-index the assignment (`ρe ∘ shift = ρ(e∘succ)`) — no `provable_rew`.
-- **`exs`**: `ρe ▹ t` is now CLOSED → collapse to its numeral value `nm m` (the `axTrue` closed-term
-  evaluation) → `Provable.exI … m`.
-- **`axm`**: closed PA axiom `↑σ` (assignment-immaterial). `σ ∈ 𝗣𝗔⁻ ∪ InductionScheme`:
-  - `𝗣𝗔⁻` (finite): strip `∀` via `allω` → each closed instance is a true atomic → **`Provable.axTrue`**.
-  - `univCl(succInd ψ)`: the worked meta-induction (PENDING_WORK lap-10) — `cut`/`exI`/`andI`/
-    `provable_em`, with the `nm n+1 = nm(n+1)` step now closed by **`axTrue`** (`removeFalseLit`/atomic).
-`provable_rew`/`ZProvable.rew`/naive `shift`+`all` (`wip/Embedding.lean`) are **superseded** by this
-closed form (kept for reference; `provable_rew` now carries a disclosed `sorry` on its `axTrue` case).
+**Remaining (disclosed `sorry`, the deep content):**
+- **`exs`** — `asg e ▹ t` is CLOSED (value `m`). Two steps: (i) `asg e ▹ (φ/[t]) = ((asg e).q ▹ φ)/[asg
+  e ▹ t]` (a clean Rew-substs lemma, like `rew_subst_nm` for general `t`); (ii) the **closed-term
+  collapse** `Provable (insert (ψ/[s]) Γ) → Provable (insert (ψ/[nm m]) Γ)` for closed `s` of value `m`
+  — needs Z∞ equality-congruence (`s = nm m` is a true closed atomic ⟹ `axTrue`, then Leibniz, which
+  M5 lacks as a rule). THE term-evaluation content; build a `Provable.exI_closed` derived lemma.
+- **`axm`** — closed PA axiom `↑σ`, `σ ∈ 𝗣𝗔⁻ ∪ InductionScheme`:
+  - `𝗣𝗔⁻` (finite, enumerate Foundation's axiom set): strip `∀` via `allω`, decompose the propositional
+    structure (`orI`/`andI`/`exI`), bottoming at true closed atomic literals → **`Provable.axTrue`**.
+  - `univCl(succInd ψ)`: the worked meta-induction (PENDING_WORK lap-10 block) — `cut`/`exI`/`andI`/
+    `provable_em`, with `nm n+1 = nm(n+1)` discharged via `axTrue` (same collapse as `exs`(ii)).
+The naive `embed`/`provable_rew`/`shift`/`all` (same file) are **superseded** — reference only
+(`provable_rew` carries a disclosed `sorry` on its `axTrue` case; renaming invariance is false there).
 
 ## ✅ The M5 `axTrue` surgery (lap 10, COMPLETE, committed, axiom-clean)
 `src/GoodsteinPA/Zinfty.lean`. Added the ω-logic atomic-truth leaf + truth-layer cut-elim:
