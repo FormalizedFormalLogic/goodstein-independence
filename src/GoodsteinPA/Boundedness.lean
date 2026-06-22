@@ -404,8 +404,72 @@ theorem boundedness
       exact nonpos_iff_eq_zero.mp this
     rcases hpart (∃⁰ χ) (Finset.mem_insert_self _ _) with hPa | ⟨t, heq, _⟩ | hPc
     · -- **Buchholz case 2** (`∃⁰χ = ∼Prog`): invert the inner `hyp ⋏ ∼X` and combine the two IHs
-      -- (outer IH on the inversion outputs, which strictly shrink the height). THE remaining crux.
-      sorry
+      -- (outer IH on the inversion outputs, which strictly shrink the height). THE crux.
+      have hχ : χ = ∼(hyp prec 🡒 Xat (#0)) := by
+        have hPa' := hPa
+        rw [show ∼(Prog prec) = ∃⁰ ∼(hyp prec 🡒 Xat (#0)) from by simp [Prog]] at hPa'
+        injection hPa'
+      subst hχ
+      set φ₁ := (hyp prec)/[nm n] with hφ₁
+      set φ₂ := ∼(Xat (nm n)) with hφ₂
+      have hC : (∼(hyp prec 🡒 Xat (#0)))/[nm n] = φ₁ ⋏ φ₂ := chi_subst prec n
+      have hposφ₁ : XPos φ₁ := xpos_subst n (hyp_xpos prec hprecXPos)
+      -- height bookkeeping
+      have hDo : D.o = d'.o + 1 := by rw [hD]; rfl
+      have hd'β : d'.o < β := lt_of_lt_of_le (hDo ▸ lt_add_one d'.o) hob
+      -- invert the conjunction `χ/[nm n] = φ₁ ⋏ φ₂`
+      have hmemC : (φ₁ ⋏ φ₂) ∈ insert ((∼(hyp prec 🡒 Xat (#0)))/[nm n]) Γ :=
+        hC ▸ Finset.mem_insert_self _ _
+      set E := (insert ((∼(hyp prec 🡒 Xat (#0)))/[nm n]) Γ).erase (φ₁ ⋏ φ₂) with hE
+      have hEsub : E ⊆ Γ := by
+        intro e he
+        rcases Finset.mem_insert.mp (Finset.mem_of_mem_erase he) with rfl | hg
+        · exact absurd hC (Finset.ne_of_mem_erase he)
+        · exact hg
+      obtain ⟨⟨d₁, hd₁o, hd₁cr, hd₁xf⟩, ⟨d₂, hd₂o, hd₂cr, hd₂xf⟩⟩ :=
+        andInv_xfree d' hxf cr0 hmemC
+      have hdβ₁ : α + 2 ^ d₁.o ≤ α + 2 ^ D.o :=
+        (add_le_add_iff_left α).mpr (Ordinal.opow_le_opow_right two_pos (le_trans hd₁o ho))
+      -- IH on premise (1): `insert φ₁ E`
+      have hpart₁ : Partition lt prec α (insert φ₁ E) := by
+        intro B hB
+        rcases Finset.mem_insert.mp hB with rfl | hBE
+        · exact Or.inr (Or.inr hposφ₁)
+        · exact hpart B (Finset.mem_insert_of_mem (hEsub hBE))
+      obtain ⟨A₁, hA₁, hposA₁, hmA₁⟩ :=
+        outerIH d'.o hd'β α d₁ hd₁o hd₁cr hd₁xf hpart₁
+      rcases Finset.mem_insert.mp hA₁ with hA₁eq | hA₁E
+      · -- (Case 2) the witness is `φ₁ = ∀y≺n Xy` ⟹ `|n|_≺ ≤ α + 2^{d'.o}`; feed IH on premise (2)
+        rw [hA₁eq] at hmA₁
+        have hmφ₁ : models lt (α + 2 ^ d'.o) φ₁ :=
+          models_mono lt ((add_le_add_iff_left α).mpr
+            (Ordinal.opow_le_opow_right two_pos hd₁o)) hposφ₁ hmA₁
+        have hrkn : rk lt n ≤ α + 2 ^ d'.o := rk_le_of_forall lt ((hprec (α + 2 ^ d'.o) n).mp hmφ₁)
+        -- IH on premise (2): `insert φ₂ E` at the bumped bound `α' = α + 2^{d'.o}`
+        have hpart₂ : Partition lt prec (α + 2 ^ d'.o) (insert φ₂ E) := by
+          intro B hB
+          rcases Finset.mem_insert.mp hB with rfl | hBE
+          · exact Or.inr (Or.inl ⟨nm n, rfl, by rw [tval_nm]; exact hrkn⟩)
+          · rcases hpart B (Finset.mem_insert_of_mem (hEsub hBE)) with hP | ⟨s, hs, hbs⟩ | hP
+            · exact Or.inl hP
+            · exact Or.inr (Or.inl ⟨s, hs, le_trans hbs (self_le_add_right α _)⟩)
+            · exact Or.inr (Or.inr hP)
+        obtain ⟨A₂, hA₂, hposA₂, hmA₂⟩ :=
+          outerIH d'.o hd'β (α + 2 ^ d'.o) d₂ hd₂o hd₂cr hd₂xf hpart₂
+        rcases Finset.mem_insert.mp hA₂ with hA₂eq | hA₂E
+        · rw [hA₂eq] at hposA₂; simp [φ₂, XPos, Xat, Xsym] at hposA₂
+        · -- the witness sits in `E ⊆ Γ ⊆ Δ`; the level `(α+2^{d'.o})+2^{d₂.o}` ≤ `α + 2^{D.o}`
+          have hpoweq : (2 : Ordinal) ^ D.o = 2 ^ d'.o + 2 ^ d'.o := by
+            rw [hDo, show d'.o + 1 = Order.succ d'.o from rfl, Ordinal.opow_succ, Ordinal.mul_two]
+          have hlev : (α + 2 ^ d'.o) + 2 ^ d₂.o ≤ α + 2 ^ D.o := by
+            refine le_trans ((add_le_add_iff_left _).mpr
+              (Ordinal.opow_le_opow_right two_pos hd₂o)) ?_
+            rw [add_assoc, ← hpoweq]
+          exact ⟨A₂, Finset.mem_insert_of_mem (hEsub hA₂E), hposA₂,
+            models_mono lt hlev hposA₂ hmA₂⟩
+      · -- (Case 1) the witness already sits in `E ⊆ Γ ⊆ Δ`
+        exact ⟨A₁, Finset.mem_insert_of_mem (hEsub hA₁E), hposA₁,
+          models_mono lt hdβ₁ hposA₁ hmA₁⟩
     · simp [Xat] at heq
     · -- Buchholz case 4 (X-positive `∃`): introduce the witness `n` and lift via monotonicity.
       have hposχ : XPos χ := hPc
