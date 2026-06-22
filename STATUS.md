@@ -1,108 +1,97 @@
 # STATUS — GoodsteinPA 📊
 
-**Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Towsner's Route B (Z_∞ ω-rule calculus + ε₀ cut-elimination).**
-· **Build**: 🟢 green (1248 jobs) · **Updated**: lap 5 · 2026-06-22
-
-## ⚡ LAP-5 BREAKTHROUGH — the gAll/I∀ lower-bound frontier is RESOLVED (machine-checked)
-The lap-4 "accumulating existentials" wall (the hardest piece, Towsner Thm 17.1 `I∀` case) is down.
-- **Hardy hierarchy ported** to `src/GoodsteinPA/Hardy.lean` (from Track-1; mathlib revs identical):
-  `hardy`/`norm` = Towsner `h_α`/`τ`, `hardy_le_of_lt` = **Hmono**, `hardy_monotone` = **Hmono_n**.
-- **`lowerBound_existential_hardy`** (`wip/LowerBoundHardy.lean`): ∀-free lower bound, **zero abstract
-  hypotheses**, over the real Hardy hierarchy + real `G`. Calculus `B` re-stated over `ONote` (= `<ε₀`).
-- **`B.allInv`** (∀-inversion) + **`lowerBound_hardy`** = the **full Thm 17.1 modulo domination `Hdom`**.
-  Resolution: invert `gAll` away (don't carry it through the induction — a set-sequent `gAll` lets the
-  ω-rule re-expand at a small reachable index and `trueR`-close everything, breaking a direct
-  invariant). All axiom-clean. See `ANALYSIS-2026-06-22-bounding-resolution.md`.
-- **Next:** discharge `Hdom : ∃ x, hardy α (max k x) < G x` — `G = goodsteinLength`, Goodstein defs
-  byte-identical to Track-1, so PORT `goodsteinLength_dominates_fastGrowing` (+ `hardy ≤ fastGrowing`,
-  bridge the `+2` to strict). Then M4 embedding + M7 assembly remain for the headline.
+**Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Towsner's Route B (witness-bounded `Z_∞` ω-rule calculus + ε₀
+cut-elimination + Hardy lower bound).** · **Build**: 🟢 green (1257 jobs, `lake build GoodsteinPA`)
+· **Updated**: lap 6 · 2026-06-22 · `2e7ba5c`
 
 ## Where it stands
-Phase 0 (encoding + faithfulness bridge) and Phase 1 (Gödel II hook) are landed and axiom-clean.
-The **deep core of Phase 2 — Gentzen-style cut-elimination for the infinitary `Z_∞` calculus
-(milestone M5, Towsner §19) — is COMPLETE and `#print axioms`-clean** in `src/GoodsteinPA/Zinfty.lean`.
-The headline `Statement.peano_not_proves_goodstein` is still a literal `sorry` (anti-fraud).
-
-## ⚠️ LAP-4 ARCHITECTURAL FINDING — the witness bound is essential (course correction)
-The completed M5 cut-elimination is for a calculus whose `∃`-rule (`Deriv.exI`) puts **no bound on
-the witness numeral**, and whose ordinal measure `o` does **not** track Towsner's numeric index `k`.
-That calculus **cannot reach the headline**: its cut-free fragment *proves* the Goodstein sentence
-`∀x∃y g_y(x)=0` at ordinal **2** (witness = `G(n)` directly), so Towsner's lower bound (Thm 17.1) is
-**false** for it. The three-theorem sandwich (16.7 embed ⟹ 19.9 cut-elim ⟹ 17.1 lower bound) only
-closes if **all three** track the witness/Hardy bound `value(t) ≤ h_α(k)`. M5 dropped it (correct
-*for cut-elimination in isolation* — the prior lap's "k not needed" claim — but a dead end for the
-chain). **Machine-checked both directions this lap** in `wip/WitnessBound.lean`, axiom-clean:
-- `unbounded_proves_goodstein` : the witness-**unbounded** cut-free calculus derives `gAll` at `2`.
-- `lowerBound_existential` : the witness-**bounded** calculus *cannot* derive the `∀`-free existential
-  fragment once `h α k < G n` — the irreducible reason the bound bites.
-
-**Consequence for the roadmap:** the load-bearing girder is now the **witness-bounded, Hardy-indexed
-`(α,k)` calculus** `B` + the full lower bound (Thm 17.1). The `src/Zinfty.lean` cut-elimination stays
-as a verified *component* but is **off the headline path** until cut-elimination is redone tracking
-`k` (its inversion/reduction *strategy* ports; only the bound bookkeeping changes). The further gap:
-our headline is real-`ℒₒᵣ` PA with an **opaque Σ₁** `goodsteinSentence`, not Towsner's extended-language
-`∀x∃y g_y(x)=0`, so a PA↔PA⁺ arithmetization bridge is *also* needed (Towsner Remark 10.3 skips it).
+Two of the three Phase-2 girders are **machine-checked and `#print axioms`-clean**: the ε₀
+cut-elimination for the infinitary calculus (M5, `src/Zinfty.lean`) and — **as of lap 6** — the
+**full cut-free Hardy lower bound, Towsner Thm 17.1, with no hypotheses beyond `α.NF`** (M6,
+`src/LowerBound.lean`: `lowerBound_hardy_selfcontained`). Phase 0 (encoding + faithfulness bridge,
+M1) and Phase 1 (Gödel II hook, M2) are landed and clean. The headline
+`Statement.peano_not_proves_goodstein` is **still a literal `sorry`** (anti-fraud — correct): the
+two completed girders are over *different* calculi (M5 unbounded `(α,c)` over real `ℒₒᵣ` syntax; M6
+witness-bounded `(α,k)` over the `GForm` fragment) and are **not yet unified**. The remaining work is
+the connecting spine — see Outstanding.
 
 ## What's happened (newest first)
-- **2026-06-22 (lap 4):** Ground-truthed Towsner §10–§19 against the Lean. Found + machine-checked
-  (axiom-clean, `wip/WitnessBound.lean`) the **witness-bound gap** above: built the witness-bounded
-  Hardy-indexed calculus `B`, proved the existential-fragment lower bound, and proved the unbounded
-  calculus collapses. Identified an invariant subtlety in Towsner's *full* 17.1 (accumulating
-  existentials under the `I∀` ω-rule) — filed `ON-LINE-REQUEST.md` for the rigorous invariant.
+- **2026-06-22 (lap 6 — review):** Verified build green (1257 jobs); **M6 lower-bound half DONE** —
+  promoted `wip/LowerBoundHardy.lean → src/GoodsteinPA/LowerBound.lean`. `lowerBound_hardy_selfcontained`
+  is the full Towsner Thm 17.1, `Hdom` discharged via the ported domination chain (`+2`→strict iterate
+  split). `#print axioms` = trust base + documented `native_decide` Goodstein base-case artifacts (🟢).
+  Re-grounded the remaining direction against the ANALYSIS doc's 5-step spine: the crux is now the
+  **witness-bounded calculus `Zᵏ` over real syntax + embedding + cut-elim-with-`k` + subformula bridge**,
+  with the **opaque-Σ₁ language gap (M7a)** flagged as the other hard piece.
+- **2026-06-22 (lap 5):** RESOLVED the gAll/I∀ lower-bound frontier (the lap-4 wall), machine-checked.
+  Ported the Hardy hierarchy → `src/Hardy.lean` (`hardy`/`norm` = Towsner `h_α`/`τ`); built the
+  witness-bounded calculus `B` over `ONote` with the **concrete** Hardy data; proved
+  `lowerBound_existential_hardy` (∀-free, zero abstract hyps), `B.allInv` (∀-inversion), and
+  `lowerBound_hardy` (full Thm 17.1 mod `Hdom`). Resolution = **invert `gAll` away, don't accumulate**
+  (a set-sequent `gAll` lets the ω-rule re-expand at a reachable index & `trueR`-close). Ported the
+  Goodstein-dominates-fastGrowing chain → `src/Domination.lean`. (`ANALYSIS-2026-06-22-bounding-resolution.md`.)
+- **2026-06-22 (lap 4):** Ground-truthed Towsner §10–§19 vs the Lean. Found + machine-checked
+  (`wip/WitnessBound.lean`) the **witness-bound gap**: the M5 `(α,c)` cut-elim is OFF the headline path
+  (unbounded `∃` ⇒ lower bound false for it). Built the corrected witness-bounded calculus, proved the
+  ∃-fragment lower bound, proved the unbounded calculus collapses (`unbounded_proves_goodstein`).
 - **2026-06-22 (lap 3):** Proved the ENTIRE Z_∞ cut-elimination (Towsner §19), zero sorries,
-  axiom-clean: inversions (done prior) + cut reductions §19.5 (∧/∨, via double-inversion) & §19.6
-  (∀/∃, by induction on the ∃-side) + `cutElimStep` §19.7 (rank `c+1→c`, all 8 cases + 8-way cut
-  dispatch) + `cutElim` §19.9. Atomic (`rel`/`nrel`) cuts via `atomCut` and `⊥` cuts via
-  `removeFalsum` — both needing NO truth layer (set-sequent idempotence dissolves them). Found
-  `Ordinal.nadd` ABSENT from mathlib v4.31.0 → used ordinary `+` with `+1` slack, bounded by
-  additive principality of `ω^c`. Restricted `exI` to numeral witnesses (for §19.6 matching).
-  Promoted `wip/ZinftyF.lean → src/GoodsteinPA/Zinfty.lean`. (M5 ✅)
-- **2026-06-22 (lap 2):** Built the real `Z_∞` calculus over Foundation's `SyntacticFormula ℒₒᵣ`
-  with set sequents; proved all three inversion lemmas (§19.2–19.4); reduced cut-elimination to
-  the lone `cutElimStep` leaf.
+  axiom-clean: inversions + cut reductions §19.5 (∧/∨) & §19.6 (∀/∃) + `cutElimStep` §19.7 + `cutElim`
+  §19.9. `Ordinal.nadd` ABSENT in mathlib v4.31.0 → ordinary `+` with `+1` slack (additive principality
+  of `ω^c`). Promoted `wip/ZinftyF.lean → src/GoodsteinPA/Zinfty.lean`. (M5 ✅)
+- **2026-06-22 (lap 2):** Built the real `Z_∞` calculus over Foundation's `SyntacticFormula ℒₒᵣ` with
+  set sequents; proved all three inversion lemmas (§19.2–19.4); reduced cut-elim to `cutElimStep`.
 - **2026-06-22 (lap 1):** M1 (`goodsteinTerminates_re`, Phase 0 axiom-clean), M2 (`Reduction.lean`
   Gödel II hook), Phase-2 decomposition doc (Towsner-grounded ladder).
 
 ## Outstanding
-### Short-term (mirror PENDING_WORK top)
-- **M4 — embedding `PA⁺ ↪ Z_∞`** (Towsner §16, Thm 16.7 / §18 Thm 18.1): every PA proof of `φ`
-  yields `Z_∞ ⊢^{α,k}_c φ` with `α < ε₀`, finite `c`. The next major girder. Reuse Foundation's
-  finitary `Derivation`; map each rule across, finitary `∀` → ω-rule. Needs: induction-axiom
-  derivability (Lemma 16.5/Cor 16.6) at bound `ω·4 # 2rk(φ) # 8`.
-- **M6 — cut-free lower bound** (Towsner §17, Thm 17.1): no cut-free `Z_∞ ⊢^α_0 ∀x∃y g_y(x)=0`
-  for any `α < ε₀`, because Goodstein length dominates every Hardy `h_α`. Largely parallel to M4;
-  M6.1–M6.3 (Hardy hierarchy) overlap Track 1 (`~/src/lean-formalizations` `Logic/FastGrowing`).
+The lower-bound side (M6) and the cut-elim engine (M5) are done but disconnected. The remaining spine
+(ANALYSIS doc §"M4 scoping", the 5 steps) connects them and reaches the headline:
+
+### Short-term (mirror PENDING_WORK top) — the connecting spine, hardest-first
+1. **`Zᵏ` — witness-bounded ω-calculus over real `ℒₒᵣ` syntax** (Towsner §15). `src/Zinfty.lean`'s
+   `Deriv` + a **truth-atom rule** (`τ α < k`) + a **witness bound on `∃`** (`v ≤ h_α(k)`). The keystone
+   the embedding lands in and cut-elim operates on. **NEXT — start the definition + structural lemmas.**
+2. **M4 — embedding `PA ⊢ φ ⟹ Zᵏ ⊢^{α,k}_c φ`** (α<ε₀, finite c), Towsner §16/§18. Reuse Foundation's
+   finitary `Derivation`; map rules across, `∀`→ω-rule; finite induction instances ⟹ finite cut rank.
+3. **Cut-elim with `k`** — redo `src/Zinfty.lean` §19 tracking the bound (`h_{ω^α}(k)`; ε₀ closed under
+   `ω^·` ⇒ the bound survives). Strategy ports; only the bound bookkeeping changes.
+4. **Subformula bridge** — a *cut-free* `Zᵏ`-derivation of `{gAll}` has only subformulas of `gAll` =
+   the `GForm` fragment (substitution-closure), so it **is** a `B`-derivation ⇒ contradicts
+   `lowerBound_hardy_selfcontained` (M6, **done**). The clean small connector.
+
 ### Long-term
-- M7 assembly (Towsner Thm 20.1): connect `∀x∃y g_y(x)=0` to our `goodsteinSentence`, chain
-  M4 ⟹ M5 ⟹ M6 ⟹ contradiction, discharge the headline `sorry`.
-- The `k`/Hardy numeric index: NOT in the current `(α,c)` `Provable`. Cut-elimination didn't need
-  it; M6 (lower bound) likely does (Towsner threads `h_{ω^α}(k)`). Re-assess when M6 starts.
+- **M7a — the language gap (Towsner Remark 10.3).** Our headline is real-`ℒₒᵣ` PA with an **opaque Σ₁**
+  `goodsteinSentence = ∀⁰ (codeOfREPred goodsteinTerminates)`, not the transparent `∀x∃y g_y(x)=0` the
+  calculus/subformula-bridge needs. Build a transparent Π₂ `gAllReal` (arithmetize `goodsteinSeq` as a
+  real formula) + `𝗣𝗔 ⊢ goodsteinSentence ↔ gAllReal` (gated by `Bridge.lean`'s spec so faithfulness
+  can't regress). The other genuinely-hard girder besides M4.
+- **M7b — assembly:** chain embed ⟹ cut-elim ⟹ subformula-bridge ⟹ contradiction ⟹ discharge the
+  headline `sorry`. (Route A via `Con(PA)` + `goodstein_implies_consistency` stays as the documented
+  alternative; it would re-introduce `PA_delta1Definable`.)
+
 ### To completion
-Headline discharged ⟺ M4 + M6 + M7 land AND `#print axioms peano_not_proves_goodstein` is clean
-(Route B should be `[propext, Classical.choice, Quot.sound]`, no `PA_delta1Definable`).
+Headline discharged ⟺ steps 1–4 + M7a + M7b land AND `#print axioms peano_not_proves_goodstein` is
+`[propext, Classical.choice, Quot.sound]` (+ the documented `native_decide` Goodstein base-cases from
+the domination path — 🟢 finite witnesses; no `PA_delta1Definable` on Route B).
 
 ## Axiom ledger (per headline / landmark theorem — the fidelity spine)
 | theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
-| `peano_not_proves_goodstein` (headline) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` | 🔓 open `sorry` — M4+M6+M7 remain; **0** real math axioms yet |
-| `goodsteinSentence_faithful` (bridge) | encoding correctness | `propext, choice, Quot.sound` | 🟢 clean (trust base only) |
+| `peano_not_proves_goodstein` (headline) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` | 🔓 open `sorry` — steps 1–4 + M7 remain; **0** real math axioms |
+| `goodsteinSentence_faithful` (bridge) | encoding correctness | `propext, choice, Quot.sound` | 🟢 clean (trust base) |
 | `goodsteinTerminates_re` (M1) | r.e. of termination | `propext, choice, Quot.sound` | 🟢 clean |
-| `Deriv.Provable.cutElim` (M5, §19.9) | ε₀ cut-elimination | `propext, choice, Quot.sound` | 🟢 clean — **NEW this lap** |
-| `Deriv.Provable.cutElimStep` (§19.7) | rank reduction | `propext, choice, Quot.sound` | 🟢 clean |
-| `Deriv.Provable.atomCut` (§19.2 content) | atomic cut elim | `propext, choice, Quot.sound` | 🟢 clean |
+| `Deriv.Provable.cutElim` (M5, §19.9) | ε₀ cut-elimination | `propext, choice, Quot.sound` | 🟢 clean — over real `ℒₒᵣ`, unbounded `(α,c)` (needs `k` retrofit for the headline path) |
+| `hardy_le_of_lt` (M6, `src/Hardy`) | Hardy index monotonicity (Hmono) | `propext, choice, Quot.sound` | 🟢 clean |
+| `lowerBound_existential_hardy` (M6) | ∃-fragment 17.1, concrete Hardy/`G` | `propext, choice, Quot.sound` | 🟢 clean — zero abstract hyps |
+| `B.allInv` (M6) | ∀-inversion (I∀-frontier resolution) | `propext, choice, Quot.sound` | 🟢 clean |
+| `lowerBound_hardy` (M6) | full Thm 17.1 mod `Hdom` | `propext, choice, Quot.sound` | 🟢 clean |
+| `lowerBound_hardy_selfcontained` (M6, **lap 6**) | **full Thm 17.1, only `α.NF`** | `propext, choice, Quot.sound` + 12 `native_decide` base-case `ax_*` | 🟢 clean — the `ax_*` are 🟢 finite Goodstein base-case witnesses (acceptable indefinitely) |
 | `not_proves_of_implies_consistency` (Route A) | meta-reduction | `…, PA_delta1Definable` | 🟡 Foundation axiom; **Route A only** — Route B avoids it |
-| `unbounded_proves_goodstein` (lap-4, `wip/`) | gap demo: no lower bound w/o witness bound | `propext, choice, Quot.sound` | 🟢 clean — proves current `Zinfty` calc is a dead end |
-| `lowerBound_existential` (lap-4, `wip/`) | ∃-fragment of Thm 17.1 (witness-bounded) | `propext, choice, Quot.sound` | 🟢 clean — the witness-bound mechanism, proven |
-| `hardy_le_of_lt` (lap-5, `src/Hardy`) | Hardy index monotonicity (Hmono) | `propext, choice, Quot.sound` | 🟢 clean — ported Track-1 |
-| `lowerBound_existential_hardy` (lap-5, `wip/`) | ∃-fragment 17.1, concrete Hardy/`G` | `propext, choice, Quot.sound` | 🟢 clean — **zero abstract hyps** |
-| `B.allInv` (lap-5, `wip/`) | ∀-inversion (the I∀-frontier resolution) | `propext, choice, Quot.sound` | 🟢 clean |
-| `lowerBound_hardy` (lap-5, `wip/`) | **full Thm 17.1** mod `Hdom` | `propext, choice, Quot.sound` | 🟢 clean — gAll case RESOLVED, modulo domination |
 
-Math-axiom count on the (eventual) Route-B headline target: **0** beyond the trust base — every
-proven component is `[propext, Classical.choice, Quot.sound]`. The `sorryAx` on the headline is the
-honest open marker, not a smuggled axiom. (`PA_delta1Definable` is 🟡 but sits only under the
-unused Route-A hook, never on the Route-B chain.)
+Math-axiom count on the (eventual) Route-B headline target: **0** beyond the trust base + the 🟢
+`native_decide` Goodstein base-case witnesses on the domination path. The `sorryAx` on the headline is
+the honest open marker. `PA_delta1Definable` (🟡) sits only under the unused Route-A hook.
 
 ## Pointers
-ROADMAP/plan: `EXPEDITION-PLAN.md`, `PHASE2-DECOMPOSITION.md` · newest baton: `HANDOFF-2026-06-22.md`
-· open-items: `PENDING_WORK.md` · charter: `DIRECTION.md`
+ROADMAP/plan: `EXPEDITION-PLAN.md`, `PHASE2-DECOMPOSITION.md` · architecture: `ANALYSIS-2026-06-22-bounding-resolution.md`
+· newest baton: `HANDOFF-2026-06-22-lap6.md` · open-items: `PENDING_WORK.md` · charter: `DIRECTION.md`

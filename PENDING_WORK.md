@@ -1,8 +1,58 @@
 # Pending work — open obligations & attack paths
 
-State after lap 2026-06-22. Build green (`lake build GoodsteinPA`, 1204 jobs). Phase 0 (encoding +
-faithfulness bridge) axiom-clean. Phase 1 (Gödel II hook) landed. The headline stays a literal
-`sorry` (anti-fraud). See `PHASE2-DECOMPOSITION.md` for the full girder ladder.
+State after lap 6 (2026-06-22). Build green (`lake build GoodsteinPA`, 1257 jobs). Phase 0 + Phase 1
+clean; **M5 (cut-elim) and M6 (Hardy lower bound) both DONE**. Headline stays a literal `sorry`
+(anti-fraud). See `PHASE2-DECOMPOSITION.md` for the girder ladder; `ANALYSIS-…-bounding-resolution.md`
+§"M4 scoping" for the 5-step connecting spine.
+
+## ✅ LAP-6 — M6 DONE (lower bound self-contained); TOP PRIORITY now = step 1, the `Zᵏ` calculus
+`src/GoodsteinPA/LowerBound.lean` (`lowerBound_hardy_selfcontained`) is the full Towsner Thm 17.1 with
+no hypotheses beyond `α.NF`, axiom-clean modulo the 🟢 `native_decide` Goodstein base-cases. M5 + M6
+are now both complete but **disconnected** (M5 = unbounded `(α,c)` over real `ℒₒᵣ`; M6 = bounded
+`(α,k)` over the `GForm` fragment). The connecting spine (hardest-first):
+
+### Step 1 (TOP — NEXT) — `Zᵏ`: witness-bounded ω-calculus over real `SyntacticFormula ℒₒᵣ`
+Towsner §15. Take `src/Zinfty.lean`'s `Deriv` design and add the two `(α,k)` side conditions that make
+the lower bound bite (the lap-4 finding — they CANNOT be dropped):
+- a **truth-atom rule** `trueR` (decidable atomic truth in ℕ, side condition `τ α < k`) — needed by the
+  embedding to derive PA's true atomic axioms, and the `τ α < k` is what couples to the witness bound;
+- a **witness bound on `∃`** (`exI` carries `v ≤ hardy α k`).
+Design choices to settle while coding:
+- **Ordinal representation:** `B` uses `ONote` (so `hardy`/`norm` are concrete) + the **bound-as-parameter,
+  no-suprema** Prop style (the `allI` rule takes a family `β : ℕ → ONote` with each `β n < α`, NOT a
+  computed `⨆`). `src/Zinfty.lean` uses `Ordinal` + computed measures + `⨆` (clean for the `ω^α`
+  cut-elim blow-up). The keystone choice: build `Zᵏ` **ONote + B-style** (matches the M6 target, avoids
+  suprema, `ω^α = oadd α 1 0`, `< ε₀` via ε₀ closed under `ω^·`) OR Ordinal + measures (reuse M5's
+  cut-elim machinery, convert to `ONote` at the subformula-bridge). Lean: ONote/B-style for uniformity
+  with the done M6; re-derive the cut-elim strategy (the §19 *moves* port; the bound bookkeeping is new).
+- Start with: the inductive `Zᵏ`, `mono_k`, `weakening`, then the inversions, then cut-reduction.
+Bank the definition + structural lemmas first (compiles), then chip cut-elim across laps.
+
+### Step 2 — M4 embedding `PA ⊢ φ ⟹ Zᵏ ⊢^{α,k}_c φ`
+α<ε₀, finite c (Towsner §16/§18). Reuse Foundation's finitary `Derivation`; map each rule across,
+finitary `∀`→ω-rule; finitely many induction instances ⟹ finite cut rank. Foundation-heavy (not
+Aristotle-friendly). Sub-targets: Lemma 16.1 (true universals at finite bound), Cor 16.6 (induction
+axioms at `ω·4 # 2rk(φ) # 8`), Thm 16.7 (induct over a Hilbert proof).
+
+### Step 3 — cut-elim with `k`
+Redo `src/Zinfty.lean` §19 tracking the witness bound. The inversions/reductions *strategy* ports; the
+new content is threading `h_{ω^α}(k)` through §19.6 (∀/∃ reduction) and confirming `ω^α < ε₀` keeps the
+final cut-free bound `< ε₀` (so domination still bites). No deep math doubt (literature-standard,
+host-verified) — formalization labor.
+
+### Step 4 — subformula bridge (the clean small connector)
+A cut-free `Zᵏ`-derivation of `{gAll}` contains only subformulas of `gAll` closed under numeral
+substitution = exactly `{gAll, gEx n, atom m n}` = the `GForm` fragment, so it **is** a `B`-derivation
+⇒ `lowerBound_hardy_selfcontained` refutes it. Needs: a subformula-closure lemma for the ω-calculus
+(structural induction over `Deriv`, ω-rule = closure under numeral substitution) + the `GForm ↪ ℒₒᵣ`
+encoding identification. Reuses M6 as-is.
+
+### M7a — the language gap (the other hard girder; Towsner Remark 10.3)
+`goodsteinSentence = ∀⁰ (codeOfREPred goodsteinTerminates)` is an **opaque Σ₁ blob**, NOT the
+transparent `∀x∃y g_y(x)=0` that step 4 needs. Build a transparent Π₂ `gAllReal` (arithmetize
+`goodsteinSeq` as a real `ℒₒᵣ` formula — Foundation's Σ₁/representability tools) and prove
+`𝗣𝗔 ⊢ goodsteinSentence ↔ gAllReal`, gated by `Bridge.lean`'s spec so faithfulness can't regress.
+Then the subformula bridge runs on `gAllReal`.
 
 ## ✅ LAP-5 — O0 done + the I∀ frontier RESOLVED; TOP PRIORITY is now O0′ (port `Hdom`)
 The witness-bounded calculus `B` is now built over `ONote` with the **concrete** Hardy hierarchy
