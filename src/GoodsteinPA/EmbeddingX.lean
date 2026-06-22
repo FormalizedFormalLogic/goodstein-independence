@@ -697,11 +697,50 @@ lemma succInd_nnf (ψ : Semiformula LX ℕ 1) :
   conv_lhs => unfold succInd
   simp only [Semiformula.imp_eq, Semiformula.neg_all]
 
+/-- A degree-1 substitution fixes a `bShift`ed (variable-free-below) term: `subst[t] ∘ bShift = bShift`. -/
+lemma subst1_comp_bShift (t : Semiterm LX ℕ 1) :
+    (Rew.subst ![t]).comp Rew.bShift = (Rew.bShift : Rew LX ℕ 0 ℕ 1) := by
+  ext y
+  · exact Fin.elim0 y
+  · simp [Rew.comp_app]
+
+/-- **Substitution-rewrite commute under one binder** (the `q`-lifted analogue of `rew_subst_term`).
+`g.q` (which fixes `#0` and `bShift`s `g`'s fvar images) commutes with substituting a `g.q`-fixed
+term `t` for the leading bound variable. -/
+lemma rew_subst1_comm_q (g : SyntacticRew LX 0 0) (φ : Semiformula LX ℕ 1) (t : Semiterm LX ℕ 1)
+    (ht : g.q t = t) :
+    g.q ▹ (φ/[t]) = (g.q ▹ φ)/[t] := by
+  show g.q ▹ (Rew.subst ![t] ▹ φ) = Rew.subst ![t] ▹ (g.q ▹ φ)
+  have heq : (g.q).comp (Rew.subst ![t]) = (Rew.subst ![t]).comp g.q := by
+    ext x
+    · cases x using Fin.cases with
+      | zero => simp [Rew.comp_app, ht]
+      | succ i => exact Fin.elim0 i
+    · rw [Rew.comp_app, Rew.comp_app, Rew.subst_fvar, Rew.q_fvar]
+      show Rew.bShift (g &x) = ((Rew.subst ![t]).comp Rew.bShift) (g &x)
+      rw [subst1_comp_bShift]
+  rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, heq]
+
+/-- **`succInd` commutes with a closed rewriting.** `g ▹ succInd ψ = succInd (g.q ▹ ψ)` — the
+naturality fact that lets the X-induction axiom's `asgX`/`fixitr` image be repackaged as an induction
+axiom for the rewritten matrix `ψ_v`, the shape `metaInduction_cong`/`succInd_nnf` consume. -/
+lemma rew_succInd (g : SyntacticRew LX 0 0) (ψ : Semiformula LX ℕ 1) :
+    g ▹ (succInd ψ) = succInd (g.q ▹ ψ) := by
+  unfold succInd
+  simp only [Nat.reduceAdd, Fin.Fin1.eq_one, Fin.isValue, Rewriting.subst1_bvar0_eq,
+    LogicalConnective.HomClass.map_imply, Rewriting.app_all, Semiformula.imp_inj,
+    Semiformula.all_inj, true_and, and_true]
+  refine ⟨?_, ?_⟩
+  · rw [rew_subst_term g ψ (↑(0:ℕ))]; congr 1; simp
+  · rw [rew_subst1_comm_q g ψ (‘(#0 + 1)’ : Semiterm LX ℕ 1) (by simp)]
+
 /-- **C₂-axm: the `axm` discharge for `paLX`.** Each `paLX` axiom appearing in `Γ` yields a
 cut-rank-bounded `XFreeAx` `Z∞`-derivation of the image sequent. **X-free base axioms** (`𝗣𝗔⁻` image)
 are TRUE closed X-free formulas ⟹ `provable_true_x`. **X-induction instances** (`univCl (succInd ψ)`)
-go through `metaInduction` (DISCLOSED `sorry`: the `succInd`/`univCl`/NNF DSL unfolding connecting
-`↑(univCl (succInd ψ))` to `metaInduction`'s explicit `{∼ψ(0), ∃(∼step), ∀ψ}` shape). -/
+go through `metaInduction_cong`: the `asgX e`-image of `↑(univCl (succInd ψ))` is `∀⁰*`-stripped
+(`PXFc_allClosure`) to per-`v` numeral instantiations, each repackaged via `rew_succInd` as an
+induction axiom `succInd ψ_v`, NNF-expanded (`succInd_nnf`) and broken by `PXFc.orI` into the
+`{∼ψ_v(0), ∃(∼step_v), ∀ψ_v}` shape `metaInduction_cong` discharges. -/
 theorem hax_paLX {Γ : Seq LX} (φ : Form LX) (hφ : φ ∈ (paLX : Schema LX)) (hΓ : φ ∈ Γ) :
     ∃ c : ℕ, ∀ e : ℕ → ℕ, ∃ α, PXFc α c (Γ.image (fun ψ => asgX e ▹ ψ)) := by
   obtain ⟨σ, hσ, rfl⟩ := hφ
@@ -713,24 +752,52 @@ theorem hax_paLX {Γ : Seq LX} (φ : Form LX) (hφ : φ ∈ (paLX : Schema LX)) 
     have hxf : XFreeForm (asgX e ▹ (Rew.emb ▹ Semiformula.lMap (Language.ORing.embedding LX) τ)) := by
       rw [xfreeForm_rew, xfreeForm_rew]; exact xfreeForm_lMap τ
     exact provable_true_x _ _ le_rfl hxf htrue (Finset.mem_image_of_mem _ hΓ)
-  · -- DISCLOSED: X-induction instance. All four structural lemmas are PROVEN above
-    -- (`metaInduction_cong`, `subst_value_subst`, `succInd_nnf`, `PXFc_allClosure`); what remains is
-    -- the integration glue. RECIPE (lap-17 recon):
-    --   1. `obtain ⟨ψ, -, rfl⟩ := hind` ⟹ `σ = univCl (succInd ψ)`; pick `c := ψ.complexity + 1`.
-    --   2. `asgX e ▹ ↑(univCl (succInd ψ)) = ∀⁰* (Rew.fixitr 0 (succInd ψ).fvSup ▹ succInd ψ)`
-    --      (PROVEN in scratch: `coe_univCl_eq_univCl'` + `rew_univCl'` (asgX-invariant) + `rfl`).
-    --   3. `PXFc_allClosure` ⟹ per `v : Fin n → ℕ` derive the numeral instantiation; reduce
-    --      `Rew.subst (nm∘v) ▹ (fixitr ▹ succInd ψ)` via `subst_comp_fixitr_eq_map` to
-    --      `Rew.rewrite f_v ▹ succInd ψ` (FRICTION: `0 + fvSup` vs `fvSup` Fin-index casts).
-    --   4. `succInd`-rewrite-commute: `g ▹ succInd ψ = succInd (g.q ▹ ψ)` (FRICTION: push `g ▹`
-    --      through nested binders + the three `ψ/[·]` substitutions — `rew_subst_term` for the closed
-    --      one, a `g.q` variant under the `∀`). Gives `succInd ψ_v` with `ψ_v := g_v.q ▹ ψ`.
-    --   5. `succInd_nnf ψ_v` + `ψ_v/[#0]=ψ_v` (simp) + `↑0=nm 0` (simp [nm]) ⟹ the NNF
-    --      `∼ψ_v/[nm 0] ⋎ (∃(∼step_v) ⋎ ∀ψ_v)`, `step_v := ∼ψ_v/[#0] ⋎ ψ_v/[‘#0+1’]`.
-    --   6. break by `PXFc.orI` ×2 (+ `.weakening` to reorder) to `{∼ψ_v(0), ∃(∼step_v), ∀ψ_v} ∪ image`.
-    --   7. `metaInduction_cong ψ_v step_v (succT_v) hsval hstep` with
-    --      `succT_v n := Rew.subst ![nm n] ‘(#0+1)’` (|·| = n+1, PROVEN approach); `hstep` by simp.
-    sorry
+  · -- X-induction instance: assemble via `PXFc_allClosure` + `rew_succInd` + `metaInduction_cong`.
+    obtain ⟨ψ, -, rfl⟩ := hind
+    refine ⟨ψ.complexity + 1, fun e => ?_⟩
+    have hmem : asgX e ▹ (↑(Semiformula.univCl (succInd ψ)) : SyntacticFormula LX)
+        ∈ Finset.image (fun φ => asgX e ▹ φ) Γ := Finset.mem_image_of_mem _ hΓ
+    suffices h : ∃ α, PXFc α (ψ.complexity + 1)
+        (insert (asgX e ▹ (↑(Semiformula.univCl (succInd ψ)) : SyntacticFormula LX))
+          (Finset.image (fun φ => asgX e ▹ φ) Γ)) by
+      rwa [Finset.insert_eq_self.mpr hmem] at h
+    rw [show asgX e ▹ (↑(Semiformula.univCl (succInd ψ)) : SyntacticFormula LX)
+          = ∀⁰* (Rew.fixitr 0 (succInd ψ).fvSup ▹ (succInd ψ)) from by
+        rw [Semiformula.coe_univCl_eq_univCl', Semiformula.rew_univCl']; rfl]
+    apply PXFc_allClosure
+    intro v
+    rw [← TransitiveRewriting.comp_app, rew_succInd]
+    set Δ : Seq LX := Finset.image (fun φ => asgX e ▹ φ) Γ with hΔ
+    set ψv : Semiformula LX ℕ 1 :=
+      (((Rew.subst fun i => nm (v i)).comp (Rew.fixitr 0 (succInd ψ).fvSup)).q ▹ ψ) with hψv
+    have hcx : ψv.complexity = ψ.complexity := by rw [hψv]; simp
+    set step : Semiformula LX ℕ 1 :=
+      (∼ψv/[(#0 : Semiterm LX ℕ 1)]) ⋎ ψv/[(‘(#0 + 1)’ : Semiterm LX ℕ 1)] with hstepdef
+    set succT : ℕ → SyntacticTerm LX :=
+      fun n => Rew.subst ![nm n] (‘(#0 + 1)’ : Semiterm LX ℕ 1) with hsuccT
+    have hsval : ∀ n, Semiterm.valm ℕ ![] (id : ℕ → ℕ) (succT n) = n + 1 := by
+      intro n
+      haveI hO : Structure.One LX ℕ := ⟨rfl⟩
+      haveI hA : Structure.Add LX ℕ := ⟨fun _ _ => rfl⟩
+      simp only [hsuccT, Semiterm.val_substs, Semiterm.val_operator₂, Semiterm.val_operator₀,
+        hA.add, valm_nm, Semiterm.val_bvar, Matrix.cons_val_zero]
+      congr 1
+    have hstep : ∀ n, (∼step)/[nm n] = (ψv/[nm n]) ⋏ ∼(ψv/[succT n]) := by
+      intro n
+      simp only [hstepdef, hsuccT]
+      simp [← TransitiveRewriting.comp_app, Rew.subst_comp_subst]
+    obtain ⟨a, ha⟩ := metaInduction_cong (Γ := Δ) ψv step succT hsval hstep
+    rw [← hcx, succInd_nnf ψv]
+    have e0 : (↑(0:ℕ) : Semiterm LX ℕ 0) = nm 0 := by simp [nm]
+    have hb : ψv/[(#0 : Semiterm LX ℕ 1)] = ψv := by simp
+    rw [e0]
+    have h1 : PXFc a (ψv.complexity + 1)
+        (insert (∃⁰ ∼step) (insert (∀⁰ ψv/[(#0:Semiterm LX ℕ 1)]) (insert (∼ψv/[nm 0]) Δ))) := by
+      rw [hb]; exact ha.weakening (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto)
+    have h2 := PXFc.orI (∃⁰ ∼step) (∀⁰ ψv/[(#0:Semiterm LX ℕ 1)]) h1
+    have h3 := PXFc.orI (∼ψv/[nm 0]) ((∃⁰ ∼step) ⋎ (∀⁰ ψv/[(#0:Semiterm LX ℕ 1)]))
+      (h2.weakening (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto))
+    exact ⟨_, h3⟩
 
 /-- **C₂, the target form.** The embedding of `𝗣𝗔(LX)`-derivations into the `XFreeAx` `Z∞` carrier
 `PXFc` is just `embedC_LX_gen` specialised to `𝓢 := ↑paLX`, **once the `axm` discharge `hax` for

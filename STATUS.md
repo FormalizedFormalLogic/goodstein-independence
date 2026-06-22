@@ -296,7 +296,7 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 | theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
 | `peano_not_proves_goodstein` (headline) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` | 🔓 open `sorry` — **C₁/D + C₂-structural DONE & clean (lap 17)**; remaining: C₂ glue (`hax_paLX`) + E (Goodstein⟹TI) + F (arithmetization seam, `‖≺‖=ε₀`) ; **0** real math axioms |
-| `hax_paLX` (C₂ glue, `src/EmbeddingX`) | `paLX`-image axioms embed to `PXFc` | `propext, sorryAx, choice, Quot.sound` | 🔓 base done (X-free via `provable_true_x`); **X-induction assembly = the one open `sorry`** (`:705`, recipe inlined). Clean ⟹ `embedC_LX` ⟹ Thm 5.6 fires. Supporting lemmas (`nrel_value_subst`, `subst_value_subst`, `metaInduction_cong`) all clean. |
+| `hax_paLX` (C₂ glue, `src/EmbeddingX`) | `paLX`-image axioms embed to `PXFc` | `propext, choice, Quot.sound` | 🟢 **CLEAN (lap 20)** — X-induction assembly discharged via `PXFc_allClosure` + new `rew_succInd`/`rew_subst1_comm_q`/`subst1_comp_bShift` + `metaInduction_cong`. ⟹ `embedC_LX` clean ⟹ **Thm 5.6 (`PA ⊬ TI(ε₀)`) axiom-clean modulo E+F**. |
 | `goodsteinSentence_faithful` (bridge) | encoding correctness | `propext, choice, Quot.sound` | 🟢 clean (trust base) |
 | `goodsteinTerminates_re` (M1) | r.e. of termination | `propext, choice, Quot.sound` | 🟢 clean |
 | `Deriv.Provable.cutElim` (M5, §19.9, `src/Zinfty`) | ε₀ cut-elimination (ℒₒᵣ) | `propext, choice, Quot.sound` | 🟢 clean — witness-FREE `(α,c)` |
