@@ -19,10 +19,26 @@ Attack paths:
    principle first as warmup, to exercise Foundation's provability API (`⊢`, `Con`, D1–D3).
 
 ### O2 — the Phase-2 girder (Route B, Towsner) — milestones M3…M7 in `PHASE2-DECOMPOSITION.md`
-This is the real frontier. **Crux: M3 (`Z_∞` calculus) and M5 (cut elimination).**
 
-**STATUS UPDATE (2026-06-22 lap 2): `wip/ZinftyF.lean` — Z_∞ on Foundation's real ℒₒᵣ syntax.**
-Supersedes the abstract-`AForm` `wip/Zinfty.lean` prototype (kept for history, do not delete).
+**✅ M3 (Z_∞ calculus) + M5 (cut-elimination) COMPLETE & axiom-clean** in
+`src/GoodsteinPA/Zinfty.lean` (promoted from `wip/`, 0 sorries, `#print axioms` = trust base only,
+2026-06-22 lap 3). The whole Towsner §19 is machine-checked: inversions 19.2–19.4, cut reductions
+19.5 (`cutReduceConj/Disj`) + 19.6 (`cutReduceAll`), atomic/⊥ cuts (`atomCut`/`removeFalsum`, **no
+truth layer needed** — set sequents dissolve them), `cutElimStep` (19.7), `cutElim` (19.9). Key
+findings: `Ordinal.nadd` ABSENT in mathlib v4.31.0 → ordinary `+` with `+1` slack (bounded below
+`ω^(·+1)` by additive principality); the Hardy `k` index was NOT needed for cut-elim (pure Schütte
+`(α,c)` suffices — it's a §17 device); `exI` restricted to numeral witnesses.
+
+**NEXT (hardest-first): M4 — the embedding `PA⁺ ↪ Z_∞`** (Towsner §16 Thm 16.7 / §18 Thm 18.1). A
+`PA⁺` proof of `φ` yields `∃ α<ε₀, ∃ k c, Z_∞ ⊢^{α}_c φ`, finite `c` (finitely many induction
+instances ⇒ finitely many finite-rank cuts — the hinge of the whole argument). Sub-targets:
+M4.1 (Lemma 16.1, true universal sentences derivable at finite bound), M4.2 (Lemma 16.5/Cor 16.6,
+induction axioms at bound `ω·4 # 2rk(φ) # 8`), M4.3 (Thm 16.7, induct over a Hilbert-style proof;
+reuse Foundation's finitary `Derivation`, map `∀`→ω-rule). M6 (Hardy lower bound, §17) is
+**independent and parallelizable** (M6.1–M6.3 overlap Track 1 `Logic/FastGrowing`; M6.4 = Thm 17.1
+is new and likely DOES need the Hardy `k` threaded through a cut-free `Provable₀`).
+
+<details><summary>Superseded lap-2 status (M5 was one open leaf `cutElimStep`)</summary>
 Done and **machine-checked** (`lake env lean wip/ZinftyF.lean`, only `cutElimStep` sorry):
 - The `Z_∞` calculus `inductive Deriv` over `SyntacticFormula ℒₒᵣ`, **Finset sequents** (set-based,
   per Towsner ⇒ contraction is FREE, no `contr` rule), ω-rule `allω`, ordinal bound `o`, `ℕ∞`
@@ -64,6 +80,8 @@ Attack paths:
    cut-elimination machine-checked (mod the embedding M4 and lower bound M6.4). NOTE: `cutElimStep`
    likely needs the numeric/Hardy `k` bound that `Provable` currently elides — re-add a `k : ℕ`
    index to `Provable`/`Deriv.o` first (it threads the `h_{ω^α}(k)` bound through 19.6/19.7).
+   *(Resolved lap 3: the `k` index turned out NOT to be needed for cut-elimination.)*
+</details>
 
 ### O3 — `PA_delta1Definable : 𝗣𝗔.Δ₁` (Foundation axiom) — only on Route A
 Needed to *state* Gödel II for `𝗣𝗔`; Foundation axiomatizes it (TODO in
