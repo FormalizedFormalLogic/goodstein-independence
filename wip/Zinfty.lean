@@ -146,6 +146,22 @@ theorem Provable.weakening {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Seq} (h : Γ �
   · simpa [Deriv.o] using ho
   · simpa [Deriv.cr] using hcr
 
+/-- Predicate-level axiom rule: a true atom closes a sequent at bound `0`, cut rank `0`. -/
+theorem Provable.trueR {Γ : Seq} (h : AForm.atom true ∈ Γ) : Provable 0 0 Γ :=
+  ⟨Deriv.trueR Γ h, by simp [Deriv.o], by simp [Deriv.cr]⟩
+
+/-- Predicate-level `∧`-introduction. -/
+theorem Provable.andI {α β : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : AForm)
+    (hφ : Provable α c (φ ::ₘ Γ)) (hψ : Provable β c (ψ ::ₘ Γ)) :
+    Provable (max α β + 1) c (and φ ψ ::ₘ Γ) := by
+  rcases hφ with ⟨dφ, hoφ, hcφ⟩
+  rcases hψ with ⟨dψ, hoψ, hcψ⟩
+  refine ⟨Deriv.andI φ ψ dφ dψ, ?_, ?_⟩
+  · simp only [Deriv.o]
+    exact add_le_add (max_le_max hoφ hoψ) le_rfl
+  · simp only [Deriv.cr]
+    exact max_le hcφ hcψ
+
 /-- Predicate-level `∨`-introduction. -/
 theorem Provable.orI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : AForm)
     (h : Provable α c (φ ::ₘ ψ ::ₘ Γ)) : Provable (α + 1) c (or φ ψ ::ₘ Γ) := by
