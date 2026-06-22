@@ -1298,4 +1298,100 @@ theorem orderType_le_of_TIprovable (lt : ℕ → ℕ → Prop) [IsWellFounded �
   obtain ⟨d, hdo, hdc, hdx⟩ := PXFc.toPXF (PXFc.cutElim h)
   exact Boundedness.orderType_le_of_TIderiv lt prec _ hprec hprecXPos d hdo hdc hdx
 
+/-! ### C₂ groundwork: `Z∞` excluded middle over `LX`, `XFreeAx`-preserving.
+
+`provable_em φ` closes `{φ, ∼φ}` cut-free using ONLY `axL`/`verumR`/`andI`/`orI`/`allω`/`exI` — **never
+`axTrue`** (atoms close via the same-atom EM axiom `axL`, *including X-atoms*). So `XFreeAx` holds for
+the whole derivation automatically, and the output is a `PXFc · 0`. This is the base/step engine of the
+embedding's X-induction meta-induction (Buchholz Thm 5.5) — the `XFreeAx`-safe route for X-formulas. -/
+theorem provable_em_x (φ : Form LX) {Γ : Seq LX} (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+    ∃ a, PXFc a 0 Γ := by
+  have key : ∀ (k : ℕ) (φ : Form LX), φ.complexity ≤ k →
+      ∀ {Γ : Seq LX}, φ ∈ Γ → ∼φ ∈ Γ → ∃ a, PXFc a 0 Γ := by
+    intro k
+    induction k with
+    | zero =>
+      intro φ hk Γ hp hn
+      cases φ using Semiformula.cases' with
+      | hverum => exact ⟨0, PXFc.verumR hp⟩
+      | hfalsum => exact ⟨0, PXFc.verumR (by simpa using hn)⟩
+      | hrel r v => exact ⟨0, PXFc.axL r v hp (by simpa using hn)⟩
+      | hnrel r v => exact ⟨0, PXFc.axL r v (by simpa using hn) hp⟩
+      | hand φ ψ => simp at hk
+      | hor φ ψ => simp at hk
+      | hall φ => simp at hk
+      | hexs φ => simp at hk
+    | succ k ih =>
+      intro φ hk Γ hp hn
+      cases φ using Semiformula.cases' with
+      | hverum => exact ⟨0, PXFc.verumR hp⟩
+      | hfalsum => exact ⟨0, PXFc.verumR (by simpa using hn)⟩
+      | hrel r v => exact ⟨0, PXFc.axL r v hp (by simpa using hn)⟩
+      | hnrel r v => exact ⟨0, PXFc.axL r v (by simpa using hn) hp⟩
+      | hand φ ψ =>
+        have hφk : φ.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
+        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
+        obtain ⟨a1, h1⟩ := ih φ hφk (Γ := insert φ (insert (∼φ) (insert (∼ψ) Γ)))
+          (by simp) (by simp)
+        obtain ⟨a2, h2⟩ := ih ψ hψk (Γ := insert ψ (insert (∼φ) (insert (∼ψ) Γ)))
+          (by simp) (by simp)
+        have hand := PXFc.andI φ ψ h1 h2
+        rw [Finset.insert_eq_self.mpr
+          (show (φ ⋏ ψ) ∈ insert (∼φ) (insert (∼ψ) Γ) by simp [hp])] at hand
+        have hor := PXFc.orI (∼φ) (∼ψ) hand
+        rw [Finset.insert_eq_self.mpr (show (∼φ ⋎ ∼ψ) ∈ Γ by simpa using hn)] at hor
+        exact ⟨_, hor⟩
+      | hor φ ψ =>
+        have hn' : (∼φ ⋏ ∼ψ) ∈ Γ := by simpa using hn
+        have hφk : φ.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
+        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
+        obtain ⟨a1, h1⟩ := ih φ hφk (Γ := insert (∼φ) (insert φ (insert ψ Γ)))
+          (by simp) (by simp)
+        obtain ⟨a2, h2⟩ := ih ψ hψk (Γ := insert (∼ψ) (insert φ (insert ψ Γ)))
+          (by simp) (by simp)
+        have hand := PXFc.andI (∼φ) (∼ψ) h1 h2
+        rw [Finset.insert_eq_self.mpr
+          (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hn'))] at hand
+        have hor := PXFc.orI φ ψ hand
+        rw [Finset.insert_eq_self.mpr (show (φ ⋎ ψ) ∈ Γ by simp [hp])] at hor
+        exact ⟨_, hor⟩
+      | hall ψ =>
+        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_all] at hk; omega
+        have hex : (∃⁰ ∼ψ) ∈ Γ := by simpa using hn
+        have fam : ∀ n, ∃ a, PXFc a 0 (insert (ψ/[nm n]) Γ) := by
+          intro n
+          have hcomp : (ψ/[nm n]).complexity ≤ k := by
+            have he : (ψ/[nm n]).complexity = ψ.complexity := by simp
+            rw [he]; exact hψk
+          obtain ⟨a, ha⟩ := ih (ψ/[nm n]) hcomp
+            (Γ := insert (∼(ψ/[nm n])) (insert (ψ/[nm n]) Γ)) (by simp) (by simp)
+          have hexI := PXFc.exI (∼ψ) n (Γ := insert (ψ/[nm n]) Γ)
+            (by have heq : (∼ψ)/[nm n] = ∼(ψ/[nm n]) := by simp
+                rw [heq]; exact ha)
+          rw [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hex)] at hexI
+          exact ⟨a + 1, hexI⟩
+        choose β hβ using fam
+        have hall := PXFc.allω ψ (Γ := Γ) hβ
+        rw [Finset.insert_eq_self.mpr hp] at hall
+        exact ⟨_, hall⟩
+      | hexs ψ =>
+        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_exs] at hk; omega
+        have hall' : (∀⁰ ∼ψ) ∈ Γ := by simpa using hn
+        have fam : ∀ n, ∃ a, PXFc a 0 (insert ((∼ψ)/[nm n]) Γ) := by
+          intro n
+          have hcomp : (ψ/[nm n]).complexity ≤ k := by
+            have he : (ψ/[nm n]).complexity = ψ.complexity := by simp
+            rw [he]; exact hψk
+          obtain ⟨a, ha⟩ := ih (ψ/[nm n]) hcomp
+            (Γ := insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) Γ)) (by simp) (by simp)
+          have hexI := PXFc.exI ψ n (Γ := insert (∼(ψ/[nm n])) Γ) ha
+          rw [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hp)] at hexI
+          have heq : (∼ψ)/[nm n] = ∼(ψ/[nm n]) := by simp
+          rw [heq]; exact ⟨a + 1, hexI⟩
+        choose β hβ using fam
+        have hall := PXFc.allω (∼ψ) (Γ := Γ) hβ
+        rw [Finset.insert_eq_self.mpr hall'] at hall
+        exact ⟨_, hall⟩
+  exact key φ.complexity φ le_rfl hp hn
+
 end GoodsteinPA.XFreeCutElim
