@@ -366,3 +366,49 @@ gives NO norm bound. The `≤`-wrapper THREW AWAY exactly the norm info the `all
 through `max k n`). `e` is raised only at the top-level cut in `cutReduceAll` (via `mono_e`). The
 lap-8 `e`-design was RIGHT; it just lacked the norm-carrying wrapper + `+1`, hitting the
 norm-not-≤-monotone wall. Implementation: `wip/OperatorZinfty.lean` (lap 12).
+
+---
+
+## ADDENDUM 7 (lap 12) — the WITNESS-budget half is NOT closable numerically; operator `H` required (corrects ADDENDUM 5)
+
+ADDENDUM 6 (norm half) is **done & committed** (`cutReduceAllAux`, axiom-clean). Trying to *feed* it from
+`cutReduceAll` exposed that §19.6 has TWO independent budgets and the lap-12 proof only closes one:
+
+**The witness-budget gap (the `fam`-index).** `cutReduceAllAux` is stated with `fam : ∀ n, Zekd α e k₀
+dd₀ c (insert (φ/[nm n]) Γ)` at a **FIXED** `k₀`. But `allInv n` (the only way to build `fam`) yields the
+n-th ∀-premise at index **`max k₀ n`** — necessarily, since that premise's witnesses range up to
+`hardy e (max k₀ n + dd₀)`, which a derivation at the smaller index `k₀` cannot host. So `fam`-at-fixed-`k₀`
+is **unprovable** in general; `cutReduceAllAux` as written is a true-but-unfeedable lemma (it compiled only
+because fixed-`k₀` + inert-`e` trivially bounds witnesses). Empirically: `cutReduceAll(k₀:=k) … fam …` with
+`fam` from `allInv` fails to unify `k` against `max k n`.
+
+**Why no numeric index works (definitive — this CORRECTS the lap-8 ADDENDUM-5 "single control ordinal `e`
+suffices" optimism).** Take `fam` at the honest `max k₀ n` and let the result index grow to Towsner's
+`h_{β#ω}(k)`. The commuting `allω` case (∃-side ends in ω-rule on `χ`) needs, for the reassembled ω-premise
+`n`, the IH-result index `≤` the premise budget — i.e. Towsner's
+  `h_{βₙ#ω}(max{k,n}) ≤ max{h_{β#ω}(k), n}`.
+For `n` large (`> k`, `> h_{β#ω}(k)`): LHS `= h_{βₙ#ω}(n) ≥ h_ω(n) = h_n(n) > n =` RHS. **FALSE.** Towsner
+"follows immediately from the IH"-hand-waves exactly this. The obstruction is structural: a numeric index
+must simultaneously (a) GROW with the ∀-branch `n` to host the witness `hardy e (max k n)` and (b) stay
+`≤ max{K,n}` to be a legal ω-premise — incompatible. The split `(k,d)` (ADD. 3), and the single control
+ordinal `e` (ADD. 5), are all numeric ⟹ all fail here. `e`-inert (my lap-12 proof) sidesteps it only by
+assuming the unprovable fixed-`k₀`.
+
+**The fix = Buchholz operator-controlled derivations** (`papers/buchholz-beweistheorie-skriptum.pdf`,
+"operatorkontrollierte Ableitungen"; also Buss Handbook ch.II). The witness "budget" is **set membership
+`n ∈ H`**, not a numeric `≤`. `H` (a set/function on ordinals, closed under the relevant `hardy`/`+`/`ω^·`
+functions) grows monotonically under cut-elim; the ω-rule premise `n` is controlled by `H[{n}]`. Because
+the budget is set-membership, the nested-`hardy` witness blow-up STAYS in the (closed) `H` — there is no
+numeric inequality to violate. The lap-8 banked Hardy lemmas (`hardy_add_collapse : H_{e+α}=H_e∘H_α`,
+`hardy_comp_lt_goodsteinLength`) ARE the closure facts an `H` needs (they let the control absorb the
+double-`hardy`); lap-8 had the right ingredients but wired them as a single numeric `e` rather than a set.
+
+**What ports (do NOT rebuild):** the entire lap-12 `cutReduceAllAux` structural skeleton + norm-carrying
+`ZekdProv` wrapper + `+1` d-bump port **verbatim** to the `H`-calculus — only the `exI`/`allω` witness
+side-condition changes (`n ≤ hardy e (k+d)` ⤳ `n ∈ H[node]`). The norm budget (ADD. 6) is orthogonal and
+stays. So lap-12 is the reusable half; next lap builds `Zekd^H` (witness control `H`) and re-does §19.2–19.6
+threading `H` (mechanical for §19.2–19.5; §19.6 is where `H`'s closure finally makes the commuting ω legal).
+
+**Decision: STOP trying numeric witness controls (single `k`, `(k,d)`, single `e`) — all three are now
+PROVED insufficient for §19.6-commuting. Build the operator `H`.** Read Buchholz's operator definition +
+its ω-rule + its cut-elim Boundedness lemma; that is the precise spec the `Zekd^H` calculus must implement.

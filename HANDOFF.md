@@ -1,84 +1,63 @@
-# HANDOFF — 2026-06-22 (lap 11)
+# HANDOFF — 2026-06-22 (lap 12)
 
-> **Branch** `plan` · **HEAD** `e37fa89` · 8 commits this lap · build **green**
+> **Branch** `plan` · **HEAD** `605d5ba` (+ uncommitted doc updates this lap) · build **green**
 > (`lake build GoodsteinPA`, 1258 jobs) · headline `peano_not_proves_goodstein` = honest `sorry`
-> (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms) · working tree clean.
-> **Lap 11 COMPLETED M4 — the embedding `embedC` (axiom-clean, promoted to `src/`) — AND uncovered
-> (via Towsner §13–17) that the headline needs the WITNESS-BOUNDED calculus `Zᵏ`: M5 drops the I∃
-> bound `k`, so `embedC` is the *unbounded* embedding (reusable, but not the headline object). The
-> `wip/Bounding.lean` bridge is FALSE as stated. See `ANALYSIS-2026-06-22-witness-bound-gap.md`.**
+> (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms) · `wip/OperatorZinfty.lean` green, 0 sorries.
+> **Lap 12 = a REVIEW lap with two findings: (a) PROVED the §19.6 norm-budget half (`cutReduceAllAux`,
+> axiom-clean); (b) PIVOTED the whole route to Buchholz's witness-FREE Boundedness analysis, which reuses
+> the done M4+M5 and avoids the witness-bounded wall.** Read `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md`
+> FIRST, then `STATUS.md`, then `PENDING_WORK.md` (lap-12 top).
 
-## 🎉 M4 — the embedding `embedC` — COMPLETE & axiom-clean (`src/GoodsteinPA/Embedding.lean`)
-`embedC : Derivation2 (𝗣𝗔:Schema) Γ → ∃ c, ∀ e:ℕ→ℕ, ∃ α, Provable α c (Γ.image (asg e ▹))`.
-`#print axioms embedC = [propext, Classical.choice, Quot.sound]` (no sorryAx, no math axioms). In
-the default build (added to `src/GoodsteinPA.lean` root import). The two non-structural cases:
-- **`exs`** (∃-intro, open witness `t`): `Provable.exI_closed` collapses the closed term `asg e ▹ t`
-  to its numeral value via the **value-congruent EM** `provable_em_cong_gen` (arity-general; atomic
-  leaves close by `axTrue` on value-equal arg vectors, quantifiers via `allω`/`exI` with the
-  `subst_q_cons_app` substitution-composition identity) + one `cut`, then numeral-`exI`.
-- **`axm`** (PA axiom `↑σ`): **ω-completeness** `provable_true` — every closed formula TRUE in ℕ is
-  `Z∞`-derivable cut-free (induction on complexity). Since `ℕ ⊧ₘ* 𝗣𝗔`, every axiom is true. The
-  ω-rule subsumes the Buchholz §5.5 meta-induction ENTIRELY — no induction-scheme special-casing.
+## 🎯 THE PIVOT (the headline of this lap — read the analysis doc)
+Reading **Buchholz "Beweistheorie" §5** (`papers/buchholz-beweistheorie-lecture-notes.pdf` pp. 26–31)
+end-to-end showed the project drifted (laps 4–11) onto Towsner's HARD witness-bounded variant. The
+**standard Gentzen analysis** bounds PA's ordinal via the **witness-FREE `Z∞`** (= our M5) + a
+**Boundedness** theorem on `TI_≺(X)` (Thm 5.4) — NOT a witness-bounded calculus. Its **Embedding** (Thm
+5.5) and **Cut-Elimination** (Thms 5.1/5.2) are EXACTLY our **M4 `embedC`** and **M5 `cutElim`**, both
+DONE & axiom-clean. So the two hardest pieces are already built; the remaining work is **Boundedness +
+Goodstein⟹TI(ε₀)** — strictly less surface than Towsner, and the textbook-standard route (= DIRECTION.md's
+original plan). The lap-11 "embedC is the wrong object / need witness-bounded `Zᵏ`" verdict was a
+**conflation**: lap 11 killed naive *witness*-extraction (height ≠ witness bound — `G(5)` at height 1),
+but Buchholz's Boundedness bounds the **order type** of `≺` via the set variable `X` + X-positive truth
+semantics `⊨^α`, sidestepping witnesses. **M6 (Hardy) + the `wip/` witness-bounded calculi drop off the
+critical path** (banked, not deleted).
 
-Reusable axiom-clean assets now in `src/Embedding.lean`: `provable_em`, `provable_em_cong_gen/_cong`,
-`Provable.exI_closed`, `provable_true`. (Superseded naive `embed`/`provable_rew` dropped on
-promotion; history in `wip/Embedding.lean`.)
+## 🎯 NEXT LAP — execute the Buchholz route (`PENDING_WORK.md` lap-12 top has the full plan)
+- **0. VERIFY-FIRST (cheap, do before deep work):** (a) M5/M4 accept a set variable `X` (extend
+  `ℒₒᵣ`→`ℒₒᵣ∪{X}` or add a fixed relation symbol — `embedC.axm`/`provable_true` only need the `X`-free PA
+  axioms, so should extend); (b) Goodstein⟹TI_≺(X) is provable in PA via the Phase-0 CNF-ε₀ encoding.
+- **1.** Truth semantics `⊨^α Γ` (`X := {n : |n|_≺<α}`), `Prog_≺`, ≺-norm, order type `‖≺‖`, X-positivity.
+- **2.** **Boundedness (Thm 5.4)** = the new theorem: induction on the cut-free `Provable β 0`-derivation
+  (8 cases, Buchholz p.29). Corollary `Z∞ ⊢^β_1 TI_≺(X) ⟹ ‖≺‖ ≤ 2^β`.
+- **3.** Goodstein ⟹ TI_≺(X) bridge (Kirby–Paris/Cichoń; reuse Phase-0 encoding).
+- **4.** Assembly ⟹ discharge headline, `#print axioms` clean.
 
-## 🎯 NEXT LAP — the WITNESS-BOUNDED calculus `Zᵏ` (read `ANALYSIS-2026-06-22-witness-bound-gap.md`)
-⚠️ **Course-correction finding (lap 11, grounded in Towsner §13–17).** The lap-11 bridge scaffold
-(`wip/Bounding.lean`, `cutfree_lt_eps0_absurd`) is **FALSE as stated**, and the lap-9 "bound directly
-on the unbounded cut-free `Deriv`" reframe is **not viable**. Reason: Towsner's lower bound (Thm 17.1)
-bites only via the **witness bound `k`** — the I∃ side condition `value(t) ≤ h_α(k)`. M5's
-`Provable α c` tracks the cut rank `c` but DROPS `k` (the lap-4 finding). Without `k`, `provable_true`
-gives a cut-free derivation of `{↑gs}` with ordinal `< ε₀` (bounded quantifiers cost `allω`=`ω`; `exI`
-costs `+1` regardless of witness VALUE) — so the ordinal alone does not bite. ⟹ **`embedC` is the
-*unbounded* embedding (Towsner Thm 14.2), subsumed by `provable_true`; it is correct + reusable but
-NOT the headline object.**
+## ✅ Lap-12 (a): §19.6 norm-machinery PROVED (`wip/OperatorZinfty.lean`, axiom-clean) — banked off-path
+`cutReduceAllAux` (Towsner's ∀/∃ cut-reduction on the witness-bounded `Zekd`) now compiles with 0 sorries,
+`#print axioms = [propext, choice, Quot.sound]`. Cracked the **norm-budget** half of the 5-lap wall via a
+self-derived **norm-carrying `ZekdProv` wrapper** (`∃ α'≤α, α'.NF ∧ norm α'<k+d ∧ Zekd α' …`) + threaded
+`norm γ<k+dd` + `+1` d-bump (ADDENDUM 6). All 10 induction cases incl. the key `allω`-commuting +
+`exI`-principal. **BUT** the **witness-budget** half is numeric-unclosable (ADDENDUM 7): `allInv` gives the
+∀-family at `max k₀ n`, and Towsner's commuting-ω bound is false for large `n` — needs the operator `H`.
+This proof is reusable norm-machinery for an operator-`H` build IF the Buchholz route ever stalls; it is
+NOT on the live chain. (`le_add_right_NF` helper also added.)
 
-**The corrected critical path (= lap-5 plan steps 1–4, now confirmed essential):**
-1. **`Zᵏ`** — M5 `Deriv` + the `(α,k)` witness bound on `exI` (`value ≤ h_α k`). Revive the banked
-   laps-6–8 `wip/` thread (`Zekd`/`OperatorZinfty`; lap-8 worked §19.2–19.5 + control axis). Cleanest
-   carrier: a `Provable`-style wrapper `∃ α' ≤ α, α'.NF ∧ Zᵏ …` (lap-8 `ZekdProv` design).
-2. **Bounded embedding (Towsner Thm 16.1/16.5/16.7)** into `Zᵏ`, ordinal `< ε₀`, finite cut rank.
-   `axm`: universal axioms via **16.1** (`provable_true` on the quantifier-free matrix — bounded, no
-   `∃`); induction via **16.5** bounded meta-induction (ordinal `ω·4#2^{rk}#2`), reusing `provable_em`
-   + `Provable.exI_closed`. Structural cases: port `embedC`'s (and/or/cut/wk/shift/all) ~verbatim.
-3. **`(α,k)`-cut-elim (Thm 19.9)** preserving the bound — the `wip/` Zekd §19 grind, now correctly
-   motivated (`ANALYSIS-…-cutelim-k-threading.md` has the §19.6 plan + the `ZekdProv` wrapper design).
-4. **Subformula bridge to `B`** (M6): a cut-free `Zᵏ` derivation of `{↑gs}` has only `↑gs`-subformulas
-   = the `GForm` fragment, so it IS a `B`-derivation ⟹ contradiction with `lowerBound_hardy_selfcontained`.
-   Plus the Σ₁-arithmetization seam (M7a: `codeOfREPred` matrix ↔ `atomTrue`) and the ONote↔Ordinal seam.
-
-**BANKED reusable assets (all axiom-clean, `src/Embedding.lean`):** `provable_true` (→16.1),
-`provable_em`/`provable_em_cong_gen`/`Provable.exI_closed` (→16.5/14.1), `embedC` structural cases,
-M5 `cutElim` template. Do NOT discard — they are the building blocks of the bounded embedding.
-
-**Banked witness-bounded calculi (verified compiling lap 11):** `wip/OperatorZinfty.lean` (`Zekd`,
-the lap-8 control-ordinal carrier) compiles green with ONE `sorry` at the §19.6 `cutReduceAll`
-frontier — ready to revive for step 1/3. Also `wip/BoundedZinfty.lean`, `wip/SplitZinfty.lean`,
-`wip/WitnessBound.lean`. **Open design question for step 1:** dedicated `Zekd` inductive (banked, big)
-vs. a side-predicate `WitnessBounded (d : Deriv Γ) α k` over M5's existing `Deriv` (reuses M5
-`cutElim` but must prove it preserves the bound — the hard `(α,k)`/`τ` bookkeeping either way). Decide
-before grinding; the ordinal seam (`o`:mathlib `Ordinal` vs `hardy`:`ONote`) bites in both.
-
-## State of the spine (Route B)
-- **M1, M2, Phase 0/1** — done, clean.
-- **M4 embedding** (`src/Embedding.lean`, `embedC`) — **DONE this lap, axiom-clean, in the build.**
-- **M5 ε₀ cut-elim** (`src/Zinfty.lean`, `Provable.cutElim`, `omegaTower_lt_epsilon0`) — done, clean.
-- **M6 Hardy lower bound** (`src/LowerBound.lean`, `lowerBound_hardy_selfcontained`) — done, clean.
-- **M7 bridge + assembly** (`wip/Bounding.lean`) — assembly SCAFFOLDED (proved mod B1 + bridge).
+## State of the spine (Buchholz route)
+- **M1, M2, Phase 0/1** — done, clean. Phase-0 encoding feeds the Goodstein⟹TI bridge.
+- **M4 embedding** (`src/Embedding.lean`, `embedC`) — **done, axiom-clean = Buchholz Thm 5.5.** ON path.
+- **M5 ε₀ cut-elim** (`src/Zinfty.lean`, `cutElim`) — **done, axiom-clean = Buchholz Thms 5.1/5.2/5.3.** ON path.
+- **Boundedness (Thm 5.4)** — the NEW theorem, lap-13 target.
+- **M6 Hardy lower bound** (`src/LowerBound.lean`) — done, clean, but **OFF the critical path** (banked).
+- **`wip/` witness-bounded calculi** — banked off-path; lap-12 `cutReduceAllAux` is the furthest reached.
 
 ## Notes
 - **LOCKED untouched:** `Defs.lean`, `Bridge.lean` RHS, `goodsteinTerminates`, headline `sorry` intact.
-- **Aristotle:** the `em_cong` job submitted this lap was CANCELLED (solved locally). Feed a bounded
-  open lemma when one arises (e.g. a self-contained B1 ordinal-sup-`<ε₀` fact, or a B4 ONote bridge).
-- **`WebFetch` dead; `WebSearch` works.** No open `ON-LINE-REQUEST.md`. For B2/B3 ground in `papers/`
-  (Towsner; `papers/SOURCES.md`) — request via `ON-LINE-REQUEST.md` if a specific bound is missing.
-- **Build:** `lake build GoodsteinPA` (1258); test wip via `lake env lean wip/Bounding.lean`.
-- **Reference corpus** (`~/personal/claude/knowledge/.../lean-journey/reference/`): `grep -rl` first.
+- **Literature on disk:** Buchholz §5 (the route), Buss Handbook ch.II (PA proof theory), Cichoń/Kirby–Paris
+  (Goodstein⟹ε₀). `Read` the PDFs directly (`pages` param). `papers/SOURCES.md` catalogs them.
+- **`WebFetch` dead; `WebSearch` works.** No open `ON-LINE-REQUEST.md`.
+- **Build:** `lake build GoodsteinPA` (1258); test wip via `lake env lean wip/OperatorZinfty.lean`.
+- **Aristotle:** idle (no genuinely-open lemma on the live chain yet; Boundedness will furnish one).
 
-## Lap-11 commits
-- `861d490` embedC exs PROVED (value-congruent EM ⟹ closed-term ∃-intro), 9/10.
-- `86ed9ec` embedC axm PROVED via ω-completeness → M4 COMPLETE 10/10.
-- `ff49e3b` promote embedC to `src/GoodsteinPA/Embedding.lean` (in the verified build).
-- `bb0488e` Route-B assembly scaffold (`wip/Bounding.lean`) — gap isolated to B1 + bridge.
+## Lap-12 commits
+- `605d5ba` §19.6 `cutReduceAllAux` PROVED on `Zekd` (norm-machinery, axiom-clean).
+- (this lap, docs) ADDENDUM 6/7, the Buchholz-pivot analysis, STATUS/PENDING/HANDOFF refresh.

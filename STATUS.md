@@ -1,23 +1,26 @@
 # STATUS — GoodsteinPA 📊
 
-**Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Towsner's Route B (witness-FREE `Z_∞` ε₀ cut-elimination
-[M5, done] + Hardy lower bound [M6, done], joined by the embedding [M4, DONE lap 11] + a bounding
-bridge [M7, scaffolded]).** · **Build**: 🟢 green (1258 jobs, `lake build GoodsteinPA`)
-· **Updated**: lap 11 · 2026-06-22 · `bb0488e`
+**Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Gentzen/Buchholz ordinal analysis — witness-FREE `Z_∞` (embedding
+[M4 `embedC`, done] + ε₀ cut-elim [M5, done]) + **Boundedness** (Thm 5.4, NEW) ⟹ `𝗣𝗔 ⊬ TI(ε₀)`, then
+Goodstein⟹TI(ε₀).** · **Build**: 🟢 green (1258 jobs, `lake build GoodsteinPA`)
+· **Updated**: lap 12 · 2026-06-22 · `605d5ba`
 
-## ⏭️ Lap-11 — M4 embedding COMPLETE (axiom-clean); + course-correction: the witness bound `k` is essential
-**M4 (`embedC`, `src/GoodsteinPA/Embedding.lean`) is DONE and axiom-clean** (`[propext, choice,
-Quot.sound]`), in the build. `exs` → `Provable.exI_closed` (value-congruent EM `provable_em_cong_gen`
-+ cut); `axm` → `provable_true` (ω-completeness). **BUT** (lap-11 finding, Towsner §13–17, see
-`ANALYSIS-2026-06-22-witness-bound-gap.md`): the headline needs the **witness-bounded calculus `Zᵏ`**
-— Towsner's lower bound (17.1) bites only via the I∃ witness bound `value ≤ h_α(k)`, which M5's
-`Provable α c` (cut-rank `c`) DROPS. Without `k`, `provable_true` already gives a cut-free `< ε₀`
-derivation of `{↑gs}`, so `embedC` is the *unbounded* embedding (Towsner Thm 14.2) — correct + reusable
-but NOT the headline object, and the lap-11 `wip/Bounding.lean` bridge is FALSE as stated. The lap-9
-"bound directly on unbounded `Deriv`" reframe is retracted; the banked laps-6–8 witness-bounded thread
-(`Zekd`) is back on the critical path. Corrected path = lap-5 steps 1–4 (build `Zᵏ`, bounded embedding
-Thm 16.1/16.5/16.7 reusing the banked assets, `(α,k)`-cut-elim 19.9, subformula bridge to `B`).
-Headline `Statement.peano_not_proves_goodstein` still an honest `sorry`.
+## ⏭️ Lap-12 — TWO findings: (a) §19.6 norm-machinery PROVED; (b) **PIVOT to Buchholz's Boundedness route** (reuses M4+M5, avoids the wall)
+**(a)** Proved Towsner's §19.6 ∀/∃ cut-reduction core `cutReduceAllAux` on the witness-bounded `Zekd`
+calculus (`wip/OperatorZinfty.lean`, axiom-clean), cracking the **norm-budget** half of the 5-lap wall
+via a **norm-carrying `ZekdProv` wrapper** + threaded `norm γ<k+dd` + `+1` d-bump (ADDENDUM 6). **But**
+the **witness-budget** half (ADDENDUM 7) is provably NOT closable with any numeric control (single `k`,
+`(k,d)`, or single control ordinal `e`): `allInv` yields the ∀-family at index `max k₀ n`, and Towsner's
+commuting-ω bound `h_{βₙ#ω}(max{k,n}) ≤ max{h_{β#ω}(k),n}` is FALSE for large `n`. Closing it needs the
+Buchholz set-operator `H` — a multi-lap build. **(b) ⟹ PIVOT (see `ANALYSIS-2026-06-22-lap12-buchholz-
+pivot.md`).** Reading Buchholz "Beweistheorie" §5 shows the STANDARD Gentzen analysis bounds PA's ordinal
+via the **witness-FREE** `Z∞` + a **Boundedness** theorem on `TI_≺(X)` — exactly **M5 (cut-elim, done) +
+M4 `embedC` (done)** + one new clean induction (Thm 5.4). The lap-11 "embedC is the wrong object / need
+witness-bounded `Zᵏ`" verdict was a **conflation**: lap 11 killed naive *witness*-extraction (height ≠
+witness bound), but Buchholz's Boundedness bounds the **order type** of `≺` via the set variable `X` +
+X-positive truth semantics `⊨^α` — sidestepping witnesses entirely. **New critical path: Boundedness
+(Thm 5.4) + Goodstein⟹TI(ε₀); drop the witness-bounded wall + M6 (Hardy) off the critical path.** This
+returns to `DIRECTION.md`'s original Gentzen/TI(ε₀) plan. Headline still an honest `sorry`.
 
 ## ⏭️ Lap-10 headline — M5 `axTrue` truth-layer surgery DONE (read `ANALYSIS-2026-06-22-truth-layer-gap.md`)
 Uncovered + closed the **truth-layer gap**: M5's pure-logic `Z_∞` couldn't host the embedding (`axm`
@@ -29,34 +32,45 @@ embedding** (`∀ e, ZProvable (Γ.image (ρe ▹))`) — discharges `axm` (via 
 collapse); supersedes the naive open `provable_rew`. M4 enabler `rew_subst_nm` also discharged this lap.
 
 ## Where it stands
-Two of the three Phase-2 girders are **machine-checked and `#print axioms`-clean**: the ε₀
-cut-elimination for the infinitary calculus (M5, `src/Zinfty.lean`) and the **full cut-free Hardy
-lower bound, Towsner Thm 17.1, with no hypotheses beyond `α.NF`** (M6, `src/LowerBound.lean`:
-`lowerBound_hardy_selfcontained`). Phase 0 (encoding + faithfulness bridge, M1) and Phase 1 (Gödel II
-hook, M2) are landed and clean. The headline `Statement.peano_not_proves_goodstein` is **still a
-literal `sorry`** (anti-fraud — correct; `#print axioms` = `[propext, sorryAx, choice, Quot.sound]`,
-0 math axioms). **Lap-9 reflection course-correction:** laps 6–8 built three successive
-witness-bounded cut-elim calculi (`BoundedZinfty→SplitZinfty→OperatorZinfty/Zekd`) chasing §19.6
-`cutReduceAll`; the lap-8 findings PROVED that thread is off the critical path (single-index Hardy
-inequality is false; literature never threads the witness index through cut-elim). **That thread is
-now officially BANKED/abandoned** — do not resume `cutReduceAllAux`. The genuinely-remaining,
-**universal** bottleneck — needed on *every* route (A, two-phase B, and Zekd) and untouched since
-lap-6 recon — is **M4, the embedding `PA ⊢ φ ⟹ Z_∞ ⊢ φ`** (Foundation `Derivation` → `Provable`,
-finite induction → ω-rule). That is the highest-value next target. The bounding bridge that joins
-M5↔M6 shrinks to a single induction on the cut-free `Deriv` once M4 + the transparent arithmetization
-(M7a) are in hand. See `REFLECTION-2026-06-22.md` and Outstanding.
+The two hardest pieces of the standard Gentzen/Buchholz analysis are **machine-checked and `#print
+axioms`-clean and ON the (lap-12-pivoted) critical path**: the **embedding** `PA ⊢ φ ⟹ Z∞ ⊢ φ` (M4
+`embedC`, `src/Embedding.lean` — Buchholz Thm 5.5) and the **ε₀ cut-elimination** for the witness-free
+infinitary calculus (M5, `src/Zinfty.lean` — Buchholz Thms 5.1/5.2/5.3). Phase 0 (encoding + faithfulness
+bridge, M1) and Phase 1 (Gödel II hook, M2) are landed and clean. The headline
+`Statement.peano_not_proves_goodstein` is **still a literal `sorry`** (anti-fraud — correct; `#print
+axioms` = `[propext, sorryAx, choice, Quot.sound]`, 0 math axioms). **Lap-12 pivot** (see route decision):
+the project drifted (laps 4–11) into Towsner's witness-bounded variant and hit a genuine wall (§19.6
+witness-budget needs the operator `H`). Buchholz §5 shows the witness-FREE route — M4+M5 (done) +
+**Boundedness (Thm 5.4)** + Goodstein⟹TI(ε₀) — is the standard, shorter path. Next target = the truth
+semantics `⊨^α` + Boundedness. M6 (Hardy lower bound) and the `wip/` witness-bounded calculi are banked
+off-path. See `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md` and Outstanding.
 
-## Route decision (lap 7) — STAY ON ROUTE B (Towsner)
-The operator delegated Route A vs B to the box (`archive/findings/…operator-route-choice.md`). **Decision:
-Route B.** Rationale: (1) the one genuinely-doubtful Route-B girder — the `(α,k)` cut-elimination
-`k`/`τ` bookkeeping — was the reason to hesitate, and **lap 7 resolved it** (it is not a wall; `k`
-simply grows and the lower bound holds for all `k` — see `ANALYSIS-2026-06-22-cutelim-k-threading.md`).
-(2) M5+M6 are both Route-B assets already banked. (3) The remaining Route-B risk is M4 (embedding) +
-M7a (the PA↔PA⁺ arithmetization bridge); Route A trades those for the full Gentzen `TI(ε₀)⊢Con(PA)` +
-`Goodstein⟹TI(ε₀)` + the `PA_delta1Definable` Foundation axiom — a *larger* unproven surface, not
-smaller. Revisit only if M7a proves intractable after sustained effort.
+## Route decision (lap 12) — PIVOT to Buchholz's Boundedness route (RETRACTS the lap-7 Route-B choice)
+**Decision: the Gentzen/Buchholz `TI(ε₀)` route, via Boundedness (Thm 5.4) on the witness-FREE `Z∞`.**
+The lap-7 "stay on Towsner Route B" rested on a claim that **lap 12 falsified**: the `(α,k)` cut-elim was
+NOT a resolved bookkeeping detail — its §19.6 commuting-ω case is provably unclosable with any numeric
+control (ADDENDUM 7), needing the Buchholz operator `H` (multi-lap). Meanwhile Buchholz §5 shows the
+witness-FREE route reuses **M5 cut-elim (done) + M4 `embedC` (done)** and needs only **Boundedness +
+Goodstein⟹TI(ε₀)** — strictly less unproven surface than Towsner's `Zᵏ` + bounded-cut-elim + bridge, and
+the textbook-standard analysis. M6 (Hardy lower bound) was the main "Route B asset" justifying the lap-7
+choice, but it is Towsner-specific and now OFF the critical path (banked, not deleted). See
+`ANALYSIS-2026-06-22-lap12-buchholz-pivot.md`. (Route A via `Con(PA)`+Gödel-II stays the documented
+escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-22 (lap 12 — §19.6 norm-machinery PROVED + PIVOT to Buchholz's Boundedness route):** Reviewed
+  the whole spine fresh. **(a)** Cracked the **norm-budget** half of the 5-lap §19.6 wall: proved
+  `cutReduceAllAux` (Towsner's ∀/∃ cut-reduction) on the witness-bounded `Zekd` calculus, axiom-clean
+  (`wip/OperatorZinfty.lean`) — via a self-derived **norm-carrying `ZekdProv` wrapper** + threaded
+  `norm γ<k+dd` + `+1` d-bump (the plain `≤`-wrapper threw away the norm bound the `allω` reassembly
+  needs, since `norm` isn't `≤`-monotone — the actual 5-lap blocker). **(b)** But feeding it from
+  `cutReduceAll` exposed the **witness-budget** obstruction is REAL and numeric-unclosable (ADDENDUM 7;
+  `allInv` gives the ∀-family at `max k₀ n`, Towsner's commuting-ω bound is false for large `n`) — needs
+  the operator `H`. **(c) ⟹ Read Buchholz §5 and PIVOTED:** the witness-FREE `Z∞` + **Boundedness**
+  (Thm 5.4) is the standard route and reuses **M4 `embedC` + M5 `cutElim` (both done, axiom-clean)**;
+  lap-11's "need witness-bounded `Zᵏ`" was a conflation of order-type-boundedness (valid) with
+  witness-boundedness (walled). New critical path = Boundedness + Goodstein⟹TI(ε₀); M6 (Hardy) drops off
+  it. See `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md` + ADDENDA 6/7. Build green; headline `sorry` intact.
 - **2026-06-22 (lap 9 — DEEP REFLECTION: course-correct off the witness-bounded detour, name M4 as the
   universal bottleneck):** Took altitude. Read DIRECTION/STATUS/HANDOFF/PENDING + the lap-6→8 history +
   the cross-lap landscape memory + all three findings docs. **Findings:** (1) The destination
@@ -165,51 +179,41 @@ smaller. Revisit only if M7a proves intractable after sustained effort.
   Gödel II hook), Phase-2 decomposition doc (Towsner-grounded ladder).
 
 ## Outstanding
-M5 (witness-free ε₀ cut-elim) and M6 (Hardy lower bound) are both **done & clean** but live on
-disconnected substrates (M5: `Ordinal`+`ℒₒᵣ`; M6: `ONote`+`GForm`). The two-phase route joins them via
-an embedding (M4) + a bounding bridge. Priorities are now **hardest-first = unavoidable-first**:
+**New route (Buchholz §5, lap-12 pivot).** M4 `embedC` (Embedding, Thm 5.5) and M5 `cutElim` (Thms
+5.1/5.2/5.3) are **done & axiom-clean** and ARE the two hard pieces. Remaining = Boundedness + the
+Goodstein⟹TI bridge. Priorities (see `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md`):
 
-### Short-term (mirror PENDING_WORK top) — the universal bottleneck first
-1. **M4 — embedding `PA ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}`** (α<ε₀, finite c), Towsner §16/§18 / Buchholz §5.5.
-   **THE highest-value target: required on every route, untouched since lap-6 recon.** Induct on
-   Foundation's finitary `Derivation`; map rules to `ZinftyF.Provable` (axL/verumR/andI/orI/cut are
-   structural); the crux is **finite induction axiom → ω-rule** (the lap-6 "derivation-substitution"
-   2nd-deep-case). Lap-9 plan: write the embedding skeleton, get structural cases green, isolate the
-   induction-axiom case as the disclosed `sorry` crux = a clean feasibility readout on the deepest
-   unknown. **Banks nothing toward the dead witness-bounded thread.**
-2. **M7a — transparent arithmetization** (parallel / fallback to M4; shovel-ready, faithfulness-gated).
-   Headline `goodsteinSentence = ∀⁰ (codeOfREPred goodsteinTerminates)` is an **opaque Σ₁** blob; the
-   calculus / bounding bridge needs a **transparent Π₂** `gAllReal = ∀x∃y[g_y(x)=0]` + `𝗣𝗔 ⊢
-   goodsteinSentence ↔ gAllReal`, gated by `Bridge.lean`'s spec so faithfulness can't regress. Pure
-   arithmetization over Foundation's Σ₁ tools — no deep proof theory, real committed progress, and good
-   recon for M4's Foundation-`Derivation`/term-encoding API.
-3. **Bounding bridge (small, once 1+2 land)** — prove `cut-free Provable α 0 Γ` (Γ in the g-fragment)
-   ⟹ ∃-witnesses `≤ hardy (toONote α) N`, by induction on the cut-free `Deriv` (allInv the ∀ away, read
-   the `exI` witness numeral off — no `+α` growth, the whole point of cut-freeness), then combine with
-   M6's `hardy_lt_goodsteinLength` (`G(n) > hardy α N` eventually) ⟹ `False`. **Prove it on M5's real
-   `Deriv` directly**; reuse M6's ℕ-domination fact, NOT the abstract `B`-calculus transport. The
-   abstract `B` lower bound (`lowerBound_hardy_selfcontained`) is the *template* for this induction, now
-   a banked reference like the witness-bounded calculi.
-4. **Assembly (M7b)** — chain M4-embed ⟹ M5-cutElim ⟹ bounding bridge ⟹ contradiction with M6 ⟹
-   discharge the headline `sorry`. Only then, only if `#print axioms` is clean.
+### Short-term (mirror PENDING_WORK top) — execute the Buchholz route
+0. **VERIFY-FIRST (lap 13, before deep work):** (a) M5/M4 cleanly take the set variable `X` (extend
+   `ℒₒᵣ`→`ℒₒᵣ∪{X}`, or add `X` as a fixed extra relation symbol — `embedC`'s `axm`/`provable_true` only
+   needs the `X`-free PA axioms, so it should extend); (b) the **Goodstein ⟹ TI_≺(X)** bridge's exact
+   shape is provable in PA via the Phase-0 CNF-ε₀ encoding. Neither is a known wall; confirm before
+   sinking laps.
+1. **Truth semantics `⊨^α Γ`** — `X := {n : |n|_≺ < α}`, plus `Prog_≺`, the ≺-norm `|n|_≺`, order type
+   `‖≺‖`, X-positivity. Light self-contained defs over `Z∞` sequents.
+2. **Boundedness (Thm 5.4) — THE new theorem.** `Z∞ ⊢^β_1 ¬Prog_≺(X),¬Xs₁,…,¬Xsₖ,Γ & |sᵢ|_≺ ≤ α ⟹
+   ⊨^{α+2^β} Γ` (Γ X-positive), by induction on the cut-free `Provable β 0`-derivation (8 cases, p.29 of
+   Buchholz). Corollary `Z∞ ⊢^β_1 TI_≺(X) ⟹ ‖≺‖ ≤ 2^β`. No Hardy, no witness bound.
+3. **Goodstein ⟹ TI_≺(X)** for the ε₀-order `≺` (the bridge) — PA ⊢ Goodstein-termination ⟹ PA ⊢
+   `TI_≺(X)` (Goodstein descent = ε₀-descent; Kirby–Paris/Cichoń). Reuses Phase-0 encoding.
+4. **Assembly:** PA ⊢ Goodstein ⟹ (M4) Z∞-deriv ⟹ (M5) cut-free at `β<ε₀` ⟹ (Boundedness) `‖≺‖≤2^β<ε₀`,
+   but the ε₀-order has `‖≺‖=ε₀` ⟹ `False` ⟹ discharge the headline. Only if `#print axioms` is clean.
 
 ### Long-term / banked
-- **Ordinal-type reconciliation** for the bounding bridge: M5's cut-free `α : Ordinal.{0}` (`<ε₀`) must
-  feed M6's `ONote`-based `hardy`. Either a standalone `∀ α<ε₀, ∃ o:ONote, o.NF ∧ o.repr = α`
-  (`ONote.repr` surjectivity onto `[0,ε₀)` — check mathlib first) applied once at the end, or re-state
-  the bounding lemma's ordinal in `ONote`. Light (one `toONote` at the leaf), not a calculus rebuild.
-- **BANKED (do NOT resume):** the witness-bounded cut-elim thread — `wip/{BoundedZinfty,SplitZinfty,
-  OperatorZinfty}.lean`, `Zekd cutReduceAllAux`. Proven off the critical path (findings + landscape).
-  Kept in `wip/` as reference (§19.2–19.5 ports, `mono_e`, inversion suites); never on the headline path.
+- **BANKED, OFF the critical path (do NOT resume on the Buchholz route):** the witness-bounded cut-elim
+  thread — `wip/{BoundedZinfty,SplitZinfty,OperatorZinfty}.lean`. Lap-12 `cutReduceAllAux` (norm-machinery,
+  axiom-clean) is the furthest it got; closing it fully needs the operator `H` (ADDENDUM 7). Kept as
+  reference for the operator-`H` build IF the Buchholz route ever stalls. **M6 (Hardy lower bound,
+  `lowerBound_hardy_selfcontained`)** — Towsner-specific, a correct theorem, now OFF the critical path.
 - **Route A** (`goodstein_implies_consistency` in `Reduction.lean`, via `Con(PA)` + Gödel II) stays as
   the documented escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom (🟡) and also
   needs M4. Revisit only if M4 + M7a prove intractable after sustained effort.
 
 ### To completion
-Headline discharged ⟺ M4 (embedding) + M7a (transparent arithmetization) + the bounding bridge + M7b
-(assembly) land AND `#print axioms peano_not_proves_goodstein` is `[propext, Classical.choice,
-Quot.sound]` (+ the documented `native_decide` Goodstein base-cases from the domination path — 🟢 finite
-witnesses; no `PA_delta1Definable` on Route B).
+Headline discharged ⟺ **Boundedness (Thm 5.4) + truth semantics + Goodstein⟹TI(ε₀) bridge + assembly**
+land on top of the done M4 `embedC` + M5 `cutElim`, AND `#print axioms peano_not_proves_goodstein` is
+`[propext, Classical.choice, Quot.sound]` (+ any documented `native_decide` Goodstein base-cases — 🟢
+finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longer required.
 
 ## Axiom ledger (per headline / landmark theorem — the fidelity spine)
 | theorem | paper claim | `#print axioms` shows | status |
