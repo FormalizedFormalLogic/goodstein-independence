@@ -67,11 +67,17 @@ Both hold for the headline's ℒₒᵣ-definable ε₀ order; **discharged at th
 mechanical PXF-style ports; C₁ reuses the inversion suite already built this lap. For C₁: introduce
 `PXFc α c Γ := ∃ d, d.o≤α ∧ d.cr≤c ∧ XFreeAx d` and port `cutReduceConj/Disj/AllAux` + `cutElimStep` +
 `cutElim` (the reductions only compose inversions [done] + builders + `cut`, none add X-`axTrue`). For
-C₂: the existing `provable_em` already uses `Provable.axL` for atoms (X-pairs route through `axL`, good
-✓); the risk is `provable_em_cong_gen` (`exs`/`exI_closed`) which `axTrue`s on `ψ/[s]` — if `ψ` is an
-X-atom that's a lone-X leaf; check whether the TI embedding ever needs X-atom value-congruence (likely
-not — `prec` is X-free, witnesses are ℒₒᵣ). `provable_true` (the `axm` case) only sees X-free PA(X)
-axioms ⟹ X-free `axTrue` ✓.
+C₂ — **CRITICAL faithfulness correction (lap-14 finding, supersedes earlier note):** the existing
+`embedC.axm` derives PA axioms via **`provable_true`** (ω-completeness, `axTrue` at atomic leaves).
+Over ℒₒᵣ that's fine, but over `LX` **the induction scheme `Ind_φ` for an X-*formula* `φ` contains
+X-atoms**, so `provable_true Ind_φ` would `axTrue` on a lone X-atom ⟹ **breaks `XFreeAx`**. So the LX
+port MUST derive the induction axioms **via the meta-induction (a tower of `cut`s on `φ(n)` + `provable_em`
+base/step)** — Buchholz Thm 5.5's actual method, NOT ω-completeness. `provable_em` for X-atoms already
+uses `Deriv.axL` (the X-pair, no truth) ✓, so the meta-induction route is `XFreeAx`-safe. The lap-10
+HANDOFF/PENDING has the full meta-induction proof worked out — port THAT for the X-induction case.
+`𝗣𝗔⁻` axioms (PeanoMinus, finite, X-free) can still go via `provable_true` (X-free `axTrue` ✓).
+`provable_em_cong_gen` (`exs`/`exI_closed`) `axTrue`s on `ψ/[s]`: safe iff `ψ` is X-free — check the TI
+embedding never value-congruences an X-atom (likely fine: `prec` X-free, witnesses are ℒₒᵣ terms).
 
 ## Notes
 - **LOCKED untouched:** `Defs.lean`, `Bridge.lean` RHS, `goodsteinTerminates`, headline `sorry`.
