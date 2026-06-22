@@ -44,6 +44,21 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-22 (lap 16 — C₂ STRUCTURAL PORT landed; the `exs` case mapped to a calculus retrofit):**
+  Built `src/GoodsteinPA/EmbeddingX.lean` (green, one disclosed `sorry`): **`embedC_LX_gen`** — the
+  `axm`-abstracted structural embedding of `Derivation2 𝓢 Γ` into `PXFc` over `LX`, all 9 structural
+  cases (`closed` via `provable_em_x`; `verum/and/or/all/wk/shift/cut`; `axm` as hypothesis `hax`),
+  every builder `XFreeAx`-safe — plus **`provable_true_x`** (ω-completeness for true closed **X-free**
+  formulas, the X-free `axm` engine) and **`XFreeForm`** (structural X-freeness + rewriting-invariance).
+  **Then ground-truthed the `exs` case against Buchholz §5 (PDF pp.26–30) and found the lap-15
+  "mechanical" claim was wrong:** faithfully embedding Foundation's `exs` (arbitrary-term ∃-intro) over
+  X-atom bodies needs Buchholz's **value-congruent X-pair axiom** `{Xs,¬Xt}` (`sᴺ=tᴺ`, `AX(Z∞)`, p.27),
+  which our same-atom `Deriv.axL` lacks. The faithful fix is a calculus retrofit (generalise the literal
+  axiom to value-congruent pairs `Deriv.axLv`); Boundedness case 1.2 (p.29) + cut-elim's literal-cut
+  (Remark p.27) already handle them in Buchholz. **Probed the retrofit** (added `axLv` + threaded the
+  ZinftyGen leaf branches): 5/8 sites mechanical, `atomCutAux` is the one hard spot, and the XFreeAx
+  interaction is benign (reverted as an uncommittable mid-big-bang; it's a single-lap effort with no
+  intermediate green). Headline still an honest `sorry`. See `ANALYSIS-2026-06-22-lap16-exs-axLv.md`.
 - **2026-06-22 (lap 15 — FRESH-MIND REVIEW: validated the lap-14 cr=0 design against a feared
   obstruction; direction confirmed sound):** Took altitude. Re-derived the full Buchholz §5 chain and
   stress-tested the lap-14 architecture. **Nearly flagged a wall:** Boundedness is implemented at
@@ -246,7 +261,9 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 | `PXFc.cutElim` (C₁, **lap 15**, `src/XFreeCutElim`) | `XFreeAx` cut-elim → cr=0 | `propext, choice, Quot.sound` | 🟢 clean — full §19 port to the `PXFc` carrier; X-atom truth branch vacuous |
 | `orderType_le_of_TIprovable` (D, **lap 15**) | Thm 5.6 tail `PXFc {TI} ⟹ ‖≺‖≤2^(ω_c^α)` | `propext, choice, Quot.sound` | 🟢 clean — C₁ ∘ corollary B; modulo seam hyps `hprec`/`hprecXPos` (F) |
 | `provable_em_x` (C₂, **lap 15**) | `Z∞` excluded middle over LX | `propext, choice, Quot.sound` | 🟢 clean — `XFreeAx`-automatic (never `axTrue`) |
-| `metaInduction` (C₂ crux, **lap 15**) | X-induction via cut-tower (Buchholz 5.5) | `propext, choice, Quot.sound` | 🟢 clean — the faithfulness-critical embedding step; abstract in `step` (Foundation-DSL glue ⟹ lap 16) |
+| `metaInduction` (C₂ crux, **lap 15**) | X-induction via cut-tower (Buchholz 5.5) | `propext, choice, Quot.sound` | 🟢 clean — the faithfulness-critical embedding step; abstract in `step` (Foundation-DSL glue ⟹ later) |
+| `provable_true_x` (C₂, **lap 16**, `src/EmbeddingX`) | ω-completeness, true closed X-free ⟹ `XFreeAx` | `propext, choice, Quot.sound` | 🟢 clean — the X-free `axm` engine |
+| `embedC_LX_gen` (C₂-struct, **lap 16**) | structural embedding `Derivation2 𝓢 Γ ⟹ PXFc` over LX | `propext, choice, Quot.sound` + `sorryAx` | 🔓 9/10 cases; `exs` disclosed `sorry` (needs the `axLv` value-congruent-literal retrofit — Buchholz `AX(Z∞)` p.27); `axm` abstracted as `hax` |
 | `hardy_le_of_lt` (M6, `src/Hardy`) | Hardy index monotonicity (Hmono) | `propext, choice, Quot.sound` | 🟢 clean |
 | `lowerBound_existential_hardy` (M6) | ∃-fragment 17.1, concrete Hardy/`G` | `propext, choice, Quot.sound` | 🟢 clean — zero abstract hyps |
 | `B.allInv` (M6) | ∀-inversion (I∀-frontier resolution) | `propext, choice, Quot.sound` | 🟢 clean |

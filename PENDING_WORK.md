@@ -1,5 +1,33 @@
 # Pending work — open obligations & attack paths
 
+## ⏭️ LAP-16 (2026-06-22) — C₂ structural port LANDED; the `exs` wall = a calculus retrofit. Read FIRST.
+
+**Landed (green, committed):** `src/GoodsteinPA/EmbeddingX.lean` — `embedC_LX_gen` (9/10 `Derivation2`
+cases, `axm`-abstracted) + `provable_true_x` (X-free ω-completeness, `XFreeAx`-safe) + `XFreeForm`.
+
+**THE finding (corrects the lap-15 "mechanical" claim):** the `exs` case is NOT mechanical. Collapsing
+a closed witness to a numeral needs a **value-congruent EM**; for an X-atom body that requires Buchholz's
+**value-congruent X-pair axiom** `{Xs,¬Xt}` (`sᴺ=tᴺ`, `AX(Z∞)`, lecture notes p.27), which our same-atom
+`Deriv.axL` does NOT provide. **Read `ANALYSIS-2026-06-22-lap16-exs-axLv.md`** — full obligation map +
+retrofit recon (5/8 ZinftyGen sites mechanical; `atomCutAux` = Buchholz Remark p.27 = the one hard spot;
+`removeFalseLit_x` X-free-restriction keeps `XFreeAx` safe; Boundedness case 1.2 = p.29).
+
+### NEXT (lap 17): the `axLv` retrofit — single-lap big-bang to ONE green checkpoint (no intermediate green)
+Generalise the literal axiom to value-congruent pairs (`Deriv.axLv (r) (v v') (hval) …`, generic over L).
+Three attack paths if the big-bang stalls:
+1. **(primary)** Drive the whole retrofit (ZinftyGen → XFreeCutElim → Boundedness → `exs` discharge) to
+   green in one lap per the HANDOFF step list. Recon says the leaf branches are mechanical.
+2. **(fallback A)** Land just the X-FREE `exs` sub-case first (case-split `XFreeForm` of the body; X-free
+   bodies need only `axTrue`, no retrofit) to narrow the `sorry` to X-bodies — a committable checkpoint.
+3. **(fallback B)** If `atomCutAux` value-congruence is a swamp, isolate it as a single disclosed
+   `axiom value_cong_xpair_cut` (NOT on the headline), let the rest of C₂ compile, discharge the axiom later.
+
+### C₂-axm discharge (after structural is sorry-free) — `paLX` + `hax`
+`paLX := Theory.lMap (ORing.embedding LX) 𝗣𝗔⁻ + InductionScheme LX Set.univ`. X-free axioms via
+`provable_true_x`; X-induction via `metaInduction` glue. (`InductionScheme L` IS generic over ORing `L`.)
+
+---
+
 ## ⏭️ LAP-15 (2026-06-22) — review validated lap-14 design; EXECUTE C₁ then C₂. Read this FIRST.
 
 **Direction CONFIRMED sound** (fresh-mind review). Lap 14 finished the crux (Boundedness Thm 5.4 +
