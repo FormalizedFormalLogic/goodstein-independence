@@ -69,9 +69,21 @@ of the calculus generalisation; clears to axiom-clean the instant the lemma belo
    cases are the same incidental recursion. **Leaves:** at an `axL`/`axLv` whose negative IS `nrel r v`,
    pair the surviving positive with `Lit'` via `PXFc.axLv` (value-cong from `|v|=|w|`); at a true
    `axTrue` literal `= nrel r v` (X-free), re-emit `axTrue` on `nrel r w`; else re-emit unchanged.
-   **Watch:** the matched `axLv` leaf needs `r₀=r` + a value extraction from `nrel rr vv = nrel r vb` —
-   use `congrArg (∼·)` (→ `rel rr vv = rel r vb`) instead of raw dependent `injection`. Then `atomCut_x`
-   Case `hrel`: transport `hNC` by `nrel_value_subst` into `result` — uniform, no truth split, no X-`axTrue`.
+   **Lap-16 attempt (reverted, validated the structure):** all 6 compound cases + `axTrue`/`verumR`/
+   `weak` leaves compiled cleanly; the two **matched** leaves are the only hard spots.
+   - *matched `axL` leaf* (leaf negative = renamed `nrel r v`): close by `PXFc.axLv rr vv ww hvw`
+     pairing the surviving positive `rel rr vv` (= `rel r v` via `hpos := congrArg (∼·) h1`) with
+     `nrel rr ww` — debug the `mem_insert_of_mem`/`mem_erase` plumbing (had an app-type-mismatch; the
+     `set Lit/Lit'` folding may need `show`/`hLdef` unfolds).
+   - *matched `axLv` leaf* (leaf negative `nrel r vb` = renamed): the genuinely hard one — the surviving
+     positive is `rel r va` (relation `r`), but `Lit' = nrel rr ww` (relation `rr`), so pairing needs
+     **`r = rr` as `Rel` elements** (with `kk = k`). `congrArg (∼·)` only gives the *formula* eq
+     `rel rr vv = rel r vb`; extract `rr = r` via `Semiformula.nrel.injEq`/`injection` + `subst`
+     (handle the `HEq` on the arg vector), OR reformulate `nrel_value_subst` to rename *by a relation+
+     vector pair* so the leaf's own relation is used. Value side: `valm va = valm vb` (hval) and
+     `valm vv = valm ww` (hvw) + `vv↔vb` from `h1`.
+   Then `atomCut_x` Case `hrel`: transport `hNC` by `nrel_value_subst` into `result` — uniform, no truth
+   split, no X-`axTrue`.
 2. **`exs` discharge** (`EmbeddingX.lean:203`): `litTrue_subst_congr` + `provable_em_cong_gen_x`
    (value-cong EM over `LX`: X-atoms via `axLv`, X-free via `axTrue`) ⟹ `PXFc.exI_closed` ⟹ kills `exs`.
 3. **`embedC_LX`** = `embedC_LX_gen` at `𝓢 := ↑paLX` once `hax` proven. Then **D fires** ⟹ Thm 5.6.
