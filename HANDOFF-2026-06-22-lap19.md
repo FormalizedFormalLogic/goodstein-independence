@@ -1,8 +1,22 @@
-# HANDOFF — 2026-06-22 (lap 19, F ORDER-TYPE WALL CLOSED)
+# HANDOFF — 2026-06-22 (lap 19, F SEAM FULLY ASSEMBLED)
 
-> **Branch** `plan` · HEAD `dbf06dc` · build **green** (`lake build GoodsteinPA`, **1268 jobs**) ·
+> **Branch** `plan` · HEAD `8d011e4` · build **green** (`lake build GoodsteinPA`, **1269 jobs**) ·
 > headline `peano_not_proves_goodstein` = honest `sorry` (anti-fraud intact). Working tree clean.
-> Deliverable: **F's order-type half — the dominant campaign risk (laps 12–19) — is DONE + axiom-clean.**
+> Deliverable: **girder F (the arithmetization seam) is FULLY ASSEMBLED** —
+> `SeamDefinability.seam : EpsilonOrder.Seam` is built; `#print axioms seam =
+> [propext, choice, Quot.sound, rePred_ltPull_natCode]` (ONE disclosed axiom). Both the dominant-risk
+> order-type half AND the definability half are discharged this lap.
+
+## ✅ Lap-19 headline deliverable — F SEAM ASSEMBLED (`src/GoodsteinPA/SeamDefinability.lean`)
+- `codeOfREPred₂` + `codeOfREPred₂_spec` — binary `ℒₒᵣ` representability (port of Foundation's unary
+  `codeOfREPred`), axiom-clean.
+- `precφ := codeOfREPred₂ (natCode order)` + `precφ_spec : ℕ ⊧/![m,n] precφ ↔ natCode m < natCode n`.
+- `seam : EpsilonOrder.Seam` — `φ := emb precφ`, `hφ` via `eval_emb`+`precφ_spec`, `ge :=
+  epsilon0_le_orderType_natCode`; `hprec`/`hprecXPos` from `EpsilonOrder` (lap 18).
+- **ONE disclosed axiom** `rePred_ltPull_natCode` (CNF order is r.e.) = the **F-φ discharge target**:
+  true (decidable `NONote.cmp` + computable `natCode`), gap = mathlib's missing `Computable`/`Primrec`
+  for `ONote.cmp`. Bounded, Foundation-free, Aristotle-eligible. **`ON-LINE-REQUEST.md` filed.** NOT on
+  any headline-clean claim (F not yet wired to headline).
 
 ## ✅ Lap-19 proof deliverable — `src/GoodsteinPA/Epsilon0Complete.lean` (NEW, all `#print axioms` clean)
 The order-type half of girder **F** (`ε₀ ≤ orderType ≺`), end-to-end:
@@ -24,12 +38,12 @@ The order-type half of girder **F** (`ε₀ ≤ orderType ≺`), end-to-end:
   Verified `#eval (natCode 5)` and `ONote.cmp (natCode 3).1 (natCode 7).1` both compute.
 
 ## 🎯 Open obligations (priority order)
-1. **F-definability `φ`** (Worker B, Foundation-side, independent) — build `codeOfREPred₂` (from
-   `codeOfPartrec'`, `Representation.lean:233`); define `φ : Semiformula ℒₒᵣ ℕ 2` for **`ltPull natCode`**
-   (`natCode a < natCode b`, expressed via the decidable `ONote.cmp (natCode a).1 (natCode b).1 = .lt`).
-   Then instantiate `GoodsteinPA.EpsilonOrder.Seam` { `lt := ltPull natCode`, `φ`, `hφ`,
-   `ge := epsilon0_le_orderType_natCode` }. The definability half (`hprec`/`hprecXPos`) is already done
-   (lap 18, `EpsilonOrder.lean`). **⟹ closes F entirely.**
+1. **Discharge `rePred_ltPull_natCode`** (`SeamDefinability.lean`) ⟹ F entirely axiom-clean. Needs
+   computable `ONote.cmp` (`Computable₂`/`Primrec`). Plan: `Primcodable NONote` is free
+   (`Primcodable.ofDenumerable`); `Computable natCode = Computable.ofNat NONote` (verified rfl); then
+   `Computable (fun q : NONote×NONote => decide (q.1 < q.2))` via relating `NONote.cmp`→`ONote.cmp` to a
+   `Primrec`/`Nat.rec` form (the recursion-framework lemma mathlib lacks). `ON-LINE-REQUEST.md` filed.
+   Aristotle-eligible (pure mathlib/computability, ZERO Foundation dep).
 2. **C₂ glue `hax_paLX`** X-induction case (`EmbeddingX.lean:705`) — closes **Thm 5.6 (`PA ⊬ TI(ε₀)`)**
    axiom-clean modulo E+F. Recipe inlined (steps 1-7), all 4 helpers proven; friction = Foundation-DSL
    Rew-pushing through `succInd`/`univCl`/`fixitr`. ALL-OR-NOTHING (can't partial-commit a sorry) ⟹ extract
