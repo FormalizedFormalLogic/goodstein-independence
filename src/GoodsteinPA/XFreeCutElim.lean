@@ -1040,6 +1040,136 @@ theorem PXFc.removeFalsum {B : Ordinal.{0}} {Γ : Seq LX}
   refine (PXFc.removeFalsumAux d hxf hcr (Finset.mem_insert_self _ _)).weakening ?_ |>.mono ho le_rfl
   intro x hx; simp only [Finset.mem_erase, Finset.mem_insert] at hx; exact (hx.2).resolve_left hx.1
 
+/-- **Value-congruent negative-literal renaming.** In a cut-free `XFreeAx` derivation of `Δ`
+containing the negative literal `nrel r v`, replace it by a value-congruent `nrel r w`
+(`|v| = |w|`), preserving height and `XFreeAx`. -/
+theorem PXFc.nrel_value_subst {k} (r : (LX).Rel k) (v w : Fin k → Semiterm LX ℕ 0)
+    (hvw : ∀ i, Semiterm.valm ℕ ![] (id : ℕ → ℕ) (v i)
+              = Semiterm.valm ℕ ![] (id : ℕ → ℕ) (w i)) :
+    ∀ {Δ : Seq LX} (d : Deriv Δ), XFreeAx d → d.cr ≤ (0 : ℕ∞) →
+      (Semiformula.nrel r v) ∈ Δ →
+      PXFc d.o 0 (insert (Semiformula.nrel r w) (Δ.erase (Semiformula.nrel r v))) := by
+  intro Δ d
+  induction d with
+  | @axL Δ k' r' v' hp hn =>
+    intro _ _ _; simp only [Deriv.o]
+    by_cases h1 : (Semiformula.nrel r v : Form LX) = Semiformula.nrel r' v'
+    · -- leaf's negative IS the renamed literal; pair leaf positive `rel r' v'` (= rel r v) with `nrel r w`
+      have hpos : (Semiformula.rel r v : Form LX) = Semiformula.rel r' v' := by
+        rw [← Semiformula.neg_nrel, h1, Semiformula.neg_nrel]
+      refine PXFc.axLv r v w hvw ?_ (Finset.mem_insert_self _ _)
+      refine Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨?_, hpos ▸ hp⟩)
+      rw [hpos]; simp
+    · refine (PXFc.axL r' v' ?_ ?_)
+      · exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨by simp, hp⟩)
+      · exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => h1 e.symm, hn⟩)
+  | @axLv Δ k' r₀ va vb hval hp hn =>
+    intro _ _ _; simp only [Deriv.o]
+    by_cases h1 : (Semiformula.nrel r v : Form LX) = Semiformula.nrel r₀ vb
+    · injection h1 with _ hk hr hvv
+      subst hk; subst hr; subst hvv
+      -- now r₀ = r, vb = v; pair leaf positive `rel r va` with `nrel r w`
+      refine PXFc.axLv r va w (fun i => (hval i).trans (hvw i)) ?_ (Finset.mem_insert_self _ _)
+      exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨by simp, hp⟩)
+    · refine (PXFc.axLv r₀ va vb hval ?_ ?_)
+      · exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨by simp, hp⟩)
+      · exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => h1 e.symm, hn⟩)
+  | @axTrue Δ k' b r' v' htrue hmem =>
+    intro hxf _ _; simp only [Deriv.o]
+    by_cases h1 : (signedLit b r' v' : Form LX) = Semiformula.nrel r v
+    · -- the true literal IS the renamed atom (X-free, false-signed); re-emit on `nrel r w`
+      have hb : b = false := by cases b <;> simp_all [signedLit]
+      subst hb
+      have hrr : (Semiformula.nrel r' v' : Form LX) = Semiformula.nrel r v := by
+        simpa [signedLit] using h1
+      have hxr : Sum.isLeft r = true :=
+        xfree_transport false r' v' hxf false r v (by simpa [signedLit] using hrr)
+      have htn : LitTrue (Semiformula.nrel r w) := by
+        rw [← Semiformula.neg_rel, litTrue_neg]
+        rw [← litTrue_rel_congr r v w hvw]
+        rw [← litTrue_neg, Semiformula.neg_rel]
+        exact hrr ▸ (by simpa [signedLit] using htrue)
+      exact PXFc.axTrue false r w hxr htn (Finset.mem_insert_self _ _)
+    · exact PXFc.axTrue b r' v' hxf htrue
+        (Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨h1, hmem⟩))
+  | @verumR Δ h =>
+    intro _ _ _; simp only [Deriv.o]
+    exact PXFc.verumR (Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨by simp, h⟩))
+  | @weak Δ' Δ d' hsub ih =>
+    intro hxf hcr hmem; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    by_cases hd : (Semiformula.nrel r v : Form LX) ∈ Δ'
+    · refine (ih hxf hcr hd).weakening ?_
+      intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
+      rcases hx with rfl | ⟨hne, hxs⟩
+      · exact Or.inl rfl
+      · exact Or.inr ⟨hne, hsub hxs⟩
+    · refine (show PXFc d'.o 0 Δ' from ⟨d', le_rfl, hcr, hxf⟩).weakening ?_
+      intro x hx
+      refine Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩)
+  | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
+    intro hxf hcr hmem; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    have hhead : (χ₀ ⋏ χ₁) ≠ (Semiformula.nrel r v : Form LX) := Semiformula.ne_of_ne_complexity (by simp)
+    have hmem0 : (Semiformula.nrel r v : Form LX) ∈ Γ₀ :=
+      (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have P0 : PXFc d₀.o 0 (insert χ₀ (insert (Semiformula.nrel r w) (Γ₀.erase (Semiformula.nrel r v)))) :=
+      (ih₀ hxf.1 (le_trans (le_max_left _ _) hcr) (Finset.mem_insert_of_mem hmem0)).weakening (by
+        intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
+    have P1 : PXFc d₁.o 0 (insert χ₁ (insert (Semiformula.nrel r w) (Γ₀.erase (Semiformula.nrel r v)))) :=
+      (ih₁ hxf.2 (le_trans (le_max_right _ _) hcr) (Finset.mem_insert_of_mem hmem0)).weakening (by
+        intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
+    exact (PXFc.andI χ₀ χ₁ P0 P1).weakening (by
+      intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
+      rcases hx with rfl | rfl | ⟨hne, hxs⟩
+      · exact Or.inr ⟨fun e => hhead e, Or.inl rfl⟩
+      · exact Or.inl rfl
+      · exact Or.inr ⟨hne, Or.inr hxs⟩)
+  | @orI Γ₀ χ₀ χ₁ d' ih =>
+    intro hxf hcr hmem; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    have hhead : (χ₀ ⋎ χ₁) ≠ (Semiformula.nrel r v : Form LX) := Semiformula.ne_of_ne_complexity (by simp)
+    have hmem0 : (Semiformula.nrel r v : Form LX) ∈ Γ₀ :=
+      (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have P : PXFc d'.o 0 (insert χ₀ (insert χ₁ (insert (Semiformula.nrel r w) (Γ₀.erase (Semiformula.nrel r v))))) :=
+      (ih hxf hcr (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))).weakening (by
+        intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
+    exact (PXFc.orI χ₀ χ₁ P).weakening (by
+      intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
+      rcases hx with rfl | rfl | ⟨hne, hxs⟩
+      · exact Or.inr ⟨fun e => hhead e, Or.inl rfl⟩
+      · exact Or.inl rfl
+      · exact Or.inr ⟨hne, Or.inr hxs⟩)
+  | @allω Γ₀ χ' d' ih =>
+    intro hxf hcr hmem; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    have hhead : (∀⁰ χ') ≠ (Semiformula.nrel r v : Form LX) := Semiformula.ne_of_ne_complexity (by simp)
+    have hmem0 : (Semiformula.nrel r v : Form LX) ∈ Γ₀ :=
+      (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have key : ∀ n, PXFc (d' n).o 0 (insert (χ'/[nm n]) (insert (Semiformula.nrel r w) (Γ₀.erase (Semiformula.nrel r v)))) := fun n =>
+      (ih n (hxf n) (le_trans (le_iSup (fun m => (d' m).cr) n) hcr)
+        (Finset.mem_insert_of_mem hmem0)).weakening (by
+          intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
+    exact (PXFc.allω χ' key).weakening (by
+      intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
+      rcases hx with rfl | rfl | ⟨hne, hxs⟩
+      · exact Or.inr ⟨fun e => hhead e, Or.inl rfl⟩
+      · exact Or.inl rfl
+      · exact Or.inr ⟨hne, Or.inr hxs⟩)
+  | @exI Γ₀ χ' n d' ih =>
+    intro hxf hcr hmem; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    have hhead : (∃⁰ χ') ≠ (Semiformula.nrel r v : Form LX) := Semiformula.ne_of_ne_complexity (by simp)
+    have hmem0 : (Semiformula.nrel r v : Form LX) ∈ Γ₀ :=
+      (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have P : PXFc d'.o 0 (insert (χ'/[nm n]) (insert (Semiformula.nrel r w) (Γ₀.erase (Semiformula.nrel r v)))) :=
+      (ih hxf hcr (Finset.mem_insert_of_mem hmem0)).weakening (by
+        intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
+    exact (PXFc.exI χ' n P).weakening (by
+      intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
+      rcases hx with rfl | rfl | ⟨hne, hxs⟩
+      · exact Or.inr ⟨fun e => hhead e, Or.inl rfl⟩
+      · exact Or.inl rfl
+      · exact Or.inr ⟨hne, Or.inr hxs⟩)
+  | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
+    intro _ hcr _; simp only [Deriv.cr] at hcr
+    exact absurd ((le_max_left _ _).trans hcr) (by simp)
+
 /-- Induction core of atomic cut (Towsner Thm 19.2): cut a `rel r v` derivation `d` against a fixed
 `nrel r v` derivation `hNC`, `XFreeAx`-preserving. The truth-layer (`removeFalseLit`) branch fires
 only on an `axTrue` leaf equal to the cut atom; `XFreeAx` of that leaf forces the cut atom X-free
@@ -1077,12 +1207,26 @@ theorem PXFc.atomCutAux {k} (r : (LX).Rel k) (v) {B : Ordinal.{0}} {Γ : Seq LX}
       Finset.mem_erase.mpr ⟨by intro h; exact absurd h (by simp), hn⟩
     by_cases hrel : (Semiformula.rel r₀ va : Form LX) = Semiformula.rel r v
     · -- The value-congruent pair's positive member IS the cut atom (`r₀ = r`, `va = v`, `|vb| = |v|`).
-      -- The leaf's value-congruent negative `nrel r vb` survives the erase; combining with
-      -- `hNC : ⊢ nrel r v, Γ` requires transporting `hNC` along the value congruence `|v| = |vb|`
-      -- (the `nrel_value_subst` renaming lemma). At an X-atom cut `axTrue` is forbidden (would emit a
-      -- lone X-`axTrue`, breaking `XFreeAx`), so the same-atom argument does not apply directly.
-      -- DISCLOSED: pending `PXFc.nrel_value_subst` (value-congruent negative-literal renaming).
-      sorry
+      -- The leaf's value-congruent negative `nrel r vb` survives the erase (`hnn`); transport
+      -- `hNC : ⊢ nrel r v, Γ` along the value congruence `|v| = |vb|` (`nrel_value_subst`), giving
+      -- `⊢ nrel r vb, Γ`, which combines with `hnn`. No `axTrue` on an X-atom is emitted.
+      injection hrel with _ hk hr hva
+      subst hk
+      have hr' : r = r₀ := (eq_of_heq hr).symm
+      have hva' : v = va := (eq_of_heq hva).symm
+      subst hr'; subst hva'
+      rcases hNC with ⟨dN, hoN, hcrN, hxfN⟩
+      have hrm := PXFc.nrel_value_subst r v vb hval dN hxfN hcrN
+        (show (Semiformula.nrel r v : Form LX) ∈ insert (Semiformula.nrel r v) Γ by simp)
+      refine (hrm.weakening ?_).mono ?_ le_rfl
+      · intro x hx
+        simp only [Finset.mem_insert, Finset.mem_erase] at hx
+        rcases hx with rfl | ⟨hne, hx2⟩
+        · exact Finset.mem_union_left _ hnn
+        · rcases hx2 with rfl | hxΓ
+          · exact absurd rfl hne
+          · exact Finset.mem_union_right _ hxΓ
+      · exact le_trans hoN (le_trans le_self_add (le_of_lt (lt_add_of_pos_right _ one_pos)))
     · have hpp : (Semiformula.rel r₀ va : Form LX) ∈ Δ.erase (Semiformula.rel r v) :=
         Finset.mem_erase.mpr ⟨hrel, hp⟩
       exact (PXFc.axLv r₀ va vb hval (Finset.mem_union_left _ hpp)
