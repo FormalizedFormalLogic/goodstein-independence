@@ -308,3 +308,24 @@ are issued by the embedding M4 / the calculus's own rules, which always have NF 
 carry an `NF γ` side-hypothesis through `cutReduceAllAux` (the ∃-side derivation's ordinal). Option (b)
 (NF-ify the leaves) is the cleanest and matches Towsner (every `Z_∞` node is `<ε₀` ⟹ NF). This is the
 concrete first task of the cut-elim grind, ahead of the commuting/principal bound bookkeeping.
+
+### Lap-8 cont. — NF-threading runs deeper than the leaves; use a `Provable`-style wrapper
+
+NF-ifying the leaves (`trueRel`/`trueNrel`, done — commit `c8cd83d`) is necessary but NOT sufficient
+for `cutReduceAll`: the **`wk` case** also needs `γ` NF. There, when `(∃∼φ)∉Δ'`, the sub-derivation
+sits at ordinal `γ` over `Δ.erase(∃∼φ)∪Γ`, but the conclusion is demanded at `osucc(α+γ)` — raising `γ
+→ osucc(α+γ)` uses `Zekd.weak`, whose `hβNF` needs `γ.NF`. Raw `Zekd` carries an *exact* ordinal (no
+built-in "≤" slack), so every ordinal-raise needs NF of the source.
+
+**Cleanest fix (matches the unbounded `Zinfty.lean` template) — a `Provable`-style wrapper:**
+```
+def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Seq) : Prop :=
+  ∃ α', α' ≤ α ∧ α'.NF ∧ Zekd α' e k d c Γ
+```
+State `cutReduceAll` over `ZekdProv` (bound `α` as an UPPER bound, like `Provable α c`). The wrapper's
+`α'.NF` supplies NF wherever an ordinal-raise is needed, and the `α' ≤ α` slack absorbs the `osucc`/`+1`
+bookkeeping uniformly (no per-case boundary fights). The unbounded `Provable.cutReduceAllAux` is then a
+near-line-by-line template (it already threads exactly this `∃ d, o d ≤ α ∧ cr ≤ c` wrapper); the
+bounded port adds the `(k, d, e)` carry: `mono_k`/`mono_d`/`mono_e` for the index, `norm_add_le` for the
+`d`-bump, `hardy_comp_lt_goodsteinLength`/`hardy_add_collapse` for the witness control. **This is the
+recommended first construction of the next lap, ahead of writing `cutReduceAllAux` itself.**
