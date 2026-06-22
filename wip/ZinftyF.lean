@@ -978,13 +978,100 @@ private theorem sup_opow_add_one_le (f : ℕ → Ordinal.{0}) :
     (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr (lt_add_of_pos_right _ one_pos)
   exact le_of_lt (Ordinal.isPrincipal_add_omega0_opow _ (lt_of_le_of_lt hsup hlt) (one_lt_opow_succ _))
 
-/-- **One level of cut elimination** (Towsner Thm 19.7). Reducing the cut rank by one raises the
-ordinal bound to `ω^α`. *(Open: the principal `cut`-on-rank-`c` case calls the reductions; the rest
-is a transfinite induction over the derivation. The atomic principal case needs an atomic-truth
-layer — a scope discovery, see HANDOFF.)* -/
+/-- **Principal cut on a rank-`c` formula** — the heart of Thm 19.7. After both premises are
+cut-free-at-`c` (bound `ω^A`, `ω^B`), a cut on `ξ` with `complexity ξ = c` is eliminated by the
+matching reduction (∧/∨ → `cutReduceConj/Disj`; ∀/∃ → `cutReduceAll`), staying below `ω^(max A B+1)`.
+The atomic cases (`complexity ξ = 0 = c`) need an atomic-truth layer (see HANDOFF) — left `sorry`. -/
+theorem Provable.cutElimPrincipal {c : ℕ} {ξ : Form} {A B : Ordinal.{0}} {Γ : Seq}
+    (hξeq : ξ.complexity = c)
+    (hC : Provable (Ordinal.omega0 ^ A) c (insert ξ Γ))
+    (hNC : Provable (Ordinal.omega0 ^ B) c (insert (∼ξ) Γ)) :
+    Provable (Ordinal.omega0 ^ (max A B + 1)) c Γ := by
+  cases ξ with
+  | verum => sorry          -- ⊤: needs atomic-truth layer (only when c = 0)
+  | falsum => sorry         -- ⊥: needs atomic-truth layer
+  | rel r v => sorry        -- atomic: needs false-atomic inversion (Towsner Thm 19.2)
+  | nrel r v => sorry
+  | and a b =>
+      have hM : max a.complexity b.complexity + 1 = c := hξeq
+      have han : a.complexity + 1 ≤ c := by have := le_max_left a.complexity b.complexity; omega
+      have hbn : b.complexity + 1 ≤ c := by have := le_max_right a.complexity b.complexity; omega
+      exact (Provable.cutReduceConj (by exact_mod_cast han) (by exact_mod_cast hbn) hC hNC).mono
+        (max_opow_add_two_le A B) le_rfl
+  | or a b =>
+      have hM : max a.complexity b.complexity + 1 = c := hξeq
+      have han : a.complexity + 1 ≤ c := by have := le_max_left a.complexity b.complexity; omega
+      have hbn : b.complexity + 1 ≤ c := by have := le_max_right a.complexity b.complexity; omega
+      exact (Provable.cutReduceDisj (by exact_mod_cast han) (by exact_mod_cast hbn) hC hNC).mono
+        (max_opow_add_two_le A B) le_rfl
+  | all φ' =>
+      have hφn : φ'.complexity + 1 ≤ c := le_of_eq hξeq
+      exact (Provable.cutReduceAll (by exact_mod_cast hφn) hC hNC).mono
+        (opow_add_opow_add_one_le A B) le_rfl
+  | exs φ' =>
+      -- ξ = ∃φ', ∼ξ = ∀∼φ'.  Use `cutReduceAll` with ∀-side = hNC, ∃-side = hC.
+      have hφn : (∼φ').complexity + 1 ≤ c := by
+        rw [Semiformula.complexity_neg]; exact le_of_eq hξeq
+      have hC' : Provable (Ordinal.omega0 ^ A) c (insert (∃⁰ ∼(∼φ')) Γ) := by
+        rw [DeMorgan.neg]; exact hC
+      refine ((Provable.cutReduceAll (by exact_mod_cast hφn) hNC hC').mono ?_ le_rfl)
+      rw [max_comm A B]; exact opow_add_opow_add_one_le B A
+
+/-- The transfinite induction underlying Thm 19.7: a derivation of cut rank `≤ c+1` becomes
+cut-free-at-`c` at bound `ω^(o d)`. Non-principal rules are reapplied (each `ω^· + small ≤ ω^(·+1)`);
+a rank-`< c` cut is kept; a rank-`= c` cut is eliminated by `cutElimPrincipal`. -/
+theorem Provable.cutElimStepAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cr d ≤ ((c + 1 : ℕ) : ℕ∞) →
+    Provable (Ordinal.omega0 ^ (o d)) c Γ := by
+  intro Γ d
+  induction d with
+  | @axL Γ k r v hp hn =>
+    intro _; simp only [Deriv.o]
+    exact (Provable.axL r v hp hn).mono zero_le (Nat.zero_le c)
+  | @verumR Γ h =>
+    intro _; simp only [Deriv.o]
+    exact (Provable.verumR h).mono zero_le (Nat.zero_le c)
+  | @weak Δ Γ d' hsub ih =>
+    intro hcr; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    exact (ih hcr).weakening hsub
+  | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
+    intro hcr; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    exact (Provable.andI χ₀ χ₁ (ih₀ ((le_max_left _ _).trans hcr))
+      (ih₁ ((le_max_right _ _).trans hcr))).mono (max_opow_add_one_le (o d₀) (o d₁)) le_rfl
+  | @orI Γ₀ χ₀ χ₁ d' ih =>
+    intro hcr; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    exact (Provable.orI χ₀ χ₁ (ih hcr)).mono (opow_add_one_le' (o d')) le_rfl
+  | @allω Γ₀ χ' d' ih =>
+    intro hcr; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    have IH : ∀ n, Provable (Ordinal.omega0 ^ (o (d' n))) c (insert (χ'/[nm n]) Γ₀) :=
+      fun n => ih n ((le_iSup (fun m => cr (d' m)) n).trans hcr)
+    exact (Provable.allω χ' IH).mono (sup_opow_add_one_le (fun n => o (d' n))) le_rfl
+  | @exI Γ₀ χ' n d' ih =>
+    intro hcr; simp only [Deriv.cr] at hcr; simp only [Deriv.o]
+    exact (Provable.exI χ' n (ih hcr)).mono (opow_add_one_le' (o d')) le_rfl
+  | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
+    intro hcr; simp only [Deriv.cr] at hcr
+    have hcr1 : cr d₁ ≤ ((c + 1 : ℕ) : ℕ∞) :=
+      (le_max_left (cr d₁) (cr d₂)).trans ((le_max_right _ _).trans hcr)
+    have hcr2 : cr d₂ ≤ ((c + 1 : ℕ) : ℕ∞) :=
+      (le_max_right (cr d₁) (cr d₂)).trans ((le_max_right _ _).trans hcr)
+    have hξc : (ξ.complexity + 1 : ℕ∞) ≤ ((c + 1 : ℕ) : ℕ∞) := (le_max_left _ _).trans hcr
+    have IH1 := ih₁ hcr1
+    have IH2 := ih₂ hcr2
+    simp only [Deriv.o]
+    by_cases hkeep : ξ.complexity < c
+    · exact (Provable.cut ξ (by exact_mod_cast Nat.succ_le_of_lt hkeep) IH1 IH2).mono
+        (max_opow_add_one_le (o d₁) (o d₂)) le_rfl
+    · have hξle : ξ.complexity ≤ c := Nat.le_of_succ_le_succ (by exact_mod_cast hξc)
+      have hξeq : ξ.complexity = c := le_antisymm hξle (not_lt.mp hkeep)
+      exact Provable.cutElimPrincipal hξeq IH1 IH2
+
+/-- **One level of cut elimination** (Towsner Thm 19.7): reducing the cut rank by one raises the
+ordinal bound to `ω^α`. -/
 theorem Provable.cutElimStep {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
     (h : Provable α (c + 1) Γ) : Provable (Ordinal.omega0 ^ α) c Γ := by
-  sorry
+  rcases h with ⟨d, ho, hcr⟩
+  exact (Provable.cutElimStepAux d hcr).mono
+    (Ordinal.opow_le_opow_right Ordinal.omega0_pos ho) le_rfl
 
 /-- **Full cut elimination** (Towsner Thm 19.9): iterate `cutElimStep` `c` times, reaching a
 cut-free derivation at ordinal `ω_c^α`. -/
