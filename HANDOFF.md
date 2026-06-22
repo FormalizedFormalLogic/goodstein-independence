@@ -23,13 +23,17 @@ semantics `⊨^α`, sidestepping witnesses. **M6 (Hardy) + the `wip/` witness-bo
 critical path** (banked, not deleted).
 
 ## 🎯 NEXT LAP — execute the Buchholz route (`PENDING_WORK.md` lap-12 top has the full plan)
-- **0a. VERIFY (a) — DONE + first lego BUILT this lap:** `wip/LangX.lean` (green) defines
-  `LX := ℒₒᵣ + Xpred` (one unary set-variable predicate `X`), its `Language.ORing` instance (6 one-liners
-  via `Sum.inl`), and confirms numerals + `X`-atoms typecheck + the `ℒₒᵣ →ᵥ LX` embedding hook. The
-  instance plumbing was trivial. **First lap-13 task: generalise M5 (`Zinfty.lean`) + M4 (`Embedding.lean`)
-  over `{L} [Language.ORing L]`** (mechanical ~128KB port — proofs use only logical structure +
-  `atomTrue`/numerals; re-instantiate at `ℒₒᵣ` for existing `src/` users, at `LX` for Boundedness).
-  Low-risk vs. Towsner's novel-math wall.
+- **0a. VERIFY (a) — DONE + two green legos BUILT this lap:**
+  - `wip/LangX.lean` — `LX := ℒₒᵣ + Xpred` (one unary set-variable `X`) + its `Language.ORing` instance
+    (6 `Sum.inl` one-liners) + numerals/`X`-atoms typecheck + the `ℒₒᵣ →ᵥ LX` hook. Plumbing was trivial.
+  - `wip/GenericZinftyProbe.lean` — M5's REAL constructs (`Form`/`nm`/`atomTrue`/`allω`/`exI`) generalise
+    over `{L}`, pinning the EXACT instance bundle: `[Language.ORing L] [Structure L ℕ] [(k)→DecidableEq
+    (L.Func k)] [(k)→DecidableEq (L.Rel k)]`. All hold for `ℒₒᵣ` and `LX` except **`Structure LX ℕ`**.
+  **Lap-13 task order:** (i) build **`Structure LX ℕ`** parametrised by a set `S ⊆ ℕ` (standard `ℒₒᵣ`
+  part + `X ↦ S`) — this DOUBLES as the carrier of Buchholz's `⊨^α` (with `S := {n : |n|_≺ < α}`), so it
+  is the single most leveraged next lego; (ii) generalise M5 (`Zinfty.lean`) + M4 (`Embedding.lean`) over
+  `{L}` + the 4 instances (header swap, ~128KB, mechanical); (iii) re-instantiate at `ℒₒᵣ` (existing
+  `src/` users) and `LX` (Boundedness). Low-risk vs. Towsner's novel-math wall.
 - **0b. VERIFY (b) — STILL OPEN:** Goodstein⟹TI_≺(X) provable in PA via the Phase-0 CNF-ε₀ encoding.
   Not a known wall; confirm before sinking laps into Boundedness.
 - **1.** Truth semantics `⊨^α Γ` (`X := {n : |n|_≺<α}`), `Prog_≺`, ≺-norm, order type `‖≺‖`, X-positivity.
