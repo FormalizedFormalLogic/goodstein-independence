@@ -3,8 +3,24 @@
 **Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Gentzen/Buchholz ordinal analysis — witness-FREE `Z_∞` (embedding
 [M4 `embedC`, done] + ε₀ cut-elim [M5, done]) + **Boundedness** (Thm 5.4, DONE lap 14, axiom-clean) ⟹
 `𝗣𝗔 ⊬ TI(ε₀)` (= `peano_not_proves_TI`, FULLY axiom-clean — F-φ DISCHARGED lap 28), then
-Goodstein⟹TI(ε₀) [= the E wall].** · **Build**: 🟢 green (1307 jobs, `lake build GoodsteinPA`) ·
-**Updated**: lap 39 (review — internal-ONote substrate COMPLETE; direction re-validated; lone wall = `hbound`@`DescentSemantic:416`) · 2026-06-23 · `280cbff`
+Goodstein⟹TI(ε₀) [= the E wall].** · **Build**: 🟢 green (1308 jobs, `lake build GoodsteinPA`) ·
+**Updated**: lap 42 (review — `IterPrefix_lxDef` DISCHARGED → descent exists unconditionally; crux now = Rathjen §3 SLOW-DOWN) · 2026-06-23 · `16552e3`
+
+## ⭐ Lap-42 (REVIEW) — the lap-41 "lone wall" `IterPrefix_lxDef` DISCHARGED; descent sequence is unconditional
+**Done:** `IterPrefix_lxDef` + `minClause_lxDef` (`DescentConstruction.lean`, axiom-clean, green 1308).
+The **membership-form trick** (`isDescent_iff_mem` — the `X`-atom on a *bound* variable, not a `znth`-term)
+that lap 35 used for the `Mlt`-descent applies verbatim to lap-41's **`descentR`** route, so all four
+`IterPrefix` clauses are binary-`LX`-definable (only the `descentR` minimality `∀ z<x', ¬(Mlt f z x ∧ ¬MX z)`,
+via Foundation `ballLT`, was new). ⟹ **`descent_iterate_seq_total : ∀ k:M, IterPrefix hM f a₀ k` is
+UNCONDITIONAL** (the canonical `Mlt`-descent prefix exists at every length, hypothesis-free). Lap 41
+over-rated this as "genuine multi-lap infra"; it was one membership-form clause.
+**Fresh-mind course-correction (recorded in `PENDING_WORK` lap-42):** the prior `hbound` decomposition
+**under-specified slowness** — it assumed the extracted descent `α` already has `iC(αₖ)≤K(k+1)`, but a
+`descentR`-least step has uncontrolled `C`. Rathjen gets the bound only via **Cor 3.4** (Grzegorczyk
+`g`-padding, Lemma 3.3), which is **NOT started** and is now the genuine remaining crux; the lap-41
+`InternalONote` toolkit is the *Thm 3.5* reindex arithmetic, downstream of Cor 3.4. Also flagged: the
+`hbound` `sorry` still carries the unachievable `𝚺₁-Function₁ b` shape (b is `X`-dependent) — refactor
+`hCD` through lap-41's `nonterminating_of_xDescent` when β lands.
 
 ## ⭐ Lap-36 (DEEP REFLECTION + WALL B DISSOLVED) — `goodsteinSentence` refactored transparent; `hB` discharged
 **Done after the synthesis:** refactored `goodsteinSentence` to the transparent `“∀ m, ∃ N, !igoodsteinDef

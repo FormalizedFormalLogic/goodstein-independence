@@ -1,5 +1,50 @@
 # Pending work — open obligations & attack paths
 
+## ⭐ Lap 42 (REVIEW) — `IterPrefix_lxDef` DISCHARGED; the descent EXISTS unconditionally; **the real crux is now the Rathjen §3 SLOW-DOWN**
+
+**Done lap 42 (1 commit, axiom-clean, green 1308):** `IterPrefix_lxDef` + `minClause_lxDef`
+(`DescentConstruction.lean`) — the lap-41 "lone wall" (`hPdef`). The membership-form trick
+(`isDescent_iff_mem`: X-atom on a *bound* variable) that `DescentConstruction.descent_seq_exists`
+already used for the `Mlt`-descent applies verbatim to the **`descentR`** route. So `IterPrefix`'s four
+clauses (`skel`/`descentMlt`/`minClause`/`xclause`) are each binary-`LX`-definable; the only new one is
+`minClause` (the `descentR` minimality `∀ z<x', ¬(Mlt f z x ∧ ¬MX z)` via Foundation `ballLT`). Result:
+**`descent_iterate_seq_total : ∀ k:M, IterPrefix hM f a₀ k` is UNCONDITIONAL** — the canonical
+`Mlt`-descent prefix exists at every length, no hypotheses. (Lap 41 over-rated this as "genuine
+multi-lap infra"; it was one membership-form clause.)
+
+**⚠️ FRESH-MIND COURSE-CORRECTION — the prior `hbound` decomposition under-specified the SLOWNESS.**
+The lap-41 plan (piece 1) claimed the extracted descent `α` comes "with `iC(α k) ≤ K(k+1)` (Rathjen
+`|αₖ|≤K(k+1)`)". **That is NOT automatic.** `descentR` picks the `<`-least `¬MX` code `≺ αₖ`; its
+coefficient `C` is uncontrolled. Rathjen gets the bound only via **Corollary 3.4** (read `papers/
+rathjen-2014…pdf` p.11–12): pad an arbitrary descent into a *slow* one (`|αᵢ|≤K(i+1)`) using the
+Grzegorczyk function `g` from **Lemma 3.3** (`g(n,m)>g(n,m+1)` for `m<f(n)`, `|g(n,m)|≤K(n+m+1)`).
+**Only then** does **Theorem 3.5**'s reindex `β_{K(n+1)+i}=ω·αₙ+(K-i)` give `C(βᵣ)≤r+1`. The lap-41
+`InternalONote` toolkit (`iC_iomul`/`iC_iadd_finite`/`icmp_betaTail_*`) is the **Thm-3.5** code
+arithmetic; **Cor 3.4 (the `g`/Grzegorczyk padding) is NOT started and is the genuine remaining wall.**
+
+**Also flag (stale code):** `no_min_descent_absurd_of_goodstein`'s `hbound` `sorry`
+(`DescentSemantic.lean:569`) still demands a `𝚺₁-Function₁ b`. That is UNACHIEVABLE — `b` is
+`X`-dependent (derived from `no_min`/`MX`). The correct route is lap-41's `nonterminating_of_xDescent`
+(the `lx_nonterminating`/`X`-essential path). When β is built, **refactor `hCD` to go through
+`nonterminating_of_xDescent`**, deleting the dead `𝚺₁` `hbound`+`DescentArith.nonterminating_internal`.
+
+**REMAINING for `hbound`, hardest-first (revised lap 42):**
+1. **(HARD CRUX — Rathjen Cor 3.4 slow-down)** — internalize the `g`/Lemma 3.3 Grzegorczyk padding on
+   `M`-codes: from an `icmp`-descent of ε₀-codes, produce a SLOW `icmp`-descent with `iC(αᵢ)≤K(i+1)`.
+   Lemma 3.2 = mathlib `exists_lt_ack_of_nat_primrec` (ack ≈ Grzegorczyk fₙ). **This is multi-lap.**
+   Decompose: (a) ℕ-template `g : ℕ²→ONote` + descent/bound lemmas (Aristotle-eligible, self-contained);
+   (b) internalize as `M`-code recursion.
+2. **(plumbing) Extract `α : M → M`** from `descent_iterate_seq_total` — `α k := znth (choose …) k`,
+   coherent across lengths via `descentR_functional` (prove prefix-agreement by induction). Gives
+   `α 0=a₀`, `∀k ¬MX(α k)`, `∀k descentR f (α k)(α(k+1))` ⟹ `Mlt`-descent + each `¬MX`. Tractable.
+3. **(plumbing) Decode `Mlt`→`icmp`** on codes (the route-b seam): `Mlt f y x` (`=prec`, X-free) ⟺
+   `icmp y x = 0` on the ε₀-code reading; `isNF (α k)`. Needs the `prec`↔`icmp` bridge in `M`.
+4. **(ARITH, toolkit ready) Thm 3.5 reindex** `α(slow) → β`, `βᵣ=ω·αₙ+(K-i)` — `iCanon(r+1)`
+   (`iC_iomul`+`iC_iadd_finite`), `icmp`-descent (within+boundary), `isNF` (`isNF_iadd_finite`).
+5. **`hPdef'` + close** — LX-def of `ievalNat(k+1)(βₖ)≤igoodstein m₀ k` (`lxDef_of_reduct` on the 𝚺₁
+   `ievalNat`/`igoodstein` graphs + β's LX-formula); `nonterminating_of_xDescent` ⟹ `hCD` ⟹ `hbound`.
+   ANTI-FRAUD: re-`#print axioms` headline (must stay `sorryAx` until the WHOLE chain is real) + girder.
+
 ## ⭐ Lap 41 — slow-down toolkit + run engine COMPLETE; `hbound` reduced to "build the X-definable β"
 
 The lone wall is still `hbound` (`DescentSemantic.lean`, now ~line 460). Lap 41 closed the ENTIRE
