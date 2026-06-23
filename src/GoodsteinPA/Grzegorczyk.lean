@@ -461,6 +461,49 @@ theorem C_bigMul_le (k : ℕ) (β : ONote) : C (bigMul k β) ≤ C β + k := by
     rw [bigMul_succ]
     exact le_trans (GoodsteinPA.Dom.C_omega_mul_le (bigMul k β)) (by omega)
 
+/-! ## Clean-append `C`-bound (`ω^(l+1)·β + g`, with `g` strictly below)
+
+For slowness we need `C (α j) = C (ω^(l+1)·β_n + g) ≤ max …`. Because every exponent of `g` is
+`< l+1 ≤` every exponent of `ω^(l+1)·β`, the addition appends `g` as a pure tail with no coefficient
+merge, so `C (a + b) ≤ max (C a) (C b)`. `AllExpAbove b a` records "every exponent of `a` dominates
+`b`" (recursively), which is exactly the clean-append condition. -/
+
+/-- `b`'s value is below `ω^e` for every leading exponent `e` occurring in `a` (so `a + b` appends
+without merging coefficients). -/
+def AllExpAbove (b : ONote) : ONote → Prop
+  | 0 => True
+  | ONote.oadd e _ a' => b.repr < (ω : Ordinal) ^ (ONote.repr e) ∧ AllExpAbove b a'
+
+/-- **Clean-append bound.** If every exponent of `a` dominates `b`, then `a + b` is `a` with `b`
+grafted as its tail, so `C (a + b) ≤ max (C a) (C b)`. -/
+theorem C_add_clean : ∀ {a : ONote}, a.NF → ∀ {b : ONote}, b.NF → AllExpAbove b a →
+    C (a + b) ≤ max (C a) (C b)
+  | 0, _, b, _, _ => by rw [ONote.zero_add, C_zero]; exact le_max_right _ _
+  | ONote.oadd e n a', hNF, b, hb, hab => by
+    obtain ⟨hbe, hab'⟩ := hab
+    have hNFe : e.NF := hNF.fst
+    have hNFa' : a'.NF := hNF.snd
+    have ih := C_add_clean hNFa' hb hab'
+    have hbelow : ONote.NFBelow (a' + b) (ONote.repr e) :=
+      ONote.add_nfBelow hNF.snd' (ONote.NF.below_of_lt' hbe hb)
+    have hadd : ONote.oadd e n a' + b = ONote.oadd e n (a' + b) := by
+      rw [ONote.oadd_add]
+      cases h : a' + b with
+      | zero => simp [ONote.addAux]
+      | oadd e'' n'' a'' =>
+        have hbXo := h ▸ hbelow
+        have hNFe'' : e''.NF := hbXo.fst
+        have hlt : ONote.repr e'' < ONote.repr e := hbXo.lt
+        have hcmp : ONote.cmp e e'' = Ordering.gt := by
+          have hc := @ONote.cmp_compares e e'' hNFe hNFe''
+          rcases hco : ONote.cmp e e'' with _ | _ | _
+          · rw [hco] at hc; exact absurd (ONote.lt_def.1 hc) (not_lt.2 hlt.le)
+          · rw [hco] at hc; exact absurd (congrArg ONote.repr hc) (ne_of_gt hlt)
+          · rfl
+        simp [ONote.addAux, hcmp]
+    rw [hadd, C_oadd, C_oadd]
+    omega
+
 /-- **Lemma 3.3(1) — descent.** `g l n (m+1) ≺ g l n m` whenever `m < F l n`. Base: `g₀_desc`.
 Step (`l+1`): decompose `m`'s block `i, j`; the increment `m ↦ m+1` either stays in block `i`
 (`blockOff` becomes `j+1`, descent by the IH via `repr_blk_within`) or crosses into block `i+1`
