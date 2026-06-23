@@ -126,6 +126,18 @@ lemma iC_iVbigMul_le (c : V) : ∀ l : V, iC (iVbigMul c l) ≤ iC c + l := by
       _ ≤ (iC c + l) + 1 := by gcongr
       _ = iC c + (l + 1) := (add_assoc _ _ _)
 
+/-- `ω^l·β ≠ 0` whenever `β ≠ 0` (each `ω·` preserves non-zero-ness). -/
+lemma iVbigMul_ne_zero {β : V} (hβ0 : β ≠ 0) : ∀ l : V, iVbigMul β l ≠ 0 := by
+  intro l
+  induction l using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simpa using hβ0
+  case succ l ih => rw [iVbigMul_succ]; exact iomul_ne_zero ih
+
+/-- A finite code `ocOadd 0 c 0` (`c ≠ 0`) is in normal form. -/
+lemma isNF_finCode {c : V} (hc : c ≠ 0) : isNF (ocOadd 0 c 0) := by
+  rw [isNF_ocOadd]; exact ⟨hc, isNF_zero, isNF_zero, Or.inl rfl⟩
+
 /-! ## The internal `g0` — base case of the Rathjen Lemma 3.3 recursion (level `l = 0`)
 
 Mirror of `Grz.g0 n m = ofNat ((n+2) -· m)`: a finite code `ω^0·((n+2)-m) = ocOadd 0 ((n+2)-m) 0`
@@ -712,5 +724,52 @@ lemma iAbove_finThresh_mono {l j : V} (hjl : j ≤ l) :
         have := ocTail_lt ea na ra; rwa [ocTail_ocOadd] at this
       rw [iAbove_ocOadd]
       exact ⟨icmp_finThresh_mono hc hjl, IH ra hra_lt hra⟩
+
+/-! ### V-indexed MinExpGe (the generic-route lead is clean above its `g`-tail)
+
+The meta-level `iAbove_ibigMul_finCode` only covers a *standard* level. For the generic Cor 3.4 lead
+`iVbigMul β (l+1)` at a non-standard `l : V`, the same MinExpGe holds, proved by internal
+`sigma1_succ_induction` on `l`. -/
+
+/-- `1 + ω^0·(c+1) = ω^0·(c+2)` on finite codes (the `MinExpGe` threshold bump). -/
+lemma iadd_one_finCode (c : V) :
+    iadd (ocOadd 0 1 0) (ocOadd 0 (c + 1) 0) = ocOadd 0 (c + 1 + 1) 0 := by
+  rw [iadd_one_fin (ocOadd_ne_zero 0 (c + 1) 0) (ocExp_ocOadd 0 (c + 1) 0),
+      ocCoeff_ocOadd, ocTail_ocOadd]
+  congr 1; rw [add_comm 1 (c + 1)]
+
+/-- **V-indexed `iAbove 0`**: `ω^(l+1)·β` has every leading exponent nonzero (needs only `β ≠ 0`). -/
+lemma iAbove_zero_iVbigMul {β : V} (hβ0 : β ≠ 0) (l : V) :
+    iAbove 0 (iVbigMul β (l + 1)) := by
+  rw [iVbigMul_succ]
+  exact iAbove_zero_iomul (iVbigMul β l) (iVbigMul_ne_zero hβ0 l)
+
+/-- **V-indexed MinExpGe** (generic `Grz.MinExpGe_bigMul`, non-standard level): `ω^(l+2)·β` has every
+leading exponent strictly above the finite code `l+1`. Internal induction on `l : V`: base `l=0` lifts
+`iAbove 0 (ω·β)` through one `ω·` (`iAbove_iomul` + `iadd_one_zero`); step bumps the threshold
+`l+1 ↦ l+2` (`iadd_one_finCode`). This certifies the generic Cor 3.4 lead `ω^(l+1)·β` is clean above any
+`g < ω^(l+1)` (whose top exponent is a finite code `⪯ l+1`). -/
+lemma iAbove_finCode_iVbigMul {β : V} (hβNF : isNF β) (hβ0 : β ≠ 0) :
+    ∀ l : V, iAbove (ocOadd 0 (l + 1) 0) (iVbigMul β (l + 1 + 1)) := by
+  intro l
+  induction l using ISigma1.sigma1_succ_induction
+  · refine Definable.comp₂ (P := iAbove)
+      (DefinableFunction₃.comp (F := ocOadd) (hF := ocOadd_definable.of_sigmaOne)
+        (DefinableFunction.const 0)
+        (DefinableFunction₂.comp (F := (· + ·)) (DefinableFunction.var 0) (DefinableFunction.const 1))
+        (DefinableFunction.const 0))
+      (DefinableFunction₂.comp (F := iVbigMul) (DefinableFunction.const β)
+        (DefinableFunction₂.comp (F := (· + ·))
+          (DefinableFunction₂.comp (F := (· + ·)) (DefinableFunction.var 0) (DefinableFunction.const 1))
+          (DefinableFunction.const 1)))
+  case zero =>
+    rw [iVbigMul_succ, iVbigMul_succ, iVbigMul_zero, zero_add]
+    have h := iAbove_iomul isNF_zero (iomul β) (isNF_iomul hβNF) (iAbove_zero_iomul β hβ0)
+    rwa [iadd_one_zero] at h
+  case succ l ih =>
+    rw [show l + 1 + 1 + 1 = (l + 1 + 1) + 1 from rfl, iVbigMul_succ]
+    have hNF : isNF (ocOadd 0 (l + 1) 0) := isNF_finCode (by simp)
+    have h := iAbove_iomul hNF (iVbigMul β (l + 1 + 1)) (isNF_iVbigMul hβNF _) ih
+    rwa [iadd_one_finCode l] at h
 
 end GoodsteinPA.InternalONote
