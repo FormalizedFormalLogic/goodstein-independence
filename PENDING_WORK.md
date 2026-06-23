@@ -1,5 +1,37 @@
 # Pending work — open obligations & attack paths
 
+## ⭐⭐⭐ Lap 49 (2026-06-23) — generic-route (non-standard level) Cor 3.4 lead bricks
+Confirmed **M1 (`goodsteinTerminates_re`) and Phase-1 reduction (`not_proves_of_implies_consistency`)
+are already complete & axiom-clean** — the operator's named M1 target was done by a prior lap; the only
+open obligation is the deep Phase-2 girder `Reduction.goodstein_implies_consistency` (crux 1+2 below).
+
+**Done this lap (`InternalCor34.lean`, axiom-clean, green 1311):** the generic Cor 3.4 lead at a
+*non-standard* level `l : V` (the meta-`ibigMul (k:ℕ)` was only the standard-level special case).
+- `oadd1iter_eq_succ` / `iAbove_ibigMul_finCode` — cast the `MinExpGe` threshold iterate to finite-code
+  form (standard level).
+- **`iVbigMul β l = (ω·)^l β`** — V-indexed `ω^l·β` as a genuine `𝚺₁` primitive recursion (`PR.Construction`,
+  mirror of `iAboveTable`), with `isNF_iVbigMul`/`icmp_iVbigMul`/`iC_iVbigMul_le` by `sigma1_succ_induction`.
+- **`iAbove_finCode_iVbigMul`** — V-indexed MinExpGe: `ω^(l+2)·β` clean above finite code `l+1`.
+  (Motive-definability needed an EXPLICIT `Definable.comp₂` term — aesop blows up on the `iAbove` rule;
+  see memory `definability-aesop-depth-blowup`.) Plus `iVbigMul_ne_zero`, `isNF_finCode`, `iadd_one_finCode`,
+  `iAbove_zero_iVbigMul`.
+
+**NEXT (hardest-first, crux 1 generic route):**
+1. **Generic clean-append on `iVbigMul`** — lift `iC_iadd_clean` / `icmp_iadd_clean(_within/_boundary)` from
+   `ibigMul (k:ℕ)` onto the V-indexed lead `iVbigMul β l`: given `g < ω^(l+1)` so `ocExp g = ocOadd 0 j 0`
+   with `j ≤ l` (or `g` finite), discharge `iAbove (ocExp g) (iVbigMul β (l+1))` via `iAbove_finCode_iVbigMul`
+   + `iAbove_finThresh_mono` (j≤l) and `iAbove_zero_iVbigMul` (g finite). That feeds the within/boundary
+   descent + the C-split directly.
+2. **Abstract-`ig` interface + `icorAlpha`** (lap-45 path #2): parameterize over abstract internal
+   `ig : V→V→V→V` with hyps (`isNF`, `ig < ω^(l+1)` i.e. `ocExp(ig) ⪯ code l`, `iC(ig) ≤ K·(n+m+1)`,
+   within/boundary `icmp`-descent). Define `icorAlpha := iadd (iVbigMul (β block) l) (ig …)`; prove the
+   three Cor-3.4 properties from the bricks (C-bound = `iC_iadd_clean`+`iC_iVbigMul_le`; within =
+   `icmp_iadd_clean`; boundary = `icmp_iadd_clean_boundary`+`icmp_iVbigMul`). Blueprint = sorry-free
+   `Grz.corAlpha_C_bound/_within/_boundary`.
+3. **The internal `ig` f-recursion over level `l:V`** (crux-1 step 3, the genuinely deep last piece):
+   needs the internal Grzegorczyk `F` (Ackermann-level) over `V ⊧ 𝗣𝗔` — the `reduct_models_PA` substrate.
+   Abstract-`ig` (step 2) defers this; discharge `ig`'s existence separately.
+
 ## ⭐⭐⭐ Lap 47 (2026-06-23) — internal Thm 3.5 COMPLETE; the two §3/Gentzen cruxes are next
 Discharged lap-46 item 4's remaining input: **ω-tower cofinality** `iwtower_cofinal : ∀ c, ∃ s, icmp c
 (iwtower s) = 0` (`InternalThm35`, axiom-clean), proved with NO NF hypothesis (`icmp_ocOadd_lt_exp` reads
