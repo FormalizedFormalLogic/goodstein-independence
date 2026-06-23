@@ -43,9 +43,19 @@ is Δ₀ hence a `𝚺₁-Predicate`, so the induction applies directly. **The o
 `bump`/`goodsteinSeq`/`T̂`/`βₖ` `𝚺₁`-definable *inside* `V`** (the `PA_delta1Definable`-flavoured gap, here
 only for the concrete primrec `bump` the repo already has `computable_bump` for). 
 
-**Next bricks (priority):** (1) **THE WALL — internalized definability:** define `bump`/`goodsteinSeq` as a
-`𝚺₁`-function in `V ⊧ₘ* 𝗜𝚺₁` via Foundation bootstrapping/`codeOfREPred`, then the internal `ineq6_step`,
-then `sigma1_pos_succ_induction`. Multi-lap. (2) Optional completeness: the Thm 3.5 HEAD block (`βⱼ=Σω_{s-i}`,
+**✅ Arithmetization SCAFFOLD machine-checked lap 25 (`src/GoodsteinPA/DescentArith.lean`, axiom-clean,
+now in the lib build).** `ineq6_internal` : inside `[V ⊧ₘ* 𝗜𝚺₁]`, given `𝚺₁`-functions `m,b`, base
+`b 0 ≤ m 0`, and the internal step, `sigma1_pos_succ_induction` yields `∀k, b k ≤ m k` — the `definability`
+tactic discharges the `𝚺₁`-predicate automatically. `nonterminating_internal` adds `0<b k ⟹ 0<m k`
+(the PA-internal Lemma 3.6). **The inequality-(6) induction now assembles in Lean**; the deep layer is
+isolated behind the two `𝚺₁`-function hyps + the step. Also: wired `DescentLift`/`DescentCore`/`DescentArith`
+into `src/GoodsteinPA.lean` (build 1271→1274 jobs).
+
+**Next bricks (priority):** (1) **THE WALL — internalized definability:** supply the concrete `𝚺₁`-function
+`m` = internalized `goodsteinSeq`/`bump` (build on Foundation `𝗜𝚺₁` `log`/`exp`/`bexp` in
+`Arithmetic/Exponential/`; `bump` is base-b digit manipulation) + `b` = `T̂^{k+2}∘β`, and prove the
+internal `ineq6_step` (`Δ₀` numeral form of `DescentCore.ineq6_step`), then plug into `ineq6_internal`.
+Multi-lap. (2) Optional completeness: the Thm 3.5 HEAD block (`βⱼ=Σω_{s-i}`,
 `j<K`) — a finite boundary detail, vacuous on its own; `headBeta s t := oadd (omegaStack (s-1)) 1
 (headBeta (s-1) t)`, `C=1` from `C_omegaStack`, descent by `repr_add`. Low value vs (1).
 

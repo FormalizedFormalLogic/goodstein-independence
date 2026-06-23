@@ -30,3 +30,10 @@ import GoodsteinPA.SeamDefinability
 
 import GoodsteinPA.Thm56
 import GoodsteinPA.EmbeddingBound
+
+-- E-core (the Goodstein⟹TI descent, Rathjen §2–3): proof-translation lift + semantic backbone
+-- + the arithmetization induction scaffold. Not yet wired into the headline (E = `DescentE` is
+-- still a `Prop`), but kept in the build so the §3 bricks stay green.
+import GoodsteinPA.DescentLift
+import GoodsteinPA.DescentCore
+import GoodsteinPA.DescentArith
