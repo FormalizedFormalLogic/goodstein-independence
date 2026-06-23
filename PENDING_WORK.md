@@ -4,16 +4,16 @@
 
 Full synthesis in **`REFLECTION-2026-06-23.md`**. Two changes the grind laps inherit:
 
-**(1) F-φ is solved — PORT IT (highest value).** The Aristotle job `aris_onotecmp` returned COMPLETE:
-`rePred_ltPull_natCode` proved in `wip/aristotle-fphi/ONoteComp.lean` (622 lines, no `sorry`, +2
-`native_decide`). Verified faithful: its final statement is *verbatim* ours and uses our
-`natCode := (Denumerable.eqv NONote).symm`. It was proved on **`v4.28.0`**; we are **`v4.31.0`** ⟹ a
-mechanical cross-version port. **Task:** create `src/GoodsteinPA/ONoteComp.lean` from it (adapt
-`import Mathlib` → our imports; reuse our `Epsilon0Complete.natCode`/`NONote`/`Denumerable` rather than
-redefining; fix any v4.28→v4.31 API drift), then in `SeamDefinability.lean` replace
-`axiom rePred_ltPull_natCode` with the ported theorem. Confirm `#print axioms peano_not_proves_TI` ⟹
-`[propext, choice, Quot.sound]` (+ the 2 🟢 `native_decide` `ofReduceBool`/`trustCompiler`). **This
-discharges an entire wall with a proof in hand** and collapses the project to ONE wall (E-core).
+**(1) F-φ is solved — PORT IN PROGRESS (`wip/aristotle-fphi/`).** Aristotle proved
+`rePred_ltPull_natCode` (verified faithful: verbatim our statement + our `natCode`). **Port started lap
+27** (`ONoteComp.v431-port-wip.lean`): reuses our `Epsilon0Complete` scaffolding, 4 proofs fixed, the
+`native_decide +revert` >10min hang resolved. **~12 proofs still break on v4.28→v4.31 drift** — full
+error analysis + fix recipe + compile-time strategy (low-heartbeat diagnostic; full build is >10min) in
+**`wip/aristotle-fphi/PORT-STATUS.md`**. The disclosed `axiom` stays in `SeamDefinability.lean` (TRUE +
+PROVEN, honest 🟡) until the port is green. **Mechanical multi-lap port — NOT the crux.** When green:
+wire into the lib + SeamDefinability, confirm `#print axioms peano_not_proves_TI =
+[propext, choice, Quot.sound]` (+ ≤2 🟢 `native_decide`). If it stays painful (see PORT-STATUS),
+deprioritize vs E-core (the actual crux).
 
 **(2) Back-end DECIDED: Route B. STOP the internal-V induction-toward-headline.** The lap 25–26
 `DescentArith.ineq6_internal` (`sigma1_pos_succ_induction`) lands X-free `𝗣𝗔 ⊢ PRWO(ε₀)` = **Route A's**

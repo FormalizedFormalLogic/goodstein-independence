@@ -8,10 +8,14 @@ baton = **`HANDOFF-2026-06-23-lap26.md`**. Durable overview = **`STATUS.md`**; E
 attack paths = **`PENDING_WORK.md`** (lap-27 top).
 
 ## TL;DR — two changes the next grind laps inherit
-1. **F-φ is SOLVED on Aristotle** (`rePred_ltPull_natCode`, `wip/aristotle-fphi/ONoteComp.lean`, verified
-   faithful — verbatim our statement + our `natCode`; no `sorry`, +2 `native_decide`). Proved on `v4.28`,
-   we're `v4.31` ⟹ **mechanical port pending.** **This is the highest-value next action** — discharges a
-   whole wall with a proof in hand, collapsing the project to ONE wall.
+1. **F-φ is SOLVED on Aristotle** (`rePred_ltPull_natCode`, verified faithful — verbatim our statement +
+   our `natCode`). **v4.28→v4.31 port STARTED lap 27** (`wip/aristotle-fphi/ONoteComp.v431-port-wip.lean`):
+   reuses our `Epsilon0Complete` scaffolding, 4 proofs fixed, the `native_decide +revert` hang resolved;
+   **~12 proofs still break** (systematic v4.31 drift — convert strictness, `LT.lt.not_lt` gone, `L[i]?`
+   syntax, of_eq id-goals). Full error analysis + fix recipe + the **compile-time strategy** (use the
+   low-heartbeat diagnostic — full build is >10min) in **`wip/aristotle-fphi/PORT-STATUS.md`**. The
+   disclosed `axiom` stays in `SeamDefinability.lean` (TRUE + PROVEN, honest 🟡) until the port is green.
+   Mechanical multi-lap port — NOT the crux (E-core is).
 2. **Back-end DECIDED: Route B** (was "deferred"). The lap 25–26 internal-V `sigma1_pos_succ_induction`
    route lands X-free `𝗣𝗔 ⊢ PRWO` = Route A's antecedent, which **cannot** feed the built
    `peano_not_proves_TI` (free-`X` obstruction, per the lap-24 correction) and whose back-end carries the
