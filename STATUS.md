@@ -3,8 +3,8 @@
 **Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Gentzen/Buchholz ordinal analysis — witness-FREE `Z_∞` (embedding
 [M4 `embedC`, done] + ε₀ cut-elim [M5, done]) + **Boundedness** (Thm 5.4, DONE lap 14, axiom-clean) ⟹
 `𝗣𝗔 ⊬ TI(ε₀)` (= `peano_not_proves_TI`, FULLY axiom-clean — F-φ DISCHARGED lap 28), then
-Goodstein⟹TI(ε₀) [= the E wall].** · **Build**: 🟢 green (1302 jobs, `lake build GoodsteinPA`) ·
-**Updated**: lap 30 (E-via-COMPLETENESS redirect) · 2026-06-23 · `01eac6a`+wd
+Goodstein⟹TI(ε₀) [= the E wall].** · **Build**: 🟢 green (1304 jobs, `lake build GoodsteinPA`) ·
+**Updated**: lap 33 (review; equality plumbing landed laps 31–32) · 2026-06-23 · `3da9f1c`
 
 ## ✅ Lap-30 (review) — STRATEGIC REDIRECT: the E wall collapses to ONE semantic lemma via completeness
 Fresh-mind pass found the lap-27 "Route B = hand-build a `paLX` sequent-calculus derivation of `TI_≺(X)`"
@@ -122,7 +122,22 @@ pure mathlib ordinal arithmetic it is **Aristotle-eligible** (the one piece with
 E **pins which `≺` F may use** (co-design). See newest `HANDOFF`.
 
 ## Where it stands
-**(lap-30 current read.)** The project has **one wall left, and it is now a single semantic lemma**:
+**(lap-33 review — current read.)** ONE wall stands between the disclosed-`sorry` headline and a fully
+axiom-clean Kirby–Paris: **`DescentSemantic.no_min_descent_absurd_of_goodstein`** (Rathjen §3 *inside a
+model `M ⊧ paLX`*). Real `#print axioms` this lap: `Thm56.peano_not_proves_TI` (the whole Buchholz Thm 5.6
+girder) = `[propext, choice, Quot.sound, ONoteComp…native_decide]` — **clean**; the would-be-headline chain
+`peano_not_proves_goodstein_modulo_semantic` adds **exactly one `sorryAx`**, from that lemma. Laps 31–32
+built the **equality plumbing** the lemma's substrate needs: X-congruence (`relExt Xsym`) is now an axiom of
+`paLX` (lap 32 `a0c611f`, `peano_not_proves_TI` re-validated clean), and `𝗘𝗤 ⪯ paLX` is proved (lap 32
+`32d0b0e`) — so models of `paLX` carry genuine equality. **Immediate gate (A2 part 2):** re-route `descentE`
+through `Structure.consequence_iff_eq` + `complete` so `no_min_descent_absurd_of_goodstein` may assume
+`[Structure.Eq LX M]` — required to install `M`'s `ℒₒᵣ`-reduct as a real `[M ⊧ₘ* 𝗜𝚺₁]` (the substrate
+lemmas `ReductModel.reduct_models_isigma1` already demand it). **Then the deep content (walls B/C/D):**
+B (opaque `codeOfREPred goodsteinTerminates` ↔ `∃N, igoodstein m N=0`, IΣ₁-internal), C (M-internal
+`Mlt`-descent via LX least-number), D (slow-down `βₖ` + `DescentCore.ineq6_step` iterated by `M ⊧
+InductionScheme LX`). Substrate is built (laps 26–32); this is the genuine remaining mathematics.
+
+**(lap-30 read.)** The project has **one wall left, and it is now a single semantic lemma**:
 `DescentSemantic.paLX_models_TI_of_PA_provable` — "if `𝗣𝗔 ⊢ goodsteinSentence`, every model `M ⊧ paLX`
 satisfies `TI prec`." Everything else is machine-checked: `peano_not_proves_TI` (Thm 5.6) is axiom-clean
 (lap 28, F-φ discharged), and `DescentSemantic.descentE : Thm56.DescentE` derives the whole `Derivation2
@@ -192,6 +207,20 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-23 (lap 33 — review: direction re-validated; equality plumbing complete, A2-part-2 is the
+  gate):** Real `#print axioms` reconfirmed: `peano_not_proves_TI` clean, `…_modulo_semantic` = trust-base
+  + 1 🟢 native_decide + exactly **one** `sorryAx` (`no_min_descent_absurd_of_goodstein`). Single wall.
+  Validated that the substrate (`ReductModel.reduct_models_isigma1`, `DescentCore.lemma36_nonterminating`/
+  `ineq6_step`) is built but gated on `[Structure.Eq LX M]` — so the lap-31/32 equality work (X-cong into
+  `paLX`; `𝗘𝗤 ⪯ paLX`) is the correct enabler, and A2-part-2 (thread `Structure.Eq` via `consequence_iff_eq`)
+  is the immediate gate before walls B/C/D. STATUS/ledger refreshed. Build green 1304 jobs.
+- **2026-06-23 (laps 31–32 — equality plumbing for the model-internal descent):** Proved the
+  X-congruence matrix in `PXFc` (lap 31 `3ba2727`) and **wired `relExt Xsym` (`∀x y, x=y→X x→X y`) into
+  `paLX`** as a genuine axiom (lap 32 `a0c611f`) — `peano_not_proves_TI` re-validated axiom-clean after the
+  3-summand `paLX` change. Then proved **`𝗘𝗤 ⪯ paLX`** (lap 32 `32d0b0e`, `DescentLift.eqLX_subset_paLX` +
+  `WeakerThan.ofSubset`): every `𝗘𝗤(LX)` axiom is an `lMap Φ`-image of a `𝗣𝗔⁻` axiom or `relExt Xsym`, so
+  models of `paLX` carry real equality. GOTCHA banked: prove `lMap`-over-`Matrix.conj` by **casing the
+  concrete ℒₒᵣ symbol** (`cases r`/`cases f`), not a general-`k` higher-order rewrite.
 - **2026-06-23 (lap 30 — review: E wall → ONE semantic lemma via first-order completeness):** Found
   that `Thm56.DescentE` need not be a hand-built `paLX` sequent derivation. Foundation's
   `Derivation.completeness_of_encodable` turns the semantic premise "every `M ⊧ paLX` models `TI prec`"
@@ -360,20 +389,24 @@ escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 5.1/5.2/5.3) are **done & axiom-clean** and ARE the two hard pieces. Remaining = Boundedness + the
 Goodstein⟹TI bridge. Priorities (see `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md`):
 
-### Short-term — ONE wall remains (lap 30): the semantic lemma `paLX_models_TI_of_PA_provable`. See `DESCENT-PLAN §5`
-F-φ discharged (lap 28), E reduced to completeness (lap 30). The single open obligation:
-`DescentSemantic.paLX_models_TI_of_PA_provable` — *under `𝗣𝗔 ⊢ goodsteinSentence`, every model `M ⊧ paLX`
-satisfies `TI prec`*. Decompose model-internally (hardest-first attack order):
-1. **(easy, next) Import Goodstein into `M`.** E-lift (`paLX_derivable2_lMap_of_PA_provable`) + soundness
-   for `Derivation2`/`Schema` ⟹ `M ⊧ lMap goodsteinSentence`, i.e. `M`'s `ℒₒᵣ`-reduct models Goodstein
-   termination. Find Foundation's soundness lemma (`sound!` / `Derivation`-soundness) + `eval_lMap`.
-2. **The X-descent.** From `M ⊧ ¬TI prec` (`Prog(X) ∧ ¬X a₀`): build the `X`-definable `≺`-descent in `M`
-   via `M`'s LX least-number principle (instance of `InductionScheme LX`, available since `M ⊧ paLX`).
-3. **(the deep core) Slow-down + inequality (6) in `M`.** Rathjen §3 slowing — `(βₖ)` with `C(βₖ) ≤ k+1` —
-   run the special Goodstein seq from `m₀ = T̂²(β₀)` (lap-26 `igoodstein` substrate, evaluated in `M`'s
-   reduct), iterate `DescentCore.ineq6_step` by `M`'s LX-induction ⟹ `M ⊧ ∀k mₖ > 0`. Contradiction with 1.
-   The lap-26 internal substrate transfers; the `DescentInternal`/`sigma1_pos_succ_induction` lemmas are
-   green-but-superseded (X-free `V ⊧ 𝗜𝚺₁` framing; reuse their *content*, re-target to `M ⊧ paLX`).
+### Short-term — ONE wall (lap 33): `DescentSemantic.no_min_descent_absurd_of_goodstein`. See `DESCENT-PLAN §5`
+Steps 1–2 of `paLX_models_TI_of_PA_provable` are PROVED (import Goodstein into `M`; unfold `TI prec` to
+abstract transfinite induction; progressivity-contrapositive ⟹ `no_min`). The single open obligation is the
+named `sorry` it bottoms out at: given `no_min` (the non-`MX` set is `Mlt`-progressive-downward) + Goodstein
+termination in `M`, derive `False`. Attack order (hardest-first; substrate built laps 26–32):
+0. **(gate, A2 part 2) Thread `[Structure.Eq LX M]`.** `𝗘𝗤 ⪯ paLX` is proved, so `descentE` can route through
+   `Structure.consequence_iff_eq` + `complete : T ⊨ φ → T ⊢ φ` (give the model genuine equality) instead of
+   `completeness_of_encodable` directly. Add `[Structure.Eq LX M]` to `no_min_descent_absurd_of_goodstein`
+   and `paLX_models_TI_of_PA_provable`. Required so `ReductModel.reduct_models_isigma1` installs the reduct
+   as `[M ⊧ₘ* 𝗜𝚺₁]`.
+1. **(wall B) Connect the opaque blob to `igoodstein`.** `hgood : M ⊧ lMap Φ goodsteinSentence` mentions the
+   r.e.-code `codeOfREPred goodsteinTerminates`; bridge it IΣ₁-internally to the transparent
+   `∃N, igoodstein m N = 0` (lap-26 substrate, in `M`'s reduct).
+2. **(wall C) M-internal `Mlt`-descent.** From `no_min` build a *definable* descending `G : M → M` via `M`'s
+   LX least-number principle (`reduct_models_isigma1`/`InductionScheme LX`). Must be M-internal, not `choice`.
+3. **(wall D) Slow-down + inequality (6) in `M`.** Slow `(G k)` ⟹ `(βₖ)` with `C(βₖ) ≤ k+1`; run the special
+   Goodstein seq from `m₀ = T̂²(β₀)`; iterate `DescentCore.ineq6_step` by `M`'s LX-induction ⟹ `M ⊧ ∀k mₖ>0`;
+   contradict `hgood`. `DescentCore.lemma36_nonterminating` is the route-neutral ONote/ℕ kernel.
 
 ### Long-term / banked
 - **BANKED, OFF the critical path (do NOT resume on the Buchholz route):** the witness-bounded cut-elim
@@ -397,7 +430,9 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 | `peano_not_proves_goodstein` (headline, `Statement.lean`) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` (lap-30 real) | 🔓 open `sorry` (LOCKED, anti-fraud) — now reduced to **ONE semantic lemma** `paLX_models_TI_of_PA_provable` via `descentE`+completeness. **0** real math axioms; the would-be-headline chain (`…_modulo_semantic`) carries only `sorryAx`+native_decide. |
 | `…_modulo_semantic` (lap 30, `src/DescentSemantic`) | the headline, modulo the disclosed semantic `sorry` | `propext, sorryAx, choice, Quot.sound, ONoteComp…native_decide.ax_1_5` (lap-30 real) | 🔓 **= `peano_not_proves_goodstein_of_descent descentE`**. Proves the FULL chain is axiom-clean save `sorryAx` (one lemma) + 1 🟢 `native_decide` — **no `PA_delta1Definable`, no custom axiom**. NOT wired to `Statement.lean`. |
 | `descentE` (lap 30, `src/DescentSemantic`) | `Thm56.DescentE` (`𝗣𝗔⊢γ ⟹ Derivation2 paLX {TI prec}`) | `propext, sorryAx, choice, Quot.sound, native_decide.ax_1_5` | 🔓 **via FO completeness** (`Derivation.completeness_of_encodable`) — reduces `DescentE` to the one semantic premise `paLX_models_TI_of_PA_provable`. Built `LX.Encodable`. |
-| `paLX_models_TI_of_PA_provable` (lap 30, `src/DescentSemantic`, **THE wall**) | Rathjen §3 in-model: `𝗣𝗔⊢γ ⟹ ∀ M⊧paLX, M⊧TI prec` | `sorryAx` (disclosed) | 🔴→🎯 the **single open obligation**. Conditionally true (non-vacuous: `M⊧TI prec` fails in Thm-5.6 countermodels). Decompose: E-lift+soundness ⟹ `M⊧lMap γ`; `¬TI`⟹X-descent (M's LNP); slow-down+ineq(6) in M ⟹ ⊥. |
+| `no_min_descent_absurd_of_goodstein` (laps 30–32, `src/DescentSemantic`, **THE wall**) | Rathjen §3 in-model: `no_min` + Goodstein-in-`M` ⟹ ⊥ | `sorryAx` (disclosed) | 🔴→🎯 the **single open obligation**. Steps 1–2 of `paLX_models_TI_of_PA_provable` (import Goodstein; unfold `TI`; progressivity⟹`no_min`) are PROVED; this named `sorry` is the genuine content. Gate = thread `[Structure.Eq LX M]` (A2-pt2, `𝗘𝗤⪯paLX` ready); then B (blob↔`igoodstein`), C (M-internal descent), D (slow-down+ineq6). |
+| `paLX_models_TI_of_PA_provable` (lap 30, `src/DescentSemantic`) | Rathjen §3 in-model: `𝗣𝗔⊢γ ⟹ ∀ M⊧paLX, M⊧TI prec` | `sorryAx` (via the wall) | 🟢 PROVED modulo the one named `sorry` above — steps 1–2 + progressivity-contrapositive machine-checked; bottoms out at `no_min_descent_absurd_of_goodstein`. |
+| `eqLX_subset_paLX` / `eqAxiom_weakerThan_paLX` (lap 32, `src/DescentLift`) | `𝗘𝗤(LX) ⊆ paLX`, hence `𝗘𝗤 ⪯ paLX` | `propext, choice, Quot.sound` | 🟢 clean — every `𝗘𝗤(LX)` axiom is an `lMap Φ`-image of a `𝗣𝗔⁻` axiom or `relExt Xsym`; gives models of `paLX` genuine equality (enables the A2-pt2 `consequence_iff_eq` route). |
 | `peano_not_proves_TI` (Thm 5.6, lap 21, **F-φ DISCHARGED lap 28**, `src/Thm56`) | Gentzen 1943: `𝗣𝗔 ⊬ TI_≺(X)` | `propext, choice, Quot.sound, ONoteComp…native_decide.ax_1_5` (lap-30 real) | 🟢 **CLEAN** — full §5 chain C₂→C₁→D→F + D'; F-φ now a theorem (`ONoteComp`). Only 1 🟢 `native_decide` finite artifact. No `sorryAx`, no math axiom. |
 | `embed_TI_bounded` (D', **discharged lap 22**, `src/Thm56`) | finite PA-proof ⟹ `Z∞`-proof height `<ε₀` | `propext, choice, Quot.sound, rePred_ltPull_natCode` | 🟢 **CLEAN** — chains `EmbeddingBound.embedC_LX_bdd` (the uniform `∃B<ε₀,∀e,∃α≤B` bound). The lap-21 disclosed `sorry` is gone. |
 | `paLX_derivable2_lMap_of_PA_provable` (E-lift, **lap 23**, `src/DescentLift`) | `𝗣𝗔 ⊢ σ ⟹ Derivation2 paLX {lMap σ}` | `propext, choice, Quot.sound` | 🟢 clean — X-free proof translation (`lMap` commutes with `succInd`/`univCl`; schema inclusion `(𝗣𝗔:Schema).lMap Φ ⊆ paLX`). Does NOT reach `TI prec` (X-essential); feeds E-core's X-induction instance. |
@@ -427,13 +462,14 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 | `hardy_comp_lt_goodsteinLength` (lap 8, `src/LowerBound`) | `H_α(H_e(m)) < G(m)` eventually | `propext, choice, Quot.sound` + the M6 `native_decide` base-cases | 🟢 clean — banked nested-index domination (reusable if a bridge ever needs a nested control index) |
 | `not_proves_of_implies_consistency` (Route A) | meta-reduction | `…, PA_delta1Definable` | 🟡 Foundation axiom; **Route A — REJECTED lap 27** (anti-fraud forbids it on the headline; back-end is Route B) |
 
-Math-axiom count: **`peano_not_proves_TI`** (Thm 5.6) carries exactly **1** math axiom — 🟡 F-φ
-`rePred_ltPull_natCode` (proven r.e., project-scale) — now **PROVED on Aristotle (lap 27)**, awaiting a
-mechanical `v4.28→v4.31` port (`wip/aristotle-fphi/ONoteComp.lean`); on port-in, Thm 5.6 is fully clean
-(mod 🟢 `native_decide`). The **headline** target is still `sorry` (E-core unbuilt); on discharge its
-`#print axioms` must be `[propext, Classical.choice, Quot.sound]` (+ documented 🟢 `native_decide`
-Goodstein base-cases on the domination path) with no `PA_delta1Definable` — **back-end is Route B**
-(lap-27 decision; the 🟡 `PA_delta1Definable` sits only under the rejected Route-A hook).
+Math-axiom count: **`peano_not_proves_TI`** (Thm 5.6) carries **0** math axioms — F-φ
+`rePred_ltPull_natCode` was **DISCHARGED lap 28** (ported `ONoteComp.lean` into `src/`); its `#print axioms`
+is now `[propext, choice, Quot.sound, ONoteComp…native_decide.ax_1_5]` (trust base + 1 🟢 finite
+`native_decide` witness). The **headline** target is still `sorry` (the one semantic wall unbuilt); the
+would-be-headline chain `…_modulo_semantic` carries only that trust base + **1 `sorryAx`**
+(`no_min_descent_absurd_of_goodstein`). On discharge, headline `#print axioms` must be `[propext,
+Classical.choice, Quot.sound]` (+ documented 🟢 `native_decide` artifacts) with no `PA_delta1Definable` —
+**back-end is Route B** (lap-27 decision; the 🟡 `PA_delta1Definable` sits only under the rejected Route-A hook).
 
 ## Pointers
 ROADMAP/plan: `EXPEDITION-PLAN.md`, `PHASE2-DECOMPOSITION.md` · **lap-27 reflection (back-end decided

@@ -138,6 +138,7 @@ the Goodstein-termination fact `hgood`, derive `False`. Discharge plan:
 The free predicate `X` (`MX`) is present throughout (a model of `paLX`, not `𝗜𝚺₁`) — the lap-24 free-`X`
 obstruction does not apply. The lap-26 substrate supplies the run; this lemma is the genuine content. -/
 theorem no_min_descent_absurd_of_goodstein {M : Type} [Nonempty M] [Structure LX M]
+    [Structure.Eq LX M]
     (hgood : M ⊧ₘ (Semiformula.lMap GoodsteinPA.DescentLift.Φ goodsteinSentence : Sentence LX))
     (hM : M ⊧ₘ* (paLX : Theory LX)) {f : ℕ → M} {a₀ : M} (ha₀ : ¬ MX a₀)
     (no_min : ∀ x : M, ¬ MX x → ∃ y, Mlt f y x ∧ ¬ MX y) : False := by
@@ -150,7 +151,8 @@ model `M ⊧ paLX` satisfies `TI prec`. Steps 1–2 (`models_lMap_goodstein`, `e
 progressivity-contrapositive are PROVED here; the genuine remaining content is the single named
 `sorry` `no_min_descent_absurd_of_goodstein` (Rathjen §3 in `M`). -/
 theorem paLX_models_TI_of_PA_provable (h : 𝗣𝗔 ⊢ ↑goodsteinSentence)
-    {M : Type} [Nonempty M] [Structure LX M] (hM : M ⊧ₘ* (paLX : Theory LX)) (f : ℕ → M) :
+    {M : Type} [Nonempty M] [Structure LX M] [Structure.Eq LX M]
+    (hM : M ⊧ₘ* (paLX : Theory LX)) (f : ℕ → M) :
     Semiformula.Evalfm M f (Boundedness.TI Thm56.prec) := by
   -- Step 1 (PROVED): the lifted Goodstein sentence holds in `M`.
   have hgood : M ⊧ₘ (Semiformula.lMap GoodsteinPA.DescentLift.Φ goodsteinSentence : Sentence LX) :=
@@ -178,10 +180,26 @@ theorem paLX_models_TI_of_PA_provable (h : 𝗣𝗔 ⊢ ↑goodsteinSentence)
 as the `Derivation2 paLX {TI prec}` that `DescentE` requires. -/
 theorem descentE : Thm56.DescentE := by
   intro h
-  have d : (paLX : Theory LX).toSchema ⟹ ([Boundedness.TI Thm56.prec] : List (SyntacticFormula LX)) :=
-    Derivation.completeness_of_encodable
-      (fun M _ _ hM => ⟨_, by simp, fun f => paLX_models_TI_of_PA_provable h hM f⟩)
-  exact ⟨by simpa using Derivation.toDerivation2 _ d⟩
+  -- The closed-sentence form of `TI prec` (it is free-variable-free: `Thm56.freeVariables_TI`).
+  let tiSent : Sentence LX := (Boundedness.TI Thm56.prec).toEmpty Thm56.freeVariables_TI
+  -- Semantic premise, now with genuine equality available in each model (via `𝗘𝗤 ⪯ paLX`):
+  -- `consequence_iff_eq` lets us WLOG-assume `[Structure.Eq LX M]` (every model is elementarily
+  -- equivalent to its `QuotEq`-quotient, and `𝗘𝗤 ⪯ paLX` preserves `paLX` under that quotient).
+  have hsem : (GoodsteinPA.EmbeddingX.paLX : Theory LX) ⊨ tiSent := by
+    rw [show ((GoodsteinPA.EmbeddingX.paLX : Theory LX) ⊨ tiSent)
+          = ((GoodsteinPA.EmbeddingX.paLX : Theory LX) ⊨[Struc.{0,0} LX] tiSent) from rfl,
+        consequence_iff_eq]
+    intro M _ _ _ hM
+    rw [models_iff]
+    exact (Semiformula.eval_toEmpty Thm56.freeVariables_TI).mp
+      (paLX_models_TI_of_PA_provable h hM (fun _ => Classical.arbitrary M))
+  -- Completeness (`complete : T ⊨ φ → T ⊢ φ`): the semantic premise lifts to syntactic provability.
+  have hprov : (GoodsteinPA.EmbeddingX.paLX : Theory LX) ⊢ tiSent := complete hsem
+  -- Repackage `paLX ⊢ tiSent` as a `Schema`-`Derivation2`, then rewrite `↑tiSent = TI prec`.
+  have h2 : (GoodsteinPA.EmbeddingX.paLX : Schema LX) ⊢!₂! (↑tiSent : SyntacticFormula LX) :=
+    provable_iff_derivable2.mp (provable_def.mp hprov)
+  rwa [show (↑tiSent : SyntacticFormula LX) = Boundedness.TI Thm56.prec
+        from Semiformula.emb_toEmpty (Boundedness.TI Thm56.prec) Thm56.freeVariables_TI] at h2
 
 /-- **The headline, modulo the one disclosed semantic `sorry`.** Combining `descentE` with the proved
 reduction `Thm56.peano_not_proves_goodstein_of_descent` yields `𝗣𝗔 ⊬ goodsteinSentence`. This carries a
