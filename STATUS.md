@@ -3,8 +3,30 @@
 **Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Gentzen/Buchholz ordinal analysis — witness-FREE `Z_∞` (embedding
 [M4 `embedC`, done] + ε₀ cut-elim [M5, done]) + **Boundedness** (Thm 5.4, DONE lap 14, axiom-clean) ⟹
 `𝗣𝗔 ⊬ TI(ε₀)` (= `peano_not_proves_TI`, axiom-clean modulo F-φ), then Goodstein⟹TI(ε₀) [= E, the
-last wall].** · **Build**: 🟢 green (1271 jobs, `lake build GoodsteinPA`) · **Updated**: lap 24
-(review) · 2026-06-23 · `dc534da`
+last wall].** · **Build**: 🟢 green (1280 jobs, `lake build GoodsteinPA`) · **Updated**: lap 27
+(DEEP REFLECTION) · 2026-06-23 · `6bf9e9d`
+
+## ✅ Lap-27 (DEEP REFLECTION) — F-φ SOLVED on Aristotle; back-end choice DECIDED (Route B); one wall left
+Altitude pass. **Two state changes.** (1) **F-φ is SOLVED:** the Aristotle job `aris_onotecmp` returned
+COMPLETE — `rePred_ltPull_natCode` proved (622-line `ONoteComp.lean`, no `sorry`, no new axioms beyond
+2 `native_decide`). Verified faithful here: its final statement is *verbatim* ours and it uses **our**
+`natCode := (Denumerable.eqv NONote).symm`. Caveat: proved on `v4.28.0` vs our `v4.31.0` ⟹ a mechanical
+cross-version **port** is pending (stashed `wip/aristotle-fphi/`). F-φ is now "proof in hand," not "open."
+(2) **COURSE CORRECTION — commit to Route B; stop deferring the back-end.** The lap 25–26 internal-V
+machinery (`DescentArith.ineq6_internal` via `sigma1_pos_succ_induction`) builds **Route A's** front-half
+(`𝗣𝗔 ⊢ goodstein → 𝗣𝗔 ⊢ PRWO(ε₀)`, X-free), which **cannot** feed the built, axiom-clean **Route B**
+back-end `peano_not_proves_TI` (the free-`X` obstruction the team itself flagged in the lap-24
+correction: `𝗣𝗔 ⊢ PRWO`/primrec can't refute the X-definable counterexample to `TI prec`; E-lift can't
+make the free `X` either). Route A carries `PA_delta1Definable` (🟡), which the anti-fraud rule forbids
+on the headline — so Route A can never finish cleanly. **Decision: Route B is primary and committed.**
+The lap-26 *arithmetic substrate* (`InternalPow/Digits/Log/Bump/Goodstein`+`InternalBridge`) is **kept**
+(reused as `LX`-formula builders for the Route-B paLX construction, ~70% transfers); only the
+`DescentArith` `sigma1_pos_succ_induction` *induction wrapper* is Route-A-flavored and off the
+clean-headline path. **Highest-value next = port F-φ** (proof in hand ⟹ discharges a whole wall),
+collapsing the project to a **single** wall: **E-core(b), Route-B form** (inequality (6) as an
+`InductionScheme LX` step on the X-definable descent inside paLX). Faithfulness audit of the headline
+reduction (`Thm56`/`Seam`) clean — no transcription drift. Headline still honest `sorry`. See
+`REFLECTION-2026-06-23.md`.
 
 ## ✅ Lap-24 (review) — direction re-validated against the real kernel; **two walls left: E-core + F-φ**
 Fresh-mind pass. Confirmed via real `#print axioms` (not the stale lap-21 ledger): **D' is fully
@@ -66,7 +88,19 @@ pure mathlib ordinal arithmetic it is **Aristotle-eligible** (the one piece with
 E **pins which `≺` F may use** (co-design). See newest `HANDOFF`.
 
 ## Where it stands
-**(lap-24 current read.)** `peano_not_proves_TI` (Buchholz Thm 5.6, `𝗣𝗔 ⊬ TI_≺(X)`) is **assembled and
+**(lap-27 current read.)** The project has effectively **one wall left: E-core (Route-B form)**. F-φ —
+the lone math axiom under `peano_not_proves_TI` — was **SOLVED on Aristotle** (`rePred_ltPull_natCode`,
+verified-faithful, `wip/aristotle-fphi/`); only a mechanical `v4.28→v4.31` port stands between it and
+discharge. The **back-end is decided: Route B** (the built, axiom-clean Buchholz monument), reversing the
+"deferred" framing — the lap 25–26 internal-V `sigma1_pos_succ_induction` route lands X-free
+`𝗣𝗔 ⊢ PRWO`, which is **Route A's** antecedent and cannot feed `peano_not_proves_TI` (free-`X`
+obstruction). E-core(b) must be re-targeted to the **integrated paLX construction** (X-definable descent
++ `InductionScheme LX`), reusing the lap-26 arithmetic substrate. Real `#print axioms` (lap 27, build
+1280 jobs): headline `[propext, sorryAx, choice, Quot.sound]` (honest `sorry`, 0 math axioms);
+`peano_not_proves_TI` = `[propext, choice, Quot.sound, rePred_ltPull_natCode]` (exactly 1 math axiom,
+F-φ, now proof-in-hand).
+
+**(historical lap-24 read.)** `peano_not_proves_TI` (Buchholz Thm 5.6, `𝗣𝗔 ⊬ TI_≺(X)`) is **assembled and
 axiom-clean modulo the single F-φ axiom** `rePred_ltPull_natCode` (on Aristotle): the full §5 chain
 C₂→C₁→D→F + D' (`embed_TI_bounded`, discharged lap 22 via `EmbeddingBound.embedC_LX_bdd`). The headline
 reduces to it through `peano_not_proves_goodstein_of_descent` modulo **E** = `DescentE`
@@ -110,6 +144,17 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-23 (lap 27 — DEEP REFLECTION: F-φ solved on Aristotle; back-end DECIDED = Route B):**
+  Altitude pass; faithfulness audit clean (no transcription drift in `Thm56`/`Seam`). **F-φ
+  (`rePred_ltPull_natCode`) returned COMPLETE from Aristotle** — verified its statement is verbatim ours
+  and uses our `natCode`; proved on `v4.28.0`, so a mechanical `v4.31` port is pending (`wip/aristotle-fphi/`).
+  **Reversed the deferred back-end framing: committed to Route B.** Found that the lap 25–26 internal-V
+  `sigma1_pos_succ_induction` assembly produces X-free `𝗣𝗔 ⊢ PRWO` = **Route A's** antecedent, which
+  cannot feed the built `peano_not_proves_TI` (free-`X` obstruction, per the lap-24 correction) and whose
+  back-end carries the forbidden `PA_delta1Definable`. Kept the lap-26 arithmetic substrate (reusable for
+  Route B's paLX construction); recognized `DescentArith.ineq6_internal` as off the clean-headline path.
+  Next = port F-φ (collapses to one wall), then E-core(b) the Route-B way. Build 1280 jobs; headline
+  `sorry` intact. See `REFLECTION-2026-06-23.md`.
 - **2026-06-22 (lap 21 — REVIEW: Thm 5.6 assembled; D' gap surfaced):** Validated the lap-20 handoff
   direction (E next, F-φ on Aristotle) against the real kernel. Assembled the §5 girder into one theorem
   `peano_not_proves_TI` (`src/GoodsteinPA/Thm56.lean`) + headline reduction to E
@@ -294,8 +339,8 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 ## Axiom ledger (per headline / landmark theorem — the fidelity spine)
 | theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
-| `peano_not_proves_goodstein` (headline) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` | 🔓 open `sorry` — reduced to ONE wall **E** via `…_of_descent`. Remaining: **E-core** (Goodstein⟹PRWO(ε₀) inside PA, Rathjen §3) + **F-φ** (`rePred_ltPull_natCode`, Aristotle). **0** real math axioms; D' + E-lift discharged. |
-| `peano_not_proves_TI` (Thm 5.6, lap 21, **clean-mod-F-φ lap 22**, `src/Thm56`) | Gentzen 1943: `𝗣𝗔 ⊬ TI_≺(X)` | `propext, choice, Quot.sound, rePred_ltPull_natCode` | 🟢 **ASSEMBLED + D' discharged** — full §5 chain C₂→C₁→D→F + D'. Sole dep: 🟡 F-φ `rePred_ltPull_natCode` (Aristotle). No `sorryAx`. |
+| `peano_not_proves_goodstein` (headline) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` (lap-27 real) | 🔓 open `sorry` — reduced via `…_of_descent` to **ONE wall: E-core (Route-B form)**. F-φ now proof-in-hand (Aristotle); back-end DECIDED = Route B. **0** real math axioms; D' + E-lift discharged. |
+| `peano_not_proves_TI` (Thm 5.6, lap 21, **clean-mod-F-φ lap 22**, `src/Thm56`) | Gentzen 1943: `𝗣𝗔 ⊬ TI_≺(X)` | `propext, choice, Quot.sound, rePred_ltPull_natCode` (lap-27 real) | 🟢 **ASSEMBLED + D' discharged** — full §5 chain C₂→C₁→D→F + D'. Sole dep: 🟡 F-φ `rePred_ltPull_natCode` — **PROVED on Aristotle (lap 27), port pending** (`wip/aristotle-fphi/`, `v4.28→v4.31`). No `sorryAx`. |
 | `embed_TI_bounded` (D', **discharged lap 22**, `src/Thm56`) | finite PA-proof ⟹ `Z∞`-proof height `<ε₀` | `propext, choice, Quot.sound, rePred_ltPull_natCode` | 🟢 **CLEAN** — chains `EmbeddingBound.embedC_LX_bdd` (the uniform `∃B<ε₀,∀e,∃α≤B` bound). The lap-21 disclosed `sorry` is gone. |
 | `paLX_derivable2_lMap_of_PA_provable` (E-lift, **lap 23**, `src/DescentLift`) | `𝗣𝗔 ⊢ σ ⟹ Derivation2 paLX {lMap σ}` | `propext, choice, Quot.sound` | 🟢 clean — X-free proof translation (`lMap` commutes with `succInd`/`univCl`; schema inclusion `(𝗣𝗔:Schema).lMap Φ ⊆ paLX`). Does NOT reach `TI prec` (X-essential); feeds E-core's X-induction instance. |
 | `evalNat_lt_iff`/`evalNat_lt_of_lt` (E-core brick, **lap 23**, `src/DescentCore`) | Rathjen 2.3(iii): `T̂^b_ω` order-reflects on `Canon` | `propext, choice, Quot.sound` | 🟢 clean — `evalNat b o < evalNat b p ↔ o.repr < p.repr` on the `Canon`/`NF` domain, from `canon_repr` + `toOrdinal` strict mono. The workhorse Lemma 3.6 inequality (6) runs on. |
@@ -322,15 +367,18 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 | `lowerBound_hardy_selfcontained` (M6, **lap 6**) | **full Thm 17.1, only `α.NF`** | `propext, choice, Quot.sound` + 12 `native_decide` base-case `ax_*` | 🟢 clean — the `ax_*` are 🟢 finite Goodstein base-case witnesses (acceptable indefinitely) |
 | `hardy_add_comp`/`_collapse` (lap 8, `src/Hardy`) | `H_{γ+δ}=H_γ∘H_δ` (non-absorbing) | `propext, choice, Quot.sound` | 🟢 clean — banked Hardy infra (was for the dead Zekd thread; still a usable composition law) |
 | `hardy_comp_lt_goodsteinLength` (lap 8, `src/LowerBound`) | `H_α(H_e(m)) < G(m)` eventually | `propext, choice, Quot.sound` + the M6 `native_decide` base-cases | 🟢 clean — banked nested-index domination (reusable if a bridge ever needs a nested control index) |
-| `not_proves_of_implies_consistency` (Route A) | meta-reduction | `…, PA_delta1Definable` | 🟡 Foundation axiom; **Route A only** — Route B avoids it |
+| `not_proves_of_implies_consistency` (Route A) | meta-reduction | `…, PA_delta1Definable` | 🟡 Foundation axiom; **Route A — REJECTED lap 27** (anti-fraud forbids it on the headline; back-end is Route B) |
 
 Math-axiom count: **`peano_not_proves_TI`** (Thm 5.6) carries exactly **1** math axiom — 🟡 F-φ
-`rePred_ltPull_natCode` (proven r.e., project-scale; on Aristotle; discharge ⟹ Thm 5.6 fully clean).
-The **headline** target is still `sorry` (E-core unbuilt); on discharge its `#print axioms` must be
-`[propext, Classical.choice, Quot.sound]` (+ documented 🟢 `native_decide` Goodstein base-cases on the
-domination path) with no `PA_delta1Definable` (that 🟡 sits only under the unused Route-A hook).
+`rePred_ltPull_natCode` (proven r.e., project-scale) — now **PROVED on Aristotle (lap 27)**, awaiting a
+mechanical `v4.28→v4.31` port (`wip/aristotle-fphi/ONoteComp.lean`); on port-in, Thm 5.6 is fully clean
+(mod 🟢 `native_decide`). The **headline** target is still `sorry` (E-core unbuilt); on discharge its
+`#print axioms` must be `[propext, Classical.choice, Quot.sound]` (+ documented 🟢 `native_decide`
+Goodstein base-cases on the domination path) with no `PA_delta1Definable` — **back-end is Route B**
+(lap-27 decision; the 🟡 `PA_delta1Definable` sits only under the rejected Route-A hook).
 
 ## Pointers
-ROADMAP/plan: `EXPEDITION-PLAN.md`, `PHASE2-DECOMPOSITION.md` · **lap-9 reflection (course change):
-`REFLECTION-2026-06-22.md`** · architecture: `ANALYSIS-2026-06-22-bounding-resolution.md` · newest
+ROADMAP/plan: `EXPEDITION-PLAN.md`, `PHASE2-DECOMPOSITION.md` · **lap-27 reflection (back-end decided
+= Route B; F-φ solved): `REFLECTION-2026-06-23.md`** · lap-9 reflection: `REFLECTION-2026-06-22.md` ·
+E map: `DESCENT-PLAN.md` · architecture: `ANALYSIS-2026-06-22-bounding-resolution.md` · newest
 baton: `HANDOFF.md` · open-items: `PENDING_WORK.md` · charter: `DIRECTION.md`

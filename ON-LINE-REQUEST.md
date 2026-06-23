@@ -1,67 +1,38 @@
-# ON-LINE-REQUEST — 2026-06-22 (lap 19)
+# ON-LINE-REQUEST — 2026-06-23 (lap 27)
 
-## Computable / Primrec comparison of Cantor normal forms (`ONote.cmp`) — the F-φ discharge target
+> **F-φ (the lap-19 `ONote.cmp` computability request) is RESOLVED** — Aristotle proved
+> `rePred_ltPull_natCode` (verified-faithful, in `wip/aristotle-fphi/ONoteComp.lean`). No literature
+> needed; only a mechanical `v4.28→v4.31` port remains. Item removed.
 
-**Theorem/source needed.** A `Computable` (ideally `Primrec`) proof that comparison of mathlib's
-`ONote`/`NONote` Cantor normal forms is computable — concretely enough to discharge:
+## The Route-B descent bridge: how is `paLX ⊢ TI_≺(X)` obtained calculus-internally? (sharpened lap 27)
 
-```lean
--- src/GoodsteinPA/SeamDefinability.lean  (currently a DISCLOSED axiom)
-axiom rePred_ltPull_natCode :
-    REPred fun v : List.Vector ℕ 2 ↦ natCode (v.get 0) < natCode (v.get 1)
--- where natCode : ℕ ≃ NONote := (Denumerable.eqv NONote).symm  (= Denumerable.ofNat NONote, computable)
---       and `<` on NONote is `repr a < repr b`, decidable via `NONote.cmp` (linearOrderOfCompares).
-```
+**Decision context (lap 27).** The back-end is now **committed to Route B**: refute the headline by
+contradicting the built, axiom-clean `peano_not_proves_TI : IsEmpty (Derivation2 paLX {TI prec})`
+(Buchholz Thm 5.6, Gentzen-1943 sharpness, `paLX ⊬ TI_≺(X)` for the **free** set predicate `X`). Route A
+(`PRWO ⟹ Con(PA)` + Gödel II) is rejected: it carries the `PA_delta1Definable` Foundation axiom that the
+anti-fraud rule forbids on the headline. So the descent wall **E** must deliver
+`𝗣𝗔 ⊢ goodsteinSentence → Nonempty (Derivation2 paLX {TI prec})` **directly** — and the internal-V
+`sigma1_pos_succ_induction` route (which lands X-free `𝗣𝗔 ⊢ PRWO`) provably cannot, because a
+counterexample to the free-`X` `TI prec` is an `X`-definable (not primrec) descent.
 
-**Exactly what I need (any one suffices):**
-1. A mathlib/known lemma giving `Primcodable ONote` with `Primrec`-grade `ONote.cmp`, OR `Computable₂
-   (fun a b : NONote => decide (a < b))` / `Computable (fun a b : ONote => ONote.cmp a b)`. Then
-   `rePred_ltPull_natCode` falls out by `ComputablePred → REPred` (`computable_iff_re_compl_re'`) +
-   `REPred.comp` with `Computable natCode` (already have `Computable.ofNat NONote`).
-2. A pointer to a reference (Lean Zulip / mathlib PR / paper) that has formalized computable ordinal-
-   notation comparison, so I can port it.
+**The precise question (any one helps).** Is there a standard reference — Buchholz's *Beweistheorie*
+notes §5 (on disk), Schütte, Takeuti, Pohlers, or a cleaner modern source — that carries out the
+**lower bound `Goodstein ⟹ paLX ⊢ TI_≺(X)`** *inside the calculus* with the free predicate `X`? Concretely:
 
-**Why it unblocks me.** F (the arithmetization seam) is fully assembled — `seam : EpsilonOrder.Seam`
-is built and `#print axioms seam = [propext, choice, Quot.sound, rePred_ltPull_natCode]`. Discharging
-this single axiom makes the *entire F girder* axiom-clean. It is pure mathlib/computability (ZERO
-Foundation dependency), bounded, and Aristotle-feedable.
+1. From a (lifted, X-free) `paLX`-proof of Goodstein termination, how is `paLX ⊢ TI_≺(X)` built? I.e.
+   the calculus-internal "well-foundedness of `≺` ⟹ transfinite-induction-for-free-`X`" step: assume
+   `Prog(X)` and `¬X a₀`; extract the `X`-definable `≺`-descent via the **LX least-number / induction
+   scheme**; slow it down (Rathjen §3); run inequality (6); contradict the lifted Goodstein at the
+   `X`-definable seed `m₀ = T̂²(β₀)`. **Which induction instances does this use, and what is the precise
+   sequent-calculus shape of the contradiction?**
 
-**Context I already verified (no need to recheck):**
-- mathlib's `Ordinal/Notation.lean` has `NONote.cmp` (decidable order) but NO `Computable`/`Primrec`
-  for it; `repr` is `noncomputable`.
-- `Primcodable NONote` is free via `Primcodable.ofDenumerable` (I have `Denumerable NONote`).
-- The order-type half (`exists_NF_repr_eq`, `epsilon0_le_orderType_natCode`) is DONE + axiom-clean in
-  `src/GoodsteinPA/Epsilon0Complete.lean` — does NOT need this.
+2. In particular: Rathjen §3's slow-down + inequality (6) are stated for **primitive recursive**
+   `(βₖ)`. What changes when `(βₖ)` is instead `X`-definable (the free-predicate case)? Does the
+   argument go through verbatim with `InductionScheme LX` replacing primrec induction, or is there a
+   subtlety (e.g. the slow-down construction needing primrec-ness)?
 
-If `--no-aristotle`/offline this lap, no action; I will attempt the recursion-framework proof locally
-next lap (relate `ONote.cmp` to a `Nat.rec`/`Primrec` form via the `Primcodable.ofDenumerable` encoding).
-
----
-
-## 2026-06-23 (lap 24) — the E back-end: how does `PRWO(ε₀)` connect to Buchholz's `paLX ⊬ TI_≺(X)`?
-
-**Context.** The repo's headline refutation is **Buchholz Thm 5.6** (`peano_not_proves_TI :
-IsEmpty (Derivation2 paLX {TI prec})`, Gentzen-1943 sharpness, `paLX ⊬ TI_≺(X)` for the **free** set
-predicate `X`), now axiom-clean modulo F-φ. The descent wall **E** needs
-`𝗣𝗔 ⊢ goodsteinSentence → Nonempty (Derivation2 paLX {TI prec})`. Rathjen 2014 §3 (on disk) gives the
-shared core `𝗣𝗔 ⊢ Goodstein → 𝗣𝗔 ⊢ PRWO(ε₀)` where **`PRWO(ε₀)` = "no descending *primitive recursive*
-ε₀-sequence"** (Rathjen Thm 2.8 / Cor 2.7). Rathjen's OWN route is **Route A** (`PRWO ⟹ Con(PA)` + Gödel
-II), NOT Buchholz's `TI_≺(X)`.
-
-**The precise question (any one helps).**
-1. **Route-B bridge.** Is there a standard reference (Buchholz's Beweistheorie notes §5? Schütte? Takeuti?
-   Pohlers?) that derives the **lower bound** `Goodstein ⟹ paLX ⊢ TI_≺(X)` (free `X`) directly — i.e.
-   carries out the descent *inside* the calculus with the free predicate — rather than via primrec-`PRWO`
-   + Con(PA)? Concretely: how is `paLX ⊢ TI_≺(X)` obtained from a (lifted, X-free) proof of Goodstein
-   termination, given that the descent extracted from `¬X` is `X`-definable, **not** primrec? A precise
-   statement of the calculus-internal "well-foundedness ⟹ transfinite-induction-for-free-X" step (and
-   which induction instances it uses) would let me formalize the Route-B back-end.
-2. **Route-A cost.** Confirm the cleanest formalized path for `𝗣𝗔 ⊢ PRWO(ε₀) → 𝗣𝗔 ⊢ Con(PA)` (Gentzen,
-   Rathjen Thm 2.8(i)) reusing the repo's existing embedding/cut-elim/boundedness girder, and whether the
-   `PA_delta1Definable` Foundation axiom is the only extra cost (the repo's `Reduction.lean` already has
-   the Gödel II hook `not_proves_of_implies_consistency`, axiom-clean modulo that one axiom).
-
-**Why it unblocks me.** Both back-ends reuse the *shared* `Goodstein ⟹ PRWO` (Rathjen §3), which I am
-formalizing regardless. Knowing the precise Route-B bridge (or confirming Route A is the standard/cheaper
-landing) decides where the §3 output plugs in and avoids a wrong-target arithmetization. Not blocking —
-I continue on §3 (inequality (6)'s step is done; next = the slow-down constructions 3.3/3.4/3.5).
+**Why it unblocks me.** This is now THE last wall (E-core(b), Route-B form). The lap-26 arithmetic
+substrate (internal Goodstein as definable formulas) is built and reusable; what I need is the precise
+calculus-internal descent shape so the paLX construction targets the right inference skeleton. Not
+blocking — I proceed on the port + the substrate meanwhile.
+</content>

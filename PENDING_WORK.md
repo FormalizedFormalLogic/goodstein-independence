@@ -1,5 +1,41 @@
 # Pending work — open obligations & attack paths
 
+## 🎯 LAP-27 (2026-06-23) — DEEP REFLECTION: F-φ SOLVED on Aristotle; back-end DECIDED = Route B. Read FIRST.
+
+Full synthesis in **`REFLECTION-2026-06-23.md`**. Two changes the grind laps inherit:
+
+**(1) F-φ is solved — PORT IT (highest value).** The Aristotle job `aris_onotecmp` returned COMPLETE:
+`rePred_ltPull_natCode` proved in `wip/aristotle-fphi/ONoteComp.lean` (622 lines, no `sorry`, +2
+`native_decide`). Verified faithful: its final statement is *verbatim* ours and uses our
+`natCode := (Denumerable.eqv NONote).symm`. It was proved on **`v4.28.0`**; we are **`v4.31.0`** ⟹ a
+mechanical cross-version port. **Task:** create `src/GoodsteinPA/ONoteComp.lean` from it (adapt
+`import Mathlib` → our imports; reuse our `Epsilon0Complete.natCode`/`NONote`/`Denumerable` rather than
+redefining; fix any v4.28→v4.31 API drift), then in `SeamDefinability.lean` replace
+`axiom rePred_ltPull_natCode` with the ported theorem. Confirm `#print axioms peano_not_proves_TI` ⟹
+`[propext, choice, Quot.sound]` (+ the 2 🟢 `native_decide` `ofReduceBool`/`trustCompiler`). **This
+discharges an entire wall with a proof in hand** and collapses the project to ONE wall (E-core).
+
+**(2) Back-end DECIDED: Route B. STOP the internal-V induction-toward-headline.** The lap 25–26
+`DescentArith.ineq6_internal` (`sigma1_pos_succ_induction`) lands X-free `𝗣𝗔 ⊢ PRWO(ε₀)` = **Route A's**
+antecedent; it **cannot** feed the built `peano_not_proves_TI` (free-`X` obstruction — exactly the
+lap-24 correction; `𝗣𝗔 ⊢ PRWO`/primrec can't refute the X-definable counterexample to `TI prec`, and
+E-lift can't make the free `X`). Route A also carries `PA_delta1Definable` (🟡), which anti-fraud
+forbids on the headline. **So:**
+- **KEEP** the lap-26 arithmetic substrate (`InternalPow/Digits/Log/Bump/Goodstein` + `InternalBridge`)
+  — it encodes Goodstein arithmetic as definable formulas, needed by Route B too (~70% transfers).
+  **Finish `InternalBridge`** (`ibump_nat`, `igoodstein_nat`) — faithfulness link to `Defs`, route-neutral.
+- **STOP** extending `DescentArith.ineq6_internal` toward the headline. It's a true lemma (stays in
+  `src/`, green), but it's Route-A-flavored and off the clean-headline path.
+- **START** E-core(b) the **Route-B way:** inside a paLX derivation, set up the X-definable descent from
+  `¬TI prec` (LX least-number scheme), define the Goodstein run from it via the lap-26 substrate (now as
+  `LX`-formula builders), and run inequality (6) as an **`InductionScheme LX`** step (NOT
+  `sigma1_pos_succ_induction`), contradicting the lifted X-free `goodsteinSentence` at the X-definable
+  seed `m₀ = T̂²(β₀)`. This is the integrated paLX construction the lap-24 correction named — the last wall.
+
+**Fallback endpoint (if E-core(b) Route-B proves intractable after sustained effort):** state E-core as
+ONE narrow cited axiom (`DescentE`) on top of the built monument + F — a legitimate, valuable artifact,
+and strictly better than Route A's `PA_delta1Definable` + unbuilt `PRWO ⟹ Con(PA)`.
+
 ## 🎯 LAP-26 (2026-06-23) — E-core(b) "THE WALL" CRACKED: internal `bump`/`goodsteinSeq` BUILT. Read FIRST.
 
 The lap-25 gating prereq ("make `bump`/`goodsteinSeq` `𝚺₁`-definable inside `V`") is **DONE + axiom-clean**.
