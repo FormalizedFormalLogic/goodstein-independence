@@ -20,7 +20,7 @@ import GoodsteinPA.InternalBump
 
 namespace GoodsteinPA.InternalONote
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.FirstOrder.Arithmetic.HierarchySymbol
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -40,6 +40,32 @@ noncomputable def ocTail (c : V) : V := sndIdx c
 
 @[simp] lemma ocOadd_ne_zero (ec n rc : V) : ocOadd ec n rc ≠ 0 :=
   (ocOadd_pos ec n rc).ne'
+
+/-! ### `𝚺₀`-definability of the decode projections -/
+
+def _root_.LO.FirstOrder.Arithmetic.ocExpDef : 𝚺₀.Semisentence 2 := .mkSigma
+  “n c. ∃ f <⁺ c, !fstIdxDef f c ∧ !pi₁Def n f”
+
+instance ocExp_defined : 𝚺₀-Function₁ (ocExp : V → V) via ocExpDef := .mk fun v ↦ by
+  simp [ocExpDef, ocExp, fstIdx_defined.iff, pi₁_defined.iff]
+
+instance ocExp_definable : 𝚺₀-Function₁ (ocExp : V → V) := ocExp_defined.to_definable
+instance ocExp_definable' (Γ) : Γ-Function₁ (ocExp : V → V) := ocExp_definable.of_zero
+
+def _root_.LO.FirstOrder.Arithmetic.ocCoeffDef : 𝚺₀.Semisentence 2 := .mkSigma
+  “n c. ∃ f <⁺ c, !fstIdxDef f c ∧ !pi₂Def n f”
+
+instance ocCoeff_defined : 𝚺₀-Function₁ (ocCoeff : V → V) via ocCoeffDef := .mk fun v ↦ by
+  simp [ocCoeffDef, ocCoeff, fstIdx_defined.iff, pi₂_defined.iff]
+
+instance ocCoeff_definable : 𝚺₀-Function₁ (ocCoeff : V → V) := ocCoeff_defined.to_definable
+instance ocCoeff_definable' (Γ) : Γ-Function₁ (ocCoeff : V → V) := ocCoeff_definable.of_zero
+
+instance ocTail_defined : 𝚺₀-Function₁ (ocTail : V → V) via sndIdxDef := .mk fun v ↦ by
+  simp [ocTail, sndIdx_defined.iff]
+
+instance ocTail_definable : 𝚺₀-Function₁ (ocTail : V → V) := ocTail_defined.to_definable
+instance ocTail_definable' (Γ) : Γ-Function₁ (ocTail : V → V) := ocTail_definable.of_zero
 
 /-! ### Round-trip: decode recovers the subcodes -/
 
@@ -95,5 +121,152 @@ lemma ocExp_lt_of_pos {c : V} (hc : 0 < c) : ocExp c < c := by
 lemma ocTail_lt_of_pos {c : V} (hc : 0 < c) : ocTail c < c := by
   have h1 : ocTail c ≤ c - 1 := by simp [ocTail, sndIdx]
   exact lt_of_le_of_lt h1 (pred_lt_self_of_pos hc)
+
+/-! ### Internal max-coefficient `iC` via course-of-values recursion
+
+`iC` is Rathjen's `C` (`DescentCore.C`): `C 0 = 0`, `C (oadd e n r) = max (max (C e) n) (C r)`. Inside
+`V` it recurses on the code value through the subterm bounds (`ocExp c`, `ocTail c` `< c`), so we
+build it by the same table reduction as `ibump`: `iCTable c = ⟨iC 0,…,iC c⟩`, reading the two
+sub-results out of the table. -/
+
+/-- Table step of `iC`: `iC c` computed from the table `s = ⟨iC 0,…,iC (c-1)⟩`. The two recursive
+sub-results sit at `ocExp c` and `ocTail c` (both `< c`); the coefficient is `ocCoeff c`. -/
+noncomputable def iCNext (c s : V) : V :=
+  max (max (znth s (ocExp c)) (ocCoeff c)) (znth s (ocTail c))
+
+def _root_.LO.FirstOrder.Arithmetic.iCNextDef : 𝚺₁.Semisentence 3 := .mkSigma
+  “y c s.
+    ∃ e, !ocExpDef e c ∧ ∃ te, !znthDef te s e ∧ ∃ co, !ocCoeffDef co c ∧
+      ∃ t, !sndIdxDef t c ∧ ∃ tt, !znthDef tt s t ∧
+        ∃ m1, !max.dfn m1 te co ∧ !max.dfn y m1 tt”
+
+instance iCNext_defined : 𝚺₁-Function₂ (iCNext : V → V → V) via iCNextDef := .mk fun v ↦ by
+  simp [iCNextDef, iCNext, ocExp_defined.iff, ocCoeff_defined.iff, ocTail, znth_defined.iff,
+    sndIdx_defined.iff, max_defined.iff]
+
+instance iCNext_definable : 𝚺₁-Function₂ (iCNext : V → V → V) := iCNext_defined.to_definable
+
+/-- Blueprint for the `iC` table: `iCTable 0 = ⟨0⟩`, `iCTable (n+1)` appends `iCNext (n+1) (iCTable n)`. -/
+def iCTable.blueprint : PR.Blueprint 0 where
+  zero := .mkSigma “y. !mkSeq₁Def y 0”
+  succ := .mkSigma “y ih n. ∃ v, !iCNextDef v (n + 1) ih ∧ !seqConsDef y ih v”
+
+noncomputable def iCTable.construction : PR.Construction V iCTable.blueprint where
+  zero := fun _ ↦ !⟦0⟧
+  succ := fun _ n ih ↦ seqCons ih (iCNext (n + 1) ih)
+  zero_defined := .mk fun v ↦ by
+    simp [iCTable.blueprint, mkSeq₁Def, seqCons_defined.iff, emptyset_def]
+  succ_defined := .mk fun v ↦ by
+    simp [iCTable.blueprint, iCNext_defined.iff, seqCons_defined.iff]
+
+/-- **The `iC` table** inside `V`: `iCTable n = ⟨iC 0,…,iC n⟩` (length `n+1`). -/
+noncomputable def iCTable (n : V) : V := iCTable.construction.result ![] n
+
+@[simp] lemma iCTable_zero : iCTable (0 : V) = !⟦0⟧ := by
+  simp [iCTable, iCTable.construction]
+
+@[simp] lemma iCTable_succ (n : V) :
+    iCTable (n + 1) = seqCons (iCTable n) (iCNext (n + 1) (iCTable n)) := by
+  simp [iCTable, iCTable.construction]
+
+/-- **Internal max-coefficient** `C` of a code: the `c`-th entry of the table. -/
+noncomputable def iC (c : V) : V := znth (iCTable c) c
+
+def _root_.LO.FirstOrder.Arithmetic.iCTableDef : 𝚺₁.Semisentence 2 :=
+  iCTable.blueprint.resultDef.rew (Rew.subst ![#0, #1])
+
+instance iCTable_defined : 𝚺₁-Function₁ (iCTable : V → V) via iCTableDef := .mk
+  fun v ↦ by simp [iCTable.construction.result_defined_iff, iCTableDef]; rfl
+
+instance iCTable_definable : 𝚺₁-Function₁ (iCTable : V → V) := iCTable_defined.to_definable
+instance iCTable_definable' (Γ) : Γ-[m + 1]-Function₁ (iCTable : V → V) :=
+  iCTable_definable.of_sigmaOne
+
+def _root_.LO.FirstOrder.Arithmetic.iCDef : 𝚺₁.Semisentence 2 := .mkSigma
+  “y c. ∃ t, !iCTableDef t c ∧ !znthDef y t c”
+
+instance iC_defined : 𝚺₁-Function₁ (iC : V → V) via iCDef := .mk fun v ↦ by
+  simp [iCDef, iC, iCTable_defined.iff, znth_defined.iff]
+
+instance iC_definable : 𝚺₁-Function₁ (iC : V → V) := iC_defined.to_definable
+instance iC_definable' (Γ) : Γ-[m + 1]-Function₁ (iC : V → V) := iC_definable.of_sigmaOne
+
+/-! ### Structural correctness of the `iC` table -/
+
+private lemma def_iCTable {k} (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ iCTable (v i)) :=
+  DefinableFunction₁.comp (F := iCTable) (DefinableFunction.var i)
+
+private lemma def_iC {k} (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ iC (v i)) :=
+  DefinableFunction₁.comp (F := iC) (DefinableFunction.var i)
+
+@[simp] lemma iCTable_seq (n : V) : Seq (iCTable n) := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₁ (def_iCTable 0)
+  case zero => simp
+  case succ n ih => rw [iCTable_succ]; exact ih.seqCons _
+
+@[simp] lemma iCTable_lh (n : V) : lh (iCTable n) = n + 1 := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₂ (DefinableFunction₁.comp (F := lh) (def_iCTable 0)) (by definability)
+  case zero => simp
+  case succ n ih => rw [iCTable_succ, Seq.lh_seqCons _ (iCTable_seq n), ih]
+
+lemma znth_seqCons_of_lt {s : V} (h : Seq s) (x : V) {i} (hi : i < lh s) :
+    znth (seqCons s x) i = znth s i :=
+  (h.seqCons x).znth_eq_of_mem (Seq.subset_seqCons s x (h.znth hi))
+
+lemma znth_iCTable_succ {n k : V} (hk : k < n + 1) :
+    znth (iCTable (n + 1)) k = znth (iCTable n) k := by
+  rw [iCTable_succ]
+  exact znth_seqCons_of_lt (iCTable_seq n) _ (by rw [iCTable_lh]; exact hk)
+
+lemma znth_seqCons_self {s : V} (h : Seq s) (x : V) : znth (seqCons s x) (lh s) = x :=
+  (h.seqCons x).znth_eq_of_mem (lh_mem_seqCons s x)
+
+/-- **Table stability.** Every entry of the length-`(N+1)` table is the genuine `iC` value. -/
+lemma znth_iCTable_eq_iC : ∀ N : V, ∀ k ≤ N, znth (iCTable N) k = iC k := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · refine Definable.ball_le (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := znth) (def_iCTable 1) (DefinableFunction.var 0))
+      (def_iC 0)
+  case zero =>
+    intro k hk
+    rcases (nonpos_iff_eq_zero.mp hk) with rfl
+    rfl
+  case succ N ih =>
+    intro k hk
+    rcases eq_or_lt_of_le hk with rfl | hlt
+    · rfl
+    · rw [znth_iCTable_succ hlt]
+      exact ih k (le_iff_lt_succ.mpr hlt)
+
+@[simp] lemma iC_zero : iC (0 : V) = 0 := by
+  simp only [iC, iCTable_zero]
+  exact (singleton_seq 0).znth_eq_of_mem ((mem_singleton_seq_iff 0 0).mpr rfl)
+
+/-- **The internal `C` recursion**: `iC (oadd e n r) = max (max (iC e) n) (iC r)` (Rathjen's
+`C_oadd`), realized on codes inside `V`. The two sub-results are read out of the table at
+`ocExp`/`ocTail`, which the subterm bounds place `< c`. -/
+lemma iC_ocOadd (ec n rc : V) :
+    iC (ocOadd ec n rc) = max (max (iC ec) n) (iC rc) := by
+  set c := ocOadd ec n rc with hc
+  have hpos : 0 < c := ocOadd_pos ec n rc
+  obtain ⟨M, hM⟩ : ∃ M, c = M + 1 :=
+    ⟨c - 1, (sub_add_self_of_le (pos_iff_one_le.mp hpos)).symm⟩
+  have key : znth (iCTable c) c = iCNext c (iCTable M) := by
+    rw [hM, iCTable_succ]
+    have := znth_seqCons_self (iCTable_seq M) (iCNext (M + 1) (iCTable M))
+    rwa [iCTable_lh] at this
+  have hexp : ocExp c ≤ M := by
+    have := ocExp_lt ec n rc; rw [← hc] at this; exact le_iff_lt_succ.mpr (hM ▸ this)
+  have htail : ocTail c ≤ M := by
+    have := ocTail_lt ec n rc; rw [← hc] at this; exact le_iff_lt_succ.mpr (hM ▸ this)
+  rw [iC, key, iCNext,
+    znth_iCTable_eq_iC M (ocExp c) hexp, znth_iCTable_eq_iC M (ocTail c) htail,
+    ocExp_ocOadd, ocCoeff_ocOadd, ocTail_ocOadd]
 
 end GoodsteinPA.InternalONote

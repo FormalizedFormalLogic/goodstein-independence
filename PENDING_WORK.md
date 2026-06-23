@@ -108,11 +108,20 @@ clean) order argument — re-validate `peano_not_proves_TI` with `#print axioms`
 ONote CNF codes as nested HFS pairs: `ocOadd ec n rc := ⟪⟪ec,n⟫,rc⟫+1` (0 ↦ 0), decode projections
 `ocExp`/`ocCoeff`/`ocTail` with round-trip simp lemmas, and the **subterm-bound lemmas** `ocExp_lt`/
 `ocCoeff_lt`/`ocTail_lt` (+ `_of_pos` forms) — the course-of-values strict-decrease facts the next
-recursions need. NEXT bricks on top (hardest-first): (1) `isONoteCode` predicate (Fixpoint or bounded
-strong-rec over the code value, using the subterm bounds); (2) `iC : V → V` (max coeff) via a CofV
-table; (3) `ievalNat : V → V → V` matching `evalNat_succ_base`'s `ibump` base-bump; (4) `icmp` CNF
-comparison `𝚫₁` + internal `evalNat_lt_iff` (the order-reflection the descent consumes); then the
-seam/F re-wire to `natCodeT` and the slow-down `βₖ`.
+recursions need.
+
+**✅ `iC` (internal `C` max-coefficient) LANDED lap 37 (green, sorry-free, `InternalONote.lean`).**
+Built `iC : V → V` via the same course-of-values table reduction as `ibump` (`iCTable n = ⟨iC 0,…,iC
+n⟩`, `iCNext` reads the two sub-results at `ocExp`/`ocTail` out of the table). Proved `𝚺₁`-definable
+(`iC_defined`), `iC_zero`, and the **recursion `iC_ocOadd : iC (ocOadd ec n rc) = max (max (iC ec) n)
+(iC rc)`** (Rathjen's `C_oadd`). The CofV-table pattern now proven to work on the new codes.
+
+NEXT bricks (hardest-first): (1) `ievalNat : V → V → V` (base, code → value) via the SAME CofV table —
+`ievalNat b (ocOadd ec n rc) = n * ipow (b+1) (ievalNat b ec) + ievalNat b rc` (mirrors
+`Domination.evalNat_oadd`), matching `evalNat_succ_base`'s `ibump` base-bump on standard inputs;
+(2) `icmp : V → V → V` CNF comparison `𝚫₁` + internal `evalNat_lt_iff` (the order-reflection the
+descent consumes — the deep piece); (3) `isONoteCode`/`isNF` predicate. Then the seam/F re-wire to
+`natCodeT` (route b, `ANALYSIS-2026-06-23-lap37-order-reflection-opacity.md`) and the slow-down `βₖ`.
 
 ---
 
