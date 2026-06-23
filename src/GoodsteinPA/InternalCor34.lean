@@ -855,6 +855,17 @@ lemma icorAlpha_C_le {β g l : V} (hg : g ≠ 0)
   rw [icorAlpha]
   exact le_trans (iC_iadd_clean hg _ hab) (max_le_max (iC_iVbigMul_le β (l + 1)) le_rfl)
 
+/-- **Constant-absorption** (`Grz.const_add_le_mul`, internal): `A + j ≤ A·(j+1)` for `A ≥ 1`. Absorbs the
+lead's constant `iC β + (l+1)` into the linear Cor 3.4 bound `K·(j+1)`. No `omega` (generic `V`): `j ≤ A·j`
+(since `1 ≤ A`) and `A·(j+1) = A·j + A`. -/
+lemma iconst_add_le_mul {A j : V} (hA : 1 ≤ A) : A + j ≤ A * (j + 1) := by
+  have h1 : j ≤ A * j := by
+    calc j = 1 * j := (one_mul j).symm
+      _ ≤ A * j := by gcongr
+  calc A + j ≤ A + A * j := by gcongr
+    _ = A * j + A := by rw [add_comm]
+    _ = A * (j + 1) := by rw [mul_add, mul_one]
+
 /-! ### End-to-end validation at the concrete base level `l = 0`
 
 Instantiating the abstract `icorAlpha_*` properties with the concrete level-0 `g`-tail `ig0`
