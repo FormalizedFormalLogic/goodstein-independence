@@ -34,6 +34,7 @@ Aristotle), and `embed_TI_bounded`'s `sorryAx` (D'). NOT wired to the headline `
 -/
 import GoodsteinPA.XFreeCutElim
 import GoodsteinPA.EmbeddingX
+import GoodsteinPA.EmbeddingBound
 import GoodsteinPA.SeamDefinability
 import GoodsteinPA.Reduction
 
@@ -93,7 +94,11 @@ sits *outside* `∀ e`, so the family `{α(n)}ₙ` is uniformly `≤ B`, hence `
 Pure ordinal bookkeeping, Foundation-light, no literature. -/
 theorem embed_TI_bounded (d : Derivation2 (paLX : Schema LX) {TI prec}) :
     ∃ (c : ℕ) (α : Ordinal.{0}), α < ε₀ ∧ PXFc α c ({TI prec} : Seq LX) := by
-  sorry
+  obtain ⟨c, B, hB, hpxfc⟩ := GoodsteinPA.EmbeddingBound.embedC_LX_bdd d
+  refine ⟨c, B, hB, ?_⟩
+  have h := hpxfc id
+  rwa [show ({TI prec} : Seq LX).image (fun ψ => asgX id ▹ ψ) = {TI prec} by
+        rw [Finset.image_singleton, asgX_TI_fix]] at h
 
 /-- A small arithmetic helper: `2^β < ε₀` for `β < ε₀` (`2 ≤ ω`, then `ω^β < ε₀`). -/
 theorem two_opow_lt_epsilon0 {β : Ordinal.{0}} (h : β < ε₀) : (2 : Ordinal) ^ β < ε₀ :=
