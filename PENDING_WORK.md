@@ -1,5 +1,31 @@
 # Pending work — open obligations & attack paths
 
+## ⭐ Lap 43 — **Rathjen Lemma 3.3 COMPLETE in the ℕ-template** (`Grzegorczyk.lean`, 6 axiom-clean commits, green 1309)
+
+The genuine combinatorial heart of the slow-down wall (Lemma 3.3, the Grzegorczyk `g`) is now fully
+machine-checked in the self-contained ℕ-template `src/GoodsteinPA/Grzegorczyk.lean`:
+- `F` (the hierarchy `F 0 n=n+1`, `F (l+1) n=(F l)^[n] n`); `g0` base case.
+- `blk k c x = ω^k·c+x` + Rathjen's two ordinal descent cases (`repr_blk_within`, `repr_blk_boundary`).
+- Block decomposition `blockIdx`/`blockOff` (via `Nat.findGreatest`) + full correctness specs
+  (`psum_blockIdx_le`, `blockIdx_lt`, `lt_psum_blockIdx_succ`, `blockOff_lt_width`, `blockIdx_eq`).
+- **`g`** recursion (`g (l+1) n m = blk (l+1) (n-i) (g l (F_l^i n) j)` for `m<F(l+1)n`, else 0).
+- Invariants `g_lt` (`repr (g l n m) < ω^(l+1)`), `g_NF`.
+- **`g_desc`** (Lemma 3.3(1) DESCENT — the hard property; within/boundary/exhausted case split).
+- **`g_C_bound`** (Lemma 3.3(2) BOUND `C(g l n m) ≤ K_l·(n+m+1)`).
+
+**REMAINING toward `hbound` (hardest-first):**
+1. **(ℕ-template Cor 3.4 assembly)** — from a descending `β:ℕ→ONote` + a **domination** `∃ l, ∀ n, |β_{n+1}| ≤ F l n`,
+   build `αⱼ = ω^ω·βₙ + g l n m` (`j = Σ_{t≤n}|βₜ| + m`, `m<|β_{n+1}|`): descent (within-block via `g_desc`,
+   across-block via `βₙ ≻ β_{n+1}` + `ω^ω` absorbing `g<ω^ω`), slowness `C(αⱼ)≤K(j+1)` (via `g_C_bound`).
+   Needs a `|·|`-length/`C` measure on `ONote` for the block widths + block-finding on the β side
+   (mirror of `blockIdx`). NOTE: the domination hypothesis is where "β primitive recursive" bites
+   (Lemma 3.2 = `exists_lt_ack_of_nat_primrec`, + `ack ≤ F l` relation); state Cor 3.4 abstractly over
+   the domination so the M-internal version supplies its own.
+2. **(Thm 3.5 reindex)** — feed the slow α into the EXISTING `DescentCore` template
+   (`C_betaTail_le`, `repr_betaTail_within/_boundary`) ⟹ β' with `C(β'ᵣ)≤r+1` ⟹ `lemma36_nonterminating`.
+3. **(M-internalization)** — port the whole ℕ-template chain onto `InternalONote` M-codes; the M-internal
+   subtlety is whether the domination holds for the X-dependent descent's block-length function.
+
 ## ⭐ Lap 42 (REVIEW) — `IterPrefix_lxDef` DISCHARGED; the descent EXISTS unconditionally; **the real crux is now the Rathjen §3 SLOW-DOWN**
 
 **Done lap 42 (1 commit, axiom-clean, green 1308):** `IterPrefix_lxDef` + `minClause_lxDef`
