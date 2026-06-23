@@ -436,6 +436,24 @@ memory `definability-aesop-depth-blowup`). The remaining links (`ig0`/`ig`/`igtT
 need an `ite`-definability lemma + the `ig` meta-recursion, deferred (`PENDING_WORK`). -/
 
 open LO.FirstOrder.Arithmetic.HierarchySymbol in
+/-- **`ite`-definability** (the key unlock for the `ig`/`bbeta` chain — Foundation has no direct
+helper). `fun v ↦ if P v then f v else g v` is definable from a Δ-definable `P` (both `P` and `¬P`
+definable) and definable `f`,`g`, via the graph disjunction `z = ite ↔ (P ∧ z=f) ∨ (¬P ∧ z=g)`. -/
+lemma definableFunction_ite {k : ℕ} {Γ : SigmaPiDelta} {M : ℕ}
+    {P : (Fin k → V) → Prop} [DecidablePred P] {f g : (Fin k → V) → V}
+    (hP : Γ-[M + 1].Definable P) (hnP : Γ-[M + 1].Definable (fun v => ¬ P v))
+    (hf : Γ-[M + 1].DefinableFunction f) (hg : Γ-[M + 1].DefinableFunction g) :
+    Γ-[M + 1].DefinableFunction (fun v => if P v then f v else g v) := by
+  refine Definable.of_iff
+    (Q := fun v : Fin (k + 1) → V =>
+      (P (fun i => v i.succ) ∧ v 0 = f (fun i => v i.succ)) ∨
+      ((¬ P (fun i => v i.succ)) ∧ v 0 = g (fun i => v i.succ))) ?_ ?_
+  · exact Definable.or (Definable.and (hP.retraction Fin.succ) hf)
+      (Definable.and (hnP.retraction Fin.succ) hg)
+  · intro v
+    by_cases h : P (fun i => v i.succ) <;> simp [h]
+
+open LO.FirstOrder.Arithmetic.HierarchySymbol in
 /-- `iblk k` is `𝚺₁`-definable in `(c, x)` (the lead `ω^k·c + x`, fixed standard level `k`). -/
 instance iblk_definable (k : ℕ) (Γ) : Γ-[m + 1]-Function₂ (iblk k : V → V → V) := by
   unfold iblk
