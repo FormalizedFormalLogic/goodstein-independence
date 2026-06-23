@@ -28,6 +28,41 @@ not free-X-TI — §3 is primrec-only, the free-X bridge is the *wrong direction
   upstream axiom (orthogonal to the Goodstein mathematics). Needs a review/operator call before the
   headline `sorry` is ever discharged.
 
+## ⭐ Lap 53 (post-reflection grind) — `ig` recursion + structural invariants BUILT (axiom-clean)
+Started the crux-1 `ig` assembly (the lap-52 NEXT). Two deliverables:
+- **Promoted `InternalGrz` → `src/`** (sorry-free, axiom-clean since lap 52; charter says completed
+  proofs live in `src/`). Build green **1314 jobs**. Added to the `GoodsteinPA.lean` aggregator.
+- **NEW `wip/InternalIg.lean`** (compiles clean via `lake env lean`, all lemmas axiom-clean
+  `[propext, choice, Quot.sound]`):
+  - `iF_pos : ∀ l x, 1 ≤ x → 1 ≤ iF l x` — positivity preservation of every meta-level (the `hfpos`
+    input the `InternalGrz` decomposition laws need), by meta-induction via `iIter_pos`.
+  - **`ig : ℕ → V → V → V`** — the internal Grzegorczyk `g` (mirror of `Grz.g`), meta-recursion on the
+    standard level: `ig 0 = ig0`; `ig (l+1) n m = iblk (l+1) (max 1 (n - iblockIdx)) (ig l (iIter … n
+    iblockIdx) iblockOff)` for `m < iF(l+1) n` else `0`. **Coefficient `max 1 (n - iblockIdx)` is the
+    faithful internal mirror of Rathjen's `(n-blockIdx).toPNat'`** (`Grz.g` uses an `ℕ+` coeff) — equal
+    to `n - iblockIdx` in the live regime, clamped to `1` out of range ⟹ NF holds unconditionally
+    (sidesteps needing `iblockIdx < n` up front). Recurrence eqns `ig_zero`/`ig_succ_of_lt`/`ig_succ_of_ge`.
+  - **`higt_exp_ig`** (internal `Grz.g_lt`, the `< ω^(l+1)` shape): `ocExp (ig l n m) = 0 ∨ ∃ j ≤ l,
+    ocExp = ocOadd 0 j 0` — a DIRECT case analysis on the outermost constructor (NO induction; the top
+    exponent is read off `ig0`/`iblk l`/`0`). This is the `StdCor34.habove_of_igt_exp` input (`higt_exp`).
+  - **`isNF_ig : ∀ l n m, isNF (ig l n m)`** (internal `Grz.g_NF`, unconditional) — meta-induction;
+    base `isNF_ig0`, step `isNF_iblk` (live coeff + NF tail via IH + tail nests below `ocOadd 0 (l+1) 0`
+    via `higt_exp_ig`, discharged by `icmp_zero_ocOadd`/`icmp_ocOadd_lt_coeff`).
+
+**NEXT crux-1 bricks (remaining `StdCor34.igt` interface, hardest-first):**
+1. **`higtC` — `iC (ig l n m) ≤ Kg·(n+m+1)`** (internal `Grz.g_C_bound`, `Grzegorczyk.lean:426`). Meta-
+   induction on `l`; step uses `iC_iblk` (= `max (max (l+1) coeff) (iC tail)`) + the decomposition
+   bookkeeping (`iblockIdx ≤ m`, `iblockOff < width`, `ipsum_iblockIdx_add_iblockOff`). Needs the
+   internal `iblockIdx < n` lemma (from `m < iF(l+1)n = (iF l)^[n]n ≤ ipsum(iF l) n n` + a `BlkRec`
+   `blk_lt`) to bound the coefficient `n - iblockIdx ≤ n`.
+2. **`higt_within` — `m < iF l n → icmp (ig l n (m+1)) (ig l n m) = 0`** (internal `Grz.g_desc`,
+   `Grzegorczyk.lean:599`). The deep recursive within-block descent; meta-induction, the hard port.
+3. **`higt0` — nonzero in range** (`m < iF(l+1)n → ig l n m ≠ 0`): `iblk`/`ig0` are `ocOadd … ≠ 0`.
+   NB the `StdCor34` `higt0` hyp is stated unconditionally — reconcile (either guard `igt` to be nonzero
+   everywhere, or weaken the `salpha_*` hyp to in-range; design call when wiring).
+Then `igt n m := ig l₀ n m`, port the five into `higtNF`/`higt0`/`higt_within`/`higtC`/`higt_exp`, wire
+`StdCor34.salpha_*` → `InternalThm35.bbeta` → `nonterminating_internal` ⟹ `goodstein_implies_prwo`.
+
 ## ⭐⭐⭐ Lap 52 — crux-1 bricks 1 + 2-core BUILT (green, axiom-clean, wip)
 Discharged the two `wip/StdCor34` interface obligations' substrate (lap-51 designated NEXT):
 

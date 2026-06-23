@@ -1,7 +1,7 @@
 /-
-# `wip/InternalGrz.lean` — Crux 1: the internal block decomposition for `ig` (Rathjen `g`-padding)
+# `InternalGrz.lean` — Crux 1: the internal block decomposition for `ig` (Rathjen `g`-padding)
 
-**Status: building the block decomposition over `iF l` (wip, off the build target).**
+**Status: COMPLETE (sorry-free, axiom-clean); promoted to `src/` (lap 53), in the build.**
 
 Rathjen's `g (l+1) n m` recurses through the block decomposition `m ↦ (blockIdx, blockOff)` where
 block `i` has width `f^[i+1] n` (`f = F l`). This file supplies that decomposition internally by
