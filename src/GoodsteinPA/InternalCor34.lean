@@ -58,6 +58,74 @@ lemma iC_ibigMul_le (k : ℕ) (c : V) : iC (ibigMul k c) ≤ iC c + (k : V) := b
       _ ≤ (iC c + (k : V)) + 1 := h2
       _ = iC c + ((k + 1 : ℕ) : V) := h3
 
+/-! ## The V-indexed `ω^l · β` (generic Cor 3.4 lead, non-standard level `l : V`)
+
+The meta-iterate `ibigMul (k : ℕ)` above is the **standard-level** lead `ω^(l+1)·β`. The generic
+Rathjen §3 route needs `l : V` (the Grzegorczyk domination level computed from an *internal* primrec
+descent index is itself internal, possibly non-standard). `iVbigMul β l = (ω·)^l β` is therefore built
+as a genuine `𝚺₁` primitive recursion over `l : V` (mirroring `iAboveTable.construction`), with the
+same three structural laws as `ibigMul` — but now provable by internal `sigma1_succ_induction` on `l`. -/
+
+/-- Blueprint for `iVbigMul` (1 parameter = the seed `β`): `zero ↦ β`, `succ ↦ ω·(ih)`. -/
+def iVbigMul.blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y x. y = x”
+  succ := .mkSigma “y ih n x. !iomulDef y ih”
+
+noncomputable def iVbigMul.construction : PR.Construction V iVbigMul.blueprint where
+  zero := fun x ↦ x 0
+  succ := fun _ _ ih ↦ iomul ih
+  zero_defined := .mk fun v ↦ by simp [iVbigMul.blueprint]
+  succ_defined := .mk fun v ↦ by simp [iVbigMul.blueprint, iomul_defined.iff]
+
+/-- `ω^l · β` on codes for an internal level `l : V` (the V-indexed iterate of `iomul`). -/
+noncomputable def iVbigMul (β l : V) : V := iVbigMul.construction.result ![β] l
+
+@[simp] lemma iVbigMul_zero (β : V) : iVbigMul β 0 = β := by
+  simp [iVbigMul, iVbigMul.construction]
+
+@[simp] lemma iVbigMul_succ (β l : V) : iVbigMul β (l + 1) = iomul (iVbigMul β l) := by
+  simp [iVbigMul, iVbigMul.construction]
+
+def _root_.LO.FirstOrder.Arithmetic.iVbigMulDef : 𝚺₁.Semisentence 3 :=
+  iVbigMul.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
+
+instance iVbigMul_defined : 𝚺₁-Function₂ (iVbigMul : V → V → V) via iVbigMulDef := .mk
+  fun v ↦ by simp [iVbigMul.construction.result_defined_iff, iVbigMulDef]; rfl
+
+instance iVbigMul_definable : 𝚺₁-Function₂ (iVbigMul : V → V → V) := iVbigMul_defined.to_definable
+instance iVbigMul_definable' (Γ) : Γ-[m + 1]-Function₂ (iVbigMul : V → V → V) :=
+  iVbigMul_definable.of_sigmaOne
+
+/-- `ω^l·β` is NF when `β` is (`isNF_iomul` iterated internally over `l : V`). -/
+lemma isNF_iVbigMul {β : V} (hβ : isNF β) : ∀ l : V, isNF (iVbigMul β l) := by
+  intro l
+  induction l using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simpa using hβ
+  case succ l ih => rw [iVbigMul_succ]; exact isNF_iomul ih
+
+/-- **`ω^l·` preserves the code comparison** (`icmp_iomul` iterated internally over `l : V`). The
+generic across-block descent `β_{n+1} ≺ β_n ⟹ ω^l·β_{n+1} ≺ ω^l·β_n`. -/
+lemma icmp_iVbigMul {a b : V} (ha : isNF a) (hb : isNF b) :
+    ∀ l : V, icmp (iVbigMul a l) (iVbigMul b l) = icmp a b := by
+  intro l
+  induction l using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ l ih => rw [iVbigMul_succ, iVbigMul_succ, icmp_iomul (isNF_iVbigMul ha l) (isNF_iVbigMul hb l), ih]
+
+/-- **`iC (ω^l·c) ≤ iC c + l`** (`iC_iomul` iterated internally over `l : V`). -/
+lemma iC_iVbigMul_le (c : V) : ∀ l : V, iC (iVbigMul c l) ≤ iC c + l := by
+  intro l
+  induction l using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ l ih =>
+    rw [iVbigMul_succ]
+    calc iC (iomul (iVbigMul c l)) ≤ iC (iVbigMul c l) + 1 := iC_iomul _
+      _ ≤ (iC c + l) + 1 := by gcongr
+      _ = iC c + (l + 1) := (add_assoc _ _ _)
+
 /-! ## The internal `g0` — base case of the Rathjen Lemma 3.3 recursion (level `l = 0`)
 
 Mirror of `Grz.g0 n m = ofNat ((n+2) -· m)`: a finite code `ω^0·((n+2)-m) = ocOadd 0 ((n+2)-m) 0`
@@ -615,6 +683,15 @@ lemma oadd1iter_eq_succ (k : ℕ) :
     congr 1
     push_cast
     rw [add_comm 1 ((k : V) + 1)]
+
+/-- **Lead is clean above the finite code `l`** (`Grz.MinExpGe_bigMul` reindexed to a finite code).
+The Cor 3.4 lead `ω^(l+1)·β` (here `ibigMul (k+2) β` with `l = k+1`) has every leading exponent
+strictly above `ocOadd 0 (l:V) 0`. Combines `iAbove_ibigMul_iter` (threshold `(1+·)^[k+1] 0`) with the
+cast identity `oadd1iter_eq_succ`. -/
+lemma iAbove_ibigMul_finCode {β : V} (hβNF : isNF β) (hβ0 : β ≠ 0) (k : ℕ) :
+    iAbove (ocOadd 0 ((k : V) + 1) 0) (ibigMul (k + 2) β) := by
+  have h := iAbove_ibigMul_iter hβNF hβ0 (k + 1)
+  rwa [oadd1iter_eq_succ k] at h
 
 /-- **Finite-threshold weakening of `iAbove`** (spine-lifted `icmp_finThresh_mono`): dominance above
 the finite code `l` implies dominance above any smaller finite code `j ≤ l`. Used to bring the
