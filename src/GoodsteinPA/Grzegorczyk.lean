@@ -65,4 +65,81 @@ theorem g0_desc (n m : ℕ) (hm : m < F 0 n) : (g0 n (m + 1)).repr < (g0 n m).re
 theorem g0_bound (n m : ℕ) : C (g0 n m) ≤ 2 * (n + m + 1) := by
   simp only [g0, C_ofNat]; omega
 
+/-! ## Induction-step building blocks: the `ω^k`-block term `ω^k·c + x`
+
+Rathjen's induction step sets `g_{l+1}(n,m) = ω^k·(n-i) + g_l(F_l^i(n), j)`. The reusable hard core is
+the **block term** `blk k c x = ω^k·c + x` (an `oadd (ofNat k) c x`) and its two ordinal facts:
+*within-block descent* (fixed leading `ω^k·c`, the tail `x` shrinks) and *block-boundary descent*
+(`ω^k·c' + x' < ω^k·c + x` whenever `c' < c` and `x' < ω^k`). These are exactly Rathjen's two descent
+cases, proved purely on `Ordinal`/`ONote` — the genuinely delicate arithmetic, isolated and verified
+once so the eventual `g` recursion only has to feed them the right `c`/`x`. -/
+
+/-- The block term `ω^k·c + repr x`. `c : ℕ+` because the live blocks have `c = n - i ≥ 1`. -/
+def blk (k : ℕ) (c : ℕ+) (x : ONote) : ONote := ONote.oadd (ONote.ofNat k) c x
+
+@[simp] theorem repr_blk (k : ℕ) (c : ℕ+) (x : ONote) :
+    (blk k c x).repr = (ω : Ordinal) ^ (k : ℕ) * (c : ℕ) + x.repr := by
+  simp [blk, ONote.repr]
+
+/-- `C` of a block term: `max(max k c) (C x)`. -/
+@[simp] theorem C_blk (k : ℕ) (c : ℕ+) (x : ONote) :
+    C (blk k c x) = max (max k (c : ℕ)) (C x) := by
+  simp [blk, C_oadd]
+
+/-- **Within-block descent**: same leading `ω^k·c`, a smaller tail gives a smaller block term. -/
+theorem repr_blk_within (k : ℕ) (c : ℕ+) {x x' : ONote} (hx : x'.repr < x.repr) :
+    (blk k c x').repr < (blk k c x).repr := by
+  simp only [repr_blk]; exact (add_lt_add_iff_left _).2 hx
+
+/-- **Block-boundary descent** (Rathjen's `ω^k·(n-(i+1)) + ω ≤ ω^k·(n-i)` step): if `c' < c` and the
+tail `x'` is below `ω^k`, then `ω^k·c' + x' < ω^k·c + x` for any `x`. The whole `c'`-block sits below
+`ω^k·(c'+1) ≤ ω^k·c`. -/
+theorem repr_blk_boundary (k : ℕ) {c c' : ℕ+} {x x' : ONote}
+    (hc : (c' : ℕ) < (c : ℕ)) (hx' : x'.repr < (ω : Ordinal) ^ (k : ℕ)) :
+    (blk k c' x').repr < (blk k c x).repr := by
+  simp only [repr_blk]
+  calc (ω : Ordinal) ^ (k : ℕ) * (c' : ℕ) + x'.repr
+      < (ω : Ordinal) ^ (k : ℕ) * (c' : ℕ) + (ω : Ordinal) ^ (k : ℕ) :=
+        (add_lt_add_iff_left _).2 hx'
+    _ = (ω : Ordinal) ^ (k : ℕ) * ((c' : ℕ) + 1) := by rw [mul_add, mul_one]
+    _ ≤ (ω : Ordinal) ^ (k : ℕ) * (c : ℕ) :=
+        mul_le_mul_right (by exact_mod_cast Nat.succ_le_of_lt hc) _
+    _ ≤ (ω : Ordinal) ^ (k : ℕ) * (c : ℕ) + x.repr := le_self_add
+
+/-! ## Iterate / partial-sum scaffolding for the block decomposition
+
+For `m < F_{l+1}(n) = (F l)^[n] n`, Rathjen writes `m = F_l(n)+F_l²(n)+…+F_l^i(n) + j` with `i < n`,
+`j < F_l^{i+1}(n)`. The partial sums `psum f n i = Σ_{t=1}^{i} f^[t](n)` carve `[0, psum f n n)` into the
+`n` blocks; block `i` is `[psum f n i, psum f n (i+1))` of width `f^[i+1](n)`. -/
+
+/-- Partial sum of iterates: `psum f n i = f^[1](n) + f^[2](n) + … + f^[i](n)`. -/
+def psum (f : ℕ → ℕ) (n : ℕ) : ℕ → ℕ
+  | 0 => 0
+  | i + 1 => psum f n i + f^[i + 1] n
+
+@[simp] theorem psum_zero (f : ℕ → ℕ) (n : ℕ) : psum f n 0 = 0 := rfl
+
+@[simp] theorem psum_succ (f : ℕ → ℕ) (n i : ℕ) :
+    psum f n (i + 1) = psum f n i + f^[i + 1] n := rfl
+
+/-- `F l n ≥ 1` for `n ≥ 1` (in fact `F l n ≥ n+1`), so each live block has positive width. -/
+theorem one_le_F (l : ℕ) {n : ℕ} (hn : 1 ≤ n) : 1 ≤ F l n := by
+  induction l generalizing n with
+  | zero => simp
+  | succ l ih =>
+    simp only [F_succ]
+    -- (F l)^[n] n ≥ 1 : iterating a function that is ≥1 on positives, from n ≥ 1
+    have key : ∀ t, 1 ≤ (F l)^[t] n := by
+      intro t
+      induction t with
+      | zero => simpa using hn
+      | succ t iht => rw [Function.iterate_succ_apply']; exact ih iht
+    exact key n
+
+/-- The partial sums strictly increase across live blocks: `psum f n i < psum f n (i+1)` once each
+iterate `f^[i+1] n ≥ 1` (true for `f = F l`, `n ≥ 1`). -/
+theorem psum_strictMono_step (f : ℕ → ℕ) (n i : ℕ) (hpos : 1 ≤ f^[i + 1] n) :
+    psum f n i < psum f n (i + 1) := by
+  simp only [psum_succ]; omega
+
 end GoodsteinPA.Grz
