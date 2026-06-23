@@ -463,3 +463,43 @@ Feedback for box / watcher:
 4. **Still do not promote `wip/GentzenCon` to `src/`.** The seam is now well guarded, but the file still has
    the two disclosed crux `sorry`s plus placeholder axioms for `ord`, `R`, `derivesEmpty`,
    `R_preserves_empty`, `ord_R_descends`, and `gentzenDescentφ`.
+
+## Addendum - after HEAD c9fc6ea (`wip/BlkRec.lean`)
+
+Update after reading HEAD `c9fc6ea` (`feat(lap 52): BlkRec - crux-1 brick 1, definable block bookkeeping
+blk/off`) and checking `lake env lean wip/BlkRec.lean`:
+
+The state-machine brick is now green and worth keeping. It avoids internal `findGreatest` by recursing on
+the pair `(blk, off)`, and it gives the direct consumers:
+
+- `blk_succ_dich` for `StdCor34.salpha_desc`;
+- `off_succ_of_blk_eq` for the within-block `igt` descent bridge;
+- `blk_add_off_le` / `blk_le` for basic index bookkeeping.
+
+The remaining caution is about the C-bound consumer.
+
+Feedback for box / watcher:
+
+1. **Do not overclaim `blk_le` as `hβC`.** `StdCor34.salpha_C_le` needs
+
+```lean
+hβC : ∀ j, iC (β (blk j)) ≤ Cβ + j
+```
+
+   In the `Grzegorczyk` template this comes from the width partial-sum fact
+   `C (β n) ≤ wsum (corW β) n ≤ j`, not merely from `blk j ≤ j`. The state-machine proof still needs an
+   invariant like `blk j = 0 ∨ znth wseq (blk j - 1) ≤ j`, or better an internal `wsum`/elapsed invariant
+   `wsum W (blk j) ≤ j`. Without that, the C-bound consumer is not discharged.
+
+2. **Be careful with `wseq` as a global width oracle.** A fixed HFS sequence code is finite; it is not a
+   total width function `W : V → V` for all internal indices. Either specialize the construction to a
+   concrete definable width function `W` when `β` lands, or use a prefix-table construction with a proved
+   prefix-invariance theorem. A single fixed `wseq` parameter is fine for local arithmetic lemmas, but it
+   should not silently become the final global `blk/off` function.
+
+3. **Next small target:** add the missing width/elapsed invariant before wiring to `salpha_C_le`. The
+   current brick already has the first three shapes; the missing one is the C-bound support.
+
+4. **The scratchpad check files are untracked.** `scratchpad/BlkRec_chk.lean` and `scratchpad/blkchk.lean`
+   appear to be temporary axiom-check harnesses. Keep them out of the build unless they are intentionally
+   promoted.

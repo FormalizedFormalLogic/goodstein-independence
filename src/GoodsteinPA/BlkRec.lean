@@ -1,7 +1,7 @@
 /-
 # `wip/BlkRec.lean` — Crux 1 brick 1: the internal block bookkeeping `blk`/`off`
 
-**Status: building the definable `blk`/`off` over an abstract width sequence code (wip).**
+**Status: COMPLETE (axiom-clean, in the build). Crux-1 brick 1.**
 
 Rathjen §3 Cor 3.4 carves the descent index `j` into *blocks* whose widths are
 `W_t = iC(β_{t+1})`. The slowed sequence `α j = ω^(l+1)·β_{blk j} + igt (blk j) (off j)`

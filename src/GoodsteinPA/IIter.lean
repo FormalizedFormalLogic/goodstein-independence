@@ -1,7 +1,7 @@
 /-
 # `wip/IIter.lean` — Crux 1 brick 2 core: internal iteration of a fixed `𝚺₁`-function
 
-**Status: building the reusable internal-iterate primitive (wip, off the build target).**
+**Status: COMPLETE (axiom-clean, in the build). Crux-1 brick 2 substrate.**
 
 The standard-level internal Grzegorczyk hierarchy `iF : ℕ → (V → V)` is built by **meta-recursion** on
 the standard level `l : ℕ` (lap-50 insight: the headline needs only a *standard* level, so the level is
