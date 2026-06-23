@@ -49,15 +49,21 @@ Started the crux-1 `ig` assembly (the lap-52 NEXT). Two deliverables:
     base `isNF_ig0`, step `isNF_iblk` (live coeff + NF tail via IH + tail nests below `ocOadd 0 (l+1) 0`
     via `higt_exp_ig`, discharged by `icmp_zero_ocOadd`/`icmp_ocOadd_lt_coeff`).
 
+**`higtC` DONE (2nd lap-53 commit, axiom-clean):** `iC_ig_bound : ∀ l, ∃ Kg>0, ∀ n m, iC (ig l n m) ≤
+Kg·(n+m+1)` (internal `Grz.g_C_bound`). Meta-induction; base `Kg=2` via `iC_ig0_le`, step `Kg=max ↑(l+1) K`
+with the three `iC_iblk` pieces each `≤ Kg·(n+m+1)` — the clamped coeff `max 1 (n-bi) ≤ n+1` is FREE
+(monus, no `iblockIdx < n` needed), the tail via the new supports `iIter_le_add_ipsum` +
+`iter_add_iblockOff_le` (`tn+tm ≤ n+m`, internal `Grz.iter_add_blockOff_le`). The in-range branch derives
+`1 ≤ n` (since `iF(l+1)0 = 0`). So 3 of 5 igt-interface props are built: **`higtNF`=`isNF_ig`,
+`higt_exp`=`higt_exp_ig`, `higtC`=`iC_ig_bound`**.
+
 **NEXT crux-1 bricks (remaining `StdCor34.igt` interface, hardest-first):**
-1. **`higtC` — `iC (ig l n m) ≤ Kg·(n+m+1)`** (internal `Grz.g_C_bound`, `Grzegorczyk.lean:426`). Meta-
-   induction on `l`; step uses `iC_iblk` (= `max (max (l+1) coeff) (iC tail)`) + the decomposition
-   bookkeeping (`iblockIdx ≤ m`, `iblockOff < width`, `ipsum_iblockIdx_add_iblockOff`). Needs the
-   internal `iblockIdx < n` lemma (from `m < iF(l+1)n = (iF l)^[n]n ≤ ipsum(iF l) n n` + a `BlkRec`
-   `blk_lt`) to bound the coefficient `n - iblockIdx ≤ n`.
-2. **`higt_within` — `m < iF l n → icmp (ig l n (m+1)) (ig l n m) = 0`** (internal `Grz.g_desc`,
-   `Grzegorczyk.lean:599`). The deep recursive within-block descent; meta-induction, the hard port.
-3. **`higt0` — nonzero in range** (`m < iF(l+1)n → ig l n m ≠ 0`): `iblk`/`ig0` are `ocOadd … ≠ 0`.
+1. **`higt_within` — `m < iF l n → icmp (ig l n (m+1)) (ig l n m) = 0`** (internal `Grz.g_desc`,
+   `Grzegorczyk.lean:599`). The deep recursive within-block descent; meta-induction with within-block
+   (`iblockOff → +1`, IH via `icmp_iblk_within`) vs block-boundary (`iblockOff → 0`, coeff drops via
+   `icmp_iblk_boundary`) vs exhaustion (`ig (m+1) = 0`) cases. The hard port — needs internal
+   `iblockIdx`/`iblockOff` step laws (`BlkRec.blk_succ_dich`/`off_succ_of_blk_eq` are the substrate).
+2. **`higt0` — nonzero in range** (`m < iF(l+1)n → ig l n m ≠ 0`): `iblk`/`ig0` are `ocOadd … ≠ 0`.
    NB the `StdCor34` `higt0` hyp is stated unconditionally — reconcile (either guard `igt` to be nonzero
    everywhere, or weaken the `salpha_*` hyp to in-range; design call when wiring).
 Then `igt n m := ig l₀ n m`, port the five into `higtNF`/`higt0`/`higt_within`/`higtC`/`higt_exp`, wire

@@ -127,4 +127,84 @@ theorem isNF_ig : ∀ (l : ℕ) (n m : V), isNF (ig l n m) := by
               (lt_of_le_of_lt hjl (by exact_mod_cast Nat.lt_succ_self l))
       · rw [ig_succ_of_ge (not_lt.mpr h)]; exact isNF_zero
 
+/-! ## The coefficient C-bound: `iC (ig l n m) ≤ Kg·(n+m+1)` (internal `Grz.g_C_bound`)
+
+The block-bookkeeping support (`iIter_le_add_ipsum`, `iter_add_iblockOff_le`) mirrors `Grz.iter_le_add_psum`
+/ `iter_add_blockOff_le`; both are generic over the fixed `𝚺₁`-function `f`. -/
+
+section Support
+variable {fDef : 𝚺₁.Semisentence 2} {f : V → V} {hf : 𝚺₁.DefinedFunction₁ f fDef}
+
+/-- `f^[i] n ≤ n + ipsum f n i` (for `i ≥ 1` the iterate is itself a summand of `ipsum`). -/
+theorem iIter_le_add_ipsum (n i : V) :
+    iIter fDef f hf n i ≤ n + ipsum fDef f hf n i := by
+  induction i using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ i _ => rw [ipsum_succ, ← add_assoc]; exact le_add_self
+
+/-- Block bookkeeping for the bound: `f^[iblockIdx] n + iblockOff ≤ n + m` (`Grz.iter_add_blockOff_le`,
+internalised) — the iterate is `≤ n + ipsum`, and `ipsum + iblockOff = m`. -/
+theorem iter_add_iblockOff_le {n m : V} (hn : 1 ≤ n) (hfpos : ∀ x, 1 ≤ x → 1 ≤ f x) :
+    iIter fDef f hf n (iblockIdx fDef f hf n m) + iblockOff fDef f hf n m ≤ n + m := by
+  have h1 := iIter_le_add_ipsum (hf := hf) n (iblockIdx fDef f hf n m)
+  have h2 := ipsum_iblockIdx_add_iblockOff (hf := hf) (m := m) hn hfpos
+  calc iIter fDef f hf n (iblockIdx fDef f hf n m) + iblockOff fDef f hf n m
+      ≤ (n + ipsum fDef f hf n (iblockIdx fDef f hf n m)) + iblockOff fDef f hf n m := by
+        gcongr
+    _ = n + (ipsum fDef f hf n (iblockIdx fDef f hf n m) + iblockOff fDef f hf n m) := by
+        rw [add_assoc]
+    _ = n + m := by rw [h2]
+
+end Support
+
+/-- **Lemma 3.3(2) — the coefficient bound** (internal `Grz.g_C_bound`). For each standard level `l`
+there is `Kg > 0` with `iC (ig l n m) ≤ Kg·(n+m+1)` for all `n,m`. Meta-induction on `l`: base `Kg=2`
+(`iC_ig0_le`); step takes `max (↑(l+1)) K`, the lead data (`l+1`, the clamped coeff `≤ n+1`) and the
+tail's bound `K·(tn+tm+1) ≤ K·(n+m+1)` (via `iter_add_iblockOff_le`) each `≤ Kg·(n+m+1)`. -/
+theorem iC_ig_bound : ∀ (l : ℕ), ∃ Kg : V, 0 < Kg ∧ ∀ (n m : V), iC (ig l n m) ≤ Kg * (n + m + 1) := by
+  intro l
+  induction l with
+  | zero =>
+      refine ⟨2, by norm_num, fun n m => ?_⟩
+      rw [ig_zero]
+      calc iC (ig0 n m) ≤ n + 2 := iC_ig0_le n m
+        _ = 2 + n := by rw [add_comm]
+        _ ≤ 2 + n + m := le_self_add
+        _ = 2 + (n + m) := by rw [add_assoc]
+        _ ≤ 2 * (n + m + 1) := iconst_add_le_mul one_le_two
+  | succ l ih =>
+      obtain ⟨K, hKpos, hK⟩ := ih
+      refine ⟨max (((l + 1 : ℕ) : V)) K, lt_of_lt_of_le hKpos (le_max_right _ _), fun n m => ?_⟩
+      rcases lt_or_ge m (iF (l + 1) n) with h | h
+      · -- in-range branch (forces `1 ≤ n`, since `iF (l+1) 0 = 0`)
+        have hn1 : 1 ≤ n := by
+          rcases eq_or_ne n 0 with rfl | hn0
+          · rw [iF_succ, iIter_zero] at h
+            exact absurd h (not_lt.mpr (Arithmetic.zero_le m))
+          · exact pos_iff_one_le.mp (pos_iff_ne_zero.mpr hn0)
+        rw [ig_succ_of_lt h, iC_iblk]
+        set bi := iblockIdx (iFDef l) (iF l) (iF_defined l) n m with hbi
+        set tn := iIter (iFDef l) (iF l) (iF_defined l) n bi with htn
+        set tm := iblockOff (iFDef l) (iF l) (iF_defined l) n m with htm
+        set M := max (((l + 1 : ℕ) : V)) K with hM
+        have hMpos : 1 ≤ M := le_trans (pos_iff_one_le.mp hKpos) (le_max_right _ _)
+        have hW1 : (1 : V) ≤ n + m + 1 := le_add_self
+        -- piece A: `↑(l+1) ≤ M·(n+m+1)`
+        have hA : ((l + 1 : ℕ) : V) ≤ M * (n + m + 1) :=
+          le_trans (le_max_left _ _) (le_mul_of_one_le_right (Arithmetic.zero_le _) hW1)
+        -- piece B: clamped coefficient `max 1 (n - bi) ≤ M·(n+m+1)`
+        have hB : max 1 (n - bi) ≤ M * (n + m + 1) := by
+          have hcoeff : max 1 (n - bi) ≤ n + m + 1 :=
+            max_le le_add_self (le_trans (sub_le_self n bi) (le_trans le_self_add le_self_add))
+          exact le_trans hcoeff (le_mul_of_one_le_left (Arithmetic.zero_le _) hMpos)
+        -- piece C: tail `iC (ig l tn tm) ≤ M·(n+m+1)`
+        have hCt : iC (ig l tn tm) ≤ M * (n + m + 1) := by
+          have hle := iter_add_iblockOff_le (hf := iF_defined l) (m := m) hn1 (iF_pos l)
+          calc iC (ig l tn tm) ≤ K * (tn + tm + 1) := hK tn tm
+            _ ≤ K * (n + m + 1) := by gcongr
+            _ ≤ M * (n + m + 1) := by gcongr; exact le_max_right _ _
+        exact max_le (max_le hA hB) hCt
+      · rw [ig_succ_of_ge (not_lt.mpr h), iC_zero]; exact Arithmetic.zero_le _
+
 end GoodsteinPA.InternalIg
