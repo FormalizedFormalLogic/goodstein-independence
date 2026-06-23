@@ -91,6 +91,32 @@ theorem reduct_models_goodstein (h : 𝗣𝗔 ⊢ ↑goodsteinSentence)
     (inst.lMap Φ).toStruc ⊧ goodsteinSentence :=
   Semiformula.models_lMap.mp (models_lMap_goodstein h hM)
 
+/-! ### Step 2 (PROVED): unfold `TI prec` semantics in `M` to abstract transfinite induction
+
+`Evalfm M f (TI prec)` is exactly transfinite induction for the pair `(Mlt f, MX)` — `Mlt` is `M`'s
+interpretation of the X-free order `prec` (= `≺`), `MX` is `M`'s interpretation of the set variable `X`.
+This strips the Foundation-DSL wrapper, leaving a transparent goal the Rathjen §3 argument acts on. -/
+
+/-- `M`'s interpretation of the set variable `X` (the `Xsym` relation). -/
+def MX {M : Type} [Structure LX M] (a : M) : Prop := Structure.rel (L := LX) Xsym ![a]
+
+/-- `M`'s interpretation of the order `≺` (`= Thm56.prec`, X-free), at assignment `f`: `Mlt f y x` reads
+`prec` with `#0 ↦ y`, `#1 ↦ x`. -/
+def Mlt {M : Type} [Structure LX M] (f : ℕ → M) (y x : M) : Prop :=
+  Semiformula.Eval (L := LX) ‹_› ![y, x] f Thm56.prec
+
+/-- **`TI prec` in `M` = abstract transfinite induction for `(Mlt, MX)`.** `Evalfm M f (TI prec)` holds
+iff: progressivity of `MX` along `Mlt` implies `MX` is total. Pure unfolding (`map_imply`/`eval_all`/
+`eval_rel₁`). -/
+theorem evalfm_TI_unfold {M : Type} [Nonempty M] [Structure LX M] (f : ℕ → M) :
+    Semiformula.Evalfm M f (Boundedness.TI Thm56.prec)
+      ↔ ((∀ x : M, (∀ y : M, Mlt f y x → MX y) → MX x) → ∀ x : M, MX x) := by
+  unfold MX Mlt
+  simp only [Boundedness.TI, Boundedness.Prog, Boundedness.hyp, Boundedness.Xat,
+    LogicalConnective.HomClass.map_imply, Semiformula.eval_all, Semiformula.eval_rel₁,
+    Semiterm.val_bvar, Matrix.cons_val_zero]
+  rfl
+
 /-! ### The single semantic obligation (Rathjen §3, model-internal) -/
 
 /-- **The E wall, reduced to one model-theoretic statement (DISCLOSED `sorry`).**
@@ -121,8 +147,15 @@ theorem paLX_models_TI_of_PA_provable (h : 𝗣𝗔 ⊢ ↑goodsteinSentence)
   -- Step 1 (PROVED): the lifted Goodstein sentence holds in `M`.
   have _hgood : M ⊧ₘ (Semiformula.lMap GoodsteinPA.DescentLift.Φ goodsteinSentence : Sentence LX) :=
     models_lMap_goodstein h hM
-  -- Steps 2–3 (the deep core, DISCLOSED): from `_hgood` + `hM` (⊧ paLX, so `Prog`/`InductionScheme LX`),
-  -- build the X-definable `≺`-descent, slow it down, run inequality (6), contradict `_hgood` ⟹ `TI prec`.
+  -- Step 2 (PROVED): reduce to abstract transfinite induction for `(Mlt f, MX)`.
+  rw [evalfm_TI_unfold]
+  intro hProg
+  -- Step 3 (the deep core, DISCLOSED, Rathjen §3 in `M`): from `hProg` (progressivity of `MX` along
+  -- `Mlt`) and `_hgood` (Goodstein terminates in `M`), conclude `∀ x, MX x`. Suppose `¬MX a₀`; by `M`'s
+  -- LX least-number principle (`hM ⊧ InductionScheme LX`) build the M-internal `Mlt`-descent of non-`MX`
+  -- elements; slow it down + run inequality (6) (lap-26 `igoodstein` in `M`'s `ℒₒᵣ`-reduct) ⟹ a
+  -- non-terminating Goodstein run, contradicting `_hgood`. (The descent must be M-INTERNAL/definable —
+  -- not metatheoretic-choice-built — so its run aligns with `M`'s internal termination statement.)
   sorry
 
 /-! ### `DescentE` via first-order completeness -/

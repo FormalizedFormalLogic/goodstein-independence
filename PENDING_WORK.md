@@ -25,17 +25,35 @@ models of `paLX` (where `X` is `M`'s relation), not `V ⊧ 𝗜𝚺₁`; complet
 the lap-26 substrate** — `igoodstein`/`ibump` run in `M`'s `ℒₒᵣ`-reduct, `DescentCore.ineq6_step` is the
 kernel. Full map in **`DESCENT-PLAN.md §5`**.
 
-**NEXT (hardest-first), decomposing `paLX_models_TI_of_PA_provable` model-internally:**
-1. **(easy, do next) `M ⊧ lMap goodsteinSentence`.** From `h`: E-lift (`paLX_derivable2_lMap_of_PA_provable`)
-   ⟹ `paLX ⊢ lMap γ`; **soundness** for `Derivation2`/`Schema` ⟹ `M ⊧ lMap γ`; `Semiformula.eval_lMap` ⟹
-   `M`'s `ℒₒᵣ`-reduct ⊧ `γ`. *Find Foundation's soundness lemma* (`sound!`, used in `complete_iff`; check it
-   applies to `Schema`/`Derivation2`). This carves the easy front off the lemma, isolating the deep core.
-2. **X-descent from `¬TI prec`.** `M ⊧ Prog(X) ∧ ¬X a₀` ⟹ X-definable `≺`-descent via `M`'s LX least-number
-   principle (`M ⊧ InductionScheme LX`). Need: the LNP as a usable fact about `M` (derive from the scheme,
-   or find a Foundation `leastNumber`/`order_induction` semantic lemma).
-3. **(deep core) Slow-down + inequality (6) in `M`.** Rathjen §3: slow `(aₖ)` ⟹ `(βₖ)` (`C(βₖ) ≤ k+1`);
-   run special Goodstein from `m₀ = T̂²(β₀)` (lap-26 `igoodstein` in `M`'s reduct); iterate `ineq6_step` by
-   `M`'s LX-induction ⟹ `M ⊧ ∀k mₖ > 0`; contradict step 1. The genuine content; multi-lap.
+**PROGRESS (lap 30, all green + axiom-clean in `DescentSemantic.lean`):**
+- **✅ Step 1 — `M ⊧ lMap goodsteinSentence`.** `models_lMap_goodstein` (E-lift + `provable_def` +
+  `Semiformula.lMap_emb` + `models_of_provable` soundness) and `reduct_models_goodstein` (via
+  `Semiformula.models_lMap`: `M`'s `ℒₒᵣ`-reduct ⊧ `goodsteinSentence`). Axiom-clean.
+- **✅ Step 2 — unfold `TI prec` semantics in `M`.** `evalfm_TI_unfold` : `Evalfm M f (TI prec) ↔
+  ((∀x, (∀y, Mlt f y x → MX y) → MX x) → ∀x, MX x)` — **abstract transfinite induction** for `(Mlt, MX)`,
+  where `MX a := Structure.rel Xsym ![a]` (M's X) and `Mlt f y x := Eval M ![y,x] f Thm56.prec` (M's ≺).
+  Pure `map_imply`/`eval_all`/`eval_rel₁` unfolding + `rfl`. The main lemma now `rw`s this and `intro`s
+  progressivity; the lone `sorry` sits on the crisp goal `∀ x, MX x`.
+
+**NEXT — the deep core (`DescentSemantic.lean:144`), hardest-first:** goal `∀ x : M, MX x` given
+`hProg : ∀ x, (∀ y, Mlt f y x → MX y) → MX x` and Goodstein-in-`M`. Suppose `¬MX a₀`. Sub-obligations:
+1. **M-internal `Mlt`-descent.** `Prog`-contrapositive: `∀x, ¬MX x → ∃y, Mlt y x ∧ ¬MX y`. Build the
+   descending sequence **as an M-INTERNAL/definable object** (NOT metatheoretic `choice` — see ⚠ below):
+   `G : M → M` by M-recursion, `G(k+1) = ≺`-least `y` with `Mlt y (G k) ∧ ¬MX y`, via `M`'s LX
+   least-number principle. NEED: LNP for LX-formulas from `M ⊧ InductionScheme LX` (search Foundation for
+   a semantic `leastNumber`/order-induction over models of induction, or derive it).
+2. **`M`'s `ℒₒᵣ`-reduct as an `ORingStructure`/`𝗜𝚺₁` model.** `hM ⊧ paLX ⊇ lMap 𝗣𝗔` ⟹ reduct ⊧ `𝗣𝗔` ⊇
+   `𝗜𝚺₁`. Bridge the reduct `inst.lMap Φ : Structure ℒₒᵣ M` into the substrate's `[ORingStructure M]
+   [M ⊧ₘ* 𝗜𝚺₁]` (instance juggling: the substrate's `igoodstein` uses the ambient `ORingStructure`).
+3. **Slow-down + inequality (6) in `M`.** Slow `(G k)` ⟹ `(βₖ)` (`C(βₖ) ≤ k+1`, Rathjen §3); run special
+   Goodstein from `m₀ = T̂²(β₀)` (lap-26 `igoodstein` in the reduct); iterate `ineq6_step` by `M`'s
+   induction ⟹ `M ⊧ ∀k mₖ > 0`; contradict Goodstein-in-`M`.
+
+**⚠ THE key subtlety (M-internal vs external descent):** the descent must be **M-internal/definable**, not
+built by Lean-level `choice` over real ℕ. An external `g : ℕ → M` makes inequality (6) hold only for
+*standard* `k`, but `M ⊧ goodstein` gives termination at an `M`-natural `N` that may be *nonstandard* — the
+external bound never reaches it. Building `G` M-internally (definable + M-recursion) makes the run align
+with `M`'s internal termination statement. This is the crux of why the deep core is genuine work.
 
 **Banked/superseded (true + green, keep in `src/`):** `DescentInternal.igoodstein_nonterminating_of_dominating`
 and the `DescentArith`/`sigma1_pos_succ_induction` scaffold are the X-free `V ⊧ 𝗜𝚺₁` framing — their
