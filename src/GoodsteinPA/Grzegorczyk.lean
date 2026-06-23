@@ -709,4 +709,39 @@ theorem corAlpha_C_bound (l : ℕ) {β : ℕ → ONote} (hβNF : ∀ n, (β n).N
       _ ≤ Kg * (j + 1) := Nat.mul_le_mul_left Kg (by omega)
       _ ≤ K * (j + 1) := Nat.mul_le_mul_right (j + 1) (le_max_right _ _)
 
+/-! ## Cor 3.4 — the descent STEP lemmas (the non-vacuous, M-portable core)
+
+The global `∀ j, αⱼ₊₁ ≺ αⱼ` is **vacuous in ℕ** (ε₀ is well-founded, so no infinite input descent `β`
+exists) and its assembly is tangled by Rathjen's `n=0` finite prefix (for `l ≥ 1`, `F l 0 = 0`, so the
+width hypothesis `1 ≤ C(β_1)` and the domination `C(β_1) ≤ F l 0` are jointly contradictory — the prefix
+exists precisely to skip this). What is **non-vacuous and ports verbatim to the M-internal codes** is the
+per-step descent logic, in two cases: within a block (lead `ω^(l+1)·β_n` fixed, `g` tail descends) and
+across a block boundary (`β_{n+1} ≺ β_n` drops the lead, the `g`-tail `< ω^(l+1)` is absorbed). These are
+the genuine mathematical content of Cor 3.4's descent; the index/prefix bookkeeping is deferred to the
+M-internal construction (where the descent is a real non-standard infinite one and Lemma 3.2's `max(2,·)`
+indexing supplies a non-degenerate domination). -/
+
+/-- **Within-block descent step.** Fixed lead `ω^(l+1)·β_n`; the `g`-tail descends (`m < F l n`). -/
+theorem corAlpha_within (l n m : ℕ) {β : ℕ → ONote} (hβNF : (β n).NF) (hm : m < F l n) :
+    (bigMul (l + 1) (β n) + g l n (m + 1)).repr < (bigMul (l + 1) (β n) + g l n m).repr := by
+  haveI := NF_bigMul (l + 1) hβNF
+  haveI := g_NF l n m
+  haveI := g_NF l n (m + 1)
+  rw [ONote.repr_add, ONote.repr_add]
+  exact (add_lt_add_iff_left _).2 (g_desc l n m hm)
+
+/-- **Block-boundary descent step.** `β_{n+1} ≺ β_n` drops the lead `ω^(l+1)·β`; the new `g`-tail
+`g l (n+1) m' < ω^(l+1)` (`g_lt`) is absorbed (`mul_add_lt`). Holds for ANY offsets `m`, `m'`. -/
+theorem corAlpha_boundary (l n m m' : ℕ) {β : ℕ → ONote}
+    (hβNFn : (β n).NF) (hβNFn1 : (β (n + 1)).NF)
+    (hβdesc : (β (n + 1)).repr < (β n).repr) :
+    (bigMul (l + 1) (β (n + 1)) + g l (n + 1) m').repr
+      < (bigMul (l + 1) (β n) + g l n m).repr := by
+  haveI := NF_bigMul (l + 1) hβNFn
+  haveI := NF_bigMul (l + 1) hβNFn1
+  haveI := g_NF l n m
+  haveI := g_NF l (n + 1) m'
+  rw [ONote.repr_add, ONote.repr_add, repr_bigMul (l + 1) hβNFn, repr_bigMul (l + 1) hβNFn1]
+  exact mul_add_lt hβdesc (g_lt l (n + 1) m')
+
 end GoodsteinPA.Grz
