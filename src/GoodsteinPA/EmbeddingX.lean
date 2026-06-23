@@ -536,6 +536,7 @@ of the finite `𝗣𝗔⁻` axioms (X-free) together with the full `LX` inductio
 Set.univ`. A hypothetical proof `Z ⊢ TI_≺(X)` is then a `Derivation2 (↑paLX) {TI prec}`. -/
 noncomputable def paLX : Theory LX :=
   Theory.lMap (Language.ORing.embedding LX) 𝗣𝗔⁻ + LO.FirstOrder.Arithmetic.InductionScheme LX Set.univ
+    + {Theory.Eq.relExt Xsym}
 
 /-! ### Discharging `hax` for `paLX` (C₂-axm): X-free base axioms + X-induction instances -/
 
@@ -734,6 +735,113 @@ lemma rew_succInd (g : SyntacticRew LX 0 0) (ψ : Semiformula LX ℕ 1) :
   · rw [rew_subst_term g ψ (↑(0:ℕ))]; congr 1; simp
   · rw [rew_subst1_comm_q g ψ (‘(#0 + 1)’ : Semiterm LX ℕ 1) (by simp)]
 
+/-! ### Discharging the X-congruence axiom `Eq.relExt Xsym` (lap-32: integrated from `XCongruence`)
+
+`paLX` now contains the single equality axiom `Eq.relExt Xsym = ∀x y, x=y → X(x) → X(y)` (X-congruence)
+so that `𝗘𝗤 ⪯ paLX` holds (every other `𝗘𝗤(LX)` axiom is an `lMap Φ`-image of an `𝗘𝗤(ℒₒᵣ)` axiom,
+already provable from `lMap Φ 𝗣𝗔⁻ ⊆ paLX`). Unlike the X-free base axioms (`provable_true_x`),
+X-congruence MENTIONS `X`, so it needs a hand `PXFc` derivation — a small cut-free, `XFreeAx`-safe one. -/
+
+/-- **The `=`-atom's ℕ-truth.** `m = n` (the lifted `LX`-literal at numerals) is `LitTrue` iff `m = n`. -/
+theorem litTrue_eq_iff (m n : ℕ) :
+    LitTrue (Semiformula.rel (Language.Eq.eq : LX.Rel 2) ![nm m, nm n]) ↔ m = n := by
+  unfold LitTrue
+  rw [Semiformula.eval_rel]
+  have hfun : (fun i => Semiterm.valm ℕ ![] (id : ℕ → ℕ)
+        ((![nm m, nm n] : Fin 2 → Semiterm LX ℕ 0) i)) = ![m, n] := by
+    funext i
+    refine i.cases ?_ (fun j => j.cases ?_ (fun k => k.elim0))
+    · simp
+    · simp
+  show Structure.rel (Language.Eq.eq : LX.Rel 2)
+      (fun i => Semiterm.valm ℕ ![] (id : ℕ → ℕ) ((![nm m, nm n] : Fin 2 → Semiterm LX ℕ 0) i)) ↔ m = n
+  rw [hfun]
+  exact Iff.rfl
+
+/-- the relExt matrix body for `Xsym` (k=1, so 2 bvars). -/
+noncomputable def relExtBody : Semisentence LX (1 + 1) :=
+  (Matrix.conj fun i : Fin 1 ↦ “#(i.addCast 1) = #(i.addNat 1)”) 🡒
+    Semiformula.rel Xsym (fun i ↦ #(i.addCast 1)) 🡒 Semiformula.rel Xsym (fun i ↦ #(i.addNat 1))
+
+/-- `Eq.relExt Xsym` IS the universal closure of `relExtBody` (definitional). -/
+lemma relExt_Xsym_eq : (Theory.Eq.relExt Xsym : Sentence LX) = ∀⁰* relExtBody := rfl
+
+/-- **The substituted+embedded relExt body in explicit NNF.** Substituting numerals `(v 0, v 1)` for the
+two bound variables of `↑relExtBody` yields the X-congruence Tait matrix (the `⋎ ⊥` is the vestige of
+`Matrix.conj`'s `⋏ ⊤` over `Fin 1`). The DSL-bookkeeping equation Task A1 needs. -/
+lemma relExtBody_subst_eq (v : Fin (1 + 1) → ℕ) :
+    (Rew.subst (fun i => nm (v i)) ▹ (↑relExtBody : SyntacticSemiformula LX (1 + 1)))
+      = (Semiformula.nrel Language.Eq.eq ![nm (v 0), nm (v 1)] ⋎ (⊥ : Form LX)) ⋎
+          (Semiformula.nrel Xsym ![nm (v 0)] ⋎ Semiformula.rel Xsym ![nm (v 1)]) := by
+  unfold relExtBody
+  simp only [Matrix.conj, Matrix.vecTail, Function.comp, Semiformula.Operator.operator,
+    Semiformula.Operator.Eq.sentence_eq]
+  simp [Semiformula.imp_eq, Semiformula.rew_rel, Semiformula.rew_nrel, Fin.addCast, Fin.addNat,
+    ← TransitiveRewriting.comp_app, Rew.comp_app]
+  refine ⟨?_, ?_, ?_⟩
+  · funext i
+    refine i.cases ?_ (fun j => j.cases ?_ (fun k => k.elim0)) <;>
+      simp [Rew.subst_bvar, Rew.emb_bvar]
+  · funext i
+    refine i.cases ?_ (fun k => k.elim0)
+    simp
+  · funext i
+    refine i.cases ?_ (fun k => k.elim0)
+    simp
+
+/-- **The relExt matrix derivation (cut-free, `XFreeAx`-safe).** The `Eq.relExt Xsym` body at numerals
+`(m, n)` — `(m ≠ n ⋎ ⊥) ⋎ (¬X(m) ⋎ X(n))` — is `PXFc`-derivable, cut rank `0`. `m = n` closes via the
+value-congruent X-literal axiom `axLv Xsym`; `m ≠ n` via the true literal `m ≠ n` (`axTrue`). -/
+theorem pxfc_relExtMatrix (m n : ℕ) (Δ : Seq LX) :
+    PXFc (((0 : Ordinal.{0}) + 1) + 1 + 1) 0
+      (insert ((Semiformula.nrel Language.Eq.eq ![nm m, nm n] ⋎ (⊥ : Form LX)) ⋎
+        (Semiformula.nrel Xsym ![nm m] ⋎ Semiformula.rel Xsym ![nm n])) Δ) := by
+  set A : Form LX := Semiformula.nrel Language.Eq.eq ![nm m, nm n] with hA
+  set B : Form LX := Semiformula.nrel Xsym ![nm m] with hB
+  set C : Form LX := Semiformula.rel Xsym ![nm n] with hC
+  have hclose : PXFc 0 0 (insert A (insert (⊥ : Form LX) (insert B (insert C Δ)))) := by
+    by_cases h : m = n
+    · subst h
+      refine (PXFc.axLv Xsym ![nm m] ![nm m] (fun i => rfl) ?_ ?_)
+      · show Semiformula.rel Xsym ![nm m] ∈ _; simp [hC]
+      · show Semiformula.nrel Xsym ![nm m] ∈ _; simp [hB]
+    · have htrue : LitTrue (signedLit (L := LX) false Language.Eq.eq ![nm m, nm n]) := by
+        show LitTrue (Semiformula.nrel (Language.Eq.eq : LX.Rel 2) ![nm m, nm n])
+        rw [← Semiformula.neg_rel, litTrue_neg, litTrue_eq_iff]; exact h
+      have hmem : signedLit (L := LX) false Language.Eq.eq ![nm m, nm n]
+          ∈ insert A (insert (⊥ : Form LX) (insert B (insert C Δ))) := by
+        show Semiformula.nrel Language.Eq.eq ![nm m, nm n] ∈ _; simp [hA]
+      exact PXFc.axTrue false Language.Eq.eq ![nm m, nm n] (by rfl) htrue hmem
+  have h1 : PXFc (0 + 1) 0 (insert (A ⋎ (⊥ : Form LX)) (insert B (insert C Δ))) :=
+    PXFc.orI A (⊥ : Form LX) hclose
+  have hsub2 : insert (A ⋎ (⊥ : Form LX)) (insert B (insert C Δ))
+      ⊆ insert B (insert C (insert (A ⋎ (⊥ : Form LX)) Δ)) := by
+    intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto
+  have h2 : PXFc ((0 + 1) + 1) 0 (insert (B ⋎ C) (insert (A ⋎ (⊥ : Form LX)) Δ)) :=
+    PXFc.orI B C (h1.weakening hsub2)
+  have hsub3 : insert (B ⋎ C) (insert (A ⋎ (⊥ : Form LX)) Δ)
+      ⊆ insert (A ⋎ (⊥ : Form LX)) (insert (B ⋎ C) Δ) := by
+    intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto
+  have h3 : PXFc (((0 + 1) + 1) + 1) 0
+      (insert ((A ⋎ (⊥ : Form LX)) ⋎ (B ⋎ C)) Δ) :=
+    PXFc.orI (A ⋎ (⊥ : Form LX)) (B ⋎ C) (h2.weakening hsub3)
+  exact h3
+
+/-- **The X-congruence discharge (unbounded).** For any `Δ`, `e`, the `asgX e`-image of `↑(Eq.relExt
+Xsym)` is `PXFc`-derivable at cut rank `0`: `asgX` is absorbed, the `∀⁰*` is stripped by
+`PXFc_allClosure` to per-numeral matrices, each closed by `pxfc_relExtMatrix`. -/
+theorem pxfc_relExt_Xsym (Δ : Seq LX) (e : ℕ → ℕ) :
+    ∃ α, PXFc α 0
+      (insert (asgX e ▹ (↑(Theory.Eq.relExt Xsym) : SyntacticFormula LX)) Δ) := by
+  have habs : (asgX e ▹ (↑(Theory.Eq.relExt Xsym) : SyntacticFormula LX))
+      = (↑(Theory.Eq.relExt Xsym) : SyntacticFormula LX) := by
+    simp only [asgX, ← TransitiveRewriting.comp_app, Rew.rewrite_comp_emb]
+  rw [habs, relExt_Xsym_eq, Rewriting.emb_allClosure]
+  apply PXFc_allClosure
+  intro v
+  rw [relExtBody_subst_eq v]
+  exact ⟨_, pxfc_relExtMatrix (v 0) (v 1) Δ⟩
+
 /-- **C₂-axm: the `axm` discharge for `paLX`.** Each `paLX` axiom appearing in `Γ` yields a
 cut-rank-bounded `XFreeAx` `Z∞`-derivation of the image sequent. **X-free base axioms** (`𝗣𝗔⁻` image)
 are TRUE closed X-free formulas ⟹ `provable_true_x`. **X-induction instances** (`univCl (succInd ψ)`)
@@ -744,7 +852,7 @@ induction axiom `succInd ψ_v`, NNF-expanded (`succInd_nnf`) and broken by `PXFc
 theorem hax_paLX {Γ : Seq LX} (φ : Form LX) (hφ : φ ∈ (paLX : Schema LX)) (hΓ : φ ∈ Γ) :
     ∃ c : ℕ, ∀ e : ℕ → ℕ, ∃ α, PXFc α c (Γ.image (fun ψ => asgX e ▹ ψ)) := by
   obtain ⟨σ, hσ, rfl⟩ := hφ
-  rcases hσ with hbase | hind
+  rcases hσ with (hbase | hind) | heq
   · obtain ⟨τ, hτ, rfl⟩ := hbase
     refine ⟨0, fun e => ?_⟩
     have hmod : ℕ ⊧ₘ τ := ModelsTheory.models ℕ hτ
@@ -798,6 +906,15 @@ theorem hax_paLX {Γ : Seq LX} (φ : Form LX) (hφ : φ ∈ (paLX : Schema LX)) 
     have h3 := PXFc.orI (∼ψv/[nm 0]) ((∃⁰ ∼step) ⋎ (∀⁰ ψv/[(#0:Semiterm LX ℕ 1)]))
       (h2.weakening (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto))
     exact ⟨_, h3⟩
+  · -- X-congruence axiom `Eq.relExt Xsym` (hand derivation, cut rank 0)
+    rw [Set.mem_singleton_iff] at heq
+    subst heq
+    refine ⟨0, fun e => ?_⟩
+    have hmem : asgX e ▹ (↑(Theory.Eq.relExt Xsym) : SyntacticFormula LX)
+        ∈ Finset.image (fun ψ => asgX e ▹ ψ) Γ := Finset.mem_image_of_mem _ hΓ
+    obtain ⟨α, hα⟩ := pxfc_relExt_Xsym (Finset.image (fun ψ => asgX e ▹ ψ) Γ) e
+    rw [Finset.insert_eq_self.mpr hmem] at hα
+    exact ⟨α, hα⟩
 
 /-- **C₂, the target form.** The embedding of `𝗣𝗔(LX)`-derivations into the `XFreeAx` `Z∞` carrier
 `PXFc` is just `embedC_LX_gen` specialised to `𝓢 := ↑paLX`, **once the `axm` discharge `hax` for

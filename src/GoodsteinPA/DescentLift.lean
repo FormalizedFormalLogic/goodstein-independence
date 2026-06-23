@@ -131,8 +131,8 @@ second summand) by `lMap_inductionScheme_subset`. -/
 theorem lMap_PA_subset : Theory.lMap Φ 𝗣𝗔 ⊆ (GoodsteinPA.EmbeddingX.paLX : Theory LX) := by
   show Theory.lMap Φ (𝗣𝗔⁻ + InductionScheme ℒₒᵣ Set.univ) ⊆ _
   rw [Theory.add_def, Theory.lMap, Set.image_union]
-  exact Set.union_subset (fun _ hx => Or.inl hx)
-    (fun _ hx => Or.inr (lMap_inductionScheme_subset hx))
+  exact Set.union_subset (fun _ hx => Or.inl (Or.inl hx))
+    (fun _ hx => Or.inl (Or.inr (lMap_inductionScheme_subset hx)))
 
 /-- The schema coercion commutes with `lMap`: `(T : Schema).lMap Φ = (Theory.lMap Φ T : Schema)`
 (both are `lMap`/`emb` images; they agree by `lMap_emb`). -/

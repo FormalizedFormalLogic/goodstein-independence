@@ -663,6 +663,29 @@ theorem PXFc_allClosure_omega : ∀ {n} (χ : Semiformula LX ℕ n) {c : ℕ} {�
       rw [← Nat.cast_one, ← Nat.cast_add]; congr 1; omega
     rwa [hcast] at hres
 
+/-- **Bounded X-congruence discharge.** The `asgX e`-image of `↑(Eq.relExt Xsym)` is `PXFc`-derivable
+at the **e-independent** finite ordinal `(((0)+1)+1+1) + 2` and cut rank `0`: `asgX` is absorbed, the
+`∀⁰*` (two bvars) is stripped by `PXFc_allClosure_omega` (each numeral matrix lands at the constant
+finite height `pxfc_relExtMatrix`), the two closure bumps add `+2`. -/
+theorem pxfc_relExt_Xsym_bdd (Δ : Seq LX) (e : ℕ → ℕ) :
+    PXFc ((((0 : Ordinal.{0}) + 1) + 1 + 1) + ((1 + 1 : ℕ) : Ordinal)) 0
+      (insert (asgX e ▹ (↑(Theory.Eq.relExt Xsym) : SyntacticFormula LX)) Δ) := by
+  have habs : (asgX e ▹ (↑(Theory.Eq.relExt Xsym) : SyntacticFormula LX))
+      = (↑(Theory.Eq.relExt Xsym) : SyntacticFormula LX) := by
+    simp only [asgX, ← TransitiveRewriting.comp_app, Rew.rewrite_comp_emb]
+  rw [habs, relExt_Xsym_eq, Rewriting.emb_allClosure]
+  apply PXFc_allClosure_omega _ (((0 : Ordinal.{0}) + 1) + 1 + 1)
+  intro v
+  rw [relExtBody_subst_eq v]
+  exact pxfc_relExtMatrix (v 0) (v 1) Δ
+
+/-- `(((0)+1)+1+1) + 2 < ε₀` — the X-congruence discharge ordinal is finite. -/
+theorem relExt_bound_lt_epsilon0 :
+    ((((0 : Ordinal.{0}) + 1) + 1 + 1) + ((1 + 1 : ℕ) : Ordinal)) < ε₀ :=
+  add_lt_epsilon0
+    (add_one_lt_epsilon0 (add_one_lt_epsilon0 (add_one_lt_epsilon0 zero_lt_epsilon0)))
+    (natCast_lt_epsilon0 _)
+
 /-! ## `hax_paLX_bdd` — the axiom discharge, with a uniform-over-`e` bound `< ε₀` -/
 
 open LO.FirstOrder.Arithmetic in
@@ -675,7 +698,7 @@ theorem hax_paLX_bdd {Γ : Seq LX} (φ : Form LX) (hφ : φ ∈ (paLX : Schema L
     ∃ c : ℕ, ∃ B : Ordinal.{0}, B < ε₀ ∧
       ∀ e : ℕ → ℕ, PXFc B c (Γ.image (fun ψ => asgX e ▹ ψ)) := by
   obtain ⟨σ, hσ, rfl⟩ := hφ
-  rcases hσ with hbase | hind
+  rcases hσ with (hbase | hind) | heq
   · -- X-free base axiom: true closed X-free formula, height `↑complexity` (e-independent)
     obtain ⟨τ, hτ, rfl⟩ := hbase
     set χτ : SyntacticFormula LX :=
@@ -742,6 +765,14 @@ theorem hax_paLX_bdd {Γ : Seq LX} (φ : Form LX) (hφ : φ ∈ (paLX : Schema L
       have h3 := PXFc.orI (∼ψv/[nm 0]) ((∃⁰ ∼step) ⋎ (∀⁰ ψv/[(#0:Semiterm LX ℕ 1)]))
         (h2.weakening (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto))
       exact h3
+  · -- X-congruence axiom `Eq.relExt Xsym`: finite e-independent height
+    rw [Set.mem_singleton_iff] at heq
+    subst heq
+    refine ⟨0, _, relExt_bound_lt_epsilon0, fun e => ?_⟩
+    have hmem : asgX e ▹ (↑(Theory.Eq.relExt Xsym) : SyntacticFormula LX)
+        ∈ Finset.image (fun ψ => asgX e ▹ ψ) Γ := Finset.mem_image_of_mem _ hΓ
+    have h := pxfc_relExt_Xsym_bdd (Finset.image (fun ψ => asgX e ▹ ψ) Γ) e
+    rwa [Finset.insert_eq_self.mpr hmem] at h
 
 /-! ## `embedC_LX_gen_bdd` — the structural embedding with a uniform-over-`e` bound `< ε₀`
 
