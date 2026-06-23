@@ -1,5 +1,29 @@
 # Pending work — open obligations & attack paths
 
+## ⭐ Lap 40 — internal ordinal arithmetic for the slow-down STARTED (2 axiom-clean commits)
+
+Read Rathjen 2014 §3 ("Slowing down", Thm 2.6 proof + Def 3.1) on disk — confirmed the slow-down
+(arbitrary ε₀-descent → sequence feeding the **special** Goodstein `igoodstein`) is irreducible and
+fundamentally needs `ω·α` multiplication + CNF addition on codes. Built the two foundational internal
+ops in `InternalONote.lean` (both `#print axioms`-clean, build green 1307):
+- ✅ **`iadd`** (`47c267b`) — internal CNF ordinal addition `a+b` on codes, CofV table indexed by the
+  first summand (param = b), 3-way leading-exponent `icmp` branch. Lemmas `iadd_zero_left`,
+  `iadd_ocOadd`.
+- ✅ **`iomul`** (`1af80bc`) — internal ω-multiplication `ω·c`, exponent bump `e↦1+e = iadd (ocOadd 0
+  1 0) e`, recurse tail. Lemmas `iomul_zero`, `iomul_ocOadd`.
+
+**NEXT (hardest-first) toward `hbound` — the `iC`-arithmetic of the slow-down (DescentCore has the
+ℕ/ONote shadows; internalize onto codes):**
+1. **`iC_iadd` / `iC_iomul` bounds.** Internalize `DescentCore.C_omega_mul_le` (`iC (iomul α) ≤ iC α +
+   1`) and `C_add_ofNat_le` (`iC (iadd α finite) ≤ max (iC α) m`, needs an internal `iNoFin`). Engine
+   of `C(βₖ) ≤ k+1` (`C_betaTail_le`).
+2. **`ievalNat` of `iadd`/`iomul`** — to define `b k = ievalNat (k+1) βₖ`. (`iadd` is NOT simply
+   additive on `ievalNat` — CNF merge; state laws carefully.)
+3. **internal descent facts** `repr_betaTail_within`/`_boundary` → `icmp`-descent of `ω·α + (K-i)`.
+4. **βₖ assembly** from the M-internal descent (seam, piece 3), 𝚺₁-def in k, `iCanon (k+1) βₖ` +
+   icmp-descent; `step` = `ineq6_step_internal` (HAVE), assemble `hbound`.
+Aristotle: idle. Candidate open lemma = `iC_iomul` bound (self-contained). Spec precisely before submit.
+
 ## ⭐ Lap 39 — internal arithmetic for `hbound`'s `step` COMPLETE (3 axiom-clean commits)
 
 The lone wall is still `hbound` (`DescentSemantic.lean:416`). Pieces 1–2 of the decomposition are DONE
