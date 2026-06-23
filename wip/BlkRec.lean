@@ -236,4 +236,35 @@ width/block route (the honest replacement for the over-claimed `blk_le`). -/
 theorem wsumc_blk_le (wseq : V) (hpos : ∀ b, 1 ≤ znth wseq b) (j : V) : wsumc wseq (blk wseq j) ≤ j :=
   le_trans le_self_add (le_of_eq (wsumc_blk_add_off wseq hpos j))
 
+/-! ## Prefix-invariance (the `wseq` seam, codex review lap 52)
+
+`blk`/`off` at step `j` read the width code `wseq` only at indices `b ≤ blk j ≤ j`. So they depend
+only on a **prefix** of `wseq`: any two codes agreeing on `znth · b` for `b ≤ j` give the same state.
+This is what lets crux-1 integration feed a *long-enough prefix code* of the true (definable) widths
+`W t = iC(β(t+1))` into the abstract `BlkRec`, instead of threading a global width function's `Def`. -/
+
+/-- **Prefix-invariance of the block state.** Agreement of the width codes on `[0, j]` forces equal
+states at step `j`. -/
+theorem boState_congr {wseq wseq' : V} :
+    ∀ j, (∀ b, b ≤ j → znth wseq b = znth wseq' b) → boState wseq j = boState wseq' j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => intro _; simp
+  case succ j ih =>
+    intro hagree
+    have iheq := ih (fun b hb => hagree b (le_trans hb le_self_add))
+    have hblk_le : π₁ (boState wseq' j) ≤ j := by
+      have := blk_le wseq' j; unfold blk at this; exact this
+    rw [boState_succ, boState_succ, iheq, boStep, boStep,
+      hagree (π₁ (boState wseq' j)) (le_trans hblk_le le_self_add)]
+
+theorem blk_prefix_congr {wseq wseq' j : V}
+    (hagree : ∀ b, b ≤ j → znth wseq b = znth wseq' b) : blk wseq j = blk wseq' j := by
+  unfold blk; rw [boState_congr j hagree]
+
+theorem off_prefix_congr {wseq wseq' j : V}
+    (hagree : ∀ b, b ≤ j → znth wseq b = znth wseq' b) : off wseq j = off wseq' j := by
+  unfold off; rw [boState_congr j hagree]
+
 end GoodsteinPA.BlkRec
