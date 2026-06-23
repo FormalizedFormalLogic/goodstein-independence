@@ -381,6 +381,20 @@ def descentR {M : Type} [Nonempty M] [Structure LX M] (f : ℕ → M) (a y : M) 
   letI : ORingStructure M := ReductModel.reductORing
   (Mlt f y a ∧ ¬ MX y) ∧ ∀ z, z < y → ¬ (Mlt f z a ∧ ¬ MX z)
 
+/-- `descentR` is **functional**: its witness (the `<`-least with the property) is unique. Two least
+witnesses tie under `<`-trichotomy (`Arithmetic.lt_tri` on `M`'s reduct, a model of `𝗣𝗔⁻`). -/
+theorem descentR_functional {M : Type} [Nonempty M] [Structure LX M] [Structure.Eq LX M]
+    (hM : M ⊧ₘ* (paLX : Theory LX)) (f : ℕ → M) {a y y' : M}
+    (h : descentR f a y) (h' : descentR f a y') : y = y' := by
+  letI oM : ORingStructure M := ReductModel.reductORing
+  haveI : M ⊧ₘ* (𝗣𝗔⁻ : Theory ℒₒᵣ) := models_of_subtheory (ReductModel.reduct_models_PA hM)
+  obtain ⟨hQy, hmy⟩ := h
+  obtain ⟨hQy', hmy'⟩ := h'
+  rcases Arithmetic.lt_tri y y' with hlt | heq | hgt
+  · exact absurd hQy (hmy' y hlt)
+  · exact heq
+  · exact absurd hQy' (hmy y' hgt)
+
 /-- `descentR` **descends** and **preserves `¬MX`**: its witness is `Mlt`-below `a` and itself non-`MX`. -/
 theorem descentR_descends {M : Type} [Nonempty M] [Structure LX M]
     (f : ℕ → M) {a y : M} (h : descentR f a y) : Mlt f y a ∧ ¬ MX y := h.1
