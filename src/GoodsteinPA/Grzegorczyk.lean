@@ -106,6 +106,82 @@ theorem repr_blk_boundary (k : ℕ) {c c' : ℕ+} {x x' : ONote}
         mul_le_mul_right (by exact_mod_cast Nat.succ_le_of_lt hc) _
     _ ≤ (ω : Ordinal) ^ (k : ℕ) * (c : ℕ) + x.repr := le_self_add
 
+/-- **General cross-block ordinal descent** (Cor 3.4's across-block step, `δ = ω^ω`): if `a < b` and
+`x' < δ`, then `δ·a + x' < δ·b + x`. The lower block sits entirely below `δ·(a+1) ≤ δ·b`. -/
+theorem mul_add_lt {δ a b x x' : Ordinal} (hab : a < b) (hx' : x' < δ) :
+    δ * a + x' < δ * b + x := by
+  calc δ * a + x' < δ * a + δ := (add_lt_add_iff_left _).2 hx'
+    _ = δ * (a + 1) := by rw [mul_add, mul_one]
+    _ ≤ δ * b := mul_le_mul_right (by exact_mod_cast Order.succ_le_of_lt hab) δ
+    _ ≤ δ * b + x := le_self_add
+
+/-! ## General width-based block decomposition (for the descent/β side of Cor 3.4)
+
+Cor 3.4 carves the index `j` into blocks whose widths are `W_n = C(β_{n+1})` (not iterates), so we need
+the block machinery for an *arbitrary* width sequence `W : ℕ → ℕ`. `wsum W i = Σ_{t<i} W t`; block `i`
+is `[wsum W i, wsum W (i+1))`. Mirrors `psum`/`blockIdx` with the same `Nat.findGreatest` engine. -/
+
+/-- Cumulative width: `wsum W i = W 0 + … + W (i-1)`. -/
+def wsum (W : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | i + 1 => wsum W i + W i
+
+@[simp] theorem wsum_zero (W : ℕ → ℕ) : wsum W 0 = 0 := rfl
+@[simp] theorem wsum_succ (W : ℕ → ℕ) (i : ℕ) : wsum W (i + 1) = wsum W i + W i := rfl
+
+/-- `wsum` is monotone, and strictly so across positive-width blocks. -/
+theorem wsum_strictMono (W : ℕ → ℕ) (hpos : ∀ t, 1 ≤ W t) : StrictMono (wsum W) :=
+  strictMono_nat_of_lt_succ fun i => by simp only [wsum_succ]; have := hpos i; omega
+
+/-- `i ≤ wsum W i` when all widths are positive (so `wsum` is unbounded). -/
+theorem le_wsum (W : ℕ → ℕ) (hpos : ∀ t, 1 ≤ W t) (i : ℕ) : i ≤ wsum W i := by
+  induction i with
+  | zero => simp
+  | succ i ih => simp only [wsum_succ]; have := hpos i; omega
+
+/-- Width-block index: largest `i ≤ cap` with `wsum W i ≤ m`. -/
+def widx (W : ℕ → ℕ) (cap m : ℕ) : ℕ := Nat.findGreatest (fun i => wsum W i ≤ m) cap
+
+/-- Width-block offset. -/
+def woff (W : ℕ → ℕ) (cap m : ℕ) : ℕ := m - wsum W (widx W cap m)
+
+theorem wsum_widx_le (W : ℕ → ℕ) (cap m : ℕ) : wsum W (widx W cap m) ≤ m :=
+  Nat.findGreatest_spec (P := fun i => wsum W i ≤ m) (m := 0) (Nat.zero_le cap)
+    (show wsum W 0 ≤ m by simp)
+
+theorem widx_lt (W : ℕ → ℕ) {cap m : ℕ} (hm : m < wsum W cap) (hcap : 1 ≤ cap) :
+    widx W cap m < cap := by
+  rcases lt_or_eq_of_le (Nat.findGreatest_le (P := fun i => wsum W i ≤ m) cap) with h | h
+  · exact h
+  · exact absurd (Nat.findGreatest_of_ne_zero (P := fun i => wsum W i ≤ m) h (by omega))
+      (by omega)
+
+theorem lt_wsum_widx_succ (W : ℕ → ℕ) {cap m : ℕ} (hm : m < wsum W cap) (hcap : 1 ≤ cap) :
+    m < wsum W (widx W cap m + 1) := by
+  have hb := widx_lt W hm hcap
+  exact not_le.1 (Nat.findGreatest_is_greatest (P := fun i => wsum W i ≤ m) (n := cap)
+    (k := widx W cap m + 1) (Nat.lt_succ_self (widx W cap m)) (by omega))
+
+theorem woff_lt_width (W : ℕ → ℕ) {cap m : ℕ} (hm : m < wsum W cap) (hcap : 1 ≤ cap) :
+    woff W cap m < W (widx W cap m) := by
+  have h1 := wsum_widx_le W cap m
+  have h2 := lt_wsum_widx_succ W hm hcap
+  rw [wsum_succ] at h2; simp only [woff]; omega
+
+theorem wsum_add_woff (W : ℕ → ℕ) (cap m : ℕ) :
+    wsum W (widx W cap m) + woff W cap m = m := by
+  have := wsum_widx_le W cap m; simp only [woff]; omega
+
+/-- **Width-block uniqueness** (general `W`): block of `x` is `i` when `wsum W i ≤ x < wsum W (i+1)`. -/
+theorem widx_eq (W : ℕ → ℕ) (hpos : ∀ t, 1 ≤ W t) {cap i x : ℕ} (hin : i ≤ cap)
+    (hlo : wsum W i ≤ x) (hhi : x < wsum W (i + 1)) : widx W cap x = i := by
+  refine le_antisymm ?_ (Nat.le_findGreatest hin hlo)
+  by_contra hc
+  push_neg at hc
+  have hb := wsum_widx_le W cap x
+  have : wsum W (i + 1) ≤ wsum W (widx W cap x) := (wsum_strictMono W hpos).monotone (by omega)
+  omega
+
 /-! ## Iterate / partial-sum scaffolding for the block decomposition
 
 For `m < F_{l+1}(n) = (F l)^[n] n`, Rathjen writes `m = F_l(n)+F_l²(n)+…+F_l^i(n) + j` with `i < n`,
