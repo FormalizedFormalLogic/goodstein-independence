@@ -498,6 +498,79 @@ theorem descent_iterate_seq_total
     ∀ k : M, IterPrefix hM f a₀ k :=
   descent_iterate_seq_exists hM f no_min ha₀ (IterPrefix_lxDef hM f a₀)
 
+/-- **Prefix agreement.** Any two canonical `descentR`-prefixes from `a₀` agree on every common index.
+The predicate `znth W i = znth W' i` is `X`-FREE (`𝚺₀`, just the `Seq`-`znth` graph), so the induction is
+the reduct's ordinary `𝗜𝚺₁` `sigma1_succ_induction` — `X` enters only through the *hypotheses* (the
+`descentR` steps), via `descentR_functional` (the canonical step is unique). This is what makes the
+per-length witnesses cohere into a single meta-function `α : M → M`. -/
+theorem IterPrefix_agree {a₀ : M} {n n' W W' : M}
+    (h0W : letI : ORingStructure M := ReductModel.reductORing
+           haveI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+           znth W 0 = a₀)
+    (hstepW : letI : ORingStructure M := ReductModel.reductORing
+              haveI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+              ∀ i, i < n → descentR f (znth W i) (znth W (i + 1)))
+    (h0W' : letI : ORingStructure M := ReductModel.reductORing
+            haveI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+            znth W' 0 = a₀)
+    (hstepW' : letI : ORingStructure M := ReductModel.reductORing
+               haveI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+               ∀ i, i < n' → descentR f (znth W' i) (znth W' (i + 1))) :
+    letI : ORingStructure M := ReductModel.reductORing
+    haveI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+    ∀ i, i ≤ n → i ≤ n' → znth W i = znth W' i := by
+  letI oM : ORingStructure M := ReductModel.reductORing
+  haveI hI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+  intro i
+  induction i using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => intro _ _; rw [h0W, h0W']
+  case succ i ih =>
+    intro hi1n hi1n'
+    have hin : i < n := succ_le_iff_lt.mp hi1n
+    have hin' : i < n' := succ_le_iff_lt.mp hi1n'
+    have heqi : znth W i = znth W' i := ih (le_of_lt hin) (le_of_lt hin')
+    have hsW := hstepW i hin
+    have hsW' := hstepW' i hin'
+    rw [← heqi] at hsW'
+    exact descentR_functional hM f hsW hsW'
+
+include hM in
+/-- **The canonical descent extracted as a meta-function `α : M → M`** (lap-42, plumbing). From the
+unconditional `descent_iterate_seq_total` + prefix agreement (`IterPrefix_agree`): `α 0 = a₀`, every
+`α k` is `¬MX`, and consecutive `α` are `descentR`-related — hence (`descentR_descends`) an honest
+`Mlt`-descent of non-`MX` codes. This is the `αₖ` the Rathjen §3 slow-down reindexes. -/
+theorem descent_alpha_exists
+    (no_min : ∀ x : M, ¬ MX x → ∃ y, Mlt f y x ∧ ¬ MX y) {a₀ : M} (ha₀ : ¬ MX a₀) :
+    letI : ORingStructure M := ReductModel.reductORing
+    ∃ α : M → M, α 0 = a₀ ∧ (∀ k : M, ¬ MX (α k)) ∧
+      (∀ k : M, descentR f (α k) (α (k + 1))) := by
+  letI oM : ORingStructure M := ReductModel.reductORing
+  haveI hI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+  classical
+  -- per-length canonical witness `s k` (length `k+1`) and its unpacked data
+  set s : M → M := fun k => Classical.choose (descent_iterate_seq_total hM f no_min ha₀ k) with hs_def
+  have hs : ∀ k, Seq (s k) ∧ lh (s k) = k + 1 ∧ znth (s k) 0 = a₀ ∧
+      (∀ i, i < k → descentR f (znth (s k) i) (znth (s k) (i + 1))) ∧
+      (∀ i, i ≤ k → ¬ MX (znth (s k) i)) := fun k =>
+    Classical.choose_spec (descent_iterate_seq_total hM f no_min ha₀ k)
+  refine ⟨fun k => znth (s k) k, ?_, ?_, ?_⟩
+  · -- `α 0 = a₀`
+    have h := (hs 0).2.2.1; simpa using h
+  · -- `¬MX (α k)`
+    intro k; exact (hs k).2.2.2.2 k le_rfl
+  · -- `descentR f (α k) (α (k+1))`
+    intro k
+    obtain ⟨_, _, h0k, hstepk, _⟩ := hs k
+    obtain ⟨_, _, h0k1, hstepk1, _⟩ := hs (k + 1)
+    -- agreement at index `k` between the length-`k+1` and length-`k+2` prefixes
+    have hagree := IterPrefix_agree hM f (a₀ := a₀) (n := k) (n' := k + 1)
+      h0k hstepk h0k1 hstepk1 k le_rfl (le_of_lt (lt_add_one k))
+    -- the new descent step lives in `s (k+1)` at index `k < k+1`
+    have hstep := hstepk1 k (lt_add_one k)
+    show descentR f (znth (s k) k) (znth (s (k + 1)) (k + 1))
+    rw [hagree]; exact hstep
+
 /-- **The descent sequence exists for every length.** By `lx_succ_induction` (`base`/`extend`). The lone
 remaining obligation is the `LX`-definability of `D(k) := ∃ W, IsDescent W ∧ lh W = k+1` — see the file
 header. Disclosed `sorry` (wall C's last sub-obligation; `wip/`, off the build). -/
