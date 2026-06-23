@@ -243,6 +243,81 @@ The Thm-3.5 output `β'` (`isNF` + `iC(β'ᵣ) ≤ r+1` + ≺-descent) is *exact
 (β'ᵣ)` is definitionally `iC(β'ᵣ) ≤ r+1`. So feeding `β'` through the Lemma-3.6 engine gives a seed `m₀`
 whose internal Goodstein run never terminates — the contradiction with the lifted `goodsteinSentence`. -/
 
+/-! ## `𝚺₁`-definability of the slowed sequence (`hdef` discharge)
+
+The whole `bbeta ∘ salpha` construction is a fixed composition of `𝚺₁`-definable code-arithmetic
+operations (`iadd`/`iVbigMul`/`iomul`/`ocOadd`/`iwtower`/`/`/`%`) applied to the definable inputs
+`β`/`blk`/`off`/`igtTot`. So given the definability of those inputs the slowed sequence is
+`𝚺₁`-definable — exactly the `hdef` hypothesis `crux1_internal_run` carries. -/
+
+open LO.FirstOrder.Arithmetic.HierarchySymbol in
+/-- `bbtail K α r = iadd (iomul (α ((r−K)/K))) (ω^0·(K − (r−K)%K))` is `𝚺₁`-definable in `r`. -/
+lemma bbtail_definable (K : V) {α : V → V} (hα : 𝚺₁-Function₁ α) :
+    𝚺₁-Function₁ (bbtail K α : V → V) := by
+  have h : (fun v : Fin 1 → V => bbtail K α (v 0))
+      = (fun v : Fin 1 → V =>
+          iadd (iomul (α ((v 0 - K) / K))) (ocOadd 0 (K - (v 0 - K) % K) 0)) := by
+    funext v; simp only [bbtail]
+  show 𝚺₁.DefinableFunction (fun v : Fin 1 → V => bbtail K α (v 0))
+  rw [h]
+  exact DefinableFunction₂.comp (F := iadd) (hF := iadd_definable' 𝚺)
+    (DefinableFunction₁.comp (hF := iomul_definable' 𝚺)
+      (DefinableFunction₁.comp (hF := hα)
+        (DefinableFunction₂.comp (F := (· / ·))
+          (DefinableFunction₂.comp (F := (· - ·))
+            (DefinableFunction.var 0) (DefinableFunction.const K))
+          (DefinableFunction.const K))))
+    (DefinableFunction₃.comp (F := ocOadd) (hF := ocOadd_definable.of_sigmaOne)
+      (DefinableFunction.const 0)
+      (DefinableFunction₂.comp (F := (· - ·)) (DefinableFunction.const K)
+        (DefinableFunction₂.comp (F := (· % ·))
+          (DefinableFunction₂.comp (F := (· - ·))
+            (DefinableFunction.var 0) (DefinableFunction.const K))
+          (DefinableFunction.const K)))
+      (DefinableFunction.const 0))
+
+open LO.FirstOrder.Arithmetic.HierarchySymbol in
+/-- `bbeta K s α r = if r < K then iwtower (s + (K−1−r)) else bbtail K α r` is `𝚺₁`-definable in `r`. -/
+lemma bbeta_definable (K s : V) {α : V → V} (hα : 𝚺₁-Function₁ α) :
+    𝚺₁-Function₁ (bbeta K s α : V → V) := by
+  have h : (fun v : Fin 1 → V => bbeta K s α (v 0))
+      = (fun v : Fin 1 → V =>
+          if v 0 < K then iwtower (s + (K - 1 - v 0)) else bbtail K α (v 0)) := by
+    funext v; simp only [bbeta]
+  show 𝚺₁.DefinableFunction (fun v : Fin 1 → V => bbeta K s α (v 0))
+  rw [h]
+  apply definableFunction_ite
+  · exact Definable.comp₂ (P := (· < ·)) (DefinableFunction.var 0) (DefinableFunction.const K)
+  · exact Definable.not
+      (Definable.comp₂ (P := (· < ·)) (DefinableFunction.var 0) (DefinableFunction.const K))
+  · exact DefinableFunction₁.comp (hF := iwtower_definable' 𝚺)
+      (DefinableFunction₂.comp (F := (· + ·)) (DefinableFunction.const s)
+        (DefinableFunction₂.comp (F := (· - ·))
+          (DefinableFunction.const (K - 1)) (DefinableFunction.var 0)))
+  · exact bbtail_definable K hα
+
+open LO.FirstOrder.Arithmetic.HierarchySymbol in
+/-- `salpha l β blk off igt j = iadd (iVbigMul (β (blk j)) (l+1)) (igt (blk j) (off j))` is
+`𝚺₁`-definable in `j`, given the definability of `β`, `blk`, `off`, `igt`. -/
+lemma salpha_definable (l : V) {β blk off : V → V} {igt : V → V → V}
+    (hβ : 𝚺₁-Function₁ β) (hblk : 𝚺₁-Function₁ blk) (hoff : 𝚺₁-Function₁ off)
+    (higt : 𝚺₁-Function₂ igt) :
+    𝚺₁-Function₁ (salpha l β blk off igt : V → V) := by
+  have h : (fun v : Fin 1 → V => salpha l β blk off igt (v 0))
+      = (fun v : Fin 1 → V =>
+          iadd (iVbigMul (β (blk (v 0))) (l + 1)) (igt (blk (v 0)) (off (v 0)))) := by
+    funext v; simp only [salpha, icorAlpha]
+  show 𝚺₁.DefinableFunction (fun v : Fin 1 → V => salpha l β blk off igt (v 0))
+  rw [h]
+  refine DefinableFunction₂.comp (F := iadd) (hF := iadd_definable' 𝚺) ?_ ?_
+  · exact DefinableFunction₂.comp (F := iVbigMul) (hF := iVbigMul_definable' 𝚺)
+      (DefinableFunction₁.comp (hF := hβ)
+        (DefinableFunction₁.comp (hF := hblk) (DefinableFunction.var 0)))
+      (DefinableFunction₂.comp (F := (· + ·)) (DefinableFunction.const l) (DefinableFunction.const 1))
+  · exact DefinableFunction₂.comp (F := igt) (hF := higt)
+      (DefinableFunction₁.comp (hF := hblk) (DefinableFunction.var 0))
+      (DefinableFunction₁.comp (hF := hoff) (DefinableFunction.var 0))
+
 /-- **Thm 3.5 facts → non-terminating internal Goodstein run.** Pure seam: repackage the `bbeta`
 output triple as `nonterminating_of_slowdown`'s input (`iCanon` from the `iC`-bound). -/
 theorem nonterminating_of_bbeta_facts {β' : V → V}
@@ -272,5 +347,40 @@ theorem crux1_internal_run (l₀ : ℕ) (hl₀ : 0 < l₀) (wseq : V)
   obtain ⟨K, s, _, hNF, hC, hdesc⟩ :=
     bbeta_of_igtTot_blkRec l₀ hl₀ wseq hβNF hβ0 hβdesc hβC hdom
   exact nonterminating_of_bbeta_facts (hdef K s) hNF hC hdesc
+
+open LO.FirstOrder.Arithmetic.HierarchySymbol in
+/-- **`hdef` discharged.** For any fixed `wseq` and `𝚺₁`-definable input `β`, the slowed sequence
+`bbeta K s (salpha l₀ β (BlkRec.blk wseq) (BlkRec.off wseq) (igtTot l₀))` is `𝚺₁`-definable in `r`
+for every `K`,`s`. Composes `bbeta_definable` over `salpha_definable` over the four definable inputs:
+`β` (the hypothesis), the `BlkRec` block-state projections (`BlkRec.blk_definable`/`off_definable`,
+specialized at the fixed `wseq`), and the totalized internal Grzegorczyk tail (`igtTot_definable`). -/
+theorem hdef_of_beta_definable (l₀ : ℕ) (wseq : V) {β : V → V} (hβ : 𝚺₁-Function₁ β)
+    (K s : V) :
+    𝚺₁-Function₁
+      (bbeta K s (salpha (l₀ : V) β (BlkRec.blk wseq) (BlkRec.off wseq) (igtTot l₀))) := by
+  have hblk : 𝚺₁-Function₁ (BlkRec.blk wseq : V → V) :=
+    DefinableFunction₂.comp (F := BlkRec.blk) (hF := BlkRec.blk_definable 𝚺)
+      (DefinableFunction.const wseq) (DefinableFunction.var 0)
+  have hoff : 𝚺₁-Function₁ (BlkRec.off wseq : V → V) :=
+    DefinableFunction₂.comp (F := BlkRec.off) (hF := BlkRec.off_definable 𝚺)
+      (DefinableFunction.const wseq) (DefinableFunction.var 0)
+  exact bbeta_definable K s
+    (salpha_definable (l₀ : V) hβ hblk hoff (igtTot_definable l₀ 𝚺))
+
+/-- **Crux-1 internal run, definability discharged.** Same as `crux1_internal_run` but with the `hdef`
+hypothesis replaced by the single definability premise on the input `β` (everything else in the
+`bbeta ∘ salpha` tower is a fixed `𝚺₁`-definable construction). The crux-1 frontier is now exactly
+**(input ≺-descending NF `β`, definable) + (domination `hdom`)**. -/
+theorem crux1_internal_run_of_beta_def (l₀ : ℕ) (hl₀ : 0 < l₀) (wseq : V)
+    {β : V → V} {Cβ : V}
+    (hβNF : ∀ n, isNF (β n)) (hβ0 : ∀ n, β n ≠ 0)
+    (hβdesc : ∀ n, icmp (β (n + 1)) (β n) = 0)
+    (hβC : ∀ j, iC (β (BlkRec.blk wseq j)) ≤ Cβ + j)
+    (hβdef : 𝚺₁-Function₁ β)
+    (hdom : ∀ j, BlkRec.blk wseq (j + 1) = BlkRec.blk wseq j →
+        BlkRec.off wseq j + 1 < iF l₀ (BlkRec.blk wseq j)) :
+    ∃ m₀ : V, ∀ k : V, 0 < igoodstein m₀ k :=
+  crux1_internal_run l₀ hl₀ wseq hβNF hβ0 hβdesc hβC hdom
+    (fun K s => hdef_of_beta_definable l₀ wseq hβdef K s)
 
 end GoodsteinPA.StdCor34
