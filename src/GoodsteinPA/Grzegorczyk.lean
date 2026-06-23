@@ -418,6 +418,49 @@ theorem g_C_bound : ∀ l, ∃ K, ∀ n m, C (g l n m) ≤ K * (n + m + 1) := by
       omega
     · rw [g_succ_of_ge h, C_zero]; exact Nat.zero_le _
 
+/-! ## The `ω^k·β` multiplier (Cor 3.4's lead term)
+
+Cor 3.4 sets `α = ω^ω·βₙ + g(n,m)`. Since at a fixed level `l` we have `g l n m < ω^(l+1)`
+(`g_lt`), it suffices to lift `β` by `ω^(l+1)` (not `ω^ω`), keeping `g` as a clean tail below the
+lifted exponents. `bigMul k β = (ω·)^[k] β = ω^k·β`, built by iterating DescentCore's `ω·` so its
+`C`/`repr`/`NF` laws come straight from the single-`ω` lemmas. -/
+
+/-- `ω^k · β`, as iterated multiplication by `ω`. -/
+def bigMul (k : ℕ) (β : ONote) : ONote := (fun b => GoodsteinPA.Dom.omegaO * b)^[k] β
+
+@[simp] theorem bigMul_zero (β : ONote) : bigMul 0 β = β := rfl
+
+theorem bigMul_succ (k : ℕ) (β : ONote) :
+    bigMul (k + 1) β = GoodsteinPA.Dom.omegaO * bigMul k β :=
+  Function.iterate_succ_apply' _ _ _
+
+/-- `ω^k·β` is normal form when `β` is. -/
+theorem NF_bigMul (k : ℕ) {β : ONote} (hβ : β.NF) : (bigMul k β).NF := by
+  induction k with
+  | zero => simpa using hβ
+  | succ k ih =>
+    rw [bigMul_succ]
+    exact @ONote.mul_nf GoodsteinPA.Dom.omegaO (bigMul k β) GoodsteinPA.Dom.NF_omegaO ih
+
+/-- `repr (ω^k·β) = ω^k · repr β`. -/
+theorem repr_bigMul (k : ℕ) {β : ONote} (hβ : β.NF) :
+    (bigMul k β).repr = (ω : Ordinal) ^ k * β.repr := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    haveI := NF_bigMul k hβ
+    haveI := GoodsteinPA.Dom.NF_omegaO
+    rw [bigMul_succ, ONote.repr_mul, GoodsteinPA.Dom.repr_omegaO, ih, ← mul_assoc,
+      ← pow_succ' ω k]
+
+/-- `C (ω^k·β) ≤ C β + k` (each `ω·` bumps the max coefficient by at most one). -/
+theorem C_bigMul_le (k : ℕ) (β : ONote) : C (bigMul k β) ≤ C β + k := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    rw [bigMul_succ]
+    exact le_trans (GoodsteinPA.Dom.C_omega_mul_le (bigMul k β)) (by omega)
+
 /-- **Lemma 3.3(1) — descent.** `g l n (m+1) ≺ g l n m` whenever `m < F l n`. Base: `g₀_desc`.
 Step (`l+1`): decompose `m`'s block `i, j`; the increment `m ↦ m+1` either stays in block `i`
 (`blockOff` becomes `j+1`, descent by the IH via `repr_blk_within`) or crosses into block `i+1`
