@@ -16,21 +16,27 @@ open obligation is the deep Phase-2 girder `Reduction.goodstein_implies_consiste
   see memory `definability-aesop-depth-blowup`.) Plus `iVbigMul_ne_zero`, `isNF_finCode`, `iadd_one_finCode`,
   `iAbove_zero_iVbigMul`.
 
-**NEXT (hardest-first, crux 1 generic route):**
-1. **Generic clean-append on `iVbigMul`** — lift `iC_iadd_clean` / `icmp_iadd_clean(_within/_boundary)` from
-   `ibigMul (k:ℕ)` onto the V-indexed lead `iVbigMul β l`: given `g < ω^(l+1)` so `ocExp g = ocOadd 0 j 0`
-   with `j ≤ l` (or `g` finite), discharge `iAbove (ocExp g) (iVbigMul β (l+1))` via `iAbove_finCode_iVbigMul`
-   + `iAbove_finThresh_mono` (j≤l) and `iAbove_zero_iVbigMul` (g finite). That feeds the within/boundary
-   descent + the C-split directly.
-2. **Abstract-`ig` interface + `icorAlpha`** (lap-45 path #2): parameterize over abstract internal
-   `ig : V→V→V→V` with hyps (`isNF`, `ig < ω^(l+1)` i.e. `ocExp(ig) ⪯ code l`, `iC(ig) ≤ K·(n+m+1)`,
-   within/boundary `icmp`-descent). Define `icorAlpha := iadd (iVbigMul (β block) l) (ig …)`; prove the
-   three Cor-3.4 properties from the bricks (C-bound = `iC_iadd_clean`+`iC_iVbigMul_le`; within =
-   `icmp_iadd_clean`; boundary = `icmp_iadd_clean_boundary`+`icmp_iVbigMul`). Blueprint = sorry-free
-   `Grz.corAlpha_C_bound/_within/_boundary`.
-3. **The internal `ig` f-recursion over level `l:V`** (crux-1 step 3, the genuinely deep last piece):
-   needs the internal Grzegorczyk `F` (Ackermann-level) over `V ⊧ 𝗣𝗔` — the `reduct_models_PA` substrate.
-   Abstract-`ig` (step 2) defers this; discharge `ig`'s existence separately.
+**DONE — steps 1 & 2 of the prior plan (this lap, all green/axiom-clean):**
+1. ✅ **Generic clean-append on `iVbigMul`** — `iAbove_code_iVbigMul`, `iAbove_ocExp_iVbigMul_fin/_inf`
+   discharge `iAbove (ocExp g) (iVbigMul β (l+1))` for finite or infinite-top-exponent `g < ω^(l+1)`.
+2. ✅ **`icorAlpha` assembly** — `icorAlpha β g l := iadd (iVbigMul β (l+1)) g` with the three portable
+   Cor-3.4 properties: `icorAlpha_within` (`icmp_iadd_clean_within`), `icorAlpha_boundary`
+   (`icmp_iadd_clean_boundary`+`icmp_iVbigMul`), `icorAlpha_C_le` (`iC_iadd_clean`+`iC_iVbigMul_le`).
+   Validated end-to-end at level 0 with concrete `ig0` (`icorAlpha_ig0_within`). NB: `iVbigMul` is now
+   `irreducible` (its `construction.result` never reduces on a variable level → whnf blow-up); the full
+   4-hyp `icmp_iadd_clean` also blows up on unification — use the `_within`/`_boundary` wrappers.
+
+**NEXT — two genuinely deep, isolated remaining pieces (crux 1 step 3):**
+3a. **The internal `ig` f-recursion over level `l:V`** — `ig (l+1) n m = iblk (l+1) (…) (ig l (f^[blk] n)
+   (off))` bottoms out at the internal Grzegorczyk `F` (Ackermann-level, NOT IΣ₁-total ⟹ needs the FULL-PA
+   reduct `reduct_models_PA`, a different layer than this `V ⊧ 𝗜𝚺₁` file). Abstract-`ig` interface (provide
+   `isNF`, `ocExp(ig) = code j ∨ 0` with `j ≤ l`, `ig ≠ 0`, `iC(ig) ≤ K(n+m+1)`, within/boundary descent as
+   hyps — exactly what `icorAlpha_*` consume) defers the F-construction; discharge `f` separately.
+3b. **The X-definable block bookkeeping** (`corBlk`/`corOff` over the raw descent's C-widths `corW β t =
+   iC(β(t+1))`) — assembles the global slow sequence `α : V → V`. **KEY FINDING this lap: this is NOT cleanly
+   IΣ₁** — `W = corW β` is X-definable (β lives in the LX descent layer, `DescentConstruction`), so `iwsum`/
+   `iwidx`/`iwoff` must be built X-definably THERE (mirror `Grz.wsum`/`widx`/`woff`, lines 159-217), not in
+   this generic-`V` file. The resulting α feeds `InternalThm35.bbeta` (Thm 3.5, DONE) → `nonterminating_of_xDescent`.
 
 ## ⭐⭐⭐ Lap 47 (2026-06-23) — internal Thm 3.5 COMPLETE; the two §3/Gentzen cruxes are next
 Discharged lap-46 item 4's remaining input: **ω-tower cofinality** `iwtower_cofinal : ∀ c, ∃ s, icmp c
