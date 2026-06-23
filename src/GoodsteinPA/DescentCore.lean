@@ -50,6 +50,18 @@ theorem evalNat_le_iff (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
     evalNat b o ≤ evalNat b p ↔ o.repr ≤ p.repr := by
   rw [← not_lt, ← not_lt, evalNat_lt_iff b hb hcp hco hnp hno]
 
+/-- **`evalNat`'s base-bump law (the substrate bridge).** Raising the evaluation base by one is
+exactly the hereditary numeric base-change `bump (b+1)` applied to the value: for a `Canon b`/`NF`
+notation, `evalNat (b+1) o = bump (b+1) (evalNat b o)`. Hence the §3 tower `T̂^{k+1}_ω(o) =
+evalNat (k+1) o` is the iterated `bump` (`bump (k+1) ∘ ⋯ ∘ bump 2`) of `evalNat 1 o` — the precise
+fact that lets the *internal* `ibump` substrate (`InternalBump`) realize `evalNat` inside a model `M`
+without coding ONote evaluation separately. Two-step: round-trip `o = toONote (b+1) (evalNat b o)`
+(`canon_round_trip`), then `evalNat_toONote`. -/
+theorem evalNat_succ_base (b : ℕ) (hb : 2 ≤ b) {o : ONote} (hco : Canon b o) (hno : o.NF) :
+    evalNat (b + 1) o = bump (b + 1) (evalNat b o) := by
+  conv_lhs => rw [← canon_round_trip b hb o hco hno]
+  exact evalNat_toONote (b + 1) (by omega) (evalNat b o)
+
 /-! ## Rathjen's max-coefficient `C : ONote → ℕ` and its bridge to `Canon`
 
 Rathjen 2014 states §3 in terms of `C(α)` = the highest integer coefficient in the complete CNF of `α`

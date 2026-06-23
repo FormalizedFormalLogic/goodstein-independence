@@ -70,6 +70,29 @@ NEXT-LAP: poll `aristotle list`; on COMPLETE, verify + port to `src/GoodsteinPA/
 `ibump_mono` (then strict-mono `ibump_strictMono` follows). This is the numeric core that internal `evalNat`
 order-reflection (piece 2) and internal `ineq6_step` (piece 4) both consume.
 
+**Also landed lap 37 (green): `DescentCore.evalNat_succ_base`** — `Canon b o → o.NF → 2≤b →
+evalNat (b+1) o = bump (b+1) (evalNat b o)` (via `canon_round_trip` + `evalNat_toONote`). THE bridge:
+raising the evalNat base by one is exactly the numeric `bump`. So `evalNat (k+2) βₖ = bump (k+2) (evalNat
+(k+1) βₖ) = ibump (k+2) (b k)` — meaning the *internal* `ibump` substrate realizes `evalNat`'s base-bump
+inside `M` directly (no separate internal ONote-evaluation needed for the base-change). This is the precise
+restatement that `ineq6_step`'s `bump (k+2) m = evalNat (k+2) (toONote (k+2) m)` step should be rebuilt on
+internally: internal `ineq6_step` = `ibump (k+2) (b k) - 1`-domination + internal evalNat ORDER-REFLECTION
+(the still-open piece needing internal ONote codes for the `βₖ₊₁ ≺ βₖ` comparison).
+
+**Refined decomposition of `hbound` after lap 37** (what internal ONote codes are STILL needed for):
+- ✅ Base-change (evaluation) side: `evalNat (b+1) o = ibump (b+1) (evalNat b o)` — internalizes via the
+  existing `ibump` substrate (`evalNat_succ_base` is the ℕ-shadow; internal version is `ibump`-direct).
+- ❌ Order-reflection side: `βₖ₊₁ ≺ βₖ ⟹ evalNat (k+2) βₖ₊₁ < evalNat (k+2) βₖ` — STILL needs internal
+  ONote codes + internal `evalNat` as a function of the code (`evalNat_lt_iff`/`evalNat_lt_of_lt`
+  internalized). This is the irreducible internal-ONote requirement: the descent comparison.
+- ❌ `βₖ` construction (the slow-down Thm 3.5 / Cor 3.4) from the M-internal descent (`descent_seq_exists`):
+  needs internal ONote codes + internal `C` + the `C(βₖ) ≤ k+1` bound, all `LX`/`𝚺₁`-definable in `M`.
+So the genuine remaining internal-ONote build is the CODE representation + `evalNat` (as code-fn) + `C` +
+order-reflection. The base-change/run side is now substrate-direct. NEXT cold-start subproject:
+`wip/InternalONote.lean` — code CNF terms as nested HFS pairs (`0 ↦ 0`, `oadd e n r ↦ ⟪⟪ec,n⟫,rc⟫`),
+`isONoteCode` predicate (Fixpoint/Δ₁), `iC`/`ievalNat` via course-of-values table (à la `ibumpTable`),
+internal `evalNat_lt_iff`. Multi-lap.
+
 ---
 
 ## 🎯 LAP-34 (2026-06-23) — wall-C/D model-internal induction TOOLKIT landed. Read FIRST.
