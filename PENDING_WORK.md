@@ -18,11 +18,14 @@ Operator-directed Route A. Lap-45's fork is **settled** (memory `route-resolved-
   2. **Gentzen Thm 2.8(i) `PRWO(ε₀)→Con(PA)`** — primrec `ord` + reduction `R`, `ord(R D)<ord D`,
      arithmetized in PA over Foundation's `Derivation`. The deep ordinal-analysis girder.
   3. **Formulate `PRWO(ε₀)` as a `Sentence ℒₒᵣ`** (∀ primrec-code descent → finite); gates both 1,2.
-  4. Thm 3.5 **prefix** `r < K` — STARTED: internal ω-tower `iwtower` on codes built (axiom-clean:
-     `iwtower_zero/_succ`, `isNF_iwtower`, `iC_iwtower = 1`, strict increase `icmp_iwtower_succ`, +
-     helper `icmp_ocOadd_lt_exp`). Remaining: the prefix sum `βⱼ = Σ_{i} ω_{s−i}` (internal sum over
-     `j < K`) + the prefix→block boundary `β_K ≺ β_{K-1}` (needs `ω·α₀ ≺ ω_s`, i.e. `s` with the
-     tower above `ω·α₀`). Then a single sequence indexed from `0` with `iC(βᵣ) ≤ r+1`.
+  4. Thm 3.5 **prefix + full β — DONE (modulo one cofinality input)**. `bbeta K s α` (`InternalThm35`)
+     is the complete Thm 3.5 sequence indexed from `0`: ω-tower prefix for `r<K` (SIMPLIFIED to single
+     towers `βⱼ = ω_{s+K−1−j}` — valid since `C` is the max coeff, not term count, so `C=1≤j+1`),
+     block-tail `bbtail` for `r≥K`. Axiom-clean: `bbeta_isNF`, `bbeta_C_le : iC(βᵣ)≤r+1` (all r),
+     `bbeta_desc` (prefix→prefix / seam / block→block). **Remaining = ONE disclosed hypothesis**
+     `hbdry : icmp (bbtail K α K) (iwtower s) = 0` (i.e. `β_K ≺ ωₛ`): ω-tower **cofinality** in ε₀
+     — `∀ NF code c, ∃ s, c ≺ iwtower s`, with a concrete `s = σ(α₀,K)`. Next lap: prove cofinality.
+     Supporting: `iwtower` (ω-tower on codes), `icmp_iwtower_succ`, `icmp_ocOadd_lt_exp`.
 - Foundation `PA_delta1Definable` axiom rides Gödel II (separate residual; lap-6 noted upstream burndown).
 
 

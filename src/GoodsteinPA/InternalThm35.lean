@@ -180,4 +180,71 @@ lemma icmp_iwtower_succ (n : V) : icmp (iwtower n) (iwtower (n + 1)) = 0 := by
     nth_rewrite 1 [iwtower_succ n]
     exact icmp_ocOadd_lt_exp ih
 
+/-! ## The full Thm 3.5 sequence `β` indexed from `0` (prefix + block-tail)
+
+The finite prefix `r < K` is **simplified** from Rathjen's `Σ_i ω_{s−i}` to *single* ω-towers
+`βⱼ = ω_{s+K−1−j}` — valid because `C` is the *max coefficient* (not the term count), so a single
+tower already has `C = 1 ≤ j+1`. Consecutive towers strictly descend (`icmp_iwtower_succ`), the prefix
+bottom `β_{K−1} = ωₛ` sits above the block top `β_K` (the boundary hypothesis `hbdry`, an instance of
+ω-tower cofinality in ε₀), and the block-tail `r ≥ K` is `bbtail`. This is the complete Thm 3.5
+output: a single sequence indexed from `0` with strict ≺-descent and the tight `C(βᵣ) ≤ r+1`, modulo
+the one disclosed cofinality input `hbdry`. -/
+
+/-- **Thm 3.5 full sequence** (codes, indexed from `0`): the ω-tower prefix for `r < K`, the
+slow-down block-tail for `r ≥ K`. `s` is the tower height with `β_K ≺ ωₛ`. -/
+noncomputable def bbeta (K s : V) (α : V → V) (r : V) : V :=
+  if r < K then iwtower (s + (K - 1 - r)) else bbtail K α r
+
+section
+variable {K s : V} {α : V → V}
+
+/-- **Thm 3.5 (full), NF invariant.** -/
+theorem bbeta_isNF (hK : 0 < K) (hNF : ∀ n, isNF (α n)) (r : V) : isNF (bbeta K s α r) := by
+  unfold bbeta
+  split
+  · exact isNF_iwtower _
+  · exact bbtail_isNF hK hNF r
+
+/-- **Thm 3.5 (full), tight slowness** `C(βᵣ) ≤ r+1` for all `r`. Prefix: `C = 1 ≤ r+1`. Block: `bbtail_C_le`. -/
+theorem bbeta_C_le (hslow : ∀ n, iC (α n) ≤ K * (n + 1)) (r : V) : iC (bbeta K s α r) ≤ r + 1 := by
+  unfold bbeta
+  split
+  · rw [iC_iwtower]; exact le_add_self
+  · rename_i h; exact bbtail_C_le hslow (not_lt.mp h)
+
+/-- **Thm 3.5 (full), strict descent** `β_{r+1} ≺ βᵣ` for all `r`. Three cases: prefix→prefix
+(consecutive towers), prefix→block at the seam `r = K−1` (the boundary `hbdry`), block→block
+(`bbtail_desc`). -/
+theorem bbeta_desc (hK : 0 < K) (hNF : ∀ n, isNF (α n)) (hdesc : ∀ n, icmp (α (n + 1)) (α n) = 0)
+    (hbdry : icmp (bbtail K α K) (iwtower s) = 0) (r : V) :
+    icmp (bbeta K s α (r + 1)) (bbeta K s α r) = 0 := by
+  unfold bbeta
+  by_cases hrK : r + 1 < K
+  · -- prefix → prefix: consecutive towers `ω_{s+K-1-(r+1)} ≺ ω_{s+K-1-r}`
+    have hr : r < K := lt_trans (lt_add_one r) hrK
+    rw [if_pos hrK, if_pos hr]
+    -- `K-1-(r+1) = (K-1-r)-1` and `s+(K-1-r) = (s+(K-1-r)-1)+1`
+    have hlt1 : r < K - 1 := lt_of_lt_of_le (lt_add_one r) (le_sub_one_of_lt hrK)
+    have hpos : 0 < K - 1 - r := pos_sub_iff_lt.mpr hlt1
+    have hsub : K - 1 - (r + 1) = K - 1 - r - 1 := (Arithmetic.sub_sub).symm
+    have hsucc : (s + (K - 1 - r - 1)) + 1 = s + (K - 1 - r) := by
+      rw [add_assoc, sub_add_self_of_le (Arithmetic.one_le_of_zero_lt _ hpos)]
+    rw [hsub, ← hsucc]
+    exact icmp_iwtower_succ (s + (K - 1 - r - 1))
+  · by_cases hr : r < K
+    · -- prefix → block at the seam `r = K-1`, so `r+1 = K`
+      have heq : r + 1 = K := le_antisymm (succ_le_iff_lt.mpr hr) (not_lt.mp hrK)
+      rw [if_neg hrK, if_pos hr, heq]
+      -- `β_{K-1} = ω_{s + (K-1-(K-1))} = ω_s`
+      have h0 : K - 1 - r = 0 := by
+        have : K - 1 = r := by rw [← heq]; simp
+        rw [this, Arithmetic.sub_self]
+      rw [h0, add_zero]
+      exact hbdry
+    · -- block → block
+      have hKr : K ≤ r := not_lt.mp hr
+      rw [if_neg hrK, if_neg hr]
+      exact bbtail_desc hK hNF hdesc hKr
+end
+
 end GoodsteinPA.InternalONote
