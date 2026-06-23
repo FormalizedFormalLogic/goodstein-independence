@@ -142,4 +142,58 @@ theorem psum_strictMono_step (f : ℕ → ℕ) (n i : ℕ) (hpos : 1 ≤ f^[i + 
     psum f n i < psum f n (i + 1) := by
   simp only [psum_succ]; omega
 
+/-- `F (l+1) n = (F l)^[n] n ≤ psum (F l) n n`: the last iterate `(F l)^[n] n` is one summand of
+`psum (F l) n n`, so `m < F (l+1) n` lands inside `[0, psum (F l) n n)` (the live block range). -/
+theorem F_succ_le_psum (l : ℕ) {n : ℕ} (hn : 1 ≤ n) : F (l + 1) n ≤ psum (F l) n n := by
+  obtain ⟨n', rfl⟩ : ∃ n', n = n' + 1 := ⟨n - 1, by omega⟩
+  rw [F_succ, psum_succ]; omega
+
+/-! ## Block decomposition `m ↦ (i, j)` (Rathjen's `m = Σ_{t≤i} f^[t](n) + j`)
+
+`blockIdx f n m` = the largest `i ≤ n` with `psum f n i ≤ m`; `blockOff f n m = m - psum f n i` is the
+offset `j` inside block `i`. For `m < psum f n n` (which holds when `m < F (l+1) n`, by
+`F_succ_le_psum`), this gives the unique `i < n`, `j < f^[i+1](n)` decomposition. -/
+
+/-- The block index `i`: largest `i ≤ n` whose partial sum `psum f n i` still fits under `m`. -/
+def blockIdx (f : ℕ → ℕ) (n m : ℕ) : ℕ := Nat.findGreatest (fun i => psum f n i ≤ m) n
+
+/-- The within-block offset `j = m - psum f n i`. -/
+def blockOff (f : ℕ → ℕ) (n m : ℕ) : ℕ := m - psum f n (blockIdx f n m)
+
+/-- Block lower bound: `psum f n (blockIdx) ≤ m` (block `0` always fits, `psum f n 0 = 0`). -/
+theorem psum_blockIdx_le (f : ℕ → ℕ) (n m : ℕ) : psum f n (blockIdx f n m) ≤ m :=
+  Nat.findGreatest_spec (P := fun i => psum f n i ≤ m) (m := 0) (Nat.zero_le n)
+    (show psum f n 0 ≤ m by simp)
+
+/-- `blockIdx f n m < n` when `m < psum f n n` (some block is not yet consumed). -/
+theorem blockIdx_lt (f : ℕ → ℕ) {n m : ℕ} (hn : 1 ≤ n) (hm : m < psum f n n) :
+    blockIdx f n m < n := by
+  rcases lt_or_eq_of_le (Nat.findGreatest_le (P := fun i => psum f n i ≤ m) n) with h | h
+  · exact h
+  · exfalso
+    have hPn : psum f n n ≤ m :=
+      Nat.findGreatest_of_ne_zero (P := fun i => psum f n i ≤ m) h (by omega)
+    omega
+
+/-- Block upper bound: `m < psum f n (blockIdx + 1)` (the next block overshoots `m`). -/
+theorem lt_psum_blockIdx_succ (f : ℕ → ℕ) {n m : ℕ} (hn : 1 ≤ n) (hm : m < psum f n n) :
+    m < psum f n (blockIdx f n m + 1) := by
+  have hb := blockIdx_lt f hn hm
+  have hng := Nat.findGreatest_is_greatest (P := fun i => psum f n i ≤ m) (n := n)
+    (k := blockIdx f n m + 1) (Nat.lt_succ_self (blockIdx f n m)) (by omega)
+  exact not_le.1 hng
+
+/-- The offset stays within its block's width: `blockOff f n m < f^[blockIdx+1] n`. -/
+theorem blockOff_lt_width (f : ℕ → ℕ) {n m : ℕ} (hn : 1 ≤ n) (hm : m < psum f n n) :
+    blockOff f n m < f^[blockIdx f n m + 1] n := by
+  have h1 := psum_blockIdx_le f n m
+  have h2 := lt_psum_blockIdx_succ f hn hm
+  rw [psum_succ] at h2
+  simp only [blockOff]; omega
+
+/-- The decomposition is exact: `psum f n i + blockOff f n m = m`. -/
+theorem psum_add_blockOff (f : ℕ → ℕ) (n m : ℕ) :
+    psum f n (blockIdx f n m) + blockOff f n m = m := by
+  have := psum_blockIdx_le f n m; simp only [blockOff]; omega
+
 end GoodsteinPA.Grz
