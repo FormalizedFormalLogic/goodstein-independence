@@ -27,8 +27,20 @@ build so `src/` stays sorry-free): the `Seq`-coded `M`-internal descent.
 - `descent_seq_exists` — `∀ k, ∃ W, IsDescent W ∧ lh W = k+1`, by `lx_succ_induction` (base/step wired).
   **The lone `sorry`** = `hDdef`, the `LX`-definability of `D(k) := ∃ W, IsDescent f a₀ W ∧ lh W = k+1`
   (a `Seq`-existential `LX`-formula with `Mlt`/`¬MX` atoms on `znth`-terms). NEXT-LAP TASK: build that
-  formula — `lxDef_of_reduct` carries the `Seq`/`lh`/`znth` `ℒₒᵣ` graph; the `znth`-term `X`-atoms
-  (`Xat (Φ-image of znth-term)`) are built directly; assemble with `lxDef_and` under one `∃W`.
+  formula. **LAP-35 progress — `isDescent_iff_mem` (PROVEN, wip):** reformulated `IsDescent` into
+  **membership form** (over the reduct, when `0 < lh W`): `Seq W ∧ ⟪0,a₀⟫∈W ∧ (∀ i x x', ⟪i,x⟫∈W →
+  ⟪i+1,x'⟫∈W → Mlt f x' x) ∧ (∀ i x, ⟪i,x⟫∈W → ¬MX x)`. **Key win:** the `X`-atom now sits on a *bound
+  variable* `x`, not a `znth`-function-term — `hDdef` no longer needs `znth`-graph-into-`X` plumbing.
+  **NEXT (hDdef, decomposed):** `D(k) ↔ ∃ W, A(W,k) ∧ B(W) ∧ C(W)` with
+    - `A(W,k) := Seq W ∧ ⟪0,a₀⟫∈W ∧ lh W = k+1` — pure `ℒₒᵣ`-on-reduct (NO prec/X); `Semisentence` from
+      Foundation `Defined.df` (`seq_defined`/`lh_defined`/membership+pairing DSL); bridge via a *binary*
+      `lxDef2_of_reduct` (generalize `lxDef_of_reduct` to `![W,k]` + `a₀` as a free-var in `e`).
+    - `B(W) := ∀ i x x', ⟪i,x⟫∈W → ⟪i+1,x'⟫∈W → Mlt f x' x` — `∈`-guards + `prec` atom (X-free, fvar-free)
+      under bounded `∀∀∀`; build directly in `LX`.
+    - `C(W) := ∀ i x, ⟪i,x⟫∈W → ¬MX x` — `∈`-guard + `Xsym`-atom under bounded `∀∀`; build directly.
+    Combine via binary `lxDef2_and`, then `∃`-close `W` (`lxDef_exists`, Foundation `eval_ex`). Needed
+    combinators (verifiable generalizations of the unary ones in `DescentSemantic`): `lxDef2_and`,
+    `lxDef2_of_reduct`, `lxDef_exists`. Then `descent_seq_exists` is sorry-free → promote to `src/`.
 
 **NEXT (wall C — after `hDdef`), hardest-first:**
 1. **Build the `X`-descent `a : M → M`** from `no_min`/`ha₀`: `a 0 = a₀`, `a (k+1) =` `lx_least_number`
