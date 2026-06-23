@@ -174,4 +174,35 @@ lemma isNF_iblk {k : ℕ} (hk : 1 ≤ k) {c x : V} (hc : c ≠ 0) (hx : isNF x)
   have : (0 : V) < (k : V) := by exact_mod_cast hk
   exact this.ne'
 
+/-! ## Internal Thm 3.5 reindex — the C-bound `iC(ω·αₙ + (K-i)) ≤ K(n+1)+i+1`
+
+Rathjen **Theorem 3.5** reindexes a *slow* descent `α` (`iC(αₙ) ≤ K·(n+1)`) into the canonical-form
+sequence `β_{K(n+1)+i} = ω·αₙ + (K-i)` with `C(βᵣ) ≤ r+1`. The internal C-bound below is the heart of
+that reindex on codes — the mirror of `DescentCore.C_betaTail_le`, built purely from the existing
+finite-tail toolkit (`iC_iomul` = "ω· bumps C by ≤1", `iC_iadd_finite` = clean append of a finite tail).
+It is **level-agnostic** (no Grzegorczyk `g`, no Ackermann), so it is route-independent and lands in
+IΣ₁. The within/boundary descent of the reindex is already `icmp_betaTail_within`/`_boundary`
+(`InternalONote.lean`); the NF is `isNF_iadd_finite`. The remaining gap before a full internal `β : V → V`
+is the index bookkeeping (`r = K(n+1)+i` via internal division) + the `j < K` ω-tower prefix, and the
+*input* slow `α` (the deep Cor 3.4 crux). -/
+
+/-- **Internal Thm 3.5 tail-term C-bound** (mirror of `DescentCore.C_betaTail_le`, on codes): the
+reindex block `β_{K(n+1)+i} = ω·αₙ + (K-i)` of a slow descent has `iC ≤ K(n+1)+i+1`. Inputs: the
+slowness `iC c ≤ K·(n+1)` of the block's base `c = αₙ`. -/
+lemma iC_betaTail_le {c K n i : V} (hslow : iC c ≤ K * (n + 1)) :
+    iC (iadd (iomul c) (ocOadd 0 (K - i) 0)) ≤ K * (n + 1) + i + 1 := by
+  refine le_trans (iC_iadd_finite c (K - i)) (max_le ?_ ?_)
+  · -- lead `ω·c`: `iC(ω·c) ≤ iC c + 1 ≤ K(n+1)+1 ≤ K(n+1)+i+1`
+    calc iC (iomul c) ≤ iC c + 1 := iC_iomul c
+      _ ≤ K * (n + 1) + 1 := by gcongr
+      _ ≤ K * (n + 1) + i + 1 := add_le_add le_self_add (le_refl 1)
+  · -- finite tail `K-i ≤ K ≤ K(n+1) ≤ K(n+1)+i+1`
+    have hKi : K - i ≤ K := sub_le_self K i
+    have hK : K ≤ K * (n + 1) := by
+      calc K = K * 1 := (mul_one K).symm
+        _ ≤ K * (n + 1) := by gcongr; exact le_add_self
+    calc K - i ≤ K := hKi
+      _ ≤ K * (n + 1) := hK
+      _ ≤ K * (n + 1) + i + 1 := le_trans le_self_add le_self_add
+
 end GoodsteinPA.InternalONote
