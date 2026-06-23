@@ -27,6 +27,31 @@ axiom-clean). **Focus E-core on the shared §3; defer the back-end choice.** Lit
 with their *step* properties (descending-at-a-step, `C(βᵣ)≤r+1`) as non-vacuous finite ℕ/ONote facts
 (Lemma 3.2 = mathlib `exists_lt_ack_of_nat_primrec`). (2) Then the arithmetization: inequality (6)'s `∀k`
 as a genuine PA-induction (the dominant wall; Σ₁ glue is free via `sigma_one_completeness`).
+**Landed lap 24:** `Dom.C : ONote → ℕ` (Rathjen's max-coefficient) + `Canon_iff_C_le` (`Canon b o ↔ C o ≤ b`).
+
+### Arithmetization API — GROUNDED (lap 24 scoping of the dominant wall)
+
+Scoped Foundation's machinery for the inequality-(6) PA-induction (E-core's irreducible core). Findings:
+- **Σ₁ glue is free:** `LO.FirstOrder.Arithmetic.sigma_one_completeness {σ : Sentence ℒₒᵣ}
+  (hσ : Hierarchy 𝚺 1 σ) : ℕ ⊧ₘ σ → T ⊢ σ` (for `[𝗥₀ ⪯ T]`, so `𝗣𝗔`) — every TRUE Σ₁ sentence is
+  PA-provable (`R0/Basic.lean:146`). This is the engine `precφ`/F-φ already rides (`codeOfREPred₂` →
+  `sigma_one_completeness_iff`). All Δ₀/Σ₁ *computations* (specific Goodstein/`T̂`/βₖ values) are free.
+- **The inductive core is the genuine work.** `∀k (mₖ ≥ T̂^{k+2}(βₖ))` is Π₁ (∀ of Δ₀) — NOT free. It
+  needs a PA-induction. Foundation's idiom = the **internalized-model approach**
+  (`Arithmetic/Induction.lean`: `sigma1_pos_succ_induction`, `bounded_all_sigma1_order_induction`, …):
+  work inside an arbitrary `V ⊧ 𝗜𝚺₁` with `𝚺₁`-definable predicates/functions, do internal induction,
+  and the framework yields the `𝗜𝚺₁`/`𝗣𝗔` proof.
+- **KEY SIMPLIFICATION — arithmetize over base-b NUMERALS, not internalized ONote.** Rathjen's whole
+  framework is numeral-based: `T̂^b_ω(α)`/`S^b_c` are base-conversions on numerals, and the order
+  comparison is base-b *digit* comparison (Lemma 2.2(ii)), which is **Δ₀** (PA-provable directly). The
+  ordinal/ONote/`repr`/ε₀ detour is only the *semantic* (ZFC-side) proof convenience (e.g. `ineq6_step`
+  via `evalNat_lt_iff`/`canon_repr`); the **PA-side proof of inequality (6) uses Δ₀ numeral comparison**
+  and avoids internalizing ONote into `V`. This is the big de-risk vs re-implementing ONote in HFS.
+- **Prerequisite chain:** (i) the Goodstein function `goodsteinSeq` is already arithmetized
+  (`Encoding.lean`/`goodsteinSentence`); (ii) the slow-down sequence `βₖ` + `T̂^{k+2}` as `𝚺₁`/primrec
+  numeral functions (define from the Lean fns via `codeOfREPred`, or hand-build in `IΣ₁`); (iii) the
+  arithmetized `ineq6_step` (Δ₀ numeral comparison); (iv) internal induction (`sigma1_pos_succ_induction`)
+  to land `𝗣𝗔 ⊢ ∀k ψ(k)`; (v) the back-end (Route A/B, deferred). **(ii)–(iv) are the multi-lap wall.**
 
 ---
 

@@ -50,6 +50,34 @@ theorem evalNat_le_iff (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
     evalNat b o ≤ evalNat b p ↔ o.repr ≤ p.repr := by
   rw [← not_lt, ← not_lt, evalNat_lt_iff b hb hcp hco hnp hno]
 
+/-! ## Rathjen's max-coefficient `C : ONote → ℕ` and its bridge to `Canon`
+
+Rathjen 2014 states §3 in terms of `C(α)` = the highest integer coefficient in the complete CNF of `α`
+(`C(0)=0`, `C(ω^{α₁}k₁+…) = max{C(αᵢ), kᵢ}`). The repo's `Domination.Canon b o` predicate ("every
+coefficient `≤ b`") is exactly `C o ≤ b`; this bridge lets the §3 lemmas be stated with either. -/
+
+/-- **Rathjen's max-coefficient** `C(α)` — the highest integer coefficient appearing anywhere in the
+complete CNF of `α` (recursively through exponents and tails). -/
+def C : ONote → ℕ
+  | 0 => 0
+  | ONote.oadd e n r => max (max (C e) (n : ℕ)) (C r)
+
+@[simp] theorem C_zero : C 0 = 0 := rfl
+
+@[simp] theorem C_oadd (e : ONote) (n : ℕ+) (r : ONote) :
+    C (ONote.oadd e n r) = max (max (C e) (n : ℕ)) (C r) := rfl
+
+/-- **`Canon` is `C ≤ b`.** The repo's coefficient-bound predicate `Canon b o` (every coefficient
+`≤ b`) holds iff the max coefficient `C o ≤ b`. So Rathjen's `C(βₙ) ≤ n+1` is `Canon (n+1) (β n)`. -/
+theorem Canon_iff_C_le (b : ℕ) (o : ONote) : Canon b o ↔ C o ≤ b := by
+  induction o with
+  | zero => exact iff_of_true (Canon_zero b) (by simp)
+  | oadd e n r ihe ihr =>
+    rw [Canon_oadd, C_oadd, ihe, ihr]; omega
+
+/-- `Canon b o` from `C o ≤ b` (the forward bridge, the form §3 lemmas consume). -/
+theorem Canon_of_C_le {b : ℕ} {o : ONote} (h : C o ≤ b) : Canon b o := (Canon_iff_C_le b o).2 h
+
 /-- `evalNat` is strictly monotone in the notation order on the `Canon`/`NF` domain
 (`o < p ⇒ evalNat b o < evalNat b p`). The `T̂` half of Rathjen's order isomorphism. -/
 theorem evalNat_lt_of_lt (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
