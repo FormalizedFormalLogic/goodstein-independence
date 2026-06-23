@@ -1,5 +1,15 @@
 # ON-LINE-REQUEST — 2026-06-23 (lap 33)
 
+> ⚠️ **SUPERSEDED as of lap 36 (2026-06-23) — do NOT fulfil.** The lap-36 deep reflection found wall B is
+> **self-inflicted**: it exists only because `goodsteinSentence` is kept as the opaque `codeOfREPred` blob.
+> The fix is to refactor `goodsteinSentence` to a transparent `igoodstein`-based Π₂ sentence (sanctioned by
+> `Encoding.lean`'s docstring, gated on the bridge spec) — then the opaque-code↔run bridge below is **moot**
+> and `hB` falls out directly. See `REFLECTION-2026-06-23-lap36.md` + `PENDING_WORK.md` top. This file will
+> be retired once the refactor lands; no online research is needed. The original request is kept below for
+> record only.
+
+---
+
 > Previous requests (lap 27 Route-B sequent shape; lap 19 F-φ) are **all resolved/moot** and have been
 > removed. ONE open request below: **Wall B — the opaque-code↔transparent-run bridge inside 𝗜𝚺₁.**
 

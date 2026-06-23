@@ -1,5 +1,45 @@
 # Pending work — open obligations & attack paths
 
+## ⭐ Reflection — 2026-06-23 (lap 36, deep): NEW DIRECTION — refactor the sentence transparent. Read FIRST.
+
+Full synthesis: `REFLECTION-2026-06-23-lap36.md`. Headline state (real `#print axioms`): girder
+(`Thm56.peano_not_proves_TI`) **clean**; headline honest `sorry`; the chain `…_modulo_semantic` carries
+exactly **one** `sorryAx` from `no_min_descent_absurd_of_goodstein`, which is `hCD` (wall C+D, `:410`) +
+`hB` (wall B, `:419`).
+
+**The finding — wall B is self-inflicted.** Every lap since 24 treated `goodsteinSentence = ∀⁰ codeOfREPred
+goodsteinTerminates` (Foundation's opaque `Classical.epsilon` r.e. blob) as a FIXED target and tried to
+*bridge to it* inside nonstandard `M` (wall B; the open `ON-LINE-REQUEST`; the "`PA_delta1Definable`-
+flavoured gap"). But `goodsteinSentence` is **not** locked, and `Encoding.lean`'s docstring (lines 35–39)
+**explicitly sanctions** refactoring it to a transparent form gated on the bridge spec.
+
+**STOP**: bridging the opaque code; reasoning about `Classical.epsilon` Kleene codes on nonstandard inputs;
+treating `goodsteinSentence` as immutable. The `ON-LINE-REQUEST.md` wall-B question is **superseded** — do
+not wait on it.
+
+**KEEP**: the lap-30 model-internal completeness architecture; the route-neutral ONote kernel
+(`DescentCore`); route 1 (ordinal analysis — monument done; route 2 is no shortcut); `#print axioms` audits.
+
+**Highest-value next target — transparent-sentence refactor (then `hCD`):**
+1. **Spike (de-risk).** In scratch, build the transparent `Sentence ℒₒᵣ` from `igoodsteinDef :
+   𝚺₁.Semisentence 3` (`InternalGoodstein.lean:46`): substitute the result slot `:= 0`, `∃`-close the step
+   var, `∀⁰`-close the seed var. Confirm `ℕ ⊧ it ↔ ∀ m ∃ N goodsteinSeq m N = 0` via `igoodstein_defined`
+   (`:49`, the `Defined` instance) + `igoodstein_nat` (`InternalBridge.lean:118`). NB pin down
+   `InternalPow.igoodstein` vs `InternalGoodstein.igoodstein` (one canonical function; check namespace).
+2. **Land it.** Redefine `goodsteinSentence` in `Encoding.lean` (import `InternalGoodstein`; drop
+   `codeOfREPred`/`R0.Representation`). Re-prove `Bridge.goodsteinSentence_faithful` — **identical locked
+   RHS** `∀ m, ∃ N, goodsteinSeq m N = 0`. Verify `models_lMap_goodstein` still compiles (form-independent).
+3. **Close `hB`** (`DescentSemantic.lean:419`) directly from `hgood` (instantiate the transparent ∀ at `m₀`,
+   eval the Σ₁ body in `M`'s `𝗜𝚺₁`-reduct via `igoodstein_defined`). Re-run `#print axioms`: only `hCD`
+   `sorryAx` should remain. `git mv ON-LINE-REQUEST.md` away (wall B moot).
+4. **Grind `hCD`** — the lone genuine wall (see the lap-34 toolkit section just below + `DESCENT-PLAN §5`).
+
+De-risk checklist (verified lap 36): `igoodsteinDef`/`igoodstein_defined`/`igoodstein_nat` exist; `Internal*`
+chain is `Encoding`-free (no cycle); `models_lMap_goodstein` is form-independent; Π₂ complexity unchanged.
+Sole unknown = Foundation ergonomics of step 1 → hence the spike.
+
+---
+
 ## 🎯 LAP-34 (2026-06-23) — wall-C/D model-internal induction TOOLKIT landed. Read FIRST.
 
 **Done this lap (green 1304 jobs, all `[propext, choice, Quot.sound]`, in `DescentSemantic.lean`):** the
