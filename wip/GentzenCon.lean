@@ -141,22 +141,22 @@ is the *descent → (β, width-domination)* construction, which for the headline
 concrete `seq = gentzenDescentφ` (standard-`l₀` dominated by Rathjen Lemma 3.2, see
 `crux1-headline-needs-only-standard-level`). Held at `sorry`. -/
 theorem prwoInstance_models_of_goodstein (seq : Semisentence ℒₒᵣ 2)
-    (M : Type) [Nonempty M] [Structure ℒₒᵣ M] [M ⊧ₘ* 𝗣𝗔] (_hγ : M ⊧ₘ goodsteinSentence) :
+    (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗣𝗔] (_hγ : M ⊧ₘ goodsteinSentence) :
     M ⊧ₘ prwoInstance seq := by
   sorry
 
 /-- **Crux 1 — Rathjen §3: `γ → PRWO(ε₀)` (every primrec instance), model-theoretic route.** From
-`𝗣𝗔 ⊢ γ` (soundness) `γ` holds in every model of `𝗣𝗔`; the per-model obligation
-`prwoInstance_models_of_goodstein` then gives `prwoInstance seq` in every model, whence (Foundation's
-first-order completeness `complete_iff`) `𝗣𝗔 ⊢ prwoInstance seq`. This skeleton ungates crux 1 from any
-`ord`/`R` arithmetization — the deep content is concentrated in `prwoInstance_models_of_goodstein`. -/
+`𝗣𝗔 ⊢ γ` (soundness, `models_of_provable`) `γ` holds in every arithmetic model of `𝗣𝗔`; the per-model
+obligation `prwoInstance_models_of_goodstein` then gives `prwoInstance seq` in every such model, whence
+(Foundation's arithmetic completeness `provable_of_models`) `𝗣𝗔 ⊢ prwoInstance seq`. This skeleton
+ungates crux 1 from any `ord`/`R` arithmetization — the deep content is concentrated in
+`prwoInstance_models_of_goodstein`. -/
 theorem goodstein_implies_prwo (seq : Semisentence ℒₒᵣ 2) :
     𝗣𝗔 ⊢ ↑goodsteinSentence → 𝗣𝗔 ⊢ prwoInstance seq := by
   intro hγ
-  have hγ_sem : 𝗣𝗔 ⊨ ↑goodsteinSentence := sound! hγ
-  refine complete_iff.mp (consequence_iff'.mpr ?_)
-  intro M _ _ _
-  have hγM : M ⊧ₘ goodsteinSentence := consequence_iff'.mp hγ_sem M
+  apply provable_of_models 𝗣𝗔 (prwoInstance seq)
+  intro M _ _
+  have hγM : M ⊧ₘ goodsteinSentence := models_of_provable inferInstance hγ
   exact prwoInstance_models_of_goodstein seq M hγM
 
 /-- **The assembly.** Crux 1 (at the Gentzen-descent instance) ∘ crux 2 = exactly the girder
