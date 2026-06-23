@@ -42,6 +42,20 @@ confirmed). **Attack paths (do one next lap):**
   `Grzegorczyk.lean` blueprint; item 1 below). This is what eventually discharges the certificate for
   `gentzenDescentφ` rather than axiomatizing it.
 
+**DONE later this lap (attack path A + honest threading):** Promoted `StdCor34` → `src/` (1316 jobs).
+Wired `SeqDominated` + `nonterminating_of_dominated` (**axiom-clean** — certificate→girder seam type-checks
+end-to-end). Then made the chain HONEST: `seqDescent_dominated` was a FALSE-for-arbitrary-seq sorry (its
+conclusion `SeqDominated M` is seq-free, so "any descent ⟹ a standard-dominated descent exists" is false —
+`F_diag`). Fixed by threading the seq-specific **`SeqStdBounded seq M := ∃ l₀:ℕ, ∀ n y, seq[y,n] → iC y ≤
+iF l₀ n`** (Rathjen Lemma 3.2) through `seqDescent_dominated` / `prwoInstance_models_of_goodstein` /
+`goodstein_implies_prwo` (now `(hstdom : ∀ M⊧IΣ₁, SeqStdBounded seq M) → 𝗣𝗔⊢γ → 𝗣𝗔⊢prwoInstance seq`),
+supplied at `gentzenDescentφ` by the disclosed axiom `gentzenDescentφ_dominated`. **Result:**
+`seqDescent_dominated` is now a TRUE conditional lemma; its sorry = the genuine Cor-3.4 construction (β from
+seq's descending branch + the standard-level slowdown using `hstdom`). **THE crux-1 next target** = prove
+`seqDescent_dominated` (paths B/C above). NB its hardest input (`hstdom` for `gentzenDescentφ`) is gated on
+crux 2's `ord`/`R` arithmetization, so the independent crux-1 work is the GENERAL construction
+(`seqDescent_dominated` for an abstract `SeqStdBounded` descent).
+
 ## ⭐ Lap 55 — crux-1 frontier collapsed to TWO clean inputs + the model-theoretic route for `goodstein_implies_prwo`
 
 **Done this lap (all axiom-clean `[propext, choice, Quot.sound]`, src build green 1315):**

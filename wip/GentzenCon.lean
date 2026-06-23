@@ -191,40 +191,51 @@ theorem nonterminating_of_dominated (M : Type) [ORingStructure M] [M ⊧ₘ* �
   obtain ⟨l₀, wseq, Cβ, β, hl₀, hNF, h0, hd, hC, hdef, hdom⟩ := h
   exact StdCor34.crux1_internal_run_of_width_dom l₀ hl₀ wseq hNF h0 hd hC hdef hdom
 
-/-- **Crux-1 certificate construction — the sharpened remaining obligation (lap-56).** From a
-model-internal everywhere-`icmp`-descending `seq`-graph, build the standard-level Cor-3.4 slowdown
-inputs (`SeqDominated M`): extract `β` as `seq`'s value function (NF, nonzero, `icmp`-descending from
-`hdesc`, `𝚺₁` from `seq`), run the standard-level Cor 3.4 slowdown to get `wseq`/`Cβ`/`l₀` with the
-width bound `iC (β (blk wseq j)) ≤ Cβ + j` and **standard** domination `∀ n, znth wseq n ≤ iF l₀ n`.
+/-- **The seq-specific standard-domination certificate (Rathjen Lemma 3.2).** `seq`'s value at position
+`n` has `ε₀`-code complexity `iC` bounded by a fixed **standard**-level Grzegorczyk function `iF l₀`.
+This is the precise honest content of "primitive-recursive" for the descent: for `seq = gentzenDescentφ`
+(= `n ↦ ord(Rⁿd₀)`) Rathjen Lemma 3.2 gives this `l₀` from `ord`/`R`'s fixed build tree (the
+`d₀`-independent bound), and it is what keeps the headline on the **standard** level
+(`crux1-headline-needs-only-standard-level`). For an *arbitrary* descent it can FAIL
+(`Grz.F_diag_not_dominated`) — which is exactly why crux 1 must carry this as a hypothesis (lap 56). -/
+def SeqStdBounded (seq : Semisentence ℒₒᵣ 2) (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁] : Prop :=
+  ∃ l₀ : ℕ, ∀ n y : M, (M ⊧/![y, n] seq) → iC y ≤ iF l₀ n
 
-**This is now the ENTIRE remaining crux-1 content** (the bridge to the girder is `nonterminating_of_dominated`,
-PROVED). For arbitrary `seq` the standard domination can fail (`Grz.F_diag_not_dominated`); the headline
-only needs `seq = gentzenDescentφ`, whose width is standard-dominated (Rathjen Lemma 3.2). Held at `sorry`.
-**Attack:** `InternalCor34.ibigMul`-standard lead + the sorry-free ℕ-template `Grzegorczyk.lean` blueprint
-(Cor 3.4) internalized over `M`; see `PENDING_WORK` paths B/C + memory `crux1-headline-needs-only-standard-level`. -/
+/-- **Crux-1 certificate construction — the sharpened remaining obligation (lap-56).** From a
+model-internal everywhere-`icmp`-descending `seq`-graph (`hdesc`) that is **standard-width-bounded**
+(`hstdom : SeqStdBounded seq M`, = Rathjen Lemma 3.2), build the Cor-3.4 slowdown inputs (`SeqDominated M`):
+take `β` = a descending NF branch of `seq`, run the standard-level Cor 3.4 slowdown to get `wseq`/`Cβ`/`l₀`
+with `iC (β (blk wseq j)) ≤ Cβ + j` and the **standard** width domination `∀ n, znth wseq n ≤ iF l₀ n`
+(which now genuinely holds, *because* of `hstdom`). **This is now the ENTIRE remaining crux-1 content**
+(the girder bridge `nonterminating_of_dominated` is PROVED; the statement is TRUE, not the old
+false-for-arbitrary-seq form). **Attack:** `InternalCor34.ibigMul`-standard lead + the sorry-free
+ℕ-template `Grzegorczyk.lean` blueprint (Cor 3.4) internalized over `M`; see `PENDING_WORK` B/C +
+memory `crux1-headline-needs-only-standard-level`. Held at `sorry`. -/
 theorem seqDescent_dominated (seq : Semisentence ℒₒᵣ 2)
     (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁]
-    (_hdesc : ∀ n y z : M, (M ⊧/![y, n] seq) → (M ⊧/![z, n + 1] seq) → icmp z y = 0) :
+    (_hdesc : ∀ n y z : M, (M ⊧/![y, n] seq) → (M ⊧/![z, n + 1] seq) → icmp z y = 0)
+    (_hstdom : SeqStdBounded seq M) :
     SeqDominated M := by
   sorry
 
-/-- **The deep crux-1 bridge** — now PROVED modulo the sharpened `seqDescent_dominated` obligation
+/-- **The deep crux-1 bridge** — PROVED modulo the sharpened `seqDescent_dominated` obligation
 (was a bare `sorry` through lap 55). Chains the certificate construction into the girder. -/
 theorem nonterminating_of_seq_descent (seq : Semisentence ℒₒᵣ 2)
     (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁]
-    (hdesc : ∀ n y z : M, (M ⊧/![y, n] seq) → (M ⊧/![z, n + 1] seq) → icmp z y = 0) :
+    (hdesc : ∀ n y z : M, (M ⊧/![y, n] seq) → (M ⊧/![z, n + 1] seq) → icmp z y = 0)
+    (hstdom : SeqStdBounded seq M) :
     ∃ m₀ : M, ∀ k : M, 0 < igoodstein m₀ k :=
-  nonterminating_of_dominated M (seqDescent_dominated seq M hdesc)
+  nonterminating_of_dominated M (seqDescent_dominated seq M hdesc hstdom)
 
-/-- **Per-model crux-1 obligation.** In every model `M ⊧ₘ* 𝗣𝗔` in which `γ` holds, the PRWO instance
-for `seq` holds. By contradiction: `M ⊭ prwoInstance seq` is an internal everywhere-≺-descending
-`seq`-graph; `nonterminating_of_seq_descent` turns it into an internal non-terminating Goodstein run
-(`∃ m₀, ∀ k, 0 < igoodstein m₀ k`), which directly contradicts `M ⊧ γ` (`∀ m, ∃ N, igoodstein m N = 0`)
-at `m₀`. The deep content is fully isolated in `nonterminating_of_seq_descent`. -/
+/-- **Per-model crux-1 obligation.** In every model `M ⊧ₘ* 𝗜𝚺₁` in which `γ` holds AND `seq` is
+standard-width-bounded (`hstdom`), the PRWO instance for `seq` holds. By contradiction: `M ⊭ prwoInstance
+seq` is an internal everywhere-≺-descending `seq`-graph; `nonterminating_of_seq_descent` (using `hstdom`)
+turns it into an internal non-terminating Goodstein run, which directly contradicts `M ⊧ γ`
+(`∀ m, ∃ N, igoodstein m N = 0`) at `m₀`. The deep content is isolated in `seqDescent_dominated`. -/
 theorem prwoInstance_models_of_goodstein (seq : Semisentence ℒₒᵣ 2)
-    (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗣𝗔] (hγ : M ⊧ₘ goodsteinSentence) :
+    (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁] (hγ : M ⊧ₘ goodsteinSentence)
+    (hstdom : SeqStdBounded seq M) :
     M ⊧ₘ prwoInstance seq := by
-  haveI : M ⊧ₘ* 𝗜𝚺₁ := ModelsTheory.of_provably_subtheory' M 𝗜𝚺₁ 𝗣𝗔
   -- `γ` in `M`: every internal Goodstein run reaches `0` (the general-model analog of the ℕ-only
   -- `Bridge.goodsteinSentence_faithful` universal-closure eval).
   have hγ' : ∀ m : M, ∃ N : M, igoodstein m N = 0 := by
@@ -238,30 +249,44 @@ theorem prwoInstance_models_of_goodstein (seq : Semisentence ℒₒᵣ 2)
     exact fun m => (h m).imp fun N h0 => h0.symm
   rw [prwoInstance_models_iff]
   intro hdesc
-  obtain ⟨m₀, hm₀⟩ := nonterminating_of_seq_descent seq M hdesc
+  obtain ⟨m₀, hm₀⟩ := nonterminating_of_seq_descent seq M hdesc hstdom
   obtain ⟨N, hN⟩ := hγ' m₀
   exact absurd hN (hm₀ N).ne'
 
-/-- **Crux 1 — Rathjen §3: `γ → PRWO(ε₀)` (every primrec instance), model-theoretic route.** From
-`𝗣𝗔 ⊢ γ` (soundness, `models_of_provable`) `γ` holds in every arithmetic model of `𝗣𝗔`; the per-model
-obligation `prwoInstance_models_of_goodstein` then gives `prwoInstance seq` in every such model, whence
-(Foundation's arithmetic completeness `provable_of_models`) `𝗣𝗔 ⊢ prwoInstance seq`. This skeleton
-ungates crux 1 from any `ord`/`R` arithmetization — the deep content is concentrated in
-`prwoInstance_models_of_goodstein`. -/
-theorem goodstein_implies_prwo (seq : Semisentence ℒₒᵣ 2) :
+/-- **Crux 1 — Rathjen §3: `γ → PRWO(ε₀)` for a standard-width-bounded `seq`, model-theoretic route.**
+From `𝗣𝗔 ⊢ γ` (soundness, `models_of_provable`) `γ` holds in every arithmetic model of `𝗣𝗔`; given the
+standard-domination certificate `hstdom` (Rathjen Lemma 3.2 for `seq`), the per-model obligation
+`prwoInstance_models_of_goodstein` gives `prwoInstance seq` in every such model, whence (Foundation's
+arithmetic completeness `provable_of_models`) `𝗣𝗔 ⊢ prwoInstance seq`. The certificate is a hypothesis,
+not a theorem: `goodstein_implies_prwo` is honest for the standard-bounded descents the headline needs
+(NOT the false "for arbitrary seq" form — `Grz.F_diag_not_dominated`); it is supplied at
+`seq = gentzenDescentφ` by `gentzenDescentφ_dominated`. -/
+theorem goodstein_implies_prwo (seq : Semisentence ℒₒᵣ 2)
+    (hstdom : ∀ (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁], SeqStdBounded seq M) :
     𝗣𝗔 ⊢ ↑goodsteinSentence → 𝗣𝗔 ⊢ prwoInstance seq := by
   intro hγ
   apply provable_of_models 𝗣𝗔 (prwoInstance seq)
   intro M _ _
+  haveI : M ⊧ₘ* 𝗜𝚺₁ := ModelsTheory.of_provably_subtheory' M 𝗜𝚺₁ 𝗣𝗔
   have hγM : M ⊧ₘ goodsteinSentence := models_of_provable inferInstance hγ
-  exact prwoInstance_models_of_goodstein seq M hγM
+  exact prwoInstance_models_of_goodstein seq M hγM (hstdom M)
 
-/-- **The assembly.** Crux 1 (at the Gentzen-descent instance) ∘ crux 2 = exactly the girder
-`Reduction.goodstein_implies_consistency`. This `wip` theorem REFINES that single `sorry` into the
-two-girder chain; it is **not** promoted to `src/` until both cruxes are real (anti-fraud). -/
+/-- **Rathjen Lemma 3.2 for the Gentzen descent (disclosed axiom).** `gentzenDescentφ = n ↦ ord(Rⁿd₀)`
+is standard-width-bounded in every model: the complexity `iC` of its `n`-th value is `≤ iF l₀ n` for a
+**standard** `l₀` determined by `ord`/`R`'s fixed primitive-recursive build tree (independent of `d₀`).
+This is the concrete instance of `SeqStdBounded` the headline needs — the step keeping crux 1 on the
+standard level. Disclosed pending the `ord`/`R` arithmetization (crux 2); joins the `ord`/`R`/eq-(5)
+placeholders, NOT on the headline `#print axioms` path (`Statement.lean` `sorry` untouched). -/
+axiom gentzenDescentφ_dominated :
+    ∀ (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁], SeqStdBounded gentzenDescentφ M
+
+/-- **The assembly.** Crux 1 (at the Gentzen-descent instance, with its Lemma-3.2 certificate) ∘ crux 2 =
+exactly the girder `Reduction.goodstein_implies_consistency`. This `wip` theorem REFINES that single
+`sorry` into the two-girder chain; it is **not** promoted to `src/` until both cruxes are real (anti-fraud). -/
 theorem goodstein_implies_consistency_via_gentzen :
     𝗣𝗔 ⊢ ↑goodsteinSentence → 𝗣𝗔 ⊢ ↑𝗣𝗔.consistent := fun hγ =>
-  gentzen_prwo_implies_consistency (goodstein_implies_prwo gentzenDescentφ hγ)
+  gentzen_prwo_implies_consistency
+    (goodstein_implies_prwo gentzenDescentφ gentzenDescentφ_dominated hγ)
 
 /-! ## Seam checks (machine-checked integration guards)
 
@@ -274,7 +299,8 @@ they are guards, not new content, and will keep guarding as the `sorry` bodies a
 Lean def** (same ε₀-order `precφ`, same descent encoding). Two faithful-but-distinct PRWO statements
 would fail here. -/
 example (hγ : 𝗣𝗔 ⊢ ↑goodsteinSentence) : 𝗣𝗔 ⊢ ↑𝗣𝗔.consistent :=
-  gentzen_prwo_implies_consistency (goodstein_implies_prwo gentzenDescentφ hγ)
+  gentzen_prwo_implies_consistency
+    (goodstein_implies_prwo gentzenDescentφ gentzenDescentφ_dominated hγ)
 
 /-- **SEAM 2 — crux 2's `Con(𝗣𝗔)` is Foundation's `Con[𝗣𝗔]`.** The whole route ends at Gödel II
 (`peano_not_proves_consistency = consistent_unprovable 𝗣𝗔`, proven about `↑𝗣𝗔.consistent`). This
