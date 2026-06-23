@@ -28,6 +28,27 @@ not free-X-TI — §3 is primrec-only, the free-X bridge is the *wrong direction
   upstream axiom (orthogonal to the Goodstein mathematics). Needs a review/operator call before the
   headline `sorry` is ever discharged.
 
+## ⭐⭐ Lap 54 (cont.) — TOTALIZED `igtTot` (unconditional NF/≠0/exp/C), in-range within-descent
+After the 5 raw `ig` props, built `igtTot l n m := if m < iF l n then ig l n m else ig0 0 0` and its
+interface (all axiom-clean, `lake env lean wip/InternalIg.lean` green): `isNF_igtTot`, `igtTot_ne_zero`,
+`higt_exp_igtTot`, `iC_igtTot_bound` are now **UNCONDITIONAL** (resolving the lap-53-flagged `higt0`
+reconciliation — the `salpha_*` interface demands these ∀ n m, but raw `ig` is 0 out of range; the fixed
+nonzero finite default `ig0 0 0 = ω^0·2` totalizes them). The within-block descent `igtTot_within`
+(`m+1 < iF l n → icmp (igtTot (m+1))(igtTot m) = 0`) STAYS in-range — this is the single seam where
+**domination (Lemma 3.2)** enters when wiring `salpha_desc`'s `higt_within` (offsets `< block width ≤
+iF l (blk)`). So `igtTot` now satisfies ALL of `salpha_isNF`/`salpha_C_le` unconditionally, and
+`salpha_desc` modulo the domination-backed within condition.
+
+**NEXT (crux-1, hardest-first = DOMINATION):** the remaining deep brick is Rathjen **Lemma 3.2**: the
+block-width `iC(β(t+1)) ≤ iF l₀ (blk)` for the specific `β` from `InternalThm35.bbeta` / the gentzen
+descent, at a STANDARD level `l₀`. This is what makes every `salpha` offset in-range (feeds
+`igtTot_within`). Until domination lands, the `salpha → bbeta → nonterminating_internal →
+goodstein_implies_prwo` chain cannot close. Also still owed: the reflection/Δ₁ lift from the V-internal
+`nonterminating_internal` machinery to the PA-provability statement `𝗣𝗔 ⊢ prwoInstance seq`
+(`wip/GentzenCon.lean:137` `goodstein_implies_prwo` `sorry`) — a large separate layer. Inspect
+`src/GoodsteinPA/Domination.lean` (`Dom` namespace, ℕ-level `toOrdinal`/`bump` bounds) + `InternalThm35`
+for the β/level interface before attacking.
+
 ## ⭐⭐ Lap 54 — ALL 5 `igt`-interface props BUILT (`higt_within` + `higt0`, axiom-clean, wip)
 The two remaining `StdCor34.igt` bricks landed in `wip/InternalIg.lean` (`lake env lean` green, full
 `lake build GoodsteinPA` still green 1314; all axiom-clean `[propext, choice, Quot.sound]`):

@@ -368,4 +368,61 @@ theorem ig_ne_zero (l : ℕ) (n m : V) (hm : m < iF l n) : ig l n m ≠ 0 := by
       rw [ig_succ_of_lt hm, iblk]
       exact ocOadd_ne_zero _ _ _
 
+/-! ## Totalized `igt` for the `StdCor34` interface (unconditional NF/≠0/exp/C; in-range descent)
+
+The `StdCor34.salpha_*` interface demands `higtNF`/`higt0`/`habove`/`higtC` **unconditionally**, but
+`ig l n m = 0` out of range (`ig_succ_of_ge`). Totalize with a fixed nonzero finite default
+`ig0 0 0 = ω^0·2` so those four props become unconditional; the within-block descent (`igtTot_within`)
+stays **in-range** — the single place Rathjen's domination (Lemma 3.2: block width `≤ iF l (blk)`) is
+consumed when wiring `salpha_desc`'s `higt_within` hypothesis. -/
+
+/-- The totalized internal Grzegorczyk tail: `ig l n m` in range, a fixed nonzero finite code else. -/
+noncomputable def igtTot (l : ℕ) (n m : V) : V := if m < iF l n then ig l n m else ig0 0 0
+
+theorem igtTot_in {l : ℕ} {n m : V} (h : m < iF l n) : igtTot l n m = ig l n m := if_pos h
+theorem igtTot_out {l : ℕ} {n m : V} (h : ¬ m < iF l n) : igtTot l n m = ig0 0 0 := if_neg h
+
+/-- **`higtNF`** (unconditional): NF in range via `isNF_ig`, NF of the finite default else. -/
+theorem isNF_igtTot (l : ℕ) (n m : V) : isNF (igtTot l n m) := by
+  rcases lt_or_ge m (iF l n) with h | h
+  · rw [igtTot_in h]; exact isNF_ig l n m
+  · rw [igtTot_out (not_lt.mpr h)]; exact isNF_ig0 0 0
+
+/-- **`higt0`** (unconditional): nonzero in range via `ig_ne_zero`, nonzero default else. -/
+theorem igtTot_ne_zero (l : ℕ) (n m : V) : igtTot l n m ≠ 0 := by
+  rcases lt_or_ge m (iF l n) with h | h
+  · rw [igtTot_in h]; exact ig_ne_zero l n m h
+  · rw [igtTot_out (not_lt.mpr h)]; exact ig0_ne_zero (by norm_num)
+
+/-- **`higt_exp`** (unconditional): top exponent `0` or finite `≤ l` in range (`higt_exp_ig`); `0` for
+the finite default. Feeds `StdCor34.habove_of_igt_exp`. -/
+theorem higt_exp_igtTot (l : ℕ) (n m : V) :
+    ocExp (igtTot l n m) = 0 ∨ ∃ j : V, j ≤ (l : V) ∧ ocExp (igtTot l n m) = ocOadd 0 j 0 := by
+  rcases lt_or_ge m (iF l n) with h | h
+  · rw [igtTot_in h]; exact higt_exp_ig l n m
+  · rw [igtTot_out (not_lt.mpr h)]; exact Or.inl (ocExp_ig0 (by norm_num))
+
+/-- **`higtC`** (unconditional): the in-range `iC_ig_bound` bumped to also cover the constant default
+(`iC (ig0 0 0) ≤ 2`), using `Kg' = max 2 Kg`. -/
+theorem iC_igtTot_bound (l : ℕ) :
+    ∃ Kg : V, 0 < Kg ∧ ∀ n m, iC (igtTot l n m) ≤ Kg * (n + m + 1) := by
+  obtain ⟨Kg, hKgpos, hKg⟩ := iC_ig_bound (V := V) l
+  refine ⟨max 2 Kg, lt_of_lt_of_le hKgpos (le_max_right _ _), fun n m => ?_⟩
+  rcases lt_or_ge m (iF l n) with h | h
+  · rw [igtTot_in h]; exact le_trans (hKg n m) (by gcongr; exact le_max_right _ _)
+  · rw [igtTot_out (not_lt.mpr h)]
+    calc iC (ig0 (0 : V) 0) ≤ (0 : V) + 2 := iC_ig0_le 0 0
+      _ = 2 := by rw [zero_add]
+      _ ≤ max 2 Kg * (n + m + 1) :=
+          le_trans (le_max_left _ _) (le_mul_of_one_le_right (Arithmetic.zero_le _) le_add_self)
+
+/-- **The in-range within-block descent** (the `salpha_desc.higt_within` brick). Under the within-block
+condition `m + 1 < iF l n` (supplied at the `StdCor34` level by domination: offsets stay below the
+block width `≤ iF l (blk)`), both `igtTot` values are `ig`, and `higt_within` gives the descent. -/
+theorem igtTot_within (l : ℕ) (n m : V) (h : m + 1 < iF l n) :
+    icmp (igtTot l n (m + 1)) (igtTot l n m) = 0 := by
+  have hm : m < iF l n := lt_trans (lt_add_one m) h
+  rw [igtTot_in h, igtTot_in hm]
+  exact higt_within l n m hm
+
 end GoodsteinPA.InternalIg
