@@ -21,6 +21,7 @@ import GoodsteinPA.InternalBump
 namespace GoodsteinPA.InternalONote
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.FirstOrder.Arithmetic.HierarchySymbol
+open GoodsteinPA.InternalPow
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -267,6 +268,147 @@ lemma iC_ocOadd (ec n rc : V) :
     have := ocTail_lt ec n rc; rw [← hc] at this; exact le_iff_lt_succ.mpr (hM ▸ this)
   rw [iC, key, iCNext,
     znth_iCTable_eq_iC M (ocExp c) hexp, znth_iCTable_eq_iC M (ocTail c) htail,
+    ocExp_ocOadd, ocCoeff_ocOadd, ocTail_ocOadd]
+
+/-! ### Internal evaluation `ievalNat` (Rathjen's `T̂^b_ω`) via course-of-values recursion
+
+`ievalNat b c` is `Domination.evalNat b` on the code `c`: `evalNat b 0 = 0`,
+`evalNat b (oadd e n r) = n * (b+1)^(evalNat b e) + evalNat b r`. Same table reduction as `iC`/`ibump`,
+parameterized by the base `b`. The sub-results at `ocExp`/`ocTail` come out of the table. This is the
+`T̂` the descent's order-reflection runs on; on standard inputs it matches `evalNat`, and its base-bump
+is `ibump` (`evalNat_succ_base`). -/
+
+/-- Table step of `ievalNat`: `n * (b+1)^(table@ocExp) + table@ocTail`. -/
+noncomputable def ievalNext (b c s : V) : V :=
+  ocCoeff c * ipow (b + 1) (znth s (ocExp c)) + znth s (ocTail c)
+
+def _root_.LO.FirstOrder.Arithmetic.ievalNextDef : 𝚺₁.Semisentence 4 := .mkSigma
+  “y b c s.
+    ∃ co, !ocCoeffDef co c ∧ ∃ e, !ocExpDef e c ∧ ∃ te, !znthDef te s e ∧
+      ∃ pe, !ipowDef pe (b + 1) te ∧ ∃ t, !sndIdxDef t c ∧ ∃ tt, !znthDef tt s t ∧
+        y = co * pe + tt”
+
+instance ievalNext_defined : 𝚺₁-Function₃ (ievalNext : V → V → V → V) via ievalNextDef := .mk
+  fun v ↦ by
+    simp [ievalNextDef, ievalNext, ocCoeff_defined.iff, ocExp_defined.iff, ocTail, znth_defined.iff,
+      ipow_defined.iff, sndIdx_defined.iff]
+
+instance ievalNext_definable : 𝚺₁-Function₃ (ievalNext : V → V → V → V) :=
+  ievalNext_defined.to_definable
+
+/-- Blueprint for the `ievalNat` table (parameter = base `b`). -/
+def ievalTable.blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y x. !mkSeq₁Def y 0”
+  succ := .mkSigma “y ih n x. ∃ v, !ievalNextDef v x (n + 1) ih ∧ !seqConsDef y ih v”
+
+noncomputable def ievalTable.construction : PR.Construction V ievalTable.blueprint where
+  zero := fun _ ↦ !⟦0⟧
+  succ := fun x n ih ↦ seqCons ih (ievalNext (x 0) (n + 1) ih)
+  zero_defined := .mk fun v ↦ by
+    simp [ievalTable.blueprint, mkSeq₁Def, seqCons_defined.iff, emptyset_def]
+  succ_defined := .mk fun v ↦ by
+    simp [ievalTable.blueprint, ievalNext_defined.iff, seqCons_defined.iff]
+
+/-- **The `ievalNat` table**: `ievalTable b n = ⟨ievalNat b 0,…,ievalNat b n⟩`. -/
+noncomputable def ievalTable (b n : V) : V := ievalTable.construction.result ![b] n
+
+@[simp] lemma ievalTable_zero (b : V) : ievalTable b 0 = !⟦0⟧ := by
+  simp [ievalTable, ievalTable.construction]
+
+@[simp] lemma ievalTable_succ (b n : V) :
+    ievalTable b (n + 1) = seqCons (ievalTable b n) (ievalNext b (n + 1) (ievalTable b n)) := by
+  simp [ievalTable, ievalTable.construction]
+
+/-- **Internal evaluation** `T̂^b_ω(code)` inside `V`: the `c`-th entry of the table. -/
+noncomputable def ievalNat (b c : V) : V := znth (ievalTable b c) c
+
+def _root_.LO.FirstOrder.Arithmetic.ievalTableDef : 𝚺₁.Semisentence 3 :=
+  ievalTable.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
+
+instance ievalTable_defined : 𝚺₁-Function₂ (ievalTable : V → V → V) via ievalTableDef := .mk
+  fun v ↦ by simp [ievalTable.construction.result_defined_iff, ievalTableDef]; rfl
+
+instance ievalTable_definable : 𝚺₁-Function₂ (ievalTable : V → V → V) := ievalTable_defined.to_definable
+instance ievalTable_definable' (Γ) : Γ-[m + 1]-Function₂ (ievalTable : V → V → V) :=
+  ievalTable_definable.of_sigmaOne
+
+def _root_.LO.FirstOrder.Arithmetic.ievalNatDef : 𝚺₁.Semisentence 3 := .mkSigma
+  “y b c. ∃ t, !ievalTableDef t b c ∧ !znthDef y t c”
+
+instance ievalNat_defined : 𝚺₁-Function₂ (ievalNat : V → V → V) via ievalNatDef := .mk fun v ↦ by
+  simp [ievalNatDef, ievalNat, ievalTable_defined.iff, znth_defined.iff]
+
+instance ievalNat_definable : 𝚺₁-Function₂ (ievalNat : V → V → V) := ievalNat_defined.to_definable
+instance ievalNat_definable' (Γ) : Γ-[m + 1]-Function₂ (ievalNat : V → V → V) :=
+  ievalNat_definable.of_sigmaOne
+
+/-! ### Structural correctness of `ievalNat` -/
+
+private lemma def_ievalTable {k} (b : V) (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ ievalTable b (v i)) :=
+  DefinableFunction₂.comp (F := ievalTable) (DefinableFunction.const b) (DefinableFunction.var i)
+
+private lemma def_ievalNat {k} (b : V) (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ ievalNat b (v i)) :=
+  DefinableFunction₂.comp (F := ievalNat) (DefinableFunction.const b) (DefinableFunction.var i)
+
+@[simp] lemma ievalTable_seq (b n : V) : Seq (ievalTable b n) := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₁ (def_ievalTable b 0)
+  case zero => simp
+  case succ n ih => rw [ievalTable_succ]; exact ih.seqCons _
+
+@[simp] lemma ievalTable_lh (b n : V) : lh (ievalTable b n) = n + 1 := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₂ (DefinableFunction₁.comp (F := lh) (def_ievalTable b 0)) (by definability)
+  case zero => simp
+  case succ n ih => rw [ievalTable_succ, Seq.lh_seqCons _ (ievalTable_seq b n), ih]
+
+lemma znth_ievalTable_succ {b n k : V} (hk : k < n + 1) :
+    znth (ievalTable b (n + 1)) k = znth (ievalTable b n) k := by
+  rw [ievalTable_succ]
+  exact znth_seqCons_of_lt (ievalTable_seq b n) _ (by rw [ievalTable_lh]; exact hk)
+
+lemma znth_ievalTable_eq_ievalNat (b : V) : ∀ N : V, ∀ k ≤ N, znth (ievalTable b N) k = ievalNat b k := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · refine Definable.ball_le (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := znth) (def_ievalTable b 1) (DefinableFunction.var 0))
+      (def_ievalNat b 0)
+  case zero =>
+    intro k hk
+    rcases (nonpos_iff_eq_zero.mp hk) with rfl
+    rfl
+  case succ N ih =>
+    intro k hk
+    rcases eq_or_lt_of_le hk with rfl | hlt
+    · rfl
+    · rw [znth_ievalTable_succ hlt]
+      exact ih k (le_iff_lt_succ.mpr hlt)
+
+@[simp] lemma ievalNat_zero (b : V) : ievalNat b 0 = 0 := by
+  simp only [ievalNat, ievalTable_zero]
+  exact (singleton_seq 0).znth_eq_of_mem ((mem_singleton_seq_iff 0 0).mpr rfl)
+
+/-- **The internal `evalNat` recursion**: `ievalNat b (oadd e n r) = n * (b+1)^(ievalNat b e) +
+ievalNat b r` (Rathjen's `T̂`/`evalNat_oadd`), on codes inside `V`. -/
+lemma ievalNat_ocOadd (b ec n rc : V) :
+    ievalNat b (ocOadd ec n rc) = n * ipow (b + 1) (ievalNat b ec) + ievalNat b rc := by
+  set c := ocOadd ec n rc with hc
+  have hpos : 0 < c := ocOadd_pos ec n rc
+  obtain ⟨M, hM⟩ : ∃ M, c = M + 1 :=
+    ⟨c - 1, (sub_add_self_of_le (pos_iff_one_le.mp hpos)).symm⟩
+  have key : znth (ievalTable b c) c = ievalNext b c (ievalTable b M) := by
+    rw [hM, ievalTable_succ]
+    have := znth_seqCons_self (ievalTable_seq b M) (ievalNext b (M + 1) (ievalTable b M))
+    rwa [ievalTable_lh] at this
+  have hexp : ocExp c ≤ M := by
+    have := ocExp_lt ec n rc; rw [← hc] at this; exact le_iff_lt_succ.mpr (hM ▸ this)
+  have htail : ocTail c ≤ M := by
+    have := ocTail_lt ec n rc; rw [← hc] at this; exact le_iff_lt_succ.mpr (hM ▸ this)
+  rw [ievalNat, key, ievalNext,
+    znth_ievalTable_eq_ievalNat b M (ocExp c) hexp, znth_ievalTable_eq_ievalNat b M (ocTail c) htail,
     ocExp_ocOadd, ocCoeff_ocOadd, ocTail_ocOadd]
 
 end GoodsteinPA.InternalONote
