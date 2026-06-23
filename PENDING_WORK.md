@@ -15,18 +15,25 @@ brick does it:
 **⚠ ARCHITECTURE CORRECTION (the lap-30 plan understated this).** Two genuine subtleties for the
 completeness route, BOTH must be handled before the substrate can run inside `M`:
 
-1. **Equality.** The Tait `Derivation.completeness_of_encodable` (used by `descentE`) quantifies its
-   semantic premise over models `M` with `[Structure LX M]` ONLY — `=` is whatever the structure
-   interprets, NOT real Lean equality. The substrate (`igoodstein` etc.) is plain Lean arithmetic over
-   `V`, needing real `=`. **Honest precondition = `[Structure.Eq LX M]`** (proved sufficient in
-   `ReductModel`). To SUPPLY it, re-route `descentE` through the equality-respecting completeness:
-   `EQ.provOf` (`Foundation/.../Completeness/Corollaries.lean`) gives `paLX ⊨ φ` from a premise over
-   `[Structure.Eq L M]`-models, needs `[L.Eq]` (LX has it) + `𝗘𝗤 ⪯ paLX` (TODO: prove — the LX eq
-   axioms are `lMap Φ`-images of ℒₒᵣ eq axioms in `lMap Φ 𝗣𝗔⁻`). Then `completeness_of_encodable :
-   T ⊨ φ → T ⊢ φ` → `Derivation2`. SOUND because `TI prec` is closed (`freeVariables_TI = ∅`) → a
-   `Sentence` (coerce via `Semiformula.toEmpty`). **NEXT-LAP TASK A** (bounded plumbing; keep build
-   green — changing `paLX_models_TI_of_PA_provable`'s signature to add `[Structure.Eq LX M]` forces the
-   `descentE` re-route in the same edit).
+1. **Equality (FULLY SCOPED lap 31 — see `ANALYSIS-2026-06-23-lap31-equality-architecture.md`).** The
+   Tait `Derivation` calculus has NO equality rules (verified `Calculus.lean:20`), so
+   `completeness_of_encodable` (used by `descentE`) gives models where `=` is an arbitrary relation,
+   NOT real equality. The substrate needs real `=`. **Honest precondition = `[Structure.Eq LX M]`**
+   (proved sufficient in `ReductModel`). To SUPPLY it, restrict to `[Structure.Eq]`-models via
+   `EQ.provOf` (`Completeness/Corollaries.lean`) — which needs **`𝗘𝗤 ⪯ paLX`**. The EXACT gap = ONE
+   axiom: **X-congruence `Theory.Eq.relExt Xsym` = `∀x y, x=y → X(x) → X(y)`** (the ℒₒᵣ-part of
+   `𝗘𝗤(LX)` is `lMap Φ 𝗘𝗤(ℒₒᵣ)`, already in `lMap Φ 𝗣𝗔⁻ ⊆ paLX`; `𝗘𝗤 ⪯ paLX` `infer_instance`
+   FAILS only for X-cong — verified). **NEXT-LAP TASK A**, two parts:
+   - **A1 (the crux, deep-but-bounded):** augment `paLX` with X-congruence and re-validate
+     `peano_not_proves_TI` — `hax_paLX` needs a NEW branch discharging X-congruence into the
+     `PXFc`/`XFreeAx` `Z∞` carrier (it is NOT X-free, so `provable_true_x` doesn't apply; it's not an
+     induction instance either). ONE simple true low-complexity axiom → a small bounded-ordinal `PXFc`
+     derivation in `EmbeddingBound`/`EmbeddingX`. The `α`/cut-rank bound of `peano_not_proves_TI` is
+     otherwise unchanged. This is the real new work; START it next lap.
+   - **A2 (plumbing):** `EQ.provOf` + `completeness_of_encodable : T ⊨ φ → T ⊢ φ` + `Semiformula.toEmpty`
+     of `TI prec` (`emb_toEmpty` un-coerces) + `provable_def`/`provable_iff_derivable2` → `Derivation2`.
+     Fiddly/bounded. Blast radius: `paLX` is woven through 6 files — augmenting its def risks a red
+     build; consider a separate `paLX'` (but `peano_not_proves_TI'` still re-runs the embedding, A1).
 
 2. **Opaque headline blob ↔ transparent substrate (THE arithmetization wall).** `hgood` gives
    `reduct ⊧ goodsteinSentence`, and `goodsteinSentence = ∀⁰ (codeOfREPred goodsteinTerminates)` is an
