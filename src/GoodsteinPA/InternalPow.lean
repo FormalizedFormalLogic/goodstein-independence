@@ -123,4 +123,14 @@ lemma ipow_le_ipow_left {b c : V} (h : b ≤ c) (x : V) : ipow b x ≤ ipow c x 
     rw [ipow_succ, ipow_succ]
     exact mul_le_mul ih h (Arithmetic.zero_le b) (Arithmetic.zero_le (ipow c x))
 
+/-- `ipow` is **strictly** monotone in the base at a positive exponent:
+`b < c → 0 < x → ipow b x < ipow c x`. -/
+lemma ipow_lt_ipow_left {b c : V} (hbc : b < c) {x : V} (hx : 0 < x) :
+    ipow b x < ipow c x := by
+  have hc0 : 0 < c := lt_of_le_of_lt (Arithmetic.zero_le b) hbc
+  obtain ⟨m, rfl⟩ : ∃ m, x = m + 1 :=
+    ⟨x - 1, (sub_add_self_of_le (pos_iff_one_le.mp hx)).symm⟩
+  rw [ipow_succ, ipow_succ]
+  exact mul_lt_mul' (ipow_le_ipow_left (le_of_lt hbc) m) hbc (Arithmetic.zero_le b) (ipow_pos hc0 m)
+
 end GoodsteinPA.InternalPow

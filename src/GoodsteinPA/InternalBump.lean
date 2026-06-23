@@ -237,4 +237,47 @@ theorem le_ibump {b : V} (hb : 2 ≤ b) : ∀ n, n ≤ ibump b n := by
             gcongr
         _ = _ := rfl
 
+/-- **Strict growth above the base** (internal analogue of `Domination.bump_gt`): for `b ≤ n`, one
+hereditary base-change strictly increases the value, `n + 1 ≤ ibump b n`. The leading power `b^L`
+(`L = ilog b n ≥ 1`) is sent to `(b+1)^(ibump b L) > b^L`, so the leading term alone already exceeds
+`n`. Digit-direct (no ordinals), so it internalizes; the `ℕ` proof's ordinal route does not. -/
+theorem ibump_gt {b : V} (hb : 2 ≤ b) {n : V} (hn : b ≤ n) : n + 1 ≤ ibump b n := by
+  have hb0 : (0 : V) < b := lt_of_lt_of_le (by simp) hb
+  have hnpos : (0 : V) < n := lt_of_lt_of_le hb0 hn
+  set L := ilog b n with hL
+  have hL1 : 1 ≤ L := ilog_pos hb hn
+  have hbe_pos : 0 < ipow b L := ipow_pos hb0 L
+  have hbe_le : ipow b L ≤ n := ipow_ilog_le hb hnpos
+  have hq1 : 1 ≤ n / ipow b L := by
+    rcases eq_or_ne (n / ipow b L) 0 with h0 | h0
+    · exfalso
+      have hlt := lt_mul_div n hbe_pos
+      rw [h0] at hlt; simp at hlt
+      exact absurd hlt (not_lt.mpr hbe_le)
+    · exact pos_iff_one_le.mp (pos_iff_ne_zero.mpr h0)
+  have hpow_lt : ipow b L < ipow (b + 1) L :=
+    ipow_lt_ipow_left (by simp) (pos_iff_one_le.mpr hL1)
+  have hpow_le : ipow (b + 1) L ≤ ipow (b + 1) (ibump b L) :=
+    ipow_le_ipow_right (by simp) (le_ibump hb L)
+  have hP : ipow b L + 1 ≤ ipow (b + 1) (ibump b L) :=
+    lt_iff_succ_le.mp (lt_of_lt_of_le hpow_lt hpow_le)
+  have hr_le : n % ipow b L ≤ ibump b (n % ipow b L) := le_ibump hb _
+  have hbump := ibump_pos hb hnpos
+  have hn_eq : n / ipow b L * ipow b L + n % ipow b L = n := by
+    rw [mul_comm]; exact div_add_mod n (ipow b L)
+  rw [← hL] at hbump
+  set q := n / ipow b L with hq
+  set BL := ipow b L with hBL
+  set P := ipow (b + 1) (ibump b L) with hPdef
+  have hmul : q * (BL + 1) ≤ q * P := by gcongr
+  have hexp : q * (BL + 1) = q * BL + q := by rw [mul_add, mul_one]
+  have hkey : q * BL + q ≤ q * P := hexp ▸ hmul
+  rw [hbump]
+  have hge : q * BL + q + n % BL ≤ q * P + ibump b (n % BL) := add_le_add hkey hr_le
+  have heq : n + 1 ≤ q * BL + q + n % BL := by
+    have e1 : q * BL + q + n % BL = q * BL + n % BL + q := add_right_comm _ _ _
+    rw [e1, hn_eq]
+    exact add_le_add (le_refl n) hq1
+  exact le_trans heq hge
+
 end GoodsteinPA.InternalPow

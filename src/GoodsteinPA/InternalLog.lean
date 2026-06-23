@@ -82,6 +82,16 @@ lemma ipow_ilog_le {b n : V} (hb : 2 ≤ b) (hn : 0 < n) : ipow b (ilog b n) ≤
 lemma lt_ipow_ilog_succ {b n : V} (hb : 2 ≤ b) (hn : 0 < n) : n < ipow b (ilog b n + 1) :=
   (ilog_spec hb hn).2
 
+/-- `1 ≤ ilog b n` once `b ≤ n` (the leading exponent is at least 1). If `ilog b n = 0` then
+`n < ipow b 1 = b`, contradicting `b ≤ n`. -/
+lemma ilog_pos {b n : V} (hb : 2 ≤ b) (hn : b ≤ n) : 1 ≤ ilog b n := by
+  have hnpos : 0 < n := lt_of_lt_of_le (lt_of_lt_of_le (by simp) hb) hn
+  by_contra h
+  have h0 : ilog b n = 0 := nonpos_iff_eq_zero.mp (le_iff_lt_succ.mpr (by simpa using not_le.mp h))
+  have hlt := lt_ipow_ilog_succ hb hnpos
+  rw [h0, zero_add, ipow_one] at hlt
+  exact absurd hlt (not_lt.mpr hn)
+
 /-- Graph of `ilog`, for the `𝚺₁`-definability instance below. -/
 lemma ilog_graph {e b n : V} :
     e = ilog b n ↔ ((2 ≤ b ∧ 0 < n) → ipow b e ≤ n ∧ n < ipow b (e + 1))
