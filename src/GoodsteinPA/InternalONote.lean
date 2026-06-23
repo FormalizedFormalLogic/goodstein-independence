@@ -1255,5 +1255,82 @@ theorem ievalNat_lt_of_icmp_eq_zero {b : V} (hb : 1 ≤ b) {o p : V}
   (evalNat_reflect_combined hb (max o p)).2 o (le_max_left _ _) p (le_max_right _ _)
     hno hnp hco hcp h
 
+/-! ### `evalNat`'s base-bump law (the substrate bridge to `ibump`) -/
+
+/-- **`ilog` from explicit bounds.** If `b^E ≤ x < b^(E+1)` then `ilog b x = E` — uniqueness of the
+leading exponent (mirrors `ilog_exists_unique`'s uniqueness clause). -/
+lemma ilog_eq_of_bounds {b x E : V} (hb : 2 ≤ b) (h1 : ipow b E ≤ x) (h2 : x < ipow b (E + 1)) :
+    ilog b x = E := by
+  have hb1 : (1 : V) ≤ b := le_trans (by simp) hb
+  have hx : 0 < x := lt_of_lt_of_le (ipow_pos (lt_of_lt_of_le (by simp) hb) E) h1
+  have hle : ipow b (ilog b x) ≤ x := ipow_ilog_le hb hx
+  have hlt : x < ipow b (ilog b x + 1) := lt_ipow_ilog_succ hb hx
+  rcases lt_trichotomy (ilog b x) E with h | h | h
+  · exact absurd (lt_of_lt_of_le (lt_of_lt_of_le hlt
+      (ipow_le_ipow_right hb1 (lt_iff_succ_le.mp h))) h1) (_root_.lt_irrefl x)
+  · exact h
+  · exact absurd (lt_of_lt_of_le (lt_of_lt_of_le h2
+      (ipow_le_ipow_right hb1 (lt_iff_succ_le.mp h))) hle) (_root_.lt_irrefl x)
+
+/-- **Tail value bound** (extracted from `evalNat_reflect_combined`'s TB component): on `isNF`/`iCanon b`,
+the tail value is strictly below the leading power `(b+1)^(ievalNat b (ocExp c))`. -/
+lemma ievalNat_tail_lt {b : V} (hb : 1 ≤ b) {c : V} (hnf : isNF c) (hcanon : iCanon b c)
+    (hc : c ≠ 0) : ievalNat b (ocTail c) < ipow (b + 1) (ievalNat b (ocExp c)) :=
+  (evalNat_reflect_combined hb c).1 c le_rfl hnf hcanon hc
+
+/-- **Internal `evalNat` base-bump law** (Rathjen's `T̂ ∘ T` bridge, internalized — the analogue of
+`DescentCore.evalNat_succ_base`). Raising the evaluation base by one is exactly the hereditary
+base-change `ibump (b+1)` of the value: `ievalNat (b+1) c = ibump (b+1) (ievalNat b c)` for `isNF`/
+`iCanon b` codes. Proved **digit-direct** by strong induction on the code: peel the leading term
+(`ilog`/`/`/`%` via `ilog_eq_of_bounds` + the tail bound), unfold `ibump_pos`, recurse on the exponent
+and tail. (No ordinals ⟹ it internalizes; the ℕ-level `toONote`/`repr` route does not.) -/
+theorem evalNat_succ_base {b : V} (hb : 1 ≤ b) :
+    ∀ w : V, ∀ c ≤ w, isNF c → iCanon b c →
+      ievalNat (b + 1) c = ibump (b + 1) (ievalNat b c) := by
+  have hb2 : (2 : V) ≤ b + 1 := by rw [← one_add_one_eq_two]; gcongr
+  have hb0 : (0 : V) < b + 1 := lt_of_lt_of_le (by simp) hb2
+  intro w
+  induction w using ISigma1.sigma1_order_induction
+  · definability
+  case ind w ih =>
+    intro c hcw hnf hcanon
+    rcases eq_or_ne c 0 with rfl | hc
+    · simp
+    · obtain ⟨e, n, r, rfl⟩ : ∃ e n r, c = ocOadd e n r :=
+        ⟨ocExp c, ocCoeff c, ocTail c, (ocOadd_destruct hc).symm⟩
+      obtain ⟨hn0, hnfe, hnfr, _⟩ := (isNF_ocOadd e n r).1 hnf
+      obtain ⟨hnb, hcae, hcar⟩ := (iCanon_ocOadd b e n r).1 hcanon
+      have hn1 : 1 ≤ n := by simpa using lt_iff_succ_le.mp (pos_iff_ne_zero.mpr hn0)
+      have hDpos : 0 < ipow (b + 1) (ievalNat b e) := ipow_pos hb0 _
+      have hvpos : 0 < ievalNat b (ocOadd e n r) := ievalNat_pos hnf (ocOadd_ne_zero e n r)
+      have htb : ievalNat b r < ipow (b + 1) (ievalNat b e) := by
+        have := ievalNat_tail_lt hb hnf hcanon (ocOadd_ne_zero e n r)
+        rwa [ocTail_ocOadd, ocExp_ocOadd] at this
+      have hilog : ilog (b + 1) (ievalNat b (ocOadd e n r)) = ievalNat b e := by
+        rw [ievalNat_ocOadd]
+        refine ilog_eq_of_bounds hb2 ?_ ?_
+        · calc ipow (b + 1) (ievalNat b e)
+              = 1 * ipow (b + 1) (ievalNat b e) := (one_mul _).symm
+            _ ≤ n * ipow (b + 1) (ievalNat b e) := by gcongr
+            _ ≤ n * ipow (b + 1) (ievalNat b e) + ievalNat b r := le_self_add
+        · rw [ipow_succ]
+          calc n * ipow (b + 1) (ievalNat b e) + ievalNat b r
+              < n * ipow (b + 1) (ievalNat b e) + ipow (b + 1) (ievalNat b e) := by gcongr
+            _ = (n + 1) * ipow (b + 1) (ievalNat b e) := by rw [add_mul, one_mul]
+            _ ≤ (b + 1) * ipow (b + 1) (ievalNat b e) := by gcongr
+            _ = ipow (b + 1) (ievalNat b e) * (b + 1) := mul_comm _ _
+      have hdiv : ievalNat b (ocOadd e n r) / ipow (b + 1) (ievalNat b e) = n := by
+        rw [ievalNat_ocOadd]; exact div_mul_add n _ htb
+      have hmod : ievalNat b (ocOadd e n r) % ipow (b + 1) (ievalNat b e) = ievalNat b r := by
+        rw [ievalNat_ocOadd, add_comm (n * ipow (b + 1) (ievalNat b e)),
+          mod_add_mul _ n hDpos, mod_eq_self_of_lt htb]
+      have he_lt : e < w :=
+        lt_of_lt_of_le (by have := ocExp_lt e n r; rwa [ocExp_ocOadd] at this) hcw
+      have hr_lt : r < w :=
+        lt_of_lt_of_le (by have := ocTail_lt e n r; rwa [ocTail_ocOadd] at this) hcw
+      have ihe : ievalNat (b + 1) e = ibump (b + 1) (ievalNat b e) := ih e he_lt e le_rfl hnfe hcae
+      have ihr : ievalNat (b + 1) r = ibump (b + 1) (ievalNat b r) := ih r hr_lt r le_rfl hnfr hcar
+      rw [ievalNat_ocOadd, ibump_pos hb2 hvpos, hilog, hdiv, hmod, ihe, ihr]
+
 
 end GoodsteinPA.InternalONote
