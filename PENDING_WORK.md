@@ -1,6 +1,36 @@
 # Pending work — open obligations & attack paths
 
-## 🎯 LAP-23 (2026-06-23) — E decomposition GROUNDED + first E-lift bricks LANDED. Read FIRST.
+## 🎯 LAP-24 (2026-06-23) — E-core kernel landed + back-end correction. Read FIRST.
+
+**Two walls left: E-core + F-φ** (D' discharged lap 22; E-lift X-free half done lap 23). Build green
+1271 jobs; headline `sorry` intact. F-φ on Aristotle (`aris_onotecmp`, running). See refreshed
+`STATUS.md` + `DESCENT-PLAN.md §3a` (Σ₁-completeness reframe) + `DESCENT-PLAN.md §1 CORRECTION`.
+
+**✅ Landed this lap (`src/GoodsteinPA/DescentCore.lean`, axiom-clean):** `Dom.ineq6_step` — the
+non-vacuous Π₁ kernel of Rathjen Lemma 3.6 (one special Goodstein step from `m ≥ T̂^{k+2}_ω(βₖ)` lands
+`≥ T̂^{k+3}_ω(β_{k+1})`), + `lemma36_ineq6`/`lemma36_nonterminating` (the `∀k` iteration — **semantic
+shadow only**, vacuous hypotheses since ε₀ is well-founded; the real content is the arithmetization).
+Weakened `Domination.canon_repr` `2≤b → 1≤b` (base-2 `T̂²_ω` needs `evalNat 1`).
+
+**⚠️ Back-end correction (lap 24).** The DESCENT-PLAN's "`PRWO ⟹ TI prec` = one X-instance" understated
+the Route-B bridge: Rathjen's `PRWO(ε₀)` is the **primrec** well-ordering statement (Thm 2.8), and a
+counterexample to the free-X `TI prec` yields an **X-definable** (not primrec) descent, so primrec-`PRWO`
+can't refute `TI prec` directly. The honest Route-B bridge = carry out Rathjen §3 **inside paLX** with the
+free-X descent (LX least-number scheme + inequality (6), contradicting the lifted X-free Goodstein at the
+X-definable seed). **De-risking:** `Goodstein ⟹ PRWO(ε₀)` (Rathjen §3) is **shared by both back-ends**
+(Route A `PRWO ⟹ Con(PA)` + Gödel II, costs `PA_delta1Definable`; Route B the integrated paLX construction,
+axiom-clean). **Focus E-core on the shared §3; defer the back-end choice.** Lit request filed
+(`ON-LINE-REQUEST.md` lap 24) to pin the cheaper back-end.
+
+**Next concrete bricks (route-independent §3):** (1) the slow-down constructions Rathjen Lemma 3.3 / Cor
+3.4 / Thm 3.5 — the explicit padding function `g : ℕ² → ω^ω` and the bounded-coefficient sequence `βⱼ`,
+with their *step* properties (descending-at-a-step, `C(βᵣ)≤r+1`) as non-vacuous finite ℕ/ONote facts
+(Lemma 3.2 = mathlib `exists_lt_ack_of_nat_primrec`). (2) Then the arithmetization: inequality (6)'s `∀k`
+as a genuine PA-induction (the dominant wall; Σ₁ glue is free via `sigma_one_completeness`).
+
+---
+
+## 🎯 LAP-23 (2026-06-23) — E decomposition GROUNDED + first E-lift bricks LANDED.
 
 Read **`DESCENT-PLAN.md`** (new, this lap): the full E wall mapped from Rathjen 2014 §2–3 to repo defs,
 with the exact Foundation E-lift bricks (`Derivation.lMap`, `provable_iff_derivable2`,

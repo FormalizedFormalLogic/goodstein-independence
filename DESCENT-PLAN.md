@@ -51,6 +51,35 @@ So **E factors as** `E-core ∘ E-lift`:
   ──[E-lift, proof translation + X-induction instance]──▶  Derivation2 paLX {TI prec}
 ```
 
+### ⚠️ CORRECTION (lap 24) — the back-end is subtler than "one X-instance"; `Goodstein ⟹ PRWO` is SHARED
+
+Grounding the above against Rathjen §2 (Thm 2.6/2.8, Cor 2.7/3.7) and Buchholz revealed two things the
+first sketch glossed:
+
+1. **Rathjen's `PRWO(ε₀)` is the *primitive-recursive* well-ordering statement** ("no descending **primrec**
+   ε₀-sequence", Thm 2.8 / Cor 2.7), and his §3 slow-down is explicitly primrec (Lemma 3.2 = Grzegorczyk/
+   `ack`). His actual headline route is **Route A**: `Goodstein ⟹ PRWO(ε₀)` (§3) + `PRWO ⟹ Con(PA)`
+   (Gentzen, Thm 2.8(i)) + Gödel II. He does **not** use Buchholz's `TI_≺(X)`.
+
+2. **`PRWO(ε₀) ⟹ paLX ⊢ TI prec` is NOT "one X-instance".** `TI prec` carries the **free** predicate `X`;
+   a counterexample to it yields an `X`-*definable* descending sequence, which is **not primrec**, so
+   primrec-`PRWO` cannot refute it. The honest Route-B bridge must carry out Rathjen §3 **inside paLX with
+   the free-X descent** (define the descent from `¬X` via the LX least-number/induction scheme; slow it
+   down; run inequality (6); contradict the *lifted, X-free* `goodsteinSentence` instantiated at the
+   X-definable seed `m₀ = T̂²_ω(β₀)`). I.e. E-core(b) for Route B is an *integrated* paLX derivation, not
+   "PA proves PRWO, then a one-line lift". (E-lift is still used — but only to import the X-free Goodstein
+   hypothesis into paLX, `σ = goodsteinSentence`.)
+
+**The de-risking consequence (route-independent focus).** The hard mathematical content —
+**`Goodstein ⟹ PRWO(ε₀)` = Rathjen §3 (slow-down + inequality (6))** — is needed by **both** back-ends and
+is therefore **never wasted**. So:
+
+> **Plan:** focus E-core on the **shared** `Goodstein ⟹ PRWO(ε₀)` (§3); inequality (6)'s step is done
+> (`Dom.ineq6_step`, lap 24). **Defer the back-end choice** — Route A (`Reduction.goodstein_implies_consistency`
+> via `PRWO ⟹ Con(PA)` + Gödel II; costs the 🟡 `PA_delta1Definable` axiom) vs Route B (the integrated
+> paLX construction; axiom-clean but heavier) — until §3 is formalized. See `ON-LINE-REQUEST.md` (lap 24)
+> for the literature question that pins which back-end is cheaper to land.
+
 ---
 
 ## 2. E-lift — proof translation (Foundation bricks VERIFIED this lap)
