@@ -82,4 +82,25 @@ lemma ipow_ilog_le {b n : V} (hb : 2 ≤ b) (hn : 0 < n) : ipow b (ilog b n) ≤
 lemma lt_ipow_ilog_succ {b n : V} (hb : 2 ≤ b) (hn : 0 < n) : n < ipow b (ilog b n + 1) :=
   (ilog_spec hb hn).2
 
+/-- Graph of `ilog`, for the `𝚺₁`-definability instance below. -/
+lemma ilog_graph {e b n : V} :
+    e = ilog b n ↔ ((2 ≤ b ∧ 0 < n) → ipow b e ≤ n ∧ n < ipow b (e + 1))
+        ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0) :=
+  Classical.choose!_eq_iff_right _
+
+def _root_.LO.FirstOrder.Arithmetic.ilogDef : 𝚺₁.Semisentence 3 := .mkSigma
+  “e b n. (2 ≤ b ∧ 0 < n → (∃ pe, !ipowDef pe b e ∧ pe ≤ n) ∧ (∃ pf, !ipowDef pf b (e + 1) ∧ n < pf))
+        ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0)”
+
+instance ilog_defined : 𝚺₁-Function₂ (ilog : V → V → V) via ilogDef := .mk fun v ↦ by
+  simp [ilogDef, ilog_graph, ipow_defined.iff]
+  refine fun _ => ⟨fun h hyp => h ?_, fun h hyp => h (fun h2 => hyp.resolve_left (not_lt.mpr h2))⟩
+  by_cases h2 : 2 ≤ v 1
+  · exact Or.inr (hyp h2)
+  · exact Or.inl (not_le.mp h2)
+
+instance ilog_definable : 𝚺₁-Function₂ (ilog : V → V → V) := ilog_defined.to_definable
+
+instance ilog_definable' (Γ) : Γ-[m + 1]-Function₂ (ilog : V → V → V) := ilog_definable.of_sigmaOne
+
 end GoodsteinPA.InternalPow
