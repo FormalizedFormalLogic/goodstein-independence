@@ -427,4 +427,42 @@ theorem igtTot_within (l : ℕ) (n m : V) (h : m + 1 < iF l n) :
   rw [igtTot_in h, igtTot_in hm]
   exact higt_within l n m hm
 
+/-! ## Definability of the `ig`-recursion leaf functions (toward the crux-1 `hdef` obligation)
+
+The `crux1_internal_run` (`wip/StdCor34.lean`) needs `𝚺₁`-definability of the slowed sequence. These
+leaf instances are the reusable bottom of that chain — built with **explicit `Definable.comp` terms**
+(the `definability` aesop tactic blows its depth limit on the nested `ocOadd`/`iwseq` compositions; see
+memory `definability-aesop-depth-blowup`). The remaining links (`ig0`/`ig`/`igtTot`/`salpha`/`bbeta`)
+need an `ite`-definability lemma + the `ig` meta-recursion, deferred (`PENDING_WORK`). -/
+
+open LO.FirstOrder.Arithmetic.HierarchySymbol in
+/-- `iblk k` is `𝚺₁`-definable in `(c, x)` (the lead `ω^k·c + x`, fixed standard level `k`). -/
+instance iblk_definable (k : ℕ) (Γ) : Γ-[m + 1]-Function₂ (iblk k : V → V → V) := by
+  unfold iblk
+  exact DefinableFunction₃.comp (F := ocOadd) (hF := ocOadd_definable.of_sigmaOne)
+    (DefinableFunction.const (ocOadd 0 (k : V) 0))
+    (DefinableFunction.var 0) (DefinableFunction.var 1)
+
+open LO.FirstOrder.Arithmetic.HierarchySymbol in
+/-- `iblockIdx` (for the concrete level `l`) is `𝚺₁`-definable in `(n, m)`: `blk (iwseq … n (m+1)) m`. -/
+instance iblockIdx_definable (l : ℕ) (Γ) :
+    Γ-[m + 1]-Function₂ (iblockIdx (iFDef l) (iF l) (iF_defined l) : V → V → V) := by
+  unfold iblockIdx
+  exact DefinableFunction₂.comp (F := BlkRec.blk)
+    (DefinableFunction₂.comp (F := iwseq (iFDef l) (iF l) (iF_defined l))
+      (DefinableFunction.var 0)
+      (DefinableFunction₂.comp (F := (· + ·)) (DefinableFunction.var 1) (DefinableFunction.const 1)))
+    (DefinableFunction.var 1)
+
+open LO.FirstOrder.Arithmetic.HierarchySymbol in
+/-- `iblockOff` (for the concrete level `l`) is `𝚺₁`-definable in `(n, m)`: `off (iwseq … n (m+1)) m`. -/
+instance iblockOff_definable (l : ℕ) (Γ) :
+    Γ-[m + 1]-Function₂ (iblockOff (iFDef l) (iF l) (iF_defined l) : V → V → V) := by
+  unfold iblockOff
+  exact DefinableFunction₂.comp (F := BlkRec.off)
+    (DefinableFunction₂.comp (F := iwseq (iFDef l) (iF l) (iF_defined l))
+      (DefinableFunction.var 0)
+      (DefinableFunction₂.comp (F := (· + ·)) (DefinableFunction.var 1) (DefinableFunction.const 1)))
+    (DefinableFunction.var 1)
+
 end GoodsteinPA.InternalIg

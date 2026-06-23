@@ -54,9 +54,15 @@ isolated to exactly **three named hypotheses**:
 1. **input `β`** (`hβNF`/`hβ0`/`hβdesc`/`hβC`) — the gentzen ε₀-descent as a ≺-descending NF V-sequence;
 2. **`hdom`** — domination (Lemma 3.2): `off j + 1 < iF l₀ (blk j)`;
 3. **`hdef`** — `𝚺₁`-definability of `bbeta K s (salpha (↑l₀) β (BlkRec.blk wseq) (BlkRec.off wseq)
-   (igtTot l₀))` (∀ K s; uniform construction). The next mechanical-ish brick: build the definability
-   chain `igtTot`/`ig` definable → `salpha` definable → `bbeta` definable (watch the aesop-depth blowup
-   per memory `definability-aesop-depth-blowup`; write explicit `Definable.comp` terms).
+   (igtTot l₀))` (∀ K s; uniform construction). STARTED (lap 54): the leaf instances
+   **`iblk_definable`/`iblockIdx_definable`/`iblockOff_definable`** are now in `src/InternalIg` (explicit
+   `DefinableFunction₂/₃.comp` terms — `definability` aesop blows its depth on the nested `ocOadd`/`iwseq`,
+   per memory). **KEY UNLOCK still owed: an `ite`-definability lemma** (`fun x => if P x then f x else g x`
+   definable from definable `P`,`f`,`g`) — Foundation has NO direct helper; build it via the graph
+   disjunction `z = ite ↔ (P ∧ z=f) ∨ (¬P ∧ z=g)` as a `Defined` Semisentence. That unlocks
+   `ig0`/`ig`(meta-induction on `l`)/`igtTot`/`bbtail` already-comp/`bbeta`/`icorAlpha`/`salpha`
+   definability — the rest of the chain. NB `bbtail` is `iadd`/`iomul`/`ocOadd`/`/`/`%` comp (no ite);
+   `bbeta` and `ig0`/`igtTot` are the ite ones; `ig` also needs meta-induction `∀ l, Function₂ (ig l)`.
 
 **REMAINING crux-1 frontier (hardest-first), all now isolated as named hypotheses of `bbeta_of_igtTot`:**
 1. **`hdom` = domination (Rathjen Lemma 3.2)**: `off j + 1 < iF l₀ (blk j)` — the within-block offset
