@@ -474,6 +474,59 @@ def AllExpAbove (b : ONote) : ONote → Prop
   | 0 => True
   | ONote.oadd e _ a' => b.repr < (ω : Ordinal) ^ (ONote.repr e) ∧ AllExpAbove b a'
 
+/-- Every exponent of `a` has `repr ≥ k` (recursively). `bigMul (l+1) β` satisfies `MinExpGe (l+1)`. -/
+def MinExpGe (k : ℕ) : ONote → Prop
+  | 0 => True
+  | ONote.oadd e _ a' => (k : Ordinal) ≤ ONote.repr e ∧ MinExpGe k a'
+
+theorem MinExpGe_zero : ∀ (a : ONote), MinExpGe 0 a
+  | 0 => trivial
+  | ONote.oadd _ _ a' => ⟨bot_le, MinExpGe_zero a'⟩
+
+/-- `ω·` bumps every exponent's `repr` by `1`, so `MinExpGe k o → MinExpGe (k+1) (ω·o)`. -/
+theorem MinExpGe_omega_mul {k : ℕ} : ∀ {o : ONote}, o.NF → MinExpGe k o →
+    MinExpGe (k + 1) (GoodsteinPA.Dom.omegaO * o)
+  | 0, _, _ => by simp [GoodsteinPA.Dom.omegaO, MinExpGe]
+  | ONote.oadd e₂ n₂ a₂, hNF, hm => by
+    obtain ⟨hke, hma⟩ := hm
+    have hNFe : e₂.NF := hNF.fst
+    have hNFa : a₂.NF := hNF.snd
+    rw [show GoodsteinPA.Dom.omegaO = ONote.oadd 1 1 0 from rfl, ONote.oadd_mul]
+    by_cases e0 : e₂ = 0
+    · subst e0
+      have hk0 : k = 0 := by
+        simp only [ONote.repr_zero] at hke
+        exact_mod_cast Ordinal.le_zero.1 hke
+      subst hk0
+      simp only [↓reduceIte]
+      exact ⟨by simp, trivial⟩
+    · simp only [e0, ↓reduceIte]
+      refine ⟨?_, MinExpGe_omega_mul hNFa hma⟩
+      have hadd : ONote.repr ((1 : ONote) + e₂) = 1 + ONote.repr e₂ := by
+        haveI := hNFe; rw [ONote.repr_add, ONote.repr_one]; norm_num
+      rw [hadd, show ((k + 1 : ℕ) : Ordinal) = 1 + (k : Ordinal) by
+        rw [show k + 1 = 1 + k from Nat.add_comm k 1, Nat.cast_add, Nat.cast_one]]
+      gcongr
+
+theorem MinExpGe_bigMul (k : ℕ) {β : ONote} (hβ : β.NF) : MinExpGe k (bigMul k β) := by
+  induction k with
+  | zero => exact MinExpGe_zero _
+  | succ k ih => rw [bigMul_succ]; exact MinExpGe_omega_mul (NF_bigMul k hβ) ih
+
+theorem AllExpAbove_of_MinExpGe {b : ONote} {k : ℕ} (hb : b.repr < (ω : Ordinal) ^ (k : ℕ)) :
+    ∀ {a : ONote}, MinExpGe k a → AllExpAbove b a
+  | 0, _ => trivial
+  | ONote.oadd e _ a', hm => by
+    obtain ⟨hke, hma⟩ := hm
+    refine ⟨lt_of_lt_of_le hb ?_, AllExpAbove_of_MinExpGe hb hma⟩
+    rw [← Ordinal.opow_natCast]
+    exact Ordinal.opow_le_opow_right Ordinal.omega0_pos hke
+
+/-- `AllExpAbove b (ω^k·β)` whenever `b < ω^k` — the clean-append condition for the Cor 3.4 sum. -/
+theorem AllExpAbove_bigMul {b β : ONote} (hβ : β.NF) {k : ℕ}
+    (hb : b.repr < (ω : Ordinal) ^ (k : ℕ)) : AllExpAbove b (bigMul k β) :=
+  AllExpAbove_of_MinExpGe hb (MinExpGe_bigMul k hβ)
+
 /-- **Clean-append bound.** If every exponent of `a` dominates `b`, then `a + b` is `a` with `b`
 grafted as its tail, so `C (a + b) ≤ max (C a) (C b)`. -/
 theorem C_add_clean : ∀ {a : ONote}, a.NF → ∀ {b : ONote}, b.NF → AllExpAbove b a →
