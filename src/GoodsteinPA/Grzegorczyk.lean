@@ -196,6 +196,31 @@ theorem psum_add_blockOff (f : ℕ → ℕ) (n m : ℕ) :
     psum f n (blockIdx f n m) + blockOff f n m = m := by
   have := psum_blockIdx_le f n m; simp only [blockOff]; omega
 
+/-- Every iterate of `F l` stays `≥ 1` from a positive start (so every block has positive width). -/
+theorem one_le_F_iter (l : ℕ) {n : ℕ} (hn : 1 ≤ n) : ∀ t, 1 ≤ (F l)^[t] n := by
+  intro t
+  induction t with
+  | zero => simpa using hn
+  | succ t ih => rw [Function.iterate_succ_apply']; exact one_le_F l ih
+
+/-- For `f = F l` and `n ≥ 1`, the partial sums are strictly monotone (every block nonempty). -/
+theorem psum_strictMono (l : ℕ) {n : ℕ} (hn : 1 ≤ n) : StrictMono (psum (F l) n) :=
+  strictMono_nat_of_lt_succ fun i =>
+    psum_strictMono_step (F l) n i (one_le_F_iter l hn (i + 1))
+
+/-- **Block-index uniqueness**: if `psum (F l) n i ≤ x < psum (F l) n (i+1)` with `i ≤ n`, then `x`'s
+block is exactly `i`. The engine that lets the recursion read off `blockIdx (F l) n (m+1)`. -/
+theorem blockIdx_eq (l : ℕ) {n : ℕ} (hn : 1 ≤ n) {i x : ℕ} (hin : i ≤ n)
+    (hlo : psum (F l) n i ≤ x) (hhi : x < psum (F l) n (i + 1)) :
+    blockIdx (F l) n x = i := by
+  refine le_antisymm ?_ (Nat.le_findGreatest hin hlo)
+  by_contra hc
+  push_neg at hc
+  have hb := psum_blockIdx_le (F l) n x
+  have hmono : psum (F l) n (i + 1) ≤ psum (F l) n (blockIdx (F l) n x) :=
+    (psum_strictMono l hn).monotone (by omega)
+  omega
+
 /-! ## The Lemma 3.3 function `g` and its structural invariants
 
 `g 0 = g₀` (base); `g (l+1) n m = ω^(l+1)·(n-i) + g l (F_l^i(n)) j` for `m < F(l+1)(n)` (block `i,j`
@@ -264,5 +289,71 @@ theorem g_NF : ∀ (l n m : ℕ), (g l n m).NF := by
       rw [ONote.repr_ofNat]
       exact_mod_cast g_lt l _ _
     · rw [g_succ_of_ge h]; exact ONote.NF.zero
+
+/-- **Lemma 3.3(1) — descent.** `g l n (m+1) ≺ g l n m` whenever `m < F l n`. Base: `g₀_desc`.
+Step (`l+1`): decompose `m`'s block `i, j`; the increment `m ↦ m+1` either stays in block `i`
+(`blockOff` becomes `j+1`, descent by the IH via `repr_blk_within`) or crosses into block `i+1`
+(`blockOff` resets to `0`, descent via `repr_blk_boundary` since the lead coefficient `n-i` drops and
+the next tail is `< ω^(l+1)` by `g_lt`); if `m+1` exhausts all blocks, `g l n (m+1) = 0 ≺ g l n m`. -/
+theorem g_desc : ∀ (l n m : ℕ), m < F l n → (g l n (m + 1)).repr < (g l n m).repr := by
+  intro l
+  induction l with
+  | zero => intro n m hm; rw [g_zero, g_zero]; exact g0_desc n m hm
+  | succ l ih =>
+    intro n m hm
+    have hn : 1 ≤ n := by
+      rcases Nat.eq_zero_or_pos n with h0 | h0
+      · subst h0; simp [F_succ] at hm
+      · exact h0
+    have hmpsum : m < psum (F l) n n := lt_of_lt_of_le hm (F_succ_le_psum l hn)
+    have hilt : blockIdx (F l) n m < n := blockIdx_lt (F l) hn hmpsum
+    have hlo : psum (F l) n (blockIdx (F l) n m) ≤ m := psum_blockIdx_le (F l) n m
+    have hhi : m < psum (F l) n (blockIdx (F l) n m + 1) := lt_psum_blockIdx_succ (F l) hn hmpsum
+    have hjval : psum (F l) n (blockIdx (F l) n m) + blockOff (F l) n m = m :=
+      psum_add_blockOff (F l) n m
+    have hwidth : blockOff (F l) n m < (F l)^[blockIdx (F l) n m + 1] n :=
+      blockOff_lt_width (F l) hn hmpsum
+    rw [g_succ_of_lt hm]
+    set i := blockIdx (F l) n m with hi
+    set j := blockOff (F l) n m with hj
+    by_cases hm1 : m + 1 < F (l + 1) n
+    · rw [g_succ_of_lt hm1]
+      by_cases hbnd : m + 1 < psum (F l) n (i + 1)
+      · -- within block i: blockIdx(m+1) = i, blockOff(m+1) = j+1
+        have hidx1 : blockIdx (F l) n (m + 1) = i :=
+          blockIdx_eq l hn (le_of_lt hilt) (by omega) hbnd
+        have hoff1 : blockOff (F l) n (m + 1) = j + 1 := by
+          simp only [blockOff, hidx1]; omega
+        rw [hidx1, hoff1]
+        apply repr_blk_within
+        have hcond : j < F l ((F l)^[i] n) := by
+          rw [← Function.iterate_succ_apply' (F l) i n]; exact hwidth
+        exact ih ((F l)^[i] n) j hcond
+      · -- boundary: m+1 = psum(i+1), blockIdx(m+1) = i+1, blockOff(m+1) = 0
+        push_neg at hbnd
+        have hb_eq : m + 1 = psum (F l) n (i + 1) := by omega
+        have hidx1 : blockIdx (F l) n (m + 1) = i + 1 := by
+          refine blockIdx_eq l hn (by omega) (by omega) ?_
+          rw [hb_eq]
+          exact psum_strictMono l hn (Nat.lt_succ_self _)
+        have hi1lt : i + 1 < n := by
+          rw [← hidx1]
+          exact blockIdx_lt (F l) hn (lt_of_lt_of_le hm1 (F_succ_le_psum l hn))
+        have hoff1 : blockOff (F l) n (m + 1) = 0 := by
+          simp only [blockOff, hidx1]; omega
+        rw [hidx1, hoff1]
+        apply repr_blk_boundary
+        · rw [PNat.toPNat'_coe (by omega : 0 < n - (i + 1)),
+            PNat.toPNat'_coe (by omega : 0 < n - i)]
+          omega
+        · exact g_lt l _ _
+    · -- m+1 exhausts all blocks: g(l+1) n (m+1) = 0
+      rw [g_succ_of_ge hm1, ONote.repr_zero, repr_blk]
+      have hcpos : (0 : Ordinal) < ((n - i).toPNat' : ℕ) := by
+        rw [PNat.toPNat'_coe (by omega : 0 < n - i)]
+        exact_mod_cast (by omega : 0 < n - i)
+      have hc : (0 : Ordinal) < (ω : Ordinal) ^ (l + 1) * ((n - i).toPNat' : ℕ) :=
+        Left.mul_pos (pow_pos Ordinal.omega0_pos _) hcpos
+      exact lt_of_lt_of_le hc le_self_add
 
 end GoodsteinPA.Grz
