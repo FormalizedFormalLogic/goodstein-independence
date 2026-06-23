@@ -33,6 +33,42 @@ def IsDescent [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁] (f : ℕ → M) (a₀ :
     (∀ i, i + 1 < lh W → Mlt f (znth W (i + 1)) (znth W i)) ∧
     (∀ i, i < lh W → ¬ MX (znth W i))
 
+/-- **Membership form of `IsDescent`** (the `Seq`-graph rendering of the `znth`-clauses). Over `M`'s
+`ℒₒᵣ`-reduct, `IsDescent f a₀ W` is equivalent to the `∈`/pairing statement
+`Seq W ∧ ⟪0,a₀⟫∈W ∧ (∀ i x x', ⟪i,x⟫∈W → ⟪i+1,x'⟫∈W → Mlt f x' x) ∧ (∀ i x, ⟪i,x⟫∈W → ¬MX x)`.
+This is the key simplification for `hDdef`: the `X`-atom now sits on a *bound variable* `x` (not a
+`znth`-function-term), so the `LX`-definability is a bounded `∀` over the reduct-definable `∈`-guard with
+a primitive `Xsym`-atom — no function-graph plumbing. Requires `0 < lh W` (always true here: `lh W = k+1`). -/
+theorem isDescent_iff_mem [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁] (f : ℕ → M) (a₀ W : M) (hpos : 0 < lh W) :
+    IsDescent f a₀ W ↔
+      (Seq W ∧ ⟪(0 : M), a₀⟫ ∈ W ∧
+        (∀ i x x' : M, ⟪i, x⟫ ∈ W → ⟪i + 1, x'⟫ ∈ W → Mlt f x' x) ∧
+        (∀ i x : M, ⟪i, x⟫ ∈ W → ¬ MX x)) := by
+  constructor
+  · rintro ⟨hSeq, hz0, hdesc, hnotMX⟩
+    refine ⟨hSeq, ?_, ?_, ?_⟩
+    · -- `⟪0,a₀⟫∈W` from `znth W 0 = a₀` and `0 < lh W`
+      have := hSeq.znth hpos; rwa [hz0] at this
+    · -- descent, membership form
+      intro i x x' hix hix'
+      have hi1 : i + 1 < lh W := hSeq.lt_lh_of_mem hix'
+      rw [← hSeq.znth_eq_of_mem hix, ← hSeq.znth_eq_of_mem hix']
+      exact hdesc i hi1
+    · -- `¬MX`, membership form
+      intro i x hix
+      rw [← hSeq.znth_eq_of_mem hix]
+      exact hnotMX i (hSeq.lt_lh_of_mem hix)
+  · rintro ⟨hSeq, hz0, hdesc, hnotMX⟩
+    refine ⟨hSeq, ?_, ?_, ?_⟩
+    · exact hSeq.znth_eq_of_mem hz0
+    · -- descent, `znth` form
+      intro i hi1
+      have hi : i < lh W := lt_of_le_of_lt (by simp) hi1
+      exact hdesc i (znth W i) (znth W (i + 1)) (hSeq.znth hi) (hSeq.znth hi1)
+    · -- `¬MX`, `znth` form
+      intro i hi
+      exact hnotMX i (znth W i) (hSeq.znth hi)
+
 section
 variable [Structure.Eq LX M] (hM : M ⊧ₘ* (paLX : Theory LX)) (f : ℕ → M)
 
