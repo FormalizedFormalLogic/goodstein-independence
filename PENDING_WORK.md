@@ -1,5 +1,34 @@
 # Pending work — open obligations & attack paths
 
+## ⭐⭐⭐ Lap 52 — crux-1 bricks 1 + 2-core BUILT (green, axiom-clean, wip)
+Discharged the two `wip/StdCor34` interface obligations' substrate (lap-51 designated NEXT):
+
+- **Brick 1 DONE — `wip/BlkRec.lean`** (axiom-clean): the definable block bookkeeping `blk`/`off` as a
+  single internal `𝚺₁` primitive recursion (`boStep` state machine: advance offset within a block,
+  roll to next block when `off+1 ≥ W(blk)`) over an **abstract width sequence code `wseq`** (read by
+  `znth wseq (blk j)`) — sidesteps internal `findGreatest`. Proves exactly the `StdCor34.salpha`
+  bookkeeping hyps: `blk_succ_dich` (= `hblk_dich`), `off_succ_of_blk_eq` (within-block off-advance,
+  behind `higt_within`), `blk_add_off_le` (= `hnm`) ⟹ `blk_le` (for `hβC`). Independent of β.
+
+- **Brick 2 CORE DONE — `wip/IIter.lean`** (axiom-clean): the reusable internal-iterate primitive
+  `iIter fDef f hf x c = f^[c] x` for a **fixed** `𝚺₁`-function `f` (graph `fDef`) at an **internal**
+  count `c : V`, as a `PR.Construction` with both recurrence laws + `𝚺₁`-definability of `(x,c) ↦ f^[c]x`
+  + `iIter_natCast` (standard `k` ⟹ meta-iterate `f^[k]`). This is the engine `iF (l+1) n = (iF l)^[n] n`
+  needs (internal iteration at standard meta-level l ⟹ NO internal Ackermann).
+
+**Brick 2 REMAINING (next lap) — assemble `iF` + `ig` by meta-recursion on the standard level `l : ℕ`:**
+1. `iF : ℕ → (V → V)` with its Def + defined-instance triple, by meta-recursion: `iF 0 = (·+1)`,
+   `iF (l+1) n = iIter (iFDef l) (iF l) (hiF l) n n`. Carry `(iFDef l, hiF l)` up the recursion (use
+   `iIterDef`/`iIter_defined` from `IIter.lean`). Then internal block decomposition `iblockIdx`/`iblockOff`
+   over `iF l` (mirror `Grz.blockIdx`/`blockOff`; reuse the `BlkRec` width idiom).
+2. `ig : ℕ → V → V → V` meta-recursion: `ig 0 = ig0` (built), `ig (l+1) n m = iblk (l+1) (n - iblockIdx…)
+   (ig l (iF l^[…] n) (iblockOff…))` for `m < iF (l+1) n` else 0 (mirror `Grz.g`). Port `g_NF`/`g_lt`/
+   `g_desc`/`g_C_bound`/`g_exp` ⟹ the `StdCor34` `igt` interface (`higtNF`/`higt0`/`higt_within`/`higtC`/
+   `higt_exp`). Then `igt n m := ig l₀ n m` for the Lemma-3.2 standard level `l₀`.
+Then wire `BlkRec.blk/off` + `igt` into `StdCor34.salpha_*` → `InternalThm35.bbeta` → `DescentArith.
+nonterminating_internal` (Lemma 3.6) ⟹ `goodstein_implies_prwo` body (crux 1).
+⚠️ Then verify the DEFERRED DEEPER SEAM (`icmp`-code ↔ `natCode`-order) before claiming crux 1.
+
 ## ⭐⭐⭐ Lap 51 — SEAM CHECKS (operator-directed): crux-1↔crux-2 chain VERIFIED at statement level
 Added 3 machine-checked guards to `wip/GentzenCon.lean` (compile iff the seams hold; green modulo the
 2 disclosed crux sorries):
