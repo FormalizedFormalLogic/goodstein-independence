@@ -12,17 +12,28 @@ ops in `InternalONote.lean` (both `#print axioms`-clean, build green 1307):
 - ✅ **`iomul`** (`1af80bc`) — internal ω-multiplication `ω·c`, exponent bump `e↦1+e = iadd (ocOadd 0
   1 0) e`, recurse tail. Lemmas `iomul_zero`, `iomul_ocOadd`.
 
-**NEXT (hardest-first) toward `hbound` — the `iC`-arithmetic of the slow-down (DescentCore has the
-ℕ/ONote shadows; internalize onto codes):**
-1. **`iC_iadd` / `iC_iomul` bounds.** Internalize `DescentCore.C_omega_mul_le` (`iC (iomul α) ≤ iC α +
-   1`) and `C_add_ofNat_le` (`iC (iadd α finite) ≤ max (iC α) m`, needs an internal `iNoFin`). Engine
-   of `C(βₖ) ≤ k+1` (`C_betaTail_le`).
-2. **`ievalNat` of `iadd`/`iomul`** — to define `b k = ievalNat (k+1) βₖ`. (`iadd` is NOT simply
-   additive on `ievalNat` — CNF merge; state laws carefully.)
-3. **internal descent facts** `repr_betaTail_within`/`_boundary` → `icmp`-descent of `ω·α + (K-i)`.
-4. **βₖ assembly** from the M-internal descent (seam, piece 3), 𝚺₁-def in k, `iCanon (k+1) βₖ` +
-   icmp-descent; `step` = `ineq6_step_internal` (HAVE), assemble `hbound`.
-Aristotle: idle. Candidate open lemma = `iC_iomul` bound (self-contained). Spec precisely before submit.
+**KEY SIMPLIFICATION (lap 40):** `ineq6_step_internal` (the `step`) keeps `ievalNat βₖ` SYMBOLIC —
+it only needs `isNF`, `iCanon`, `icmp`-descent of the codes, NOT computed `ievalNat` values. So the
+messy `ievalNat_iadd`/`ievalNat_iomul` laws are NOT needed for the assembly. Only `isNF` + `iC`(canon)
++ `icmp`-descent of the `βₖ = ω·αₖ + (K-i)` codes are required.
+
+**DONE this lap (7 commits, all axiom-clean, green 1307):**
+- ✅ `iadd` (CNF addition), `iomul` (ω·α).
+- ✅ `iC_one_add`, `iC_iomul` (`iC(ω·c) ≤ iC c + 1`), `iC_iadd_finite` (`iC(ω·c + m) ≤ max(iC(ω·c)) m`)
+  → the full `C(βₖ) ≤ k+1` canonicity bound (Rathjen Thm 3.5).
+- ✅ `icmp_self`, `icmp_betaTail_within` (within-block descent `ω·α+p ≺ ω·α+(p+1)`).
+- ✅ `icmp_one_add` (`1+·` preserves the comparison) + helpers — the boundary crux.
+
+**NEXT (hardest-first) toward `hbound`:**
+1. **`icmp_iomul`** (`icmp (iomul a)(iomul b) = icmp a b`, ω-mult order-preserving) — structural
+   induction via `icmp_one_add` (head) + IH (tail). NF hyps needed.
+2. **boundary descent** `icmp (ω·αNext + s)(ω·α + t) = 0` from `icmp αNext α = 0` — via icmp_iomul
+   (decision happens in the iomul part, before the appended finite tails).
+3. **`isNF_iomul`, `isNF_iadd_finite`** — isNF preservation. Needed for step's isNF hyps.
+4. **βₖ assembly** from the M-internal descent (seam) — 𝚺₁-def in k, `iCanon (k+1) βₖ` (iC bounds, HAVE),
+   icmp-descent (within + boundary), isNF; `b k = ievalNat (k+1) βₖ`; `step` = `ineq6_step_internal`
+   (HAVE); base/hpos; assemble `hbound`. Plus the SEAM rewire (route b) for the descent input.
+Aristotle: idle. Candidate open lemma = `icmp_iomul` (self-contained given icmp_one_add). Spec before submit.
 
 ## ⭐ Lap 39 — internal arithmetic for `hbound`'s `step` COMPLETE (3 axiom-clean commits)
 
