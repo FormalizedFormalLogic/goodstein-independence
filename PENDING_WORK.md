@@ -28,6 +28,29 @@ not free-X-TI — §3 is primrec-only, the free-X bridge is the *wrong direction
   upstream axiom (orthogonal to the Goodstein mathematics). Needs a review/operator call before the
   headline `sorry` is ever discharged.
 
+## ⭐⭐⭐ Lap 54 (cont.) — Cor 3.4 → Thm 3.5 internal chain ASSEMBLED end-to-end (modulo named hyps)
+`wip/StdCor34.lean` now imports the promoted `GoodsteinPA.InternalIg` and assembles the real
+internal-Grzegorczyk tail into the Thm-3.5 sequence (both axiom-clean `[propext, choice, Quot.sound]`,
+`lake env lean wip/StdCor34.lean` green; src build green 1315):
+- **`salpha_igtTot_spec l₀ (hl₀ : 0 < l₀) …`** — instantiates `salpha (↑l₀) β blk off (igtTot l₀)` and
+  proves the NF + (∃K, tight C-bound) + ≺-descent triple. The four unconditional `igtTot` props discharge
+  `salpha_isNF`/`salpha_C_le` outright; `salpha_desc` reduces to the **single domination input** `hdom`
+  (`∀ j, blk(j+1)=blk j → off j + 1 < iF l₀ (blk j)`) via `igtTot_within`.
+- **`bbeta_of_igtTot …`** — feeds that triple into `InternalThm35.bbeta_isNF`/`bbeta_C_le`/
+  `bbeta_desc_exists`, producing `∃ K s, 0<K ∧ NF ∧ iC(β'ᵣ)≤r+1 ∧ ≺-descent` — the complete Thm 3.5
+  output (the input `DescentArith`/Lemma 3.6 consume).
+
+**REMAINING crux-1 frontier (hardest-first), all now isolated as named hypotheses of `bbeta_of_igtTot`:**
+1. **`hdom` = domination (Rathjen Lemma 3.2)**: `off j + 1 < iF l₀ (blk j)` — the within-block offset
+   stays below the Grzegorczyk width. THE deep arithmetic brick; needs the specific input `β`/level `l₀`.
+2. **`blk`/`off` bookkeeping + input `β`**: the `blk`/`off`/`hblk_dich`/`hoff_adv`/`hnm` come from
+   `BlkRec` (in src); the raw ≺-descending NF `β` (`hβNF`/`hβ0`/`hβdesc`/`hβC`) is the gentzen-descent
+   instance encoded as ε₀-codes — needs the descent-graph → V-internal-β bridge.
+3. **Reflection lift**: from the V-internal descending sequence to the PA-provability statement
+   `𝗣𝗔 ⊢ prwoInstance seq` (`wip/GentzenCon.lean:137` `goodstein_implies_prwo` `sorry`) via
+   `DescentArith.nonterminating_internal` (needs Σ₁-definable `m`,`b` + internalized `ineq6_step`).
+Inspect `src/GoodsteinPA/Domination.lean` (Dom ns) + `DescentSlowdown.lean` + `DescentArith` for (1)/(3).
+
 ## ⭐⭐ Lap 54 (cont.) — TOTALIZED `igtTot` (unconditional NF/≠0/exp/C), in-range within-descent
 After the 5 raw `ig` props, built `igtTot l n m := if m < iF l n then ig l n m else ig0 0 0` and its
 interface (all axiom-clean, `lake env lean wip/InternalIg.lean` green): `isNF_igtTot`, `igtTot_ne_zero`,

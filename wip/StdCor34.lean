@@ -33,11 +33,12 @@ internal Cor 3.4, feeding `bbeta` → `DescentArith.nonterminating_internal` (Le
 -/
 import GoodsteinPA.InternalCor34
 import GoodsteinPA.InternalThm35
+import GoodsteinPA.InternalIg
 
 namespace GoodsteinPA.StdCor34
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic
-open GoodsteinPA GoodsteinPA.InternalONote
+open GoodsteinPA GoodsteinPA.InternalONote GoodsteinPA.IIter GoodsteinPA.InternalIg
 
 set_option maxHeartbeats 400000
 
@@ -150,5 +151,63 @@ theorem habove_of_igt_exp (hl : 0 < l)
   rcases higt_exp n m with h0 | ⟨j, hjl, hj⟩
   · exact iAbove_ocExp_iVbigMul_fin (hβ0 (blk a)) l h0
   · exact iAbove_ocExp_iVbigMul_inf (hβNF (blk a)) (hβ0 (blk a)) hl hjl hj
+
+/-! ## The concrete Cor 3.4 assembly with the real internal-Grzegorczyk tail `igtTot`
+
+Instantiate `salpha` with the totalized internal Grzegorczyk tail `igtTot l₀` (`InternalIg`, axiom-clean)
+at a STANDARD level `l₀ ≥ 1`. The four unconditional `igtTot` props (`isNF_igtTot`/`igtTot_ne_zero`/
+`higt_exp_igtTot`→`habove_of_igt_exp`/`iC_igtTot_bound`) discharge `salpha_isNF` and `salpha_C_le`
+outright; `salpha_desc` reduces to the **single domination input** `hdom` (the within-block offset stays
+below `iF l₀ (blk j)`, Rathjen Lemma 3.2) routed through `igtTot_within`. The output is exactly the
+NF + tight-`iC` + ≺-descent triple `InternalThm35.bbeta_isNF`/`bbeta_C_le`/`bbeta_desc_exists` consume. -/
+theorem salpha_igtTot_spec (l₀ : ℕ) (hl₀ : 0 < l₀)
+    {β blk off : V → V} {Cβ : V}
+    (hβNF : ∀ n, isNF (β n)) (hβ0 : ∀ n, β n ≠ 0)
+    (hβdesc : ∀ n, icmp (β (n + 1)) (β n) = 0)
+    (hβC : ∀ j, iC (β (blk j)) ≤ Cβ + j)
+    (hblk_dich : ∀ j, blk (j + 1) = blk j ∨ blk (j + 1) = blk j + 1)
+    (hoff_adv : ∀ j, blk (j + 1) = blk j → off (j + 1) = off j + 1)
+    (hnm : ∀ j, blk j + off j ≤ j)
+    (hdom : ∀ j, blk (j + 1) = blk j → off j + 1 < iF l₀ (blk j)) :
+    (∀ j, isNF (salpha (l₀ : V) β blk off (igtTot l₀) j)) ∧
+    (∃ K, 0 < K ∧ ∀ j, iC (salpha (l₀ : V) β blk off (igtTot l₀) j) ≤ K * (j + 1)) ∧
+    (∀ j, icmp (salpha (l₀ : V) β blk off (igtTot l₀) (j + 1))
+            (salpha (l₀ : V) β blk off (igtTot l₀) j) = 0) := by
+  have hlV : (0 : V) < (l₀ : V) := by exact_mod_cast hl₀
+  have habove : ∀ n m a, iAbove (ocExp (igtTot l₀ n m)) (iVbigMul (β (blk a)) ((l₀ : V) + 1)) :=
+    habove_of_igt_exp hlV hβ0 hβNF (higt_exp_igtTot l₀)
+  obtain ⟨Kg, _, hKg⟩ := iC_igtTot_bound (V := V) l₀
+  refine ⟨fun j => salpha_isNF hβNF (isNF_igtTot l₀) (igtTot_ne_zero l₀) habove j,
+    salpha_C_le hβC (fun j => hKg (blk j) (off j)) hnm (igtTot_ne_zero l₀) habove,
+    fun j => salpha_desc hβNF hβdesc (igtTot_ne_zero l₀) habove hblk_dich ?_ j⟩
+  intro j hw
+  rw [hoff_adv j hw]
+  exact igtTot_within l₀ (blk j) (off j) (hdom j hw)
+
+/-- **Cor 3.4 → Thm 3.5, end-to-end (internal, modulo the named hypotheses).** Feeding the
+`salpha_igtTot_spec` triple into `InternalThm35.bbeta` produces the complete Thm 3.5 sequence
+`β' = bbeta K s α` (ω-tower prefix + slow-down block-tail) with a height `s`, positive `K`, the NF
+invariant, the **tight** slowness `iC(β'ᵣ) ≤ r+1`, and strict ≺-descent at every index — exactly the
+input `DescentArith`/Lemma 3.6 consume. The remaining crux-1 frontier is then: (1) the `hdom`
+domination (Lemma 3.2), (2) the `blk`/`off` bookkeeping from `BlkRec` + the raw input descent `β` from
+the gentzen instance, (3) the reflection lift of the V-internal descent to `𝗣𝗔 ⊢ prwoInstance`. -/
+theorem bbeta_of_igtTot (l₀ : ℕ) (hl₀ : 0 < l₀)
+    {β blk off : V → V} {Cβ : V}
+    (hβNF : ∀ n, isNF (β n)) (hβ0 : ∀ n, β n ≠ 0)
+    (hβdesc : ∀ n, icmp (β (n + 1)) (β n) = 0)
+    (hβC : ∀ j, iC (β (blk j)) ≤ Cβ + j)
+    (hblk_dich : ∀ j, blk (j + 1) = blk j ∨ blk (j + 1) = blk j + 1)
+    (hoff_adv : ∀ j, blk (j + 1) = blk j → off (j + 1) = off j + 1)
+    (hnm : ∀ j, blk j + off j ≤ j)
+    (hdom : ∀ j, blk (j + 1) = blk j → off j + 1 < iF l₀ (blk j)) :
+    ∃ K s : V, 0 < K ∧
+      (∀ r, isNF (bbeta K s (salpha (l₀ : V) β blk off (igtTot l₀)) r)) ∧
+      (∀ r, iC (bbeta K s (salpha (l₀ : V) β blk off (igtTot l₀)) r) ≤ r + 1) ∧
+      (∀ r, icmp (bbeta K s (salpha (l₀ : V) β blk off (igtTot l₀)) (r + 1))
+              (bbeta K s (salpha (l₀ : V) β blk off (igtTot l₀)) r) = 0) := by
+  obtain ⟨hNF, ⟨K, hKpos, hslow⟩, hdesc⟩ :=
+    salpha_igtTot_spec l₀ hl₀ hβNF hβ0 hβdesc hβC hblk_dich hoff_adv hnm hdom
+  obtain ⟨s, hs⟩ := bbeta_desc_exists hKpos hNF hdesc
+  exact ⟨K, s, hKpos, bbeta_isNF hKpos hNF, bbeta_C_le hslow, hs⟩
 
 end GoodsteinPA.StdCor34
