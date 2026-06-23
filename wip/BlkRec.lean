@@ -11,7 +11,9 @@ arithmetic properties (`StdCor34.salpha_desc`/`_C_le`):
 * the **dichotomy** `blk (j+1) = blk j ∨ blk (j+1) = blk j + 1`;
 * the **offset recurrence** `blk (j+1) = blk j → off (j+1) = off j + 1` (within a block the in-block
   offset advances, so the `igt`-tail descends), and `off (j+1) = 0` at a block boundary;
-* the **C-bookkeeping** `blk j + off j ≤ j` (hence `blk j ≤ j`, feeding `iC(β_{blk j}) ≤ Cβ + j`).
+* the **C-bookkeeping** `blk j + off j ≤ j` (block count); and the elapsed-*width* invariant
+  `wsumc (blk j) ≤ j` (`wsumc_blk_le`), the fact `hβC : iC(β_{blk j}) ≤ Cβ + j` actually needs on the
+  width/block route — block-count `blk j ≤ j` alone is NOT enough (codex review, lap 52).
 
 The ℕ-template `Grz.wsum`/`widx`/`woff` realises this with `Nat.findGreatest` over the partial-sum
 function. Internalising `findGreatest` is awkward; instead we build `blk`/`off` directly as a single
@@ -155,8 +157,83 @@ theorem blk_add_off_le (wseq : V) : ∀ j : V, blk wseq j + off wseq j ≤ j := 
       have hbj : blk wseq j ≤ j := le_trans le_self_add ih
       gcongr
 
-/-- **`blk j ≤ j`** — feeds `iC(β_{blk j}) ≤ Cβ + j` in `StdCor34.salpha_C_le`'s `hβC`. -/
+/-- **`blk j ≤ j`** — a *block-count* bound (NOT by itself enough for `hβC`; see the width invariant
+`wsumc_blk_le` below, which is the elapsed-*width* fact `StdCor34.salpha_C_le`'s `hβC` actually needs). -/
 theorem blk_le (wseq j : V) : blk wseq j ≤ j :=
   le_trans le_self_add (blk_add_off_le wseq j)
+
+/-! ## The elapsed-*width* invariant (for `hβC`)
+
+`blk_le` (block-count `blk j ≤ j`) is **not** what `StdCor34.salpha_C_le`'s `hβC :
+iC (β (blk j)) ≤ Cβ + j` needs on the width/block route — there the relevant fact is the *cumulative
+width* `wsumc (blk j) ≤ j` (RAthjen Cor 3.4: the `C`-growth of `β` is bookkept against the elapsed
+width `Σ_{b<blk j} W(b)`, not the block count). We prove `wsumc (blk j) + off j = j` (exact, under
+positive widths), hence `wsumc (blk j) ≤ j`. The width of block `b` is `znth wseq b`. -/
+
+/-- Cumulative width `wsumc wseq i = Σ_{b<i} znth wseq b`. -/
+def wsumc.blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y x. y = 0”
+  succ := .mkSigma “y ih i x. ∃ w, !znthDef w x i ∧ y = ih + w”
+
+noncomputable def wsumc.construction : PR.Construction V wsumc.blueprint where
+  zero := fun _ ↦ 0
+  succ := fun x i ih ↦ ih + znth (x 0) i
+  zero_defined := .mk fun v ↦ by simp [wsumc.blueprint]
+  succ_defined := .mk fun v ↦ by simp [wsumc.blueprint, znth_defined.iff]
+
+/-- Cumulative width up to (excluding) block `i`. -/
+noncomputable def wsumc (wseq i : V) : V := wsumc.construction.result ![wseq] i
+
+@[simp] lemma wsumc_zero (wseq : V) : wsumc wseq 0 = 0 := by
+  simp [wsumc, wsumc.construction]
+
+@[simp] lemma wsumc_succ (wseq i : V) : wsumc wseq (i + 1) = wsumc wseq i + znth wseq i := by
+  simp [wsumc, wsumc.construction]
+
+def _root_.LO.FirstOrder.Arithmetic.wsumcDef : 𝚺₁.Semisentence 3 :=
+  wsumc.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
+
+instance wsumc_defined : 𝚺₁-Function₂ (wsumc : V → V → V) via wsumcDef := .mk
+  fun v ↦ by simp [wsumc.construction.result_defined_iff, wsumcDef, wsumc]; rfl
+
+instance wsumc_definable : 𝚺₁-Function₂ (wsumc : V → V → V) := wsumc_defined.to_definable
+instance wsumc_definable' (Γ) : Γ-[m + 1]-Function₂ (wsumc : V → V → V) :=
+  wsumc_definable.of_sigmaOne
+
+/-- **Offset stays below the current block width** (under positive widths). The within-block invariant
+that makes a boundary fire exactly at `off = width - 1`. -/
+theorem off_lt_width (wseq : V) (hpos : ∀ b, 1 ≤ znth wseq b) :
+    ∀ j, off wseq j < znth wseq (blk wseq j) := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simpa using lt_of_lt_of_le _root_.zero_lt_one (hpos 0)
+  case succ j ih =>
+    by_cases h : off wseq j + 1 < znth wseq (blk wseq j)
+    · obtain ⟨hb, ho⟩ := blk_off_within wseq j h; rw [hb, ho]; exact h
+    · obtain ⟨hb, ho⟩ := blk_off_boundary wseq j (not_lt.mp h)
+      rw [hb, ho]; exact lt_of_lt_of_le _root_.zero_lt_one (hpos _)
+
+/-- **The elapsed-width identity** (under positive widths): `wsumc (blk j) + off j = j`. The total
+steps `j` is exactly the cumulative width of completed blocks plus the current in-block offset. -/
+theorem wsumc_blk_add_off (wseq : V) (hpos : ∀ b, 1 ≤ znth wseq b) :
+    ∀ j, wsumc wseq (blk wseq j) + off wseq j = j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ j ih =>
+    by_cases h : off wseq j + 1 < znth wseq (blk wseq j)
+    · obtain ⟨hb, ho⟩ := blk_off_within wseq j h
+      rw [hb, ho, ← add_assoc, ih]
+    · obtain ⟨hb, ho⟩ := blk_off_boundary wseq j (not_lt.mp h)
+      have hw : znth wseq (blk wseq j) = off wseq j + 1 :=
+        le_antisymm (not_lt.mp h) (lt_iff_succ_le.mp (off_lt_width wseq hpos j))
+      rw [hb, ho, add_zero, wsumc_succ, hw, ← add_assoc, ih]
+
+/-- **`wsumc (blk j) ≤ j`** — the elapsed-*width* bound `StdCor34.salpha_C_le`'s `hβC` consumes on the
+width/block route (the honest replacement for the over-claimed `blk_le`). -/
+theorem wsumc_blk_le (wseq : V) (hpos : ∀ b, 1 ≤ znth wseq b) (j : V) : wsumc wseq (blk wseq j) ≤ j :=
+  le_trans le_self_add (le_of_eq (wsumc_blk_add_off wseq hpos j))
 
 end GoodsteinPA.BlkRec
