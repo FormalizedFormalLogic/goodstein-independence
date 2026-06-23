@@ -1,5 +1,31 @@
 # Pending work — open obligations & attack paths
 
+## ⭐ Lap 39 — internal arithmetic for `hbound`'s `step` COMPLETE (3 axiom-clean commits)
+
+The lone wall is still `hbound` (`DescentSemantic.lean:416`). Pieces 1–2 of the decomposition are DONE
+this lap (all `#print axioms`-clean, build green 1307):
+- ✅ **`InternalONote.evalNat_succ_base`** `ievalNat (b+1) c = ibump (b+1) (ievalNat b c)` (isNF/iCanon),
+  digit-direct strong induction (helpers `ilog_eq_of_bounds`, `ievalNat_tail_lt`, div/mod peel). `53d1b00`.
+- ✅ **`InternalPow.ibump_mono`/`ibump_strictMono`** — ported the Aristotle ℕ blueprint (UUID 7c8bb0e8)
+  into clean IΣ₁ (combined UB+strict-mono induction, no nlinarith). `c7675f0`.
+- ✅ **`InternalONote.ineq6_step_internal`** — the internalized Rathjen ineq (6), = `hbound`'s `step`:
+  `ievalNat (k+2) bk1 ≤ ibump (k+2) m - 1` from `bk1 ≺ bk` + `ievalNat (k+1) bk ≤ m`. Chains
+  `evalNat_succ_base` + `ibump_mono` + `ievalNat_lt_of_icmp_eq_zero`. `5f9df55`.
+
+**Remaining to assemble `hbound`** (`∃ m₀ b, 𝚺₁-Function₁ b ∧ b 0 ≤ igoodstein m₀ 0 ∧ step ∧ ∀k 0<b k`):
+With `βₖ` the slowed descent, `b k = ievalNat (k+1) βₖ`, `m₀ = ievalNat 1 β₀`: `step` = `ineq6_step_internal`
+(HAVE); `base` = refl; `hpos` = `ievalNat_pos` (need `βₖ ≠ 0`). The two HARD remaining pieces:
+3. **Seam/F re-wire (route b)** — make `Mlt`/`precφ`/`MX` (in `paLX_models_TI_of_PA_provable`) decode to
+   `icmp`/codes, so the `no_min` descent becomes a `≺`-descent of ε₀-codes. RISKY (touches the proven
+   `peano_not_proves_TI` girder) — re-`#print axioms peano_not_proves_TI` after EVERY edit (must stay clean).
+   FIRST investigate: `DescentLift`/`DescentSemantic` defs of `Mlt`/`MX`/`prec`; `Thm56.prec`/`precφ`;
+   `SeamDefinability`. Decide whether a standalone "slow-down of an abstract code-descent" lemma can be
+   built BEFORE the seam (so piece 4 proceeds in parallel).
+4. **βₖ slow-down (Rathjen Thm 3.5)** + assemble — from the code-descent build `βₖ` with `iC βₖ ≤ k+1`
+   (so `iCanon (k+1) βₖ`), still `≺`-descending; `𝚺₁`-definable in k; feed `DescentArith.nonterminating_internal`.
+
+Aristotle: idle (next genuinely-open lemma = the slow-down or the seam; spec one before submitting).
+
 ## ⭐ Lap 38 — INTERNAL-ONOTE SUBSTRATE COMPLETE (read `HANDOFF-2026-06-23-lap38.md`)
 
 `InternalONote.lean` now has the full ε₀-notation arithmetic inside `IΣ₁`, all axiom-clean: codes,
