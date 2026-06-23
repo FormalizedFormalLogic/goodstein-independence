@@ -100,6 +100,38 @@ Lemma 3.6's inequality (6). These are self-contained, axiom-clean, **Aristotle-e
 needs an ℒₒᵣ formula — reuse the seam's `precφ : Semisentence ℒₒᵣ 2` (the arithmetic ε₀-order, X-free)
 and state `PRWO` as `∀ primrec-coded sequences …` / the `TI(precφ)` schema. This is where most laps go.
 
+### 3a. The Σ₁-completeness reframe — name the kernel (lap 24, cross-session strategic note)
+
+**Most of the arithmetization (b) is FREE, the same way F-φ is free.** Rathjen's slow-down (3.3/3.4/3.5)
+builds **primitive recursive** witnesses `g`, `βⱼ` by *explicit* formulas. Every *computational* claim
+about them — "the slowed value at step `k` is `v`", "`C(βₖ) ≤ k+1`", "this `g` strictly descends while
+`m < f(n)`" — is **Σ₁/Δ₀**, and **true Σ₁ facts are PA-provable for free** via Foundation's
+`sigma_one_completeness` / `re_complete` (the very engine F-φ rides). So the bulk of (b) is Σ₁ glue, not
+hand-built induction.
+
+**The irreducible content is a single `Π₁` PA-induction: Rathjen inequality (6)**
+`∀ k, mₖ ≥ T̂^{k+2}_ω(βₖ)` (the special Goodstein run from `T̂²_ω(β₀)` never reaches 0). Its semantic core
+— the **inductive step** — is now a clean axiom-clean ℕ/ONote lemma **`Dom.ineq6_step`** (`DescentCore.lean`,
+lap 24): one `evalNat (k+2)` order-reflection per Goodstein step, no well-foundedness. The PA induction
+that iterates it is the analog of **Boundedness on the other side of the proof** — the one genuine multi-lap
+girder of E-core(b). Everything else around it is Σ₁ reflection.
+
+> **Attack order (refined):** (1) E-lift X-induction instance (`PRWO ⟹ TI prec`, the X-essential glue;
+> the X-free proof-translation half is already done). (2) Semantic backbone bricks, Aristotle-eligible:
+> `ineq6_step` ✅ done; the slow-down constructions 3.3/3.4/3.5 as plain ℕ/ONote facts (Lemma 3.2 =
+> mathlib `exists_lt_ack_of_nat_primrec`). (3) Arithmetize: computational facts → Σ₁-completeness (free);
+> the **one** real lift = inequality (6)'s `∀ k` as a genuine PA-induction. (4) Assemble `E = E-lift ∘
+> E-core`, discharge headline, then `#print axioms`.
+
+**Anti-vacuity (E-core is the highest fraud-risk step in the project).** Two guards: (i) keep the
+headline `sorry` until `#print axioms peano_not_proves_goodstein` is clean (doctrine); (ii) the `prec`/ε₀-
+order E-core builds `PRWO` over **must be the same `prec`** `peano_not_proves_TI` refutes — `Thm56`
+already quantifies over a single `prec`, which enforces the coupling that makes the contradiction real.
+Treat the `PRWO`/`TI prec` statement as a designated audit surface alongside `TI prec`. Also note: the
+`∀ k`/non-termination *Lean* statements (`lemma36_ineq6`, `lemma36_nonterminating`) have **semantically
+unsatisfiable** hypotheses (ε₀ is well-founded in ZFC) — they carry **zero** independence force on their
+own; only their PA-internal (arithmetized) form does. The reusable non-vacuous content is `ineq6_step`.
+
 **ALT escape hatch** (`Reduction.goodstein_implies_consistency`, Route A): Rathjen Thm 2.8 says
 `PRA ⊢ PRWO(ε₀) → Con(PA)`, then Gödel II. Avoids E-lift but **reintroduces `PA_delta1Definable`** (a
 Foundation-side axiom) — keep B (the `peano_not_proves_TI` route) as primary; A only if B stalls.

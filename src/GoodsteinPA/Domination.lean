@@ -1039,7 +1039,7 @@ theorem Canon_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
 /-- A `Canon` NF notation is recovered by reading `evalNat` back at the ordinal level:
 `toOrdinal (b+1) (evalNat b E) = repr E`. Structural induction; the leading-term remainder
 bound for `toOrdinal_oadd` comes from `NF` via the engine's strict monotonicity. -/
-theorem canon_repr (b : ℕ) (hb : 2 ≤ b) :
+theorem canon_repr (b : ℕ) (hb : 1 ≤ b) :
     ∀ E : ONote, Canon b E → E.NF → toOrdinal (b + 1) (evalNat b E) = E.repr := by
   have hSM : StrictMono (toOrdinal (b + 1)) := fun a c hac =>
     (toOrdinal_mono_and_bound (b + 1) (by omega) c).1 a hac
@@ -1066,7 +1066,7 @@ theorem canon_round_trip (b : ℕ) (hb : 2 ≤ b) (E : ONote) (hcanon : Canon b 
     toONote (b + 1) (evalNat b E) = E := by
   haveI : (toONote (b + 1) (evalNat b E)).NF := toONote_NF (b + 1) (by omega) (evalNat b E)
   haveI : E.NF := hNF
-  rw [← repr_inj, repr_toONote (b + 1) (by omega), canon_repr b hb E hcanon hNF]
+  rw [← repr_inj, repr_toONote (b + 1) (by omega), canon_repr b (by omega) E hcanon hNF]
 
 /-- `Good b o`: `o` is `Canon` except for at most one coefficient `= b+1`, parked at the active
 frontier of the descent — the lowest term, deeper in the tail, or (when `o = ω^e`) inside the
