@@ -564,7 +564,7 @@ lemma iAbove_iomul {e0 : V} (he0 : isNF e0) :
 
 /-- **Base of the `MinExpGe` chain**: `ω·a` has every leading exponent `≻ 0` (each is `1+e ≠ 0`),
 i.e. `iAbove 0 (ω·a)` for any `a ≠ 0`. (Internal `MinExpGe 1 (ω·a)`, no NF needed.) -/
-lemma iAbove_zero_iomul : ∀ a, a ≠ 0 → iAbove 0 (iomul a) := by
+lemma iAbove_zero_iomul : ∀ a : V, a ≠ 0 → iAbove 0 (iomul a) := by
   intro a
   induction a using ISigma1.sigma1_order_induction
   · definability
@@ -579,5 +579,45 @@ lemma iAbove_zero_iomul : ∀ a, a ≠ 0 → iAbove 0 (iomul a) := by
     rcases eq_or_ne ra 0 with rfl | hra
     · rw [iomul_zero]; exact iAbove_zero 0
     · exact IH ra hra_lt hra
+
+/-- The `MinExpGe` threshold iterate `(1+·)^[k] 0` is NF at every step (`isNF_iadd_one`). -/
+lemma isNF_oadd1iter (k : ℕ) : isNF ((iadd (ocOadd 0 1 0))^[k] (0 : V)) := by
+  induction k with
+  | zero => simpa using isNF_zero
+  | succ k ih => rw [Function.iterate_succ_apply']; exact isNF_iadd_one ih
+
+/-- **`MinExpGe` meta-iterate** (internal `Grz.MinExpGe_bigMul`): `ω^(k+1)·β` has every leading
+exponent strictly above the threshold `(1+·)^[k] 0` (= the finite code `k`). Base = `iAbove_zero_iomul`,
+step = `iAbove_iomul` (`isNF_ibigMul` supplies the NF arg). -/
+lemma iAbove_ibigMul_iter {β : V} (hβNF : isNF β) (hβ0 : β ≠ 0) (k : ℕ) :
+    iAbove ((iadd (ocOadd 0 1 0))^[k] (0 : V)) (ibigMul (k + 1) β) := by
+  induction k with
+  | zero =>
+    have h := iAbove_zero_iomul β hβ0
+    rw [Function.iterate_zero_apply]
+    rwa [ibigMul_succ, ibigMul_zero]
+  | succ k ih =>
+    rw [Function.iterate_succ_apply', ibigMul_succ]
+    exact iAbove_iomul (isNF_oadd1iter k) _ (isNF_ibigMul (k + 1) hβNF) ih
+
+/-- **Finite-threshold weakening of `iAbove`** (spine-lifted `icmp_finThresh_mono`): dominance above
+the finite code `l` implies dominance above any smaller finite code `j ≤ l`. Used to bring the
+`MinExpGe` threshold down to `ocExp g` (a finite code `⪯ l`) when `g < ω^(l+1)`. -/
+lemma iAbove_finThresh_mono {l j : V} (hjl : j ≤ l) :
+    ∀ a : V, iAbove (ocOadd 0 l 0) a → iAbove (ocOadd 0 j 0) a := by
+  intro a
+  induction a using ISigma1.sigma1_order_induction
+  · definability
+  case ind a IH =>
+    intro habove
+    rcases eq_or_ne a 0 with rfl | ha
+    · exact iAbove_zero _
+    · obtain ⟨ea, na, ra, rfl⟩ : ∃ ea na ra, a = ocOadd ea na ra :=
+        ⟨ocExp a, ocCoeff a, ocTail a, (ocOadd_destruct ha).symm⟩
+      obtain ⟨hc, hra⟩ := iAbove_ocOadd.mp habove
+      have hra_lt : ra < ocOadd ea na ra := by
+        have := ocTail_lt ea na ra; rwa [ocTail_ocOadd] at this
+      rw [iAbove_ocOadd]
+      exact ⟨icmp_finThresh_mono hc hjl, IH ra hra_lt hra⟩
 
 end GoodsteinPA.InternalONote

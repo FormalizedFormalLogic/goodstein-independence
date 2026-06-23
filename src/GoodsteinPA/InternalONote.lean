@@ -504,6 +504,10 @@ lemma oswap_thenV (a b : V) : oswap (thenV a b) = thenV (oswap a) (oswap b) := b
   · simp [ha]
   · rw [if_neg ha, if_neg (by rw [oswap_eq_one]; exact ha)]
 
+@[simp] lemma thenV_one_left (x : V) : thenV 1 x = x := by simp [thenV]
+@[simp] lemma thenV_zero_left (x : V) : thenV 0 x = 0 := by
+  rw [thenV, if_neg (zero_ne_one)]
+
 /-- `thenV` is associative (lexicographic combine). -/
 lemma thenV_assoc (a b c : V) : thenV (thenV a b) c = thenV a (thenV b c) := by
   unfold thenV
@@ -2015,6 +2019,49 @@ lemma icmp_infHead_finHead {a b : V} (ha : a ≠ 0) (hb : b ≠ 0)
   rw [ocExp_ocOadd] at hfa hfb
   subst hfb
   rw [icmp_ocOadd, icmp_pos_zero hfa]; simp [thenV]
+
+/-- **Finite-threshold monotonicity** (avoids a general `icmp` transitivity): a code that strictly
+dominates the finite code `ω^0·l` also dominates every smaller finite code `ω^0·j` (`j ≤ l`).
+Concrete case split on the dominating code's head: an infinite head dominates any finite code
+outright; a finite head dominates by its (larger) coefficient/tail, which the `ℕ`-order carries
+down to `j`. Used to weaken the `MinExpGe` threshold from the level `l` down to `ocExp g` when
+`g < ω^(l+1)` (g's exponent is a finite code `⪯ ω^0·l`). -/
+lemma icmp_finThresh_mono {s l j : V} (hsl : icmp s (ocOadd 0 l 0) = 2) (hjl : j ≤ l) :
+    icmp s (ocOadd 0 j 0) = 2 := by
+  have hs0 : s ≠ 0 := by
+    rintro rfl
+    rcases eq_or_ne (ocOadd 0 l 0 : V) 0 with h | h
+    · rw [h, icmp_zero_zero] at hsl; exact (one_lt_two).ne hsl
+    · rw [icmp_zero_pos h] at hsl; exact (two_ne_zero).symm hsl
+  obtain ⟨es, cs, ts, rfl⟩ : ∃ es cs ts, s = ocOadd es cs ts :=
+    ⟨ocExp s, ocCoeff s, ocTail s, (ocOadd_destruct hs0).symm⟩
+  rw [icmp_ocOadd es cs ts 0 l 0] at hsl
+  rw [icmp_ocOadd es cs ts 0 j 0]
+  rcases eq_or_ne es 0 with hes | hes
+  · -- finite head: the decision is `cmpV cs ·` then the tail
+    subst hes
+    rw [icmp_zero_zero, thenV_one_left] at hsl ⊢
+    -- hsl : thenV (cmpV cs l) (icmp ts 0) = 2 ; goal same with j
+    rcases lt_trichotomy cs l with hcl | hcl | hcl
+    · -- cs < l : premise forces thenV = 0, contradiction
+      rw [show cmpV cs l = 0 by rw [cmpV, if_pos hcl], thenV_zero_left] at hsl
+      exact absurd hsl (two_ne_zero).symm
+    · -- cs = l : ties at l, premise needs icmp ts 0 = 2 (ts ≠ 0)
+      rw [show cmpV cs l = 1 by rw [cmpV, if_neg (not_lt.mpr hcl.ge), if_pos hcl], thenV_one_left]
+        at hsl
+      rcases lt_or_eq_of_le hjl with hjlt | hje
+      · rw [show cmpV cs j = 2 by
+          rw [cmpV, if_neg (not_lt.mpr (hcl ▸ hjlt.le)), if_neg (hcl ▸ hjlt.ne')]]
+        simp [thenV]
+      · rw [show cmpV cs j = 1 by rw [cmpV, if_neg (not_lt.mpr (hje ▸ hcl.ge)),
+          if_pos (hcl.trans hje.symm)], thenV_one_left]
+        exact hsl
+    · -- cs > l ≥ j : dominates outright at the coefficient
+      have hcj : j < cs := lt_of_le_of_lt hjl hcl
+      rw [show cmpV cs j = 2 by rw [cmpV, if_neg (not_lt.mpr hcj.le), if_neg hcj.ne']]
+      simp [thenV]
+  · -- infinite head: dominates any finite code
+    rw [icmp_pos_zero hes, thenV, if_neg (one_lt_two).ne']
 
 /-- **`1 + ·` preserves the code comparison** for NF exponents: `icmp (1+e₁) (1+e₂) = icmp e₁ e₂`.
 The crux of `icmp_iomul`. NF is needed: with a zero coefficient the finite-head bump could spuriously
