@@ -16,12 +16,17 @@ Discharged the two `wip/StdCor34` interface obligations' substrate (lap-51 desig
   + `iIter_natCast` (standard `k` ⟹ meta-iterate `f^[k]`). This is the engine `iF (l+1) n = (iF l)^[n] n`
   needs (internal iteration at standard meta-level l ⟹ NO internal Ackermann).
 
-**Brick 2 REMAINING (next lap) — assemble `iF` + `ig` by meta-recursion on the standard level `l : ℕ`:**
-1. `iF : ℕ → (V → V)` with its Def + defined-instance triple, by meta-recursion: `iF 0 = (·+1)`,
-   `iF (l+1) n = iIter (iFDef l) (iF l) (hiF l) n n`. Carry `(iFDef l, hiF l)` up the recursion (use
-   `iIterDef`/`iIter_defined` from `IIter.lean`). Then internal block decomposition `iblockIdx`/`iblockOff`
-   over `iF l` (mirror `Grz.blockIdx`/`blockOff`; reuse the `BlkRec` width idiom).
-2. `ig : ℕ → V → V → V` meta-recursion: `ig 0 = ig0` (built), `ig (l+1) n m = iblk (l+1) (n - iblockIdx…)
+**Brick 2 — `iF` + `ipsum` substrate DONE (`wip/IIter.lean`, axiom-clean); REMAINING = block-decomp + `ig`:**
+- ✅ `iF : ℕ → (V → V)` built by meta-recursion (Subtype bundle `iFwith` carries function+Def+proof):
+  `iF_zero`/`iF_succ`/`iF_defined` + `iF_natCast` (standard agreement `iF l ↑k = ↑(Grz.F l k)`).
+- ✅ `ipsum f n i = Σ_{t=1}^i f^[t] n` (`Grz.psum` internalized): `ipsum_zero`/`ipsum_succ`/`ipsum_defined`
+  + monotonicity. Generic over the fixed `𝚺₁`-fn `f`, so it serves every `iF l`.
+- ⏭ NEXT: `iblockIdx`/`iblockOff` over `iF l` (level sets of `ipsum (iF l) n`). Mirror `Grz.blockIdx`/
+  `blockOff` but AVOID internal `findGreatest` — use the `BlkRec.boStep` state-machine idiom (a width
+  recurrence whose width at block `i` is `iIter (iFDef l) (iF l) (iF_defined l) n (i+1)`), giving
+  `psum_blockIdx_le`/`blockOff_lt_width`/`psum_add_blockOff` internally. Needs `ipsum` monotonicity +
+  a `≤ n` cap (blocks `< n`). Then `iF l`/`ipsum`/block-decomp standard-agreement lemmas as needed.
+1. `ig : ℕ → V → V → V` meta-recursion: `ig 0 = ig0` (built), `ig (l+1) n m = iblk (l+1) (n - iblockIdx…)
    (ig l (iF l^[…] n) (iblockOff…))` for `m < iF (l+1) n` else 0 (mirror `Grz.g`). Port `g_NF`/`g_lt`/
    `g_desc`/`g_C_bound`/`g_exp` ⟹ the `StdCor34` `igt` interface (`higtNF`/`higt0`/`higt_within`/`higtC`/
    `higt_exp`). Then `igt n m := ig l₀ n m` for the Lemma-3.2 standard level `l₀`.
