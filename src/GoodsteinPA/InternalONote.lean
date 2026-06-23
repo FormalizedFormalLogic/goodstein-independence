@@ -1370,4 +1370,175 @@ theorem ineq6_step_internal {k bk bk1 : V}
     _ ≤ ibump (k + 2) m := ibump_mono hk2 hm
 
 
+/-! ### Internal CNF ordinal addition `iadd` (toward the Rathjen §3 slow-down)
+
+`iadd a b` is `ONote.add a b` on codes. Cantor-normal-form addition recurses on the **first**
+argument's tail (`ONote.add (oadd e n r) b = ...` reads `r + b`), with `b` a fixed parameter — so it
+is a course-of-values recursion indexed by `a` (parameter `b`), exactly like `ievalNat` (param =
+base). The three cases compare leading exponents via `icmp`:
+`oadd e n r + oadd e' n' r' = ` `oadd e' n' r'` if `e < e'`; `oadd e (n+n') r'` if `e = e'`;
+`oadd e n (r + b)` if `e > e'`. Only the `gt` branch reads the table (at `ocTail a < a`). -/
+
+/-- `ocOadd ec n rc = ⟪⟪ec,n⟫,rc⟫+1` as a graph (for inlining in `iaddNext`'s formula). -/
+def _root_.LO.FirstOrder.Arithmetic.ocOaddDef : 𝚺₁.Semisentence 4 := .mkSigma
+  “y ec n rc. ∃ p, !pairDef p ec n ∧ ∃ q, !pairDef q p rc ∧ y = q + 1”
+
+instance ocOadd_defined : 𝚺₁-Function₃ (ocOadd : V → V → V → V) via ocOaddDef := .mk fun v ↦ by
+  simp [ocOaddDef, ocOadd, pair_defined.iff]
+
+instance ocOadd_definable : 𝚺₁-Function₃ (ocOadd : V → V → V → V) := ocOadd_defined.to_definable
+
+/-- Table step of `iadd` at first-argument index `c` (param `b`, table `s` of `iadd · b`). -/
+noncomputable def iaddNext (b c s : V) : V :=
+  if c = 0 then b
+  else if b = 0 then c
+  else if icmp (ocExp c) (ocExp b) = 0 then b
+  else if icmp (ocExp c) (ocExp b) = 1 then
+    ocOadd (ocExp c) (ocCoeff c + ocCoeff b) (ocTail b)
+  else ocOadd (ocExp c) (ocCoeff c) (znth s (ocTail c))
+
+def _root_.LO.FirstOrder.Arithmetic.iaddNextDef : 𝚺₁.Semisentence 4 := .mkSigma
+  “y b c s.
+    (c = 0 ∧ y = b)
+  ∨ (c ≠ 0 ∧ b = 0 ∧ y = c)
+  ∨ (c ≠ 0 ∧ b ≠ 0 ∧ ∃ ec, !ocExpDef ec c ∧ ∃ eb, !ocExpDef eb b ∧
+       ∃ cm, !icmpDef cm ec eb ∧
+       ( (cm = 0 ∧ y = b)
+       ∨ (cm = 1 ∧ ∃ cc, !ocCoeffDef cc c ∧ ∃ cb, !ocCoeffDef cb b ∧ ∃ tb, !sndIdxDef tb b ∧
+            !ocOaddDef y ec (cc + cb) tb)
+       ∨ (cm ≠ 0 ∧ cm ≠ 1 ∧ ∃ cc, !ocCoeffDef cc c ∧ ∃ tc, !sndIdxDef tc c ∧
+            ∃ st, !znthDef st s tc ∧ !ocOaddDef y ec cc st) ) )”
+
+instance iaddNext_defined : 𝚺₁-Function₃ (iaddNext : V → V → V → V) via iaddNextDef := .mk
+  fun v ↦ by
+  simp [iaddNextDef, iaddNext, ocExp_defined.iff, ocCoeff_defined.iff, ocTail,
+    sndIdx_defined.iff, icmp_defined.iff, znth_defined.iff, ocOadd_defined.iff]
+  by_cases hc : v 2 = 0
+  · simp [hc]
+  · by_cases hb : v 1 = 0
+    · simp [hc, hb]
+    · by_cases h0 : icmp (ocExp (v 2)) (ocExp (v 1)) = 0
+      · simp [hc, hb, h0]
+      · by_cases h1 : icmp (ocExp (v 2)) (ocExp (v 1)) = 1
+        · simp [hc, hb, h0, h1]
+        · simp [hc, hb, h0, h1]
+
+instance iaddNext_definable : 𝚺₁-Function₃ (iaddNext : V → V → V → V) := iaddNext_defined.to_definable
+
+/-- Blueprint for the `iadd` table (parameter = second summand `b`). -/
+def iaddTable.blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y x. !mkSeq₁Def y x”
+  succ := .mkSigma “y ih n x. ∃ v, !iaddNextDef v x (n + 1) ih ∧ !seqConsDef y ih v”
+
+noncomputable def iaddTable.construction : PR.Construction V iaddTable.blueprint where
+  zero := fun x ↦ !⟦x 0⟧
+  succ := fun x n ih ↦ seqCons ih (iaddNext (x 0) (n + 1) ih)
+  zero_defined := .mk fun v ↦ by
+    simp [iaddTable.blueprint, mkSeq₁Def, seqCons_defined.iff, emptyset_def]
+  succ_defined := .mk fun v ↦ by
+    simp [iaddTable.blueprint, iaddNext_defined.iff, seqCons_defined.iff]
+
+/-- **The `iadd` table**: `iaddTable b n = ⟨iadd 0 b,…,iadd n b⟩`. -/
+noncomputable def iaddTable (b n : V) : V := iaddTable.construction.result ![b] n
+
+@[simp] lemma iaddTable_zero (b : V) : iaddTable b 0 = !⟦b⟧ := by
+  simp [iaddTable, iaddTable.construction]
+
+@[simp] lemma iaddTable_succ (b n : V) :
+    iaddTable b (n + 1) = seqCons (iaddTable b n) (iaddNext b (n + 1) (iaddTable b n)) := by
+  simp [iaddTable, iaddTable.construction]
+
+/-- **Internal CNF ordinal addition** `a + b` inside `V`: the `a`-th entry of the table. -/
+noncomputable def iadd (a b : V) : V := znth (iaddTable b a) a
+
+def _root_.LO.FirstOrder.Arithmetic.iaddTableDef : 𝚺₁.Semisentence 3 :=
+  iaddTable.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
+
+instance iaddTable_defined : 𝚺₁-Function₂ (iaddTable : V → V → V) via iaddTableDef := .mk
+  fun v ↦ by simp [iaddTable.construction.result_defined_iff, iaddTableDef]; rfl
+
+instance iaddTable_definable : 𝚺₁-Function₂ (iaddTable : V → V → V) := iaddTable_defined.to_definable
+instance iaddTable_definable' (Γ) : Γ-[m + 1]-Function₂ (iaddTable : V → V → V) :=
+  iaddTable_definable.of_sigmaOne
+
+def _root_.LO.FirstOrder.Arithmetic.iaddDef : 𝚺₁.Semisentence 3 := .mkSigma
+  “y a b. ∃ t, !iaddTableDef t b a ∧ !znthDef y t a”
+
+instance iadd_defined : 𝚺₁-Function₂ (iadd : V → V → V) via iaddDef := .mk fun v ↦ by
+  simp [iaddDef, iadd, iaddTable_defined.iff, znth_defined.iff]
+
+instance iadd_definable : 𝚺₁-Function₂ (iadd : V → V → V) := iadd_defined.to_definable
+instance iadd_definable' (Γ) : Γ-[m + 1]-Function₂ (iadd : V → V → V) := iadd_definable.of_sigmaOne
+
+/-! ### Structural correctness of `iadd` -/
+
+private lemma def_iaddTable {k} (b : V) (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ iaddTable b (v i)) :=
+  DefinableFunction₂.comp (F := iaddTable) (DefinableFunction.const b) (DefinableFunction.var i)
+
+private lemma def_iadd {k} (b : V) (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ iadd (v i) b) :=
+  DefinableFunction₂.comp (F := iadd) (DefinableFunction.var i) (DefinableFunction.const b)
+
+@[simp] lemma iaddTable_seq (b n : V) : Seq (iaddTable b n) := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₁ (def_iaddTable b 0)
+  case zero => simp
+  case succ n ih => rw [iaddTable_succ]; exact ih.seqCons _
+
+@[simp] lemma iaddTable_lh (b n : V) : lh (iaddTable b n) = n + 1 := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₂ (DefinableFunction₁.comp (F := lh) (def_iaddTable b 0)) (by definability)
+  case zero => simp
+  case succ n ih => rw [iaddTable_succ, Seq.lh_seqCons _ (iaddTable_seq b n), ih]
+
+lemma znth_iaddTable_succ {b n k : V} (hk : k < n + 1) :
+    znth (iaddTable b (n + 1)) k = znth (iaddTable b n) k := by
+  rw [iaddTable_succ]
+  exact znth_seqCons_of_lt (iaddTable_seq b n) _ (by rw [iaddTable_lh]; exact hk)
+
+lemma znth_iaddTable_eq_iadd (b : V) : ∀ N : V, ∀ k ≤ N, znth (iaddTable b N) k = iadd k b := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · refine Definable.ball_le (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := znth) (def_iaddTable b 1) (DefinableFunction.var 0))
+      (def_iadd b 0)
+  case zero =>
+    intro k hk
+    rcases (nonpos_iff_eq_zero.mp hk) with rfl
+    rfl
+  case succ N ih =>
+    intro k hk
+    rcases eq_or_lt_of_le hk with rfl | hlt
+    · rfl
+    · rw [znth_iaddTable_succ hlt]
+      exact ih k (le_iff_lt_succ.mpr hlt)
+
+@[simp] lemma iadd_zero_left (b : V) : iadd 0 b = b := by
+  simp only [iadd, iaddTable_zero]
+  exact (singleton_seq b).znth_eq_of_mem ((mem_singleton_seq_iff b b).mpr rfl)
+
+/-- **The internal CNF-addition recursion**: `iadd (oadd e n r) b` evaluates the three-way leading
+exponent comparison (the `gt` branch recursing into `iadd r b`). -/
+lemma iadd_ocOadd (ec n rc b : V) :
+    iadd (ocOadd ec n rc) b =
+      (if b = 0 then ocOadd ec n rc
+       else if icmp ec (ocExp b) = 0 then b
+       else if icmp ec (ocExp b) = 1 then ocOadd ec (n + ocCoeff b) (ocTail b)
+       else ocOadd ec n (iadd rc b)) := by
+  set c := ocOadd ec n rc with hc
+  have hpos : 0 < c := ocOadd_pos ec n rc
+  obtain ⟨M, hM⟩ : ∃ M, c = M + 1 :=
+    ⟨c - 1, (sub_add_self_of_le (pos_iff_one_le.mp hpos)).symm⟩
+  have key : znth (iaddTable b c) c = iaddNext b c (iaddTable b M) := by
+    rw [hM, iaddTable_succ]
+    have := znth_seqCons_self (iaddTable_seq b M) (iaddNext b (M + 1) (iaddTable b M))
+    rwa [iaddTable_lh] at this
+  have htail : ocTail c ≤ M := by
+    have := ocTail_lt ec n rc; rw [← hc] at this; exact le_iff_lt_succ.mpr (hM ▸ this)
+  have hcne : c ≠ 0 := hpos.ne'
+  rw [iadd, key, iaddNext, if_neg hcne]
+  rw [znth_iaddTable_eq_iadd b M (ocTail c) htail, ocExp_ocOadd, ocCoeff_ocOadd, ocTail_ocOadd]
+
 end GoodsteinPA.InternalONote

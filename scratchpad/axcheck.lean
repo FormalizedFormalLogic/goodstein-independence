@@ -1,0 +1,4 @@
+import GoodsteinPA
+open GoodsteinPA
+#print axioms GoodsteinPA.peano_not_proves_goodstein
+#print axioms GoodsteinPA.goodsteinSentence_faithful

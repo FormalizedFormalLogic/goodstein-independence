@@ -1,0 +1,9 @@
+# Summary of changes for run 1b0db56b-d466-415f-bcef-2208e6d2766f
+Proved `ibump_mono` in `ibump_mono.lean` by replacing its `sorry`, using only the provided axioms plus standard `Nat` arithmetic (no ordinals).
+
+Approach:
+- The key difficulty is that monotonicity needs a strict-increase fact at consecutive arguments, which in turn requires the upper bound `ibump b n < (b+1)^(ibump b (ilog b n) + 1)`, whose proof itself needs strict monotonicity on smaller arguments. So I proved an *upper bound* and *strict monotonicity* together by a single strong induction on the larger argument.
+- This is packaged as a helper lemma `ibump_combined` (a conjunction of the upper bound and strict monotonicity, indexed by a bound `N`), proved by `Nat.strong_induction_on`. Leading exponents are compared via `ilog_mono`; when the exponents are equal the argument splits on the leading coefficient (`q` vs `q'`) and peels the remainder via the `ibump_pos` recursion.
+- The core induction is stated and proved as a fully parametric lemma `ibump_combined_param` (the `ipow`/`ilog`/`ibump` laws taken as ordinary hypotheses), and `ibump_combined` is obtained by instantiating it with the file's axioms. The final `ibump_mono` follows immediately.
+
+Verification: the file builds cleanly with no warnings and no remaining `sorry`. `#print axioms ibump_mono` shows it depends only on the provided `IBumpMono.*` axioms together with `propext`, `Classical.choice`, and `Quot.sound`. (One supplied axiom, `ipow_lt_ipow_right`, turned out not to be needed and is left declared but unused; a large `maxHeartbeats` is set locally for the computational helper lemma.)
