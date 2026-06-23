@@ -21,6 +21,7 @@ in Phases 3–4 when `γ ⟹ Con(𝗣𝗔)` is proved.
 -/
 import GoodsteinPA.Encoding
 import GoodsteinPA.Defs
+import GoodsteinPA.InternalBridge
 
 namespace GoodsteinPA
 
@@ -34,8 +35,14 @@ theorem goodsteinSentence_faithful :
     (ℕ ⊧ₘ goodsteinSentence) ↔ ∀ m, ∃ N, goodsteinSeq m N = 0 := by
   unfold goodsteinSentence
   rw [models_iff]
-  simp only [Semiformula.eval_all]
-  refine forall_congr' fun m => ?_
-  simpa [goodsteinTerminates] using codeOfREPred_spec goodsteinTerminates_re (x := m)
+  -- Eval the transparent Π₂ sentence `∀ m, ∃ N, !igoodsteinDef 0 m N` at ℕ: the `!igoodsteinDef`
+  -- splice unfolds to `0 = igoodstein m N` via the `Defined` instance, then `igoodstein_nat`
+  -- (`igoodstein = goodsteinSeq` on ℕ) rewrites to the locked RHS. No `codeOfREPred` opacity.
+  simp only [Nat.reduceAdd, Nat.succ_eq_add_one, Fin.isValue, Semiformula.eval_all,
+    Semiformula.eval_ex, Semiformula.eval_substs, InternalPow.igoodstein_defined.iff,
+    Matrix.cons_val_zero, Semiterm.val_operator₀, Structure.numeral_eq_numeral,
+    ORingStructure.zero_eq_zero, Fin.succ_zero_eq_one, Matrix.cons_val_one, Semiterm.val_bvar,
+    Fin.Fin1.eq_one, Matrix.cons_val_fin_one, Fin.succ_one_eq_two, Matrix.cons_app_two]
+  simp only [InternalPow.igoodstein_nat, eq_comm]
 
 end GoodsteinPA

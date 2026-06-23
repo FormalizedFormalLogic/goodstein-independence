@@ -4,9 +4,17 @@
 [M4 `embedC`, done] + ε₀ cut-elim [M5, done]) + **Boundedness** (Thm 5.4, DONE lap 14, axiom-clean) ⟹
 `𝗣𝗔 ⊬ TI(ε₀)` (= `peano_not_proves_TI`, FULLY axiom-clean — F-φ DISCHARGED lap 28), then
 Goodstein⟹TI(ε₀) [= the E wall].** · **Build**: 🟢 green (1306 jobs, `lake build GoodsteinPA`) ·
-**Updated**: lap 36 (DEEP REFLECTION — wall B is self-inflicted; refactor the sentence transparent) · 2026-06-23 · `ac00b01`
+**Updated**: lap 36 (DEEP REFLECTION + WALL B DISSOLVED — `goodsteinSentence` refactored transparent; `hB` discharged) · 2026-06-23 · `52640ae`+
 
-## ⭐ Lap-36 (DEEP REFLECTION) — WALL B IS SELF-INFLICTED; the new direction is to refactor the sentence transparent
+## ⭐ Lap-36 (DEEP REFLECTION + WALL B DISSOLVED) — `goodsteinSentence` refactored transparent; `hB` discharged
+**Done after the synthesis:** refactored `goodsteinSentence` to the transparent `“∀ m, ∃ N, !igoodsteinDef
+0 m N”` (`Encoding.lean`), re-proved `Bridge.goodsteinSentence_faithful` axiom-**clean** with the IDENTICAL
+locked RHS, and **closed `hB`** (`DescentSemantic.lean:419`) — `hgood` lifts to `M`'s reduct
+(`reduct_eq_standardModel`), evals to `∀ m ∃ N, igoodstein m N = 0`, instantiate at `m₀`. Real `#print
+axioms`: `goodsteinSentence_faithful` = `[propext, choice, Quot.sound]`; the chain's lone `sorryAx` is now
+**only `hCD`**. `ON-LINE-REQUEST` archived (wall B moot). **Two walls → one; the only literature gate is
+gone, the remaining path is entirely offline.** The synthesis that motivated this:
+
 Altitude pass on the stronger model. Real `#print axioms` reconfirmed: the **entire ordinal-analysis girder
 is done and axiom-clean** (`Thm56.peano_not_proves_TI` = trust-base + 1 🟢 native_decide), the headline is
 an honest `sorry` (0 math axioms), and the would-be-headline `…_modulo_semantic` carries exactly **one**
@@ -142,14 +150,15 @@ pure mathlib ordinal arithmetic it is **Aristotle-eligible** (the one piece with
 E **pins which `≺` F may use** (co-design). See newest `HANDOFF`.
 
 ## Where it stands
-**(lap-36 reflection — current read.)** The ordinal-analysis girder is **done and axiom-clean**; the
-headline is **one theorem** away (`DescentSemantic.no_min_descent_absurd_of_goodstein`), splitting into
-`hCD` (wall C+D) and `hB` (wall B). The lap-36 finding: **wall B is self-inflicted** by keeping the opaque
-`codeOfREPred` blob as `goodsteinSentence`; the sanctioned fix is to redefine `goodsteinSentence`
-transparently from `igoodsteinDef` (re-proving the bridge), which makes `hB` immediate and removes the
-project's only literature gate. After that, the lone genuine wall is `hCD` (Rathjen §3 internalized in `M`,
-ONote kernel built). **New direction**: do the transparent-sentence refactor first, then grind `hCD`. See
-`REFLECTION-2026-06-23-lap36.md`.
+**(lap-36 reflection + wall B dissolved — current read.)** The ordinal-analysis girder is **done and
+axiom-clean**; the headline is **one theorem** away (`DescentSemantic.no_min_descent_absurd_of_goodstein`).
+Lap 36 found wall B was self-inflicted by the opaque `codeOfREPred` blob, **refactored `goodsteinSentence`
+transparent** (`“∀ m ∃ N, !igoodsteinDef 0 m N”`, faithful bridge re-proved clean), and **discharged `hB`**.
+The project's only literature gate is gone (`ON-LINE-REQUEST` archived). **The lone genuine remaining wall
+is `hCD`** (wall C+D): Rathjen §3 slow-down internalized in `M` — extract a coherent descent function from
+`descent_seq_exists` (lap 35), construct `βₖ` + internalize the `DescentCore` ONote/`C` kernel into `M`'s
+reduct as `LX`-definable functions, wire the run side (`DescentArith.nonterminating_internal`). Fully
+offline. See `REFLECTION-2026-06-23-lap36.md`.
 
 **(lap-33 review — historical read.)** ONE wall stands between the disclosed-`sorry` headline and a fully
 axiom-clean Kirby–Paris: **`DescentSemantic.no_min_descent_absurd_of_goodstein`** (Rathjen §3 *inside a
@@ -236,14 +245,13 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
-- **2026-06-23 (lap 36 — DEEP REFLECTION: wall B is self-inflicted; new direction = refactor the sentence
-  transparent):** Real `#print axioms` reconfirmed clean girder + 1 `sorryAx` headline. Found that wall B
-  (the opaque `codeOfREPred`↔`igoodstein` bridge, `ON-LINE-REQUEST`) is an artifact of keeping the opaque
-  blob as `goodsteinSentence`. `Encoding.lean`'s docstring sanctions a transparent refactor gated on the
-  bridge spec; the substrate (`igoodsteinDef`/`igoodstein_defined`/`igoodstein_nat`) exists, the import DAG
-  is clean, `models_lMap_goodstein` is form-independent. **Course change:** redefine `goodsteinSentence`
-  transparently ⟹ `hB` is immediate, wall B dissolves, the only literature gate is removed, two walls→one
-  (`hCD`, wall C+D). STOP bridging the opaque code. See `REFLECTION-2026-06-23-lap36.md`. Build green 1306.
+- **2026-06-23 (lap 36 — DEEP REFLECTION + WALL B DISSOLVED):** Found wall B (the opaque
+  `codeOfREPred`↔`igoodstein` bridge, `ON-LINE-REQUEST`) was self-inflicted by keeping the opaque blob as
+  `goodsteinSentence`; `Encoding.lean`'s docstring sanctions a transparent refactor gated on the bridge
+  spec. **Executed it:** redefined `goodsteinSentence := “∀ m, ∃ N, !igoodsteinDef 0 m N”`, re-proved
+  `goodsteinSentence_faithful` axiom-clean (identical locked RHS), and **discharged `hB`**. Real `#print
+  axioms`: faithful bridge clean; the chain's lone `sorryAx` is now only `hCD`. Two walls → one; the only
+  literature gate removed (`ON-LINE-REQUEST` archived). See `REFLECTION-2026-06-23-lap36.md`. Build green 1306.
 - **2026-06-23 (laps 34–35 — wall-C descent-existence brick + `hDdef` DISCHARGED):** Built the M-internal
   descent scaffold and discharged its lone `sorry`: `DescentConstruction.descent_seq_exists`
   (`∀k, ∃W, IsDescent f a₀ W ∧ lh W=k+1`) is sorry-free + axiom-clean, promoted to `src/`. `D(k)` shown
@@ -433,16 +441,13 @@ escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 5.1/5.2/5.3) are **done & axiom-clean** and ARE the two hard pieces. Remaining = Boundedness + the
 Goodstein⟹TI bridge. Priorities (see `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md`):
 
-### Short-term — NEW DIRECTION (lap 36): refactor `goodsteinSentence` transparent ⟹ wall B dissolves, then grind `hCD`
-The headline bottoms out at `DescentSemantic.no_min_descent_absurd_of_goodstein` = `hCD` (`:410`) + `hB`
-(`:419`). The lap-36 reflection re-orders the attack (was: A2-gate → bridge-the-opaque-blob wall B → C/D):
-1. **(NEW, do first) Transparent-sentence refactor — dissolves wall B.** Redefine `goodsteinSentence` as the
-   Π₂ sentence built from `igoodsteinDef : 𝚺₁.Semisentence 3` (subst result `:=0`, `∃` step var, `∀⁰` close);
-   import `InternalGoodstein` into `Encoding.lean`, drop `codeOfREPred`/`R0.Representation`. Re-prove
-   `Bridge.goodsteinSentence_faithful` (IDENTICAL locked RHS) via `igoodstein_nat`+`igoodstein_defined`.
-   Then `hB` (`:419`) is immediate from `hgood`. **Spike first** (build the sentence + confirm ℕ-eval in
-   scratch) to de-risk the Foundation ergonomics. Retire `ON-LINE-REQUEST.md` (wall B moot).
-2. **(then, the lone genuine wall) `hCD` = wall C+D** — Rathjen §3 slow-down internalized in `M`. ONote kernel
+### Short-term — `hCD` is the LONE wall (lap 36: wall B DISCHARGED)
+The headline bottoms out at `DescentSemantic.no_min_descent_absurd_of_goodstein`, now a single `sorry`
+`hCD` (`:410`) — `hB` (`:419`) was discharged lap 36 by the transparent-`goodsteinSentence` refactor.
+1. ✅ **Transparent-sentence refactor — DONE (lap 36).** `goodsteinSentence := “∀ m ∃ N, !igoodsteinDef 0 m N”`
+   (`Encoding.lean`); `Bridge.goodsteinSentence_faithful` re-proved axiom-clean (identical locked RHS);
+   `hB` closed; `ON-LINE-REQUEST` archived (wall B moot). Verified by real `#print axioms`.
+2. **(the lone genuine wall) `hCD` = wall C+D** — Rathjen §3 slow-down internalized in `M`. ONote kernel
    built (`DescentCore`: `C`/`ineq6_step`/`lemma36_nonterminating`); M-internal descent existence built
    (`DescentConstruction.descent_seq_exists`, lap 35). Remaining: extract a coherent descent function `a:M→M`;
    construct `βₖ` + internalize `DescentCore`'s ONote/`C` facts into `M`'s reduct as `LX`-definable functions;
@@ -484,7 +489,7 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 | `peano_not_proves_goodstein` (headline, `Statement.lean`) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` (lap-30 real) | 🔓 open `sorry` (LOCKED, anti-fraud) — now reduced to **ONE semantic lemma** `paLX_models_TI_of_PA_provable` via `descentE`+completeness. **0** real math axioms; the would-be-headline chain (`…_modulo_semantic`) carries only `sorryAx`+native_decide. |
 | `…_modulo_semantic` (lap 30, `src/DescentSemantic`) | the headline, modulo the disclosed semantic `sorry` | `propext, sorryAx, choice, Quot.sound, ONoteComp…native_decide.ax_1_5` (lap-30 real) | 🔓 **= `peano_not_proves_goodstein_of_descent descentE`**. Proves the FULL chain is axiom-clean save `sorryAx` (one lemma) + 1 🟢 `native_decide` — **no `PA_delta1Definable`, no custom axiom**. NOT wired to `Statement.lean`. |
 | `descentE` (lap 30, `src/DescentSemantic`) | `Thm56.DescentE` (`𝗣𝗔⊢γ ⟹ Derivation2 paLX {TI prec}`) | `propext, sorryAx, choice, Quot.sound, native_decide.ax_1_5` | 🔓 **via FO completeness** (`Derivation.completeness_of_encodable`) — reduces `DescentE` to the one semantic premise `paLX_models_TI_of_PA_provable`. Built `LX.Encodable`. |
-| `no_min_descent_absurd_of_goodstein` (laps 30–35, `src/DescentSemantic`, **THE wall**) | Rathjen §3 in-model: `no_min` + Goodstein-in-`M` ⟹ ⊥ | `sorryAx` (disclosed, 2 sub-`sorry`: `hCD`@410, `hB`@419) | 🔴→🎯 the **single open obligation**. `[Structure.Eq LX M]` threaded (done). **Lap-36 plan:** `hB` (wall B) dissolves via the transparent-`goodsteinSentence` refactor (no longer the opaque-blob bridge / `ON-LINE-REQUEST` — that's superseded). `hCD` (wall C+D) is the lone genuine remainder: descent function extraction (`descent_seq_exists` lap 35) + βₖ slow-down internalized in `M` + run side (`DescentArith.nonterminating_internal`). |
+| `no_min_descent_absurd_of_goodstein` (laps 30–36, `src/DescentSemantic`, **THE wall**) | Rathjen §3 in-model: `no_min` + Goodstein-in-`M` ⟹ ⊥ | `sorryAx` (disclosed, **1** sub-`sorry`: `hCD`@410) | 🔴→🎯 the **single open obligation**. `hB` (wall B) **DISCHARGED lap 36** (transparent `goodsteinSentence` ⟹ `hgood` evals to `∀ m ∃ N, igoodstein m N=0`; no opaque-code bridge). `hCD` (wall C+D) is the lone genuine remainder: descent function extraction (`descent_seq_exists` lap 35) + βₖ slow-down internalized in `M` + run side (`DescentArith.nonterminating_internal`). |
 | `paLX_models_TI_of_PA_provable` (lap 30, `src/DescentSemantic`) | Rathjen §3 in-model: `𝗣𝗔⊢γ ⟹ ∀ M⊧paLX, M⊧TI prec` | `sorryAx` (via the wall) | 🟢 PROVED modulo the one named `sorry` above — steps 1–2 + progressivity-contrapositive machine-checked; bottoms out at `no_min_descent_absurd_of_goodstein`. |
 | `eqLX_subset_paLX` / `eqAxiom_weakerThan_paLX` (lap 32, `src/DescentLift`) | `𝗘𝗤(LX) ⊆ paLX`, hence `𝗘𝗤 ⪯ paLX` | `propext, choice, Quot.sound` | 🟢 clean — every `𝗘𝗤(LX)` axiom is an `lMap Φ`-image of a `𝗣𝗔⁻` axiom or `relExt Xsym`; gives models of `paLX` genuine equality (enables the A2-pt2 `consequence_iff_eq` route). |
 | `peano_not_proves_TI` (Thm 5.6, lap 21, **F-φ DISCHARGED lap 28**, `src/Thm56`) | Gentzen 1943: `𝗣𝗔 ⊬ TI_≺(X)` | `propext, choice, Quot.sound, ONoteComp…native_decide.ax_1_5` (lap-30 real) | 🟢 **CLEAN** — full §5 chain C₂→C₁→D→F + D'; F-φ now a theorem (`ONoteComp`). Only 1 🟢 `native_decide` finite artifact. No `sorryAx`, no math axiom. |
@@ -493,7 +498,7 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 | `evalNat_lt_iff`/`evalNat_lt_of_lt` (E-core brick, **lap 23**, `src/DescentCore`) | Rathjen 2.3(iii): `T̂^b_ω` order-reflects on `Canon` | `propext, choice, Quot.sound` | 🟢 clean — `evalNat b o < evalNat b p ↔ o.repr < p.repr` on the `Canon`/`NF` domain, from `canon_repr` + `toOrdinal` strict mono. The workhorse Lemma 3.6 inequality (6) runs on. |
 | `peano_not_proves_goodstein_of_descent` (G, **lap 21**, `src/Thm56`) | `DescentE ⟹ 𝗣𝗔 ⊬ γ` | same as Thm 5.6 | 🟢 reduction — pins E's interface (`𝗣𝗔 ⊢ γ → Nonempty (Derivation2 paLX {TI prec})`); headline `sorry` stays until E real |
 | `hax_paLX` (C₂ glue, `src/EmbeddingX`) | `paLX`-image axioms embed to `PXFc` | `propext, choice, Quot.sound` | 🟢 **CLEAN (lap 20)** — X-induction assembly discharged via `PXFc_allClosure` + new `rew_succInd`/`rew_subst1_comm_q`/`subst1_comp_bShift` + `metaInduction_cong`. ⟹ `embedC_LX` clean. |
-| `goodsteinSentence_faithful` (bridge) | encoding correctness | `propext, choice, Quot.sound` | 🟢 clean (trust base) |
+| `goodsteinSentence_faithful` (bridge) | encoding correctness `(ℕ⊧γ) ↔ ∀m∃N goodsteinSeq m N=0` | `propext, choice, Quot.sound` | 🟢 clean (trust base) — **lap 36:** re-proved for the transparent `γ := “∀ m ∃ N, !igoodsteinDef 0 m N”` via `igoodstein_defined.iff`+`igoodstein_nat`; **identical locked RHS**, faithfulness preserved. |
 | `goodsteinTerminates_re` (M1) | r.e. of termination | `propext, choice, Quot.sound` | 🟢 clean |
 | `Deriv.Provable.cutElim` (M5, §19.9, `src/Zinfty`) | ε₀ cut-elimination (ℒₒᵣ) | `propext, choice, Quot.sound` | 🟢 clean — witness-FREE `(α,c)` |
 | `ZinftyGen.…Provable.cutElim` (M5-generic, lap 13) | ε₀ cut-elim over `{L}` | `propext, choice, Quot.sound` | 🟢 clean — the X-route carrier (`L=LX`); reused wholesale, no re-proof |

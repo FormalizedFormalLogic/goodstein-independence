@@ -20,23 +20,22 @@ not wait on it.
 **KEEP**: the lap-30 model-internal completeness architecture; the route-neutral ONote kernel
 (`DescentCore`); route 1 (ordinal analysis — monument done; route 2 is no shortcut); `#print axioms` audits.
 
-**Highest-value next target — transparent-sentence refactor (then `hCD`):**
-1. **Spike (de-risk).** In scratch, build the transparent `Sentence ℒₒᵣ` from `igoodsteinDef :
-   𝚺₁.Semisentence 3` (`InternalGoodstein.lean:46`): substitute the result slot `:= 0`, `∃`-close the step
-   var, `∀⁰`-close the seed var. Confirm `ℕ ⊧ it ↔ ∀ m ∃ N goodsteinSeq m N = 0` via `igoodstein_defined`
-   (`:49`, the `Defined` instance) + `igoodstein_nat` (`InternalBridge.lean:118`). NB pin down
-   `InternalPow.igoodstein` vs `InternalGoodstein.igoodstein` (one canonical function; check namespace).
-2. **Land it.** Redefine `goodsteinSentence` in `Encoding.lean` (import `InternalGoodstein`; drop
-   `codeOfREPred`/`R0.Representation`). Re-prove `Bridge.goodsteinSentence_faithful` — **identical locked
-   RHS** `∀ m, ∃ N, goodsteinSeq m N = 0`. Verify `models_lMap_goodstein` still compiles (form-independent).
-3. **Close `hB`** (`DescentSemantic.lean:419`) directly from `hgood` (instantiate the transparent ∀ at `m₀`,
-   eval the Σ₁ body in `M`'s `𝗜𝚺₁`-reduct via `igoodstein_defined`). Re-run `#print axioms`: only `hCD`
-   `sorryAx` should remain. `git mv ON-LINE-REQUEST.md` away (wall B moot).
-4. **Grind `hCD`** — the lone genuine wall (see the lap-34 toolkit section just below + `DESCENT-PLAN §5`).
+**✅ Transparent-sentence refactor — DONE lap 36 (wall B dissolved):**
+1. ✅ `goodsteinSentence := “∀ m, ∃ N, !igoodsteinDef 0 m N”` (`Encoding.lean`, imports `InternalGoodstein`).
+   `InternalPow.igoodstein` IS `InternalGoodstein.igoodstein` (one function, namespace `GoodsteinPA.InternalPow`).
+2. ✅ `Bridge.goodsteinSentence_faithful` re-proved axiom-clean — identical locked RHS — eval via
+   `InternalPow.igoodstein_defined.iff` + `InternalPow.igoodstein_nat` + `eq_comm`. `models_lMap_goodstein`
+   compiled unchanged (form-independent, confirmed).
+3. ✅ `hB` (`DescentSemantic.lean:419`) closed: `Semiformula.models_lMap.mp hgood` → `simp only
+   [ReductModel.reduct_eq_standardModel]` → coerce `.toStruc ⊧` to `Evalbm (s := @standardModel M oM)`
+   (defeq, `models_iff` rfl) → same eval `simp only` set → `hev m₀`. `ON-LINE-REQUEST` archived.
+   Real `#print axioms`: `goodsteinSentence_faithful` clean; chain's lone `sorryAx` = `hCD` only.
+   GOTCHA banked: to eval a `lMap Φ`-lifted ℒₒᵣ sentence in `M`'s reduct, `models_lMap.mp` gives
+   `(inst.lMap Φ).toStruc ⊧ σ`; `simp only [reduct_eq_standardModel]` (NOT `rw` — dependent `reductORing`
+   motive) rewrites the reduct to `standardModel oM`, then `have h : Evalbm (s := @standardModel M oM) … := this`
+   coerces by defeq (`rw [models_iff]` does NOT fire on the `.toStruc ⊧` form).
 
-De-risk checklist (verified lap 36): `igoodsteinDef`/`igoodstein_defined`/`igoodstein_nat` exist; `Internal*`
-chain is `Encoding`-free (no cycle); `models_lMap_goodstein` is form-independent; Π₂ complexity unchanged.
-Sole unknown = Foundation ergonomics of step 1 → hence the spike.
+**Next: grind `hCD`** — the lone genuine wall (see the lap-34 toolkit section just below + `DESCENT-PLAN §5`).
 
 ---
 

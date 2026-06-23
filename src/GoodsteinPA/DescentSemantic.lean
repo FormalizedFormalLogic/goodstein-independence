@@ -416,7 +416,22 @@ theorem no_min_descent_absurd_of_goodstein {M : Type} [Nonempty M] [Structure LX
   -- the Σ₁-definitional agreement of `codeOfREPred goodsteinTerminates` with `∃ k, igoodstein · k = 0`
   -- (`reduct_models_goodstein` supplies the blob; the gap is the code↔run equivalence in `M`).
   have hB : ∃ k : M, InternalPow.igoodstein m₀ k = 0 := by
-    sorry
+    -- `hgood` lifts to `M`'s `ℒₒᵣ`-reduct (`= standardModel oM`); the transparent `goodsteinSentence`
+    -- evals there to `∀ m, ∃ N, igoodstein m N = 0` (the SAME `InternalPow.igoodstein` `hCD` ran on —
+    -- no opaque-code bridge). Instantiate at `m₀`.
+    have hred := Semiformula.models_lMap.mp hgood
+    simp only [ReductModel.reduct_eq_standardModel] at hred
+    -- `(standardModel oM).toStruc ⊧ goodsteinSentence` is defeq to `Evalbm` over `oM` (`models_iff` rfl);
+    -- coerce, unfold the transparent sentence, and eval the `!igoodsteinDef 0 m N` splice.
+    have hev : Semiformula.Evalbm (s := @standardModel M oM) M ![] goodsteinSentence := hred
+    unfold goodsteinSentence at hev
+    simp only [Nat.reduceAdd, Nat.succ_eq_add_one, Fin.isValue, Semiformula.eval_all,
+      Semiformula.eval_ex, Semiformula.eval_substs, InternalPow.igoodstein_defined.iff,
+      Matrix.cons_val_zero, Semiterm.val_operator₀, Structure.numeral_eq_numeral,
+      ORingStructure.zero_eq_zero, Fin.succ_zero_eq_one, Matrix.cons_val_one, Semiterm.val_bvar,
+      Fin.Fin1.eq_one, Matrix.cons_val_fin_one, Fin.succ_one_eq_two, Matrix.cons_app_two] at hev
+    obtain ⟨N, hN⟩ := hev m₀
+    exact ⟨N, hN.symm⟩
   obtain ⟨k, hk⟩ := hB
   exact absurd hk (hpos k).ne'
 

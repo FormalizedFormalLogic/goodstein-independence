@@ -42,6 +42,7 @@ import Foundation.FirstOrder.Incompleteness.Second
 import Foundation.FirstOrder.Arithmetic.R0.Representation
 import GoodsteinPA.Defs
 import GoodsteinPA.Computability
+import GoodsteinPA.InternalGoodstein
 
 namespace GoodsteinPA
 
@@ -66,10 +67,20 @@ theorem goodsteinTerminates_re : REPred goodsteinTerminates := by
   have hproj := REPred.projection (β := ℕ) hcomp.to_re
   exact hproj.of_eq (fun m => by simp [goodsteinTerminates])
 
-/-- **The Goodstein sentence `γ`.** The `ℒₒᵣ`-sentence "every Goodstein sequence terminates",
-obtained as the universal closure of Foundation's r.e.-predicate code for `goodsteinTerminates`.
-Faithfulness (`ℕ ⊧ₘ goodsteinSentence ↔ ∀ m, ∃ N, goodsteinSeq m N = 0`) is `Bridge.lean`. -/
+/-- **The Goodstein sentence `γ` (transparent Σ₁/Π₂ form, lap 36).** The `ℒₒᵣ`-sentence "every
+Goodstein sequence terminates", built from the repo's **own** `𝚺₁`-definable internal Goodstein run
+`igoodstein` (`InternalGoodstein.lean`) via its defining formula `igoodsteinDef : 𝚺₁.Semisentence 3`
+(`!igoodsteinDef 0 m N` says `igoodstein m N = 0`):
+
+  `γ := ∀ m, ∃ N, igoodstein m N = 0`.
+
+This **replaces** the earlier opaque `∀⁰ (codeOfREPred goodsteinTerminates)` form (Foundation's
+`Classical.epsilon`-over-Kleene-normal-form r.e. blob). The refactor is **sanctioned** by the Phase-2+
+caveat above and gated only on `Bridge.goodsteinSentence_faithful` keeping the **identical** RHS
+`∀ m, ∃ N, goodsteinSeq m N = 0` (which it does, via `igoodstein_nat`) — so faithfulness cannot regress.
+The win: inside any model `M ⊧ 𝗜𝚺₁`, `γ` is the *transparent* run, so the descent contradiction
+(`DescentSemantic`) needs no opaque-code↔run bridge (the old "wall B"). -/
 noncomputable def goodsteinSentence : Sentence ℒₒᵣ :=
-  ∀⁰ (codeOfREPred goodsteinTerminates)
+  “∀ m, ∃ N, !igoodsteinDef 0 m N”
 
 end GoodsteinPA
