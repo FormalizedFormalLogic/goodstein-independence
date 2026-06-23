@@ -409,4 +409,104 @@ lemma ocExp_iadd_clean {a b : V} (hb : b ≠ 0) (ha : a ≠ 0) (habove : iAbove 
   obtain ⟨hc, _⟩ := iAbove_ocOadd.mp habove
   rw [iadd_clean_step hb hc, ocExp_ocOadd, ocExp_ocOadd]
 
+/-! ### The unified clean-append comparison (within + boundary), the internal `corAlpha_*` core
+
+The full `Grz.corAlpha` descent needs *both* the within-block comparison (fixed lead, `g`-tail decides)
+and the boundary comparison (lead drops, the `g`-tail `< ω^(l+1)` is absorbed). Both are the single
+identity `icmp (iadd a₁ b₁) (iadd a₂ b₂) = thenV (icmp a₁ a₂) (icmp b₁ b₂)` whenever each tail `bᵢ` is
+clean below *both* spines `a₁`, `a₂` (`iAbove (ocExp bᵢ) aⱼ` for all four pairs — automatic in Cor 3.4
+since every `g < ω^(l+1)` and every `ω^(l+1)·β`-spine exponent `≥ l+1`). The clean appends share the
+entire `a`-spines and graft their tails strictly below, so the lexicographic comparison is decided in
+the spine exactly as `icmp a₁ a₂` and only falls through to `icmp b₁ b₂` on full spine-equality.
+
+Proved by strong induction on the pair `⟪a₁, a₂⟫`: at a both-positive head the comparison is the
+lexicographic combine (`icmp_pos_pos`) of (exponent, coefficient, tail), the tails recurse by the IH,
+and `thenV` associates the recursive combine back onto `icmp a₁ a₂` (`thenV_assoc`). The mixed base
+cases (one spine ends first) use `icmp_pos_ocOadd_lt_exp` + the `icmp` antisymmetry `icmp_two_iff_swap_zero`
+(the grafted tail's leading exponent is dominated by the other still-running spine head). -/
+set_option maxHeartbeats 1000000 in
+lemma icmp_iadd_clean_aux {b₁ b₂ : V} (hb₁ : b₁ ≠ 0) (hb₂ : b₂ ≠ 0) :
+    ∀ p : V, iAbove (ocExp b₁) (π₁ p) → iAbove (ocExp b₁) (π₂ p) →
+             iAbove (ocExp b₂) (π₁ p) → iAbove (ocExp b₂) (π₂ p) →
+      icmp (iadd (π₁ p) b₁) (iadd (π₂ p) b₂)
+        = thenV (icmp (π₁ p) (π₂ p)) (icmp b₁ b₂) := by
+  intro p
+  induction p using ISigma1.sigma1_order_induction
+  · -- definability built by hand: the 4 antecedents (𝚷₁ iAbove-compositions) and the
+    -- equation conclusion (𝚺₁) are each shallow; `Definable.imp` chains them.
+    refine Definable.imp ?_ (Definable.imp ?_ (Definable.imp ?_ (Definable.imp ?_ ?_)))
+    · definability
+    · definability
+    · definability
+    · definability
+    · definability
+  case ind p IH =>
+    intro h11 h12 h21 h22
+    have hp : (⟪π₁ p, π₂ p⟫ : V) = p := pair_unpair p
+    rcases eq_or_ne (π₁ p) 0 with ha | ha
+    · rcases eq_or_ne (π₂ p) 0 with hb | hb
+      · -- both spines empty: tails compare directly
+        rw [ha, hb, iadd_zero_left, iadd_zero_left, icmp_zero_zero]; simp [thenV]
+      · -- left spine empty, right runs: `b₁ ≺ iadd a₂ b₂` (b₁'s exp below the right head)
+        obtain ⟨e₂, n₂, r₂, ha2⟩ : ∃ e n r, π₂ p = ocOadd e n r :=
+          ⟨_, _, _, (ocOadd_destruct hb).symm⟩
+        obtain ⟨hc₂, _⟩ := iAbove_ocOadd.mp (ha2 ▸ h22)
+        obtain ⟨hd₂, _⟩ := iAbove_ocOadd.mp (ha2 ▸ h12)
+        rw [ha, ha2, iadd_zero_left, iadd_clean_step hb₂ hc₂, icmp_zero_pos (ocOadd_ne_zero _ _ _)]
+        rw [icmp_pos_ocOadd_lt_exp hb₁ (icmp_two_iff_swap_zero.mp hd₂)]
+        simp [thenV]
+    · rcases eq_or_ne (π₂ p) 0 with hb | hb
+      · -- right spine empty, left runs: `iadd a₁ b₁ ≻ b₂`
+        obtain ⟨e₁, n₁, r₁, ha1⟩ : ∃ e n r, π₁ p = ocOadd e n r :=
+          ⟨_, _, _, (ocOadd_destruct ha).symm⟩
+        obtain ⟨hc₁, _⟩ := iAbove_ocOadd.mp (ha1 ▸ h11)
+        obtain ⟨hd₁, _⟩ := iAbove_ocOadd.mp (ha1 ▸ h21)
+        rw [hb, ha1, iadd_zero_left, iadd_clean_step hb₁ hc₁, icmp_pos_zero (ocOadd_ne_zero _ _ _)]
+        rw [icmp_two_iff_swap_zero.mpr
+          (icmp_pos_ocOadd_lt_exp hb₂ (icmp_two_iff_swap_zero.mp hd₁))]
+        simp [thenV]
+      · -- both spines run: lockstep peel, tails by IH
+        obtain ⟨e₁, n₁, r₁, ha1⟩ : ∃ e n r, π₁ p = ocOadd e n r :=
+          ⟨_, _, _, (ocOadd_destruct ha).symm⟩
+        obtain ⟨e₂, n₂, r₂, ha2⟩ : ∃ e n r, π₂ p = ocOadd e n r :=
+          ⟨_, _, _, (ocOadd_destruct hb).symm⟩
+        obtain ⟨hc₁, ht₁₁⟩ := iAbove_ocOadd.mp (ha1 ▸ h11)
+        obtain ⟨hc₂, ht₁₂⟩ := iAbove_ocOadd.mp (ha2 ▸ h12)
+        obtain ⟨hd₁, ht₂₁⟩ := iAbove_ocOadd.mp (ha1 ▸ h21)
+        obtain ⟨hd₂, ht₂₂⟩ := iAbove_ocOadd.mp (ha2 ▸ h22)
+        -- IH at the tail pair ⟪r₁, r₂⟫ < p
+        have hlt : (⟪r₁, r₂⟫ : V) < p := by
+          have h := pair_lt_pair
+            (show r₁ < π₁ p by rw [ha1]; have := ocTail_lt e₁ n₁ r₁; rwa [ocTail_ocOadd] at this)
+            (show r₂ < π₂ p by rw [ha2]; have := ocTail_lt e₂ n₂ r₂; rwa [ocTail_ocOadd] at this)
+          rwa [hp] at h
+        have hih := IH _ hlt
+        simp only [pi₁_pair, pi₂_pair] at hih
+        have hihr := hih ht₁₁ ht₁₂ ht₂₁ ht₂₂
+        have e1 : iadd (ocOadd e₁ n₁ r₁) b₁ = ocOadd e₁ n₁ (iadd r₁ b₁) := iadd_clean_step hb₁ hc₁
+        have e2 : iadd (ocOadd e₂ n₂ r₂) b₂ = ocOadd e₂ n₂ (iadd r₂ b₂) := iadd_clean_step hb₂ hd₂
+        rw [ha1, ha2, e1, e2]
+        simp only [icmp_ocOadd, hihr, thenV_assoc]
+
+/-- **Unified clean-append comparison** (`Grz.corAlpha_within` + `corAlpha_boundary`, internal): when
+each tail `bᵢ` is clean below both spines, two clean appends compare exactly as their spines, falling
+through to the tails only on full spine-equality:
+`icmp (iadd a₁ b₁) (iadd a₂ b₂) = thenV (icmp a₁ a₂) (icmp b₁ b₂)`. -/
+lemma icmp_iadd_clean (a₁ a₂ : V) {b₁ b₂ : V} (hb₁ : b₁ ≠ 0) (hb₂ : b₂ ≠ 0)
+    (h₁₁ : iAbove (ocExp b₁) a₁) (h₁₂ : iAbove (ocExp b₁) a₂)
+    (h₂₁ : iAbove (ocExp b₂) a₁) (h₂₂ : iAbove (ocExp b₂) a₂) :
+    icmp (iadd a₁ b₁) (iadd a₂ b₂) = thenV (icmp a₁ a₂) (icmp b₁ b₂) := by
+  have h := icmp_iadd_clean_aux hb₁ hb₂ ⟪a₁, a₂⟫
+  simp only [pi₁_pair, pi₂_pair] at h
+  exact h h₁₁ h₁₂ h₂₁ h₂₂
+
+/-- **Boundary clean-append descent** (`Grz.corAlpha_boundary`, internal): if the lead drops
+(`a₁ ≺ a₂`) then the clean appends descend (`iadd a₁ b₁ ≺ iadd a₂ b₂`), for any clean tails. -/
+lemma icmp_iadd_clean_boundary {a₁ a₂ b₁ b₂ : V} (hb₁ : b₁ ≠ 0) (hb₂ : b₂ ≠ 0)
+    (h₁₁ : iAbove (ocExp b₁) a₁) (h₁₂ : iAbove (ocExp b₁) a₂)
+    (h₂₁ : iAbove (ocExp b₂) a₁) (h₂₂ : iAbove (ocExp b₂) a₂)
+    (hlt : icmp a₁ a₂ = 0) :
+    icmp (iadd a₁ b₁) (iadd a₂ b₂) = 0 := by
+  rw [icmp_iadd_clean a₁ a₂ hb₁ hb₂ h₁₁ h₁₂ h₂₁ h₂₂, hlt]; simp [thenV]
+
 end GoodsteinPA.InternalONote

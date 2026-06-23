@@ -1,0 +1,643 @@
+arXiv:1405.4484v1 [math.LO] 18 May 2014
+
+Goodstein’s theorem revisited
+Michael Rathjen
+School of Mathematics, University of Leeds
+Leeds, LS2 JT, England
+
+Abstract
+Inspired by Gentzen’s 1936 consistency proof, Goodstein found a
+close fit between descending sequences of ordinals < ε0 and sequences
+of integers, now known as Goodstein sequences. This article revisits
+Goodstein’s 1944 paper. In light of new historical details found in
+a correspondence between Bernays and Goodstein, we address the
+question of how close Goodstein came to proving an independence
+result for PA. We also present an elementary proof of the fact that
+already the termination of all special Goodstein sequences, i.e. those
+induced by the shift function, is not provable in PA. This was first
+proved by Kirby and Paris in 1982, using techniques from the model
+theory of arithmetic. The proof presented here arguably only uses
+tools that would have been available in the 1940’s or 1950’s. Thus we
+ponder the question whether striking independence results could have
+been proved much earlier? In the same vein we also wonder whether
+the search for strictly mathematical examples of an incompleteness
+in PA really attained its “holy grail” status before the late 1970’s.
+Almost no direct moral is ever given; rather, the paper strives to lay
+out evidence for the reader to consider and have the reader form their
+own conclusions. However, in relation to independence results, we
+think that both Goodstein and Gentzen are deserving of more credit.
+
+1
+
+History
+
+This paper grew out of a Goodstein lecture that I gave at the Logic Colloquium 2012 in Manchester. The lecture touched on many of Goodstein’s
+papers, though, this article will just be concerned with his best known result
+1
+
+[7] from 1944. Whilst reading [7], I formed the overwhelming impression
+that Goodstein came very close to proving an independence result. Recent
+archival studies by Jan von Plato (cf. [12]) which have brought to light a
+remarkable correspondence between Goodstein and Bernays have now confirmed that this impression was not unfounded. Goodstein’s paper [7] originally bore the title “A note on Gentzen’s theorem”, thereby referring to
+Gentzen’s 1936 paper [5] which proved the consistency of first order number
+theory1 by transfinite induction up to the ordinal ε0 . He sent it to Church
+in 1942 for publication in the JSL. Church sent the paper to Bernays for
+refereeing. Bernays then contacted Goodstein directly and included a long
+list of remarks and suggestions in his letter [2] dated 1 September 1942. As
+a result of these comments, Goodstein altered his paper considerably and
+also changed the title to “On the restricted ordinal theorem”. By the latter
+he meant the proposition that every strictly descending sequence of ordinals
+below ε0 is necessarily finite. As Gentzen [5] showed, this implies the consistency of first order number theory. Crucially in his paper Goodstein proved
+that this statement is equivalent to a statement P about integers, now known
+as the termination of Goodstein sequences. From Bernays’ letter it is clear
+that the original version of Goodstein’s paper contained a claim about the
+unprovability of P in number theory. Bernays in his letter correctly pointed
+out that P , being of Π11 form, is not a statement that can be formalized in
+Gentzen’s system of first order number theory as it talks about all descending
+sequences.
+The system A cannot be exactly the system denoted by Gentzen
+as “reine Zahlentheorie”, since this one contains no function variables and so your theorem P is not expressible in it. However
+the Gentzen proof surely can be extended to the case that free
+function variables are added to the considered formal system. [2]
+Unfortunately Goodstein then removed the passage about the unprovability of P . He could have easily2 come up with an independence result for
+PA as Gentzen’s proof only utilizes primitive recursive sequences of ordinals
+and the equivalent theorem about primitive recursive Goodstein sequences is
+expressible in the language of PA (see Theorem 2.8).
+1
+
+First order number theory or reine Zahlentheorie as it was called by Gentzen is essentially the same system as what is nowadays called Peano arithmetic, PA.
+2
+This expression may be too strong since it assumes that Goodstein had penetrated
+the details of Gentzen’s rather difficult paper [5].
+
+2
+
+Barwise in 1977 in the Handbook of Mathematical Logic added an editor’s
+note to the famous paper by Paris and Harrington [11]:
+Since 1931, the year Gödel’s Incompleteness Theorems were published, mathematicians have been looking for a strictly mathematical example of an incompleteness in first-order Peano arithmetic, one which is mathematically simple and interesting and
+does not require the numerical coding of notions from logic. The
+first such examples were found early in 1977, when this Handbook
+was almost finished.
+Barwise describes the problem of finding a natural mathematical incompleteness in Peano arithmetic almost as a “holy grail problem” of mathematical
+logic. As Goodstein almost found a mathematical example in the 1940s one
+wonders whether this problem was perceived as so important back then.3 In
+his paper Goodstein identifies as his main objective to determine which initial cases of Gentzen’s restricted ordinal theorem can be proven by finistist
+means. Here initial cases refer to the ordinals (in Goodstein’s notation) ϑn
+(ϑ0 = ω, ϑk+1 = ω ϑk ) and the pertaining assertions P (n) that all descending
+sequences below ϑn are necessarily finite. Interestingly enough, Goodstein
+claimed that “P (n) is capable of a finite constructive proof for any assigned
+n” ([7, p.39]). Bernays referred to this claim in his letter from 29 September
+1943 [3] when he wrote “I think, that the methodological difficulties appearing
+ω
+already in the case of ω ω , ..., will induce you to speak in a more reserved
+form about it.” This time Goodstein did not heed Bernays’ advice.
+In the next section we give an account of Goodman’s theorem and illuminate its origins in Gentzen’s work. We also give two independence results
+from PA that by and large can be credited to Gentzen (Theorem 2.8) and
+Goodstein (Theorem 2.9), respectively. We leave it to the reader to assay
+whether they meet Barwise’s criteria of being mathematically simple and
+interesting and not requiring the numerical coding of notions from logic.
+In the last section we give an elementary proof of Kirby’s and Paris’ 1982
+result [9] that the termination of special Goodstein sequences induced by
+the shift function is not provable in PA. Yet another proof was presented
+3
+
+In view of the impact Hilbert’s problem list had on mathematics and of how Hilbert’s
+work and ideas furnished the young Gödel with problem to solve, one might guess that if
+one of the luminaries of mathematical logic had declared the importance of this problem
+in the 1940s, the young ones would have leapt at this chance and followed Gentzen’s and
+Goodstein’s lead.
+
+3
+
+by Cichon [4] in 1983. Our main technique consists in making descending
+sequences of ordinals < ε0 slow. We like to think that this elementary proof
+could have been found in the 1940’s or at least 1950’s. Such a thought could
+be considered to be unfair to the logicians who, after a lot of hard technical
+work, established this independence result. This is not our intention and
+we like to stress that their techniques were certainly not available before the
+1970’s. On the other hand, we definitely think that Goodstein and Gentzen
+deserve at least some credit for “their” independence results. Another question that seems to be relevant in this context is the following: Could it be
+that the problem of finding statements independent from PA did not occupy
+center stage in mathematical logic before the 1970’s, thereby accounting for
+their late arrival?4
+
+2
+
+Cantor normal forms
+
+Let ε0 be the least ordinal β such that ω β = β. Every ordinal 0 < α < ε0
+can be written in a unique way as
+α = ω α1 · k1 + . . . + ω αn · kn
+
+(1)
+
+where α > α1 > . . . > αn and 0 < k1 , . . . , kn < ω. This we call the Cantor
+normal form of α. By writing α =N F ω α1 · k1 + . . . + ω αn · kn we shall convey
+that (1) obtains.
+The ordinals αi with αi 6= 0 can also be written in Cantor normal form
+with yet smaller exponents. As this process terminates after finitely many
+steps every ordinal < ε0 can be represented in a unique way as a term over
+the alphabet ω, +, ·, 0, 1, 2, 3, . . . which we call its complete Cantor normal
+form.
+In what follows we identify ordinals < ε0 with their representation in complete Cantor normal form. Henceforth, unless indicated otherwise, ordinals
+are assumed to be smaller than ε0 and will be denoted by lower case Greek
+4
+
+For what it’s worth, here is some anecdotal evidence. Around 1979, Diana Schmidt
+proved that Kruskal’s theorem elementarily implies that the ordinal representation system for Γ0 is well-founded [13]. She even wrote (p. 61) that she didn’t know of any
+applications of her result to proof theory. This is quite surprising since in conjunction
+with proof-theoretic work of Feferman and Schütte from the 1960’s it immediately implies the nowadays celebrated result that Kruskal’s theorem is unprovable in predicative
+mathematics.
+
+4
+
+letters. By |α| we denote the length of α in complete Cantor normal form
+(viewed as a string of symbols). More precisely, if α =N F ω α1 ·k1 +. . .+ω αn ·kn
+we define
+|α| = max{|α1 |, . . . , |αn |, k1, . . . , kn } + 1.
+By C(α) we denote the highest integer coefficient that appears in α, i.e.,
+inductively this can be defined by letting C(0) = 0 and
+C(α) = max{C(α1 ), . . . , C(αn ), k1 , . . . , kn }
+where α =N F ω α1 · k1 + . . . + ω αn · kn .
+There is a similar Cantor normal form for positive integers m to any base
+b with b ≥ 2, namely we can express m uniquely in the form
+m = bn1 · k1 + . . . + bnr · kr
+
+(2)
+
+where m > n1 > . . . > nr ≥ 0 and 0 < k1 , . . . , kr < b. As each ni >
+0 is itself of this form we can repeat this procedure, arriving at what is
+called the complete b-representation of m. In this way we get a unique
+representation of m over the alphabet 0, 1, . . . , b, +, ·.
+3
+For example 7 625 597 485 157 = 327 · 1 + 34 · 2 + 31 · 2 + 30 · 2 = 33 + 33+1 ·
+2 + 31 · 2 + 2.
+Definition 2.1 Goodstein [7] defined operations mediating between ordinals
+< ε0 and natural numbers.
+For naturals m > 0 and c ≥ b ≥ 2 let Sbc (m) be the integer resulting from
+m by replacing the base b in the complete b-representation of m everywhere
+by c. For example S34 (34) = 265, since 34 = 33 +3·2+1 and 44 +4·2+1 = 265.
+For any ordinal α and natural b ≥ 2 with b > C(α) let T̂ωb (α) be the
+integer resulting from α by replacing ω in the complete Cantor normal form
+of α everywhere by b. For example
+T̂ω3 (ω ω+1 + ω 2 · 2 + ω · 2 + 1) = 33+1 + 32 · 2 + 3 · 2 + 1 = 106.
+Conversely, for naturals m ≥ 1 and b ≥ 2 let Tbω (m) be the ordinal
+obtained from the complete b-representation of m by replacing the base b
+everywhere with ω. Thus T3ω (106) = ω ω+1 + ω 2 · 2 + ω · 2 + 1 and
+T3ω (34) = T4ω (S34 (34)) = T4ω (265) = ω ω + ω · 2 + 1.
+We also set Tbω (0) = 0 and T̂ωb (0) := 0.
+5
+
+Goodstein’s main insight was that given two ordinals α, β < ε0 one could
+replace the base ω in their complete Cantor normal forms by a sufficiently
+large number b and the resulting natural numbers T̂ωb (α) and T̂ωb (β) would
+stand in the same ordering as α and β. This is simply a consequence of the
+fact that the criteria for comparing ordinals in Cantor normal form are the
+same as for natural numbers in base b-representation, as spelled out in the
+next Lemma.
+Lemma 2.2
+(i) Let α =N F ω α1 · k1 + . . . + ω αr · kr and β =N F ω β1 · l1 + . . . + ω βs · ks .
+Then α < β if and only if either of the following obtains:
+1. There exists 0 < j ≤ min(r, s) such that αi = βi and ki = li for
+i = 1, . . . , j − 1 and αj < βj , or αj = βj and kj < lj .
+2. r < s and αi = βi and ki = li hold for all 1 ≤ i ≤ r.
+′
+
+′
+
+(ii) Let b ≥ 2, n = ba1 · k1 + . . . + bar · kr and m = ba1 · l1 + . . . + bas · ls be
+b-representations of integers n and m, respectively. Then n < m if and
+only if either of the following obtains:
+1. There exists 0 < j ≤ min(r, s) such that ai = a′i and ki = li for
+i = 1, . . . , j − 1 and aj < a′j , or aj = a′j and kj < lj .
+2. r < s and ai = a′i and ki = li hold for all 1 ≤ i ≤ r.
+Lemma 2.3 Let m, n, b be naturals, b ≥ 2, and α, β be ordinals with C(α), C(β) <
+b.
+(i) T̂ωb (Tbω (m)) = m.
+(ii) Tbω (T̂ωb (α)) = α.
+(iii) α < β ⇔ T̂ωb (α) < T̂ωb (β).
+(iv) m < n ⇔ Tbω (m) < Tbω (n).
+Proof. (i) and (ii) are obvious. (iii) and (iv) follow from Lemma 2.2.
+
+6
+
+⊔
+⊓
+
+Definition 2.4 Given any natural number m and non-decreasing function
+f :N→N
+with f (0) ≥ 2 define
+f (i)
+
+·1
+mf0 = m, . . . , mfi+1 = Sf (i+1) (mfi ) −
+· 1 = 0 if k = 0.
+· 1 is the predecessor of k if k > 0, and k −
+where k −
+f
+We shall call (mi )i∈N a Goodstein sequence. Note that a sequence
+f
+(mi )i∈N is uniquely determined by f once we fix its starting point m = mf0 .
+The case when f is just a shift function has received special attention.
+·
+Given any m we define m0 = m and mi+1 := Si+2
+i+3 (mi ) − 1 and call (mi )i∈N a
+id2
+special Goodstein sequence. Thus (mi )i∈N = (mi )i∈N , where id2 (x) =
+x + 2. Special Goodstein sequences can differ only with respect to their
+starting points. They give rise to a recursive function fgood defined as follows:
+fgood (m) is the least i such that mi = 0 where (mi )i∈IN is the special Goodstein
+sequence starting with m0 = m.
+Theorem 2.5 (Goodstein 1944) Every Goodstein sequence terminates, i.e.
+there exists k such that mfi = 0 for all i ≥ k.
+Proof. If mfi 6= 0 one has
+f (i)
+
+Tfω(i) (mfi ) = Tfω(i+1) (Sf (i+1) (mfi )) > Tfω(i+1) (mfi+1 )
+f (i)
+
+by Lemma 2.3(iv) since Sf (i+1) (mfi ) = mfi+1 + 1. Hence, as there are no
+infinitely descending ordinal sequences, there must exist a k such that mfk =
+0.
+⊔
+⊓
+The statement of the previous theorem is not formalizable in PA. However, the corresponding statement about termination of special Goodstein
+sequences is expressible in the language of PA as a Π2 statement. It was
+shown to be unprovable in PA by Kirby and Paris in 1982 [9] using modeltheoretic tools. [9] prompted Cichon [4] to find a different (short) proof that
+harked back to older proof-theoretic work of Kreisel’s [10] from 1952 which
+identified the so-called < ε0 -recursive functions as the provably recursive
+functions of PA. Other results pivotal to [4] were ordinal-recursion-theoretic
+classifications of Schwichtenberg [15] and Wainer [18] from around 1970 which
+7
+
+showed that the latter class of recursive functions consists exactly of those
+elementary in one of the fast growing functions Fα with α < ε0 . As Fε0
+eventually dominates any of these functions it is not provably total in PA.
+Cichon verified that Fε0 is elementary in the function fgood of Definition 2.4.
+Thus termination of special Goodstein sequences is not provable in PA.
+Returning to Goodstein, he established a connection between sequences of
+natural numbers and descending sequences of ordinals. Inspection of his proof
+shows that, using the standard scale of reverse mathematics, it can be carried
+out in the weakest system, RCA0 , based on of recursive comprehension (see
+[17]).
+Theorem 2.6 (Goodstein 1944) Over RCA0 the following are equivalent:
+(i) Every Goodstein sequence terminates.
+(ii) There are no infinitely descending sequences of ordinals
+ε 0 > α0 > α1 > α2 > . . . .
+Of course, when we speak about ordinals < ε0 in RCA0 we mean Cantor
+normal forms.
+Proof. “(ii)⇒(i)” follows from Theorem 2.5. For the converse, assume
+(i) and, aiming at a contradiction, suppose we have a strictly descending
+sequence of ordinals ε0 > α0 > α1 > α2 > . . .. Define a function f : N → N
+by letting f (i) = max{C(α0 ), . . . , C(αi )} + 1. f is non-decreasing. Let
+m := T̂ωf(0) (α0 ). We claim that
+T̂ωf(i) (αi ) ≤ mfi
+
+(3)
+
+and to this end use induction on i. It’s true for i = 0 by definition. Inductively assume mfi ≥ T̂ωf(i) (αi ). Then
+f (i)
+
+f (i)
+
+Sf (i+1) (mfi ) ≥ Sf (i+1) (T̂ωf(i) (αi ))
+and hence
+f (i)
+
+f (i)
+
+Sf (i+1) (mfi ) ≥ Sf (i+1) (T̂ωf(i) (αi )) = T̂ωf(i+1) (αi ) > T̂ωf(i+1) (αi+1 )
+8
+
+(4)
+
+where the last inequality holds by Lemma 2.3(iii) since αi+1 < αi and
+C(αi+1 ), C(αi ) < f (i + 1).
+f (i)
+· 1 ≥ T̂ωf(i+1) (αi+1 ), furnishing
+From (4) we conclude that mfi+1 = Sf (i+1) (mfi ) −
+the induction step.
+Since mfk = 0 for a sufficiently large k, (3) yields that T̂ωf(k) (αk ) = 0, and
+hence αk = 0, contradicting αk > αk+1 .
+⊔
+⊓
+
+Whereas it’s not possible to speak about arbitrary Goodstein sequences in
+PA, one can certainly formalize the notion of a primitive recursive sequence
+of naturals in this theory. As a result of the proof of the previous Theorem
+we have:
+Corollary 2.7 Over PA the following are equivalent:
+(i) Every primitive recursive Goodstein sequence terminates.
+(ii) There are no infinitely descending primitive recursive sequences of ordinals
+ε 0 > α0 > α1 > α2 > . . . .
+A very coarse description of Gentzen’s result [5] one often finds is that he
+showed that transfinite induction up to ε0 suffices to prove the consistency
+of first order number theory (also known as Peano arithmetic, PA). What
+Gentzen actually did is much more subtle. He defined a reduction procedure
+on derivations (proofs) and showed that if successive application of a reduction step on a given derivation always leads to a non-reducible derivation
+in finitely many steps, then the consistency of PA follows. The latter he
+ensured by assigning ordinals to derivations in such a way that a reduction
+step applied to a reducible derivation results in a derivation with a smaller
+ordinal. Let us explain in more detail how this is done in the later [6] which
+uses the sequent calculus. Firstly, he defined an assignment ord of ordinals to
+derivations of PA such for every derivation D of PA in his sequent calculus,
+ord(D) is an ordinal < ε0 . He then defined a reduction procedure R such
+that whenever D is a derivation of the empty sequent in PA then R(D) is
+another derivation of the empty sequent in PA but with a smaller ordinal
+assigned to it, i.e.,
+ord(R(D)) < ord(D).
+9
+
+(5)
+
+Moreover, both ord and R are primitive recursive functions and only finitist
+means are used in showing (5). As a result, if PRWO(ε0 ) is the statement that
+there are no infinitely descending primitive recursive sequences of ordinals
+below ε0 , then the following are immediate consequences of Gentzen’s work.
+Theorem 2.8 (Gentzen 1936, 1938)
+(i) The theory of primitive recursive arithmetic, PRA, proves that PRWO(ε0 )
+implies the consistency of PA.
+(ii) Assuming that PA is consistent, PA does not prove PRWO(ε0 ).
+Proof. For (ii), of course, one invokes Gödel’s second incompleteness theorem.
+⊔
+⊓
+So it appears that an attentive reader could have inferred the following from
+[5, 6, 7] in 1944:
+Theorem 2.9 Termination of primitive recursive Goodstein sequences is not
+provable in PA.
+Proof. Use Theorem 2.8 (ii) and Corollary 2.7.
+
+3
+
+⊔
+⊓
+
+Slowing down
+
+The key to establishing that already termination of special Goodstein sequences is beyond PA is to draw on Theorem 2.8 and to show that infinite
+descending sequences can be made slow. This technology was used in a paper by Simpson [16, Lemma 3.6] where it is credited to Harvey Friedman. It
+would be good to know where this padding technique was used for the first
+time.
+Definition 3.1 Addition of ordinals α + β is usually defined by transfinite
+recursion on β. For ordinals given in complete Cantor normal form addition
+can be defined explicitly. We set α + 0 := α and 0 + α := α. Now let
+α, β be non-zero ordinals, where α =N F ω α1 · k1 + . . . + ω αr · kr and β =N F
+ω β1 · l1 + . . . + ω βs · ls . If α1 < β1 then α + β := β. Otherwise there is a largest
+1 ≤ i ≤ r such that αi ≥ β1 . If αi = β1 , then
+α + β := ω α1 · k1 + . . . + ω αi−1 · ki−1 + ω β1 · (ki + l1 ) + ω β2 · l2 + . . . + ω βls · ls .
+10
+
+If αi < β1 , then
+α + β := ω α1 · k1 + . . . + ω αi · ki + ω β1 · l1 + . . . + ω βls · ls .
+With the help of addition we can also explicitly define multiplication ω α · β
+as follows: ω α · 0 := 0. If β =N F ω β1 · l1 + . . . + ω βs · ls then
+ω α · β := ω α+β1 · l1 + . . . + ω α+βs · ls .
+We shall use ω · β to stand for ω 1 · β.
+Next we recall an elementary result that was known in the 1950’s (e.g., [8]).
+Lemma 3.2 For a function ℓ : IN → IN define ℓ0 (l) = l and ℓk+1 (l) =
+ℓ(ℓk (l)). The Grzegorczyk hierarchy (fl )l∈N is generated by the functions
+f0 (n) = n + 1 and fl+1 (n) = (fl )n (n).
+For every primitive recursive function h of arity r there is an n such
+h(~x ) ≤ fn (max(2, ~x )) holds for all ~x = x1 , . . . , xr .
+Proof. The proof proceeds by induction on the generation of primitive recursive function, using properties of the hierarchy (fl )l∈N . It is straightforward
+but a bit tedious. We shall give it in the appendix.
+⊔
+⊓
+Lemma 3.3 (PA) Let f : N → N be primitive recursive. Then there exists
+a primitive recursive function g : N2 → ω ω such that
+(1) g(n, m) > g(n, m + 1) whenever m < f (n).
+(2) There exists a constant K such |g(n, m)| ≤ K · (n + m + 1) holds for
+all n, m.
+Proof. By Lemma 3.2 is suffices to show this for any f = fl in the in the
+hierarchy (fl )l∈N . We will actually obtain a 0 < k < ω such that g : N2 → ω k .
+To find g we proceed by induction on l.
+Base Case: f (n) = n + 1. Define g by
+· m.
+g(n, m) = (n + 2) −
+Induction Step: Let g : N2 → ω k satisfy the conditions (1) and (2) for
+f , and let f ′ be defined by diagonalizing over f , i.e., f ′ (k) = f k (k), where
+f 0 (l) = l and f k+1(l) = f (f k (l)). If m < f ′ (n) define g ′(n, m) by letting
+g ′(n, m) = ω k · (n − i) + g(f i (n), j),
+11
+
+where i and j are the unique integers such that
+m = f (n) + f 2 (n) + . . . + f i (n) + j,
+i < n and j < f i+1 (n). If m ≥ f ′ (n) set g ′ (n, m) = 0.
+We first show that g ′ satisfies requirement (1) for f ′ . So suppose m <
+′
+f (n). Let m = f (n)+f 2(n)+. . .+f i (n)+j with j < f i+1 (n). We distinguish
+two cases. If also j + 1 < f i+1 (n), then
+g ′(n, m+1) = ω k ·(n−i)+g(f i(n), j +1) < ω k ·(n−i)+g(f i(n), j) = g ′ (n, m)
+holds by the inductive assumption on g and f since j < f (f i (n)). The other
+possible case is that j + 1 = f i+1 (n) and then we have
+g ′(n, m+1) = ω k ·(n−(i+1))+g(f i+1 (n), 0) < ω k ·(n−i)+g(f i (n), j) = g ′(n, m)
+since ω k · (n − (i + 1)) + ω ≤ ω k · (n − i) as k > 0.
+g ′ also satisfies requirement (2) for f ′ since
+|g ′(n, m)| ≤ constant · n + constant · (f i (n) + m + 1)
+≤ constant · (n + m + 1).
+⊔
+⊓
+Corollary 3.4 (PA) From a given primitive recursive strictly descending
+sequence ε0 > β0 > β1 > β2 > . . . one can construct a slow primitive recursive
+strictly descending sequence ε0 > α0 > α1 > α2 > . . ., where slow means that
+there is a constant K such that
+|αi | ≤ K · (i + 1)
+holds for all i.
+Proof. By the previous Lemma let g : N2 → ω ω be chosen such that
+g(n, m) > g(n, m + 1) for every m < |βn+1| and |g(n, m)| ≤ K · (n + m + 1)
+holds for all n, m. Now set
+αj = ω ω · βn + g(n, m)
+
+12
+
+where j = |β0 | + |β1| + . . . + |βn | + m for m < |βn+1 |. For such j one computes
+that
+|αj | ≤ constant · |βn | + constant · (n + m + 1)
+≤ constant · (j + 1).
+We also need to determine αi for i < |β0 |. For instance let
+αi = ω ω · β0 + |β0 | + 1 − i
+for i < |β0 |. Clearly we can choose a constant K0 such that |αi | ≤ K0 · (i + 1)
+for i < |β0 |.
+⊔
+⊓
+Theorem 3.5 (PA) Let ε0 > α0 > α1 > α2 > . . . be a slow primitive
+recursive descending sequence of ordinals, i.e., there is a constant K such
+that |αi | ≤ K · (i + 1) for all i. Then there exists a primitive recursive
+descending sequence ε0 > β0 > β1 > β2 > . . . such that C(βr ) ≤ r + 1 for all
+r.
+Proof. Obviously K > 0. Let ω0 = 1 and ωn+1 = ω ωn . As α0 < ε0 we find
+s < ω such that ω · α0 < ωs and K < s. Now put
+X
+
+K−1−j
+
+βj :=
+
+ωs−i
+
+i=0
+
+for j = 0, . . . , K − 1, and
+βK·(n+1)+i := ω · αn + (K − i)
+for n < ω and 0 ≤ i < K. By construction, βr > βr+1 for all r. As
+C(ωr ) = 1 for all r, one has C(βj ) = 1 for all j = 0, . . . , K − 1. Moreover, as
+C(αn ) ≤ |αn | ≤ K · (n + 1), it follows that
+C(βK·(n+1)+i ) = C(ω · αn + (K − i)) ≤ K · (n + 1) + 1,
+since multiplying by ω increases the coefficients by at most 1. As a result,
+C(βr ) ≤ r + 1 for all r.
+⊔
+⊓
+
+13
+
+Lemma 3.6 (PA) Let ε0 > β0 > β1 > β2 > . . . be a primitive recursive
+descending sequence of ordinals such that C(βn ) ≤ n + 1. Then the special
+·
+Goodstein sequence (mi )i∈N with m0 = T̂ω2 (β0 ) and mi+1 = Si+2
+i+3 (mi ) −1 does
+not terminate.
+Proof. We claim that
+mk ≥ T̂ωk+2 (βk )
+
+(6)
+
+holds for all k.
+For k = 0 this holds by definition. Assume this to be true for i, i.e.,
+mi ≥ T̂ωi+2 (βi ). Let δ = Ti+2
+ω (mi ). Since C(βi ) < i + 2 it follows from Lemma
+2.3(iii) that δ ≥ βi , and hence δ > βi+1 . As C(δ), C(βi+1 ) < i + 3 it follows
+from Lemma 2.3(iii) that T̂ωi+3 (δ) > T̂ωi+3 (βi+1 ). Thus, since
+ω
+·
+·
+mi+1 = Si+2
+i+3 (mi ) − 1 = T̂i+3 (δ) − 1,
+
+we arrive at mi+1 ≥ T̂ωi+3 (βi+1 ) as desired.
+(6) entails mk 6= 0 for all k.
+
+⊔
+⊓
+
+In sum, what we have done amounts to an elementary proof of the following result due to Kirby and Paris [9, Theorem 1(ii)]:
+Corollary 3.7 The statement that any special Goodstein sequence terminates is not provable in PA.
+Proof. Let GS be the statement that every special Goodstein sequence
+terminates. Arguing in PA and assuming GS, we obtain from Lemma 3.6,
+Theorem 3.4 and Corollary 3.4 that there is no infinite primitive recursive
+descending sequence of ordinals below ε0 , i.e., PRWO(ε0 ). However, by Theorem 2.8 the latter is not provable in PA.
+⊔
+⊓
+
+4
+
+Appendix
+
+It remains to prove Lemma 3.2. To this end the following is useful.
+Lemma 4.1 Recall that for a function h : IN → IN we defined h0 (l) = l and
+hk+1 (l) = h(hk (l)). Also recall that the hierarchy (fl )l∈N is generated by the
+functions f0 (n) = n + 1 and fl+1 (n) = (fl )n (n). We shall write fln rather
+than (fl )n .
+Let f be any of the functions fl in this hierarchy. Then f satisfies the
+following properties:
+14
+
+(i) f (x) ≥ x + 1 if x > 0.
+(ii) f z (x) ≥ x for all x, z.
+(iii) If x < y then f (x) < f (y) and f z (x) < f z (y).
+(iv) fl+1 (x) ≥ fl (x) whenever x > 0.
+Proof. (i),(ii),(iii) will be proved simultaneously by induction on l. (i) and
+(iii) are obvious for f = f0 and (ii) follows via a trivial induction on z. Now
+assume that (i),(ii),(iii) hold for fk and l = k + 1. For x > 0 one then
+computes
+fl (x) = fkx (x) = fk (fkx−1 (x)) ≥ fk (x) ≥ x + 1
+using the properties for fk . (ii) follows from this by induction on z. As to
+(iii), note that
+fl (x + 1) = fkx+1(x + 1) = fk (fkx (x + 1)) > fk (fkx (x)) ≥ fkx (x) = fl (x),
+using the properties for fk , and thus (iii) follows by straightforward inductions on y and z.
+If x > 0, then fl+1 (x) = flx (x) = fl (flx−1 (x)) ≥ fl (x) by (ii) and (iii). ⊔
+⊓
+Proof of Lemma 3.2: We want to prove that for or every primitive
+recursive function h of arity r there is an n such h(~x ) ≤ fn (max(2, ~x )) holds
+for all ~x = x1 , . . . , xr .
+We show this by induction on the generation of the primitive recursive
+functions. Clearly for all n we have h(~x) ≤ fn (max(2, ~x )) by Lemma 4.1(i)
+if h is any of the initial functions x 7→ 0, ~x 7→ xi , and x 7→ x + 1.
+Now let h be defined by h(~x ) = g(ϕ1 (~x ), . . . , ϕs (~x )) and assume that the
+assertion holds for g, ϕ1, . . . , ϕs . By Lemma 3.2(iv) we can then pick an n
+such that g(~y ) ≤ fn (max(2, ~y )) and ϕi (~x ) ≤ fn (max(2, ~y )) hold for all ~y , ~x
+and 1 ≤ i ≤ s. As a result,
+h(~x ) ≤ fn (max(2, fn (max(2, ~x )))) = fn (fn (max(2, ~x ))) =
+fn2 (max(2, ~x )) ≤ fnmax(2,~x ) (max(2, ~x )) = fn+1 (max(2, ~x )),
+showing that fn+1 is a majorant for h.
+Now suppose h is defined by primitive recursion from g and ϕ via h(~x, 0) =
+g(~x ) and h(~x, y + 1) = ϕ(~x, y, h(~x, y)) and that fn majorizes g and ϕ, i.e.,
+g(~x ) ≤ fn (max(2, ~x )) and ϕ(~x, y, z) ≤ fn (max(2, ~x )). We claim that
+h(~x, y) ≤ fn (max(2, ~x, y)).
+15
+
+(7)
+
+We prove this by induction on y. For y = 0 we have h(~x, y) = g(~x ) ≤
+fn (max(2, ~x )) = fn1 (max(2, ~x )). For the induction step we compute
+h(~x, y + 1) = ϕ(~x, y, h(~x, y)) ≤ fn (max(2, ~x, y, h(~x, y)))
+≤ fn (max(2, ~x, y, fny+1(max(2, ~x, y)))) = fn (fny+1 (max(2, ~x, y)))
+= fny+2 (max(2, ~x, y))
+where the second “≤” uses the inductive assumption and the penultimate
+“=” uses Lemma 4.1.
+From the claim (7) we get with Lemma 4.1, letting w = max(2, ~x, y), that
+h(~x, y) ≤ fny+1 (max(2, ~x, y)) ≤ fnw+1(w) = fn (fnw (w)) = fn (fn+1 (w))
+2
+w
+≤ fn+1 (fn+1 (w)) = fn+1
+(w) ≤ fn+1
+(w) = fn+2 (w).
+As a result, h(~x, y) ≤ fn+2 (max(2, ~x, y)).
+
+⊔
+⊓
+
+Acknowledgement: I thank Jan von Plato for having shared his archival
+findings about the Goodstein-Bernays correspondence with me even before
+his own work on it [12] has been published.
+I also acknowledge support by the EPSRC of the UK through Grant No.
+EP/G029520/1.
+
+References
+[1] J. Barwise (ed.): Handbook of Mathematical Logic, (North-Holland, Amsterdam, 1977).
+[2] P. Bernays: Letter to Goodstein, dated September 1st, 1942, Bernays
+collection of the ETH Zürich.
+[3] P. Bernays: Letter to Goodstein, dated September 29th, 1943, Bernays
+collection of the ETH Zürich.
+[4] A. Cichon: A short proof of two recently discovered independence results
+using recursion theoretic methods, Proc. Amer. Math. Soc. 87 (1983)
+704–706.
+[5] G. Gentzen: Die Widerspruchsfreiheit der reinen Zahlentheorie. Mathematische Annalen 112 (1936) 493–565.
+16
+
+[6] G. Gentzen: Neue Fassung des Widerspruchsfreiheitsbeweises für die
+reine Zahlentheorie, Forschungen zur Logik und zur Grundlegung der
+exacten Wissenschaften, Neue Folge 4 (Hirzel, Leipzig, 1938) 19–44.
+[7] R.L. Goodstein 1944: On the restricted ordinal theorem, Journal of Symbolic Logic 9 (1944) 33–41.
+[8] A. Grzegorczyk: Some classes of recursive functions. Rozprawy Mate
+No. IV (Warsaw, 1953).
+[9] L. Kirby, J. Paris: Accessible independence results for Peano arithmetic,
+Bull. London Math. Soc. 14 (1982) 285–293.
+[10] G. Kreisel: On the interpretation of non-finitist proofs II. Journal of
+Symbolic Logic 17 (1952) 43–58.
+[11] J. Paris, L. Harrington: A mathematical incompleteness in Peano arithmetic. In: J. Barwise (ed.): Handbook of Mathematical Logic, (NorthHolland, Amsterdam, 1977) 1133–1142.
+[12] Jan von Plato: Gödel, Gentzen, Goodstein: The magic sound of a Gstring. To appear in the Mathematical Intelligencer.
+[13] D. Schmidt: Well-partial orderings and their maximal order types. (Habilitationsschrift, Universität Heidelberg, 1979).
+[14] K. Schütte: Proof Theory. Springer 1977.
+[15] H. Schwichtenberg: Eine Klassifikation der ε0 -rekursiven Funktionen.
+Zeitschrift für mathematische Logik und Grundlagen der Mathematik
+17 (1971) 61–74.
+[16] S.G. Simpson: Nichtbeweisbarkeit von gewissen kombinatorischen Eigenschaften endlicher Bäume, Archiv für mathematische Logik 25 (1985)
+45–65.
+[17] S.G. Simpson: Subsystems of Second Order Arithmetic, second edition,
+(Cambridge University Press, 2009).
+[18] S.S. Wainer: A classification of the ordinal recursive functions. Archiv
+für Mathematische Logik und Grundlagenforschung 13 (1970) 136–153.
+
+17
+
+

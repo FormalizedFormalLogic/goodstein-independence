@@ -453,6 +453,9 @@ instance thenV_defined : 𝚺₀-Function₂ (thenV : V → V → V) via thenVDe
   simp [thenVDef, thenV]
   by_cases h : v 1 = 1 <;> simp [h]
 
+instance thenV_definable : 𝚺₀-Function₂ (thenV : V → V → V) := thenV_defined.to_definable
+instance thenV_definable' (Γ) : Γ-Function₂ (thenV : V → V → V) := thenV_definable.of_zero
+
 /-- `cmp` on ordering codes: 0 if `a<b`, 1 if `a=b`, 2 otherwise. -/
 noncomputable def cmpV (a b : V) : V := if a < b then 0 else if a = b then 1 else 2
 
@@ -465,6 +468,59 @@ instance cmpV_defined : 𝚺₀-Function₂ (cmpV : V → V → V) via cmpVDef :
   · simp [h]
   · simp [h]
   · simp [not_lt.mpr (le_of_lt h), le_of_lt h, (ne_of_lt h).symm]
+
+instance cmpV_definable : 𝚺₀-Function₂ (cmpV : V → V → V) := cmpV_defined.to_definable
+instance cmpV_definable' (Γ) : Γ-Function₂ (cmpV : V → V → V) := cmpV_definable.of_zero
+
+/-- Order-code involution swapping `0`↔`2` (lt↔gt), fixing `1` (eq). `icmp` is antisymmetric
+through it: `icmp c2 c1 = oswap (icmp c1 c2)` (`icmp_swap`). -/
+noncomputable def oswap (x : V) : V := if x = 0 then 2 else if x = 2 then 0 else x
+
+def _root_.LO.FirstOrder.Arithmetic.oswapDef : 𝚺₀.Semisentence 2 := .mkSigma
+  “y x. (x = 0 ∧ y = 2) ∨ (x ≠ 0 ∧ x = 2 ∧ y = 0) ∨ (x ≠ 0 ∧ x ≠ 2 ∧ y = x)”
+
+instance oswap_defined : 𝚺₀-Function₁ (oswap : V → V) via oswapDef := .mk fun v ↦ by
+  simp [oswapDef, oswap]
+  by_cases h0 : v 1 = 0 <;> by_cases h2 : v 1 = 2 <;> simp [h0, h2]
+
+instance oswap_definable : 𝚺₀-Function₁ (oswap : V → V) := oswap_defined.to_definable
+
+@[simp] lemma oswap_zero : oswap (0 : V) = 2 := by simp [oswap]
+@[simp] lemma oswap_two : oswap (2 : V) = 0 := by simp [oswap]
+@[simp] lemma oswap_one : oswap (1 : V) = 1 := by simp [oswap]
+
+lemma oswap_eq_one {x : V} : oswap x = 1 ↔ x = 1 := by
+  rcases eq_or_ne x 1 with rfl | h
+  · simp
+  · constructor
+    · intro hx; simp only [oswap] at hx
+      by_cases h0 : x = 0 <;> by_cases h2 : x = 2 <;> simp_all
+    · intro hx; exact absurd hx h
+
+/-- `oswap` is a `thenV`-homomorphism (lexicographic-combine commutes with the swap). -/
+lemma oswap_thenV (a b : V) : oswap (thenV a b) = thenV (oswap a) (oswap b) := by
+  unfold thenV
+  by_cases ha : a = 1
+  · simp [ha]
+  · rw [if_neg ha, if_neg (by rw [oswap_eq_one]; exact ha)]
+
+/-- `thenV` is associative (lexicographic combine). -/
+lemma thenV_assoc (a b c : V) : thenV (thenV a b) c = thenV a (thenV b c) := by
+  unfold thenV
+  by_cases ha : a = 1 <;> simp [ha]
+
+/-- `cmpV` is antisymmetric through `oswap`. -/
+lemma cmpV_swap (a b : V) : cmpV b a = oswap (cmpV a b) := by
+  rcases lt_trichotomy a b with h | h | h
+  · have e1 : cmpV a b = 0 := by rw [cmpV, if_pos h]
+    have e2 : cmpV b a = 2 := by rw [cmpV, if_neg (not_lt.mpr h.le), if_neg h.ne']
+    rw [e1, e2]; simp
+  · subst h
+    have e1 : cmpV a a = 1 := by rw [cmpV, if_neg (_root_.lt_irrefl a), if_pos rfl]
+    rw [e1]; simp
+  · have e1 : cmpV a b = 2 := by rw [cmpV, if_neg (not_lt.mpr h.le), if_neg h.ne']
+    have e2 : cmpV b a = 0 := by rw [cmpV, if_pos h]
+    rw [e1, e2]; simp
 
 /-- The "both-positive" branch of the comparison step on the pair index `i = ⟪c1,c2⟫` with table `s`:
 lexicographic `then`-combine of the exponent comparison (read at `⟪ocExp c1, ocExp c2⟫`), the leading
@@ -1887,6 +1943,60 @@ lemma icmp_pos_pos {a b : V} (ha : a ≠ 0) (hb : b ≠ 0) :
   obtain ⟨ea, ca, ta, rfl⟩ : ∃ x y z, a = ocOadd x y z := ⟨_, _, _, (ocOadd_destruct ha).symm⟩
   obtain ⟨eb, cb, tb, rfl⟩ : ∃ x y z, b = ocOadd x y z := ⟨_, _, _, (ocOadd_destruct hb).symm⟩
   rw [icmp_ocOadd]; simp only [ocExp_ocOadd, ocCoeff_ocOadd, ocTail_ocOadd]
+
+/-- **A strictly smaller leading exponent decides `≺`** (head version): if `b` is positive and its
+leading exponent is `≺ e`, then `b ≺ ω^e·n + r` outright. -/
+lemma icmp_pos_ocOadd_lt_exp {b e n r : V} (hb : b ≠ 0) (h : icmp (ocExp b) e = 0) :
+    icmp b (ocOadd e n r) = 0 := by
+  conv_lhs => rw [← ocOadd_destruct hb]
+  rw [icmp_ocOadd, h]; simp [thenV]
+
+/-- **`icmp` is antisymmetric through `oswap`** (auxiliary, on a pair index): comparison swaps its
+arguments by swapping `lt`↔`gt`. Strong induction on the pair `m = ⟪c1,c2⟫`: at the both-positive
+head it is the lexicographic combine of (exponent, coefficient, tail) comparisons, each of which
+swaps by the IH (`oswap` is a `thenV`-homomorphism). -/
+lemma icmp_swap_aux : ∀ m : V, icmp (π₂ m) (π₁ m) = oswap (icmp (π₁ m) (π₂ m)) := by
+  intro m
+  induction m using ISigma1.sigma1_order_induction
+  · definability
+  case ind m IH =>
+    have hm : (⟪π₁ m, π₂ m⟫ : V) = m := pair_unpair m
+    rcases eq_or_ne (π₁ m) 0 with ha | ha
+    · rcases eq_or_ne (π₂ m) 0 with hb | hb
+      · rw [ha, hb, icmp_zero_zero]; simp
+      · rw [ha, icmp_zero_pos hb, icmp_pos_zero hb]; simp
+    · rcases eq_or_ne (π₂ m) 0 with hb | hb
+      · rw [hb, icmp_pos_zero ha, icmp_zero_pos ha]; simp
+      · rw [icmp_pos_pos ha hb, icmp_pos_pos hb ha]
+        have hexp : (⟪ocExp (π₁ m), ocExp (π₂ m)⟫ : V) < m := by
+          have h := pair_lt_pair (ocExp_lt_of_pos (pos_iff_ne_zero.mpr ha))
+            (ocExp_lt_of_pos (pos_iff_ne_zero.mpr hb))
+          rwa [hm] at h
+        have htail : (⟪ocTail (π₁ m), ocTail (π₂ m)⟫ : V) < m := by
+          have h := pair_lt_pair (ocTail_lt_of_pos (pos_iff_ne_zero.mpr ha))
+            (ocTail_lt_of_pos (pos_iff_ne_zero.mpr hb))
+          rwa [hm] at h
+        have he := IH _ hexp
+        have ht := IH _ htail
+        simp only [pi₁_pair, pi₂_pair] at he ht
+        rw [he, ht, cmpV_swap, oswap_thenV, oswap_thenV]
+
+/-- **`icmp` antisymmetry**: `icmp c2 c1 = oswap (icmp c1 c2)` (lt↔gt swap, eq fixed). -/
+lemma icmp_swap (c1 c2 : V) : icmp c2 c1 = oswap (icmp c1 c2) := by
+  have := icmp_swap_aux ⟪c1, c2⟫
+  simpa using this
+
+lemma oswap_eq_two {x : V} : oswap x = 2 ↔ x = 0 := by
+  rcases eq_or_ne x 0 with rfl | h0
+  · simp
+  · rcases eq_or_ne x 2 with rfl | h2
+    · simp
+    · rw [oswap, if_neg h0, if_neg h2]; exact ⟨fun h => absurd h h2, fun h => absurd h h0⟩
+
+/-- `icmp a b = 2 ⟺ icmp b a = 0` (the `≻`/`≺` antisymmetry, the direction the clean-append
+boundary descent needs). -/
+lemma icmp_two_iff_swap_zero {a b : V} : icmp a b = 2 ↔ icmp b a = 0 := by
+  rw [icmp_swap b a, oswap_eq_two]
 
 /-- A finite-head code (`ocExp a = 0`) is `≺` an infinite-head code (`ocExp b ≠ 0`). -/
 lemma icmp_finHead_infHead {a b : V} (ha : a ≠ 0) (hb : b ≠ 0)
