@@ -536,4 +536,48 @@ lemma iC_iadd_clean {b : V} (hb : b ≠ 0) :
             max_le_max (le_refl _) (IH ra hra_lt hra)
         _ = max (max (max (iC ea) na) (iC ra)) (iC b) := (max_assoc _ _ _).symm
 
+/-! ### `iAbove` preservation under `ω·` (internal `Grz.MinExpGe_omega_mul`)
+
+`iomul` bumps every leading exponent `e ↦ 1+e`, and `1+·` is order-faithful (`icmp_one_add`, NF
+exponents), so the spine-dominance flag lifts with the threshold bumped the same way:
+`iAbove e0 a ⟹ iAbove (1+e0) (ω·a)`. This is the inductive step of the internal `MinExpGe`
+chain that certifies the Cor 3.4 lead `ω^(l+1)·β` is clean above any `g < ω^(l+1)`. -/
+lemma iAbove_iomul {e0 : V} (he0 : isNF e0) :
+    ∀ a, isNF a → iAbove e0 a → iAbove (iadd (ocOadd 0 1 0) e0) (iomul a) := by
+  intro a
+  induction a using ISigma1.sigma1_order_induction
+  · definability
+  case ind a IH =>
+    intro hNF habove
+    rcases eq_or_ne a 0 with rfl | ha
+    · rw [iomul_zero]; exact iAbove_zero _
+    · obtain ⟨ea, na, ra, rfl⟩ : ∃ ea na ra, a = ocOadd ea na ra :=
+        ⟨ocExp a, ocCoeff a, ocTail a, (ocOadd_destruct ha).symm⟩
+      obtain ⟨hc, hra_above⟩ := iAbove_ocOadd.mp habove
+      rw [isNF_ocOadd] at hNF
+      obtain ⟨_, hea_NF, hra_NF, _⟩ := hNF
+      have hra_lt : ra < ocOadd ea na ra := by
+        have := ocTail_lt ea na ra; rwa [ocTail_ocOadd] at this
+      rw [iomul_ocOadd, iAbove_ocOadd]
+      refine ⟨?_, IH ra hra_lt hra_NF hra_above⟩
+      rw [icmp_one_add hea_NF he0]; exact hc
+
+/-- **Base of the `MinExpGe` chain**: `ω·a` has every leading exponent `≻ 0` (each is `1+e ≠ 0`),
+i.e. `iAbove 0 (ω·a)` for any `a ≠ 0`. (Internal `MinExpGe 1 (ω·a)`, no NF needed.) -/
+lemma iAbove_zero_iomul : ∀ a, a ≠ 0 → iAbove 0 (iomul a) := by
+  intro a
+  induction a using ISigma1.sigma1_order_induction
+  · definability
+  case ind a IH =>
+    intro ha
+    obtain ⟨ea, na, ra, rfl⟩ : ∃ ea na ra, a = ocOadd ea na ra :=
+      ⟨ocExp a, ocCoeff a, ocTail a, (ocOadd_destruct ha).symm⟩
+    have hra_lt : ra < ocOadd ea na ra := by
+      have := ocTail_lt ea na ra; rwa [ocTail_ocOadd] at this
+    rw [iomul_ocOadd, iAbove_ocOadd]
+    refine ⟨icmp_pos_zero (iadd_one_ne_zero ea), ?_⟩
+    rcases eq_or_ne ra 0 with rfl | hra
+    · rw [iomul_zero]; exact iAbove_zero 0
+    · exact IH ra hra_lt hra
+
 end GoodsteinPA.InternalONote

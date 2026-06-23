@@ -1864,3 +1864,26 @@ substitution-layer refactor is a prerequisite for *both* `cut` and `cutElimStep`
 For `Ordinal`, `add_le_add_right h c` elaborates to `c + a ≤ c + b` (adds on the *left*) — use
 `add_le_add h le_rfl` to get `a + 1 ≤ b + 1` from `a ≤ b`. `gcongr` on `⨆`-bounds spawns a
 `BddAbove (Set.range …)` side-goal (discharge with `Ordinal.bddAbove_range`).
+
+## lap 48 — internal Cor 3.4 bricks landed; MinExpGe assembly remaining (2026-06-23)
+DONE (axiom-clean, green): `icmp_iadd_clean`/`_boundary` (within+boundary unified), `iC_iadd_clean`
+(C-split = Grz.C_add_clean), `iAbove_iomul` (MinExpGe step: `iAbove e0 a → iAbove (1+e0)(ω·a)`),
+`iAbove_zero_iomul` (MinExpGe base: `iAbove 0 (ω·a)`). Plus general `icmp_swap` antisymmetry infra
+in InternalONote.
+
+REMAINING for the `iAbove (ocExp g) (ibigMul (l+1) β)` clean-condition (3 attack paths):
+1. **Meta-iterate (recommended).** By `induction k:ℕ`: `iAbove (oadd1iter k 0) (ibigMul (k+1) β)`
+   from base `iAbove_zero_iomul` + step `iAbove_iomul` (needs `isNF_ibigMul` for the NF arg, exists).
+   `oadd1iter k = (iadd (ocOadd 0 1 0))^[k]`. Then identify `oadd1iter k 0 = ocOadd 0 k 0` (finite k)
+   via `iadd_one_zero`/`iadd_one_fin`, and weaken the threshold `ofin l → ocExp g` (g < ω^(l+1) ⟹
+   ocExp g ⪯ ofin l).
+2. **Threshold weakening** is the one piece needing care: `iAbove (ofin l) a → (ocExp g ⪯ ofin l) →
+   iAbove (ocExp g) a`. Since g's exps are FINITE codes (ig0/iblk have finite ocExp), the spine-vs-
+   threshold comparisons are all finite (cmpV on coeffs) OR infinite-head-vs-finite
+   (`icmp_infHead_finHead`) — provable WITHOUT general `icmp` transitivity. State as
+   `icmp_spine_finThresh_mono : icmp s (ofin (l+1)) = 2 → j ≤ l → icmp s (ofin j) = 2` by cases on s.
+3. Alternatively prove general `icmp_trans` (≺ transitive) once — heavier but unblocks everything.
+
+Then assemble `icorAlpha` (mirror `Grz.corAlpha`): C-bound (`iC_iadd_clean`+`iC_ibigMul_le`+`iC` of g),
+within (`icmp_iadd_clean` with `icmp a a`=1 via the same-lead), boundary (`icmp_iadd_clean_boundary`
++ `icmp_ibigMul` lifting β-descent). Feeds `DescentSemantic.nonterminating_of_xDescent`.
