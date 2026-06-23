@@ -44,3 +44,4 @@ import GoodsteinPA.InternalLog
 import GoodsteinPA.InternalBump
 import GoodsteinPA.InternalGoodstein
 import GoodsteinPA.InternalBridge
+import GoodsteinPA.DescentInternal

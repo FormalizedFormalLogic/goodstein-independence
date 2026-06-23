@@ -27,6 +27,25 @@ Route-neutral / on the Route-B path (the substrate doubles as `LX`-formula build
 unchanged: **E-core(b) Route-B** (the integrated paLX descent), partially literature-gated (see
 `ON-LINE-REQUEST.md` — the precise calculus-internal `Goodstein ⟹ paLX ⊢ TI_≺(X)` shape).
 
+**Also landed lap 29 (`src/GoodsteinPA/DescentInternal.lean`, green, axiom-clean):** wired the bridged
+internal run into the (6)-scaffold. `igoodstein_sigma1 (m₀) : 𝚺₁-Function₁ (igoodstein m₀)` (partial
+application of `igoodstein_definable` via `DefinableFunction₂.comp`), and
+`igoodstein_nonterminating_of_dominating` = `nonterminating_internal` specialized to `m := igoodstein
+m₀`. **This makes the RUN side of E-core(b) axiom-clean and pins the precise remaining obligation: a
+`𝚺₁`-bound `b k = T̂^{k+2}(βₖ)` with `(base, step, hpos)`.** `step` is the internalized `ineq6_step`
+(numeral-Δ₀ form of `DescentCore.ineq6_step`); `b`/`βₖ` is the slow-down side, fed in Route B by the
+`X`-definable descent from `¬TI prec`.
+
+**NEXT (hardest-first, offline-tractable pieces):**
+1. **Internal `ineq6_step`** (the `step` hyp): the genuine non-vacuous Π₁ kernel as a `Δ₀`-numeral fact
+   inside `V` — base-`b` digit form (Rathjen 2.2(ii)), NOT internalized ONote (`DESCENT-PLAN §3b`).
+   Build on `ibump` (bridged) + internal digit/value reading. Deep, multi-lap; the irreducible content.
+2. **The `b`/`βₖ` side**: requires the descending input. In Route B this is `X`-definable from `¬TI
+   prec` — literature-gated on the exact paLX shape (`ON-LINE-REQUEST.md`).
+3. **Route-B paLX glue**: from `¬TI prec` (free-`X`) extract the descent via the LX least-number scheme;
+   contradict the lifted `goodsteinSentence` via `igoodstein_nonterminating_of_dominating`. Skeleton-
+   decompose into named `wip/` obligations once the paLX shape is pinned.
+
 ## 🎯 LAP-28 (2026-06-23) — F-φ DISCHARGED (in build). ONE wall left: E-core(b) Route-B. Read FIRST.
 
 **Done this lap:** F-φ ported + wired (`src/GoodsteinPA/ONoteComp.lean`); `peano_not_proves_TI` is now
