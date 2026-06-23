@@ -50,5 +50,6 @@ import GoodsteinPA.DescentInternal
 -- (`paLX_models_TI_of_PA_provable`). Modulo that disclosed `sorry`, the headline chains; NOT wired
 -- into `Statement.lean` (anti-fraud). See `DescentSemantic.lean` docstring + `DESCENT-PLAN.md §5`.
 import GoodsteinPA.DescentSemantic
+import GoodsteinPA.DescentConstruction
 import GoodsteinPA.ReductModel
 import GoodsteinPA.XCongruence

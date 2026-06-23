@@ -1,22 +1,23 @@
 /-
-# `wip/DescentConstruction.lean` — wall C: the M-internal `Mlt`-descent sequence (SCAFFOLD)
+# `DescentConstruction.lean` — wall C: the M-internal `Mlt`-descent sequence (COMPLETE, axiom-clean)
 
 The lone wall `DescentSemantic.no_min_descent_absurd_of_goodstein`'s `hCD` needs an `M`-internal,
-`LX`-definable descending sequence built from `no_min`/`ha₀`. This file scaffolds that construction
-over `M`'s `ℒₒᵣ`-reduct (`reductORing`, `⊧ 𝗜𝚺₁`) using Foundation's HFS `Seq` coding:
+`LX`-definable descending sequence built from `no_min`/`ha₀`. This file constructs it over `M`'s
+`ℒₒᵣ`-reduct (`reductORing`, `⊧ 𝗜𝚺₁`) using Foundation's HFS `Seq` coding. **Sorry-free** (lap 35):
 
 - `IsDescent f a₀ W` — `W` codes a finite `Mlt`-descending sequence through `¬MX` from `a₀`.
+- `isDescent_iff_mem` — the membership (`Seq`-graph) form of `IsDescent`: the `X`-atom sits on a *bound
+  variable*, not a `znth`-term — the key simplification for the definability.
 - `descent_base` / `descent_extend` — the base (length 1) and the canonical one-step extension (via
-  `DescentSemantic.descent_step`, the `lx_least_number` selector). **PROVEN** (real math content).
-- `descent_seq_exists` — `∀ k, ∃ W, IsDescent W ∧ lh W = k+1`, by `lx_succ_induction`. **Disclosed
-  `sorry`** on the lone remaining obligation: the `LX`-definability of the predicate
-  `D(k) := ∃ W, IsDescent W ∧ lh W = k+1` (an `LX`-formula with a `Seq`-existential + interleaved
-  `Mlt`/`¬MX` atoms on `znth`-terms). The combinators in `DescentSemantic`
-  (`lxDef_of_reduct`, `lxDef_and`, `MX_lxDef`) carry the `ℒₒᵣ` parts; the `znth`-term `X`-atoms are
-  built directly (next lap).
-
-This file is OUTSIDE the build target (`wip/`), so its disclosed `sorry`s do not block the self-stop
-gate; `src/` stays sorry-free. Promote to `src/` once `descent_seq_exists` is sorry-free.
+  `DescentSemantic.descent_step`, the `lx_least_number` selector). Real math content.
+- `lxDef_exists` / `lxDef2_and` — binary `LX`-definability combinators (`∃`-closure, conjunction).
+- `skel_lxDef` / `descentMlt_lxDef` / `xclause_lxDef` — pieces A/B/C: the `LX`-definability of the
+  `ℒₒᵣ`-skeleton (`Seq`/`∈`/`lh`), the `Mlt`-descent clause (`prec` atom), and the `¬MX` clause
+  (`Xsym` atom). Built directly from Foundation's `memRelOpr`/`seqDef`/`lhDef` + `lMap Φ` to the reduct.
+- `descent_seq_exists` — `∀ k, ∃ W, IsDescent W ∧ lh W = k+1`, by `lx_succ_induction`; its definability
+  hypothesis `hDdef` (`D(k) := ∃ W, IsDescent W ∧ lh W = k+1` is `LX`-definable) is **DISCHARGED**
+  (`∃ W, A∧B∧C`, `lxDef2_and` + `lxDef_exists`). This is wall C's descent-existence brick, ready to
+  feed the βₖ slow-down (Rathjen §3 Thm 3.5) toward `hCD`.
 -/
 import GoodsteinPA.DescentSemantic
 import Mathlib.Tactic.FinCases
@@ -296,6 +297,49 @@ theorem descentMlt_lxDef :
   · intro hR i x x' h1 h2
     exact (hp x' x i).mp (hR i x x' ((hg1 x' x i).mpr h1) ((hg2 x' x i).mpr h2))
 
+/-- **Piece A of `hDdef`: the skeleton `Seq W ∧ ⟪0,a₀⟫∈W ∧ lh W = k+1` is binary-`LX`-definable** (with
+`a₀` a parameter, carried by the free assignment `e 0 = a₀`). Pure `ℒₒᵣ`-on-reduct: `Seq` via `seqDef`,
+membership via `memRelOpr`, `lh W = k+1` via `lhDef` (both `𝚺₀` Foundation `Defined` predicates, read off
+the reduct by `Defined.iff`). -/
+theorem skel_lxDef (a₀ : M) :
+    letI : ORingStructure M := ReductModel.reductORing
+    haveI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+    ∃ e : ℕ → M, ∃ β : Semiformula LX ℕ 2,
+      ∀ W k : M, (Seq W ∧ ⟪(0 : M), a₀⟫ ∈ W ∧ lh W = k + 1)
+        ↔ Semiformula.Evalm M ![W, k] e β := by
+  letI oM : ORingStructure M := ReductModel.reductORing
+  haveI hI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
+  have hred := ReductModel.reduct_eq_standardModel (M := M)
+  refine ⟨fun _ => a₀, Semiformula.lMap Φ (
+      ((Rewriting.emb (seqDef.val)) ⇜ ![(#0 : Semiterm ℒₒᵣ ℕ 2)]) ⋏
+      (memRelOpr.operator ![#0, ‘0’, &0]) ⋏
+      ((Rewriting.emb (lhDef.val)) ⇜ ![‘(#1 + 1)’, (#0 : Semiterm ℒₒᵣ ℕ 2)])), fun W k => ?_⟩
+  set e : ℕ → M := fun _ => a₀ with he
+  rw [Semiformula.eval_lMap, hred, LogicalConnective.HomClass.map_and,
+    LogicalConnective.HomClass.map_and]
+  refine and_congr ?_ (and_congr ?_ ?_)
+  · -- `Seq W`
+    rw [Semiformula.eval_substs, Semiformula.eval_emb]
+    have hv : (fun i : Fin 1 =>
+        Semiterm.val (@standardModel M oM) ![W, k] e (![(#0 : Semiterm ℒₒᵣ ℕ 2)] i)) = ![W] := by
+      funext j; fin_cases j <;> simp [Semiterm.val_bvar]
+    rw [hv]
+    simp
+  · -- `⟪0,a₀⟫∈W`
+    rw [Semiformula.eval_operator]
+    have hv : (fun j : Fin 3 =>
+        Semiterm.val (@standardModel M oM) ![W, k] e (![(#0 : Semiterm ℒₒᵣ ℕ 2), ‘0’, &0] j))
+        = ![W, 0, a₀] := by funext j; fin_cases j <;> simp [Semiterm.val_bvar, he]
+    rw [hv]; simp
+  · -- `lh W = k+1`
+    rw [Semiformula.eval_substs, Semiformula.eval_emb]
+    have hv : (fun i : Fin 2 =>
+        Semiterm.val (@standardModel M oM) ![W, k] e (![‘(#1 + 1)’, (#0 : Semiterm ℒₒᵣ ℕ 2)] i))
+        = ![k + 1, W] := by funext j; fin_cases j <;> simp [Semiterm.val_bvar]
+    rw [hv]
+    rw [show (lh W = k + 1) ↔ (k + 1 = lh W) from eq_comm]
+    simp
+
 /-- **The descent sequence exists for every length.** By `lx_succ_induction` (`base`/`extend`). The lone
 remaining obligation is the `LX`-definability of `D(k) := ∃ W, IsDescent W ∧ lh W = k+1` — see the file
 header. Disclosed `sorry` (wall C's last sub-obligation; `wip/`, off the build). -/
@@ -307,10 +351,25 @@ theorem descent_seq_exists
     ∀ k : M, ∃ W, IsDescent f a₀ W ∧ lh W = k + 1 := by
   letI : ORingStructure M := ReductModel.reductORing
   haveI : M ⊧ₘ* (𝗜𝚺₁ : Theory ℒₒᵣ) := ReductModel.reduct_models_isigma1 hM
-  -- `D(k) := ∃ W, IsDescent f a₀ W ∧ lh W = k+1` is LX-definable (header obligation).
+  haveI hPA : M ⊧ₘ* (𝗣𝗔⁻ : Theory ℒₒᵣ) := models_of_subtheory (ReductModel.reduct_models_PA hM)
+  -- `D(k) := ∃ W, IsDescent f a₀ W ∧ lh W = k+1` is LX-definable (header obligation), now DISCHARGED:
+  -- it is `∃ W, A(W,k) ∧ B(W) ∧ C(W)` (pieces `skel_lxDef`/`descentMlt_lxDef`/`xclause_lxDef`),
+  -- combined by `lxDef2_and` and `∃`-closed by `lxDef_exists`; the membership form is `isDescent_iff_mem`.
   have hDdef : ∃ e : ℕ → M, ∃ φ : Semiformula LX ℕ 1,
       ∀ k, (∃ W, IsDescent f a₀ W ∧ lh W = k + 1) ↔ Semiformula.Evalm M ![k] e φ := by
-    sorry
+    obtain ⟨e, φ, hφ⟩ :=
+      lxDef_exists (lxDef2_and (skel_lxDef hM a₀) (lxDef2_and (descentMlt_lxDef hM f) (xclause_lxDef hM)))
+    refine ⟨e, φ, fun k => ?_⟩
+    rw [← hφ k]
+    refine exists_congr fun W => ?_
+    have h0 : (0 : M) < k + 1 := lt_of_le_of_lt (by simp) (lt_add_one k)
+    constructor
+    · rintro ⟨hdesc, hlh⟩
+      rw [isDescent_iff_mem f a₀ W (hlh ▸ h0)] at hdesc
+      obtain ⟨hSeq, hmem, hdMlt, hnotMX⟩ := hdesc
+      exact ⟨⟨hSeq, hmem, hlh⟩, hdMlt, hnotMX⟩
+    · rintro ⟨⟨hSeq, hmem, hlh⟩, hdMlt, hnotMX⟩
+      exact ⟨(isDescent_iff_mem f a₀ W (hlh ▸ h0)).mpr ⟨hSeq, hmem, hdMlt, hnotMX⟩, hlh⟩
   refine lx_succ_induction hM hDdef ?_ ?_
   · -- base: `k = 0`
     obtain ⟨hd, hl⟩ := descent_base hM f ha₀
