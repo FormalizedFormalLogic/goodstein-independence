@@ -19,6 +19,7 @@ Mirrors `InternalCor34.iVbigMul.construction` but with the iterated operation pa
 + the defined instance), so the same primitive serves every meta-level of `iF`.
 -/
 import GoodsteinPA.InternalCor34
+import GoodsteinPA.Grzegorczyk
 
 namespace GoodsteinPA.IIter
 
@@ -75,5 +76,61 @@ lemma iIter_natCast (x : V) : ∀ k : ℕ, iIter fDef f hf x (k : V) = f^[k] x :
   induction k with
   | zero => simp
   | succ k ih => rw [Nat.cast_succ, iIter_succ, ih, Function.iterate_succ_apply']
+
+/-! ## The standard-level Grzegorczyk hierarchy `iF` (internal, meta-recursion on level `l : ℕ`)
+
+`iF 0 = (·+1)`, `iF (l+1) n = (iF l)^[n] n` (`Grz.F`), built by **meta-recursion on the standard level
+`l : ℕ`** — at each level `iF l` is a fixed `𝚺₁`-total function, and the diagonal `(iF l)^[n] n` is the
+internal iterate (`iIter`) at the internal count `n`. The recursion carries the **(function, Def,
+defined-proof) triple** so each level's `iIter` call has the graph it needs. NO internal Ackermann:
+the level never becomes an internal `V`. -/
+
+/-- The `𝚺₁` graph of `iF l` (independent of the model). -/
+def iFDef : ℕ → 𝚺₁.Semisentence 2
+  | 0 => .mkSigma “y n. y = n + 1”
+  | l + 1 => .mkSigma “y n. !(iIterDef (iFDef l)) y n n”
+
+variable (V) in
+/-- `iF l` bundled with its defined-proof, so the meta-recursion can feed `iIter`. -/
+noncomputable def iFwith : (l : ℕ) → { f : V → V // 𝚺₁.DefinedFunction₁ f (iFDef l) }
+  | 0 => ⟨fun n ↦ n + 1, .mk fun v ↦ by simp [iFDef]⟩
+  | l + 1 =>
+      ⟨fun n ↦ iIter (iFDef l) (iFwith l).1 (iFwith l).2 n n,
+       .mk fun v ↦ by
+         simp [iFDef, (iIter_defined (hf := (iFwith l).2)).iff]⟩
+
+/-- The internal standard-level Grzegorczyk hierarchy `iF l : V → V`. -/
+noncomputable def iF (l : ℕ) : V → V := (iFwith V l).1
+
+/-- `iF l` is `𝚺₁`-definable by `iFDef l`. -/
+lemma iF_defined (l : ℕ) : 𝚺₁.DefinedFunction₁ (iF l : V → V) (iFDef l) := (iFwith V l).2
+
+@[simp] lemma iF_zero (n : V) : iF 0 n = n + 1 := rfl
+
+theorem iF_succ (l : ℕ) (n : V) :
+    iF (l + 1) n = iIter (iFDef l) (iF l) (iF_defined l) n n := rfl
+
+lemma iF_definable (l : ℕ) : 𝚺₁-Function₁ (iF l : V → V) := (iF_defined l).to_definable
+lemma iF_definable' (l : ℕ) (Γ) : Γ-[m + 1]-Function₁ (iF l : V → V) :=
+  (iF_definable l).of_sigmaOne
+
+/-- **Standard agreement.** On a standard input `k : ℕ`, `iF l` computes the meta-`Grz.F l`'s value.
+Proved by meta-induction on `l` through `iIter_natCast` — the bridge that reduces every internal `iF`
+fact at a standard argument to its kernel-checked `Grz` counterpart. -/
+lemma iF_natCast : ∀ (l : ℕ) (k : ℕ), iF l (k : V) = (Grz.F l k : V) := by
+  intro l
+  induction l with
+  | zero => intro k; simp [Grz.F]
+  | succ l ih =>
+      -- iterate agreement at level `l` for a *general* start, by induction on the count
+      have iter_agree : ∀ (i x : ℕ), (iF l)^[i] (x : V) = ((Grz.F l)^[i] x : V) := by
+        intro i
+        induction i with
+        | zero => intro x; simp
+        | succ i ihi =>
+            intro x
+            rw [Function.iterate_succ_apply', ihi x, ih, Function.iterate_succ_apply']
+      intro k
+      rw [iF_succ, Grz.F_succ, iIter_natCast, iter_agree]
 
 end GoodsteinPA.IIter
