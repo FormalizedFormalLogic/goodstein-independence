@@ -509,4 +509,31 @@ lemma icmp_iadd_clean_boundary {a₁ a₂ b₁ b₂ : V} (hb₁ : b₁ ≠ 0) (h
     icmp (iadd a₁ b₁) (iadd a₂ b₂) = 0 := by
   rw [icmp_iadd_clean a₁ a₂ hb₁ hb₂ h₁₁ h₁₂ h₂₁ h₂₂, hlt]; simp [thenV]
 
+/-! ### The clean-append C-split (internal `Grz.C_add_clean`)
+
+When the tail `b` is clean below `a`'s spine (`iAbove (ocExp b) a`), `iadd a b` grafts `b` as a
+fresh bottom summand — no coefficient merges — so `iC (iadd a b) ≤ max (iC a) (iC b)`. This is the
+C-split powering Cor 3.4's slowness bound (`Grz.corAlpha_C_bound`): the lead `ω^(l+1)·βₙ` and the
+`g`-tail contribute their `C`s independently. Strong induction on `a` peeling its spine by
+`iadd_clean_step`. -/
+lemma iC_iadd_clean {b : V} (hb : b ≠ 0) :
+    ∀ a, iAbove (ocExp b) a → iC (iadd a b) ≤ max (iC a) (iC b) := by
+  intro a
+  induction a using ISigma1.sigma1_order_induction
+  · definability
+  case ind a IH =>
+    intro habove
+    rcases eq_or_ne a 0 with rfl | ha
+    · rw [iadd_zero_left, iC_zero]; simp
+    · obtain ⟨ea, na, ra, rfl⟩ : ∃ ea na ra, a = ocOadd ea na ra :=
+        ⟨ocExp a, ocCoeff a, ocTail a, (ocOadd_destruct ha).symm⟩
+      obtain ⟨hc, hra⟩ := iAbove_ocOadd.mp habove
+      have hra_lt : ra < ocOadd ea na ra := by
+        have := ocTail_lt ea na ra; rwa [ocTail_ocOadd] at this
+      rw [iadd_clean_step hb hc, iC_ocOadd, iC_ocOadd]
+      calc max (max (iC ea) na) (iC (iadd ra b))
+          ≤ max (max (iC ea) na) (max (iC ra) (iC b)) :=
+            max_le_max (le_refl _) (IH ra hra_lt hra)
+        _ = max (max (max (iC ea) na) (iC ra)) (iC b) := (max_assoc _ _ _).symm
+
 end GoodsteinPA.InternalONote
