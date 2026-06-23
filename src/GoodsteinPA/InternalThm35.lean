@@ -180,6 +180,23 @@ lemma icmp_iwtower_succ (n : V) : icmp (iwtower n) (iwtower (n + 1)) = 0 := by
     nth_rewrite 1 [iwtower_succ n]
     exact icmp_ocOadd_lt_exp ih
 
+/-- **ω-tower cofinality in ε₀.** Every code is dominated by some ω-tower:
+`∀ c, ∃ s, c ≺ ωₛ` (`icmp c (iwtower s) = 0`). No NF hypothesis is needed — the comparison
+`icmp_ocOadd_lt_exp` only reads the *leading exponent*, so a single `≺`-witness on the exponent
+(supplied by the strong-induction hypothesis at `ocExp c < c`) decides the whole code. The witness
+`s` is the iterated-exponent depth of `c`. This discharges the seam hypothesis `hbdry` of
+`bbeta_desc` (memory `route-resolved-prwo-gentzen`; PENDING_WORK lap-46 §4). -/
+theorem iwtower_cofinal (c : V) : ∃ s, icmp c (iwtower s) = 0 := by
+  induction c using ISigma1.sigma1_order_induction
+  · definability
+  case ind c IH =>
+    rcases eq_or_ne c 0 with rfl | hc
+    · exact ⟨0, by rw [iwtower_zero]; exact icmp_zero_ocOadd 0 1 0⟩
+    · obtain ⟨se, hse⟩ := IH (ocExp c) (ocExp_lt_of_pos (pos_iff_ne_zero.mpr hc))
+      refine ⟨se + 1, ?_⟩
+      rw [← ocOadd_destruct hc, iwtower_succ]
+      exact icmp_ocOadd_lt_exp hse
+
 /-! ## The full Thm 3.5 sequence `β` indexed from `0` (prefix + block-tail)
 
 The finite prefix `r < K` is **simplified** from Rathjen's `Σ_i ω_{s−i}` to *single* ω-towers
@@ -245,6 +262,17 @@ theorem bbeta_desc (hK : 0 < K) (hNF : ∀ n, isNF (α n)) (hdesc : ∀ n, icmp 
       have hKr : K ≤ r := not_lt.mp hr
       rw [if_neg hrK, if_neg hr]
       exact bbtail_desc hK hNF hdesc hKr
+
+/-- **Thm 3.5 (full), strict descent — boundary discharged.** The seam hypothesis `hbdry` of
+`bbeta_desc` is exactly `β_K ≺ ω_s`, which ω-tower cofinality (`iwtower_cofinal`) supplies for a
+suitable `s` applied to the block top `bbtail K α K`. So the complete descending Thm 3.5 sequence
+exists *unconditionally* (a height `s` and `β = bbeta K s α` with strict ≺-descent at every index).
+The NF and tight-slowness facts (`bbeta_isNF`, `bbeta_C_le`) hold for this same `s`. -/
+theorem bbeta_desc_exists (hK : 0 < K) (hNF : ∀ n, isNF (α n))
+    (hdesc : ∀ n, icmp (α (n + 1)) (α n) = 0) :
+    ∃ s, ∀ r, icmp (bbeta K s α (r + 1)) (bbeta K s α r) = 0 := by
+  obtain ⟨s, hs⟩ := iwtower_cofinal (bbtail K α K)
+  exact ⟨s, fun r => bbeta_desc hK hNF hdesc hs r⟩
 end
 
 end GoodsteinPA.InternalONote
