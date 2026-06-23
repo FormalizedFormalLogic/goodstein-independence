@@ -192,6 +192,14 @@ lemma icmp_ig0_desc {n m : V} (hm : m < n + 1) :
   rw [hcmp]
   simp
 
+/-- `ig0 n m ≠ 0` in-block (`m < n+2`): it is a positive finite code. -/
+lemma ig0_ne_zero {n m : V} (h : m < n + 2) : ig0 n m ≠ 0 := by
+  rw [ig0_of_lt h]; exact ocOadd_ne_zero _ _ _
+
+/-- `ocExp (ig0 n m) = 0` in-block: `ig0` is a finite code `ω^0·c`, top exponent `0`. -/
+lemma ocExp_ig0 {n m : V} (h : m < n + 2) : ocExp (ig0 n m) = 0 := by
+  rw [ig0_of_lt h, ocExp_ocOadd]
+
 /-- **Lemma 3.3(2) base, coefficient bound**: `iC (ig0 n m) ≤ n + 2` (`K = 2` half on codes). -/
 lemma iC_ig0_le (n m : V) : iC (ig0 n m) ≤ n + 2 := by
   rcases lt_or_ge m (n + 2) with h | h
@@ -846,5 +854,26 @@ lemma icorAlpha_C_le {β g l : V} (hg : g ≠ 0)
     iC (icorAlpha β g l) ≤ max (iC β + (l + 1)) (iC g) := by
   rw [icorAlpha]
   exact le_trans (iC_iadd_clean hg _ hab) (max_le_max (iC_iVbigMul_le β (l + 1)) le_rfl)
+
+/-! ### End-to-end validation at the concrete base level `l = 0`
+
+Instantiating the abstract `icorAlpha_*` properties with the concrete level-0 `g`-tail `ig0`
+(`Grz.g0`) confirms the interface composes with a real `g` (de-risking before the deep internal `ig`
+f-recursion lands). At level 0 the lead is `ω·β`, the tail `ig0 n m` is a finite code (`ocExp = 0`),
+so the clean-append condition discharges via `iAbove_ocExp_iVbigMul_fin`. -/
+
+/-- **Level-0 within-block descent, concrete.** `ω·β + ig0 n (m+1) ≺ ω·β + ig0 n m` while `m < n+1`
+(the internal `F 0 n`). The whole `icorAlpha` interface, end-to-end on `ig0`. -/
+lemma icorAlpha_ig0_within {β : V} (hβ0 : β ≠ 0) {n m : V} (hm : m < n + 1) :
+    icmp (icorAlpha β (ig0 n (m + 1)) 0) (icorAlpha β (ig0 n m) 0) = 0 := by
+  have hmn2 : m < n + 2 := lt_trans hm (by simp)
+  have hm1n2 : m + 1 < n + 2 := by
+    have h : m + 1 < (n + 1) + 1 := add_lt_add_of_lt_of_le hm (le_refl 1)
+    have e : n + 1 + 1 = n + 2 := by rw [add_assoc, one_add_one_eq_two]
+    rwa [e] at h
+  exact icorAlpha_within (ig0_ne_zero hm1n2) (ig0_ne_zero hmn2)
+    (iAbove_ocExp_iVbigMul_fin hβ0 0 (ocExp_ig0 hm1n2))
+    (iAbove_ocExp_iVbigMul_fin hβ0 0 (ocExp_ig0 hmn2))
+    (icmp_ig0_desc hm)
 
 end GoodsteinPA.InternalONote
