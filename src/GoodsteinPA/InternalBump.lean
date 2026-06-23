@@ -16,7 +16,7 @@ import GoodsteinPA.InternalLog
 
 namespace GoodsteinPA.InternalPow
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.FirstOrder.Arithmetic.HierarchySymbol
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -78,6 +78,9 @@ instance ibumpTable_defined : 𝚺₁-Function₂ (ibumpTable : V → V → V) v
 
 instance ibumpTable_definable : 𝚺₁-Function₂ (ibumpTable : V → V → V) := ibumpTable_defined.to_definable
 
+instance ibumpTable_definable' (Γ) : Γ-[m + 1]-Function₂ (ibumpTable : V → V → V) :=
+  ibumpTable_definable.of_sigmaOne
+
 def _root_.LO.FirstOrder.Arithmetic.ibumpDef : 𝚺₁.Semisentence 3 := .mkSigma
   “y b n. ∃ t, !ibumpTableDef t b n ∧ !znthDef y t n”
 
@@ -86,6 +89,70 @@ instance ibump_defined : 𝚺₁-Function₂ (ibump : V → V → V) via ibumpDe
 
 instance ibump_definable : 𝚺₁-Function₂ (ibump : V → V → V) := ibump_defined.to_definable
 
+instance ibump_definable' (Γ) : Γ-[m + 1]-Function₂ (ibump : V → V → V) :=
+  ibump_definable.of_sigmaOne
+
 end
+
+/-! ### Structural correctness of the table
+
+`definability`/aesop cannot discharge predicates over `ibumpTable` (its `PR.result` definability
+leaf makes the `isDefEq` search blow up), so the `𝚺₁`-predicate side conditions of the inductions
+below are supplied as **explicit composition terms** via the helpers here. -/
+
+/-- `fun v ↦ ibumpTable b (v i)` is `𝚺₁`-definable (explicit composition, no search). -/
+private lemma def_ibumpTable {k} (b : V) (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ ibumpTable b (v i)) :=
+  DefinableFunction₂.comp (F := ibumpTable) (DefinableFunction.const b) (DefinableFunction.var i)
+
+private lemma def_ibump {k} (b : V) (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ ibump b (v i)) :=
+  DefinableFunction₂.comp (F := ibump) (DefinableFunction.const b) (DefinableFunction.var i)
+
+@[simp] lemma ibumpTable_seq (b n : V) : Seq (ibumpTable b n) := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₁ (def_ibumpTable b 0)
+  case zero => simp
+  case succ n ih => rw [ibumpTable_succ]; exact ih.seqCons _
+
+@[simp] lemma ibumpTable_lh (b n : V) : lh (ibumpTable b n) = n + 1 := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₂ (DefinableFunction₁.comp (F := lh) (def_ibumpTable b 0))
+      (by definability)
+  case zero => simp
+  case succ n ih => rw [ibumpTable_succ, Seq.lh_seqCons _ (ibumpTable_seq b n), ih]
+
+/-- Earlier entries of a `seqCons` are preserved. -/
+lemma znth_seqCons_of_lt {s : V} (h : Seq s) (x : V) {i} (hi : i < lh s) :
+    znth (seqCons s x) i = znth s i :=
+  (h.seqCons x).znth_eq_of_mem (Seq.subset_seqCons s x (h.znth hi))
+
+lemma znth_ibumpTable_succ {b n k : V} (hk : k < n + 1) :
+    znth (ibumpTable b (n + 1)) k = znth (ibumpTable b n) k := by
+  rw [ibumpTable_succ]
+  exact znth_seqCons_of_lt (ibumpTable_seq b n) _ (by rw [ibumpTable_lh]; exact hk)
+
+@[simp] lemma ibump_zero (b : V) : ibump b 0 = 0 := by
+  simp only [ibump, ibumpTable_zero]
+  exact (singleton_seq 0).znth_eq_of_mem ((mem_singleton_seq_iff 0 0).mpr rfl)
+
+/-- **Table stability.** Every entry of the length-`(N+1)` table is the genuine `ibump` value. -/
+lemma znth_ibumpTable_eq_ibump (b : V) : ∀ N, ∀ k ≤ N, znth (ibumpTable b N) k = ibump b k := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · refine Definable.ball_le (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := znth) (def_ibumpTable b 1) (DefinableFunction.var 0))
+      (def_ibump b 0)
+  case zero =>
+    intro k hk
+    rcases (nonpos_iff_eq_zero.mp hk) with rfl
+    rfl
+  case succ N ih =>
+    intro k hk
+    rcases eq_or_lt_of_le hk with rfl | hlt
+    · rfl
+    · rw [znth_ibumpTable_succ hlt]
+      exact ih k (le_iff_lt_succ.mpr hlt)
 
 end GoodsteinPA.InternalPow
