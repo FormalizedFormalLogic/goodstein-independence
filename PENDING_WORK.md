@@ -1,5 +1,26 @@
 # Pending work — open obligations & attack paths
 
+## ⭐⭐⭐ Lap 47 (2026-06-23) — internal Thm 3.5 COMPLETE; the two §3/Gentzen cruxes are next
+Discharged lap-46 item 4's remaining input: **ω-tower cofinality** `iwtower_cofinal : ∀ c, ∃ s, icmp c
+(iwtower s) = 0` (`InternalThm35`, axiom-clean), proved with NO NF hypothesis (`icmp_ocOadd_lt_exp` reads
+only the leading exponent, so `sigma1_order_induction` at `ocExp c < c` decides the whole code; witness
+`s` = the iterated-exponent depth). ⟹ `bbeta_desc_exists` gives the full Thm 3.5 descending sequence
+**unconditionally** (no `hbdry`). **Internal Thm 3.5 is now hypothesis-free and route-independent.**
+
+**The two open deep cruxes (hardest-first), both multi-lap — the live work:**
+1. **Internal Cor 3.4** (THE harder). Produce the slow internal descent `α : V → V` (`iC(αₙ)≤K(n+1)`,
+   `isNF`, `icmp`-descent) from a raw primrec ε₀-descent. Internal level `l:V` ⟹ Ackermann ⟹ needs the PA
+   substrate. **Recommended first attack (lap-45 path #2): parameterize over an abstract internal `f`**
+   (recursion eqns + Lemma-3.2 domination as hypotheses); build `ig`/`icorAlpha`/descent+bound relative to
+   it; discharge `f`'s existence separately. Blueprint = `Grzegorczyk.lean` ℕ-template. The standard-`l`
+   `InternalCor34` (`ig0`/`iblk`/`ibigMul`) is reusable bricks (special case), NOT the generic route.
+2. **Gentzen Thm 2.8(i) `PRWO(ε₀)→Con(𝗣𝗔)`** + formulate **`PRWO(ε₀)` as a `Sentence ℒₒᵣ`**. Primrec `ord`
+   + reduction `R`, `ord(R D)<ord D`, over Foundation `Derivation`. THE deep ordinal-analysis girder.
+
+**Decision for next lap:** start crux 1 via the abstract-`f` parameterization (path #2) — it lets the
+genuine `g`-padding math land green now without first building internal Ackermann. See `Reduction.lean`
+docstring + STATUS "Where it stands" for the full chain.
+
 ## ⭐⭐⭐ Lap 46 (2026-06-23) — ROUTE RESOLVED: PRWO(ε₀)→Con(PA)+Gödel II (Rathjen Thm 2.8)
 Operator-directed Route A. Lap-45's fork is **settled** (memory `route-resolved-prwo-gentzen`):
 - **Headline path** = Rathjen Cor 3.7: `𝗣𝗔⊢γ →(§3, primrec) 𝗣𝗔⊢PRWO(ε₀) →(Gentzen Thm 2.8(i)) 𝗣𝗔⊢Con(PA)`,

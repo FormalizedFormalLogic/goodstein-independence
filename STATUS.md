@@ -1,10 +1,13 @@
 # STATUS — GoodsteinPA 📊
 
-**Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`, via Gentzen/Buchholz ordinal analysis — witness-FREE `Z_∞` (embedding
-[M4 `embedC`, done] + ε₀ cut-elim [M5, done]) + **Boundedness** (Thm 5.4, DONE lap 14, axiom-clean) ⟹
-`𝗣𝗔 ⊬ TI(ε₀)` (= `peano_not_proves_TI`, FULLY axiom-clean — F-φ DISCHARGED lap 28), then
-Goodstein⟹TI(ε₀) [= the E wall].** · **Build**: 🟢 green (1309 jobs, `lake build GoodsteinPA`) ·
-**Updated**: lap 44 (DEEP REFLECTION — wall's literal `sorry` found framed on a DEAD/unachievable 𝚺₁ path; X-essential consumer `nonterminating_of_xDescent` built since lap 41; Rathjen §3 re-grounded vs PDF) · 2026-06-23 · `3310ad9`
+**Kirby–Paris: `𝗣𝗔 ⊬ Goodstein`. ROUTE RESOLVED (lap 45→46) to Rathjen 2014 Cor 3.7 = the original
+DIRECTION/Gödel-II plan: `𝗣𝗔⊢γ →(§3, all primrec) 𝗣𝗔⊢PRWO(ε₀) →(Gentzen Thm 2.8(i)) 𝗣𝗔⊢Con(𝗣𝗔)`, then
+Gödel II.** The §3 internal pipeline = internal Cor 3.4 (Grzegorczyk `g`-padding, internal level — DEEP,
+open) → internal Thm 3.5 (slow α → tight `C(βᵣ)≤r+1` — **COMPLETE lap 47**, `InternalThm35`) → Lemma 3.6
+(`nonterminating_internal`, done). The Buchholz free-X `peano_not_proves_TI` (axiom-clean) is a **banked
+asset, OFF the headline path** (free-X-TI ⊢ PRWO, wrong direction). · **Build**: 🟢 green (1311 jobs,
+`lake build GoodsteinPA`) · **Updated**: lap 47 (REVIEW — ω-tower cofinality lands ⟹ internal Thm 3.5
+hypothesis-free; STATUS re-framed onto Route A) · 2026-06-23 · `c8ba8a6`
 
 ## ⭐ Lap-44 (DEEP REFLECTION) — kernel re-verified, slow-down re-grounded; the wall's `sorry` is framed on a DEAD path
 **Direction: KEEP** (Buchholz §5 girder DONE+axiom-clean; E = one semantic wall = Rathjen §3 slow-down in `M`).
@@ -186,7 +189,29 @@ pure mathlib ordinal arithmetic it is **Aristotle-eligible** (the one piece with
 E **pins which `≺` F may use** (co-design). See newest `HANDOFF`.
 
 ## Where it stands
-**(lap-44 reflection — current read.)** The ordinal-analysis girder is **done and axiom-clean** (real
+**(lap-47 review — CURRENT read; route is Rathjen Cor 3.7.)** Headline `peano_not_proves_goodstein` is
+an honest `sorry` (real `#print axioms` = `[propext, sorryAx, choice, Quot.sound]`, 0 math axioms,
+anti-fraud intact). The headline reduces — via the axiom-clean `not_proves_of_implies_consistency` +
+Gödel II — to the **one** open implication `Reduction.goodstein_implies_consistency : 𝗣𝗔⊢γ → 𝗣𝗔⊢Con(𝗣𝗔)`
+(disclosed `sorry`), faithfully decomposed in its docstring into TWO deep girders:
+1. **§3: `𝗣𝗔⊢γ → 𝗣𝗔⊢PRWO(ε₀)`** (all primrec). Pipeline: internal **Cor 3.4** (raw primrec ε₀-descent →
+   *slow* α with `iC(αₙ)≤K(n+1)`; Grzegorczyk `g`-padding, **internal level `l:V` ⟹ Ackermann, not
+   IΣ₁-total ⟹ needs the PA substrate, not the IΣ₁ `PR.Construction` toolkit**) → internal **Thm 3.5**
+   (slow α → `β` with tight `iC(βᵣ)≤r+1`, **COMPLETE lap 47** — `bbeta_isNF`/`bbeta_C_le`/`bbeta_desc_exists`,
+   the ω-tower cofinality boundary now discharged) → **Lemma 3.6** (`DescentArith.nonterminating_internal`,
+   done) ⟹ a non-terminating special Goodstein run, contradicting γ.
+2. **`PRWO(ε₀) → Con(𝗣𝗔)`** (Gentzen Thm 2.8(i), PRA-provable): primrec ordinal assignment `ord` + reduction
+   `R` with `ord(R D)<ord D`, arithmetized over Foundation's `Derivation`. THE deep ordinal-analysis girder.
+   Prereq: formulate `PRWO(ε₀)` as a `Sentence ℒₒᵣ`.
+
+**Two open deep cruxes (hardest-first), both multi-lap:** (a) **internal Cor 3.4** (the harder — internal
+Grzegorczyk level over `V ⊧ 𝗣𝗔`; recommended first attack = parameterize over an abstract internal `f`
+with its recursion eqns + Lemma-3.2 domination as hypotheses, per PENDING_WORK lap-45 path #2), and (b)
+**Gentzen Thm 2.8** + the `PRWO` sentence. Plus the residual 🟡 `PA_delta1Definable` (Foundation axiom under
+Gödel II — see ledger). The ℕ-template substrate (`Grzegorczyk.lean` Lemma 3.3 + Cor 3.4 bricks, sorry-free)
+is the blueprint for (a). Internal Thm 3.5 (lap 47) is route-independent and survives any route change.
+
+**(lap-44 reflection — historical read; predates the route resolution.)** The ordinal-analysis girder is **done and axiom-clean** (real
 `#print axioms peano_not_proves_TI` = trust-base + 1 🟢 native_decide); the headline
 `peano_not_proves_goodstein` is an honest `sorry` (0 math axioms, anti-fraud intact);
 `goodsteinSentence_faithful` is clean. The ENTIRE project reduces to **one obligation** inside
@@ -313,6 +338,22 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-23 (lap 47 — REVIEW + internal Thm 3.5 COMPLETED):** Validated the lap-46 route resolution
+  against the real kernel (headline honest `sorry`, 0 math axioms; `peano_not_proves_TI` clean; Gödel-II
+  surface carries `PA_delta1Definable`). Direction **KEEP** (Route A = Rathjen Cor 3.7). Landed the one
+  remaining piece of internal Thm 3.5: **ω-tower cofinality** `iwtower_cofinal : ∀ c, ∃ s, c ≺ ωₛ`
+  (`InternalThm35`, axiom-clean) — proved with NO NF hypothesis (the comparison `icmp_ocOadd_lt_exp` reads
+  only the leading exponent, so `sigma1_order_induction` at `ocExp c < c` decides the whole code). This
+  discharges `bbeta_desc`'s seam hypothesis `hbdry` ⟹ `bbeta_desc_exists` produces the full descending
+  Thm 3.5 sequence unconditionally. **Internal Thm 3.5 is now hypothesis-free.** Re-framed STATUS header /
+  Where-it-stands / Outstanding / ledger off the stale free-X framing onto Route A. Build green 1311 jobs.
+- **2026-06-23 (lap 46 — ROUTE RESOLVED):** Settled lap-45's fork → **Route A** (Rathjen Cor 3.7:
+  γ→PRWO(ε₀)→Con(PA)→Gödel II), grounded in Rathjen 2014 Thm 2.8 + §2-3 (`scratchpad/rathjen.txt`). The
+  free-X β-wall (`DescentSemantic:582`) is the WRONG target: §3 is primrec-only (machine-checked obstruction
+  `not_dominated_of_diag_le`), but a PRWO descent is *internally* primrec ⟹ Lemma 3.2 applies. Decomposed
+  `goodstein_implies_consistency` faithfully in its docstring (2 girders). Built the model-internal Thm 3.5
+  block-tail + ω-tower + full `bbeta` sequence (`InternalThm35.lean`, axiom-clean) modulo the cofinality
+  input now discharged lap 47. Memory `route-resolved-prwo-gentzen`.
 - **2026-06-23 (lap 44 — DEEP REFLECTION):** Altitude pass on the stronger model. Re-verified kernel from
   real `#print axioms` (headline 0 math axioms; `peano_not_proves_TI` clean; chain = trust-base + 🟢
   native_decide + 1 `sorryAx`); re-grounded Rathjen §3 slow-down against the PDF (subagent). **Direction
@@ -414,186 +455,54 @@ escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
   `metaInduction` demanded — no syntactic `step'` can satisfy the old `hstep`; resolved by the
   value-congruent reformulation. Only the `hax_paLX` induction *assembly* (integration glue, recipe
   inlined at the sorry) remains for full C₂. Headline still an honest `sorry`.
-- **2026-06-22 (lap 16 — C₂ STRUCTURAL PORT landed; the `exs` case mapped to a calculus retrofit):**
-  Built `src/GoodsteinPA/EmbeddingX.lean` (green, one disclosed `sorry`): **`embedC_LX_gen`** — the
-  `axm`-abstracted structural embedding of `Derivation2 𝓢 Γ` into `PXFc` over `LX`, all 9 structural
-  cases (`closed` via `provable_em_x`; `verum/and/or/all/wk/shift/cut`; `axm` as hypothesis `hax`),
-  every builder `XFreeAx`-safe — plus **`provable_true_x`** (ω-completeness for true closed **X-free**
-  formulas, the X-free `axm` engine) and **`XFreeForm`** (structural X-freeness + rewriting-invariance).
-  **Then ground-truthed the `exs` case against Buchholz §5 (PDF pp.26–30) and found the lap-15
-  "mechanical" claim was wrong:** faithfully embedding Foundation's `exs` (arbitrary-term ∃-intro) over
-  X-atom bodies needs Buchholz's **value-congruent X-pair axiom** `{Xs,¬Xt}` (`sᴺ=tᴺ`, `AX(Z∞)`, p.27),
-  which our same-atom `Deriv.axL` lacks. The faithful fix is a calculus retrofit (generalise the literal
-  axiom to value-congruent pairs `Deriv.axLv`); Boundedness case 1.2 (p.29) + cut-elim's literal-cut
-  (Remark p.27) already handle them in Buchholz. **Probed the retrofit** (added `axLv` + threaded the
-  ZinftyGen leaf branches): 5/8 sites mechanical, `atomCutAux` is the one hard spot, and the XFreeAx
-  interaction is benign (reverted as an uncommittable mid-big-bang; it's a single-lap effort with no
-  intermediate green). Headline still an honest `sorry`. See `ANALYSIS-2026-06-22-lap16-exs-axLv.md`.
-- **2026-06-22 (lap 15 — FRESH-MIND REVIEW: validated the lap-14 cr=0 design against a feared
-  obstruction; direction confirmed sound):** Took altitude. Re-derived the full Buchholz §5 chain and
-  stress-tested the lap-14 architecture. **Nearly flagged a wall:** Boundedness is implemented at
-  `d.cr = 0` (fully cut-free), whereas Buchholz states it at `⊢^β_1` (cut-rank ≤ 1, atomic cuts allowed,
-  his case 8 = the X-atomic cut). The worry: getting a cr=0 `XFreeAx` derivation of `{TI}` needs cutElim
-  to *eliminate X-atomic cuts*, and the truth-layer surgery (`removeFalseLit`) would emit `axTrue false
-  Xsym` leaves — breaking `XFreeAx`. **Resolved by reading `atomCutAux`:** our `Provable.axL` is the
-  *same-atom* EM axiom `{Xs,¬Xs}` (not Buchholz's value-matched `{Xs,¬Xt}`), so an X-atomic cut closes by
-  **set idempotence** (the `axL` branch, no truth), and the truth-surgery branch is **vacuous under
-  `XFreeAx`** (it fires only on an `axTrue` leaf *equal to* the cut atom — i.e. an X-`axTrue` leaf, which
-  `XFreeAx` forbids). So `atomCut` preserves `XFreeAx` when cutting X-atoms on `XFreeAx` inputs, and the
-  lap-14 C₁ plan (port cutElim to a `cr`-carrying `PXFc` twin, all the way to cr=0) is **feasible as
-  written**. **Then GROUND IT OUT (same lap):** built `src/GoodsteinPA/XFreeCutElim.lean` (1456 lines,
-  all `[propext,choice,Quot.sound]`) — **C₁ DONE** (the full §19 cut-elim ported to the `XFreeAx`-tracking
-  `PXFc` carrier: builders + inversions-at-cr≤c + cut reductions + truth layer + `cutElim`), **D DONE**
-  (`orderType_le_of_TIprovable` = Thm 5.6 tail), and the **C₂ crux** (`metaInduction`, the X-induction
-  embedding via a cut-tower — the lap-14-flagged faithfulness case — + `provable_em_x`, LX excluded
-  middle). Headline still an honest `sorry`. **Remaining to Thm 5.6: the C₂ structural `embedC` port.**
-- **2026-06-22 (lap 14 — CRUX CRACKED: Boundedness Thm 5.4 + the full corollary B, axiom-clean):**
-  Proved **`boundedness`** (Thm 5.4) — the 9-`Deriv`-case nested induction (outer strong-induction on the
-  ordinal height `o d`, inner structural), hardest **case 2** (`¬Prog` `∃⁰`-inversion + the `α→α+2^{β₀}`
-  rank bump) machine-checked — and **`orderType_le_of_TIderiv`**, the FULL corollary `Z∞ ⊢^β_1 TI_≺(X)
-  ⟹ ‖≺‖ ≤ 2^β` (invert TI's `🡒`/`∀` via the new `XFreeAx`-preserving inversion suite `andInv_xfree`/
-  `orInv_xfree`/`allInv_xfree`, feed Boundedness). Built the **`PXF`** carrier (cut-free `XFreeAx`-tracking
-  provability + smart constructors). All 17 deliverables `[propext,choice,Quot.sound]`, no math axioms,
-  modulo the two legitimate seam hypotheses `hprec`/`hprecXPos` (discharged at arithmetization, step F).
-  This is Buchholz's crux done. Remaining to Thm 5.6: C₁ (XFreeAx cutElim→cr=0) + C₂ (`embedC` over LX).
-- **2026-06-22 (lap 13 — Boundedness prerequisites; generic Z∞ over LX):** Read Buchholz §5 pp.26–31
-  end-to-end. Shipped (green, axiom-clean, `src/`): **`LangX`** (`structLX (S:ℕ→Prop) : Structure LX ℕ`,
-  the `⊨^S` carrier), **`ZinftyGen`** (M5 cut-elim **generalised over `{L}[ORing L][Structure L ℕ][DecEq…]`**,
-  `Provable.cutElim` axiom-clean — reused wholesale on the X-route, no cut-elim re-proof), **`TruthSem`**
-  (`rk`/`orderType`/`models (⊨^γ)`/`Sat` + X-free invariance `models_lMap`), **`XPositive`** (`XPos` +
-  `models_mono`, the Buchholz cases 2/3/4 monotonicity). Confirmed VERIFY-(a): the set variable `X` is
-  plumbing, not math. See `ANALYSIS-2026-06-22-lap13-boundedness-design.md`.
-- **2026-06-22 (lap 12 — §19.6 norm-machinery PROVED + PIVOT to Buchholz's Boundedness route):** Reviewed
-  the whole spine fresh. **(a)** Cracked the **norm-budget** half of the 5-lap §19.6 wall: proved
-  `cutReduceAllAux` (Towsner's ∀/∃ cut-reduction) on the witness-bounded `Zekd` calculus, axiom-clean
-  (`wip/OperatorZinfty.lean`) — via a self-derived **norm-carrying `ZekdProv` wrapper** + threaded
-  `norm γ<k+dd` + `+1` d-bump (the plain `≤`-wrapper threw away the norm bound the `allω` reassembly
-  needs, since `norm` isn't `≤`-monotone — the actual 5-lap blocker). **(b)** But feeding it from
-  `cutReduceAll` exposed the **witness-budget** obstruction is REAL and numeric-unclosable (ADDENDUM 7;
-  `allInv` gives the ∀-family at `max k₀ n`, Towsner's commuting-ω bound is false for large `n`) — needs
-  the operator `H`. **(c) ⟹ Read Buchholz §5 and PIVOTED:** the witness-FREE `Z∞` + **Boundedness**
-  (Thm 5.4) is the standard route and reuses **M4 `embedC` + M5 `cutElim` (both done, axiom-clean)**;
-  lap-11's "need witness-bounded `Zᵏ`" was a conflation of order-type-boundedness (valid) with
-  witness-boundedness (walled). New critical path = Boundedness + Goodstein⟹TI(ε₀); M6 (Hardy) drops off
-  it. See `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md` + ADDENDA 6/7. Build green; headline `sorry` intact.
-- **2026-06-22 (lap 9 — DEEP REFLECTION: course-correct off the witness-bounded detour, name M4 as the
-  universal bottleneck):** Took altitude. Read DIRECTION/STATUS/HANDOFF/PENDING + the lap-6→8 history +
-  the cross-lap landscape memory + all three findings docs. **Findings:** (1) The destination
-  (`peano_not_proves_goodstein` axiom-clean) is still right and worth it — net-new in Lean. (2) The
-  **two-phase pivot (lap-8) is correct** and well-supported (Buchholz §5 / Schwichtenberg–Wainer Ch.4:
-  never thread the witness index through cut-elim). (3) **But laps 6–8 fixated** on building/rebuilding
-  witness-bounded cut-elim calculi (`BoundedZinfty→SplitZinfty→OperatorZinfty/Zekd`, ~3 laps), which the
-  findings + landscape memory both show was **never on the critical path** — M5 (witness-free cut-elim)
-  has been done & clean since lap 3. (4) The **real, universal, untouched bottleneck is M4** (embedding
-  `PA ⊢ φ ⟹ Z_∞ ⊢ φ`): it is required on *every* route to the headline (A, two-phase B, Zekd), and has
-  sat at "recon done lap 6" for 8 laps while the easier-but-off-path cut-elim thread absorbed effort.
-  (5) **Architecture seam named:** M5 is over mathlib `Ordinal.{0}`+real `ℒₒᵣ`; M6 is over `ONote`+abstract
-  `GForm` — the bridge must cross an ordinal-type seam + a language seam. **Reframe:** prove the bounding
-  lemma *directly* on M5's real cut-free `Deriv` (reusing M6's `hardy_lt_goodsteinLength` ℕ-domination
-  fact — the reusable core of M6 — not transporting into the abstract `B` calculus). **Decision:** STOP
-  the `cutReduceAllAux`/Zekd thread (bank `wip/` as reference); next target = **M4 feasibility probe**,
-  with **M7a (transparent arithmetization)** as the parallel shovel-ready / fallback thread. Refreshed
-  STATUS + wrote `REFLECTION-2026-06-22.md` + rewrote HANDOFF to inherit the course change. **Then
-  started the M4 grind (post-synthesis):** `wip/Embedding.lean` — `embed : Derivation2 (𝗣𝗔:Schema) Γ →
-  ∃ α c, Provable α c Γ` over the SAME `Finset (SyntacticFormula ℒₒᵣ)` substrate (no language
-  translation). **6/10 cases proved** (verum/and/or/wk/cut/closed); **`provable_em` (Z∞ excluded-middle)
-  FULLY PROVED + axiom-clean.** 4 deep cases remain (`axm`/`all`/`exs`/`shift`), all needing a shared M5
-  renaming/subst lemma (the `Derivation.rewrite` analogue) = the next target. Build green (1257),
-  headline `sorry` intact, ledger re-confirmed by real `#print axioms`.
-- **2026-06-22 (lap 8 — control-ordinal operator calculus built through §19.5; Hardy infra BANKED):**
-  Resolved the **Hardy-infrastructure layer** of the §19.6 crux (both directions, axiom-clean, in
-  `src/`): `hardy_add_comp`/`hardy_add_collapse` (`H_{γ+δ}=H_γ∘H_δ` for non-absorbing `γ+δ` — the
-  cut-elim control collapse) and `hardy_comp_lt_goodsteinLength` (`H_α(H_e(m)) < G(m)` eventually, any
-  NF `α,e` — the lower-bound nested-index domination, via `ω^Q·2` exceeding both + the coefficient law).
-  Then built `wip/OperatorZinfty.lean`: the **control-ordinal operator calculus `Zekd α e k d c Γ`**
-  (witness bound `hardy e (k+d)` decoupled from the derivation ordinal `α`), sorry-free through §19.5 —
-  inductive + `mono_k/d/c` + the NEW **`mono_e`** (control-axis monotonicity, via the banked
-  `hardy_le_of_lt`) + full inversion suite (orInv/andInvL/R/allInv) + §19.5 cutReduceConj/Disj + all
-  §19.6/19.7 ordinal/norm helpers. **Design validated (`ANALYSIS-…-cutelim-k-threading.md` ADDENDUM 5):**
-  the single control ordinal `e` (numeric Buchholz form, NOT the set-valued `H`) closes the ADDENDUM-4
-  witness-index obstruction — commuting cases keep `e` inert, `e` rises only at the top cut via `mono_e`,
-  the lower bound survives via `hardy_comp_lt_goodsteinLength`. **Remaining girder = §19.6 `cutReduceAll`
-  on `Zekd`** (port `Zinfty.lean:785` + bounded bookkeeping); a NF-threading subtlety in the leaf cases
-  surfaced (norm_add_le is NF-essential) — fix + 3 options recorded in ADDENDUM 5.
-  **STRATEGIC PIVOT (ON-LINE-FINDINGS, end of lap 8):** the §19.6 commuting bound is **provably
-  unclosable in any single-numeric-index system** (the Hardy inequality is FALSE; Towsner hand-waves it;
-  `cutReduceAllAux`'s commuting cases hit exactly this). The literature-standard fix is **two-phase**:
-  cut-eliminate on the witness-index-FREE calculus (**= M5, `src/Zinfty.lean`, DONE**) then Hardy-bound
-  the CUT-FREE result (**= M6, DONE**). **The remaining critical-path work is the BRIDGE** (cut-free
-  `Z∞ {gAll}` → `B`-derivation via subformula property + a Hardy bounding lemma → contradiction), NOT the
-  witness-bounded cut-elim. `Zekd`/`SplitZinfty` are now banked alternatives. See `PENDING_WORK.md` top.
-- **2026-06-22 (lap 3):** Proved the ENTIRE Z_∞ cut-elimination (Towsner §19), zero sorries,
-  axiom-clean: inversions + cut reductions §19.5 (∧/∨) & §19.6 (∀/∃) + `cutElimStep` §19.7 + `cutElim`
-  §19.9. `Ordinal.nadd` ABSENT in mathlib v4.31.0 → ordinary `+` with `+1` slack (additive principality
-  of `ω^c`). Promoted `wip/ZinftyF.lean → src/GoodsteinPA/Zinfty.lean`. (M5 ✅)  *(laps 1–2 trimmed —
-  M1/M2/Phase-0-1 landed + the real `Z_∞` calculus & inversions built; see git history.)*
 
 ## Outstanding
-**New route (Buchholz §5, lap-12 pivot).** M4 `embedC` (Embedding, Thm 5.5) and M5 `cutElim` (Thms
-5.1/5.2/5.3) are **done & axiom-clean** and ARE the two hard pieces. Remaining = Boundedness + the
-Goodstein⟹TI bridge. Priorities (see `ANALYSIS-2026-06-22-lap12-buchholz-pivot.md`):
+**Route A = Rathjen Cor 3.7 (resolved lap 45→46).** The headline reduces (axiom-clean) to
+`Reduction.goodstein_implies_consistency : 𝗣𝗔⊢γ → 𝗣𝗔⊢Con(𝗣𝗔)`, a disclosed `sorry` = two deep girders.
 
-### Short-term — produce the M-internal slowed code-descent `β` (lap-44 read; consumer side DONE)
-The headline bottoms out at `DescentSemantic.no_min_descent_absurd_of_goodstein` (`:574`). **What is already
-built (the entire consumer/run side):** `nonterminating_of_xDescent` (X-essential, `lx_succ_induction`),
-`slowdown_run_facts` + `ineq6_step_internal` (internal Lemma 3.6), `DescentCore` Thm 3.5 reindex
-(`C_betaTail_le` via `C_omega_mul_le`, `repr_betaTail_within/_boundary`) + Lemma 3.6
-(`lemma36_nonterminating`), all ℕ; `Grzegorczyk.lean` Lemma 3.3 (complete) + Cor 3.4 bricks; the
-X-definable descent `descentR`/`descent_iterate_seq_total` (unconditional). **The single remaining content
-is: produce `β : M → M` with `isNF`, `iCanon (k+1)` (`C(βₖ) ≤ k+1`), `icmp`-descent, + LX-definable run
-comparison `hPdef`.** Plan (hardest-first):
-1. **Rewire the wall (lap-44 finding A) — first.** Replace the dead 𝚺₁ `hbound` block (`:568–577`,
-   `nonterminating_internal`) with `nonterminating_of_xDescent`; the residual `sorry` becomes the honest
-   "produce `β`" obligation. (Keep `nonterminating_internal`/`hbound_of_slowdown` as banked sorry-free
-   assets — do NOT delete.) Re-`#print axioms` stays `[propext, sorryAx, choice, Quot.sound]`.
-2. **Finish ℕ Cor 3.4 assembly (`Grzegorczyk.lean`) — de-risk the C-collapse (finding B).** Define
-   `α j = ω^(l+1)·βₙ + g l n m` over `widx`/`woff` (widths `W n = C(β(n+1))`), prove descent (`mul_add_lt`
-   across blocks, `g_desc` within) + slowness `C(α j) ≤ K·(j+1)` (`C_add_clean`/`AllExpAbove_bigMul`). If
-   the C-bound won't close, fall back to Rathjen's length `|·|`.
-3. **M-internalize Cor 3.4 + Thm 3.5 reindex onto `InternalONote` codes** ⟹ `β : V → V` (`V ⊧ 𝗜𝚺₁`) with
-   the three structural facts, from the X-definable descent. The deepest layer; the internal Lemma 3.6
-   engine already consumes it.
-4. **Discharge `hPdef`** (LX-definability of `T̂^{k+2}(βₖ) ≤ mₖ` — `β` is X-definable + 𝚺₁ code arithmetic,
-   so LX-definable via the `lxDef_of_reduct`/`lxDef_and`/`MX_lxDef` toolkit), plug `β` into the rewired wall.
-Several laps, fully offline. See `REFLECTION-2026-06-23-lap44.md`, `HANDOFF-2026-06-23-lap43.md`.
-
-**(superseded gate, kept for record) A2 part 2 — Thread `[Structure.Eq LX M]`.** `𝗘𝗤 ⪯ paLX` is proved, so
-`descentE` routes through `Structure.consequence_iff_eq` + `complete` (already done in `descentE`/the wall's
-signature carries `[Structure.Eq LX M]`). Required so `ReductModel.reduct_models_isigma1` installs the reduct
-   as `[M ⊧ₘ* 𝗜𝚺₁]`.
-1. **(wall B) Connect the opaque blob to `igoodstein`.** `hgood : M ⊧ lMap Φ goodsteinSentence` mentions the
-   r.e.-code `codeOfREPred goodsteinTerminates`; bridge it IΣ₁-internally to the transparent
-   `∃N, igoodstein m N = 0` (lap-26 substrate, in `M`'s reduct).
-2. **(wall C) M-internal `Mlt`-descent.** From `no_min` build a *definable* descending `G : M → M` via `M`'s
-   LX least-number principle (`reduct_models_isigma1`/`InductionScheme LX`). Must be M-internal, not `choice`.
-3. **(wall D) Slow-down + inequality (6) in `M`.** Slow `(G k)` ⟹ `(βₖ)` with `C(βₖ) ≤ k+1`; run the special
-   Goodstein seq from `m₀ = T̂²(β₀)`; iterate `DescentCore.ineq6_step` by `M`'s LX-induction ⟹ `M ⊧ ∀k mₖ>0`;
-   contradict `hgood`. `DescentCore.lemma36_nonterminating` is the route-neutral ONote/ℕ kernel.
+### Short-term (mirror PENDING_WORK top) — the two open §3/Gentzen cruxes, hardest-first
+1. **Internal Cor 3.4** (THE harder crux). Produce the *slow* internal descent `α : V → V`
+   (`iC(αₙ)≤K(n+1)`, `isNF`, `icmp`-descent) from a raw primrec ε₀-descent, via Grzegorczyk `g`-padding.
+   The level `l` is **internal (`l:V`) ⟹ `f_l` is Ackermann ⟹ NOT IΣ₁-provably total ⟹ needs the PA
+   substrate `ReductModel.reduct_models_PA`, NOT the IΣ₁ `PR.Construction` toolkit.** Recommended first
+   attack (PENDING_WORK lap-45 path #2): **parameterize over an abstract internal `f`** (take its recursion
+   eqns + Lemma-3.2 domination as hypotheses) so the genuine `g`-math lands green now; discharge `f`'s
+   existence separately. Blueprint = the sorry-free ℕ-template `Grzegorczyk.lean` (Lemma 3.3 complete + Cor
+   3.4 bricks `corAlpha_C_bound`/`corAlpha_within`/`corAlpha_boundary`). The existing meta-`l` `InternalCor34`
+   (`ig0`/`iblk`/`ibigMul`) is the **standard-`l` special case** — reusable bricks, not the generic route.
+2. **Gentzen Thm 2.8(i): `PRWO(ε₀) → Con(𝗣𝗔)`** + formulate **`PRWO(ε₀)` as a `Sentence ℒₒᵣ`** (∀ primrec
+   ε₀-descent → finite). Primrec ordinal assignment `ord` on Foundation `Derivation`s + reduction `R` with
+   `ord(R D)<ord D`; an empty-sequent derivation would give an infinite primrec ε₀-descent, forbidden by PRWO.
+3. **Assemble `goodstein_implies_consistency`** from 1+2 (internal Thm 3.5 + Lemma 3.6 are DONE), then —
+   only if `#print axioms` is clean — discharge the headline `sorry`.
 
 ### Long-term / banked
-- **BANKED, OFF the critical path (do NOT resume on the Buchholz route):** the witness-bounded cut-elim
-  thread — `wip/{BoundedZinfty,SplitZinfty,OperatorZinfty}.lean`. Lap-12 `cutReduceAllAux` (norm-machinery,
-  axiom-clean) is the furthest it got; closing it fully needs the operator `H` (ADDENDUM 7). Kept as
-  reference for the operator-`H` build IF the Buchholz route ever stalls. **M6 (Hardy lower bound,
-  `lowerBound_hardy_selfcontained`)** — Towsner-specific, a correct theorem, now OFF the critical path.
-- **Route A** (`goodstein_implies_consistency` in `Reduction.lean`, via `Con(PA)` + Gödel II) stays as
-  the documented escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom (🟡) and also
-  needs M4. Revisit only if M4 + M7a prove intractable after sustained effort.
+- **Internal Thm 3.5 — COMPLETE (lap 47), route-independent.** `InternalThm35.bbeta_isNF`/`bbeta_C_le`/
+  `bbeta_desc_exists` + `iwtower_cofinal`. Survives any route change; consumed by Lemma 3.6.
+- **`peano_not_proves_TI` (Buchholz §5, Thm 5.6) — axiom-clean but OFF the headline path.** Free-X-TI ⊢ PRWO
+  (wrong direction), so it cannot chain to Con(PA). A banked monument (M4 `embedC` + M5 `cutElim` + Boundedness
+  + C₁/C₂/D/F-φ). Do NOT try to wire it to the headline. The free-X β-wall (`DescentSemantic:582`) is the
+  abandoned target — a `wip/` candidate (machine-checked OFF-path by `not_dominated_of_diag_le`).
+- **Witness-bounded cut-elim** (`wip/{Bounded,Split,Operator}Zinfty`) + **M6 Hardy lower bound** — older banked
+  threads, off-path. Never delete.
 
 ### To completion
-Headline discharged ⟺ **Boundedness (Thm 5.4) + truth semantics + Goodstein⟹TI(ε₀) bridge + assembly**
-land on top of the done M4 `embedC` + M5 `cutElim`, AND `#print axioms peano_not_proves_goodstein` is
-`[propext, Classical.choice, Quot.sound]` (+ any documented `native_decide` Goodstein base-cases — 🟢
-finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longer required.
+Headline discharged ⟺ internal Cor 3.4 (slow α) + Gentzen Thm 2.8 (`PRWO→Con(PA)`) + the `PRWO` sentence all
+land and chain through `goodstein_implies_consistency`, AND `#print axioms peano_not_proves_goodstein` is
+`[propext, Classical.choice, Quot.sound]`. **Route-A honesty caveat:** Gödel II for `𝗣𝗔` rides Foundation's
+🟡 `PA_delta1Definable` (Δ₁-definability of `𝗣𝗔`, a true theorem held as a disclosed upstream `axiom`). On
+this route the clean-headline target is `[propext, choice, Quot.sound, PA_delta1Definable]` with that one
+disclosed upstream axiom, OR `PA_delta1Definable` discharged upstream (Foundation pin-bump / burndown — see
+DIRECTION anti-fraud rule #1, which a future call must reconcile against Route A's Gödel-II dependency).
 
 ## Axiom ledger (per headline / landmark theorem — the fidelity spine)
 | theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
-| `peano_not_proves_goodstein` (headline, `Statement.lean`) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` (lap-30 real) | 🔓 open `sorry` (LOCKED, anti-fraud) — now reduced to **ONE semantic lemma** `paLX_models_TI_of_PA_provable` via `descentE`+completeness. **0** real math axioms; the would-be-headline chain (`…_modulo_semantic`) carries only `sorryAx`+native_decide. |
-| `…_modulo_semantic` (lap 30, `src/DescentSemantic`) | the headline, modulo the disclosed semantic `sorry` | `propext, sorryAx, choice, Quot.sound, ONoteComp…native_decide.ax_1_5` (lap-30 real) | 🔓 **= `peano_not_proves_goodstein_of_descent descentE`**. Proves the FULL chain is axiom-clean save `sorryAx` (one lemma) + 1 🟢 `native_decide` — **no `PA_delta1Definable`, no custom axiom**. NOT wired to `Statement.lean`. |
-| `descentE` (lap 30, `src/DescentSemantic`) | `Thm56.DescentE` (`𝗣𝗔⊢γ ⟹ Derivation2 paLX {TI prec}`) | `propext, sorryAx, choice, Quot.sound, native_decide.ax_1_5` | 🔓 **via FO completeness** (`Derivation.completeness_of_encodable`) — reduces `DescentE` to the one semantic premise `paLX_models_TI_of_PA_provable`. Built `LX.Encodable`. |
-| `no_min_descent_absurd_of_goodstein` (laps 30–44, `src/DescentSemantic`, **THE wall**) | Rathjen §3 in-model: `no_min` + Goodstein-in-`M` ⟹ ⊥ | `sorryAx` (disclosed, **1** sub-`sorry`: `:574`) | 🎯 the **single open obligation** (🟡 project-scale formalization, not 🟠). `hB` **DISCHARGED lap 36**. ⚠ **lap-44:** the literal `:574` `sorry` still routes through the **DEAD 𝚺₁ path** (`hbound`+`nonterminating_internal`, `𝚺₁-Function₁ b`) which is **unachievable** (`b` X-dependent). Correct consumer **`nonterminating_of_xDescent` is built (lap 41)** — rewire to it. Remaining content = **produce the M-internal slowed code-descent `β`** (Rathjen Cor 3.4 + Thm 3.5 on `InternalONote` codes); the run side (`slowdown_run_facts`/`ineq6_step_internal`/`lemma36_nonterminating`/Thm 3.5 reindex) is DONE. |
-| `paLX_models_TI_of_PA_provable` (lap 30, `src/DescentSemantic`) | Rathjen §3 in-model: `𝗣𝗔⊢γ ⟹ ∀ M⊧paLX, M⊧TI prec` | `sorryAx` (via the wall) | 🟢 PROVED modulo the one named `sorry` above — steps 1–2 + progressivity-contrapositive machine-checked; bottoms out at `no_min_descent_absurd_of_goodstein`. |
+| `peano_not_proves_goodstein` (headline, `Statement.lean`) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` (**lap-47 real**) | 🔓 open `sorry` (LOCKED, anti-fraud) — **0** math axioms. Route A: reduces (axiom-clean) to `goodstein_implies_consistency` via `not_proves_of_implies_consistency` + Gödel II. |
+| `goodstein_implies_consistency` (Route-A girder, `src/Reduction`) | Rathjen Cor 3.7: `𝗣𝗔⊢γ → 𝗣𝗔⊢Con(𝗣𝗔)` | `sorryAx` (disclosed, the one open girder) | 🎯 **THE single open obligation.** Two deep girders (docstring): §3 `γ→PRWO(ε₀)` (internal Cor 3.4 → Thm 3.5 [DONE lap 47] → Lemma 3.6 [done]) + Gentzen Thm 2.8 `PRWO→Con(PA)`. 🟡 project-scale formalization. |
+| `not_proves_of_implies_consistency` / `peano_not_proves_consistency` (Phase 1, `src/Reduction`) | meta-reduction + Gödel II for `𝗣𝗔` | `propext, choice, Quot.sound, PA_delta1Definable` (**lap-47 real**) | 🟡 the **Route-A Gödel-II hook** (NO LONGER "rejected" — Route A is the chosen route, lap 46). `PA_delta1Definable` = Δ₁-definability of `𝗣𝗔`, a true theorem held as a disclosed `axiom` in the Foundation pin; the headline inherits it on this route. Discharge = upstream burndown. |
+| `InternalThm35.bbeta_*` / `iwtower_cofinal` (internal Thm 3.5, **lap 47**, `src/InternalThm35`) | Rathjen Thm 3.5: slow α → `β` with tight `C(βᵣ)≤r+1` | `propext, choice, Quot.sound` | 🟢 **CLEAN + COMPLETE** — `bbeta_isNF`/`bbeta_C_le`/`bbeta_desc_exists`; ω-tower cofinality `iwtower_cofinal` discharges the seam. Route-independent; consumed by Lemma 3.6 (`nonterminating_internal`). |
+| `peano_not_proves_goodstein_modulo_semantic` / `descentE` / `no_min_descent_absurd_of_goodstein` / `paLX_models_TI_of_PA_provable` (laps 30–44, `src/DescentSemantic`) | the free-X completeness route (Rathjen §3-on-X) | `sorryAx` + native_decide | 🚫 **OFF-PATH (lap 45 obstruction).** The free-X β-wall (`:582`) is the WRONG target — §3-on-X is structurally blocked (`not_dominated_of_diag_le`). Banked, not deleted; `wip/` candidate. NOT wired to `Statement.lean`. |
 | `eqLX_subset_paLX` / `eqAxiom_weakerThan_paLX` (lap 32, `src/DescentLift`) | `𝗘𝗤(LX) ⊆ paLX`, hence `𝗘𝗤 ⪯ paLX` | `propext, choice, Quot.sound` | 🟢 clean — every `𝗘𝗤(LX)` axiom is an `lMap Φ`-image of a `𝗣𝗔⁻` axiom or `relExt Xsym`; gives models of `paLX` genuine equality (enables the A2-pt2 `consequence_iff_eq` route). |
 | `peano_not_proves_TI` (Thm 5.6, lap 21, **F-φ DISCHARGED lap 28**, `src/Thm56`) | Gentzen 1943: `𝗣𝗔 ⊬ TI_≺(X)` | `propext, choice, Quot.sound, ONoteComp…native_decide.ax_1_5` (lap-30 real) | 🟢 **CLEAN** — full §5 chain C₂→C₁→D→F + D'; F-φ now a theorem (`ONoteComp`). Only 1 🟢 `native_decide` finite artifact. No `sorryAx`, no math axiom. |
 | `embed_TI_bounded` (D', **discharged lap 22**, `src/Thm56`) | finite PA-proof ⟹ `Z∞`-proof height `<ε₀` | `propext, choice, Quot.sound, rePred_ltPull_natCode` | 🟢 **CLEAN** — chains `EmbeddingBound.embedC_LX_bdd` (the uniform `∃B<ε₀,∀e,∃α≤B` bound). The lap-21 disclosed `sorry` is gone. |
@@ -622,19 +531,18 @@ finite witnesses; no `PA_delta1Definable` on this route). M6 (Hardy) is no longe
 | `lowerBound_hardy_selfcontained` (M6, **lap 6**) | **full Thm 17.1, only `α.NF`** | `propext, choice, Quot.sound` + 12 `native_decide` base-case `ax_*` | 🟢 clean — the `ax_*` are 🟢 finite Goodstein base-case witnesses (acceptable indefinitely) |
 | `hardy_add_comp`/`_collapse` (lap 8, `src/Hardy`) | `H_{γ+δ}=H_γ∘H_δ` (non-absorbing) | `propext, choice, Quot.sound` | 🟢 clean — banked Hardy infra (was for the dead Zekd thread; still a usable composition law) |
 | `hardy_comp_lt_goodsteinLength` (lap 8, `src/LowerBound`) | `H_α(H_e(m)) < G(m)` eventually | `propext, choice, Quot.sound` + the M6 `native_decide` base-cases | 🟢 clean — banked nested-index domination (reusable if a bridge ever needs a nested control index) |
-| `not_proves_of_implies_consistency` (Route A) | meta-reduction | `…, PA_delta1Definable` | 🟡 Foundation axiom; **Route A — REJECTED lap 27** (anti-fraud forbids it on the headline; back-end is Route B) |
-
-Math-axiom count: **`peano_not_proves_TI`** (Thm 5.6) carries **0** math axioms — F-φ
-`rePred_ltPull_natCode` was **DISCHARGED lap 28** (ported `ONoteComp.lean` into `src/`); its `#print axioms`
-is now `[propext, choice, Quot.sound, ONoteComp…native_decide.ax_1_5]` (trust base + 1 🟢 finite
-`native_decide` witness). The **headline** target is still `sorry` (the one semantic wall unbuilt); the
-would-be-headline chain `…_modulo_semantic` carries only that trust base + **1 `sorryAx`**
-(`no_min_descent_absurd_of_goodstein`). On discharge, headline `#print axioms` must be `[propext,
-Classical.choice, Quot.sound]` (+ documented 🟢 `native_decide` artifacts) with no `PA_delta1Definable` —
-**back-end is Route B** (lap-27 decision; the 🟡 `PA_delta1Definable` sits only under the rejected Route-A hook).
+Math-axiom count: the **headline** is still an honest `sorry` (real lap-47 `#print axioms` =
+`[propext, sorryAx, choice, Quot.sound]`, **0** math axioms). The single open obligation is
+`goodstein_implies_consistency` (Route A); its two deep girders (internal Cor 3.4 + Gentzen Thm 2.8) are
+unbuilt. The Route-A Gödel-II hook carries the 🟡 `PA_delta1Definable` upstream axiom (a true theorem,
+disclosed in the Foundation pin). On discharge, headline `#print axioms` will be `[propext, choice,
+Quot.sound, PA_delta1Definable]` (the disclosed upstream axiom) unless that is burned down upstream.
+DIRECTION's anti-fraud rule #1 (`= [propext, choice, Quot.sound]`, no custom axiom) must be reconciled
+with Route A's Gödel-II dependency by a future operator/review call (accept the disclosed upstream axiom
+vs burn it down). The banked free-X `peano_not_proves_TI` (0 math axioms) does NOT chain to Con(PA).
 
 ## Pointers
-ROADMAP/plan: `EXPEDITION-PLAN.md`, `PHASE2-DECOMPOSITION.md` · **lap-27 reflection (back-end decided
-= Route B; F-φ solved): `REFLECTION-2026-06-23.md`** · lap-9 reflection: `REFLECTION-2026-06-22.md` ·
-E map: `DESCENT-PLAN.md` · architecture: `ANALYSIS-2026-06-22-bounding-resolution.md` · newest
-baton: `HANDOFF.md` · open-items: `PENDING_WORK.md` · charter: `DIRECTION.md`
+ROADMAP/plan: `EXPEDITION-PLAN.md`, `PHASE2-DECOMPOSITION.md` · **route resolution (lap 46): memory
+`route-resolved-prwo-gentzen` + `Reduction.lean` docstring** · architecture review: `E-ARCHITECTURE-REVIEW
+-2026-06-23.md` + `E-ARCHITECTURE-RESPONSE-2026-06-23.md` · lap-44 reflection: `REFLECTION-2026-06-23-lap44.md`
+· newest baton: `HANDOFF.md` → newest dated HANDOFF · open-items: `PENDING_WORK.md` · charter: `DIRECTION.md`
