@@ -1,5 +1,32 @@
 # Pending work — open obligations & attack paths
 
+## 🎯 LAP-29 (2026-06-23) — `InternalBridge` FINISHED: substrate faithfulness machine-checked. Read FIRST.
+
+**Done this lap (green, 1300 jobs, axiom-clean `[propext, choice, Quot.sound]`):** the lap-28 parked
+`ibump_nat`/`igoodstein_nat` bridges are now **theorems** in `src/GoodsteinPA/InternalBridge.lean`. The
+internal `𝚺₁`-definable Goodstein substrate (`ibump`/`igoodstein` over a model `V`) is proven to compute
+the **audited** `Defs.bump`/`Defs.goodsteinSeq` on the standard model `ℕ` — the anti-fraud faithfulness
+link Route B relies on (the internal run is the genuine Goodstein process, not a look-alike).
+
+**The Foundation-ℕ operation diamond is SOLVED** (the lap-28 blocker). Foundation declares `noncomputable
+scoped` `Div`/`Mod`/`Sub` instances over any `PeanoMinus` model `V` (built from `Classical.choose!`),
+which over `V=ℕ` are **distinct instances** from `Nat.instDiv`/`instMod`/`instSub` (NOT defeq for
+`/`,`%`,`−`; only `+`,`*` and `OfNat 0/1` coincide — there is NO `instAdd_foundation`/`instMul_foundation`).
+Three bridge lemmas convert them:
+- `fdiv_nat`/`fmod_nat`/`fsub_nat` — must state the LHS with the **explicit Foundation instance**
+  `@HDiv.hDiv ℕ ℕ ℕ (@instHDiv ℕ (@LO.FirstOrder.Arithmetic.instDiv_foundation ℕ _ _)) x d` (a bare `_`
+  resolves to `Nat.instDiv`, the global winner — confirmed via pp.all probe). Proofs: `div_eq_of`
+  (foundation) + Nat facts; `sub_spec_of_ge`/`sub_spec_of_le` (foundation) + `omega` (omega treats the
+  foundation sub as an atom and the `+` as Nat's).
+- **Gotcha:** `igoodstein_succ`'s `ibump (k+2) …` uses the generic `instOfNatAtLeastTwo` numeral (V was
+  generic), NOT `instOfNatNat`, so `rw [ibump_nat (k+2) …]` won't match a freshly-written `k+2`; first
+  `rw [fsub_nat]` to Natify the `−1`, then `show … (k+2) … = …` to re-cast the numeral (defeq), then
+  the rewrite matches. (Saved to memory.)
+
+Route-neutral / on the Route-B path (the substrate doubles as `LX`-formula builders). The ONE wall is
+unchanged: **E-core(b) Route-B** (the integrated paLX descent), partially literature-gated (see
+`ON-LINE-REQUEST.md` — the precise calculus-internal `Goodstein ⟹ paLX ⊢ TI_≺(X)` shape).
+
 ## 🎯 LAP-28 (2026-06-23) — F-φ DISCHARGED (in build). ONE wall left: E-core(b) Route-B. Read FIRST.
 
 **Done this lap:** F-φ ported + wired (`src/GoodsteinPA/ONoteComp.lean`); `peano_not_proves_TI` is now
