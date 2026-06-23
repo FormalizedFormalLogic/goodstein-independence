@@ -1,5 +1,27 @@
 # Pending work — open obligations & attack paths
 
+## 🎯 LAP-28 (2026-06-23) — F-φ DISCHARGED (in build). ONE wall left: E-core(b) Route-B. Read FIRST.
+
+**Done this lap:** F-φ ported + wired (`src/GoodsteinPA/ONoteComp.lean`); `peano_not_proves_TI` is now
+fully axiom-clean (mod trust base + 1 🟢 `native_decide`). The project has **exactly one wall: `DescentE`**
+(`Thm56.lean:133`) — the integrated paLX Route-B construction (`𝗣𝗔 ⊢ goodstein → paLX ⊢ TI prec`).
+
+**Attempted + parked (off-critical-path):** the route-neutral faithfulness bricks `ibump_nat`/
+`igoodstein_nat` in `InternalBridge.lean` (PENDING-26 NEXT). The math is straightforward strong
+induction matching `ibump_succ`/`Defs.bump`, BUT it hit a **Foundation-ℕ operation diamond**: Foundation's
+`/`,`%` on a model `V` are `noncomputable scoped instance`s built from `Classical.choose!`
+(`IOpen/Basic.lean:86,260`), so over `V=ℕ` they are **NOT defeq** to `Nat.div`/`Nat.mod` (instances
+`instDiv_foundation`/`instMod_foundation` ≠ `Nat.instDiv`/`Nat.instMod`). `ipow_nat`/`ilog_nat` work
+because `ipow`/`ilog` are hand-built (bridged by their own induction); but `ibump_succ` exposes raw V-`/`,`%`.
+- **The fix (next lap):** build two bridge lemmas `Vdiv_nat`/`Vmod_nat` (Foundation `/`,`%` over ℕ = Nat's)
+  via `LO.FirstOrder.Arithmetic.div_eq_of` (`hb : b*c ≤ a`, `ha : a < b*(c+1)` ⟹ `a/b = c`) + `rem_graph`
+  / `div_add_mod` (`IOpen/Basic.lean:106,267,275`), feeding Nat facts (`Nat.mul_div_le`,
+  `Nat.lt_div_add_one_mul_self`) through `le_def`. CAUTION: the scoped Foundation `Div`/`Mod` lose to
+  Nat's global instance in plain `a / b` notation — must state the bridges with explicit
+  `@HDiv.hDiv ℕ ℕ ℕ <foundation-inst>`. Then `ibump_nat` closes (the `*`,`+` ARE defeq; only `/`,`%` need it).
+- This is **route-neutral** (faithfulness link to audited `Defs`), NOT the headline crux. Do it only as
+  warm-up / when E-core stalls.
+
 ## 🎯 LAP-27 (2026-06-23) — DEEP REFLECTION: F-φ SOLVED on Aristotle; back-end DECIDED = Route B. Read FIRST.
 
 Full synthesis in **`REFLECTION-2026-06-23.md`**. Two changes the grind laps inherit:
