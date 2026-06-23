@@ -22,6 +22,14 @@ X-definable seed). **De-risking:** `Goodstein ⟹ PRWO(ε₀)` (Rathjen §3) is 
 axiom-clean). **Focus E-core on the shared §3; defer the back-end choice.** Lit request filed
 (`ON-LINE-REQUEST.md` lap 24) to pin the cheaper back-end.
 
+**✅ Landed lap 25 (`DescentCore.lean`, axiom-clean):** Rathjen's tower `ωₙ` (`omegaStack`: `ω₀=1`,
+`ωₙ₊₁=ω^{ωₙ}`) + `omegaStack_NF`, `C_omegaStack : C(ωₙ)=1`, `repr_omegaStack_succ`,
+`repr_omegaStack_strictMono` (the Thm 3.5 head-term scaffold). **Next §3 brick = the C-arithmetic for the
+tail terms `β_{K(n+1)+i} = ω·αₙ + (K-i)`:** `C(1+e) ≤ C(e)+1` (needs `ONote.add`/`addAux` internals) →
+`C(ω*α) ≤ C(α)+1` (induction on `ONote.mul` recursion; "mul by ω bumps coeffs by ≤1") → then the explicit
+`βᵣ` construction + pointwise `C(βᵣ)≤r+1` and single-step descent (NON-vacuous — state pointwise, not as
+"∀ infinite descending seq", to avoid the vacuity trap that `lemma36_*` flagged).
+
 **Next concrete bricks (route-independent §3):** (1) the slow-down constructions Rathjen Lemma 3.3 / Cor
 3.4 / Thm 3.5 — the explicit padding function `g : ℕ² → ω^ω` and the bounded-coefficient sequence `βⱼ`,
 with their *step* properties (descending-at-a-step, `C(βᵣ)≤r+1`) as non-vacuous finite ℕ/ONote facts

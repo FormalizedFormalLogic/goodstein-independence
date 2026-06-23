@@ -85,6 +85,53 @@ theorem evalNat_lt_of_lt (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
     evalNat b o < evalNat b p :=
   (evalNat_lt_iff b hb hco hcp hno hnp).2 (ONote.lt_def.1 h)
 
+/-! ## Rathjen's `ωₙ` tower (the `T̂ 3.5` slow-down scaffold)
+
+Rathjen Thm 3.5 builds the first `K` terms of the `C`-bounded sequence from the tower `ω₀ = 1`,
+`ωₙ₊₁ = ω^{ωₙ}` (`βⱼ = Σ_{i<K-j} ω_{s-i}`). Two facts about the tower are used: every `ωₙ` has
+max-coefficient `C(ωₙ) = 1` (so the head terms are `Canon 1`), and the tower is strictly increasing.
+Both are clean, non-vacuous `ONote` facts (no well-foundedness), recorded here as `§3` bricks. -/
+
+/-- Rathjen's tower `ωₙ`: `ω₀ = 1`, `ωₙ₊₁ = ω^{ωₙ}` (= `oadd ωₙ 1 0`). -/
+def omegaStack : ℕ → ONote
+  | 0 => 1
+  | n + 1 => ONote.oadd (omegaStack n) 1 0
+
+@[simp] theorem omegaStack_zero : omegaStack 0 = 1 := rfl
+
+@[simp] theorem omegaStack_succ (n : ℕ) :
+    omegaStack (n + 1) = ONote.oadd (omegaStack n) 1 0 := rfl
+
+/-- Every tower level is in normal form. -/
+theorem omegaStack_NF : ∀ n, (omegaStack n).NF
+  | 0 => by simpa using (inferInstance : ONote.NF 1)
+  | n + 1 => by
+    have := omegaStack_NF n
+    exact ONote.NF.oadd_zero _ _
+
+/-- **`C(ωₙ) = 1`** for all `n` (Rathjen Thm 3.5: "As `C(ωᵣ) = 1` for all `r`"). The base `ω₀ = 1`
+has `C = 1`; each `ω^{ωₙ}` keeps the head coefficient `1` and recurses into the exponent. -/
+@[simp] theorem C_omegaStack : ∀ n, C (omegaStack n) = 1
+  | 0 => rfl
+  | n + 1 => by rw [omegaStack_succ, C_oadd, C_omegaStack n]; rfl
+
+/-- `repr ωₙ₊₁ = ω^{repr ωₙ}`. -/
+theorem repr_omegaStack_succ (n : ℕ) :
+    (omegaStack (n + 1)).repr = ω ^ (omegaStack n).repr := by
+  rw [omegaStack_succ, ONote.repr]
+  simp
+
+/-- **The tower is strictly increasing**: `repr ωₙ < repr ωₙ₊₁`. Induction: base `repr 1 = 1 < ω =
+repr ω₁`; step `repr ωₙ < repr ωₙ₊₁ ⟹ ω^{repr ωₙ} < ω^{repr ωₙ₊₁}` by strict monotonicity of `ω^·`. -/
+theorem repr_omegaStack_strictMono : ∀ n, (omegaStack n).repr < (omegaStack (n + 1)).repr
+  | 0 => by
+    rw [repr_omegaStack_succ, omegaStack_zero, ONote.repr_one]
+    simpa using Ordinal.one_lt_omega0
+  | n + 1 => by
+    have ih := repr_omegaStack_strictMono n
+    rw [repr_omegaStack_succ, repr_omegaStack_succ]
+    exact (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).2 ih
+
 /-! ## Rathjen Lemma 3.6 — the special Goodstein run from `T̂²_ω(β₀)` does not terminate
 
 This is the **kernel of E-core** (see `DESCENT-PLAN.md`): from a descending ε₀-sequence with bounded
