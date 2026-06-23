@@ -1332,5 +1332,42 @@ theorem evalNat_succ_base {b : V} (hb : 1 ≤ b) :
       have ihr : ievalNat (b + 1) r = ibump (b + 1) (ievalNat b r) := ih r hr_lt r le_rfl hnfr hcar
       rw [ievalNat_ocOadd, ibump_pos hb2 hvpos, hilog, hdiv, hmod, ihe, ihr]
 
+/-! ### Internalized Rathjen inequality (6) -/
+
+/-- **Internal `ineq6_step`** (the `step` of the descent's `hbound`; internalized
+`DescentCore.ineq6_step`, Rathjen Lemma 3.6 inequality (6)). For a one-step `≺`-descent `bk1 ≺ bk`
+with coefficient bounds `C(bk) ≤ k+1`, `C(bk1) ≤ k+2`, if the run value `m` already dominates
+`T̂^{k+1}(bk)` then after one Goodstein bump it dominates `T̂^{k+2}(bk1)`:
+`ievalNat (k+2) bk1 ≤ ibump (k+2) m - 1`.
+
+Proved **digit-direct** (no `toONote`/`repr`, unlike the ℕ-level proof) by chaining the three
+substrate facts: `evalNat_succ_base` (base-bump `ievalNat (k+2) bk = ibump (k+2) (ievalNat (k+1) bk)`),
+`ibump_mono` (monotonicity of the bump), and `ievalNat_lt_of_icmp_eq_zero` (order-reflection at base
+`k+2`). The chain is `ievalNat (k+2) bk1 < ievalNat (k+2) bk = ibump (k+2) (ievalNat (k+1) bk)
+≤ ibump (k+2) m`. -/
+theorem ineq6_step_internal {k bk bk1 : V}
+    (hNFk : isNF bk) (hNFk1 : isNF bk1)
+    (hck : iCanon (k + 1) bk) (hck1 : iCanon (k + 2) bk1)
+    (hdesc : icmp bk1 bk = 0) {m : V} (hm : ievalNat (k + 1) bk ≤ m) :
+    ievalNat (k + 2) bk1 ≤ ibump (k + 2) m - 1 := by
+  have hk1 : (1 : V) ≤ k + 1 := by simpa using add_le_add_right (zero_le k) (1 : V)
+  have hk2 : (2 : V) ≤ k + 2 := by simpa using add_le_add_right (zero_le k) (2 : V)
+  have h121 : (1 : V) ≤ k + 2 := le_trans (by simp) hk2
+  have hk12 : k + 1 + 1 = k + 2 := by rw [add_assoc, one_add_one_eq_two]
+  -- `iCanon (k+1) bk → iCanon (k+2) bk` (max coefficient ≤ k+1 ≤ k+2)
+  have hck' : iCanon (k + 2) bk := by
+    rw [iCanon_def] at hck ⊢
+    exact le_trans hck (by rw [← hk12]; exact le_self_add)
+  -- base-bump law at base `k+1`
+  have hbase : ievalNat (k + 2) bk = ibump (k + 2) (ievalNat (k + 1) bk) := by
+    have h := evalNat_succ_base hk1 bk bk le_rfl hNFk hck
+    rwa [hk12] at h
+  -- chain to a strict bound, then `≤ · - 1`
+  refine le_sub_one_of_lt ?_
+  calc ievalNat (k + 2) bk1
+      < ievalNat (k + 2) bk := ievalNat_lt_of_icmp_eq_zero h121 hNFk1 hNFk hck1 hck' hdesc
+    _ = ibump (k + 2) (ievalNat (k + 1) bk) := hbase
+    _ ≤ ibump (k + 2) m := ibump_mono hk2 hm
+
 
 end GoodsteinPA.InternalONote
