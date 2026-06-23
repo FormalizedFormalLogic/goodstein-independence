@@ -39,3 +39,4 @@ import GoodsteinPA.DescentCore
 import GoodsteinPA.DescentArith
 import GoodsteinPA.InternalPow
 import GoodsteinPA.InternalDigits
+import GoodsteinPA.InternalLog
