@@ -535,4 +535,62 @@ lemma fvSubst_inegF {a t p : V} (ht : IsUTerm ℒₒᵣ t) (hp : IsUFormula ℒ�
   rw [fvSubst_or hp.neg (by simp), fvSubst_neg ht hp]
   simp
 
+/-! ## Term-substitution helpers for the `zInd` succedent terms (rung-1 step A)
+
+The `zInd` rule's three succedent terms — `numeral 0`, `Sa = ^&e ^+ numeral 1` (`e` the eigenvariable,
+`e ≠ a`), and the conclusion term `zIndTerm d` — must be transferred through `termFvSubst a t`. The
+`numeral`/`Sa` cases are FIXED by `e ≠ a`-freshness (they contain no `^&a`); only `zIndTerm d` is
+genuinely renamed (its closedness is supplied by the `zIndWff` conjunct). -/
+
+/-- `termFvSubst` commutes with `qqAdd` (binary `+` function node). `termFvSubst_func` carries
+hypotheses so it does not auto-fire in a bare `simp`; we discharge `IsFunc 2 addIndex` /
+`IsUTermVec 2 ?[x,y]` explicitly. -/
+lemma termFvSubst_qqAdd (a t x y : V) (hx : IsUTerm ℒₒᵣ x) (hy : IsUTerm ℒₒᵣ y) :
+    termFvSubst ℒₒᵣ a t (x ^+ y) = (termFvSubst ℒₒᵣ a t x) ^+ (termFvSubst ℒₒᵣ a t y) := by
+  have hf := Bootstrapping.Arithmetic.LOR_func_addIndex (V := V)
+  have hv : IsUTermVec ℒₒᵣ 2 (?[x, y] : V) := (IsUTermVec.mkSeq₂_iff (L := ℒₒᵣ)).mpr ⟨hx, hy⟩
+  simp only [Bootstrapping.Arithmetic.qqAdd]
+  rw [termFvSubst_func (L := ℒₒᵣ) hf hv]
+  congr 1
+  rw [show (2 : V) = 1 + 1 from (one_add_one_eq_two).symm,
+    termFvSubstVec_cons hx ((IsUTermVec.adjoin₁_iff (L := ℒₒᵣ)).mpr hy),
+    show (1 : V) = 0 + 1 from (zero_add 1).symm, termFvSubstVec_cons hy (IsUTermVec.empty (L := ℒₒᵣ)),
+    termFvSubstVec_nil (L := ℒₒᵣ)]
+
+/-- `termFvSubst` fixes any numeral (numerals contain no free variables). Mirrors `numeral_substs`. -/
+@[simp] lemma termFvSubst_numeral (a t x : V) :
+    termFvSubst ℒₒᵣ a t (Bootstrapping.Arithmetic.numeral x) = Bootstrapping.Arithmetic.numeral x := by
+  induction x using ISigma1.sigma1_succ_induction
+  · definability
+  case zero =>
+    simp [Bootstrapping.Arithmetic.zero,
+      Bootstrapping.Arithmetic.qqFunc_absolute, Bootstrapping.qqFuncN_eq_qqFunc]
+  case succ x ih =>
+    rcases zero_or_succ x with (rfl | ⟨x, rfl⟩)
+    · simp [Bootstrapping.Arithmetic.one,
+        Bootstrapping.Arithmetic.qqFunc_absolute, Bootstrapping.qqFuncN_eq_qqFunc]
+    · rw [Bootstrapping.Arithmetic.numeral_add_two,
+        termFvSubst_qqAdd a t _ _ (by simp)
+          (Bootstrapping.Arithmetic.one_semiterm (V := V) (n := 0)).isUTerm, ih]
+      congr 1
+      simp [Bootstrapping.Arithmetic.one,
+        Bootstrapping.Arithmetic.qqFunc_absolute, Bootstrapping.qqFuncN_eq_qqFunc]
+
+/-- The `zInd` minor-premise succedent term `Sa = ^&e ^+ numeral 1` is fixed by `termFvSubst a t`
+provided the eigenvariable `e ≠ a` (Buchholz regularity). -/
+lemma termFvSubst_succVar {a t e : V} (he : e ≠ a) :
+    termFvSubst ℒₒᵣ a t (^&e ^+ Bootstrapping.Arithmetic.numeral 1) =
+      ^&e ^+ Bootstrapping.Arithmetic.numeral 1 := by
+  rw [termFvSubst_qqAdd _ _ _ _ ((IsSemiterm.fvar (L := ℒₒᵣ) 0 e).isUTerm)
+      (Bootstrapping.Arithmetic.numeral_uterm 1), termFvSubst_fvar_ne (L := ℒₒᵣ) he,
+      termFvSubst_numeral]
+
+/-- `Sa = ^&e ^+ numeral 1` is a closed semiterm. -/
+@[simp] lemma isSemiterm_succVar (e : V) :
+    IsSemiterm ℒₒᵣ 0 (^&e ^+ Bootstrapping.Arithmetic.numeral 1) := by
+  have hf := Bootstrapping.Arithmetic.LOR_func_addIndex (V := V)
+  rw [Bootstrapping.Arithmetic.qqAdd]
+  exact (IsSemiterm.func (L := ℒₒᵣ)).mpr ⟨hf,
+    (IsSemitermVec.doubleton (L := ℒₒᵣ)).mpr ⟨IsSemiterm.fvar 0 e, by simp⟩⟩
+
 end GoodsteinPA.InternalZ
