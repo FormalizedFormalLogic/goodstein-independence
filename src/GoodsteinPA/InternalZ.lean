@@ -1365,7 +1365,8 @@ noncomputable def zIndWff (d : V) : Prop :=
       substs1 ℒₒᵣ (Bootstrapping.Arithmetic.qqAdd (qqFvar (zIndEig d))
         (Bootstrapping.Arithmetic.numeral 1)) (zIndP d)) ∧
   seqSucc (fstIdx d) = substs1 ℒₒᵣ (zIndTerm d) (zIndP d) ∧
-  IsSemiformula ℒₒᵣ 1 (zIndP d)
+  IsSemiformula ℒₒᵣ 1 (zIndP d) ∧
+  IsSemiterm ℒₒᵣ 0 (zIndTerm d)
 
 /-- **`𝚫₁`-definability of `zIndWff`.** Projections (`fstIdx`/`zIndP`/`zIndPrem0/1`/`zIndEig`/`zIndTerm`/
 `seqAnt`/`seqSucc`/`inAnt`/`qqFvar`) are `𝚺₀`; the `𝚺₁` content is the term-codes `numeral`/`qqAdd` and the
@@ -1384,7 +1385,7 @@ noncomputable def _root_.LO.FirstOrder.Arithmetic.zIndWffDef : 𝚫₁.Semisente
       ∃ sa, !(Bootstrapping.Arithmetic.qqAddGraph) sa fa z1 ∧
       ∃ subsa, !(substs1Graph ℒₒᵣ) subsa sa p ∧ ss1 = subsa) ∧
     (∃ ss, !seqSuccDef ss s ∧ ∃ subt, !(substs1Graph ℒₒᵣ) subt t p ∧ ss = subt) ∧
-    !(isSemiformula ℒₒᵣ).sigma 1 p ”)
+    !(isSemiformula ℒₒᵣ).sigma 1 p ∧ !(isSemiterm ℒₒᵣ).sigma 0 t ”)
   (.mkPi “d.
     ∀ s, !fstIdxDef s d → ∀ p, !zIndPDef p d → ∀ d0, !zIndPrem0Def d0 d → ∀ d1, !zIndPrem1Def d1 d →
     ∀ a, !zIndEigDef a d → ∀ t, !zIndTermDef t d →
@@ -1398,7 +1399,7 @@ noncomputable def _root_.LO.FirstOrder.Arithmetic.zIndWffDef : 𝚫₁.Semisente
       ∀ sa, !(Bootstrapping.Arithmetic.qqAddGraph) sa fa z1 →
       ∀ subsa, !(substs1Graph ℒₒᵣ) subsa sa p → ss1 = subsa) ∧
     (∀ ss, !seqSuccDef ss s → ∀ subt, !(substs1Graph ℒₒᵣ) subt t p → ss = subt) ∧
-    !(isSemiformula ℒₒᵣ).pi 1 p ”)
+    !(isSemiformula ℒₒᵣ).pi 1 p ∧ !(isSemiterm ℒₒᵣ).pi 0 t ”)
 
 instance zIndWff_defined : 𝚫₁-Predicate (zIndWff : V → Prop) via zIndWffDef :=
   ⟨by intro v
