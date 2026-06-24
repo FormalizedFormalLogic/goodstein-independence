@@ -1,5 +1,25 @@
 # Pending work — open obligations & attack paths
 
+## ⭐⭐⭐ Lap 72 — RUNG 1 `zsubst` DEFINED (eigenvariable substitution on Z-derivations)
+
+**Landed (green 1323, axiom-clean), see `HANDOFF-2026-06-24-lap72.md` for the full ledger:**
+- `src/GoodsteinPA/FvSubst.lean` (new `module`): `termFvSubst a t u` (term-level free-var subst
+  `^&a↦t`, `Language.TermRec`) + `fvSubst a t p` (formula-level, `UformulaRec1`, param `⟪a,t⟫`,
+  identity `allChanges` since `t` closed) + definability + `fvSubst_isSemiformula` (preservation,
+  closed `t`). Resolves PENDING's open "free-var subst is not `substs1`" design question.
+- `src/GoodsteinPA/Zsubst.lean` (new): `fvSubstSeq`/`fvSubstSeqt` (seq/sequent subst), `tblMapSeq`
+  (zK premise table-map), `zsubstNext` (7-tag table step), `zsubst d a t` (course-of-values
+  `<`-recursion, mirror `iRTable`/`iR2`), all `𝚺₁`-definable. Added `zIallEig`/`zAxAllK` accessors.
+
+**NEXT — rung 1 CORRECTNESS (the def is in place; prove it does the right thing):**
+1. `fstIdx_zsubst : fstIdx (zsubst d a t) = fvSubstSeqt a t (fstIdx d)` (diagonal table read-out, mirror
+   `iR2`'s `znth_iRTable` lemmas in `InternalZ.lean` ~4380+, then 7-tag `fstIdx (z* s' …) = s'`). EASIEST.
+2. `ZDerivation_zsubst` (rung-1 correctness): child `<` bounds + per-rule subst-commutation + likely an
+   eigenvariable-freshness hyp; drive by `ZDerivation`-induction + lap-70 `zDerivation_z*_inv`.
+3. `iotil_zsubst = iotil` (õ subst-invariance; shape+rank based, `irk` subst-invariant — prove
+   `irk_fvSubst` analog of `irk_substs1`). Likely EASIEST after (1).
+Then **rung 2** (genuine Ind reduct) reachable. Cut-elim shape blueprint: `~/src/Gentzen/.../cut_elim.v`.
+
 ## ⭐⭐⭐ Lap 71 — FRESH-MIND REVIEW + rung-0.5 I¬ wired (cascade de-risked)
 
 **Review:** direction KEPT (Option A forced lap 70, kernel re-verified: headline 0 math axioms; lap-70
