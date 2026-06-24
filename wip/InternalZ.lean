@@ -24,6 +24,7 @@ namespace GoodsteinPA.InternalZ
 
 open Classical
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.FirstOrder.Arithmetic.HierarchySymbol ISigma1 PeanoMinus
+open GoodsteinPA.InternalONote
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -413,5 +414,85 @@ instance idg_defined : 𝚺₁-Function₁ (idg : V → V) via idgDef := .mk fun
 
 instance idg_definable : 𝚺₁-Function₁ (idg : V → V) := idg_defined.to_definable
 instance idg_definable' (Γ) : Γ-[m + 1]-Function₁ (idg : V → V) := idg_definable.of_sigmaOne
+
+/-! ### Structural correctness of the `idg` table (mirror `iC`) -/
+
+private lemma def_idgTable {k} (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ idgTable (v i)) :=
+  DefinableFunction₁.comp (F := idgTable) (DefinableFunction.var i)
+
+private lemma def_idg {k} (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ idg (v i)) :=
+  DefinableFunction₁.comp (F := idg) (DefinableFunction.var i)
+
+@[simp] lemma idgTable_seq (n : V) : Seq (idgTable n) := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₁ (def_idgTable 0)
+  case zero => simp
+  case succ n ih => rw [idgTable_succ]; exact ih.seqCons _
+
+@[simp] lemma idgTable_lh (n : V) : lh (idgTable n) = n + 1 := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₂ (DefinableFunction₁.comp (F := lh) (def_idgTable 0)) (by definability)
+  case zero => simp
+  case succ n ih => rw [idgTable_succ, Seq.lh_seqCons _ (idgTable_seq n), ih]
+
+lemma znth_idgTable_succ {n k : V} (hk : k < n + 1) :
+    znth (idgTable (n + 1)) k = znth (idgTable n) k := by
+  rw [idgTable_succ]
+  exact znth_seqCons_of_lt (idgTable_seq n) _ (by rw [idgTable_lh]; exact hk)
+
+/-- **Table stability**: every entry of the length-`(N+1)` table is the genuine `idg` value. -/
+lemma znth_idgTable_eq_idg : ∀ N : V, ∀ k ≤ N, znth (idgTable N) k = idg k := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · refine Definable.ball_le (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := znth) (def_idgTable 1) (DefinableFunction.var 0))
+      (def_idg 0)
+  case zero =>
+    intro k hk; rcases (nonpos_iff_eq_zero.mp hk) with rfl; rfl
+  case succ N ih =>
+    intro k hk
+    rcases eq_or_lt_of_le hk with rfl | hlt
+    · rfl
+    · rw [znth_idgTable_succ hlt]; exact ih k (le_iff_lt_succ.mpr hlt)
+
+/-- `idg c = idgNext c (idgTable (c-1))` for positive codes (the table-reduction unfolding). -/
+lemma idg_eq_idgNext {c : V} (hpos : 0 < c) : idg c = idgNext c (idgTable (c - 1)) := by
+  obtain ⟨M, rfl⟩ : ∃ M, c = M + 1 := ⟨c - 1, (sub_add_self_of_le (pos_iff_one_le.mp hpos)).symm⟩
+  have key : znth (idgTable (M + 1)) (M + 1) = idgNext (M + 1) (idgTable M) := by
+    rw [idgTable_succ]
+    have h := znth_seqCons_self (idgTable_seq M) (idgNext (M + 1) (idgTable M))
+    rwa [idgTable_lh] at h
+  simp only [idg, add_tsub_cancel_right, key]
+
+/-- `a < c ⟹ a ≤ c - 1` (a sub-index lands in the length-`c` table). -/
+lemma le_pred_of_lt {a c : V} (h : a < c) : a ≤ c - 1 := by
+  have hc : 0 < c := lt_of_le_of_lt (show (0 : V) ≤ a by simp) h
+  refine le_iff_lt_succ.mpr ?_
+  rwa [sub_add_self_of_le (pos_iff_one_le.mp hc)]
+
+/-! ### `idg` recursion equations (Buchholz §4) -/
+
+@[simp] lemma idg_zAtom (s : V) : idg (zAtom s) = 0 := by
+  rw [idg_eq_idgNext (by simp [zAtom]), idgNext]
+  simp [zTag_zAtom]
+
+@[simp] lemma idg_zIall (s a p d0 : V) : idg (zIall s a p d0) = idg d0 := by
+  rw [idg_eq_idgNext (by simp [zIall]), idgNext, if_pos (zTag_zIall s a p d0), zIallPrem_zIall]
+  exact znth_idgTable_eq_idg _ d0 (le_pred_of_lt (d0_lt_zIall s a p d0))
+
+@[simp] lemma idg_zIneg (s p d0 : V) : idg (zIneg s p d0) = idg d0 := by
+  rw [idg_eq_idgNext (by simp [zIneg]), idgNext, if_neg (by simp), if_pos (zTag_zIneg s p d0),
+    zInegPrem_zIneg]
+  exact znth_idgTable_eq_idg _ d0 (le_pred_of_lt (d0_lt_zIneg s p d0))
+
+@[simp] lemma idg_zInd (s at' p d0 d1 : V) :
+    idg (zInd s at' p d0 d1) = max (max (idg d0 - 1) (idg d1 - 1)) (irk p) := by
+  rw [idg_eq_idgNext (by simp [zInd]), idgNext, if_neg (by simp), if_neg (by simp),
+    if_pos (zTag_zInd s at' p d0 d1), zIndPrem0_zInd, zIndPrem1_zInd, zIndP_zInd,
+    znth_idgTable_eq_idg _ d0 (le_pred_of_lt (d0_lt_zInd s at' p d0 d1)),
+    znth_idgTable_eq_idg _ d1 (le_pred_of_lt (d1_lt_zInd s at' p d0 d1))]
 
 end GoodsteinPA.InternalZ
