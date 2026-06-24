@@ -1206,7 +1206,9 @@ def zKValid (s r ds : V) : Prop :=
   (∀ i < lh ds, zTag (znth ds i) = 2 → IsUFormula ℒₒᵣ (zInegF (znth ds i))) ∧
   (∀ i < lh ds, zTag (znth ds i) = 5 → IsUFormula ℒₒᵣ (zAxAllF (znth ds i))) ∧
   (∀ i < lh ds, zTag (znth ds i) = 6 → IsUFormula ℒₒᵣ (zAxNegF (znth ds i))) ∧
-  (∀ i < lh ds, IsUFormula ℒₒᵣ (chainAsucc ds i))
+  (∀ i < lh ds, IsUFormula ℒₒᵣ (chainAsucc ds i)) ∧
+  IsUFormula ℒₒᵣ (seqSucc s) ∧
+  (∀ k < lh (seqAnt s), IsUFormula ℒₒᵣ (znth (seqAnt s) k))
 
 /-- **Δ₁-definability of `zKValid`.** Bundles `isChainInfDef.sigma`/`.pi` with the bounded-`∀ i < lh ds`
 per-premise conditions: `iperm`/`¬iperm` (`ipermDef`, `𝚺₀`) read off `tp`/`fstIdx` of premise `i`, and
@@ -1216,7 +1218,7 @@ recovers the split. -/
 noncomputable def _root_.LO.FirstOrder.Arithmetic.zKValidDef : 𝚫₁.Semisentence 3 := .mkDelta
   (.mkSigma “s r ds.
     !(isChainInfDef.sigma) s r ds ∧
-    ∃ l, !lhDef l ds ∧ ∀ i < l,
+    (∃ l, !lhDef l ds ∧ ∀ i < l,
       ∃ zi, !znthDef zi ds i ∧ ∃ ti, !tpDef ti zi ∧
         ( (∃ fi, !fstIdxDef fi zi ∧ !ipermDef ti fi)
           ∧ ¬(!ipermDef ti s)
@@ -1225,10 +1227,13 @@ noncomputable def _root_.LO.FirstOrder.Arithmetic.zKValidDef : 𝚫₁.Semisente
             ∧ (tg = 2 → ∃ q, !zInegFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q)
             ∧ (tg = 5 → ∃ q, !zAxAllFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q)
             ∧ (tg = 6 → ∃ q, !zAxNegFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q) ) )
-        ∧ ∃ ca, !chainAsuccDef ca ds i ∧ !(isUFormula ℒₒᵣ).sigma ca ”)
+        ∧ ∃ ca, !chainAsuccDef ca ds i ∧ !(isUFormula ℒₒᵣ).sigma ca )
+    ∧ (∃ sc, !seqSuccDef sc s ∧ !(isUFormula ℒₒᵣ).sigma sc)
+    ∧ (∃ sa, !seqAntDef sa s ∧ ∃ la, !lhDef la sa ∧ ∀ k < la,
+        ∃ z, !znthDef z sa k ∧ !(isUFormula ℒₒᵣ).sigma z) ”)
   (.mkPi “s r ds.
     !(isChainInfDef.pi) s r ds ∧
-    ∀ l, !lhDef l ds → ∀ i < l,
+    (∀ l, !lhDef l ds → ∀ i < l,
       ∀ zi, !znthDef zi ds i → ∀ ti, !tpDef ti zi →
         ( (∀ fi, !fstIdxDef fi zi → !ipermDef ti fi)
           ∧ ¬(!ipermDef ti s)
@@ -1237,19 +1242,23 @@ noncomputable def _root_.LO.FirstOrder.Arithmetic.zKValidDef : 𝚫₁.Semisente
             ∧ (tg = 2 → ∀ q, !zInegFDef q zi → !(isUFormula ℒₒᵣ).pi q)
             ∧ (tg = 5 → ∀ q, !zAxAllFDef q zi → !(isUFormula ℒₒᵣ).pi q)
             ∧ (tg = 6 → ∀ q, !zAxNegFDef q zi → !(isUFormula ℒₒᵣ).pi q) ) )
-        ∧ ∀ ca, !chainAsuccDef ca ds i → !(isUFormula ℒₒᵣ).pi ca ”)
+        ∧ ∀ ca, !chainAsuccDef ca ds i → !(isUFormula ℒₒᵣ).pi ca )
+    ∧ (∀ sc, !seqSuccDef sc s → !(isUFormula ℒₒᵣ).pi sc)
+    ∧ (∀ sa, !seqAntDef sa s → ∀ la, !lhDef la sa → ∀ k < la,
+        ∀ z, !znthDef z sa k → !(isUFormula ℒₒᵣ).pi z) ”)
 
 instance zKValid_defined : 𝚫₁-Relation₃ (zKValid : V → V → V → Prop) via zKValidDef :=
   ⟨by intro v
       simp [zKValidDef, HierarchySymbol.Semiformula.val_sigma, znth_defined.iff, tp_defined.iff,
         fstIdx_defined.iff, iperm_defined.iff, zTag_defined.iff, zIallF_defined.iff,
         zInegF_defined.iff, zAxAllF_defined.iff, zAxNegF_defined.iff, chainAsucc_defined.iff,
-        lh_defined.iff],
+        seqSucc_defined.iff, seqAnt_defined.iff, lh_defined.iff],
    by intro v
       simp [zKValidDef, zKValid, HierarchySymbol.Semiformula.val_sigma, znth_defined.iff,
         tp_defined.iff, fstIdx_defined.iff, iperm_defined.iff, zTag_defined.iff, zIallF_defined.iff,
         zInegF_defined.iff, zAxAllF_defined.iff, zAxNegF_defined.iff, chainAsucc_defined.iff,
-        lh_defined.iff, forall_and, and_assoc, numeral_eq_natCast]⟩
+        seqSucc_defined.iff, seqAnt_defined.iff, lh_defined.iff, forall_and, and_assoc,
+        numeral_eq_natCast]⟩
 
 instance zKValid_definable : 𝚫₁-Relation₃ (zKValid : V → V → V → Prop) :=
   zKValid_defined.to_definable
@@ -4647,7 +4656,7 @@ finder's least-pair) + the i/j-side wrap helpers. -/
 lemma iord_descent_iR2_zK_of_valid {s r ds : V} (hds : Seq ds)
     (hmem : ∀ i < lh ds, ZDerivation (znth ds i)) (hvalid : zKValid s r ds) :
     icmp (iord (iR2 (zK s r ds))) (iord (zK s r ds)) = 0 := by
-  obtain ⟨hci, hperm0, hnperm0, hf1, hf2, hf5, hf6, _hsucc⟩ := hvalid
+  obtain ⟨hci, hperm0, hnperm0, hf1, hf2, hf5, hf6, _hsucc, _hssf, _hsaf⟩ := hvalid
   obtain ⟨j0, hj0, hAj0, hchain, hrank⟩ := hci
   -- Tr/Fa = the ⊥-instances; the well-formedness obligations discharge as in `..._of_chain_tp`.
   have hwfR : ∀ i ≤ j0, ∀ A, tp (znth ds i) = isymR A → 0 < irk A ∨ False :=
