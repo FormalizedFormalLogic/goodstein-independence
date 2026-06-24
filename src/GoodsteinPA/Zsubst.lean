@@ -593,6 +593,35 @@ lemma termFvSubst_succVar {a t e : V} (he : e ≠ a) :
   exact (IsSemiterm.func (L := ℒₒᵣ)).mpr ⟨hf,
     (IsSemitermVec.doubleton (L := ℒₒᵣ)).mpr ⟨IsSemiterm.fvar 0 e, by simp⟩⟩
 
+/-! ## Substitution-invariants for the `zK` chain-validity transfer (rung-1 step C.zK groundwork)
+
+`zKValid` subst-invariance reads the chain through `irk`/`tp`/`iperm`/`isChainInf`; the foundational
+fact is that `fvSubst` (substituting a closed term for a free variable) leaves the **logical complexity**
+`irk` unchanged — it only touches atomic subterms. -/
+
+/-- **`irk` is invariant under `fvSubst`** (`rk` counts logical structure; substituting a closed term for
+a free variable touches only atoms). The rank ingredient of `isChainInf` subst-invariance. -/
+lemma irk_fvSubst {a t : V} (ht : IsUTerm ℒₒᵣ t) {A : V} :
+    IsUFormula ℒₒᵣ A → irk (fvSubst ℒₒᵣ a t A) = irk A := by
+  apply IsUFormula.ISigma1.sigma1_succ_induction
+  · definability
+  · intro k r v hr hv
+    rw [fvSubst_rel hr hv, irk_rel hr (IsUTermVec.termFvSubst ht hv), irk_rel hr hv]
+  · intro k r v hr hv
+    rw [fvSubst_nrel hr hv, irk_nrel hr (IsUTermVec.termFvSubst ht hv), irk_nrel hr hv]
+  · simp
+  · simp
+  · intro p q hp hq ihp ihq
+    rw [fvSubst_and hp hq, irk_and (IsUFormula.fvSubst ht hp) (IsUFormula.fvSubst ht hq),
+      irk_and hp hq, ihp, ihq]
+  · intro p q hp hq ihp ihq
+    rw [fvSubst_or hp hq, irk_or (IsUFormula.fvSubst ht hp) (IsUFormula.fvSubst ht hq),
+      irk_or hp hq, ihp, ihq]
+  · intro p hp ihp
+    rw [fvSubst_all hp, irk_all (IsUFormula.fvSubst ht hp), irk_all hp, ihp]
+  · intro p hp ihp
+    rw [fvSubst_ex hp, irk_ex (IsUFormula.fvSubst ht hp), irk_ex hp, ihp]
+
 /-! ## `ZDerivation_zsubst` — eigenvariable substitution preserves Z-derivability (rung-1 step C)
 
 Substituting the closed term `t` for the free variable `^&a` throughout a Z-derivation `d ≤ a` yields a
