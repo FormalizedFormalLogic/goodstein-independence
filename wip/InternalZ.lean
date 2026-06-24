@@ -860,4 +860,32 @@ instance iord_definable' (Γ) : Γ-[m + 1]-Function₁ (iord : V → V) := iord_
 /-- `o(d) = ω_{dg(d)}(õ(d))` — unfolds the assignment to the tower over the pre-ordinal. -/
 lemma iord_eq (d : V) : iord d = iotower (iotil d) (idg d) := rfl
 
+/-! ## C3 — Thm 4.2 ordinal descent `o(d[n]) ≺ o(d)`, rule by rule
+
+Buchholz Thm 4.2: each reduction `d ↦ d[n]` strictly lowers `o`. We prove the per-rule ordinal
+inequalities directly from the C1 assignment equations and the `src/` order theory (Lemma 4.1
+monotonicity: `icmp_iotower_mono` same-degree, `icmp_iotower_lt_succ_of_le` degree-drop,
+`self_lt_iadd_one`). These are the mathematical core; wiring them through a concrete reduction
+operator `iR` (Def 3.2) is downstream plumbing.
+
+`icmp a b = 0` reads `a ≺ b`. -/
+
+/-- **I-rule descent** (same degree, `õ` drops by one successor): if `dg(e)=dg(d)` and
+`õ(d)=õ(e)+1`, then `o(e) ≺ o(d)`. The tower height is unchanged and the base strictly
+increases (`self_lt_iadd_one`), so `icmp_iotower_mono` gives the descent. This covers Buchholz's
+`I^a_∀xF`/`I_¬A` cases (`d[n]` has the same `dg`/`õ`-predecessor as the premise). -/
+lemma iord_descent_I {d e : V} (hg : idg e = idg d)
+    (ho : iotil d = iadd (iotil e) (ocOadd 0 1 0)) : icmp (iord e) (iord d) = 0 := by
+  rw [iord, iord, hg, ho]
+  exact icmp_iotower_mono (self_lt_iadd_one (iotil e) (iotil e) le_rfl) (idg d)
+
+/-- `o(d0) ≺ o(I_¬A d0)` — the `I_¬A` reduction `d[0] = d0` strictly lowers `o`. -/
+lemma iord_descent_zIneg (s p d0 : V) : icmp (iord d0) (iord (zIneg s p d0)) = 0 :=
+  iord_descent_I (by simp) (by simp)
+
+/-- `o(d0) ≺ o(I^a_∀xF d0)` at the level of the premise code `d0` (the `d[n]=d0(a/n)` reduct shares
+`d0`'s `dg`/`õ` once substitution-invariance of the assignment is established — a separate brick). -/
+lemma iord_descent_zIall (s a p d0 : V) : icmp (iord d0) (iord (zIall s a p d0)) = 0 :=
+  iord_descent_I (by simp) (by simp)
+
 end GoodsteinPA.InternalZ
