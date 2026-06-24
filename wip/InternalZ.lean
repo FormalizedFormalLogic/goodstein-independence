@@ -776,4 +776,88 @@ lemma iotil_eq_ioNext {c : V} (hpos : 0 < c) : iotil c = ioNext c (ioTable (c - 
     znth_ioTable_eq_iotil _ d0 (le_pred_of_lt (d0_lt_zInd s at' p d0 d1)),
     znth_ioTable_eq_iotil _ d1 (le_pred_of_lt (d1_lt_zInd s at' p d0 d1))]
 
+/-! ### iõ-fold over a premise sequence (for the variadic `K^r` equation), mirror `iseqMaxIdg` -/
+
+def iseqNaddIdgAux.blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y ds. y = 0”
+  succ := .mkSigma “y ih n ds.
+    ∃ di, !znthDef di ds n ∧ ∃ v, !iotilDef v di ∧ ∃ w, !ocOaddDef w v 1 0 ∧ !inaddDef y ih w”
+
+noncomputable def iseqNaddIdgAux.construction : PR.Construction V iseqNaddIdgAux.blueprint where
+  zero := fun _ ↦ 0
+  succ := fun x n ih ↦ inadd ih (ocOadd (iotil (znth (x 0) n)) 1 0)
+  zero_defined := .mk fun v ↦ by simp [iseqNaddIdgAux.blueprint]
+  succ_defined := .mk fun v ↦ by
+    simp [iseqNaddIdgAux.blueprint, znth_defined.iff, iotil_defined.iff, ocOadd_defined.iff,
+      inadd_defined.iff]
+
+/-- Partial iõ-fold: `iseqNaddIdgAux ds j = #_{i<j} ω^{iotil(znth ds i)}`. -/
+noncomputable def iseqNaddIdgAux (ds j : V) : V := iseqNaddIdgAux.construction.result ![ds] j
+
+@[simp] lemma iseqNaddIdgAux_zero (ds : V) : iseqNaddIdgAux ds 0 = 0 := by
+  simp [iseqNaddIdgAux, iseqNaddIdgAux.construction]
+
+@[simp] lemma iseqNaddIdgAux_succ (ds j : V) :
+    iseqNaddIdgAux ds (j + 1) = inadd (iseqNaddIdgAux ds j) (ocOadd (iotil (znth ds j)) 1 0) := by
+  simp [iseqNaddIdgAux, iseqNaddIdgAux.construction]
+
+def _root_.LO.FirstOrder.Arithmetic.iseqNaddIdgAuxDef : 𝚺₁.Semisentence 3 :=
+  iseqNaddIdgAux.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
+
+instance iseqNaddIdgAux_defined : 𝚺₁-Function₂ (iseqNaddIdgAux : V → V → V) via iseqNaddIdgAuxDef :=
+  .mk fun v ↦ by simp [iseqNaddIdgAux.construction.result_defined_iff, iseqNaddIdgAuxDef]; rfl
+
+instance iseqNaddIdgAux_definable : 𝚺₁-Function₂ (iseqNaddIdgAux : V → V → V) :=
+  iseqNaddIdgAux_defined.to_definable
+instance iseqNaddIdgAux_definable' (Γ) : Γ-[m + 1]-Function₂ (iseqNaddIdgAux : V → V → V) :=
+  iseqNaddIdgAux_definable.of_sigmaOne
+
+/-- **iõ-fold over a sequence**: `iseqNaddIdg ds = #_{i<lh ds} ω^{iotil(znth ds i)}`. -/
+noncomputable def iseqNaddIdg (ds : V) : V := iseqNaddIdgAux ds (lh ds)
+
+/-- **Table-fold = iõ-fold under dominance** (mirror `iseqMaxAux_idgTable_eq`). -/
+lemma iseqNaddAux_ioTable_eq {M ds : V} (hdom : ∀ i < lh ds, znth ds i ≤ M) :
+    ∀ j ≤ lh ds, iseqNaddAux (ioTable M) ds j = iseqNaddIdgAux ds j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · refine Definable.imp (by definability) ?_
+    refine Definable.comp₂
+      (DefinableFunction₃.comp (F := iseqNaddAux)
+        (DefinableFunction₁.comp (F := ioTable) (DefinableFunction.const M))
+        (DefinableFunction.const ds) (DefinableFunction.var 0))
+      (DefinableFunction₂.comp (F := iseqNaddIdgAux) (DefinableFunction.const ds)
+        (DefinableFunction.var 0))
+  case zero => intro _; simp
+  case succ j ih =>
+    intro hj
+    rw [iseqNaddAux_succ, iseqNaddIdgAux_succ, ih (le_trans (by simp) hj),
+      znth_ioTable_eq_iotil M (znth ds j) (hdom j (lt_of_lt_of_le (by simp) hj))]
+
+/-- **The variadic `K^r` pre-ordinal equation** (Buchholz §4):
+`õ(K^r_Π d0…dl) = ω^{õ d0} # … # ω^{õ dl} = #_{j} ω^{õ dⱼ}`. -/
+lemma iotil_zK (s r ds : V) (hds : Seq ds) : iotil (zK s r ds) = iseqNaddIdg ds := by
+  have hdom : ∀ i < lh ds, znth ds i ≤ zK s r ds - 1 := fun i hi ↦
+    le_pred_of_lt (lt_trans (lt_of_mem_rng (hds.znth hi)) (ds_lt_zK s r ds))
+  rw [iotil_eq_ioNext (by simp [zK]), ioNext, if_neg (by simp), if_neg (by simp), if_neg (by simp),
+    if_pos (zTag_zK s r ds), zKseq_zK, iseqNaddTab,
+    iseqNaddAux_ioTable_eq hdom (lh ds) (le_refl _), iseqNaddIdg]
+
+/-! ## `iord` (`o`) — the full ordinal assignment `o(d) = ω_{dg(d)}(õ(d))` (C1c)
+
+The `dg(d)`-fold ω-exponential tower (`iotower`, `src/InternalTower.lean`) over the pre-ordinal
+`õ(d)`. This is the [KB81] assignment Thm 4.2 descends on. -/
+noncomputable def iord (d : V) : V := iotower (iotil d) (idg d)
+
+def _root_.LO.FirstOrder.Arithmetic.iordDef : 𝚺₁.Semisentence 2 := .mkSigma
+  “y d. ∃ a, !iotilDef a d ∧ ∃ g, !idgDef g d ∧ !iotowerDef y a g”
+
+instance iord_defined : 𝚺₁-Function₁ (iord : V → V) via iordDef := .mk fun v ↦ by
+  simp [iordDef, iord, iotil_defined.iff, idg_defined.iff, iotower_defined.iff]
+
+instance iord_definable : 𝚺₁-Function₁ (iord : V → V) := iord_defined.to_definable
+instance iord_definable' (Γ) : Γ-[m + 1]-Function₁ (iord : V → V) := iord_definable.of_sigmaOne
+
+/-- `o(d) = ω_{dg(d)}(õ(d))` — unfolds the assignment to the tower over the pre-ordinal. -/
+lemma iord_eq (d : V) : iord d = iotower (iotil d) (idg d) := rfl
+
 end GoodsteinPA.InternalZ
