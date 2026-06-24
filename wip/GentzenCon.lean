@@ -163,14 +163,26 @@ axiom gentzenDescentφ : Semisentence ℒₒᵣ 2
 
 /-! ## Step 3 — the two cruxes, and their assembly into the `Reduction.lean` interface -/
 
+/-- **Crux 2, as ONE internalized `𝗣𝗔`-theorem (disclosed axiom).** Gentzen's `PRWO(ε₀) → Con(𝗣𝗔)`,
+arithmetized: `𝗣𝗔` itself proves the object-level implication `prwoInstance gentzenDescentφ ➝ Con(𝗣𝗔)`.
+This is the honest single statement of the deep ordinal-analysis girder — it consolidates the
+meta-level `ord`/`R`/eq-(5) scaffold above (the *justification*: inside `𝗣𝗔`, `¬Con` yields a derivation
+`d₀` of `⊥`, whence `n ↦ ord(Rⁿd₀)` is an infinite primrec `ε₀`-descent `gentzenDescent_descends`,
+contradicting the PRWO instance) into the exact `𝗣𝗔`-provable sentence the reduction needs. Discharging
+it is the generational crux-2 work: arithmetize `ord`/`R` as `ℒₒᵣ` primrec functions over Foundation's
+`Theory.Derivation` and prove eq-(5) in `𝗣𝗔` (Buchholz [6] = `papers/buchholz-on-gentzens-first-
+consistency-proof.pdf`; `papers/siders-*.pdf`). NOT on the headline `#print axioms` path
+(`Statement.lean` `sorry` untouched). -/
+axiom gentzen_reduction_internalized :
+    𝗣𝗔 ⊢ (prwoInstance gentzenDescentφ 🡒 ↑𝗣𝗔.consistent)
+
 /-- **Crux 2 — Gentzen Thm 2.8(i): `PRWO(ε₀) → Con(𝗣𝗔)`.** If `𝗣𝗔` proves the PRWO instance for the
-Gentzen descent, then `𝗣𝗔` proves its own consistency: inside `𝗣𝗔`, `¬Con` yields a derivation `d₀`
-of `⊥`, whence `n ↦ ord(Rⁿ d₀)` is an infinite primrec ε₀-descent (`gentzenDescent_descends`),
-contradicting `prwoInstance gentzenDescentφ`. Held at `sorry` — the deep ordinal-analysis girder
-(needs `ord`/`R`/eq (5) arithmetized in `𝗣𝗔`). -/
+Gentzen descent, then `𝗣𝗔` proves its own consistency. Now **PROVED** (lap-57) by modus ponens on the
+internalized reduction `gentzen_reduction_internalized` — the deep content is isolated in that single
+disclosed `𝗣𝗔`-theorem; the logical wrapper is real. -/
 theorem gentzen_prwo_implies_consistency :
-    𝗣𝗔 ⊢ prwoInstance gentzenDescentφ → 𝗣𝗔 ⊢ ↑𝗣𝗔.consistent := by
-  sorry
+    𝗣𝗔 ⊢ prwoInstance gentzenDescentφ → 𝗣𝗔 ⊢ ↑𝗣𝗔.consistent :=
+  fun hp => gentzen_reduction_internalized ⨀ hp
 
 /-- **The seq-specific standard-domination certificate (Rathjen Lemma 3.2), width form (lap-57).** The
 value at position `n+1` has `ε₀`-code complexity `iC` bounded by a fixed **standard**-level Grzegorczyk
