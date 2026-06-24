@@ -84,4 +84,61 @@ lemma icmp_iotower_mono {α β : V} (h : icmp α β = 0) :
   case succ n ih =>
     rw [iotower_succ, iotower_succ, icmp_omega_pow]; exact ih
 
+/-! ## Cross-level steps — the `dg`-drop descent cases of Thm 4.2
+
+When a reduction `d ↦ d[k]` lowers the degree (`dg(d[k]) = dg(d) - 1`, the `Ind`/`K^r` cases), the
+descent `o(d[k]) ≺ o(d)` crosses tower levels: `ω_m(α) ≺ ω_{m+1}(β)`. The crux is `α ≺ ω^α`
+(`self_lt_omega_pow`): one tower step strictly increases. Foundation: `ocExp c ≺ c` (a CNF code's
+leading exponent is `≺` the whole code). -/
+
+/-- **A CNF code's leading exponent is `≺` the code**: `icmp (ocExp c) c = 0` (NF `c ≠ 0`). Strong
+induction: the head exponent `ocExp c` compares to `c` via its own lead `ocExp (ocExp c) ≺ ocExp c`
+(IH on the smaller code `ocExp c`). -/
+lemma icmp_ocExp_self : ∀ w : V, ∀ c ≤ w, isNF c → c ≠ 0 → icmp (ocExp c) c = 0 := by
+  intro w
+  induction w using ISigma1.sigma1_order_induction
+  · definability
+  case ind w ih =>
+    intro c hcw hc hc0
+    rcases eq_or_ne (ocExp c) 0 with he | he
+    · rw [he]; exact icmp_zero_pos hc0
+    · have hlt : ocExp c < c := by
+        have h := ocExp_lt (ocExp c) (ocCoeff c) (ocTail c)
+        rwa [ocOadd_destruct hc0] at h
+      have hnf_exp : isNF (ocExp c) :=
+        ((isNF_ocOadd (ocExp c) (ocCoeff c) (ocTail c)).1
+          (by rw [ocOadd_destruct hc0]; exact hc)).2.1
+      rw [icmp_pos_pos he hc0]
+      have hkey : icmp (ocExp (ocExp c)) (ocExp c) = 0 :=
+        ih (ocExp c) (lt_of_lt_of_le hlt hcw) (ocExp c) le_rfl hnf_exp he
+      rw [hkey]; simp [thenV]
+
+/-- **`α ≺ ω^α`** (NF `α`): every code is strictly below its own `ω`-power. The lead exponent of `ω^α`
+is `α`, while `α`'s own lead exponent is `≺ α` (`icmp_ocExp_self`), so the head decides. -/
+lemma self_lt_omega_pow {α : V} (hα : isNF α) : icmp α (ocOadd α 1 0) = 0 := by
+  rcases eq_or_ne α 0 with rfl | h0
+  · exact icmp_zero_pos (ocOadd_ne_zero _ _ _)
+  · exact icmp_pos_ocOadd_lt_exp h0 (icmp_ocExp_self α α le_rfl hα h0)
+
+/-- **One tower step strictly increases**: `ω_m(α) ≺ ω_{m+1}(α)` (NF `α`). -/
+lemma icmp_iotower_lt_succ {α : V} (hα : isNF α) (m : V) :
+    icmp (iotower α m) (iotower α (m + 1)) = 0 := by
+  rw [iotower_succ]; exact self_lt_omega_pow (isNF_iotower hα m)
+
+/-- **The `dg`-drop descent step**: if `ω_m(α) ≼ ω_m(β)` (strictly `≺`, or `=`), then
+`ω_m(α) ≺ ω_{m+1}(β)`. Composes `≼` at level `m` with the strict step `ω_m(β) ≺ ω_{m+1}(β)`. This is
+the inequality Thm 4.2 needs whenever the reduction lowers the degree. -/
+lemma icmp_iotower_lt_succ_of_le {α β : V} (hβ : isNF β) (m : V)
+    (h : icmp (iotower α m) (iotower β m) = 0 ∨ iotower α m = iotower β m) :
+    icmp (iotower α m) (iotower β (m + 1)) = 0 := by
+  have hstep : icmp (iotower β m) (iotower β (m + 1)) = 0 := icmp_iotower_lt_succ hβ m
+  rcases h with hlt | heq
+  · set a := iotower α m
+    set b := iotower β m
+    set c := iotower β (m + 1)
+    exact icmp_trans (max a (max b c)) a (le_max_left _ _)
+      b (le_trans (le_max_left _ _) (le_max_right _ _))
+      c (le_trans (le_max_right _ _) (le_max_right _ _)) hlt hstep
+  · rw [heq]; exact hstep
+
 end GoodsteinPA.InternalONote
