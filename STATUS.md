@@ -5,9 +5,37 @@ DIRECTION/Gödel-II plan: `𝗣𝗔⊢γ →(§3, all primrec) 𝗣𝗔⊢PRWO(�
 Gödel II.** The §3 internal pipeline = internal Cor 3.4 (Grzegorczyk `g`-padding, internal level — DEEP,
 open) → internal Thm 3.5 (slow α → tight `C(βᵣ)≤r+1` — **COMPLETE lap 47**, `InternalThm35`) → Lemma 3.6
 (`nonterminating_internal`, done). The Buchholz free-X `peano_not_proves_TI` (axiom-clean) is a **banked
-asset, OFF the headline path** (free-X-TI ⊢ PRWO, wrong direction). · **Build**: 🟢 green (1318 jobs,
-`lake build GoodsteinPA`) · **Updated**: lap 59 (FRESH-MIND REVIEW — crux-2 brick: natural-sum `#` NF +
-order foundations; reprioritized ORDER over iC for the õ descent) · 2026-06-24 · `a23dd84`
+asset, OFF the headline path** (free-X-TI ⊢ PRWO, wrong direction). **Crux 1 (`γ→PRWO`) LANDED axiom-clean
+(lap 57); crux 2 (`PRWO→Con`, Buchholz-Z ordinal analysis arithmetized in PA) is the sole remaining math
+content — the 🟡 active frontier.** · **Build**: 🟢 green (1320 jobs, `lake build GoodsteinPA`) ·
+**Updated**: lap 62 (DEEP REFLECTION — endpoint hardened to axiom-free-or-abandoned; C0.5 Foundation→Z
+bridge surfaced; sequencing = build the OBJECTS before more assignment algebra) · 2026-06-24 · `3e40feb`
+
+> **⭐⭐ Lap-62 DEEP REFLECTION (read first).** See `REFLECTION-2026-06-24-lap62.md` (primary deliverable),
+> `HARVEST.md` (new), `E-EQ5-ROUTE-FINDING-2026-06-23.md` (judge). **Direction KEEP — trajectory is genuine
+> forward motion, not circling** (crux 1 landed lap 57; 58–61 correctly built crux-2's axiom-clean ordinal
+> engine; no repeated failed attempts). Re-verified kernel: headline `[propext, sorryAx, choice, Quot.sound]`
+> (0 math axioms), `goodsteinSentence_faithful` CLEAN `[propext, choice, Quot.sound]`, `peano_not_proves_TI`
+> CLEAN. **Three sharpenings the grind laps couldn't make:**
+> 1. **Endpoint HARDENED (operator directive supersedes lap-53).** Trevor 2026-06-23: **axiom-free or
+>    abandoned** — no cited `PRWO→Con` axiom on the headline; `PA_delta1Definable` must also be discharged.
+>    Lap-53's "honest endpoint = cited eq-5 axiom" is FORBIDDEN. This re-classifies **crux 2 from
+>    🟠-generational-cited-axiom → 🟡 project-scale frontier debt that must be fully discharged** — honest
+>    because **feasibility is SETTLED**: the Gentzen `Con(PA)` core was machine-checked in **Coq, Feb 2026**
+>    (Bryce–Goré, arXiv:2603.00487; judge finishability ~60% multi-month, up from ~35%).
+> 2. **C0.5 Foundation→Z bridge is LOAD-BEARING and was unplanned.** `gentzen_descent_of_inconsistent` is
+>    fired by `¬𝗣𝗔.Consistent M` (a **Foundation** ⊥-proof) but `iord`/`iR` live on **Buchholz-Z** — nothing
+>    converts one to the other (~1k-line milestone = Bryce–Goré's `Peano.v`). Bridge lemma TYPE written
+>    (`InternalZ.lean` footer); fork resolved to **(B) keep Buchholz-Z + bridge** (judge-endorsed; matches
+>    Bryce–Goré). The `GentzenCon.lean` footer's "arithmetize over Foundation's `Theory.Derivation`" plan is
+>    SUPERSEDED.
+> 3. **Sequencing: build the OBJECTS before more algebra.** The assignment interior (F1–F4, ω-tower,
+>    `idg`/`iõ`/`iord`, C3 templates) is rich, but the objects it operates on don't exist yet: **Fixpoint
+>    `ZDerivation`** (so derivations are inductive objects), **`iR`** (C2 reduction), **C0.5 bridge**. The C3
+>    templates are conditionals that cannot be instantiated per-rule without them. **Highest-value next =
+>    Fixpoint `ZDerivation : V → Prop`** (lap-61 NEXT #1, confirmed), then `iR`, then the bridge.
+> **PARALLEL FRONT:** discharge `PA_delta1Definable` (now mandatory). Filed `ON-LINE-REQUEST` for the
+> Bryce–Goré source (C0.5 blueprint).
 
 > **⭐ Lap-59 review summary (read first).** Re-verified the kernel from real `#print axioms` (headline
 > `peano_not_proves_goodstein` = `[propext, sorryAx, choice, Quot.sound]`, **0 math axioms**, honest
@@ -634,10 +662,10 @@ DIRECTION anti-fraud rule #1, which a future call must reconcile against Route A
 | theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
 | `peano_not_proves_goodstein` (headline, `Statement.lean`) | uncond. (Kirby–Paris) | `propext, sorryAx, choice, Quot.sound` (**lap-59 real, re-verified**) | 🔓 open `sorry` (LOCKED, anti-fraud) — **0** math axioms. Route A: reduces (axiom-clean) to `goodstein_implies_consistency` via `not_proves_of_implies_consistency` + Gödel II. |
-| `goodstein_implies_consistency` (Route-A girder, `src/Reduction`) | Rathjen Cor 3.7: `𝗣𝗔⊢γ → 𝗣𝗔⊢Con(𝗣𝗔)` | `sorryAx` + `PA_delta1Definable` (disclosed; the one open girder, type already forces the upstream axiom) | 🎯 **THE single open obligation = crux 1 ∘ crux 2 (ASYMMETRIC, lap 53).** §3 `γ→PRWO(ε₀)` = **crux 1, 🟡 TRACTABLE** (internal Cor 3.4 ~80% built → Thm 3.5 [DONE lap 47] → Lemma 3.6 [done]; a few laps to assembly). Gentzen Thm 2.8 `PRWO→Con(PA)` = **crux 2, 🟠 GENERATIONAL** (ord/R/eq-5 arithmetized in PA; no upstream shortcut). |
+| `goodstein_implies_consistency` (Route-A girder, `src/Reduction`) | Rathjen Cor 3.7: `𝗣𝗔⊢γ → 𝗣𝗔⊢Con(𝗣𝗔)` | `sorryAx` + `PA_delta1Definable` (disclosed; the one open girder, type already forces the upstream axiom) | 🎯 **THE single open obligation = crux 1 ∘ crux 2.** §3 `γ→PRWO(ε₀)` = **crux 1 — DONE, axiom-clean (lap 57)** via the width-FUNCTION refactor (`BlkRecF`/`StdCor34F`/`crux1_internal_run_F`); in `wip/GentzenCon.lean`. Gentzen Thm 2.8 `PRWO→Con(PA)` = **crux 2, 🟡 ACTIVE FRONTIER** (Buchholz-Z ordinal analysis arithmetized in PA; feasibility settled by Bryce–Goré Coq, Feb 2026; must be fully discharged — operator: axiom-free or abandoned). |
 | `not_proves_of_implies_consistency` / `peano_not_proves_consistency` (Phase 1, `src/Reduction`) | meta-reduction + Gödel II for `𝗣𝗔` | `propext, choice, Quot.sound, PA_delta1Definable` (**lap-47 real**) | 🟡 the **Route-A Gödel-II hook** (NO LONGER "rejected" — Route A is the chosen route, lap 46). `PA_delta1Definable` = Δ₁-definability of `𝗣𝗔`, a true theorem held as a disclosed `axiom` in the Foundation pin; the headline inherits it on this route. Discharge = upstream burndown. |
 | `InternalThm35.bbeta_*` / `iwtower_cofinal` (internal Thm 3.5, **lap 47**, `src/InternalThm35`) | Rathjen Thm 3.5: slow α → `β` with tight `C(βᵣ)≤r+1` | `propext, choice, Quot.sound` | 🟢 **CLEAN + COMPLETE** — `bbeta_isNF`/`bbeta_C_le`/`bbeta_desc_exists`; ω-tower cofinality `iwtower_cofinal` discharges the seam. Route-independent; consumed by Lemma 3.6 (`nonterminating_internal`). |
-| `GentzenCon.prwoInstance_faithful` / `prwoInstance_models_iff` / `eval_prec_internal` (PRWO formulation, **lap 50, REBUILT lap 56**, `wip/GentzenCon`) | Rathjen Thm 2.8: PRWO(ε₀) is the `ℒₒᵣ`-sentence "no ε₀-descent" | `propext, choice, Quot.sound` (**lap-56 real** — SHED the F-φ `native_decide` artifact) | 🟢 **CLEAN** — **lap 56:** rebuilt on the TRANSPARENT `prec_internal`/`InternalONote.icmp` (was the opaque `precφ`=`codeOfREPred₂`, std-model-only spec → wall-B opacity in nonstandard `M`). `prwoInstance_models_iff` (`M⊧prwoInstance seq ↔ ¬∀n y z, seq[y,n]→seq[z,n+1]→icmp z y=0`, every `M⊧IΣ₁`) now holds identically in nonstandard models; `_faithful` is its `M=ℕ` corollary. **natCode↔NF bridge DISSOLVED.** **Crux-2 deep core = `ord_R_descends` (eq 5, now icmp form) — 🟠 GENERATIONAL cited axiom**: arithmetizing Gentzen's ord/R inside PA is multi-year; Foundation's Hauptsatz is meta-level, no upstream shortcut. Scaffold isolates it to this one axiom + proves the meta-descent + 3 SEAM type-checks. |
+| `GentzenCon.prwoInstance_faithful` / `prwoInstance_models_iff` / `eval_prec_internal` (PRWO formulation, **lap 50, REBUILT lap 56**, `wip/GentzenCon`) | Rathjen Thm 2.8: PRWO(ε₀) is the `ℒₒᵣ`-sentence "no ε₀-descent" | `propext, choice, Quot.sound` (**lap-56 real** — SHED the F-φ `native_decide` artifact) | 🟢 **CLEAN** — **lap 56:** rebuilt on the TRANSPARENT `prec_internal`/`InternalONote.icmp` (was the opaque `precφ`=`codeOfREPred₂`, std-model-only spec → wall-B opacity in nonstandard `M`). `prwoInstance_models_iff` (`M⊧prwoInstance seq ↔ ¬∀n y z, seq[y,n]→seq[z,n+1]→icmp z y=0`, every `M⊧IΣ₁`) now holds identically in nonstandard models; `_faithful` is its `M=ℕ` corollary. **natCode↔NF bridge DISSOLVED.** **Crux-2 deep core (lap-58 reframe) = `gentzen_descent_of_inconsistent` (per-model semantic form: `¬𝗣𝗔.Consistent M → infinite ε₀-descent`) — 🟡 ACTIVE FRONTIER** (was 🟠 cited eq-5; reclassified lap 62 — feasibility settled by Bryce–Goré Coq, must be fully discharged). The lap-60/61 `wip/InternalZ.lean` engine (idg/iõ/iord + C3 descent templates, axiom-clean) discharges it once the C0 Fixpoint `ZDerivation`, `iR` (C2), and the **C0.5 Foundation→Z bridge** land. The 9 `GentzenCon` axioms: 5 ℕ-meta scaffold (`ord/R/derivesEmpty/...`, not consumed downstream) + 4 per-model (`gentzen_descent_of_inconsistent`/`gentzenDescentφ`/`_dominated`/`_realized` — the real targets). |
 | `peano_not_proves_goodstein_modulo_semantic` / `descentE` / `no_min_descent_absurd_of_goodstein` / `paLX_models_TI_of_PA_provable` (laps 30–44, `src/DescentSemantic`) | the free-X completeness route (Rathjen §3-on-X) | `sorryAx` + native_decide | 🚫 **OFF-PATH (lap 45 obstruction).** The free-X β-wall (`:582`) is the WRONG target — §3-on-X is structurally blocked (`not_dominated_of_diag_le`). Banked, not deleted; `wip/` candidate. NOT wired to `Statement.lean`. |
 | `eqLX_subset_paLX` / `eqAxiom_weakerThan_paLX` (lap 32, `src/DescentLift`) | `𝗘𝗤(LX) ⊆ paLX`, hence `𝗘𝗤 ⪯ paLX` | `propext, choice, Quot.sound` | 🟢 clean — every `𝗘𝗤(LX)` axiom is an `lMap Φ`-image of a `𝗣𝗔⁻` axiom or `relExt Xsym`; gives models of `paLX` genuine equality (enables the A2-pt2 `consequence_iff_eq` route). |
 | `peano_not_proves_TI` (Thm 5.6, lap 21, **F-φ DISCHARGED lap 28**, `src/Thm56`) | Gentzen 1943: `𝗣𝗔 ⊬ TI_≺(X)` | `propext, choice, Quot.sound, ONoteComp…native_decide.ax_1_5` (lap-30 real) | 🟢 **CLEAN** — full §5 chain C₂→C₁→D→F + D'; F-φ now a theorem (`ONoteComp`). Only 1 🟢 `native_decide` finite artifact. No `sorryAx`, no math axiom. |
@@ -667,17 +695,21 @@ DIRECTION anti-fraud rule #1, which a future call must reconcile against Route A
 | `lowerBound_hardy_selfcontained` (M6, **lap 6**) | **full Thm 17.1, only `α.NF`** | `propext, choice, Quot.sound` + 12 `native_decide` base-case `ax_*` | 🟢 clean — the `ax_*` are 🟢 finite Goodstein base-case witnesses (acceptable indefinitely) |
 | `hardy_add_comp`/`_collapse` (lap 8, `src/Hardy`) | `H_{γ+δ}=H_γ∘H_δ` (non-absorbing) | `propext, choice, Quot.sound` | 🟢 clean — banked Hardy infra (was for the dead Zekd thread; still a usable composition law) |
 | `hardy_comp_lt_goodsteinLength` (lap 8, `src/LowerBound`) | `H_α(H_e(m)) < G(m)` eventually | `propext, choice, Quot.sound` + the M6 `native_decide` base-cases | 🟢 clean — banked nested-index domination (reusable if a bridge ever needs a nested control index) |
-Math-axiom count (lap-53 real, build green 1313): the **headline** is still an honest `sorry`
+Math-axiom count (**lap-62 real, build green 1320**): the **headline** is still an honest `sorry`
 (`[propext, sorryAx, choice, Quot.sound]`, **0** math axioms). The single open obligation is
-`goodstein_implies_consistency` = **crux 1 (🟡, tractable, ~80% built) ∘ crux 2 (🟠, generational, cited
-eq-5)**. The Route-A Gödel-II hook carries the upstream `PA_delta1Definable` axiom (a true theorem,
-disclosed in the Foundation pin) — and `goodstein_implies_consistency` already carries it through its type.
-**Honest best-case headline = `[propext, choice, Quot.sound, PA_delta1Definable]`** (crux 1 built, crux 2
-cited eq-5, PA_delta1Definable upstream). This is NOT DIRECTION rule #1's strict trust base; the
-`PA_delta1Definable` cost is **inherent to Route A's Gödel II** (cannot be routed around) and needs an
-operator/review reconciliation — recommendation (lap 53): **accept the single disclosed upstream axiom**
-(it is orthogonal to the Goodstein mathematics) rather than hold the repo hostage to a Foundation TODO.
-The banked free-X `peano_not_proves_TI` (0 math axioms) does NOT chain to Con(PA) — keep, don't resurrect.
+`goodstein_implies_consistency` = **crux 1 (DONE, axiom-clean lap 57) ∘ crux 2 (🟡 active frontier)**.
+**⚠️ ENDPOINT HARDENED (operator directive, 2026-06-23 — supersedes the lap-53 recommendation):** this
+project builds **axiom-free** (trust base `propext, choice, Quot.sound` only) **or is abandoned.** The
+headline may **not** rest on a cited `PRWO→Con` (eq-5) axiom — crux 2 must be **fully discharged** — and
+`PA_delta1Definable` must **also** be discharged (it is no longer "accept as disclosed"; it is a mandatory
+sub-task). The lap-53 "honest best-case = `[propext, choice, Quot.sound, PA_delta1Definable]` with cited
+eq-5" is **FORBIDDEN.** This re-classifies **crux 2 from 🟠-generational → 🟡 project-scale frontier debt**,
+honest because **feasibility is SETTLED** (the Gentzen `Con(PA)` core was machine-checked in Coq, Feb 2026 —
+Bryce–Goré arXiv:2603.00487; ~60% finishable multi-month). Crux 2 lives in `wip/GentzenCon.lean`
+(sorry-free, **9 disclosed crux-2 axioms**) + `wip/InternalZ.lean` (0 sorry/0 axiom — the real axiom-clean
+implementation). The new C0.5 Foundation→Z bridge (judge Finding 3) is load-bearing; build order =
+**Fixpoint `ZDerivation` → `iR` → C0.5 bridge → per-rule C3**. The banked free-X `peano_not_proves_TI`
+(0 math axioms) does NOT chain to Con(PA) — keep, don't resurrect (see `HARVEST.md`).
 
 ## Pointers
 ROADMAP/plan: `EXPEDITION-PLAN.md`, `PHASE2-DECOMPOSITION.md` · **route resolution (lap 46): memory

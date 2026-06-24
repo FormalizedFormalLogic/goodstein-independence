@@ -1,5 +1,39 @@
 # Pending work — open obligations & attack paths
 
+## ⭐⭐⭐ Reflection — 2026-06-24 (lap 62, DEEP) — priorities reset
+
+> Full synthesis: `REFLECTION-2026-06-24-lap62.md`. Direction **KEEP** (genuine forward motion — crux 1
+> landed lap 57, 58–61 correctly built crux-2's axiom-clean ordinal engine). Three sharpenings below.
+
+**Endpoint HARDENED (operator directive, binding):** axiom-free (trust base only) **or abandoned**. No cited
+`PRWO→Con` axiom on the headline; `PA_delta1Definable` must also be discharged. Crux 2 reclassified
+🟠-generational → **🟡 must-fully-discharge frontier** (feasibility settled: Bryce–Goré Coq, Feb 2026).
+
+**KEEP:** Route A; crux 2 via **Buchholz-Z + C0.5 bridge** (fork B, judge-endorsed); the axiom-clean
+`InternalZ` engine; `GentzenCon` SEAM guards; the banked `peano_not_proves_TI` monument (do NOT touch).
+
+**STOP:** crux-2-as-cited-axiom as an endpoint (forbidden); refining `#`/tower/template algebra *before* the
+OBJECTS exist; the `GentzenCon` footer's "arithmetize over Foundation's `Theory.Derivation`" plan (superseded
+by Buchholz-Z — re-point that footer next edit).
+
+**HIGHEST-VALUE NEXT (objects-first, in order):**
+1. **Fixpoint `ZDerivation : V → Prop`** — THE unblocker (lap-61 NEXT #1, confirmed). Mirror Foundation's
+   `Theory.Derivation` via `HFS/Fixpoint.lean`'s `Fixpoint.Construction` over the `z*` codes
+   (`InternalZ.lean`). Unblocks structural induction (`isNF (iõ d)`), `iR` well-definedness, the
+   ⊥-characterization, and per-rule C3 instantiation.
+2. **`iR : V → V`** (C2 reduction `d ↦ d[0]`) — needed to state the per-rule descent on concrete reducts.
+3. **C0.5 Foundation→Z bridge** — `(𝗣𝗔).DerivationOf d ⊥ → ∃ z, ZDerivesEmpty z` (M-internal). Type written
+   in `InternalZ.lean` footer; blueprint = Bryce–Goré `Peano.v` (filed `ON-LINE-REQUEST` for the source).
+4. **per-rule C3 arithmetic** (Ind/Kʳ `õ`-comparisons, using `src/InternalNadd` F1–F4) — now has objects to
+   attach to.
+
+**PARALLEL FRONT (when crux-2 blocks):** discharge `PA_delta1Definable` upstream (now mandatory) — check the
+Foundation pin first (still an `axiom` in `Incompleteness/Examples.lean`?).
+
+**HYGIENE (low, non-blocking):** off-path `DescentSemantic.lean` free-X `sorry` + deps → `wip/` candidates.
+
+---
+
 ## ⭐⭐ Lap 59 — natural-sum `#` NF + order foundations DONE; ORDER>iC reprioritization
 
 `wip/InternalNadd.lean` (the lap-58 brick 1) now carries, all `lake env lean` green + axiom-clean

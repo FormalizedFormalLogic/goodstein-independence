@@ -937,4 +937,40 @@ lemma isNF_iseqNaddIdgAux {ds : V} (hall : ∀ i < lh ds, isNF (iotil (znth ds i
 lemma isNF_iseqNaddIdg {ds : V} (hall : ∀ i < lh ds, isNF (iotil (znth ds i))) :
     isNF (iseqNaddIdg ds) := isNF_iseqNaddIdgAux hall (lh ds) le_rfl
 
+/-! ## C0.5 — the Foundation→Z bridge (NEXT milestone, lap-62 reflection)
+
+**The missing seam** (judge `E-EQ5-ROUTE-FINDING-2026-06-23.md` Finding 3; lap-62 reflection
+Sharpening 2). The downstream crux-2 obligation `GentzenCon.gentzen_descent_of_inconsistent` is fired
+by `¬ 𝗣𝗔.Consistent M` — i.e. `M` carries a coded **Foundation** (Tait-calculus) derivation of `⊥`. But
+`iord`/`iR`/the C3 descent operate on **Buchholz system-Z** derivation codes (`zAtom`/`zIall`/`zIneg`/
+`zInd`/`zK`). **Nothing yet turns a Foundation ⊥-proof into a Z ⊥-derivation.** Without this bridge the
+whole C1/C3 engine has no input. Scale: Bryce–Goré's analogue (`aarondroidbryce/Gentzen`,
+`theories/Logic/Peano.v`, `PA_closed_PA_omega`) is ~1,215 lines — a milestone, not a footnote.
+
+**The bridge lemma type (write it now, prove it after the Fixpoint lands).** Once
+`ZDerivation : V → Prop` (the C0 Fixpoint) and `ZDerivesEmpty d := ZDerivation d ∧ fstIdx d = ⌜∅⌝`
+exist, the bridge is the `Z ⊇ PA`-on-closed-sequents simulation, M-internal (`Σ₁` / per-model):
+
+```
+-- C0.5 — Foundation⊥ ⟹ Z-derivation of the empty sequent (M-internal).
+theorem foundation_bot_to_Z_empty
+    {d : V} (hd : (𝗣𝗔).DerivationOf d (⊥ : Sentence ℒₒᵣ)) :
+    ∃ z : V, ZDerivesEmpty z
+```
+
+Decomposes (Bryce–Goré `Peano.v` blueprint) into:
+* **(i) axioms:** every Foundation/PA axiom is a Z-theorem — `⊢_Z Γ, A` for each `A ∈ 𝗣𝗔` (incl. the
+  induction scheme, handled by Z's `Ind` rule directly — the reason system Z is the right vehicle).
+* **(ii) rules:** every Foundation inference rule is Z-admissible (`Z`-cut, weakening, the logical rules
+  map to Z's `I`-rules / `K^r` chain rule).
+* **(iii) assembly:** structural recursion on the Foundation derivation `d` (codes of sub-derivations are
+  `<`-smaller — `HFS` course-of-values) builds the Z code `z` with `fstIdx z = fstIdx d`.
+
+Then `derivesEmpty` (the `GentzenCon` stand-in) is genuinely **populated** from `¬ 𝗣𝗔.Consistent M`:
+`¬Con ⟹ ∃ d, 𝗣𝗔.DerivationOf d ⊥ ⟹ (C0.5) ∃ z, ZDerivesEmpty z ⟹` feed the Z-descent `n ↦ iord(iR^[n] z)`.
+
+**Prereqs (build first, in order):** C0 Fixpoint `ZDerivation` → `iR` (C2) → this bridge. See
+`HARVEST.md`, `PENDING_WORK.md` lap-62, and `GentzenCon.lean` footer (to be re-pointed from Foundation's
+`Theory.Derivation` onto Buchholz-Z + this bridge). -/
+
 end GoodsteinPA.InternalZ
