@@ -841,4 +841,49 @@ lemma inadd_left_mono {X Y : V} (hX : isNF X) (hY : isNF Y) (hXY : icmp X Y = 0)
         have := ocTail_lt eg cg rg; rwa [ocTail_ocOadd] at this
       exact icmp_insTerm_mono (isNF_inadd hX rg hrg) (isNF_inadd hY rg hrg) (IH rg hrglt hrg)
 
+/-! ## F3 — a single term is `≺` the next ω-power (`ω^β·k ≺ ω^{β+1}`)
+
+The §4 `Ind`-rule assignment (`õ(d) = ω^{õ(d0)} # ω^{õ(d1)+1}`,
+`CRUX2-ORD-ASSIGNMENT-2026-06-24.md`) raises the right summand's exponent to the **ordinal successor**
+`β+1 = iadd β 1` (`1 = ocOadd 0 1 0`). The descent in case 4 needs that any single term with exponent `β`
+sits below `ω^{β+1}`; this reduces to the foundational fact `β ≺ β+1`. -/
+
+/-- **`β ≺ β + 1`** (any code is `≺` its ordinal successor). `iadd β 1` either bumps the trailing
+exponent-0 coefficient (`ec = 0` branch — strictly larger coefficient) or grafts a `1` at the bottom of
+the spine; in both cases the head/coeff above match and the comparison drops to the strictly-larger tail.
+Strong induction down the spine of `β`. -/
+lemma self_lt_iadd_one : ∀ w : V, ∀ a ≤ w, icmp a (iadd a (ocOadd 0 1 0)) = 0 := by
+  intro w
+  induction w using ISigma1.sigma1_order_induction
+  · definability
+  case ind w ih =>
+    intro a haw
+    rcases eq_or_ne a 0 with rfl | ha
+    · rw [iadd_zero_left]; exact icmp_zero_pos (ocOadd_ne_zero 0 1 0)
+    · obtain ⟨ec, n, rc, rfl⟩ : ∃ ec n rc, a = ocOadd ec n rc :=
+        ⟨_, _, _, (ocOadd_destruct ha).symm⟩
+      rw [iadd_ocOadd, if_neg (ocOadd_ne_zero (0 : V) 1 0), ocExp_ocOadd]
+      by_cases h0 : icmp ec 0 = 0
+      · exfalso
+        rcases eq_or_ne ec 0 with rfl | hec
+        · rw [icmp_zero_zero] at h0; exact absurd h0 (by simp)
+        · rw [icmp_pos_zero hec] at h0; exact absurd h0 (by simp)
+      · rw [if_neg h0]
+        by_cases h1 : icmp ec 0 = 1
+        · rw [if_pos h1, ocCoeff_ocOadd, ocTail_ocOadd, icmp_ocOadd, icmp_self ec ec le_rfl,
+            thenV_one_left]
+          have : cmpV n (n + 1) = 0 := cmpV_eq_zero.mpr (by simp)
+          rw [this]; simp [thenV]
+        · rw [if_neg h1, icmp_ocOadd, icmp_self ec ec le_rfl, cmpV_self, thenV_one_left,
+            thenV_one_left]
+          have hrc : rc < ocOadd ec n rc := by
+            have := ocTail_lt ec n rc; rwa [ocTail_ocOadd] at this
+          exact ih rc (lt_of_lt_of_le hrc haw) rc le_rfl
+
+/-- **F3 — a single term is `≺` the next ω-power**: `ω^β·k ≺ ω^{β+1}` where `β+1 = iadd β 1`. The
+leading exponents `β ≺ β+1` (`self_lt_iadd_one`) decide the lexicographic comparison outright. -/
+lemma icmp_term_lt_omega_succ (β k : V) :
+    icmp (ocOadd β k 0) (ocOadd (iadd β (ocOadd 0 1 0)) 1 0) = 0 := by
+  rw [icmp_ocOadd, self_lt_iadd_one β β le_rfl]; simp [thenV]
+
 end GoodsteinPA.InternalONote
