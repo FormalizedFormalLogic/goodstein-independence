@@ -4765,6 +4765,24 @@ lemma not_zKValid_iCritReduct (d i j v w : V) :
   · rw [iCritReductSeq_lh]; exact zero_lt_two
   · rw [znth_iCritReductSeq_zero]; rfl
 
+/-! ### The clean `RedSound` fragment: the I-rules (tags 1,2)
+
+`RedSound` asks only that the `iR2`-reduct be a genuine `ZDerivation` (the end-sequent matching is handled
+separately by `fstIdx_iR2_of_tag_Ind_or_K`). For the I-rules `iR2` returns the immediate sub-derivation
+`d0` (`iR2_zIall`/`iR2_zIneg`), which is a `ZDerivation` by inversion — so this fragment is unconditional.
+The I¬ case is Buchholz 14.23 `d[0] := d0` verbatim (no substitution); the I∀ case's GENUINE reduct is
+`d0(a/n)` but the ordinal-faithful `d0` is *also* a valid derivation (only its end-sequent differs, which
+`RedSound` does not constrain). These never arise on a `ZDerivesEmpty` code (tags 3,4), but a general
+tag-dispatched `RedSound` proof reuses them. -/
+
+/-- `RedSound` for the I∀ rule: `iR2 (zIall …) = d0` is a `ZDerivation`. -/
+lemma ZDerivation_iR2_zIall {s a p d0 : V} (hZ : ZDerivation (zIall s a p d0)) :
+    ZDerivation (iR2 (zIall s a p d0)) := by rw [iR2_zIall]; exact (zDerivation_zIall_inv hZ).1
+
+/-- `RedSound` for the I¬ rule: `iR2 (zIneg …) = d0` is a `ZDerivation` (Buchholz 14.23). -/
+lemma ZDerivation_iR2_zIneg {s p d0 : V} (hZ : ZDerivation (zIneg s p d0)) :
+    ZDerivation (iR2 (zIneg s p d0)) := by rw [iR2_zIneg]; exact (zDerivation_zIneg_inv hZ).1
+
 /-- Every premise of the Ind-reduct sequence `iIndReductSeq d0 d1 k = ⟨d1,…,d1,d0⟩` is a `ZDerivation`
 when `d0`,`d1` are. -/
 lemma znth_iIndReductSeq_ZDerivation {d0 d1 k : V} (h0 : ZDerivation d0) (h1 : ZDerivation d1) :

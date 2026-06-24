@@ -1,5 +1,54 @@
 # Pending work — open obligations & attack paths
 
+## ⭐⭐⭐ Lap 70 — Option B REFUTED in-kernel; Option A (genuine reduct) ladder
+
+**Finding (kernel-checked, `not_zKValid_iCritReduct`):** the ordinal-faithful `iR2` can NEVER preserve
+`zKValid` — `iCritReduct`'s premises are chains (`iCritAux = zK …`, `tp = isymRep`, permissible
+everywhere), breaking `zKValid`'s criticality conjunct, which the L3.1 redex finder requires. So lap-69's
+**Option B is dead**; **`RedSound` is false for the current `iR2`**. (Cross-checked vs Bryce–Goré: their
+`cut_elimination` is genuinely validity-preserving + shape-dispatched — `~/src/Gentzen/.../cut_elim.v`.)
+
+**Buchholz genuine reductions (Def 3.2 / 14.23–14.25, `scratchpad/buchholz-gentzen.txt:184-265`):**
+- **I¬ (14.23):** `d[0] := d0`. No substitution. ✅ `ZDerivation_iR2_zIneg` (lap 70, clean).
+- **I∀ (14.23):** `d[n] := d0(a/n)` — eigenvariable `a` replaced by numeral `n` throughout `d0`.
+- **Ind (14.24):** `d[0] := K^r⟨d0, d1(0), d1(1), …, d1(k−1)⟩`, `k = ⟦induction term⟧` (a numeral since
+  `d` closed). Premises: `d0 : Γ→F(0)`, `d1(i) : F(i),Γ→F(i+1)`. **Valid chain** because each premise
+  `d1(i)`'s antecedent formula `F(i)` is the PRIOR premise's succedent (threading ✓). Needs the
+  substituted copies `d1(a/i)` + count `k`.
+- **Chain/K (14.25):** the cut-elimination proper — shape-dispatched on the cut formula (atom/neg/∀).
+
+**THE foundational brick = eigenvariable substitution on Z-derivations `zsubst : V→V→V→V`** (substitute
+numeral `n` for free variable `a` throughout derivation `d`), Σ₁-definable + `ZDerivation`-preserving.
+Building blocks in hand: Foundation's coded-formula substitution `substs1 ℒₒᵣ t p` (used already in
+`irk_substs1`), rank-substitution-invariance `irk_substs1`, the peeling inversions
+`zDerivation_zIall_inv`/`_zIneg_inv`/`_zAxAll_inv`/`_zAxNeg_inv` (lap 70). `zsubst` is a Σ₁ recursion over
+the derivation tree applying `substs1` at each sequent — mirror the `iRTable`/`iCritReduct` blueprint
+recursions. Multi-lap; build incrementally.
+
+**LADDER (hardest-first within Option A; the Ind case is the more tractable wall — its reduct premises are
+genuine sub-derivations, NOT `Rep`, so not definitionally blocked like the K-case):**
+1. **`zsubst d a n`** — Σ₁ derivation substitution. Sub-bricks: per-node sequent substitution (apply
+   `substs1`/`Rew` to `fstIdx`), recurse on `zIallPrem`/`zInegPrem`/`zIndPrem0/1`/`zKseq`. Prove
+   `ZDerivation_zsubst` (preserves validity) + `iotil_zsubst = iotil` (õ substitution-invariance — the
+   ordinal side already assumes this; make it a theorem) + `fstIdx_zsubst` (the reduced end-sequent).
+2. **Genuine Ind reduct `iRInd'`** = `zK s (irk p) ⟨d0, zsubst d1 at' 0, …, zsubst d1 at' (k−1)⟩` with
+   `k = ⟦induction-term-of d⟧`. Build the substituted-block sequence (Σ₁ recursion reading `zsubst d1 at' i`
+   at index `i`; mirror `iRepeatSeq`). Prove `zKValid` of it — the **threading** is the genuine content
+   (premise `i+1`'s antecedent `F(i)` = premise `i`'s succedent; rank `irk(F(i)) ≤ r` via `irk_substs1`).
+3. **`RedSound` for tag 3 (Ind)** falls out: `ZDerivation (iRInd' …)` from step 2's `zKValid` +
+   `znth_…_ZDerivation`. Re-fit `iord_descent` to `iRInd'` (õ-side survives via `iotil_zsubst`).
+4. **Genuine critical reduct (K-case, tag 4)** = the cut-elimination, shape-dispatched (Bryce–Goré
+   `cut_elimination_atom`/`_neg`/`_lor`). Hardest. Peel R-redex (`zDerivation_zIall_inv` → `d0`, then
+   `zsubst` for I∀) + L-redex (`zDerivation_zAxAll_inv`/`_zAxNeg_inv`) and splice into a chain whose
+   premises are genuine (non-`Rep`) sub-derivations. Prove `zKValid` + re-fit `iord` descent.
+5. **`RedSound`** (`∀ d, ZDerivesEmpty d → ZDerivation (iR2 d)`) = tag-dispatch on 3 (Ind) + 4 (K).
+   Then `iord_iR2_iterate_descends` (already assembled) closes the descent → C0.5 bridge → `Reduction:68`.
+
+**Banked lap 70 (all axiom-clean, green 1321):** `zDerivation_zIall_inv`/`_zIneg_inv`/`_zAxAll_inv`/
+`_zAxNeg_inv`/`_zAtom_inv` (peeling), `not_zKValid_of_zK_premise`/`not_zKValid_iCritReduct` (obstruction),
+`ZDerivation_iR2_zIall`/`_zIneg` (clean I-rule `RedSound` fragment), `iCritReductSeq_lh`/
+`znth_iCritReductSeq_zero`.
+
 ## ⭐⭐ Lap 67 — THE tag-4 K-case descent ASSEMBLED (`iord_descent_iR2_zK_of_valid`, axiom-clean)
 
 The crux-2 ordinal nut for the chain/cut rule is machine-checked. `iord_descent_iR2_zK_of_valid`
