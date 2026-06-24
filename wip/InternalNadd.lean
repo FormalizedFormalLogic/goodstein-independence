@@ -535,4 +535,38 @@ exactly what the `icmp_insTerm_congr` merge branch needs. -/
 @[simp] lemma cmpV_add_left (k a b : V) : cmpV (k + a) (k + b) = cmpV a b := by
   simp only [cmpV, add_lt_add_iff_left, add_right_inj]
 
+/-! ## Strict `#`-monotonicity — helpers toward `icmp_insTerm_mono`
+
+The §4 descent needs: replacing a summand by a strictly smaller one strictly decreases the natural
+sum. Recast via `inadd_single_term`, this is the single-term insertion `≺`-preservation
+`icmp_insTerm_mono` (below, the crux). Two reusable helpers first. -/
+
+/-- **Lead exponent decides `≺`**: if both codes are positive and the leading exponents satisfy
+`icmp (ocExp X) (ocExp Y) = 0`, then `icmp X Y = 0` outright (the head dominates the lexicographic
+combine). -/
+lemma icmp_zero_of_exp_zero {X Y : V} (hX : X ≠ 0) (hY : Y ≠ 0)
+    (h : icmp (ocExp X) (ocExp Y) = 0) : icmp X Y = 0 := by
+  rw [icmp_pos_pos hX hY, h]; simp [thenV]
+
+/-- **Dominance (the `A = 0` base case of `icmp_insTerm_mono`)**: a lone term `ω^e·n` is `≺` its own
+insertion into any nonzero NF code `B` — inserting either prepends/keeps a `≻`-head, merges to a
+larger coefficient, or appends a positive tail. Three branches on `icmp e (ocExp B)`. -/
+lemma icmp_term_insTerm {e n B : V} (hB : isNF B) (hB0 : B ≠ 0) :
+    icmp (ocOadd e n 0) (insTerm e n B) = 0 := by
+  obtain ⟨eb, cb, rb, rfl⟩ : ∃ eb cb rb, B = ocOadd eb cb rb :=
+    ⟨_, _, _, (ocOadd_destruct hB0).symm⟩
+  have hcb : cb ≠ 0 := ((isNF_ocOadd eb cb rb).mp hB).1
+  rw [insTerm_ocOadd]
+  by_cases h2 : icmp e eb = 2
+  · rw [if_pos h2, icmp_ocOadd, icmp_self e e le_rfl, cmpV_self, icmp_zero_ocOadd]
+    simp [thenV]
+  · rw [if_neg h2]
+    by_cases h1 : icmp e eb = 1
+    · rw [if_pos h1, icmp_ocOadd, icmp_self e e le_rfl,
+        show cmpV n (n + cb) = 0 from cmpV_eq_zero.mpr (lt_add_of_pos_right n (pos_iff_ne_zero.mpr hcb))]
+      simp [thenV]
+    · have h0 : icmp e eb = 0 := icmp_eq_zero_of_ne h1 h2
+      rw [if_neg h1, icmp_ocOadd, h0]
+      simp [thenV]
+
 end GoodsteinPA.InternalONote
