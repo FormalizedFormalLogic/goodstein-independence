@@ -1070,6 +1070,24 @@ def isChainInf (s r ds : V) : Prop :=
       inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i') ∧
     (∀ i < j0, irk (chainAsucc ds i) ≤ r)
 
+/-- **Index form of `isChainInf`** — the `∀ B, inAnt B Γ → …` antecedent-threading condition rewritten
+as a bounded `∀ k < lh Γ, …(znth Γ k)` (since `inAnt B Γ ↔ ∃ k < lh Γ, znth Γ k = B`). This eliminates
+the only unbounded universal, so every quantifier in the matrix is bounded (the lone remaining `𝚺₁`
+content is `irk ≤ r`) — exactly the shape `isChainInfDef`'s `𝚫₁` Σ/Π cores match. -/
+lemma isChainInf_iff_idx {s r ds : V} : isChainInf s r ds ↔
+    ∃ j0 < lh ds,
+      (chainAsucc ds j0 = seqSucc s ∨ chainAsucc ds j0 = (^⊥ : V)) ∧
+      (∀ i ≤ j0, ∀ k < lh (chainAnt ds i),
+        inAnt (znth (chainAnt ds i) k) (seqAnt s) ∨
+        ∃ i' < i, znth (chainAnt ds i) k = chainAsucc ds i') ∧
+      (∀ i < j0, irk (chainAsucc ds i) ≤ r) := by
+  unfold isChainInf
+  constructor
+  · rintro ⟨j0, hj0, hA, hB, hC⟩
+    exact ⟨j0, hj0, hA, fun i hi k hk => hB i hi _ ⟨k, hk, rfl⟩, hC⟩
+  · rintro ⟨j0, hj0, hA, hB, hC⟩
+    exact ⟨j0, hj0, hA, fun i hi Bv ⟨k, hk, hBv⟩ => hBv ▸ hB i hi k hk, hC⟩
+
 /-! ### Σ₁-definability of the sequent layer (`seqAnt`/`seqSucc`/`chainAsucc`/`chainAnt`)
 
 The chain-validity ingredients toward `zKValid`'s arithmetization (the `ZPhi` `zK`-disjunct cascade).
