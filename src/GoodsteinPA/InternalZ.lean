@@ -3970,6 +3970,27 @@ noncomputable def zAxReduct (d : V) : V :=
   rw [zAxReduct, if_neg (by simp [zTag_zAxNeg]), if_pos (by simp [zTag_zAxNeg])]
   simp
 
+/-- **Σ₁-definability of `zAxReduct`** (`zAxAllF d = π₁(zRest d)`, `zAxNegF d = zRest d`; `zAx1` via its
+graph). The arithmetization that lets `zAxReduct` thread through the `iRNext`/`iCritReduct` tag-4
+definition. -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.zAxReductDef : 𝚺₁.Semisentence 2 := .mkSigma
+  “y d. ∃ t, !zTagDef t d ∧
+    ( (t = 5 ∧ ∃ s, !fstIdxDef s d ∧ ∃ r, !zRestDef r d ∧ ∃ p, !pi₁Def p r ∧ !zAx1Graph y s p)
+    ∨ (t = 6 ∧ ∃ s, !fstIdxDef s d ∧ ∃ p, !zRestDef p d ∧ !zAx1Graph y s p)
+    ∨ (t ≠ 5 ∧ t ≠ 6 ∧ y = d) )”
+
+set_option maxHeartbeats 800000 in
+instance zAxReduct_defined : 𝚺₁-Function₁ (zAxReduct : V → V) via zAxReductDef := .mk fun v ↦ by
+  simp [zAxReductDef, zAxReduct, zTag_defined.iff, fstIdx_defined.iff, zRest_defined.iff,
+    pi₁_defined.iff, zAx1_defined.iff, zAxAllF, zAxNegF, numeral_eq_natCast]
+  by_cases h5 : zTag (v 1) = 5
+  · simp [h5]
+  · by_cases h6 : zTag (v 1) = 6
+    · simp [h5, h6]
+    · simp [h5, h6]
+
+instance zAxReduct_definable : 𝚺₁-Function₁ (zAxReduct : V → V) := zAxReduct_defined.to_definable
+
 /-- **j-side bundle via `zAxReduct`, ∀-axiom case**: the reduct `zAxReduct (Ax^{∀p,k})` satisfies the
 `iRedDescent` bundle (the K-case nut's j-side fact, packaged on the genuine reduct function). -/
 lemma iRedDescent_zAxReduct_zAxAll {s p k : V} (hp : IsUFormula ℒₒᵣ p) :
