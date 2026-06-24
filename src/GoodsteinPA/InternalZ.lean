@@ -3771,6 +3771,21 @@ instance : (zconstruction (V := V)).StrongFinite where
 `d` is a Z-derivation iff it is built by one Z-rule from premises that are themselves Z-derivations. -/
 def ZDerivation (d : V) : Prop := (zconstruction (V := V)).Fixpoint ![] d
 
+/-- **`𝚫₁`-definability of `ZDerivation`** (the strong-finite Fixpoint definability, mirror Foundation's
+`Theory.Derivation.defined`). Needed as the motive-definability for `zDerivation_induction`-driven proofs
+that recurse on a `𝚺₁`-function of the derivation (e.g. `ZDerivation_zsubst`). -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.zDerivationDef : 𝚫₁.Semisentence 1 :=
+  zblueprint.fixpointDefΔ₁
+
+instance ZDerivation_defined : 𝚫₁-Predicate (ZDerivation : V → Prop) via zDerivationDef :=
+  (zconstruction (V := V)).fixpoint_definedΔ₁
+
+instance ZDerivation_definable : 𝚫₁-Predicate (ZDerivation : V → Prop) :=
+  ZDerivation_defined.to_definable
+
+instance ZDerivation_definable' (Γ) : Γ-[m + 1]-Predicate (ZDerivation : V → Prop) :=
+  ZDerivation_definable.of_deltaOne
+
 /-- **Recursion equation** for `ZDerivation` (the `Fixpoint.Construction.case`): a code is a
 Z-derivation iff `ZPhi` holds of it over the set of Z-derivations. -/
 lemma zDerivation_iff {d : V} : ZDerivation d ↔ ZPhi {z | ZDerivation z} d :=
