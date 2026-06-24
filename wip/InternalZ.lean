@@ -1513,6 +1513,25 @@ theorem iord_iR_descent_I :
     · rintro (h | h) <;> simp at h
     · rintro (h | h) <;> simp at h
 
+/-- **`õ` of a genuine Z-derivation is a valid CNF code** (`isNF (iotil d)` for every `ZDerivation d`).
+The structural fact behind the `isNF (iotil ·)` premise of `iord_descent_dgdrop`/`iord_descent_cut`:
+proved by `ZDerivation` structural induction (the C0 Fixpoint), each rule discharged by its
+per-constructor NF lemma (`isNF_iotil_z{Atom,Iall,Ineg,Ind}`, and `isNF_iseqNaddIdg` via `iotil_zK`
+for the variadic `K^r`). This finally **populates the NF side-condition on real derivation objects**,
+removing the standing "discharged later via `ZDerivation`" caveat from the descent templates. -/
+theorem isNF_iotil_of_zDerivation : ∀ d : V, ZDerivation d → isNF (iotil d) := by
+  apply zDerivation_induction (P := fun d ↦ isNF (iotil d))
+  · definability
+  · intro C hC d hphi
+    rcases hphi with ⟨s, rfl⟩ | ⟨s, a, p, d0, rfl, h0⟩ | ⟨s, p, d0, rfl, h0⟩ |
+      ⟨s, at', p, d0, d1, rfl, h0, h1⟩ | ⟨s, r, ds, rfl, hseq, hall⟩
+    · exact isNF_iotil_zAtom s
+    · exact isNF_iotil_zIall (hC d0 h0).2
+    · exact isNF_iotil_zIneg (hC d0 h0).2
+    · exact isNF_iotil_zInd (hC d0 h0).2 (hC d1 h1).2
+    · rw [iotil_zK s r ds hseq]
+      exact isNF_iseqNaddIdg (fun i hi => (hC (znth ds i) (hall i hi)).2)
+
 /-! ## C0.5 — the Foundation→Z bridge (NEXT milestone, lap-62 reflection)
 
 **The missing seam** (judge `E-EQ5-ROUTE-FINDING-2026-06-23.md` Finding 3; lap-62 reflection
