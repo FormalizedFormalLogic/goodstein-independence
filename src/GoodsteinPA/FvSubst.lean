@@ -139,6 +139,112 @@ lemma termFvSubstVec_cons {kk u us : V} (hu : IsUTerm L u) (hus : IsUTermVec L k
 
 end termFvSubst
 
+/-! ## Formula-level free-variable substitution `^&a ↦ t`
+
+The recursion parameter bundles the eigenvariable index and the replacement term as a pair
+`⟪a, t⟫` (projected by `π₁`/`π₂` inside the atom case). The replacement `t` in our use is always a
+*closed* term (a numeral), so going under a quantifier leaves it unchanged — `allChanges`/
+`exsChanges` are the identity. (A general `t` would need `termBShift` here; we don't need it.) -/
+
+namespace FvSubst
+
+variable (L)
+
+noncomputable def blueprint : UformulaRec1.Blueprint where
+  rel    := .mkSigma “y param k R v.
+    ∃ a, !pi₁Def a param ∧ ∃ tt, !pi₂Def tt param ∧
+      ∃ v', !(termFvSubstVecGraph L) v' a tt k v ∧ !qqRelDef y k R v'”
+  nrel   := .mkSigma “y param k R v.
+    ∃ a, !pi₁Def a param ∧ ∃ tt, !pi₂Def tt param ∧
+      ∃ v', !(termFvSubstVecGraph L) v' a tt k v ∧ !qqNRelDef y k R v'”
+  verum  := .mkSigma “y param. !qqVerumDef y”
+  falsum := .mkSigma “y param. !qqFalsumDef y”
+  and    := .mkSigma “y param p₁ p₂ y₁ y₂. !qqAndDef y y₁ y₂”
+  or     := .mkSigma “y param p₁ p₂ y₁ y₂. !qqOrDef y y₁ y₂”
+  all    := .mkSigma “y param p₁ y₁. !qqAllDef y y₁”
+  exs    := .mkSigma “y param p₁ y₁. !qqExsDef y y₁”
+  allChanges := .mkSigma “param' param. param' = param”
+  exsChanges := .mkSigma “param' param. param' = param”
+
+noncomputable def construction : UformulaRec1.Construction V (blueprint L) where
+  rel    (param k R v) := ^rel k R (termFvSubstVec L (π₁ param) (π₂ param) k v)
+  nrel   (param k R v) := ^nrel k R (termFvSubstVec L (π₁ param) (π₂ param) k v)
+  verum  _             := ^⊤
+  falsum _             := ^⊥
+  and    _ _ _ y₁ y₂   := y₁ ^⋏ y₂
+  or     _ _ _ y₁ y₂   := y₁ ^⋎ y₂
+  all    _ _ y₁        := ^∀ y₁
+  exs    _ _ y₁        := ^∃ y₁
+  allChanges param     := param
+  exsChanges param     := param
+  rel_defined := .mk fun v ↦ by
+    simp [blueprint, pi₁_defined.iff, pi₂_defined.iff, termFvSubstVec.defined.iff]
+  nrel_defined := .mk fun v ↦ by
+    simp [blueprint, pi₁_defined.iff, pi₂_defined.iff, termFvSubstVec.defined.iff]
+  verum_defined := .mk fun v ↦ by simp [blueprint]
+  falsum_defined := .mk fun v ↦ by simp [blueprint]
+  and_defined := .mk fun v ↦ by simp [blueprint]
+  or_defined := .mk fun v ↦ by simp [blueprint]
+  all_defined := .mk fun v ↦ by simp [blueprint]
+  exs_defined := .mk fun v ↦ by simp [blueprint]
+  allChanges_defined := .mk fun v ↦ by simp [blueprint]
+  exChanges_defined := .mk fun v ↦ by simp [blueprint]
+
+end FvSubst
+
+section fvSubst
+
+open FvSubst
+
+variable (L)
+
+/-- Replace the free variable `^&a` by the coded term `t` throughout the coded formula `p`. -/
+noncomputable def fvSubst (a t p : V) : V := (construction L).result L ⟪a, t⟫ p
+
+noncomputable def fvSubstGraph : 𝚺₁.Semisentence 4 := .mkSigma
+  “y a t p. ∃ param, !pairDef param a t ∧ !((blueprint L).result L) y param p”
+
+variable {L}
+
+variable {a t : V}
+
+instance fvSubst.defined : 𝚺₁-Function₃[V] (fvSubst L) via fvSubstGraph L := .mk fun v ↦ by
+  simp [fvSubstGraph, fvSubst, (construction L).result_defined.iff]
+
+instance fvSubst.definable : 𝚺₁-Function₃[V] (fvSubst L) := fvSubst.defined.to_definable
+
+instance fvSubst.definable' : Γ-[m + 1]-Function₃[V] (fvSubst L) := fvSubst.definable.of_sigmaOne
+
+@[simp] lemma fvSubst_rel {k R v} (hR : L.IsRel k R) (hv : IsUTermVec L k v) :
+    fvSubst L a t (^rel k R v) = ^rel k R (termFvSubstVec L a t k v) := by
+  simp [fvSubst, construction, hR, hv]
+
+@[simp] lemma fvSubst_nrel {k R v} (hR : L.IsRel k R) (hv : IsUTermVec L k v) :
+    fvSubst L a t (^nrel k R v) = ^nrel k R (termFvSubstVec L a t k v) := by
+  simp [fvSubst, construction, hR, hv]
+
+@[simp] lemma fvSubst_verum : fvSubst L a t ^⊤ = ^⊤ := by simp [fvSubst, construction]
+
+@[simp] lemma fvSubst_falsum : fvSubst L a t ^⊥ = ^⊥ := by simp [fvSubst, construction]
+
+@[simp] lemma fvSubst_and {p q} (hp : IsUFormula L p) (hq : IsUFormula L q) :
+    fvSubst L a t (p ^⋏ q) = fvSubst L a t p ^⋏ fvSubst L a t q := by
+  simp [fvSubst, construction, hp, hq]
+
+@[simp] lemma fvSubst_or {p q} (hp : IsUFormula L p) (hq : IsUFormula L q) :
+    fvSubst L a t (p ^⋎ q) = fvSubst L a t p ^⋎ fvSubst L a t q := by
+  simp [fvSubst, construction, hp, hq]
+
+@[simp] lemma fvSubst_all {p} (hp : IsUFormula L p) :
+    fvSubst L a t (^∀ p) = ^∀ (fvSubst L a t p) := by
+  simp [fvSubst, construction, hp]
+
+@[simp] lemma fvSubst_ex {p} (hp : IsUFormula L p) :
+    fvSubst L a t (^∃ p) = ^∃ (fvSubst L a t p) := by
+  simp [fvSubst, construction, hp]
+
+end fvSubst
+
 end
 
 end LO.FirstOrder.Arithmetic.Bootstrapping
