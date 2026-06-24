@@ -197,6 +197,69 @@ lemma termFvSubst_termSubst (ht : IsSemiterm L 0 t) {n m w u : V}
       nth_termSubstVec htsf.isUTerm hi,
       nth_termFvSubstVec hts.isUTerm hi, ih i hi]
 
+/-- A **closed term is fixed by bound-variable shifting** (`termBShift` raises bound vars; a closed term
+has none). Needed for the binder case of the formula substitution lemma. -/
+lemma termBShift_eq_self_of_closed (ht : IsSemiterm L 0 t) : termBShift L t = t := by
+  apply IsSemiterm.induction 𝚺 ?_ ?_ ?_ ?_ t ht
+  · definability
+  · intro z hz; exact absurd hz (by simp)
+  · intro x; simp
+  · intro k f v hf hv ih
+    rw [termBShift_func hf hv.isUTerm]
+    simp only [qqFunc_inj, true_and]
+    apply nth_ext' k (by rw [len_termBShiftVec hv.isUTerm]) (by simp [hv.lh])
+    intro i hi
+    rw [nth_termBShiftVec hv.isUTerm hi, ih i hi]
+
+/-- **`termFvSubst` commutes with bound-variable shift `termBShift`** (closed `t`). The binder-traversal
+input to the formula substitution lemma: under a quantifier `subst` applies `qVec` (= `^#0 ∷ bShift`),
+and `fvSubst`'s identity-`allChanges` must agree with that shift. -/
+lemma termFvSubst_termBShift (ht : IsSemiterm L 0 t) {n u : V} (hu : IsSemiterm L n u) :
+    termFvSubst L a t (termBShift L u) = termBShift L (termFvSubst L a t u) := by
+  apply IsSemiterm.induction 𝚺 ?_ ?_ ?_ ?_ u hu
+  · definability
+  · intro z hz; simp
+  · intro x
+    by_cases h : x = a
+    · subst h; simp [termBShift_eq_self_of_closed ht]
+    · simp [h]
+  · intro k f v hf hv ih
+    have hvf : IsSemitermVec L k n (termFvSubstVec L a t k v) :=
+      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hv
+    rw [termBShift_func hf hv.isUTerm,
+      termFvSubst_func hf hv.termBShiftVec.isUTerm,
+      termFvSubst_func hf hv.isUTerm,
+      termBShift_func hf hvf.isUTerm]
+    simp only [qqFunc_inj, true_and]
+    apply nth_ext' k
+      (by rw [len_termFvSubstVec hv.termBShiftVec.isUTerm])
+      (by rw [len_termBShiftVec hvf.isUTerm])
+    intro i hi
+    rw [nth_termFvSubstVec hv.termBShiftVec.isUTerm hi,
+      nth_termBShiftVec hv.isUTerm hi,
+      nth_termBShiftVec hvf.isUTerm hi,
+      nth_termFvSubstVec hv.isUTerm hi, ih i hi]
+
+/-- **`termFvSubstVec` commutes with `qVec`** (closed `t`): the cons of `^#0` survives, and the shifted
+tail commutes by `termFvSubst_termBShift`. This is the equation the binder case of the formula
+substitution lemma `fvSubst_subst` reduces to. -/
+lemma termFvSubstVec_qVec (ht : IsSemiterm L 0 t) {n m w : V} (hw : IsSemitermVec L n m w) :
+    termFvSubstVec L a t (n + 1) (qVec L w) = qVec L (termFvSubstVec L a t n w) := by
+  have hfw : IsSemitermVec L n m (termFvSubstVec L a t n w) :=
+    IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hw
+  have hqw : IsUTermVec L (n + 1) (qVec L w) := hw.qVec.isUTerm
+  apply nth_ext' (n + 1)
+    (by rw [len_termFvSubstVec hqw])
+    (by rw [hfw.qVec.isUTerm.lh])
+  intro i hi
+  rw [nth_termFvSubstVec hqw hi]
+  rcases zero_or_succ i with rfl | ⟨j, rfl⟩
+  · simp [qVec]
+  · have hj : j < n := by simpa using hi
+    simp only [qVec, hw.lh, hfw.lh, nth_adjoin_succ]
+    rw [nth_termBShiftVec hw.isUTerm hj, nth_termBShiftVec hfw.isUTerm hj,
+      nth_termFvSubstVec hw.isUTerm hj, termFvSubst_termBShift ht (hw.nth hj)]
+
 end termFvSubst
 
 /-! ## Formula-level free-variable substitution `^&a ↦ t`
@@ -369,6 +432,84 @@ lemma fvSubst_neg (ht : IsUTerm L t) {p} (hp : IsUFormula L p) :
     simp [hp, hq, hp.neg, hq.neg, IsUFormula.fvSubst ht hp, IsUFormula.fvSubst ht hq, ihp, ihq]
   · intro p hp ihp; simp [hp, hp.neg, IsUFormula.fvSubst ht hp, ihp]
   · intro p hp ihp; simp [hp, hp.neg, IsUFormula.fvSubst ht hp, ihp]
+
+/-- **Formula-level substitution lemma**: free-variable substitution `^&a ↦ t` (closed `t`) commutes
+with bound-variable substitution `subst w`. The renamed vector `termFvSubstVec a t n w` is applied to
+the renamed formula. The atom cases reduce to the term-level `termFvSubst_termSubst`; the binder cases
+to `termFvSubstVec_qVec`. Proved by `IsSemiformula.pi1_structural_induction`, mirror of `substs_substs`. -/
+lemma fvSubst_subst (ht : IsSemiterm L 0 t) {n m w p : V}
+    (hp : IsSemiformula L n p) (hw : IsSemitermVec L n m w) :
+    fvSubst L a t (subst L w p) = subst L (termFvSubstVec L a t n w) (fvSubst L a t p) := by
+  refine IsSemiformula.pi1_structural_induction
+    (P := fun n p => ∀ m w, IsSemitermVec L n m w →
+      fvSubst L a t (subst L w p) = subst L (termFvSubstVec L a t n w) (fvSubst L a t p))
+    ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ hp m w hw
+  · definability
+  · intro n k R v hR hv m w hw
+    have hvf : IsSemitermVec L k n (termFvSubstVec L a t k v) :=
+      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hv
+    rw [substs_rel hR hv.isUTerm, fvSubst_rel hR (hw.termSubstVec hv).isUTerm,
+      fvSubst_rel hR hv.isUTerm, substs_rel hR hvf.isUTerm]
+    simp only [qqRel_inj, true_and]
+    apply nth_ext' k
+      (by rw [len_termFvSubstVec (hw.termSubstVec hv).isUTerm])
+      (by rw [len_termSubstVec hvf.isUTerm])
+    intro i hi
+    rw [nth_termFvSubstVec (hw.termSubstVec hv).isUTerm hi, nth_termSubstVec hv.isUTerm hi,
+      nth_termSubstVec hvf.isUTerm hi, nth_termFvSubstVec hv.isUTerm hi,
+      termFvSubst_termSubst ht hw (hv.nth hi)]
+  · intro n k R v hR hv m w hw
+    have hvf : IsSemitermVec L k n (termFvSubstVec L a t k v) :=
+      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hv
+    rw [substs_nrel hR hv.isUTerm, fvSubst_nrel hR (hw.termSubstVec hv).isUTerm,
+      fvSubst_nrel hR hv.isUTerm, substs_nrel hR hvf.isUTerm]
+    simp only [qqNRel_inj, true_and]
+    apply nth_ext' k
+      (by rw [len_termFvSubstVec (hw.termSubstVec hv).isUTerm])
+      (by rw [len_termSubstVec hvf.isUTerm])
+    intro i hi
+    rw [nth_termFvSubstVec (hw.termSubstVec hv).isUTerm hi, nth_termSubstVec hv.isUTerm hi,
+      nth_termSubstVec hvf.isUTerm hi, nth_termFvSubstVec hv.isUTerm hi,
+      termFvSubst_termSubst ht hw (hv.nth hi)]
+  · intro n m w hw; simp
+  · intro n m w hw; simp
+  · intro n p q hp hq ihp ihq m w hw
+    rw [substs_and hp.isUFormula hq.isUFormula,
+      fvSubst_and (hp.subst hw).isUFormula (hq.subst hw).isUFormula,
+      fvSubst_and hp.isUFormula hq.isUFormula,
+      substs_and (IsUFormula.fvSubst ht.isUTerm hp.isUFormula)
+        (IsUFormula.fvSubst ht.isUTerm hq.isUFormula),
+      ihp m w hw, ihq m w hw]
+  · intro n p q hp hq ihp ihq m w hw
+    rw [substs_or hp.isUFormula hq.isUFormula,
+      fvSubst_or (hp.subst hw).isUFormula (hq.subst hw).isUFormula,
+      fvSubst_or hp.isUFormula hq.isUFormula,
+      substs_or (IsUFormula.fvSubst ht.isUTerm hp.isUFormula)
+        (IsUFormula.fvSubst ht.isUTerm hq.isUFormula),
+      ihp m w hw, ihq m w hw]
+  · intro n p hp ih m w hw
+    rw [substs_all hp.isUFormula, fvSubst_all (hp.subst hw.qVec).isUFormula,
+      ih (m + 1) (qVec L w) hw.qVec, fvSubst_all hp.isUFormula,
+      substs_all (IsUFormula.fvSubst ht.isUTerm hp.isUFormula),
+      termFvSubstVec_qVec ht hw]
+  · intro n p hp ih m w hw
+    rw [substs_ex hp.isUFormula, fvSubst_ex (hp.subst hw.qVec).isUFormula,
+      ih (m + 1) (qVec L w) hw.qVec, fvSubst_ex hp.isUFormula,
+      substs_ex (IsUFormula.fvSubst ht.isUTerm hp.isUFormula),
+      termFvSubstVec_qVec ht hw]
+
+/-- **`fvSubst` commutes with `substs1` by a fresh free variable** (`a' ≠ a`, closed `t`): the key
+freshness-gated rule. The `zIall`/`zInd` premise succedents `substs1 (^&a') p` (eigenvariable `a'`)
+transfer under `^&a ↦ t` iff `a` differs from the eigenvariable `a'` — Buchholz's regularity. -/
+lemma fvSubst_substs1_fvar (ht : IsSemiterm L 0 t) {a' p : V} (haa : a' ≠ a)
+    (hp : IsSemiformula L 1 p) :
+    fvSubst L a t (substs1 L ^&a' p) = substs1 L ^&a' (fvSubst L a t p) := by
+  have hw : IsSemitermVec L 1 0 (?[^&a'] : V) := IsSemitermVec.singleton.mpr (by simp)
+  have hvec : termFvSubstVec L a t 1 (?[^&a'] : V) = ?[^&a'] := by
+    rw [show (1 : V) = 0 + 1 from by simp, termFvSubstVec_cons (by simp) (by simp)]
+    simp [termFvSubst_fvar_ne haa]
+  unfold substs1
+  rw [fvSubst_subst ht hp hw, hvec]
 
 end fvSubst
 
