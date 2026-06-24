@@ -67,6 +67,42 @@ reduct must install on the j-side.
 Then the UNCONDITIONAL `ZDerivation d → icmp (iord (iR2 d)) (iord d) = 0` (all tags), the
 no-infinite-descent → `ZDerivesEmpty d → False`, C0.5 bridge, wire `Reduction.lean:68`.
 
+## ⭐⭐ THE blocking structural gap (lap 66, verified): ZPhi lacks the §5 axiom base cases
+
+`ZPhi` (line ~3165) — the `ZDerivation` fixpoint — has exactly 5 disjuncts: zAtom / zIall / zIneg /
+zInd / zK. **No tag-5/6 disjunct.** So every chain premise (`znth ds i ∈ C` = a `ZDerivation`) has tag
+∈ {0..4}, NEVER 5/6. But `tp` assigns the L-symbol `isymLk` ONLY to tags 5/6 (`zAxAll`/`zAxNeg`), and
+the redex finder (`inference_critical_pair_of_chain`) needs a premise with `tp = isymLk` at the j-end.
+⟹ **on a genuine `ZDerivation`, the redex finder never fires** — the K-case is unreachable, not just
+unproven. The §5 L-axioms are Buchholz logical-axiom LEAVES (the only source of left symbols, tp
+comment p.12) and MUST be `ZPhi` base cases. (med's arm added them via `ZDerivation_zAxInst/_zAx1`.)
+
+**EXTENSION PLAN (atomic change — nothing compiles until the whole cascade is fixed; do it in one
+focused pass, build at the end):** add two base-case disjuncts AT THE END of the `ZPhi` Or-chain (after
+the zK disjunct) so existing rcases patterns only need 2 appended cases:
+```
+  ∨ (∃ s p k, d = zAxAll s p k ∧ IsUFormula ℒₒᵣ p)   -- ∀-axiom leaf (tag 5)
+  ∨ (∃ s p,   d = zAxNeg s p   ∧ IsUFormula ℒₒᵣ p)   -- ¬-axiom leaf (tag 6)
+```
+(IsUFormula in ZPhi so a rcased premise gives `IsUFormula p` for the §5 descent — `IsUFormula` is a
+`𝚫₁-Predicate` in Foundation, `via isUFormula ℒₒᵣ`, usable in the blueprint.) Cascade to fix:
+  - `ZPhi` def (~3165); `zphi_monotone` (~3173 rintro: +2 trivial leaf patterns, no `C` use);
+    `zphi_strong_finite` (~3185: +2, leaves have no premise so `by simp`); `zphi_iff` (~3198, BOTH
+    directions, bounded `∃ s<d,…`); `zblueprint` Σ AND Π cores (~3227, add `!zAxAllGraph d s p k ∧
+    !isUFormula …` style disjuncts); `zPhi_definable` (~3247, add `zAxAll_defined.iff`,
+    `zAxNeg_defined.iff`, `IsUFormula.defined.iff` to the simp).
+  - 6 `rcases zDerivation_iff.mp` sites: lines ~3355, 3379, 3568, 3954 (`iord_descent_iR2_struct`),
+    3972 (`iRedDescent_iR2_of_tp_isymR`), 4014 (`zAxReduct_of_ZDerivation`). Each: append 2 patterns
+    `| ⟨s, p, k, rfl, hp⟩ | ⟨s, p, rfl, hp⟩`. For the descent lemmas the new leaf cases are tag 5/6:
+    in `iord_descent_iR2_struct` they're NF (no descent needed — but htag excludes them, so `simp at
+    htag`); in `iRedDescent_iR2_of_tp_isymR` tp=isymLk≠isymR so `absurd`; in `zAxReduct_of_ZDerivation`
+    `zAxReduct (zAxAll…) = zAx1…` is NOT `= d`, so that lemma must WEAKEN — see below.
+  - ⚠️ `zAxReduct_of_ZDerivation` becomes FALSE for the new leaves (`zAxReduct (zAxAll s p k) = zAx1 s p
+    ≠ zAxAll s p k`). Restrict it to `tp d = isymR A → …` or to tags {0..4}, OR only use it on the
+    i-side premise (which has `tp = isymR`, tag 1/2). Re-scope to `(htp : tp d = isymR A)`.
+Then: with axioms now reachable as premises, assemble the K-case (steps 3–5 above) and the
+unconditional descent.
+
 ## ⭐⭐⭐ Reflection — 2026-06-24 (lap 62, DEEP) — priorities reset
 
 > Full synthesis: `REFLECTION-2026-06-24-lap62.md`. Direction **KEEP** (genuine forward motion — crux 1
