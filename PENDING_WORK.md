@@ -22,10 +22,14 @@ patterns); (4) `∧ !(…WffDef.sigma) …` into zblueprint σ-core, `∧ !(…W
 `+…Wff_defined.iff` to `zPhi_definable`'s second simp; (6) `lake build`, fix the ≤2 inversion sites that
 name the disjunct's last conjunct — strengthen the corresponding `_inv` lemma to surface the `…Wff`.
 
-**NEXT (remaining rung 0.5):**
-- **I∀:** wire `zIallWff s a p d0` (already defined; needs MOVE-UP + a `𝚫₁-Relation₄` Def using
-  `substs1Graph ℒₒᵣ` for `seqSucc(fstIdx d0)=substs1 (^&a) p` + `qqFvarDef`; `substs1.defined` is upstream).
-  ⚠️ check `𝚫₁-Relation₄` notation exists; strengthen `zDerivation_zIall_inv` to surface `zIallWff`.
+**I∀ DONE (this lap too, green 1321, axiom-clean):** wired `zIallWff s a p d0` identically — moved up,
+`zIallWffDef : 𝚫₁.Semisentence 4` (`substs1Graph ℒₒᵣ` for `seqSucc(fstIdx d0)=substs1 (^&a) p`, `qqFvarDef`
+for `^&a`), `zIallWff_defined : 𝚫₁-Relation₄` (the σ/π simp needs `(substs1.defined (L := ℒₒᵣ)).iff` — `L`
+must be pinned or instance synth fails), wired through the full cascade, and **STRENGTHENED
+`zDerivation_zIall_inv`** to return `… ∧ zIallWff s a p d0` (recover the eigenvariable `a` via
+`congrArg (fun d => π₁ (zRest d)) h` — there is no `zIallEig` accessor; `zRest (zIall s a p d0)=⟪a,p,d0⟫`).
+
+**NEXT (remaining rung 0.5 — Ind only):**
 - **Ind:** define `zIndWff` — needs the `at'=⟪a,t⟫` decode (accessors `zIndEig`/`zIndTerm`) + the `‘0’`
   numeral term-code + the `S(^&a) = ^&a ⊹ 1` ℒₒᵣ term-code (no successor symbol; use `qqFunc`/`qqAdd` =
   `addIndex`). Then `𝚫₁` Def + wire + strengthen `zDerivation_zInd_inv`.
