@@ -324,4 +324,94 @@ lemma le_iseqMaxAux {s ds : V} :
 lemma le_iseqMaxTab {s ds i : V} (hi : i < lh ds) :
     znth s (znth ds i) ≤ iseqMaxTab s ds := le_iseqMaxAux _ i hi
 
+/-! ## `idg` — the degree assignment, total `𝚺₁` by course-of-values recursion
+
+Buchholz §4: `dg(atom)=0`; `dg(I·d0)=dg(d0)`; `dg(Ind d0 d1)=max{dg(d0)-1,dg(d1)-1,rk F}`;
+`dg(K^r d0…dl)=max{dg(d0)-1,…,dg(dl)-1,r}`. Realized as a total function on ALL codes via the same
+table reduction as `iC` (`InternalONote`): `idgTable n = ⟨idg 0,…,idg n⟩`, the step `idgNext d s`
+reading sub-results out of `s` at the projection indices (all `≤ d`). The `K^r` fold uses
+`iseqMaxTab` with `max{…,dⱼ-1} = (max dⱼ) ∸ 1` (∸ commutes with max). -/
+
+/-- Table step of `idg`: `idg d` from the table `s = ⟨idg 0,…,idg (d-1)⟩`, dispatching on `zTag d`. -/
+noncomputable def idgNext (d s : V) : V :=
+  if zTag d = 1 then znth s (zIallPrem d)
+  else if zTag d = 2 then znth s (zInegPrem d)
+  else if zTag d = 3 then
+    max (max (znth s (zIndPrem0 d) - 1) (znth s (zIndPrem1 d) - 1)) (irk (zIndP d))
+  else if zTag d = 4 then max (zKrank d) (iseqMaxTab s (zKseq d) - 1)
+  else 0
+
+def _root_.LO.FirstOrder.Arithmetic.idgNextDef : 𝚺₁.Semisentence 3 := .mkSigma
+  “y d s. ∃ t, !zTagDef t d ∧
+    ( (t = 1 ∧ ∃ p, !zIallPremDef p d ∧ !znthDef y s p)
+    ∨ (t = 2 ∧ ∃ p, !zInegPremDef p d ∧ !znthDef y s p)
+    ∨ (t = 3 ∧ ∃ p0, !zIndPrem0Def p0 d ∧ ∃ v0, !znthDef v0 s p0 ∧ ∃ w0, !subDef w0 v0 1 ∧
+        ∃ p1, !zIndPrem1Def p1 d ∧ ∃ v1, !znthDef v1 s p1 ∧ ∃ w1, !subDef w1 v1 1 ∧
+        ∃ m, !max.dfn m w0 w1 ∧ ∃ pf, !zIndPDef pf d ∧ ∃ rk, !irkDef rk pf ∧ !max.dfn y m rk)
+    ∨ (t = 4 ∧ ∃ rk, !zKrankDef rk d ∧ ∃ ds, !zKseqDef ds d ∧ ∃ f, !iseqMaxTabDef f s ds ∧
+        ∃ w, !subDef w f 1 ∧ !max.dfn y rk w)
+    ∨ (t ≠ 1 ∧ t ≠ 2 ∧ t ≠ 3 ∧ t ≠ 4 ∧ y = 0) )”
+
+set_option maxHeartbeats 1000000 in
+instance idgNext_defined : 𝚺₁-Function₂ (idgNext : V → V → V) via idgNextDef := .mk fun v ↦ by
+  simp [idgNextDef, idgNext, zTag_defined.iff, zIallPrem_defined.iff, zInegPrem_defined.iff,
+    zIndPrem0_defined.iff, zIndPrem1_defined.iff, zIndP_defined.iff, zKrank_defined.iff,
+    zKseq_defined.iff, irk_defined.iff, iseqMaxTab_defined.iff, znth_defined.iff,
+    sub_defined.iff, max_defined.iff]
+  by_cases h1 : zTag (v 1) = 1
+  · simp [h1]
+  · by_cases h2 : zTag (v 1) = 2
+    · simp [h1, h2]
+    · by_cases h3 : zTag (v 1) = 3
+      · simp [h1, h2, h3]
+      · by_cases h4 : zTag (v 1) = 4
+        · simp [h1, h2, h3, h4]
+        · simp [h1, h2, h3, h4]
+
+instance idgNext_definable : 𝚺₁-Function₂ (idgNext : V → V → V) := idgNext_defined.to_definable
+
+/-- Blueprint for the `idg` table. -/
+def idgTable.blueprint : PR.Blueprint 0 where
+  zero := .mkSigma “y. !mkSeq₁Def y 0”
+  succ := .mkSigma “y ih n. ∃ v, !idgNextDef v (n + 1) ih ∧ !seqConsDef y ih v”
+
+noncomputable def idgTable.construction : PR.Construction V idgTable.blueprint where
+  zero := fun _ ↦ !⟦0⟧
+  succ := fun _ n ih ↦ seqCons ih (idgNext (n + 1) ih)
+  zero_defined := .mk fun v ↦ by
+    simp [idgTable.blueprint, mkSeq₁Def, seqCons_defined.iff, emptyset_def]
+  succ_defined := .mk fun v ↦ by
+    simp [idgTable.blueprint, idgNext_defined.iff, seqCons_defined.iff]
+
+/-- **The `idg` table**: `idgTable n = ⟨idg 0,…,idg n⟩` (length `n+1`). -/
+noncomputable def idgTable (n : V) : V := idgTable.construction.result ![] n
+
+@[simp] lemma idgTable_zero : idgTable (0 : V) = !⟦0⟧ := by simp [idgTable, idgTable.construction]
+
+@[simp] lemma idgTable_succ (n : V) :
+    idgTable (n + 1) = seqCons (idgTable n) (idgNext (n + 1) (idgTable n)) := by
+  simp [idgTable, idgTable.construction]
+
+/-- **The degree** `dg(d)` of a code: the `d`-th entry of the table. -/
+noncomputable def idg (d : V) : V := znth (idgTable d) d
+
+def _root_.LO.FirstOrder.Arithmetic.idgTableDef : 𝚺₁.Semisentence 2 :=
+  idgTable.blueprint.resultDef.rew (Rew.subst ![#0, #1])
+
+instance idgTable_defined : 𝚺₁-Function₁ (idgTable : V → V) via idgTableDef := .mk
+  fun v ↦ by simp [idgTable.construction.result_defined_iff, idgTableDef]; rfl
+
+instance idgTable_definable : 𝚺₁-Function₁ (idgTable : V → V) := idgTable_defined.to_definable
+instance idgTable_definable' (Γ) : Γ-[m + 1]-Function₁ (idgTable : V → V) :=
+  idgTable_definable.of_sigmaOne
+
+def _root_.LO.FirstOrder.Arithmetic.idgDef : 𝚺₁.Semisentence 2 := .mkSigma
+  “y d. ∃ t, !idgTableDef t d ∧ !znthDef y t d”
+
+instance idg_defined : 𝚺₁-Function₁ (idg : V → V) via idgDef := .mk fun v ↦ by
+  simp [idgDef, idg, idgTable_defined.iff, znth_defined.iff]
+
+instance idg_definable : 𝚺₁-Function₁ (idg : V → V) := idg_defined.to_definable
+instance idg_definable' (Γ) : Γ-[m + 1]-Function₁ (idg : V → V) := idg_definable.of_sigmaOne
+
 end GoodsteinPA.InternalZ
