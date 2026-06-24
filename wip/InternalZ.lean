@@ -88,6 +88,31 @@ instance zK_defined : 𝚺₀-Function₃ (zK : V → V → V → V) via zKGraph
 @[simp] lemma ds_lt_zK (s r ds : V) : ds < zK s r ds :=
   le_iff_lt_succ.mp <| le_trans (le_trans (le_pair_right _ _) <| le_pair_right _ _) <| le_pair_right _ _
 
+/-! ## `zTag` — the rule tag (second pair component), for recursion dispatch
+
+The ordinal assignment functions `idg`/`iõ`/`iord` are **total** `𝚺₁` functions on codes, defined by
+course-of-values recursion (like `iC`/`iomul`) that dispatches on `zTag d` and reads the relevant
+subderivations. (`ZDerivation : V → Prop` — the Fixpoint, NEXT brick — is needed only to characterize
+*which* codes are derivations + for `derivesEmpty`, not for the descent on these functions.) -/
+
+/-- The rule tag of a derivation code: `π₁ (sndIdx d)` (`= π₁ (π₂ (d-1))`). -/
+noncomputable def zTag (d : V) : V := π₁ (sndIdx d)
+
+def _root_.LO.FirstOrder.Arithmetic.zTagDef : 𝚺₀.Semisentence 2 := .mkSigma
+  “y d. ∃ sd <⁺ d, !sndIdxDef sd d ∧ !pi₁Def y sd”
+
+instance zTag_defined : 𝚺₀-Function₁ (zTag : V → V) via zTagDef := .mk fun v ↦ by
+  simp [zTagDef, zTag, sndIdx_defined.iff, pi₁_defined.iff]
+
+instance zTag_definable : 𝚺₀-Function₁ (zTag : V → V) := zTag_defined.to_definable
+
+@[simp] lemma zTag_zAtom (s : V) : zTag (zAtom s) = 0 := by simp [zTag, sndIdx, zAtom]
+@[simp] lemma zTag_zIall (s a p d0 : V) : zTag (zIall s a p d0) = 1 := by simp [zTag, sndIdx, zIall]
+@[simp] lemma zTag_zIneg (s p d0 : V) : zTag (zIneg s p d0) = 2 := by simp [zTag, sndIdx, zIneg]
+@[simp] lemma zTag_zInd (s at' p d0 d1 : V) : zTag (zInd s at' p d0 d1) = 3 := by
+  simp [zTag, sndIdx, zInd]
+@[simp] lemma zTag_zK (s r ds : V) : zTag (zK s r ds) = 4 := by simp [zTag, sndIdx, zK]
+
 /-! ## `fstIdx` (end-sequent) projection -/
 
 @[simp] lemma fstIdx_zAtom (s : V) : fstIdx (zAtom s) = s := by simp [fstIdx, zAtom]
