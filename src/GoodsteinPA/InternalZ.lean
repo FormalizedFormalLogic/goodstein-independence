@@ -4657,6 +4657,37 @@ lemma ZDerivation_iR2_zInd_of_zKValid {s at' p d0 d1 : V}
     ⟨s, irk p, iIndReductSeq d0 d1 1, rfl, iIndReductSeq_seq d0 d1 1,
       fun i hi => znth_iIndReductSeq_ZDerivation h0 h1 i hi, hvalid⟩))))
 
+/-- Both premises of the critical-reduct sequence `iCritReductSeq d0 d1 = ⟨d0,d1⟩` are `ZDerivation`s
+when `d0`,`d1` are. -/
+lemma znth_iCritReductSeq_ZDerivation {d0 d1 : V} (h0 : ZDerivation d0) (h1 : ZDerivation d1) :
+    ∀ i < lh (iCritReductSeq d0 d1), ZDerivation (znth (iCritReductSeq d0 d1) i) := by
+  intro i hi
+  rw [iCritReductSeq] at hi ⊢
+  rcases lt_or_ge i (lh (seqCons (∅ : V) d0)) with hlt | hge
+  · rw [znth_seqCons_of_lt (seq_empty.seqCons d0) d1 hlt]
+    rw [Seq.lh_seqCons _ seq_empty] at hlt
+    have hi0 : i = lh (∅ : V) :=
+      le_antisymm (le_iff_lt_succ.mpr (by rw [lh_empty] at hlt ⊢; exact hlt)) (by simp)
+    rw [hi0, znth_seqCons_self seq_empty]; exact h0
+  · rw [Seq.lh_seqCons _ (seq_empty.seqCons d0)] at hi
+    have : i = lh (seqCons (∅ : V) d0) := le_antisymm (le_iff_lt_succ.mpr hi) hge
+    rw [this, znth_seqCons_self (seq_empty.seqCons d0)]; exact h1
+
+/-- **Reduction-soundness for the critical reduct, modulo chain-validity.** `iCritReduct d i j v w` is the
+chain `zK (fstIdx d) (zKrank d - 1) (iCritReductSeq (iCritAux d i v) (iCritAux d j w))`; given its two
+auxiliaries are `ZDerivation`s and the produced chain is `zKValid`, it is a genuine `ZDerivation`. The K
+analog of `ZDerivation_iR2_zInd_of_zKValid` (premises + `Seq` free; `zKValid` + the auxiliaries'
+validity are the deep recursive residual — Buchholz's reduction lemma). -/
+lemma ZDerivation_iCritReduct_of {d i j v w : V}
+    (ha : ZDerivation (iCritAux d i v)) (hb : ZDerivation (iCritAux d j w))
+    (hvalid : zKValid (fstIdx d) (zKrank d - 1)
+      (iCritReductSeq (iCritAux d i v) (iCritAux d j w))) :
+    ZDerivation (iCritReduct d i j v w) := by
+  rw [iCritReduct, zDerivation_iff]
+  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+    ⟨fstIdx d, zKrank d - 1, iCritReductSeq (iCritAux d i v) (iCritAux d j w), rfl,
+      iCritReductSeq_seq _ _, fun n hn => znth_iCritReductSeq_ZDerivation ha hb n hn, hvalid⟩))))
+
 /-! ## The iterated descent — `n ↦ iord (iR2^[n] z)` is an infinite `≺`-descent
 
 This is the V-internal analog of `GentzenCon.gentzenDescent_descends`, on the genuine objects
