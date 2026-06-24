@@ -33,6 +33,38 @@ namespace GoodsteinPA
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic
 
+/-! ## Brick 1 — the internal `succInd` builder (lap 78, axiom-clean)
+
+`succIndCodeT` mirrors `succInd φ = φ/[0] 🡒 ∀⁰(φ/[#0] 🡒 φ/[#0+1]) 🡒 ∀⁰ φ/[#0]` on Foundation's
+typed coded-formula layer (`Bootstrapping.Semiformula`), and `succIndCodeT_quote` proves it commutes
+with the quote: `succIndCodeT ⌜φ⌝ = ⌜succInd φ⌝`. This is the first reusable piece of the
+induction-axiom recognizer; only the universal-closure wrapper (`univCl`) remains. -/
+
+section SuccIndCode
+
+open LO.FirstOrder.Arithmetic.Bootstrapping
+open LO.FirstOrder.Arithmetic.Bootstrapping.Arithmetic
+
+variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+
+/-- Internal `succInd` builder on the typed coded-formula layer: from a code `p` of a 1-bound-var
+formula, build the code of `succInd`'s matrix `p/[0] 🡒 ∀⁰(p/[#0] 🡒 p/[#0+1]) 🡒 ∀⁰ p/[#0]`. -/
+noncomputable def succIndCodeT (p : Semiformula V ℒₒᵣ 1) : Formula V ℒₒᵣ :=
+  (p.subst ![typedNumeral 0]) 🡒
+    ((∀⁰ ((p.subst ![Semiterm.bvar 0]) 🡒
+          (p.subst ![(Semiterm.bvar 0 : Semiterm V ℒₒᵣ 1) + typedNumeral 1]))) 🡒
+      (∀⁰ (p.subst ![Semiterm.bvar 0])))
+
+/-- **Quote-correctness of the internal `succInd` builder.** `succIndCodeT ⌜φ⌝ = ⌜succInd φ⌝` — the
+internal builder applied to a quoted formula computes the quote of the external `succInd φ`. Proved by
+unfolding both and discharging via the `typed_quote_*` coding simp set. -/
+@[simp] lemma succIndCodeT_quote (φ : Semiformula ℒₒᵣ ℕ 1) :
+    succIndCodeT (⌜φ⌝ : Semiformula V ℒₒᵣ 1) = ⌜succInd φ⌝ := by
+  unfold succIndCodeT succInd
+  simp [Matrix.constant_eq_singleton]
+
+end SuccIndCode
+
 /-- **`𝗣𝗔⁻` is Δ₁-definable** (axiom-clean). `𝗣𝗔⁻` is a finite theory (`PeanoMinus.finite`:
 `𝗣𝗔⁻ = 𝗘𝗤 ∪ {17 axioms}`, all over the finite-symbol language `ℒₒᵣ`), so the finite-theory
 combinator `Theory.Δ₁.ofFinite` enumerates it into a `𝚫₁.Semisentence 1`. -/
@@ -49,10 +81,11 @@ where `succInd φ = “φ(0) → (∀x, φ(x) → φ(x+1)) → ∀x φ(x)”` an
 a Δ₁ formula `ch(y)` with `ℕ ⊧ ch(⌜ψ⌝) ↔ ∃φ, ψ = univCl (succInd φ)`, provably Σ↔Π in `𝗜𝚺₁`.
 
 **Construction plan** (all primitives exist in `Foundation/.../Bootstrapping/Syntax/`):
-1. Internal `succIndCode p` from a 1-free-var formula code `p`, via `qqAll`/`qqOr`/`neg`/`substs1`/
-   `numeral` (and the de Bruijn shift bookkeeping under the two `∀`s) — a `𝚺₁` function on codes.
+1. ✅ **DONE (lap 78): `succIndCodeT` + `succIndCodeT_quote`** above — the internal `succInd` builder,
+   quote-correct (`succIndCodeT ⌜φ⌝ = ⌜succInd φ⌝`), axiom-clean.
 2. Internal `univClClose q` = iterate `qqAll` over the free `^&i` of `q` (count = max fvar + 1) — a
-   `𝚺₁` function; the closure makes the result a sentence.
+   `𝚺₁` function; the closure makes the result a sentence. **THE remaining wall** (no internal `fvSup`/
+   closure machinery in Foundation; needs a Σ₁-recursion over the formula + a bounded ∀-wrap loop).
 3. `ch(y) := ∃ p < y, IsSemiformula 1 p ∧ y = univClClose (succIndCode p)` — bounded `∃` (the
    construction strictly grows the code), hence Δ₁ (Δ₀ over the Δ₁ pieces).
 4. `mem_iff`: bridge `⌜univCl (succInd φ)⌝ = univClClose (succIndCode ⌜φ⌝)` via the
