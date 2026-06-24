@@ -58,6 +58,8 @@ import GoodsteinPA.FvSubst
 -- Promoted from wip/ to src/ (lap 66) so the green-gate type-checks it every lap. Sorry-free;
 -- off the headline path until wired into Reduction.lean, but now compiled + axiom-scanned.
 import GoodsteinPA.InternalZ
+-- Eigenvariable substitution on Z-derivations (rung 1 of the RedSound ladder, lap 72).
+import GoodsteinPA.Zsubst
 import GoodsteinPA.InternalCor34
 import GoodsteinPA.IIter
 import GoodsteinPA.BlkRec
