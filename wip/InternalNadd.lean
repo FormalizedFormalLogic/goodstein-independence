@@ -465,4 +465,62 @@ lemma isNF_inadd {b : V} (hb : isNF b) : ∀ a, isNF a → isNF (inadd a b) := b
         have := ocTail_lt ec nc rc; rwa [ocTail_ocOadd] at this
       exact isNF_insTerm hec hnc _ (IH rc hrclt hrc)
 
+/-! ## Prepend / right-unit laws -/
+
+/-- **Prepend law for `insTerm`.** When the new exponent `e` strictly dominates `b`'s leading
+exponent (or `b = 0`), `insTerm e n b` is the literal prepend `ocOadd e n b`. -/
+lemma insTerm_prepend {e n b : V} (h : b = 0 ∨ icmp (ocExp b) e = 0) :
+    insTerm e n b = ocOadd e n b := by
+  rcases eq_or_ne b 0 with rfl | hb0
+  · rw [insTerm_zero]
+  · obtain ⟨ec, nc, rc, rfl⟩ : ∃ ec nc rc, b = ocOadd ec nc rc :=
+      ⟨_, _, _, (ocOadd_destruct hb0).symm⟩
+    have hcmp : icmp ec e = 0 := by
+      rcases h with h | h
+      · exact absurd h (ocOadd_ne_zero _ _ _)
+      · rwa [ocExp_ocOadd] at h
+    rw [insTerm_ocOadd, if_pos (icmp_two_iff_swap_zero.mpr hcmp)]
+
+/-- **Right unit of `#`.** The natural sum of an NF code with `0` is itself: order-induction on `a`,
+each leading term re-prepended via `insTerm_prepend` (NF guarantees the strict-dominance side). -/
+lemma inadd_zero_right : ∀ a, isNF a → inadd a 0 = a := by
+  intro a
+  induction a using ISigma1.sigma1_order_induction
+  · definability
+  case ind a IH =>
+    intro ha
+    rcases eq_or_ne a 0 with rfl | ha0
+    · exact inadd_zero_left 0
+    · obtain ⟨ec, nc, rc, rfl⟩ : ∃ ec nc rc, a = ocOadd ec nc rc :=
+        ⟨_, _, _, (ocOadd_destruct ha0).symm⟩
+      rw [isNF_ocOadd] at ha
+      obtain ⟨_, _, hrc, hside⟩ := ha
+      rw [inadd_ocOadd]
+      have hrclt : rc < ocOadd ec nc rc := by
+        have := ocTail_lt ec nc rc; rwa [ocTail_ocOadd] at this
+      rw [IH rc hrclt hrc]
+      exact insTerm_prepend hside
+
+/-! ## ω-power monotonicity
+
+Buchholz's `õ` only ever natural-sums **single ω-powers** `ω^α = ocOadd α 1 0` (coefficient `1`,
+empty tail): `õ(K d0…dl) = ω^{õ d0} # … # ω^{õ dl}`. On such terms the comparison collapses to the
+exponent comparison, so `ω^·` is an order-embedding — the bedrock for the §4 ordinal descent. -/
+
+/-- `thenV a 1 = a` (right `eq`-identity of the lexicographic combiner). -/
+@[simp] lemma thenV_one_right (a : V) : thenV a 1 = a := by
+  unfold thenV; by_cases h : a = 1 <;> simp [h]
+
+/-- **`ω^·` is an order-embedding**: `icmp (ω^α) (ω^β) = icmp α β` (coefficient `1`, empty tail, so
+the lexicographic combine passes straight through to the exponents). -/
+lemma icmp_omega_pow (α β : V) :
+    icmp (ocOadd α 1 0) (ocOadd β 1 0) = icmp α β := by
+  rw [icmp_ocOadd, cmpV_self, icmp_zero_zero, thenV_one_right, thenV_one_right]
+
+/-- **Folding an ω-power into a natural sum is a single `insTerm`**: `ω^α # b = insTerm α 1 b`
+(the empty tail collapses the `inadd` recursion to one insertion). This is the step `õ`'s
+left-fold `ω^{õ d0} # (ω^{õ d1} # … )` repeatedly takes. -/
+lemma inadd_omega_pow (α b : V) : inadd (ocOadd α 1 0) b = insTerm α 1 b := by
+  rw [inadd_ocOadd, inadd_zero_left]
+
 end GoodsteinPA.InternalONote
