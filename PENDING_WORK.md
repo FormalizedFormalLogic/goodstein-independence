@@ -1,5 +1,47 @@
 # Pending work — open obligations & attack paths
 
+## ⭐ Lap 66 — crux-2 island promoted to src/ + green-gated; K-case j-side architecture pinned
+
+**Done this lap:** (P0+P1a) Farmed goodstein-ab-xhigh's recursive-iR2 spine (3937 lines, the
+architectural keystone) and PROMOTED it out of the un-built `wip/` island into
+`src/GoodsteinPA/InternalZ.lean`, imported by the aggregator. `lake build GoodsteinPA` (1321 jobs)
+now type-checks it every lap AND the sorry-gate scans it (it is sorry-free). Capstones verified
+axiom-clean. Then banked the j-side §5 atomic-reduct bundle `iRedDescent_zAx1_zAxAll/_zAxNeg`.
+
+**P1b (med graft) — NOT mergeable as-is.** goodstein-ab-med used an INCOMPATIBLE symbol encoding
+(`iRsym C = ⟪0,C,0⟫+1`, `iLsym A k = ⟪1,A,k⟫+1`, `isymKind/isymFml` via `π₁(I-1)`) vs xhigh's
+(`isymR A = ⟪0,A⟫`, `isymLk k A = ⟪1,k,A⟫`). med's atomic chain (`ZDerivesEmpty_descends_critical_atomic`,
+60-decl closure) bottoms out on med's `tp`/`ZPhi`/`ZDerivation` over that encoding, so it does not
+compile against the xhigh spine — grafting it = re-deriving against xhigh's layer, i.e. NEW work, not
+a merge. xhigh ALREADY has the §5 atomic layer (`zAxAll`/`zAxNeg`/`zAx1`/`oAtom1`/`icmp_oAtom1_oAtomLk`),
+so med's value is largely duplicated; do NOT spend laps porting med's encoding.
+
+**THE pinned crux-2 frontier (the genuine remaining math, K-case = tag 4):**
+`iord_descent_iR2_struct` proves the descent `o(iR2 d) ≺ o(d)` UNCONDITIONALLY for I-rules (tags 1,2)
+and Ind (tag 3). The K-rule (tag 4) reduces — via `iord_descent_iRcrit_of_chain'` — to six `ρ`-facts
+about the two redex premises (`ρ = iR2(znth ds ·)`):
+  - **i-side (R-redex, an I-rule): DONE** concretely (`iRedDescent_iR2_of_tp_isymR`).
+  - **j-side (L-axiom redex, tags 5/6): the BLOCKER.** `iR2` is the IDENTITY on atomic axioms
+    (`iR2_zAxAll`/`iR2_zAxNeg` proven), so `ρ(redexJ)=znth ds j` and the required strict drop
+    `icmp (iotil (ρ j)) (iotil (znth ds j)) = 0` is FALSE (irreflexive). The §5 reduct `zAx1`
+    (strict drop, banked as `iRedDescent_zAx1_z*` this lap) cannot enter through the `iR2` table.
+**NEXT-LAP ATTACK (3 paths):**
+  1. **Revise `iCritReduct`/`iRNext` tag-4** so the j-component is the §5 reduct `zAx1 s p` of the
+     L-axiom premise (not the table lookup `vj = iR2(premⱼ)`). Then `iRedDescent_zAx1_z*` supplies the
+     j-side bundle directly. (Check `iCritReduct` def at ~line 2789 — does it already special-case the
+     axiom premise? If not, thread a `zAx1` substitution there.) Risk: definability re-proof of the
+     edited `iCritReductDef`.
+  2. **Weaken the nut's j-side hypothesis** from strict drop (`icmp = 0`) to `≤`, IF the K-case ordinal
+     descent actually comes from the cut-rank reduction (r → r−1, the `idg`/degree drop) rather than the
+     j-premise õ-drop. Re-read Buchholz 3.2 case 5.1 / §4 `o(d)=ω_{dg(d)}(õ(d))`: if `dg` strictly
+     drops on the whole zK reduct, the õ-side only needs `≤`. This may be the cleaner route — verify
+     which factor carries the descent.
+  3. **State a separate K-case descent lemma** taking the j-side `iRedDescent (zAx1 s p) (znth ds j)`
+     as an explicit hyp (not routed through `ρ=iR2`), and assemble `iord_descent_iR2_struct` for tag 4
+     by feeding `iRedDescent_zAx1_z*` + `iRedDescent_iR2_of_tp_isymR`.
+Then assemble the UNCONDITIONAL `ZDerivation d → icmp (iord (iR2 d)) (iord d) = 0` (all tags), drive
+the no-infinite-descent → `ZDerivesEmpty d → False`, build C0.5 bridge, wire `Reduction.lean:68`.
+
 ## ⭐⭐⭐ Reflection — 2026-06-24 (lap 62, DEEP) — priorities reset
 
 > Full synthesis: `REFLECTION-2026-06-24-lap62.md`. Direction **KEEP** (genuine forward motion — crux 1

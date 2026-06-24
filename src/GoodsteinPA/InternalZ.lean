@@ -3934,4 +3934,22 @@ lemma iRedDescent_iR2_of_tp_isymR {d A : V} (htp : tp d = isymR A) (hZ : ZDeriva
   · rw [tp_zInd] at htp; exact absurd htp (by simp)
   · rw [tp_zK] at htp; exact absurd htp (by simp)
 
+/-! ### j-side §5 atomic-axiom reduct bundle (the K-case's L-premise descent, lap 66)
+
+The K-case nut (`iord_descent_iRcrit_of_chain'`) pins its descent to six `ρ`-facts about the two redex
+premises. The i-side (R-redex, an I-rule) is discharged by `iRedDescent_iR2_of_tp_isymR`. The j-side
+(L-axiom redex, tags 5/6) needs the §5 `Ax^1` reduct `zAx1`: these two lemmas package its
+`iRedDescent` bundle (degree not raised — both `idg = 0`; pre-ordinal strictly dropped via
+`icmp_iotil_zAx1_z*`; reduct NF). Buchholz Lemma 5.2. The remaining plumbing (next lap, see
+PENDING_WORK): `iR2` is the IDENTITY on atomic axioms (`iR2_zAxAll`/`iR2_zAxNeg`), so the §5 reduct
+cannot enter via the `iR2` table — `iCritReduct`'s j-component must invoke `zAx1` directly. These
+bundles are exactly what that revised critical reduct must supply on the j-side. -/
+lemma iRedDescent_zAx1_zAxAll {s p k : V} (hp : IsUFormula ℒₒᵣ p) :
+    iRedDescent (zAx1 s p) (zAxAll s p k) :=
+  ⟨by simp, icmp_iotil_zAx1_zAxAll hp, isNF_iotil_zAx1 s p⟩
+
+lemma iRedDescent_zAx1_zAxNeg {s p : V} (hp : IsUFormula ℒₒᵣ p) :
+    iRedDescent (zAx1 s p) (zAxNeg s p) :=
+  ⟨by simp, icmp_iotil_zAx1_zAxNeg hp, isNF_iotil_zAx1 s p⟩
+
 end GoodsteinPA.InternalZ
