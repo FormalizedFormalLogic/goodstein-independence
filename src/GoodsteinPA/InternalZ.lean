@@ -4797,6 +4797,26 @@ lemma ZDerivation_iR2_zIall {s a p d0 : V} (hZ : ZDerivation (zIall s a p d0)) :
 lemma ZDerivation_iR2_zIneg {s p d0 : V} (hZ : ZDerivation (zIneg s p d0)) :
     ZDerivation (iR2 (zIneg s p d0)) := by rw [iR2_zIneg]; exact (zDerivation_zIneg_inv hZ).1
 
+/-! ### Rung-0.5: the I-rule premise-sequent side conditions (toward a rule-faithful `ZPhi`)
+
+The current `ZPhi` I∀/I¬/Ind disjuncts pin only the *conclusion* succedent, not the *premise* sequents —
+so a genuine reduct's end-sequent (hence the Ind chain threading) is uncomputable. These predicates pin the
+Buchholz inference-rule premise sequents (rules read from `scratchpad/buchholz-gentzen.txt:140-152`); the
+next lap wires them as conjuncts into the `ZPhi` disjuncts (a Σ₁/Δ₁ Fixpoint cascade like laps 66/69) and
+proves their definability. They need only already-Δ₁ pieces (`seqAnt`/`seqSucc`/`fstIdx`/`inAnt`/`^⊥` and
+the Σ₁ `substs1`). The Ind analog additionally needs the `Sa = a+1` ℒₒᵣ term-code (deferred). -/
+
+/-- **∀-introduction premise sequent**: `d0 ⊢ Γ→F(a)` — same antecedent as the conclusion `s`, succedent
+`F(a) = substs1 (^&a) p` (matrix `p`'s bound variable replaced by the eigenvariable `a`). [Freshness
+`a ∉ s` is a separate global side condition.] The genuine I∀ reduct `d0(a/n) ⊢ Γ→F(n)` reads off this. -/
+def zIallWff (s a p d0 : V) : Prop :=
+  seqAnt (fstIdx d0) = seqAnt s ∧ seqSucc (fstIdx d0) = substs1 ℒₒᵣ (qqFvar a) p
+
+/-- **¬-introduction premise sequent**: `d0 ⊢ A,Γ→⊥` — succedent `⊥`, and the negated formula `A = p` in
+its antecedent. No substitution (Buchholz 14.23 reduct `d[0] := d0`). -/
+def zInegWff (p d0 : V) : Prop :=
+  seqSucc (fstIdx d0) = (^⊥ : V) ∧ inAnt p (seqAnt (fstIdx d0))
+
 /-- Every premise of the Ind-reduct sequence `iIndReductSeq d0 d1 k = ⟨d1,…,d1,d0⟩` is a `ZDerivation`
 when `d0`,`d1` are. -/
 lemma znth_iIndReductSeq_ZDerivation {d0 d1 k : V} (h0 : ZDerivation d0) (h1 : ZDerivation d1) :
