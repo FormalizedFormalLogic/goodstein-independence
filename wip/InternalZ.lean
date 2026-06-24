@@ -1158,6 +1158,32 @@ lemma iseqNaddIdg_iRepeatSeq {v k : V} (hk : 0 < k) :
     iseqNaddIdgAux_const hconst (lh (iRepeatSeq v k)) (by rw [iRepeatSeq_lh]; exact hk) le_rfl,
     iRepeatSeq_lh]
 
+/-- **`#`-fold depends only on the entries**: if `ds`, `ds'` agree on the first `j` entries then their
+partial `#`-folds agree. The congruence behind "replace/extend a sequence" reasoning (the chain cases
+LH3/LH5 and the Ind reduct's `seqCons` both need it). -/
+lemma iseqNaddIdgAux_congr {ds ds' : V} :
+    ∀ j, (∀ i < j, znth ds i = znth ds' i) → iseqNaddIdgAux ds j = iseqNaddIdgAux ds' j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · refine Definable.imp (Definable.ball_lt (by definability) (by definability)) ?_
+    refine Definable.comp₂
+      (DefinableFunction₂.comp (F := iseqNaddIdgAux)
+        (DefinableFunction.const ds) (DefinableFunction.var 0))
+      (DefinableFunction₂.comp (F := iseqNaddIdgAux)
+        (DefinableFunction.const ds') (DefinableFunction.var 0))
+  case zero => intro _; rw [iseqNaddIdgAux_zero, iseqNaddIdgAux_zero]
+  case succ j ih =>
+    intro h
+    rw [iseqNaddIdgAux_succ, iseqNaddIdgAux_succ, ih (fun i hi => h i (lt_trans hi (by simp))),
+      h j (by simp)]
+
+/-- **`#`-fold over a `seqCons`**: appending `v` adds the summand `ω^{õ v}`. -/
+lemma iseqNaddIdg_seqCons {ds v : V} (hds : Seq ds) :
+    iseqNaddIdg (seqCons ds v) = inadd (iseqNaddIdg ds) (ocOadd (iotil v) 1 0) := by
+  rw [iseqNaddIdg, iseqNaddIdg, Seq.lh_seqCons v hds, iseqNaddIdgAux_succ,
+    iseqNaddIdgAux_congr (lh ds) (fun i hi => (znth_seqCons_of_lt hds v hi).symm),
+    znth_seqCons_self hds v]
+
 /-! ## C0 Fixpoint — the system-Z derivation predicate `ZDerivation : V → Prop`
 
 The one-step rule `ZPhi C d` ("`d` is a Z-derivation given its premises lie in `C`"), mirroring
