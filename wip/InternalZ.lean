@@ -922,6 +922,29 @@ lemma iord_descent_zIneg (s p d0 : V) : icmp (iord d0) (iord (zIneg s p d0)) = 0
 lemma iord_descent_zIall (s a p d0 : V) : icmp (iord d0) (iord (zIall s a p d0)) = 0 :=
   iord_descent_I (by simp) (by simp)
 
+/-- **Cut-elimination descent template** (Thm 4.2 critical case, Buchholz Lemma 4.1(b)(ii) case 5.1;
+judge `E-CRUX2-DECOMPOSITION-2026-06-24.md` §8.3 N4). The reduct `e = d[0]` has its pre-ordinal jump
+*up* to `õ(e) ≺ ω^{õ(d)}` (N3b), but the degree strictly drops `dg(e) + 1 ≤ dg(d)` (N3a). The descent
+`o(e) ≺ o(d)` survives because the degree drop absorbs the pre-ordinal jump through the tower:
+`o(e) = ω_{dg(e)}(õ(e)) ≺ ω_{dg(e)}(ω^{õ(d)}) = ω_{dg(e)+1}(õ(d)) ≼ ω_{dg(d)}(õ(d)) = o(d)`
+— `icmp_iotower_mono` (base) + `iotower_omega_pow` (base-shift) + `icmp_iotower_height_le` (height).
+This is the ordinal tail of the nut; only the object construction `iR`-critical-branch + the bounds
+N3a/N3b that instantiate `hdeg`/`ho` remain. -/
+lemma iord_descent_cut {d e : V} (hnf : isNF (iotil d)) (hdeg : idg e + 1 ≤ idg d)
+    (ho : icmp (iotil e) (ocOadd (iotil d) 1 0) = 0) : icmp (iord e) (iord d) = 0 := by
+  rw [iord_eq, iord_eq]
+  have step1 : icmp (iotower (iotil e) (idg e)) (iotower (ocOadd (iotil d) 1 0) (idg e)) = 0 :=
+    icmp_iotower_mono ho (idg e)
+  rw [iotower_omega_pow (iotil d) (idg e)] at step1
+  rcases icmp_iotower_height_le hnf hdeg with hh | hh
+  · exact icmp_trans
+      (max (iotower (iotil e) (idg e))
+        (max (iotower (iotil d) (idg e + 1)) (iotower (iotil d) (idg d))))
+      _ (le_max_left _ _)
+      _ (le_trans (le_max_left _ _) (le_max_right _ _))
+      _ (le_trans (le_max_right _ _) (le_max_right _ _)) step1 hh
+  · rw [← hh]; exact step1
+
 /-! ## Structural NF building blocks for `õ` (toward `isNF (iotil d)` on derivations)
 
 `õ(d)` is a valid CNF code (`isNF`) for genuine derivations. The general fact needs structural

@@ -146,5 +146,41 @@ The box is offline but `papers/` is in-repo — point each hard node at its rich
   definitional), then T3.4 collapses to a definitional unfolding — *check before building it as a theorem*.
 - Credit: the box's F1–F4 isolation and the `icmp_insTerm_congr` nut-identification (lap 59) are exactly
   right and feed LH3/LH5 + nut-step 2. This doc reorders and gates; it does not relitigate the algebra.
-```
-```
+
+## 8. Atomic breakdown of the hard part (leaf-level grind-list)
+The nut (case 5.1) and its two prereqs, taken down to bite-sized Lean obligations against Buchholz pp.8–11.
+**Punchline: no leaf is a monolith; only four leaves are genuinely-new content.** Tags: 🆓 free (structural
+IH) · ➕ ℕ-arithmetic/definitional · ✅ algebra you have · 🔨 algebra you're building (F1/F2) · 🆕 new but
+small · 📐 one tower lemma.
+
+### 8.1 — Lemma 3.1, the redex finder (p.8). A `Σ₁` search, NO ordinals.
+- **L1** the last inference symbol `I_{j₀}` is an L-symbol (`L^k_B`), forced by the false-minimal succedent. [🆕 a `zTag`-of-last-premise case-check]
+- **L2** `j :=` least index with `I_j ∈ L`; its cut-formula `B ∈ Γ_j\Γ`, so `B = A_i` for some `i<j`. [🆕 minimality search + antecedent-membership]
+- **L3** by minimality `I_i ∉ L`; permissibility `I_i ◁ Π_i` forces `I_i = R_{A_i}`. [🆕 "permissible non-L symbol on `Γ→A_i` ⟹ `R_{A_i}`" case-lemma]
+- **L4** `rk(A_i) > 0` (else `R_{A_i}` & `L^k_{A_i}` both permissible ⟹ `A_i ≈ ⊤` and `≈ ⊥`, impossible). [➕ rank/truth-value check]
+⟹ a `Σ₁`-definable least pair `(i,j,k)`. All four leaves are finite code-combinatorics — the box's `zTag`/recognizer wheelhouse.
+
+### 8.2 — Theorem 3.4(a), the rank bound (p.9).
+- **T1** IH(b) on the redex premises: `d_i[k] ⊢ Π_i·F(k)`, `d_j[0] ⊢ F(k),Π_j`. [🆓 structural IH]
+- **T2/T3** `d{0}:=K^r_{Π·A(d)}(i/d_i[k])`, `d{1}:=K^r_{A(d),Π}(j/d_j[0])` are valid `K^r` chains with the stated endsequents. [🆕 ONE reusable lemma: "replace a premise of a valid `K^r`-chain by a same-endsequent reduct ⟹ still valid `K^r`"]
+- **T4** `rk(A(d)) < r`, since `rk(A(d)) = rk(F(k)) = rk(F) < rk(F)+1 = rk(∀xF) = rk(A_i) ≤ r`. Three facts: **(a)** `rk` substitution-invariant `rk(F(k))=rk(F)` [🆕 small structural lemma — the ONE new rank fact]; **(b)** `rk(∀xF)=rk(F)+1` [➕ definitional]; **(c)** `rk(A_i) ≤ r` [➕ the `K^r` chain-rank invariant, read off well-formedness].
+
+### 8.3 — The nut, Lemma 4.1(b)(ii) case 5.1 (p.11). Given L3.1's redex + T3.4's `d{0}/d{1}`:
+- **N1** IH on the immediate subderivations: `dg(d_i[k]) ≤ dg(d_i)`, `õ(d_i[k]) < õ(d_i)` (and `d_j[0]`). [🆓 structural IH = Lemma 4.1 on `d_i`,`d_j`]
+- **N2** lift to the auxiliaries: `dg(d{ν}) ≤ dg(d)` and `õ(d{ν}) < õ(d)`. [dg: ➕ `dg(K^r…)=max{dg(prem)−1,r}` + N1. õ: 🔨 **F1** — replacing one `#`-summand `ω^{õ(d_i)}` by the smaller `ω^{õ(d_i[k])}` lowers the sum = your `icmp_insTerm_congr`/left-cancel]
+- **N3a** `dg(d[0]) < dg(d)`: `dg(d[0])=max{dg(d{0})−1,dg(d{1})−1,r−1}`, each term `< dg(d)` from N2 + `r ≤ dg(d)`. [➕ pure ℕ-max arithmetic] **← the cut-elim degree-drop is just arithmetic, once `iR` builds `d{0}/d{1}`**
+- **N3b** `õ(d[0]) < ω^{õ(d)}`: `õ(d[0]) = ω^{õ(d{0})} # ω^{õ(d{1})}`, both `< õ(d)` (N2) ⟹ via **F2** (`ω^{α0}#ω^{α1} ≺ ω^α`). [🔨/✅ **F2**]
+- **N3c** `rk(A(d)) < dg(d)`: T3.4 `rk(A(d)) < r ≤ dg(d)`. [➕ arithmetic]
+- **N4** Thm 4.2 combine: `o(d[0]) = ω_{dg(d[0])}(õ(d[0])) <_{N3b} ω_{dg(d[0])}(ω^{õ(d)}) = ω_{dg(d[0])+1}(õ(d)) ≤_{N3a} ω_{dg(d)}(õ(d)) = o(d)`. Uses **(i)** `ω_m(ω^α)=ω_{m+1}(α)` [➕ definitional tower identity], **(ii)** `ω_m` base-monotone [✅ `icmp_iotower_mono`], **(iii)** tower height-monotone `ω_m(β) ≤ ω_{m'}(β)` for `m ≤ m'` [📐 — **VALIDATE `icmp_iotower_lt_succ_of_le` delivers exactly (iii)**]
+
+### Tally — the ENTIRE hard part's genuinely-new content is 4 small leaves:
+1. **L1–L4** the redex finder (finite `zTag` combinatorics).
+2. **T2/T3** the "replace-a-premise stays a valid `K^r`-chain" lemma (one reusable fact).
+3. **T4(a)** rank-substitution-invariance `rk(F(k))=rk(F)` (one structural lemma).
+4. **the `d{0}/d{1}` object construction** = `iR`'s critical branch (the only sizeable build, and it's bounded).
+Everything else is 🆓 IH, ➕ arithmetic, 🔨 F1/F2 (in flight), ✅/📐 one tower lemma. **No monolithic step remains in crux-2.** The "wall" was a staircase.
+
+### 8.4 — Validation (this section specifically)
+- I read Buchholz pp.8–11 directly, but mapped `d{0}/d{1}`/`dg(K^r)`/`õ(K^r)` to the box's `iR`/`idg`/`iõ` from the handoffs — **confirm the `iR` critical branch builds `d{0}=K^r(i/d_i[k])`, `d{1}=K^r(j/d_j[0])`, `d[0]=K^{r-1}d{0}d{1}` verbatim** (3.2 case 5.1); a different reduct changes N2–N3.
+- N4(iii): if `icmp_iotower_lt_succ_of_le` proves only `ω_m(α) ≼ ω_{m+1}(β)` under `α ≼ β` (same form as its name), confirm that instantiates to height-monotonicity at fixed base; else it's a 1-lemma gap.
+- T4(c) assumes `iR`/`ZDerivation` carries the chain-rank `r` and the `rk(cut formula) ≤ r` well-formedness invariant. If ranks aren't stored, T4(c) needs the invariant proved from the `K^r` constructor first.
