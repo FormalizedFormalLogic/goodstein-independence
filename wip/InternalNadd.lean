@@ -313,4 +313,80 @@ lemma inadd_ocOadd (ec nc rc b : V) :
   rw [inadd, key, inaddNext, if_neg hcne,
     znth_inaddTable_eq_inadd b M (ocTail c) htail, ocExp_ocOadd, ocCoeff_ocOadd, ocTail_ocOadd]
 
+/-! ## Supporting `icmp` trichotomy (lt/eq/gt are the only outcomes) -/
+
+lemma cmpV_tri (a b : V) : cmpV a b = 0 ∨ cmpV a b = 1 ∨ cmpV a b = 2 := by
+  unfold cmpV; split_ifs <;> simp
+
+lemma thenV_tri {a b : V} (ha : a = 0 ∨ a = 1 ∨ a = 2) (hb : b = 0 ∨ b = 1 ∨ b = 2) :
+    thenV a b = 0 ∨ thenV a b = 1 ∨ thenV a b = 2 := by
+  unfold thenV; split_ifs with h
+  · exact hb
+  · exact ha
+
+/-- **`icmp` trichotomy**: the comparison code is always `0` (lt), `1` (eq), or `2` (gt). -/
+lemma icmp_tri (c1 c2 : V) : icmp c1 c2 = 0 ∨ icmp c1 c2 = 1 ∨ icmp c1 c2 = 2 := by
+  suffices h : ∀ m : V, icmp (π₁ m) (π₂ m) = 0 ∨ icmp (π₁ m) (π₂ m) = 1 ∨ icmp (π₁ m) (π₂ m) = 2 by
+    have := h ⟪c1, c2⟫; simpa using this
+  intro m
+  induction m using ISigma1.sigma1_order_induction
+  · definability
+  case ind m IH =>
+    have hm : (⟪π₁ m, π₂ m⟫ : V) = m := pair_unpair m
+    rcases eq_or_ne (π₁ m) 0 with ha | ha
+    · rcases eq_or_ne (π₂ m) 0 with hb | hb
+      · rw [ha, hb, icmp_zero_zero]; tauto
+      · rw [ha, icmp_zero_pos hb]; tauto
+    · rcases eq_or_ne (π₂ m) 0 with hb | hb
+      · rw [hb, icmp_pos_zero ha]; tauto
+      · rw [icmp_pos_pos ha hb]
+        have hexp : (⟪ocExp (π₁ m), ocExp (π₂ m)⟫ : V) < m := by
+          have h := pair_lt_pair (ocExp_lt_of_pos (pos_iff_ne_zero.mpr ha))
+            (ocExp_lt_of_pos (pos_iff_ne_zero.mpr hb))
+          rwa [hm] at h
+        have htail : (⟪ocTail (π₁ m), ocTail (π₂ m)⟫ : V) < m := by
+          have h := pair_lt_pair (ocTail_lt_of_pos (pos_iff_ne_zero.mpr ha))
+            (ocTail_lt_of_pos (pos_iff_ne_zero.mpr hb))
+          rwa [hm] at h
+        have he := IH _ hexp; simp only [pi₁_pair, pi₂_pair] at he
+        have ht := IH _ htail; simp only [pi₁_pair, pi₂_pair] at ht
+        exact thenV_tri he (thenV_tri (cmpV_tri _ _) ht)
+
+/-- If the comparison is neither `eq` nor `gt`, it is `lt` (`= 0`). -/
+lemma icmp_eq_zero_of_ne {a b : V} (h1 : icmp a b ≠ 1) (h2 : icmp a b ≠ 2) : icmp a b = 0 := by
+  rcases icmp_tri a b with h | h | h
+  · exact h
+  · exact absurd h h1
+  · exact absurd h h2
+
+/-! ## Positivity and leading exponent of `insTerm` -/
+
+/-- `insTerm e n b` is always a positive code (every recursion branch is an `ocOadd`). -/
+@[simp] lemma insTerm_pos (e n b : V) : 0 < insTerm e n b := by
+  rcases eq_or_ne b 0 with rfl | hb
+  · rw [insTerm_zero]; exact ocOadd_pos _ _ _
+  · obtain ⟨e', n', r', rfl⟩ : ∃ e' n' r', b = ocOadd e' n' r' :=
+      ⟨ocExp b, ocCoeff b, ocTail b, (ocOadd_destruct hb).symm⟩
+    rw [insTerm_ocOadd]; split_ifs <;> exact ocOadd_pos _ _ _
+
+lemma insTerm_ne_zero (e n b : V) : insTerm e n b ≠ 0 := (insTerm_pos e n b).ne'
+
+/-- **Leading exponent of `insTerm`**: the head exponent is `e` unless `e ≺ (lead exp of b)`, in which
+case it stays `ocExp b`. -/
+lemma ocExp_insTerm (e n b : V) :
+    ocExp (insTerm e n b) = if b = 0 then e else if icmp e (ocExp b) = 0 then ocExp b else e := by
+  rcases eq_or_ne b 0 with rfl | hb
+  · simp [insTerm_zero]
+  · obtain ⟨e', n', r', rfl⟩ : ∃ e' n' r', b = ocOadd e' n' r' :=
+      ⟨ocExp b, ocCoeff b, ocTail b, (ocOadd_destruct hb).symm⟩
+    rw [insTerm_ocOadd, if_neg (ocOadd_ne_zero _ _ _), ocExp_ocOadd]
+    by_cases h0 : icmp e e' = 0
+    · rw [if_pos h0, if_neg (by rw [h0]; simp), if_neg (by rw [h0]; simp), ocExp_ocOadd]
+    · rw [if_neg h0]
+      by_cases h2 : icmp e e' = 2
+      · rw [if_pos h2, ocExp_ocOadd]
+      · by_cases h1 : icmp e e' = 1
+        · rw [if_neg h2, if_pos h1, ocExp_ocOadd]
+        · exact absurd (icmp_eq_zero_of_ne h1 h2) h0
+
 end GoodsteinPA.InternalONote

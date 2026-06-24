@@ -48,6 +48,14 @@ on NF), `iC_inadd` (`iC (a # b) ≤ iC a + iC b` or similar), and `inadd`-commut
 `õ`'s descent (Lemma 4.1) consumes. Mirror the `iadd`/`iomul` `isNF_*`/`icmp_*`/`iC_*` proof style
 (`InternalONote.lean` ~1820–2100).
 
+**HELPERS DONE (lap 58 cont., `wip/InternalNadd.lean` green):** `icmp_tri` (comparison code is always
+`0`/`1`/`2`, order-induction via `cmpV_tri`/`thenV_tri`) + `icmp_eq_zero_of_ne`; `insTerm_pos`/
+`insTerm_ne_zero`; `ocExp_insTerm` (head exp `= e` unless `e ≺ lead-exp b`, then `ocExp b`). V-numeral
+disequalities (`0≠1`,`0≠2`,…) discharge by `simp`. **NEXT: `isNF_insTerm`** (`isNF e → n≠0 → isNF b →
+isNF (insTerm e n b)`) by order-induction on `b`: the `e≺e'` branch needs `icmp (ocExp(insTerm e n r')) e'
+= 0`, supplied by `ocExp_insTerm` (lead-exp is `e` or `ocExp r'`, both `≺ e'`). Then `isNF_inadd`,
+`icmp`-monotonicity, `iC_inadd`.
+
 ## ⭐⭐ Lap 57 — TWO findings: (a) seqDescent_dominated was FALSE, fixed; (b) width-code wall
 
 **(a) Soundness fix (DONE, committed `38c6de0`).** Lap-56's `seqDescent_dominated` was **false at ℕ**
