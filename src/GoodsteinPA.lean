@@ -48,6 +48,10 @@ import GoodsteinPA.InternalONote
 -- (promoted lap 60; sorry-free, axiom-clean). Order facts F1–F4: strict left-monotonicity,
 -- `ω^α#ω^β ≺ ω^γ`, `ω^β·k ≺ ω^{β+1}`, commutativity. Consumed by the (wip) crux-2 descent.
 import GoodsteinPA.InternalNadd
+-- ω-exponential tower `ω_n(α)` for Buchholz §4 `o(d) = ω_{dg(d)}(õ(d))` (promoted lap 60;
+-- sorry-free, axiom-clean). Strict base-monotonicity `icmp_iotower_mono` (Thm 4.2 same-degree
+-- descent) + NF preservation. Consumed by the (wip) crux-2 ordinal assignment.
+import GoodsteinPA.InternalTower
 import GoodsteinPA.InternalCor34
 import GoodsteinPA.IIter
 import GoodsteinPA.BlkRec
