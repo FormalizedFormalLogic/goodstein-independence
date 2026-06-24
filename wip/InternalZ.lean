@@ -1010,6 +1010,36 @@ lemma isNF_omega_pow {e : V} (he : isNF e) : isNF (ocOadd e 1 0) :=
 @[simp] lemma isNF_iotil_zAtom (s : V) : isNF (iotil (zAtom s)) := by
   rw [iotil_zAtom]; exact isNF_zero
 
+/-- `õ(I^a_∀xF d0)` is NF when `õ(d0)` is — the assignment is `õ(d0) + 1`, NF by `isNF_iadd_one_right`. -/
+@[simp] lemma isNF_iotil_zIall {s a p d0 : V} (hd0 : isNF (iotil d0)) :
+    isNF (iotil (zIall s a p d0)) := by rw [iotil_zIall]; exact isNF_iadd_one_right hd0
+
+/-- `õ(I_¬A d0)` is NF when `õ(d0)` is. -/
+@[simp] lemma isNF_iotil_zIneg {s p d0 : V} (hd0 : isNF (iotil d0)) :
+    isNF (iotil (zIneg s p d0)) := by rw [iotil_zIneg]; exact isNF_iadd_one_right hd0
+
+/-- `õ(Ind^{a,t}_F d0 d1)` is NF when `õ(d0)`,`õ(d1)` are — the assignment is
+`ω^{õ(d0)} # ω^{õ(d1)+1}`, NF by `isNF_inadd` of two NF ω-powers (the right exponent via
+`isNF_iadd_one_right`). -/
+@[simp] lemma isNF_iotil_zInd {s at' p d0 d1 : V} (hd0 : isNF (iotil d0)) (hd1 : isNF (iotil d1)) :
+    isNF (iotil (zInd s at' p d0 d1)) := by
+  rw [iotil_zInd]
+  exact isNF_inadd (isNF_omega_pow (isNF_iadd_one_right hd1)) _ (isNF_omega_pow hd0)
+
+/-- **LH4 — the Ind-rule descent's ordinal core** (Buchholz §4 case 4; judge §2 LH4). The reduct
+`d[0] = K^r(d0, d1(0),…,d1(k−1))` has `õ(d[0]) = ω^{õ d0} # ω^{õ d1}·k` (the `k` substitution-invariant
+copies collected into one CNF term `ocOadd (õ d1) k 0`), and `õ(zInd) = ω^{õ d0} # ω^{õ d1 + 1}`. The
+descent `õ(d[0]) ≺ õ(zInd)` is F1 (left-monotonicity, fixing the `ω^{õ d0}` summand) applied to F3
+(`ω^β·k ≺ ω^{β+1}`). The `k ≠ 0` hypothesis keeps `ocOadd b k 0` a valid CNF term. -/
+lemma icmp_iotil_ind_reduct {a b k : V} (ha : isNF a) (hb : isNF b) (hk : k ≠ 0) :
+    icmp (inadd (ocOadd a 1 0) (ocOadd b k 0))
+         (inadd (ocOadd a 1 0) (ocOadd (iadd b (ocOadd 0 1 0)) 1 0)) = 0 :=
+  inadd_left_mono
+    ((isNF_ocOadd b k 0).2 ⟨hk, hb, isNF_zero, Or.inl rfl⟩)
+    (isNF_omega_pow (isNF_iadd_one_right hb))
+    (icmp_term_lt_omega_succ b k)
+    (ocOadd a 1 0) (isNF_omega_pow ha)
+
 /-- The `#`-fold `iseqNaddIdgAux` is NF when every folded entry's `õ` is NF. -/
 lemma isNF_iseqNaddIdgAux {ds : V} (hall : ∀ i < lh ds, isNF (iotil (znth ds i))) :
     ∀ j ≤ lh ds, isNF (iseqNaddIdgAux ds j) := by
