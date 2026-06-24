@@ -38,23 +38,34 @@ NOT achieve descent on tag-4; the §5 j-reduct is genuinely required, not option
 j-side bundles `iRedDescent_zAxReduct_zAxAll/_zAxNeg` (axiom-clean). This is the function the critical
 reduct must install on the j-side.
 
-**NEXT-LAP ATTACK (path 1 = the live route):**
-  1. **Σ₁-definability of `zAxReduct`** (`zAxReductDef`): mirror `iRNextDef` (line 3734). Building
-     blocks: `zTagDef`, `fstIdxDef`, `zRestDef`, `pi₁Def`, `zAx1Graph` (graph form — `zAx1` is a
-     `𝚺₀-Function₂` via `zAx1Graph`, NOT a `*Def`). `zAxAllF d = π₁(zRest d)`, `zAxNegF d = zRest d`
-     have no standalone Def — inline them. (Deferred lap 66 to avoid risk on a clean checkpoint.)
-  2. **Revise `iRNext`/`iCritReduct` tag-4** (line 3729 / 2789) so the j-component reduct is
-     `zAxReduct (premⱼ)` instead of the table lookup `vj = znth s (...redexJ...)` (= `iR2(premⱼ)` = the
-     unchanged axiom). Keep the i-component as the table lookup (I-rule, `iRedDescent_iR2_of_tp_isymR`).
-     Re-prove the edited `iRNextDef`/`iCritReductDef` definability.
-  3. **Tag-5/6 inversion** (`zTag d = 5 → ∃ s p k, d = zAxAll s p k ∧ IsUFormula p`): needed to apply
-     `iRedDescent_zAxReduct_zAxAll` to a redexJ premise known only by `tp = isymLk k A`. Check whether
-     the L-axiom well-formedness (`IsUFormula p`) is carried by the chain's `hwfL`/`zKWff` data.
-  NOTE: atomic axioms (tags 5/6) are NOT standalone `ZDerivation` constructors (`zDerivation_iff` has
-  only zAtom/zIall/zIneg/zInd/zK) — they appear only as chain premises, so the j-side lemma keys off the
-  premise code being `zAxAll`/`zAxNeg`, not off `ZDerivation premⱼ`.
-Then assemble the UNCONDITIONAL `ZDerivation d → icmp (iord (iR2 d)) (iord d) = 0` (all tags), drive
-the no-infinite-descent → `ZDerivesEmpty d → False`, build C0.5 bridge, wire `Reduction.lean:68`.
+**DONE path-1 steps 1+2 (lap 66):**
+  1. ✅ `zAxReductDef` (Σ₁-definability of `zAxReduct`) — axiom-clean.
+  2. ✅ **Rewired `iRNext` tag-4** (the `iR2` table step) so BOTH premise reducts are wrapped in
+     `zAxReduct`: `iCritReduct d i j (zAxReduct (iR2 premᵢ)) (zAxReduct (iR2 premⱼ))`. `zAxReduct` is the
+     identity off atomic-axiom tags (so harmless on the i-side I-rule sub-derivation, which is a
+     `ZDerivation` ⟹ tag ∈ {0..4} ⟹ never 5/6) and is the §5 `Ax^1` reduct on the j-side L-axiom redex.
+     `iRNextDef` re-proven; `iR2_zK` + `iR2_zK_eq_iRcrit` updated to `ρ = fun n ↦ zAxReduct (iR2 (znth ds n))`.
+     All axiom-clean, green (1321 jobs). **The reduction `iR2` now genuinely descends on tag-4 in
+     principle** — the j-premise õ strictly drops.
+
+**NEXT-LAP ATTACK (assemble the unconditional K-case, then the whole induction):**
+  3. **`zAxReduct_of_ZDerivation`** (`ZDerivation d → zAxReduct d = d`): from `zDerivation_iff`, a
+     ZDerivation's tag ∈ {0,1,2,3,4} (zAtom/zIall/zIneg/zInd/zK), never 5/6, so `zAxReduct` is the
+     identity. Needed to collapse the i-side wrap `zAxReduct (iR2 premᵢ) = iR2 premᵢ` in the descent.
+  4. **Tag-5/6 inversion + UFormula** (`zTag d = 5 → ∃ s p k, d = zAxAll s p k`, similarly tag 6): to
+     apply `iRedDescent_zAxReduct_zAxAll/_zAxNeg` to a redexJ premise known by `tp = isymLk k A`. The
+     `IsUFormula p` side comes from the chain's `hwfL`/`zKWff` well-formedness data — locate it.
+  5. **Assemble `iord_descent_iR2_struct` for tag 4**: feed `iord_descent_iCritReduct_object` with
+     `v = zAxReduct (iR2 premᵢ)` (= `iR2 premᵢ` via step 3, descent from `iRedDescent_iR2_of_tp_isymR`)
+     and `w = zAxReduct (iR2 premⱼ)` (= `zAx1` via `iR2_zAxAll`+`zAxReduct_zAxAll`, descent from
+     `iRedDescent_zAxReduct_zAxAll`). The redex `(i,j)` + `tp` facts come from
+     `inference_critical_pair_of_chain` (already used inside `iord_descent_iRcrit_of_chain'`). Likely
+     route: discharge the six `ρ`-facts of `iord_descent_iRcrit_of_chain'` at `ρ = zAxReduct ∘ iR2`,
+     then `rw [← iR2_zK_eq_iRcrit]`.
+  NOTE: atomic axioms (tags 5/6) are NOT standalone `ZDerivation` constructors — they appear only as
+  chain premises, so the j-side lemma keys off the premise CODE being `zAxAll`/`zAxNeg`.
+Then the UNCONDITIONAL `ZDerivation d → icmp (iord (iR2 d)) (iord d) = 0` (all tags), the
+no-infinite-descent → `ZDerivesEmpty d → False`, C0.5 bridge, wire `Reduction.lean:68`.
 
 ## ⭐⭐⭐ Reflection — 2026-06-24 (lap 62, DEEP) — priorities reset
 

@@ -3721,6 +3721,44 @@ lemma znth_le_self (ds k : V) : znth ds k ≤ ds := by
   · exact le_of_lt (lt_of_mem_rng (h.1.znth h.2))
   · rw [znth_prop_not (by rw [not_and_or, not_lt] at h; exact h)]; simp
 
+/-- **The §5 atomic-reduct FUNCTION** `d ↦ d[0]` for an L-axiom premise (Buchholz §5, Lemma 5.2):
+`Ax^{∀p,k} ↦ Ax^1_{·→p}` (tag 5) and `Ax^{¬p,0} ↦ Ax^1_{·→p}` (tag 6) — the principal formula stripped
+to its rank-one-lower matrix. Identity off the atomic-axiom tags. This is the j-component the K-case
+critical reduction installs (in `iRNext`/`iCritReduct` tag-4) instead of the table lookup `iR2(premⱼ)`,
+which is the identity on axioms (`iR2_zAxAll`/`iR2_zAxNeg`) and so yields NO õ-drop on the j-side. -/
+noncomputable def zAxReduct (d : V) : V :=
+  if zTag d = 5 then zAx1 (fstIdx d) (zAxAllF d)
+  else if zTag d = 6 then zAx1 (fstIdx d) (zAxNegF d)
+  else d
+
+@[simp] lemma zAxReduct_zAxAll (s p k : V) : zAxReduct (zAxAll s p k) = zAx1 s p := by
+  simp [zAxReduct]
+
+@[simp] lemma zAxReduct_zAxNeg (s p : V) : zAxReduct (zAxNeg s p) = zAx1 s p := by
+  rw [zAxReduct, if_neg (by simp [zTag_zAxNeg]), if_pos (by simp [zTag_zAxNeg])]
+  simp
+
+/-- **Σ₁-definability of `zAxReduct`** (`zAxAllF d = π₁(zRest d)`, `zAxNegF d = zRest d`; `zAx1` via its
+graph). The arithmetization that lets `zAxReduct` thread through the `iRNext`/`iCritReduct` tag-4
+definition. -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.zAxReductDef : 𝚺₁.Semisentence 2 := .mkSigma
+  “y d. ∃ t, !zTagDef t d ∧
+    ( (t = 5 ∧ ∃ s, !fstIdxDef s d ∧ ∃ r, !zRestDef r d ∧ ∃ p, !pi₁Def p r ∧ !zAx1Graph y s p)
+    ∨ (t = 6 ∧ ∃ s, !fstIdxDef s d ∧ ∃ p, !zRestDef p d ∧ !zAx1Graph y s p)
+    ∨ (t ≠ 5 ∧ t ≠ 6 ∧ y = d) )”
+
+set_option maxHeartbeats 800000 in
+instance zAxReduct_defined : 𝚺₁-Function₁ (zAxReduct : V → V) via zAxReductDef := .mk fun v ↦ by
+  simp [zAxReductDef, zAxReduct, zTag_defined.iff, fstIdx_defined.iff, zRest_defined.iff,
+    pi₁_defined.iff, zAx1_defined.iff, zAxAllF, zAxNegF, numeral_eq_natCast]
+  by_cases h5 : zTag (v 1) = 5
+  · simp [h5]
+  · by_cases h6 : zTag (v 1) = 6
+    · simp [h5, h6]
+    · simp [h5, h6]
+
+instance zAxReduct_definable : 𝚺₁-Function₁ (zAxReduct : V → V) := zAxReduct_defined.to_definable
+
 /-- Table step of `iR2`: `iR2 d` from `s = ⟨iR2 0,…,iR2 (d-1)⟩`, dispatching on `zTag d`. -/
 noncomputable def iRNext (d s : V) : V :=
   if zTag d = 1 then zIallPrem d
@@ -3728,7 +3766,8 @@ noncomputable def iRNext (d s : V) : V :=
   else if zTag d = 3 then iRInd d
   else if zTag d = 4 then
     iCritReduct d (redexI d) (redexJ d)
-      (znth s (znth (zKseq d) (redexI d))) (znth s (znth (zKseq d) (redexJ d)))
+      (zAxReduct (znth s (znth (zKseq d) (redexI d))))
+      (zAxReduct (znth s (znth (zKseq d) (redexJ d))))
   else d
 
 noncomputable def _root_.LO.FirstOrder.Arithmetic.iRNextDef : 𝚺₁.Semisentence 3 := .mkSigma
@@ -3738,14 +3777,15 @@ noncomputable def _root_.LO.FirstOrder.Arithmetic.iRNextDef : 𝚺₁.Semisenten
     ∨ (t = 3 ∧ !iRIndDef y d)
     ∨ (t = 4 ∧ ∃ ds, !zKseqDef ds d ∧ ∃ i, !redexIDef i d ∧ ∃ j, !redexJDef j d ∧
         ∃ ai, !znthDef ai ds i ∧ ∃ aj, !znthDef aj ds j ∧
-        ∃ vi, !znthDef vi s ai ∧ ∃ vj, !znthDef vj s aj ∧ !iCritReductDef y d i j vi vj)
+        ∃ vi, !znthDef vi s ai ∧ ∃ wi, !zAxReductDef wi vi ∧
+        ∃ vj, !znthDef vj s aj ∧ ∃ wj, !zAxReductDef wj vj ∧ !iCritReductDef y d i j wi wj)
     ∨ (t ≠ 1 ∧ t ≠ 2 ∧ t ≠ 3 ∧ t ≠ 4 ∧ y = d) )”
 
 set_option maxHeartbeats 1000000 in
 instance iRNext_defined : 𝚺₁-Function₂ (iRNext : V → V → V) via iRNextDef := .mk fun v ↦ by
   simp [iRNextDef, iRNext, zTag_defined.iff, zIallPrem_defined.iff, zInegPrem_defined.iff,
     iRInd_defined.iff, zKseq_defined.iff, redexI_defined.iff, redexJ_defined.iff,
-    znth_defined.iff, iCritReduct_defined.iff]
+    znth_defined.iff, zAxReduct_defined.iff, iCritReduct_defined.iff]
   by_cases h1 : zTag (v 1) = 1
   · simp [h1]
   · by_cases h2 : zTag (v 1) = 2
@@ -3882,7 +3922,8 @@ table (`znth_le_self` + `ds_lt_zK`). -/
 lemma iR2_zK (s r ds : V) :
     iR2 (zK s r ds) =
       iCritReduct (zK s r ds) (redexI (zK s r ds)) (redexJ (zK s r ds))
-        (iR2 (znth ds (redexI (zK s r ds)))) (iR2 (znth ds (redexJ (zK s r ds)))) := by
+        (zAxReduct (iR2 (znth ds (redexI (zK s r ds)))))
+        (zAxReduct (iR2 (znth ds (redexJ (zK s r ds))))) := by
   have hbound : ∀ k : V, znth ds k ≤ zK s r ds - 1 := fun k =>
     le_trans (znth_le_self ds k) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [iR2_eq_iRNext (by simp [zK]), iRNext, if_neg (by simp), if_neg (by simp), if_neg (by simp),
@@ -3890,11 +3931,13 @@ lemma iR2_zK (s r ds : V) :
     znth_iRTable_eq_iR2 _ (znth ds (redexI (zK s r ds))) (hbound _),
     znth_iRTable_eq_iR2 _ (znth ds (redexJ (zK s r ds))) (hbound _)]
 
-/-- `iR2 (zK s r ds) = iRcrit (zK s r ds) (fun n ↦ iR2 (znth ds n))` — the recursive reduct IS the
-abstract critical reduct `iRcrit` at the concrete recursive `ρ`. (Bridges the closed recursion to the
-banked nut descent `iord_descent_iRcrit_of_chain`.) -/
+/-- `iR2 (zK s r ds) = iRcrit (zK s r ds) (fun n ↦ zAxReduct (iR2 (znth ds n)))` — the recursive reduct
+IS the abstract critical reduct `iRcrit` at the concrete recursive `ρ`, with the §5 atomic reduct
+`zAxReduct` applied per premise (identity off atomic axioms; the §5 `Ax^1` reduct on the L-axiom redex
+j-premise — the descent-carrying j-side fix, lap 66). Bridges the closed recursion to the banked nut
+descent `iord_descent_iRcrit_of_chain`. -/
 lemma iR2_zK_eq_iRcrit (s r ds : V) :
-    iR2 (zK s r ds) = iRcrit (zK s r ds) (fun n => iR2 (znth ds n)) := by
+    iR2 (zK s r ds) = iRcrit (zK s r ds) (fun n => zAxReduct (iR2 (znth ds n))) := by
   rw [iR2_zK, iRcrit]
 
 /-! ## The Thm-4.2 descent through the recursive `iR2` — structural + Ind assembly (tags 1,2,3)
@@ -3951,45 +3994,6 @@ lemma iRedDescent_zAx1_zAxAll {s p k : V} (hp : IsUFormula ℒₒᵣ p) :
 lemma iRedDescent_zAx1_zAxNeg {s p : V} (hp : IsUFormula ℒₒᵣ p) :
     iRedDescent (zAx1 s p) (zAxNeg s p) :=
   ⟨by simp, icmp_iotil_zAx1_zAxNeg hp, isNF_iotil_zAx1 s p⟩
-
-/-- **The §5 atomic-reduct FUNCTION** `d ↦ d[0]` for an L-axiom premise (Buchholz §5, Lemma 5.2):
-`Ax^{∀p,k} ↦ Ax^1_{·→p}` (tag 5) and `Ax^{¬p,0} ↦ Ax^1_{·→p}` (tag 6) — the principal formula stripped
-to its rank-one-lower matrix. Identity off the atomic-axiom tags. This is the j-component the K-case
-critical reduction must install (`iCritReduct`'s `vj`) instead of the table lookup `iR2(premⱼ)`, which is
-the identity on axioms (`iR2_zAxAll`/`iR2_zAxNeg`) and so yields NO õ-drop on the j-side. Threading
-`zAxReduct` through `iRNext`/`iCritReduct` tag-4 (with its Σ₁ definability) is the next lap's plumbing. -/
-noncomputable def zAxReduct (d : V) : V :=
-  if zTag d = 5 then zAx1 (fstIdx d) (zAxAllF d)
-  else if zTag d = 6 then zAx1 (fstIdx d) (zAxNegF d)
-  else d
-
-@[simp] lemma zAxReduct_zAxAll (s p k : V) : zAxReduct (zAxAll s p k) = zAx1 s p := by
-  simp [zAxReduct]
-
-@[simp] lemma zAxReduct_zAxNeg (s p : V) : zAxReduct (zAxNeg s p) = zAx1 s p := by
-  rw [zAxReduct, if_neg (by simp [zTag_zAxNeg]), if_pos (by simp [zTag_zAxNeg])]
-  simp
-
-/-- **Σ₁-definability of `zAxReduct`** (`zAxAllF d = π₁(zRest d)`, `zAxNegF d = zRest d`; `zAx1` via its
-graph). The arithmetization that lets `zAxReduct` thread through the `iRNext`/`iCritReduct` tag-4
-definition. -/
-noncomputable def _root_.LO.FirstOrder.Arithmetic.zAxReductDef : 𝚺₁.Semisentence 2 := .mkSigma
-  “y d. ∃ t, !zTagDef t d ∧
-    ( (t = 5 ∧ ∃ s, !fstIdxDef s d ∧ ∃ r, !zRestDef r d ∧ ∃ p, !pi₁Def p r ∧ !zAx1Graph y s p)
-    ∨ (t = 6 ∧ ∃ s, !fstIdxDef s d ∧ ∃ p, !zRestDef p d ∧ !zAx1Graph y s p)
-    ∨ (t ≠ 5 ∧ t ≠ 6 ∧ y = d) )”
-
-set_option maxHeartbeats 800000 in
-instance zAxReduct_defined : 𝚺₁-Function₁ (zAxReduct : V → V) via zAxReductDef := .mk fun v ↦ by
-  simp [zAxReductDef, zAxReduct, zTag_defined.iff, fstIdx_defined.iff, zRest_defined.iff,
-    pi₁_defined.iff, zAx1_defined.iff, zAxAllF, zAxNegF, numeral_eq_natCast]
-  by_cases h5 : zTag (v 1) = 5
-  · simp [h5]
-  · by_cases h6 : zTag (v 1) = 6
-    · simp [h5, h6]
-    · simp [h5, h6]
-
-instance zAxReduct_definable : 𝚺₁-Function₁ (zAxReduct : V → V) := zAxReduct_defined.to_definable
 
 /-- **j-side bundle via `zAxReduct`, ∀-axiom case**: the reduct `zAxReduct (Ax^{∀p,k})` satisfies the
 `iRedDescent` bundle (the K-case nut's j-side fact, packaged on the genuine reduct function). -/
