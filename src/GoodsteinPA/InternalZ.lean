@@ -1139,6 +1139,103 @@ instance iperm_defined : 𝚺₀-Relation (iperm : V → V → Prop) via ipermDe
     seqSucc, seqAnt, pi₁_le_self, pi₂_le_self]
 instance iperm_definable : 𝚺₀-Relation (iperm : V → V → Prop) := iperm_defined.to_definable
 
+/-- **Δ₁-definability of `isChainInf`** (via the bounded-index form `isChainInf_iff_idx`). The σ-core
+extracts every function value positively (`∃ y, !fDef y args ∧ …`), the π-core via the antecedent
+(`∀ y, !fDef y args → …`); both reduce to the same proposition because each function is total and
+single-valued. The only genuinely `𝚺₁` content is `irk ≤ r` (chainAsucc/chainAnt are `𝚺₁`-typed but
+projection-shallow); `lh`/`znth`/`seqAnt`/`seqSucc`/`inAnt` are `𝚺₀`. This is the chain-structure
+ingredient of `zKValidDef`. -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.isChainInfDef : 𝚫₁.Semisentence 3 := .mkDelta
+  (.mkSigma “s r ds.
+    ∃ l, !lhDef l ds ∧ ∃ j0 < l,
+      ( ∃ ca0, !chainAsuccDef ca0 ds j0 ∧
+          ( (∃ ss, !seqSuccDef ss s ∧ ca0 = ss) ∨ (∃ bot, !qqFalsumDef bot ∧ ca0 = bot) ) )
+      ∧ ( ∀ i <⁺ j0, ∃ cai, !chainAntDef cai ds i ∧ ∃ lc, !lhDef lc cai ∧ ∀ k < lc,
+            ∃ z, !znthDef z cai k ∧
+              ( (∃ sa, !seqAntDef sa s ∧ !inAntDef z sa)
+                ∨ (∃ i' < i, !chainAsuccDef z ds i') ) )
+      ∧ ( ∀ i < j0, ∃ ca, !chainAsuccDef ca ds i ∧ ∃ rk, !irkDef rk ca ∧ rk ≤ r ) ”)
+  (.mkPi “s r ds.
+    ∀ l, !lhDef l ds → ∃ j0 < l,
+      ( ∀ ca0, !chainAsuccDef ca0 ds j0 →
+          ( (∀ ss, !seqSuccDef ss s → ca0 = ss) ∨ (∀ bot, !qqFalsumDef bot → ca0 = bot) ) )
+      ∧ ( ∀ i <⁺ j0, ∀ cai, !chainAntDef cai ds i → ∀ lc, !lhDef lc cai → ∀ k < lc,
+            ∀ z, !znthDef z cai k →
+              ( (∀ sa, !seqAntDef sa s → !inAntDef z sa)
+                ∨ (∃ i' < i, ∀ cai', !chainAsuccDef cai' ds i' → z = cai') ) )
+      ∧ ( ∀ i < j0, ∀ ca, !chainAsuccDef ca ds i → ∀ rk, !irkDef rk ca → rk ≤ r ) ”)
+
+instance isChainInf_defined : 𝚫₁-Relation₃ (isChainInf : V → V → V → Prop) via isChainInfDef :=
+  ⟨by intro v
+      simp [isChainInfDef, chainAsucc_defined.iff, chainAnt_defined.iff, irk_defined.iff,
+        lh_defined.iff, znth_defined.iff, seqAnt_defined.iff, seqSucc_defined.iff,
+        inAnt_defined.iff, qqFalsum_defined.iff],
+   by intro v
+      simp [isChainInfDef, isChainInf_iff_idx, chainAsucc_defined.iff, chainAnt_defined.iff,
+        irk_defined.iff, lh_defined.iff, znth_defined.iff, seqAnt_defined.iff,
+        seqSucc_defined.iff, inAnt_defined.iff, qqFalsum_defined.iff]⟩
+
+instance isChainInf_definable : 𝚫₁-Relation₃ (isChainInf : V → V → V → Prop) :=
+  isChainInf_defined.to_definable
+
+/-- **Validity of a `K^r` chain inference** (Buchholz Def p.8 + Lemma 3.3) — exactly the deferred
+hypotheses `iord_descent_iRcrit_of_chain'` consumes beyond the premises being `ZDerivation`s:
+`isChainInf` (the chain-structure data `j0`/`A_{j0}`/threading/rank), the per-premise permissibility
+`tp(dᵢ) ◁ Γᵢ→Aᵢ` and criticality `tp(dᵢ) ⋪ Π`, and formula-hood of each premise's principal formula
+(which feeds `tp_isymR_pos`/`tp_isymLk_pos` to discharge the `hwfR`/`hwfL` rank conditions). This is
+the `zK`-disjunct side condition that the refined `ZPhi` carries. -/
+def zKValid (s r ds : V) : Prop :=
+  isChainInf s r ds ∧
+  (∀ i < lh ds, iperm (tp (znth ds i)) (fstIdx (znth ds i))) ∧
+  (∀ i < lh ds, ¬ iperm (tp (znth ds i)) s) ∧
+  (∀ i < lh ds, zTag (znth ds i) = 1 → IsUFormula ℒₒᵣ (zIallF (znth ds i))) ∧
+  (∀ i < lh ds, zTag (znth ds i) = 2 → IsUFormula ℒₒᵣ (zInegF (znth ds i))) ∧
+  (∀ i < lh ds, zTag (znth ds i) = 5 → IsUFormula ℒₒᵣ (zAxAllF (znth ds i))) ∧
+  (∀ i < lh ds, zTag (znth ds i) = 6 → IsUFormula ℒₒᵣ (zAxNegF (znth ds i)))
+
+/-- **Δ₁-definability of `zKValid`.** Bundles `isChainInfDef.sigma`/`.pi` with the bounded-`∀ i < lh ds`
+per-premise conditions: `iperm`/`¬iperm` (`ipermDef`, `𝚺₀`) read off `tp`/`fstIdx` of premise `i`, and
+the tag-gated principal-formula well-formedness (`IsUFormula` via `(isUFormula ℒₒᵣ).sigma`/`.pi`). The
+six `∀ i < lh ds` conjuncts of `zKValid` are fused under one bounded `∀ i < l` here; `forall_and`
+recovers the split. -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.zKValidDef : 𝚫₁.Semisentence 3 := .mkDelta
+  (.mkSigma “s r ds.
+    !(isChainInfDef.sigma) s r ds ∧
+    ∃ l, !lhDef l ds ∧ ∀ i < l,
+      ∃ zi, !znthDef zi ds i ∧ ∃ ti, !tpDef ti zi ∧
+        ( (∃ fi, !fstIdxDef fi zi ∧ !ipermDef ti fi)
+          ∧ ¬(!ipermDef ti s)
+          ∧ ∃ tg, !zTagDef tg zi ∧
+            ( (tg = 1 → ∃ q, !zIallFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q)
+            ∧ (tg = 2 → ∃ q, !zInegFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q)
+            ∧ (tg = 5 → ∃ q, !zAxAllFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q)
+            ∧ (tg = 6 → ∃ q, !zAxNegFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q) ) ) ”)
+  (.mkPi “s r ds.
+    !(isChainInfDef.pi) s r ds ∧
+    ∀ l, !lhDef l ds → ∀ i < l,
+      ∀ zi, !znthDef zi ds i → ∀ ti, !tpDef ti zi →
+        ( (∀ fi, !fstIdxDef fi zi → !ipermDef ti fi)
+          ∧ ¬(!ipermDef ti s)
+          ∧ ∀ tg, !zTagDef tg zi →
+            ( (tg = 1 → ∀ q, !zIallFDef q zi → !(isUFormula ℒₒᵣ).pi q)
+            ∧ (tg = 2 → ∀ q, !zInegFDef q zi → !(isUFormula ℒₒᵣ).pi q)
+            ∧ (tg = 5 → ∀ q, !zAxAllFDef q zi → !(isUFormula ℒₒᵣ).pi q)
+            ∧ (tg = 6 → ∀ q, !zAxNegFDef q zi → !(isUFormula ℒₒᵣ).pi q) ) ) ”)
+
+instance zKValid_defined : 𝚫₁-Relation₃ (zKValid : V → V → V → Prop) via zKValidDef :=
+  ⟨by intro v
+      simp [zKValidDef, HierarchySymbol.Semiformula.val_sigma, znth_defined.iff, tp_defined.iff,
+        fstIdx_defined.iff, iperm_defined.iff, zTag_defined.iff, zIallF_defined.iff,
+        zInegF_defined.iff, zAxAllF_defined.iff, zAxNegF_defined.iff, lh_defined.iff],
+   by intro v
+      simp [zKValidDef, zKValid, HierarchySymbol.Semiformula.val_sigma, znth_defined.iff,
+        tp_defined.iff, fstIdx_defined.iff, iperm_defined.iff, zTag_defined.iff, zIallF_defined.iff,
+        zInegF_defined.iff, zAxAllF_defined.iff, zAxNegF_defined.iff, lh_defined.iff, forall_and,
+        numeral_eq_natCast]⟩
+
+instance zKValid_definable : 𝚫₁-Relation₃ (zKValid : V → V → V → Prop) :=
+  zKValid_defined.to_definable
+
 /-- **L3.1 on a GENUINE chain** (E-CRUX2 §8.1, the lap-66 NEXT-item-1 bridge). For the chain `zK s r ds`
 with chain-inference data `j0` (from `isChainInf`: `hj0`/`hAj0`/`hchain`/`hrank` are exactly its three
 components), the coded symbol sequence `Iseq := tpSeq ds` (so `znth Iseq i = tp (znth ds i)`), and the
@@ -4306,21 +4403,8 @@ needs the Buchholz side conditions of a *valid* `K^r` inference — packaged her
 the bare `ZPhi` `zK` disjunct (just `Seq ds ∧ ∀ i, premise ∈ ZDerivation`) does NOT yet carry. This
 lemma proves the tag-4 descent CONDITIONALLY on `zKValid`; wiring `zKValid` into the `ZPhi` `zK`
 disjunct (the Σ₁/Δ₁ Fixpoint cascade) is the next phase, after which the tag-4 case of
-`iord_descent_iR2_struct` falls out by feeding `zDerivation_zK_inv` + this lemma. -/
-
-/-- **Validity of a `K^r` chain inference** (Buchholz Def p.8 + Lemma 3.3) — exactly the deferred
-hypotheses `iord_descent_iRcrit_of_chain'` consumes beyond the premises being `ZDerivation`s:
-`isChainInf` (the chain-structure data `j0`/`A_{j0}`/threading/rank), the per-premise permissibility
-`tp(dᵢ) ◁ Γᵢ→Aᵢ` and criticality `tp(dᵢ) ⋪ Π`, and formula-hood of each premise's principal formula
-(which feeds `tp_isymR_pos`/`tp_isymLk_pos` to discharge the `hwfR`/`hwfL` rank conditions). -/
-def zKValid (s r ds : V) : Prop :=
-  isChainInf s r ds ∧
-  (∀ i < lh ds, iperm (tp (znth ds i)) (fstIdx (znth ds i))) ∧
-  (∀ i < lh ds, ¬ iperm (tp (znth ds i)) s) ∧
-  (∀ i < lh ds, zTag (znth ds i) = 1 → IsUFormula ℒₒᵣ (zIallF (znth ds i))) ∧
-  (∀ i < lh ds, zTag (znth ds i) = 2 → IsUFormula ℒₒᵣ (zInegF (znth ds i))) ∧
-  (∀ i < lh ds, zTag (znth ds i) = 5 → IsUFormula ℒₒᵣ (zAxAllF (znth ds i))) ∧
-  (∀ i < lh ds, zTag (znth ds i) = 6 → IsUFormula ℒₒᵣ (zAxNegF (znth ds i)))
+`iord_descent_iR2_struct` falls out by feeding `zDerivation_zK_inv` + this lemma. (`zKValid` and its
+`𝚫₁` arithmetization `zKValidDef` are defined earlier, alongside `isChainInfDef`.) -/
 
 /-- **THE K-case descent (tag 4), conditional on chain validity.** For a valid `K^r` chain `zK s r ds`
 whose premises are all `ZDerivation`s, the recursive reduct `iR2` strictly lowers the ordinal:
