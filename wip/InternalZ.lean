@@ -1187,6 +1187,27 @@ lemma zDerivation_induction {P : V → Prop} (hP : 𝚫₁-Predicate P)
     ∀ d, ZDerivation d → P d :=
   (zconstruction (V := V)).induction (Γ := 𝚺) hP.of_deltaOne H
 
+/-- **Structural descent over `ZDerivation` for the I-rules** (Buchholz Thm 4.2, cases 2–3 = LH1/LH2):
+for any Z-derivation `d` built by `I^a_∀xF` or `I_¬A` (`zTag d ∈ {1,2}`), the reduct strictly lowers
+the ordinal, `o(iR d) ≺ o(d)`. Proved by `ZDerivation` structural induction (the C0 Fixpoint),
+dispatching on the rule: the I-rule cases are `iord_descent_iR_z*`; atom/Ind/K^r are vacuous (wrong
+tag). The Ind/K^r tags broaden into this predicate once `iR`'s reducts for those rules are built — the
+Ind chain reduct (LH4) and the critical/non-critical K^r branches (the nut). This is the V-level,
+machine-checked analogue of the `GentzenCon` placeholder axiom `ord_R_descends`, restricted to the
+rules whose reduct `iR` already constructs. -/
+theorem iord_iR_descent_I :
+    ∀ d, ZDerivation d → (zTag d = 1 ∨ zTag d = 2) → icmp (iord (iR d)) (iord d) = 0 := by
+  apply zDerivation_induction
+  · definability
+  · intro C _ d hphi
+    rcases hphi with ⟨s, rfl⟩ | ⟨s, a, p, d0, rfl, _⟩ | ⟨s, p, d0, rfl, _⟩ |
+      ⟨s, at', p, d0, d1, rfl, _, _⟩ | ⟨s, r, ds, rfl, _, _⟩
+    · rintro (h | h) <;> simp at h
+    · rintro _; exact iord_descent_iR_zIall s a p d0
+    · rintro _; exact iord_descent_iR_zIneg s p d0
+    · rintro (h | h) <;> simp at h
+    · rintro (h | h) <;> simp at h
+
 /-! ## C0.5 — the Foundation→Z bridge (NEXT milestone, lap-62 reflection)
 
 **The missing seam** (judge `E-EQ5-ROUTE-FINDING-2026-06-23.md` Finding 3; lap-62 reflection
