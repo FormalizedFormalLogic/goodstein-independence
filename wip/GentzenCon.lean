@@ -241,11 +241,16 @@ theorem seqDescent_dominated (seq : Semisentence ℒₒᵣ 2)
   -- `hstdom` bounds the realizer's complexity by a STANDARD Grzegorczyk level
   obtain ⟨l₀, hl₀bound⟩ := hstdom
   have hβbound : ∀ n, iC (β n) ≤ iF l₀ n := fun n => hl₀bound n (β n) (hgraph n)
-  -- REMAINING GAP: the Cor-3.4 width bookkeeping. Build `wseq`/`Cβ`/(a positive standard `l₀'`) with
-  --   (a) `iC (β (blk wseq j)) ≤ Cβ + j`   — block spacing absorbs the complexity jumps
-  --   (b) `znth wseq n ≤ iF l₀' n`          — width domination from `hβbound` (Lemma 3.2)
-  -- Everything else (`0 < l₀'`, NF, `≠0`, descent, definability of `β`) is supplied above.
-  -- TODO(width-construction): `BlkRec` width code over `t ↦ iC (β (t+1))`, `Cβ := iC (β 0)`.
+  -- REMAINING GAP: the Cor-3.4 width bookkeeping. `SeqDominated` currently packages the width as a
+  -- FINITE code `wseq : M` (`znth wseq n`), but `ANALYSIS-2026-06-23-lap57-width-code-wall.md` shows
+  -- **no finite `wseq` works**: past `lh wseq`, `znth = 0` ⟹ `blk wseq j ∼ j`, so `iC (β (blk wseq j))
+  -- ≤ Cβ + j` fails for the complexity-growing descents Cor 3.4 targets. The width must be a
+  -- `𝚺₁` FUNCTION `W := fun t => iC (β (t+1))` (mirroring `Grz.corW`); that requires refactoring
+  -- `BlkRec`/`StdCor34`/`SeqDominated` to read `W (blk)` instead of `znth wseq (blk)`. Once refactored,
+  -- this discharges DIRECTLY: `Cβ := iC (β 0)`, `l₀' := l₀ + 1`, `hβC` via the internal `C_le_wsumc`
+  -- (`iC (β n) ≤ wsumc W n ≤ n`), width-dom `W n = iC (β (n+1)) ≤ iF l₀ (n+1) ≤ iF (l₀+1) n` from
+  -- `hβbound`. Everything else (`0<l₀'`, NF, `≠0`, descent, definability of `β`) is supplied above.
+  -- TODO(width-function-refactor): see the analysis note; this `<;> sorry` collapses to the refactor.
   refine ⟨?_, ?_, ?_, β, ?_, hNF, h0, hβdesc, ?_, hdef, ?_⟩ <;> sorry
 
 /-- **The deep crux-1 bridge** — PROVED modulo the sharpened `seqDescent_dominated` obligation

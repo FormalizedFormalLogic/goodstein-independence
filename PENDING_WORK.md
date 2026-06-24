@@ -1,6 +1,29 @@
 # Pending work — open obligations & attack paths
 
-## ⭐ Lap 56 — crux-1 redirect: natCode↔NF bridge DISSOLVED (transparent icmp); over-generality sharpened
+## ⭐⭐ Lap 57 — TWO findings: (a) seqDescent_dominated was FALSE, fixed; (b) width-code wall
+
+**(a) Soundness fix (DONE, committed `38c6de0`).** Lap-56's `seqDescent_dominated` was **false at ℕ**
+(conclusion `SeqDominated` asserts an infinite ε₀-descent; hyps vacuously met by empty seq). Fixed by
+threading an explicit realizer `SeqRealized seq M = ∃ β:M→M, (∀n, M⊧/![β n,n] seq) ∧ NF ∧ ≠0 ∧ 𝚺₁`,
+discharging the β-parts of `SeqDominated` directly. New disclosed axiom `gentzenDescentφ_realized`. See
+memory `seqdominated-vacuity-needs-realizer`.
+
+**(b) THE sharpened crux-1 target — `BlkRec`-over-function refactor (see
+`ANALYSIS-2026-06-23-lap57-width-code-wall.md`).** The remaining `seqDescent_dominated` gap is NOT
+"build a finite width code `wseq`" — **no finite `wseq` works**. `nonterminating_of_slowdown` needs the
+slow-down NF+`iC≤k+1`+descent for ALL `k:V`; a finite `wseq` gives `znth=0` past `lh` ⟹ `blk wseq j ∼ j`
+⟹ `iC(β(blk j)) ≤ Cβ+j` fails for complexity-growing descents (exactly Cor 3.4's case). **Fix:** width as
+a `𝚺₁` FUNCTION `W := fun t => iC(β(t+1))` (mirrors `Grz.corW`). Refactor steps:
+1. `src/BlkRec.lean`: add `blkF W`/`offF W` (𝚺₁ `boState` recursion reading `W (π₁ ih)`), re-prove the 4
+   bookkeeping facts + width-sum facts + internal `C_le_wsumc` (= `Grz.C_le_wsum_corW`). Additive → green.
+2. `src/StdCor34.lean`: `crux1_internal_run_of_width_dom` etc. switch `BlkRec.blk wseq`→`blkF W`; width
+   hyp becomes `∀n, W n ≤ iF l₀ n`; `hβC` via `C_le_wsumc`.
+3. `wip/GentzenCon.lean` `SeqDominated`: `wseq Cβ : M` → `W : M→M`; `seqDescent_dominated` then discharges
+   fully (`Cβ:=iC(β 0)`, `l₀':=l₀+1`, width-dom from `hβbound`). No remaining width gap.
+
+This is hardest-first crux-1 work; the descent half is already general (works for any width). Start at (1).
+
+## Lap 56 — crux-1 redirect: natCode↔NF bridge DISSOLVED (transparent icmp); over-generality sharpened
 
 **FRESH-MIND REVIEW. Build green 1315; headline honest sorry; M1+Phase 1 done; faithfulness clean.
 Direction VALIDATED** (crux 1 right hardest-but-tractable target; crux-2 eq-5 stays 🟠 parked). Two
