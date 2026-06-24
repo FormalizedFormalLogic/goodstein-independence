@@ -141,6 +141,26 @@ lemma termFvSubstVec_cons {kk u us : V} (hu : IsUTerm L u) (hus : IsUTermVec L k
 lemma isSemiterm_weaken {n m u : V} (h : IsSemiterm L n u) (hnm : n ≤ m) : IsSemiterm L m u :=
   IsSemiterm.def.mpr ⟨(IsSemiterm.def.mp h).1, le_trans (IsSemiterm.def.mp h).2 hnm⟩
 
+/-- **`termFvSubst` preserves `IsUTerm`** (for an `IsUTerm` replacement `t`). The `IsUTerm` analog of
+`IsSemitermVec.termFvSubst`, needed for the constructor-commutation lemmas (`fvSubst_neg`) that work at
+the `IsUFormula`/`IsUTerm` level. -/
+lemma IsUTerm.termFvSubst (ht : IsUTerm L t) {u} (hu : IsUTerm L u) :
+    IsUTerm L (termFvSubst L a t u) := by
+  apply IsUTerm.induction 𝚺 ?_ ?_ ?_ ?_ u hu
+  · definability
+  · intro z; simp
+  · intro x; by_cases h : x = a <;> simp [h, ht]
+  · intro k f v hkf hv ih
+    rw [termFvSubst_func hkf hv]
+    refine IsUTerm.mk (Or.inr (Or.inr ⟨k, f, _, hkf, ⟨(len_termFvSubstVec hv).symm, ?_⟩, rfl⟩))
+    intro i hi; rw [nth_termFvSubstVec hv hi]; exact ih i hi
+
+/-- **`termFvSubstVec` preserves `IsUTermVec`** (for an `IsUTerm` replacement `t`). -/
+lemma IsUTermVec.termFvSubst (ht : IsUTerm L t) {kk v} (hv : IsUTermVec L kk v) :
+    IsUTermVec L kk (termFvSubstVec L a t kk v) :=
+  ⟨(len_termFvSubstVec hv).symm, fun i hi ↦ by
+    rw [nth_termFvSubstVec hv hi]; exact IsUTerm.termFvSubst ht (hv.2 i hi)⟩
+
 end termFvSubst
 
 /-! ## Formula-level free-variable substitution `^&a ↦ t`
@@ -280,6 +300,39 @@ lemma fvSubst_isSemiformula (ht : IsSemiterm L 0 t) {n p : V} (hp : IsSemiformul
     simpa [h₁.isUFormula] using ih₁
   · have ih₁ : IsSemiformula L (n + 1) (fvSubst L a t p₁) := ih p₁ (by simp) (n + 1) (by simp [f]) h₁
     simpa [h₁.isUFormula] using ih₁
+
+/-- **`fvSubst` preserves `IsUFormula`** (for an `IsUTerm` replacement `t`). Mirrors `IsUFormula.neg`. -/
+lemma IsUFormula.fvSubst (ht : IsUTerm L t) {p} (hp : IsUFormula L p) :
+    IsUFormula L (fvSubst L a t p) := by
+  apply IsUFormula.ISigma1.sigma1_succ_induction ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ p hp
+  · definability
+  · intro k r v hr hv; simp [hr, hv, hv.termFvSubst ht]
+  · intro k r v hr hv; simp [hr, hv, hv.termFvSubst ht]
+  · simp
+  · simp
+  · intro p q hp hq ihp ihq; simp [hp, hq, ihp, ihq]
+  · intro p q hp hq ihp ihq; simp [hp, hq, ihp, ihq]
+  · intro p hp ihp; simp [hp, ihp]
+  · intro p hp ihp; simp [hp, ihp]
+
+/-- **`fvSubst` commutes with coded negation** (`fvSubst a t (∼p) = ∼(fvSubst a t p)`, for an `IsUTerm`
+replacement `t`). Both are `UformulaRec1` structural recursions that touch only the atom term-vectors
+(identically on `rel`/`nrel`); the rule needed to transfer the `zIneg` succedent `inegF p` under
+substitution. -/
+lemma fvSubst_neg (ht : IsUTerm L t) {p} (hp : IsUFormula L p) :
+    fvSubst L a t (neg L p) = neg L (fvSubst L a t p) := by
+  apply IsUFormula.ISigma1.sigma1_succ_induction ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ p hp
+  · definability
+  · intro k r v hr hv; simp [hr, hv, hv.termFvSubst ht]
+  · intro k r v hr hv; simp [hr, hv, hv.termFvSubst ht]
+  · simp
+  · simp
+  · intro p q hp hq ihp ihq
+    simp [hp, hq, hp.neg, hq.neg, IsUFormula.fvSubst ht hp, IsUFormula.fvSubst ht hq, ihp, ihq]
+  · intro p q hp hq ihp ihq
+    simp [hp, hq, hp.neg, hq.neg, IsUFormula.fvSubst ht hp, IsUFormula.fvSubst ht hq, ihp, ihq]
+  · intro p hp ihp; simp [hp, hp.neg, IsUFormula.fvSubst ht hp, ihp]
+  · intro p hp ihp; simp [hp, hp.neg, IsUFormula.fvSubst ht hp, ihp]
 
 end fvSubst
 

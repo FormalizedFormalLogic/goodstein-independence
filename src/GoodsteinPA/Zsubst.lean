@@ -514,4 +514,25 @@ lemma fstIdx_zsubst {d : V} (a t : V) (hZ : ZDerivation d) :
   · rw [zsubst_zAxAll, fstIdx_zAxAll, fstIdx_zAxAll]
   · rw [zsubst_zAxNeg, fstIdx_zAxNeg, fstIdx_zAxNeg]
 
+/-! ## Substitution-commutation substrate for `ZDerivation_zsubst` (rung-1 step 2)
+
+The per-Z-rule transfer lemmas the genuine correctness `ZDerivation_zsubst` will consume:
+* `inAnt_fvSubstSeq` — antecedent membership is preserved (atom + Ax cases; no freshness needed).
+* `fvSubst_inegF` — `fvSubst` commutes with `inegF` (the `zIneg`/`zAxNeg` succedent). -/
+
+/-- **Antecedent membership transfers under `fvSubstSeq`.** If `A ∈ Γ` (positionally) then
+`fvSubst a t A ∈ fvSubstSeq a t Γ` — the atom-rule and ∀/¬-axiom cases of `ZDerivation_zsubst`. -/
+lemma inAnt_fvSubstSeq {a t A Γ : V} (h : inAnt A Γ) :
+    inAnt (fvSubst ℒₒᵣ a t A) (fvSubstSeq a t Γ) := by
+  obtain ⟨i, hi, hA⟩ := h
+  exact ⟨i, by rw [fvSubstSeq_lh]; exact hi, by rw [znth_fvSubstSeq hi, hA]⟩
+
+/-- **`fvSubst` commutes with `inegF`** (`inegF p = ∼p ⋎ ⊥`), via `fvSubst_neg`. Needed to transfer the
+`zIneg` conclusion succedent `inegF p` under eigenvariable substitution. -/
+lemma fvSubst_inegF {a t p : V} (ht : IsUTerm ℒₒᵣ t) (hp : IsUFormula ℒₒᵣ p) :
+    fvSubst ℒₒᵣ a t (inegF p) = inegF (fvSubst ℒₒᵣ a t p) := by
+  unfold inegF
+  rw [fvSubst_or hp.neg (by simp), fvSubst_neg ht hp]
+  simp
+
 end GoodsteinPA.InternalZ
