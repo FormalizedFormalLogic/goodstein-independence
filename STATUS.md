@@ -9,10 +9,27 @@ asset, OFF the headline path** (free-X-TI ⊢ PRWO, wrong direction). **Crux 1 (
 (lap 57); crux 2 (`PRWO→Con`, Buchholz-Z ordinal analysis arithmetized in IΣ₁) is the sole remaining math
 content — the 🟡 active frontier, now sharply localized to `RedSound` (InternalZ.lean): the `iR2`-reduct of
 a contradiction derivation must itself be a genuine `ZDerivation` = real internalized cut-elimination.** ·
-**Build**: 🟢 green (1321 jobs, `lake build GoodsteinPA`) · **Updated**: lap 71 (FRESH-MIND REVIEW —
-direction KEPT; Option B refuted in-kernel lap 70, Option A genuine reduct forced) · 2026-06-24 · `e1a6147`
+**Build**: 🟢 green (1323 jobs, `lake build GoodsteinPA`) · **Updated**: lap 74 (DEEP REFLECTION —
+direction KEPT + re-validated; crux-2 unavoidability *proven* from altitude) · 2026-06-24 · `ab772d0`
 
-> **⭐⭐⭐ Lap-71 FRESH-MIND REVIEW (read FIRST — current).** Re-verified the kernel from real `#print
+> **⭐⭐⭐ Lap-74 DEEP REFLECTION (read FIRST — current).** See `REFLECTION-2026-06-24-lap74.md` (primary
+> deliverable). Re-verified the kernel (real `#print axioms`, build green **1323**): headline
+> `peano_not_proves_goodstein = [propext, sorryAx, choice, Quot.sound]` (**0 math axioms**, anti-fraud
+> intact); `goodstein_implies_consistency = + PA_delta1Definable`; faithfulness anchor clean. **Direction
+> KEEP — re-validated, not stale; trajectory is monotone forward motion (laps 66→73), not circling.** Three
+> altitude sharpenings the grind laps can't make: **(1) crux 2 is genuinely UNAVOIDABLE — *proven* this lap**:
+> the banked free-X `peano_not_proves_TI` is the WRONG SHAPE (`γ` can't imply free-`X` TI), the
+> specific-instance route still needs Gentzen, and the meta-level monument can't be reused internally — so no
+> ε₀-strength-free proof exists; the "off-path" verdict is correct, a future lap must not re-litigate it.
+> **(2) lap-70 reduct re-work**: the genuine Option-A reduct re-fits BOTH validity (RedSound) AND its own
+> descent (`o(R d)≺o(d)`); the `iord`/ω-tower *assignment* machinery is reusable but the `iR2`/`iCritReduct`
+> *definition* + `iord_iR2_iterate_descends` *assembly* are superseded — STOP extending `iR2` infra. **(3)
+> `PA_delta1Definable` is the named SECOND FRONT**: still an `axiom` upstream (confirmed), independent of crux
+> 2, mandatory for axiom-free, untouched — the biggest non-cut-elim risk to the endpoint. **Highest-value next
+> = finish `ZDerivation_zsubst` (rung-1 step 2)** → genuine Ind reduct (rung 2). Direction unchanged; drive
+> the RedSound rung ladder.
+
+> **⭐⭐⭐ Lap-71 FRESH-MIND REVIEW (historical — see lap-74 box above).** Re-verified the kernel from real `#print
 > axioms`: headline `peano_not_proves_goodstein` = `[propext, sorryAx, choice, Quot.sound]` (**0 math
 > axioms**, honest `sorry`, anti-fraud intact); `goodstein_implies_consistency` = that + `PA_delta1Definable`;
 > the lap-70 landmark lemmas (`not_zKValid_iCritReduct`, `ZDerivation_iR2_zIall`, `iord_descent_iR2_zK_of_valid`)
@@ -285,7 +302,20 @@ pure mathlib ordinal arithmetic it is **Aristotle-eligible** (the one piece with
 E **pins which `≺` F may use** (co-design). See newest `HANDOFF`.
 
 ## Where it stands
-**(lap-71 FRESH-MIND REVIEW — CURRENT read.)** Build green 1321; headline honest `sorry` (real `#print
+**(lap-74 DEEP REFLECTION — CURRENT read.)** Build green **1323**; headline honest `sorry` (real `#print
+axioms = [propext, sorryAx, choice, Quot.sound]`, 0 math axioms, anti-fraud intact; statement re-audited
+faithful — no transcription drift). M1 + Phase 1 long done; crux 1 (`γ→PRWO`) landed axiom-clean lap 57.
+The single open girder `goodstein_implies_consistency` = crux 1 ∘ **crux 2** (`PRWO→Con`), with crux 2
+sharply localized to the lone `InternalZ` obligation **`RedSound`** (the genuine validity-preserving reduct
+of a contradiction Z-derivation = real internalized cut-elimination). **Lap 74 re-validated the direction
+from altitude and PROVED crux 2 is unavoidable** (the banked free-X monument is the wrong shape; the
+specific-instance route still needs Gentzen — no ε₀-strength-free proof exists). Active work = the RedSound
+rung ladder (0.5 ✅ → 1 `zsubst` → 2 Ind reduct → 3 K/cut reduct → 4 dispatch), now at `ZDerivation_zsubst`
+(rung-1 step 2). Two flagged risks: the lap-70 reduct re-work (`iR2`/`iCritReduct` superseded — stop
+extending; `iord`/ω-tower assignment reusable) and the named second front `PA_delta1Definable` (still an
+upstream `axiom`, mandatory for axiom-free, untouched). See `REFLECTION-2026-06-24-lap74.md`.
+
+**(lap-71 FRESH-MIND REVIEW — historical read.)** Build green 1321; headline honest `sorry` (real `#print
 axioms` = `[propext, sorryAx, choice, Quot.sound]`, 0 math axioms, faithfulness anchor clean, anti-fraud
 intact — all re-verified). M1 + Phase 1 (Gödel II hook) long done; crux 1 (`γ→PRWO`) landed axiom-clean
 lap 57. The single open math girder `goodstein_implies_consistency` = crux 1 ∘ **crux 2** (`PRWO→Con`),
@@ -486,6 +516,16 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-24 (lap 74 — DEEP REFLECTION):** Altitude pass on the stronger model (`REFLECTION-2026-06-24-lap74.md`,
+  primary deliverable). Re-verified the kernel (real `#print axioms`, green **1323**): headline 0 math axioms,
+  honest `sorry`, anti-fraud intact; statement re-audited faithful (no transcription drift — `goodsteinSentence`
+  = standard Goodstein over genuine `Peano`). **Direction KEPT + re-validated.** Three sharpenings: **(1)
+  PROVED crux 2 is unavoidable** — the banked free-X monument is the wrong shape and the specific-instance route
+  still needs Gentzen, so no ε₀-strength-free proof exists (closes the "resurrect the monument" door for future
+  laps). **(2)** flagged the lap-70 reduct re-work (genuine reduct re-fits validity AND descent; `iord`/ω-tower
+  *assignment* reusable, `iR2`/`iCritReduct` *definition* + iterate-descent *assembly* superseded — stop
+  extending `iR2`). **(3)** named `PA_delta1Definable` the official second front (still an upstream `axiom`,
+  mandatory, untouched). Laps 71–73 (rung 0.5 + `zsubst` define/correctness) confirmed monotone, not circling.
 - **2026-06-24 (lap 71 — FRESH-MIND REVIEW):** Re-verified the kernel from real `#print axioms` (headline
   0 math axioms, honest `sorry`; lap-70 landmarks clean; build green 1321). **Direction KEPT.** Crux 2 is
   localized to the single `RedSound` obligation; lap 70 refuted Option B in-kernel (`not_zKValid_iCritReduct`)
@@ -600,61 +640,10 @@ escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
   it internalizes) via a combined tail-bound + monotonicity strong induction (`evalNat_reflect_combined`).
   Substrate inventory: codes/`iC`/`ievalNat`/`iCanon`/`icmp`/`isNF`/order-reflection. Aristotle `ibump_mono`
   COMPLETE (downloaded, not yet ported to V — order-reflection didn't need it). Build green 1307 jobs.
-- **2026-06-23 (lap 36 — DEEP REFLECTION + WALL B DISSOLVED):** Found wall B (the opaque
-  `codeOfREPred`↔`igoodstein` bridge, `ON-LINE-REQUEST`) was self-inflicted by keeping the opaque blob as
-  `goodsteinSentence`; `Encoding.lean`'s docstring sanctions a transparent refactor gated on the bridge
-  spec. **Executed it:** redefined `goodsteinSentence := “∀ m, ∃ N, !igoodsteinDef 0 m N”`, re-proved
-  `goodsteinSentence_faithful` axiom-clean (identical locked RHS), and **discharged `hB`**. Real `#print
-  axioms`: faithful bridge clean; the chain's lone `sorryAx` is now only `hCD`. Two walls → one; the only
-  literature gate removed (`ON-LINE-REQUEST` archived). See `REFLECTION-2026-06-23-lap36.md`. Build green 1306.
-- **2026-06-23 (laps 34–35 — wall-C descent-existence brick + `hDdef` DISCHARGED):** Built the M-internal
-  descent scaffold and discharged its lone `sorry`: `DescentConstruction.descent_seq_exists`
-  (`∀k, ∃W, IsDescent f a₀ W ∧ lh W=k+1`) is sorry-free + axiom-clean, promoted to `src/`. `D(k)` shown
-  `LX`-definable via the binary-definability combinators (`lxDef_exists`/`lxDef2_and`) + the membership/
-  `Seq`-graph form `isDescent_iff_mem` (key move: the `X`-atom sits on a bound var, not a `znth`-term).
-  GOTCHA: mixed `ℒₒᵣ`-guard + `X`-atom `LX` formulas — write the guard in `ℒₒᵣ`, `lMap Φ` it, conjoin the
-  `Xsym`/`prec` atom in `LX`. The remaining wall-C content is the βₖ slow-down + the run (now folded into `hCD`).
-- **2026-06-23 (lap 33 — review: direction re-validated; equality plumbing complete, A2-part-2 is the
-  gate):** Real `#print axioms` reconfirmed: `peano_not_proves_TI` clean, `…_modulo_semantic` = trust-base
-  + 1 🟢 native_decide + exactly **one** `sorryAx` (`no_min_descent_absurd_of_goodstein`). Single wall.
-  Validated that the substrate (`ReductModel.reduct_models_isigma1`, `DescentCore.lemma36_nonterminating`/
-  `ineq6_step`) is built but gated on `[Structure.Eq LX M]` — so the lap-31/32 equality work (X-cong into
-  `paLX`; `𝗘𝗤 ⪯ paLX`) is the correct enabler, and A2-part-2 (thread `Structure.Eq` via `consequence_iff_eq`)
-  is the immediate gate before walls B/C/D. STATUS/ledger refreshed. Build green 1304 jobs.
-- **2026-06-23 (laps 31–32 — equality plumbing for the model-internal descent):** Proved the
-  X-congruence matrix in `PXFc` (lap 31 `3ba2727`) and **wired `relExt Xsym` (`∀x y, x=y→X x→X y`) into
-  `paLX`** as a genuine axiom (lap 32 `a0c611f`) — `peano_not_proves_TI` re-validated axiom-clean after the
-  3-summand `paLX` change. Then proved **`𝗘𝗤 ⪯ paLX`** (lap 32 `32d0b0e`, `DescentLift.eqLX_subset_paLX` +
-  `WeakerThan.ofSubset`): every `𝗘𝗤(LX)` axiom is an `lMap Φ`-image of a `𝗣𝗔⁻` axiom or `relExt Xsym`, so
-  models of `paLX` carry real equality. GOTCHA banked: prove `lMap`-over-`Matrix.conj` by **casing the
-  concrete ℒₒᵣ symbol** (`cases r`/`cases f`), not a general-`k` higher-order rewrite.
-- **2026-06-23 (lap 30 — review: E wall → ONE semantic lemma via first-order completeness):** Found
-  that `Thm56.DescentE` need not be a hand-built `paLX` sequent derivation. Foundation's
-  `Derivation.completeness_of_encodable` turns the semantic premise "every `M ⊧ paLX` models `TI prec`"
-  into `paLX ⟹ [TI prec]`. New `src/DescentSemantic.lean`: built `LX.Encodable`, proved `descentE :
-  Thm56.DescentE` and `peano_not_proves_goodstein_modulo_semantic` **modulo one disclosed `sorry`**
-  (`paLX_models_TI_of_PA_provable`). Real `#print axioms` on the full chain = `[propext, sorryAx, choice,
-  Quot.sound, native_decide.ax_1_5]` — no `PA_delta1Definable`, no custom axiom; discharging the lemma
-  ⟹ clean headline. Resolves the free-`X` obstruction (models of `paLX` carry `X`) and drops the
-  literature gate. Build green 1302 jobs; `Statement.lean` headline `sorry` intact.
-- **2026-06-23 (lap 27 — DEEP REFLECTION: F-φ solved on Aristotle; back-end DECIDED = Route B):**
-  Altitude pass; faithfulness audit clean (no transcription drift in `Thm56`/`Seam`). **F-φ
-  (`rePred_ltPull_natCode`) returned COMPLETE from Aristotle** — verified its statement is verbatim ours
-  and uses our `natCode`; proved on `v4.28.0`, so a mechanical `v4.31` port is pending (`wip/aristotle-fphi/`).
-  **Reversed the deferred back-end framing: committed to Route B.** Found that the lap 25–26 internal-V
-  `sigma1_pos_succ_induction` assembly produces X-free `𝗣𝗔 ⊢ PRWO` = **Route A's** antecedent, which
-  cannot feed the built `peano_not_proves_TI` (free-`X` obstruction, per the lap-24 correction) and whose
-  back-end carries the forbidden `PA_delta1Definable`. Kept the lap-26 arithmetic substrate (reusable for
-  Route B's paLX construction); recognized `DescentArith.ineq6_internal` as off the clean-headline path.
-  Next = port F-φ (collapses to one wall), then E-core(b) the Route-B way. Build 1280 jobs; headline
-  `sorry` intact. See `REFLECTION-2026-06-23.md`.
-- **2026-06-22 (lap 21 — REVIEW: Thm 5.6 assembled; D' gap surfaced):** Validated the lap-20 handoff
-  direction (E next, F-φ on Aristotle) against the real kernel. Assembled the §5 girder into one theorem
-  `peano_not_proves_TI` (`src/GoodsteinPA/Thm56.lean`) + headline reduction to E
-  (`peano_not_proves_goodstein_of_descent`). **Caught a real gap the handoff missed: D'** (embedded
-  ordinal `< ε₀`), now isolated as the disclosed `embed_TI_bounded` `sorry`. Build green 1270 jobs;
-  headline still `sorry` (anti-fraud). F-φ Aristotle job `aris_onotecmp` still RUNNING. Walls: E + F-φ + D'.
-  *(Older bullets laps 17–18 trimmed; see git history / dated HANDOFFs.)*
+  *(Older bullets laps 21–38 trimmed lap 74; see git history, dated HANDOFFs, and the lap-36/44/53/62
+  reflection docs. Arc: laps 21–35 assembled the free-X Thm 5.6 monument + the model-internal descent
+  scaffold; lap 36 dissolved wall B [transparent `goodsteinSentence`]; lap 45→46 resolved the route to
+  Route A [Goodstein⟹PRWO⟹Con], retiring the free-X back-end as off-path.)*
 
 ## Outstanding
 **Route A = Rathjen Cor 3.7 (resolved lap 45→46).** The headline reduces (axiom-clean) to
@@ -741,7 +730,7 @@ DIRECTION anti-fraud rule #1, which a future call must reconcile against Route A
 | `lowerBound_hardy_selfcontained` (M6, **lap 6**) | **full Thm 17.1, only `α.NF`** | `propext, choice, Quot.sound` + 12 `native_decide` base-case `ax_*` | 🟢 clean — the `ax_*` are 🟢 finite Goodstein base-case witnesses (acceptable indefinitely) |
 | `hardy_add_comp`/`_collapse` (lap 8, `src/Hardy`) | `H_{γ+δ}=H_γ∘H_δ` (non-absorbing) | `propext, choice, Quot.sound` | 🟢 clean — banked Hardy infra (was for the dead Zekd thread; still a usable composition law) |
 | `hardy_comp_lt_goodsteinLength` (lap 8, `src/LowerBound`) | `H_α(H_e(m)) < G(m)` eventually | `propext, choice, Quot.sound` + the M6 `native_decide` base-cases | 🟢 clean — banked nested-index domination (reusable if a bridge ever needs a nested control index) |
-Math-axiom count (**lap-62 real, build green 1320**): the **headline** is still an honest `sorry`
+Math-axiom count (**lap-74 real, build green 1323**): the **headline** is still an honest `sorry`
 (`[propext, sorryAx, choice, Quot.sound]`, **0** math axioms). The single open obligation is
 `goodstein_implies_consistency` = **crux 1 (DONE, axiom-clean lap 57) ∘ crux 2 (🟡 active frontier)**.
 **⚠️ ENDPOINT HARDENED (operator directive, 2026-06-23 — supersedes the lap-53 recommendation):** this

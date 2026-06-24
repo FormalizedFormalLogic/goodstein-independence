@@ -1,5 +1,38 @@
 # Pending work — open obligations & attack paths
 
+## Reflection — 2026-06-24 (lap 74, DEEP) — direction KEPT; three sharpenings
+
+Full write-up: `REFLECTION-2026-06-24-lap74.md`. Synthesis for the grind:
+
+**Direction call: KEEP, re-validated from altitude.** crux 2 (internalized finitary-Buchholz-Z
+cut-elimination) is the right, *unavoidable* target — PROVED this lap: the banked free-X
+`peano_not_proves_TI` is the wrong shape (`γ` can't imply free-`X` TI), the specific-instance route
+still needs Gentzen, and the meta-level monument can't be reused internally. No ε₀-strength-free proof
+of an ε₀-strength independence result exists. A future lap must NOT re-litigate "resurrect the monument."
+
+**KEEP doing:** the RedSound rung ladder (0.5 ✅ → 1 `zsubst` → 2 Ind reduct → 3 K/cut reduct → 4
+dispatch); the reusable `iord`/ω-tower ordinal *assignment* machinery; the lap-71 cascade recipe for
+ZPhi side conditions; banking (not deleting, not resurrecting) the Thm-5.6 monument.
+
+**STOP doing:** (1) extending `iR2`/`iCritReduct` infrastructure — lap 70 proved that reduct is NOT
+validity-preserving; it is SUPERSEDED by the genuine Option-A reduct. Every new `iR2`-shaped lemma is
+on the dead path. The genuine reduct re-fits BOTH validity (RedSound) AND its own descent
+`o(R d)≺o(d)`; reuse the C3 templates, not the `iord_iR2_iterate_descends` assembly. (2) treating
+`PA_delta1Definable` as an acceptable disclosed residual (operator: axiom-free or abandoned).
+
+**Highest-value next target (re-endorsed):** finish **`ZDerivation_zsubst`** (rung-1 step 2) — see the
+lap-73 box below for the resolved plan (freshness via `d ≤ a` code-bound; close the well-formedness gap
+by adding `IsSemiformula`/`IsUFormula` to `zIallWff`/`zIndWff`/`zInegWff`, start `zInegWff`). It unblocks
+the genuine Ind reduct (rung 2), the more tractable of the two genuine reducts.
+
+**SECOND FRONT (advance when the ladder blocks — design soak / build wait):** `PA_delta1Definable`
+(Foundation `Incompleteness/Examples.lean:17`, still an `axiom` upstream + in our pin; arithmetize PA's
+induction-scheme Δ₁-definability). Independent of crux 2, mandatory for axiom-free, untouched by any lap
+— the biggest non-cut-elimination risk to the endpoint. Bounded (no deep math) but substantial.
+
+**Deferred (after RedSound):** the C0.5 Foundation→Z bridge (`¬Con(PA)` ⟹ a Z ⊥-derivation); blueprint
+= Bryce–Goré `Peano.v` 3-layer shape in `archive/findings/ON-LINE-FINDINGS-2026-06-24-bryce-gore-gentzen.md`.
+
 ## ⭐⭐⭐ Lap 73 — RUNG 1 STEP 1 DONE + STEP 2 SUBSTRATE COMPLETE (`fstIdx_zsubst`, full subst-commutation)
 
 **Landed (green 1323, all axiom-clean `[propext, Classical.choice, Quot.sound]`):**
