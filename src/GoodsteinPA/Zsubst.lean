@@ -391,4 +391,127 @@ instance zsubst_definable : 𝚺₁-Function₃ (zsubst : V → V → V → V) :
 instance zsubst_definable' (Γ) : Γ-[m + 1]-Function₃ (zsubst : V → V → V → V) :=
   zsubst_definable.of_sigmaOne
 
+/-! ## Structural correctness of the `zsubst` table (mirror `iR2`/`iotil`)
+
+The table read-out + diagonal unfolding + per-constructor recursion equations, proven exactly as the
+`iR2`/`iotil` analogs in `InternalZ.lean`. The payoff is `fstIdx_zsubst` and the recursion equations
+that `ZDerivation_zsubst` (rung-1 correctness) will consume. -/
+
+private lemma def_zsubstTable {k} (a t : V) (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ zsubstTable a t (v i)) :=
+  DefinableFunction₃.comp (F := zsubstTable) (DefinableFunction.const a)
+    (DefinableFunction.const t) (DefinableFunction.var i)
+
+private lemma def_zsubst {k} (a t : V) (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ zsubst (v i) a t) :=
+  DefinableFunction₃.comp (F := zsubst) (DefinableFunction.var i)
+    (DefinableFunction.const a) (DefinableFunction.const t)
+
+@[simp] lemma zsubstTable_seq (a t n : V) : Seq (zsubstTable a t n) := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₁ (def_zsubstTable a t 0)
+  case zero => simp
+  case succ n ih => rw [zsubstTable_succ]; exact ih.seqCons _
+
+@[simp] lemma zsubstTable_lh (a t n : V) : lh (zsubstTable a t n) = n + 1 := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₂ (DefinableFunction₁.comp (F := lh) (def_zsubstTable a t 0)) (by definability)
+  case zero => simp
+  case succ n ih => rw [zsubstTable_succ, Seq.lh_seqCons _ (zsubstTable_seq a t n), ih]
+
+lemma znth_zsubstTable_succ (a t : V) {n k : V} (hk : k < n + 1) :
+    znth (zsubstTable a t (n + 1)) k = znth (zsubstTable a t n) k := by
+  rw [zsubstTable_succ]
+  exact znth_seqCons_of_lt (zsubstTable_seq a t n) _ (by rw [zsubstTable_lh]; exact hk)
+
+lemma znth_zsubstTable_eq_zsubst (a t : V) : ∀ N : V, ∀ k ≤ N, znth (zsubstTable a t N) k = zsubst k a t := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · refine Definable.ball_le (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := znth) (def_zsubstTable a t 1) (DefinableFunction.var 0))
+      (def_zsubst a t 0)
+  case zero =>
+    intro k hk; rcases (nonpos_iff_eq_zero.mp hk) with rfl; rfl
+  case succ N ih =>
+    intro k hk
+    rcases eq_or_lt_of_le hk with rfl | hlt
+    · rfl
+    · rw [znth_zsubstTable_succ a t hlt]; exact ih k (le_iff_lt_succ.mpr hlt)
+
+lemma zsubst_eq_zsubstNext (a t : V) {c : V} (hpos : 0 < c) :
+    zsubst c a t = zsubstNext c (zsubstTable a t (c - 1)) a t := by
+  obtain ⟨M, rfl⟩ : ∃ M, c = M + 1 := ⟨c - 1, (sub_add_self_of_le (pos_iff_one_le.mp hpos)).symm⟩
+  have key : znth (zsubstTable a t (M + 1)) (M + 1) = zsubstNext (M + 1) (zsubstTable a t M) a t := by
+    rw [zsubstTable_succ]
+    have h := znth_seqCons_self (zsubstTable_seq a t M) (zsubstNext (M + 1) (zsubstTable a t M) a t)
+    rwa [zsubstTable_lh] at h
+  simp only [zsubst, add_tsub_cancel_right, key]
+
+/-! ### `zsubst` recursion equations (per Z-rule) -/
+
+@[simp] lemma zsubst_zAtom (s a t : V) : zsubst (zAtom s) a t = zAtom (fvSubstSeqt a t s) := by
+  rw [zsubst_eq_zsubstNext a t (by simp [zAtom]), zsubstNext]; simp [zTag_zAtom]
+
+@[simp] lemma zsubst_zIall (s e p d0 a t : V) :
+    zsubst (zIall s e p d0) a t =
+      zIall (fvSubstSeqt a t s) e (fvSubst ℒₒᵣ a t p) (zsubst d0 a t) := by
+  rw [zsubst_eq_zsubstNext a t (by simp [zIall]), zsubstNext, if_neg (by simp), if_pos (zTag_zIall s e p d0)]
+  simp only [fstIdx_zIall, zIallEig_zIall, zIallF_zIall, zIallPrem_zIall]
+  rw [znth_zsubstTable_eq_zsubst a t _ d0 (le_pred_of_lt (d0_lt_zIall s e p d0))]
+
+@[simp] lemma zsubst_zIneg (s p d0 a t : V) :
+    zsubst (zIneg s p d0) a t = zIneg (fvSubstSeqt a t s) (fvSubst ℒₒᵣ a t p) (zsubst d0 a t) := by
+  rw [zsubst_eq_zsubstNext a t (by simp [zIneg]), zsubstNext, if_neg (by simp), if_neg (by simp),
+    if_pos (zTag_zIneg s p d0)]
+  simp only [fstIdx_zIneg, zInegF_zIneg, zInegPrem_zIneg]
+  rw [znth_zsubstTable_eq_zsubst a t _ d0 (le_pred_of_lt (d0_lt_zIneg s p d0))]
+
+@[simp] lemma zsubst_zInd (s e u p d0 d1 a t : V) :
+    zsubst (zInd s ⟪e, u⟫ p d0 d1) a t =
+      zInd (fvSubstSeqt a t s) ⟪e, termFvSubst ℒₒᵣ a t u⟫ (fvSubst ℒₒᵣ a t p)
+        (zsubst d0 a t) (zsubst d1 a t) := by
+  rw [zsubst_eq_zsubstNext a t (by simp [zInd]), zsubstNext, if_neg (by simp), if_neg (by simp),
+    if_neg (by simp), if_pos (zTag_zInd s _ p d0 d1)]
+  simp only [fstIdx_zInd, zIndEig_zInd, zIndTerm_zInd, zIndP_zInd, zIndPrem0_zInd, zIndPrem1_zInd,
+    pi₁_pair, pi₂_pair]
+  rw [znth_zsubstTable_eq_zsubst a t _ d0 (le_pred_of_lt (d0_lt_zInd s _ p d0 d1)),
+    znth_zsubstTable_eq_zsubst a t _ d1 (le_pred_of_lt (d1_lt_zInd s _ p d0 d1))]
+
+@[simp] lemma zsubst_zK (s r ds a t : V) :
+    zsubst (zK s r ds) a t = zK (fvSubstSeqt a t s) r (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) := by
+  rw [zsubst_eq_zsubstNext a t (by simp [zK]), zsubstNext, if_neg (by simp), if_neg (by simp),
+    if_neg (by simp), if_neg (by simp), if_pos (zTag_zK s r ds)]
+  simp only [fstIdx_zK, zKrank_zK, zKseq_zK]
+
+@[simp] lemma zsubst_zAxAll (s p k a t : V) :
+    zsubst (zAxAll s p k) a t = zAxAll (fvSubstSeqt a t s) (fvSubst ℒₒᵣ a t p) k := by
+  rw [zsubst_eq_zsubstNext a t (by simp [zAxAll]), zsubstNext, if_neg (by simp), if_neg (by simp),
+    if_neg (by simp), if_neg (by simp), if_neg (by simp), if_pos (zTag_zAxAll s p k)]
+  simp only [fstIdx_zAxAll, zAxAllF_zAxAll, zAxAllK_zAxAll]
+
+@[simp] lemma zsubst_zAxNeg (s p a t : V) :
+    zsubst (zAxNeg s p) a t = zAxNeg (fvSubstSeqt a t s) (fvSubst ℒₒᵣ a t p) := by
+  rw [zsubst_eq_zsubstNext a t (by simp [zAxNeg]), zsubstNext, if_neg (by simp), if_neg (by simp),
+    if_neg (by simp), if_neg (by simp), if_neg (by simp), if_neg (by simp), if_pos (zTag_zAxNeg s p)]
+  simp only [fstIdx_zAxNeg, zAxNegF_zAxNeg]
+
+/-! ### `fstIdx_zsubst` — the end-sequent of the substituted derivation computes (rung-1 step 1)
+
+For any genuine Z-derivation `d`, the reduct's end-sequent is the substituted end-sequent. Proven by
+the 7-way `ZDerivation` case split (each constructor's recursion equation + `fstIdx (z* s' …) = s'`). -/
+
+lemma fstIdx_zsubst {d : V} (a t : V) (hZ : ZDerivation d) :
+    fstIdx (zsubst d a t) = fvSubstSeqt a t (fstIdx d) := by
+  rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, e, p, d0, rfl, _, _⟩ | ⟨s, p, d0, rfl, _, _⟩ |
+    ⟨s, at', p, d0, d1, rfl, _, _⟩ | ⟨s, r, ds, rfl, _, _, _⟩ |
+    ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩
+  · rw [zsubst_zAtom, fstIdx_zAtom, fstIdx_zAtom]
+  · rw [zsubst_zIall, fstIdx_zIall, fstIdx_zIall]
+  · rw [zsubst_zIneg, fstIdx_zIneg, fstIdx_zIneg]
+  · rw [show at' = ⟪π₁ at', π₂ at'⟫ from (pair_unpair at').symm, zsubst_zInd, fstIdx_zInd, fstIdx_zInd]
+  · rw [zsubst_zK, fstIdx_zK, fstIdx_zK]
+  · rw [zsubst_zAxAll, fstIdx_zAxAll, fstIdx_zAxAll]
+  · rw [zsubst_zAxNeg, fstIdx_zAxNeg, fstIdx_zAxNeg]
+
 end GoodsteinPA.InternalZ
