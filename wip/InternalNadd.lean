@@ -696,4 +696,46 @@ lemma icmp_term_insTerm {e n B : V} (hB : isNF B) (hB0 : B ≠ 0) :
       rw [if_neg h1, icmp_ocOadd, h0]
       simp [thenV]
 
+/-- **Strict mono, strictly-smaller-lead case (non-recursive).** When `A`'s leading exponent is `≺`
+`B`'s (`icmp ea eb = 0`), inserting the same `ω^e·n` into both keeps `A ≺ B`. The `3×3` grid on
+`icmp e ea` × `icmp e eb`: 5 combos resolve at head/coeff/lead, 4 are impossible (they would force
+`ea ⪰ eb`, contradicting `icmp ea eb = 0` — derived via `icmp_trans`/swap). -/
+lemma icmp_insTerm_left {e n ea ca ra eb cb rb : V} (hcb : cb ≠ 0) (h : icmp ea eb = 0) :
+    icmp (insTerm e n (ocOadd ea ca ra)) (insTerm e n (ocOadd eb cb rb)) = 0 := by
+  rw [insTerm_ocOadd, insTerm_ocOadd]
+  by_cases h2a : icmp e ea = 2
+  · rw [if_pos h2a]
+    by_cases h2b : icmp e eb = 2
+    · rw [if_pos h2b, icmp_ocOadd, icmp_self e e le_rfl, cmpV_self, thenV_one_left, thenV_one_left,
+        icmp_ocOadd, h]
+      simp [thenV]
+    · by_cases h1b : icmp e eb = 1
+      · rw [if_neg h2b, if_pos h1b, icmp_ocOadd, icmp_self e e le_rfl, thenV_one_left,
+          show cmpV n (n + cb) = 0 from
+            cmpV_eq_zero.mpr (lt_add_of_pos_right n (pos_iff_ne_zero.mpr hcb))]
+        simp [thenV]
+      · have hceb0 : icmp e eb = 0 := icmp_eq_zero_of_ne h1b h2b
+        rw [if_neg h2b, if_neg h1b, icmp_ocOadd, hceb0]; simp [thenV]
+  · by_cases h1a : icmp e ea = 1
+    · rw [if_neg h2a, if_pos h1a]
+      have hea : e = ea := icmp_eq_imp_eq (max e ea) e (le_max_left _ _) ea (le_max_right _ _) h1a
+      have hceb0 : icmp e eb = 0 := by rw [hea]; exact h
+      rw [if_neg (by rw [hceb0]; simp), if_neg (by rw [hceb0]; simp), icmp_ocOadd, hceb0]
+      simp [thenV]
+    · rw [if_neg h2a, if_neg h1a]
+      have hcea0 : icmp e ea = 0 := icmp_eq_zero_of_ne h1a h2a
+      by_cases h2b : icmp e eb = 2
+      · exfalso
+        have hebe : icmp eb e = 0 := icmp_two_iff_swap_zero.mp h2b
+        have hba : icmp eb ea = 0 := icmp_trans (max eb (max e ea)) eb (le_max_left _ _)
+          e (le_trans (le_max_left _ _) (le_max_right _ _))
+          ea (le_trans (le_max_right _ _) (le_max_right _ _)) hebe hcea0
+        rw [icmp_two_iff_swap_zero.mpr hba] at h; exact absurd h (by simp)
+      · by_cases h1b : icmp e eb = 1
+        · exfalso
+          have heb : e = eb := icmp_eq_imp_eq (max e eb) e (le_max_left _ _) eb (le_max_right _ _) h1b
+          have : icmp ea eb = 2 := by rw [← heb]; exact icmp_two_iff_swap_zero.mpr hcea0
+          rw [this] at h; exact absurd h (by simp)
+        · rw [if_neg h2b, if_neg h1b, icmp_ocOadd, h]; simp [thenV]
+
 end GoodsteinPA.InternalONote
