@@ -535,6 +535,133 @@ exactly what the `icmp_insTerm_congr` merge branch needs. -/
 @[simp] lemma cmpV_add_left (k a b : V) : cmpV (k + a) (k + b) = cmpV a b := by
   simp only [cmpV, add_lt_add_iff_left, add_right_inj]
 
+/-! ## `icmp` transitivity of `≺` (the linear-order spine the descent reasoning needs)
+
+`InternalONote` proved `icmp` trichotomy + antisymmetry but **deliberately avoided** a general
+transitivity (`icmp_finThresh_mono` docstring). The natural-sum monotonicity proof needs it (it must
+chain `ea ≺ e ≺ eb`), so it is built here: lexicographic transitivity on `(exp, coeff, tail)` by
+strong induction, recursing into exponents and tails (both strictly smaller codes). -/
+
+/-- **`≺` is transitive** (bounded form): `icmp a b = 0 → icmp b c = 0 → icmp a c = 0`. -/
+lemma icmp_trans : ∀ w : V, ∀ a ≤ w, ∀ b ≤ w, ∀ c ≤ w,
+    icmp a b = 0 → icmp b c = 0 → icmp a c = 0 := by
+  intro w
+  induction w using ISigma1.sigma1_order_induction
+  · definability
+  case ind w ih =>
+    intro a haw b hbw c hcw hab hbc
+    rcases eq_or_ne a 0 with rfl | ha
+    · -- a = 0: from `hbc`, c ≠ 0, so icmp 0 c = 0.
+      have hc : c ≠ 0 := by
+        rintro rfl
+        rcases eq_or_ne b 0 with rfl | hb
+        · rw [icmp_zero_zero] at hbc; exact absurd hbc (by simp)
+        · rw [icmp_pos_zero hb] at hbc; exact absurd hbc (by simp)
+      rw [icmp_zero_pos hc]
+    · have hb : b ≠ 0 := by
+        rintro rfl; rw [icmp_pos_zero ha] at hab; exact absurd hab (by simp)
+      have hc : c ≠ 0 := by
+        rintro rfl; rw [icmp_pos_zero hb] at hbc; exact absurd hbc (by simp)
+      obtain ⟨ea, ca, ra, rfl⟩ : ∃ ea ca ra, a = ocOadd ea ca ra :=
+        ⟨_, _, _, (ocOadd_destruct ha).symm⟩
+      obtain ⟨eb, cb, rb, rfl⟩ : ∃ eb cb rb, b = ocOadd eb cb rb :=
+        ⟨_, _, _, (ocOadd_destruct hb).symm⟩
+      obtain ⟨ec, cc, rc, rfl⟩ : ∃ ec cc rc, c = ocOadd ec cc rc :=
+        ⟨_, _, _, (ocOadd_destruct hc).symm⟩
+      rw [icmp_ocOadd] at hab hbc ⊢
+      have hea : ea < w := lt_of_lt_of_le (by simpa using ocExp_lt ea ca ra) haw
+      have heb : eb < w := lt_of_lt_of_le (by simpa using ocExp_lt eb cb rb) hbw
+      have hec : ec < w := lt_of_lt_of_le (by simpa using ocExp_lt ec cc rc) hcw
+      have hra : ra < w := lt_of_lt_of_le (by simpa using ocTail_lt ea ca ra) haw
+      have hrb : rb < w := lt_of_lt_of_le (by simpa using ocTail_lt eb cb rb) hbw
+      have hrc : rc < w := lt_of_lt_of_le (by simpa using ocTail_lt ec cc rc) hcw
+      have IHe : icmp ea eb = 0 → icmp eb ec = 0 → icmp ea ec = 0 := fun h1 h2 =>
+        ih (max ea (max eb ec)) (max_lt hea (max_lt heb hec))
+          ea (le_max_left _ _) eb (le_trans (le_max_left _ _) (le_max_right _ _))
+          ec (le_trans (le_max_right _ _) (le_max_right _ _)) h1 h2
+      have IHr : icmp ra rb = 0 → icmp rb rc = 0 → icmp ra rc = 0 := fun h1 h2 =>
+        ih (max ra (max rb rc)) (max_lt hra (max_lt hrb hrc))
+          ra (le_max_left _ _) rb (le_trans (le_max_left _ _) (le_max_right _ _))
+          rc (le_trans (le_max_right _ _) (le_max_right _ _)) h1 h2
+      rcases eq_or_ne (icmp ea eb) 0 with hEab | hEab
+      · -- ea ≺ eb ⟹ ea ≺ ec (eb ≺ ec by IHe, or eb = ec by substitution).
+        have hEac : icmp ea ec = 0 := by
+          rcases eq_or_ne (icmp eb ec) 0 with hEbc | hEbc
+          · exact IHe hEab hEbc
+          · have hEbc1 : icmp eb ec = 1 := by
+              rcases thenV_eq_zero.mp hbc with h | ⟨h, _⟩
+              · exact absurd h hEbc
+              · exact h
+            have hee : eb = ec :=
+              icmp_eq_imp_eq (max eb ec) eb (le_max_left _ _) ec (le_max_right _ _) hEbc1
+            rw [← hee]; exact hEab
+        rw [hEac]; simp [thenV]
+      · -- ea = eb (icmp = 1); the comparison drops to (coeff, tail).
+        have hEab1 : icmp ea eb = 1 := by
+          rcases thenV_eq_zero.mp hab with h | ⟨h, _⟩
+          · exact absurd h hEab
+          · exact h
+        have habCR : thenV (cmpV ca cb) (icmp ra rb) = 0 := by
+          rcases thenV_eq_zero.mp hab with h | ⟨_, h⟩
+          · exact absurd h hEab
+          · exact h
+        have heab : ea = eb :=
+          icmp_eq_imp_eq (max ea eb) ea (le_max_left _ _) eb (le_max_right _ _) hEab1
+        rcases eq_or_ne (icmp eb ec) 0 with hEbc | hEbc
+        · -- eb ≺ ec, and ea = eb ⟹ ea ≺ ec.
+          have : icmp ea ec = 0 := by rw [heab]; exact hEbc
+          rw [this]; simp [thenV]
+        · -- eb = ec too; ea = eb = ec, drop to (coeff, tail) transitivity.
+          have hEbc1 : icmp eb ec = 1 := by
+            rcases thenV_eq_zero.mp hbc with h | ⟨h, _⟩
+            · exact absurd h hEbc
+            · exact h
+          have hbcCR : thenV (cmpV cb cc) (icmp rb rc) = 0 := by
+            rcases thenV_eq_zero.mp hbc with h | ⟨_, h⟩
+            · exact absurd h hEbc
+            · exact h
+          have hebc : eb = ec :=
+            icmp_eq_imp_eq (max eb ec) eb (le_max_left _ _) ec (le_max_right _ _) hEbc1
+          have hEac1 : icmp ea ec = 1 := by rw [heab, hebc]; exact icmp_self ec ec le_rfl
+          rw [hEac1, thenV_one_left]
+          -- goal: thenV (cmpV ca cc) (icmp ra rc) = 0, from the (C,R) lex transitivity.
+          rcases eq_or_ne (cmpV ca cb) 0 with hCab | hCab
+          · have hcacb : ca < cb := cmpV_eq_zero.mp hCab
+            have hCac : cmpV ca cc = 0 := by
+              rcases eq_or_ne (cmpV cb cc) 0 with hCbc | hCbc
+              · exact cmpV_eq_zero.mpr (lt_trans hcacb (cmpV_eq_zero.mp hCbc))
+              · have hCbc1 : cmpV cb cc = 1 := by
+                  rcases thenV_eq_zero.mp hbcCR with h | ⟨h, _⟩
+                  · exact absurd h hCbc
+                  · exact h
+                have hbe : cb = cc := cmpV_eq_one.mp hCbc1
+                exact cmpV_eq_zero.mpr (by rw [← hbe]; exact hcacb)
+            rw [hCac]; simp [thenV]
+          · have hCab1 : cmpV ca cb = 1 := by
+              rcases thenV_eq_zero.mp habCR with h | ⟨h, _⟩
+              · exact absurd h hCab
+              · exact h
+            have hRab : icmp ra rb = 0 := by
+              rcases thenV_eq_zero.mp habCR with h | ⟨_, h⟩
+              · exact absurd h hCab
+              · exact h
+            have hcacb : ca = cb := cmpV_eq_one.mp hCab1
+            rcases eq_or_ne (cmpV cb cc) 0 with hCbc | hCbc
+            · have hCac : cmpV ca cc = 0 := cmpV_eq_zero.mpr (by rw [hcacb]; exact cmpV_eq_zero.mp hCbc)
+              rw [hCac]; simp [thenV]
+            · have hCbc1 : cmpV cb cc = 1 := by
+                rcases thenV_eq_zero.mp hbcCR with h | ⟨h, _⟩
+                · exact absurd h hCbc
+                · exact h
+              have hRbc : icmp rb rc = 0 := by
+                rcases thenV_eq_zero.mp hbcCR with h | ⟨_, h⟩
+                · exact absurd h hCbc
+                · exact h
+              have hcbcc : cb = cc := cmpV_eq_one.mp hCbc1
+              have hCac1 : cmpV ca cc = 1 := cmpV_eq_one.mpr (hcacb.trans hcbcc)
+              rw [hCac1, thenV_one_left]
+              exact IHr hRab hRbc
+
 /-! ## Strict `#`-monotonicity — helpers toward `icmp_insTerm_mono`
 
 The §4 descent needs: replacing a summand by a strictly smaller one strictly decreases the natural
