@@ -24,17 +24,37 @@
    fact `ec ≻ (every exp of rc)` so the `nc`-merge can only hit a `b`-coefficient (≤ iC b), never an
    rc-term. ⟹ a real NF-aware proof, deferred until/unless C4 needs it.
 
-**NEXT deep target (hardest-first) = `#` strict monotonicity on ω-power summands.** Concrete bricks:
-- `ocExp_inadd` — lead exponent of `a#b` is the icmp-max of `ocExp a`, `ocExp b` (NF). Foundational; messy
-  recursion (insTerm lead-exp via `ocExp_insTerm` folded over `a`). Bootstraps all order reasoning.
-- `inadd_strict_mono_left` — `isNF a→isNF a'→isNF b→ icmp a a'=0 → icmp (inadd a b)(inadd a' b)=0`
-  (Hessenberg strict left-mono). THE descent workhorse. Likely via `ocExp_inadd` + term-merge induction.
-- `inadd_comm` (NF) — natural sum is commutative on codes (NF canonical-form uniqueness). Gives
-  right-mono from left-mono and lets `ω^{õ d0}#…#ω^{õ dl}` be reordered (needed to compare reducts).
-- `inadd_assoc` (NF) — associativity, so the left-fold `ω^{õ d0}#(ω^{õ d1}#…)` matches the multiset sum.
-- Read `scratchpad/buchholz-gentzen.txt` §4 (Lemma 4.1 / Thm 4.2 PROOF) to pin the EXACT `#`/`ω^`/tower
-  inequalities each rule-case (I∀/I¬/Ind/K) needs — target those, don't over-build the algebra.
-- ALT (worktree, in parallel if a lap stalls): start C0 (arithmetize system Z `ZDerivation : V→Prop`),
+**Buchholz §4 inequalities NOW PINNED** (read `scratchpad/buchholz-gentzen.txt:781-822`). Lemma 4.1 /
+Thm 4.2: every descent case rewrites `õ(d)=ω^{α0}#…#ω^{αl}` by replacing ONE summand `ω^{αi}` with a
+strictly-smaller block, then concludes the whole `#` drops. The `#`-facts actually consumed:
+- **(F1) `#` strict left-cancellation/mono** — replacing a summand by a smaller one decreases the sum.
+- **(F2) two-powers-below** — `αi0,αi1 ≺ αi → icmp (ω^{αi0} # ω^{αi1}) (ω^{αi}) = 0`  (case 5.1, 5.2.1).
+- **(F3) `ω^β·k ≺ ω^{β+1}`** — `icmp (ocOadd β k 0) (ω^{β+1}) = 0`, finite k (case 4, the Ind rule).
+- **(F4) commutativity** of `#` (to move the changed summand to the cancellable end) + assoc for the fold.
+
+**NEXT deep target (hardest-first) = (F1), now SHARPLY ISOLATED.** This lap recast it:
+`#` strict-mono ⟺ **left-cancellation `icmp (inadd g X) (inadd g Y) = icmp X Y`** (NF g,X,Y), which by
+order-induction on `g` (using `inadd_ocOadd` + `inadd_single_term`, banked) reduces to the **single-term
+insertion embedding**:
+> **`icmp_insTerm_congr` (NF A, NF B): `icmp (insTerm e n A) (insTerm e n B) = icmp A B`.**  ← THE nut.
+Proof plan = pair order-induction on `m=⟪A,B⟫` (mirror `icmp_swap_aux`/`icmp_eq_imp_eq`), motive
+`isNF (π₁ m)→isNF (π₂ m)→ …`. Case grid on `icmp e (ocExp A)`×`icmp e (ocExp B)` (∈{0,1,2}) + A/B=0:
+  - both-prepend (e≻ both leads): heads `ω^e·n` equal, tails are A,B ⟹ `icmp_ocOadd` + `icmp_self` +
+    `cmpV_self` collapse to `icmp A B`.
+  - both-merge (e=both leads): coeffs `n+ca`,`n+cb`; **`cmpV_add_left`** (banked) ⟹ `cmpV ca cb`; tails
+    `ra,rb` unchanged ⟹ `icmp A B` directly (`icmp_pos_pos`).
+  - both-recurse (e≺ both leads): heads `ω^{la}·ca` vs `ω^{lb}·cb` decide unless la=lb∧ca=cb, then
+    **IH on ⟪ra,rb⟫** (both `< m`). Heads match `icmp A B`'s head exactly.
+  - mixed (e relates differently to la vs lb): then la≠lb (NF + e between them), so BOTH `icmp A B` and the
+    inserted comparison are decided by the lead-exponent comparison la-vs-lb — they agree. (Lean: case on
+    which of the 6 mixed combos; each resolves at the head via `icmp_pos_*`/`icmp_finHead_infHead`-style.)
+  - base A=0 (B≠0, so `icmp A B=0`): need `icmp (ω^e·n) (insTerm e n B)=0`, i.e. ω^e·n ≺ insertion into a
+    nonzero NF B. Sub-lemma `insTerm_ge_term` (dominance). Symmetric for B=0.
+Then **(F1)** `inadd_left_cancel` (induct g) ⟹ strict-mono corollary `icmp X Y=0 → icmp(g#X)(g#Y)=0`.
+**(F2)/(F3)** are short once `icmp_omega_pow` + `icmp_ocOadd` are in hand (F3 = exponent compare `β≺β+1`;
+F2 = both exps `≺ αi` ⟹ 2-term CNF below `ω^{αi}`). **(F4)** commutativity = the other hard nut (NF
+canonical-form uniqueness); defer behind (F1) since (F1)+reorder often suffices per-case.
+- ALT (worktree, parallel if a lap stalls): start C0 (arithmetize system Z `ZDerivation : V→Prop`),
   independent of the `#` order algebra.
 
 ## ⭐⭐⭐ Lap 58 — crux 2 REFRAMED to model-theoretic route + Buchholz ord/R GROUNDED from source
