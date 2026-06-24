@@ -46,6 +46,7 @@ on ℕ (a decidable std-only fact) to tie `icmp` to the mathlib-ε₀ order-type
 import GoodsteinPA.SeamDefinability
 import GoodsteinPA.InternalONote
 import GoodsteinPA.StdCor34
+import GoodsteinPA.StdCor34F
 import GoodsteinPA.Reduction
 
 namespace GoodsteinPA.GentzenCon
@@ -171,97 +172,53 @@ theorem gentzen_prwo_implies_consistency :
     𝗣𝗔 ⊢ prwoInstance gentzenDescentφ → 𝗣𝗔 ⊢ ↑𝗣𝗔.consistent := by
   sorry
 
-/-- **The standard-level domination certificate** (lap-56): the existence of the Cor-3.4 slowed-sequence
-inputs (`l₀ : ℕ` standard, block sequence `wseq`, NF descending codes `β`, complexity bound `Cβ`) that
-`StdCor34.crux1_internal_run_of_width_dom` consumes. This is the precise data a `seq`-descent must yield
-to drive a non-terminating internal Goodstein run; for `seq = gentzenDescentφ` it is supplied by Rathjen
-Lemma 3.2 (`ord`/`R`'s fixed build tree gives the standard `l₀`), the step the headline needs. -/
-def SeqDominated (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁] : Prop :=
-  ∃ (l₀ : ℕ) (wseq Cβ : M) (β : M → M), 0 < l₀ ∧
-    (∀ n, isNF (β n)) ∧ (∀ n, β n ≠ 0) ∧ (∀ n, icmp (β (n + 1)) (β n) = 0) ∧
-    (∀ j, iC (β (BlkRec.blk wseq j)) ≤ Cβ + j) ∧ (𝚺₁-Function₁ β) ∧
-    (∀ n, znth wseq n ≤ iF l₀ n)
-
-/-- **The girder, packaged.** A standard-level domination certificate drives a non-terminating internal
-Goodstein run — by unpacking the certificate and applying the (sorry-free) crux-1 girder
-`StdCor34.crux1_internal_run_of_width_dom`. PROVED (the seam between the certificate and the
-internal-Grzegorczyk machinery now type-checks end-to-end; was the historical bug source). -/
-theorem nonterminating_of_dominated (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁]
-    (h : SeqDominated M) : ∃ m₀ : M, ∀ k : M, 0 < igoodstein m₀ k := by
-  obtain ⟨l₀, wseq, Cβ, β, hl₀, hNF, h0, hd, hC, hdef, hdom⟩ := h
-  exact StdCor34.crux1_internal_run_of_width_dom l₀ hl₀ wseq hNF h0 hd hC hdef hdom
-
-/-- **The seq-specific standard-domination certificate (Rathjen Lemma 3.2).** `seq`'s value at position
-`n` has `ε₀`-code complexity `iC` bounded by a fixed **standard**-level Grzegorczyk function `iF l₀`.
-This is the precise honest content of "primitive-recursive" for the descent: for `seq = gentzenDescentφ`
-(= `n ↦ ord(Rⁿd₀)`) Rathjen Lemma 3.2 gives this `l₀` from `ord`/`R`'s fixed build tree (the
-`d₀`-independent bound), and it is what keeps the headline on the **standard** level
+/-- **The seq-specific standard-domination certificate (Rathjen Lemma 3.2), width form (lap-57).** The
+value at position `n+1` has `ε₀`-code complexity `iC` bounded by a fixed **standard**-level Grzegorczyk
+function `iF l₀` — i.e. the *block width* `iC (β (n+1))` (the internal `Grz.corW`) is `iF l₀`-dominated.
+This is exactly the input `StdCor34F.crux1_internal_run_F` needs (no off-by-one: the certificate is
+stated at the `n+1` position so `hbound (β (n+1))` gives `iC (β (n+1)) ≤ iF l₀ n` directly). For
+`seq = gentzenDescentφ` (= `n ↦ ord(Rⁿd₀)`) Rathjen Lemma 3.2 gives this `l₀` from `ord`/`R`'s fixed
+build tree (the `d₀`-independent bound), keeping the headline on the **standard** level
 (`crux1-headline-needs-only-standard-level`). For an *arbitrary* descent it can FAIL
-(`Grz.F_diag_not_dominated`) — which is exactly why crux 1 must carry this as a hypothesis (lap 56). -/
+(`Grz.F_diag_not_dominated`) — why crux 1 must carry it as a hypothesis. -/
 def SeqStdBounded (seq : Semisentence ℒₒᵣ 2) (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁] : Prop :=
-  ∃ l₀ : ℕ, ∀ n y : M, (M ⊧/![y, n] seq) → iC y ≤ iF l₀ n
+  ∃ l₀ : ℕ, 0 < l₀ ∧ ∀ n y : M, (M ⊧/![y, n + 1] seq) → iC y ≤ iF l₀ n
 
 /-- **The seq is realized by a total, `𝚺₁`-definable, NF-nonzero-valued branch** (lap-57). For the
 construction to produce a genuine internal infinite descent, the graph `seq(y,n)` must actually be
-*total functional* with normal-form, nonzero ε₀-code values — packaged as the existence of a single
-function `β : M → M` realizing the graph at every position, definable in `M`. This is the honest content
-of "`seq` is the graph of a primitive-recursive ε₀-valued function": for `seq = gentzenDescentφ`
-(= `n ↦ ord(Rⁿd₀)`) it holds because `ord`/`R` are primrec and `ord` lands in NF codes. **Without it the
-old `seqDescent_dominated` was FALSE** (a vacuous/partial `seq` satisfies `hdesc`/`hstdom` trivially, yet
-`SeqDominated M` asserts the existence of an infinite ε₀-descent — impossible in `ℕ`). Supplying `β`
-ties that existence to `seq` genuinely having a descending NF branch, so the hypotheses become jointly
-unsatisfiable in `ℕ` (vacuously true there, like `StdCor34.crux1_internal_run_of_width_dom`) and
-substantive only in nonstandard `M`. -/
+*total functional* with normal-form, nonzero ε₀-code values — packaged as a single function `β : M → M`
+realizing the graph at every position, with an **explicit parameter-free `𝚺₁` graph** `βDef`
+(`DefinedFunction₁ β βDef`, NOT merely `𝚺₁-Function₁ β`: the abstract `Definable` allows `V`-parameters,
+which cannot be baked into the `BlkRecF` block-recursion blueprint). This is the honest content of "`seq`
+is the graph of a primitive-recursive ε₀-valued function": for `seq = gentzenDescentφ` (= `n ↦ ord(Rⁿd₀)`)
+it holds because `ord`/`R` are primrec (an explicit `𝚺₁` graph) and `ord` lands in nonzero NF codes.
+Supplying `β` ties the infinite-descent existence to `seq` genuinely having a descending NF branch, so
+the hypotheses are jointly unsatisfiable in `ℕ` (vacuously true there) and substantive only in
+nonstandard `M`. -/
 def SeqRealized (seq : Semisentence ℒₒᵣ 2) (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁] : Prop :=
-  ∃ β : M → M, (∀ n : M, M ⊧/![β n, n] seq) ∧ (∀ n, isNF (β n)) ∧ (∀ n, β n ≠ 0) ∧
-    (𝚺₁-Function₁ β)
+  ∃ (β : M → M) (βDef : 𝚺₁.Semisentence 2), (∀ n : M, M ⊧/![β n, n] seq) ∧ (∀ n, isNF (β n)) ∧
+    (∀ n, β n ≠ 0) ∧ 𝚺₁.DefinedFunction₁ β βDef
 
-/-- **Crux-1 certificate construction — the sharpened remaining obligation (lap-57).** From a
-model-internal everywhere-`icmp`-descending `seq`-graph (`hdesc`) that is **realized by a total NF branch**
-(`hreal`) and **standard-width-bounded** (`hstdom : SeqStdBounded seq M`, = Rathjen Lemma 3.2), build the
-Cor-3.4 slowdown inputs (`SeqDominated M`). With the realizer `β` supplied, the `β`-parts of
-`SeqDominated` (NF, `≠0`, `icmp`-descent, `𝚺₁`-definability) are **DISCHARGED directly** here — the
-descent `icmp (β (n+1)) (β n) = 0` is exactly `hdesc` applied to the graph-realizations of `β`. **The
-ENTIRE remaining crux-1 content is now the width bookkeeping**: a `𝚺₁` width code `wseq` and constant
-`Cβ` with the C-bound `iC (β (blk wseq j)) ≤ Cβ + j` (Cor-3.4 block spacing) and the **standard** width
-domination `∀ n, znth wseq n ≤ iF l₀ n` (Rathjen Lemma 3.2, from `hstdom`). **Attack:** the BlkRec
-width-code construction over `t ↦ iC (β (t+1))` (cumulative widths absorb the complexity jumps, giving
-the linear `Cβ + j` bound via `BlkRec.wsumc_blk_le`); see memory `crux1-headline-needs-only-standard-level`.
-Held at `sorry` on the width construction. -/
-theorem seqDescent_dominated (seq : Semisentence ℒₒᵣ 2)
-    (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁]
-    (hreal : SeqRealized seq M)
-    (hdesc : ∀ n y z : M, (M ⊧/![y, n] seq) → (M ⊧/![z, n + 1] seq) → icmp z y = 0)
-    (hstdom : SeqStdBounded seq M) :
-    SeqDominated M := by
-  obtain ⟨β, hgraph, hNF, h0, hdef⟩ := hreal
-  -- the realizer descends: apply `hdesc` to the graph-realizations of `β` at `n` and `n+1`
-  have hβdesc : ∀ n, icmp (β (n + 1)) (β n) = 0 := fun n =>
-    hdesc n (β n) (β (n + 1)) (hgraph n) (hgraph (n + 1))
-  -- `hstdom` bounds the realizer's complexity by a STANDARD Grzegorczyk level
-  obtain ⟨l₀, hl₀bound⟩ := hstdom
-  have hβbound : ∀ n, iC (β n) ≤ iF l₀ n := fun n => hl₀bound n (β n) (hgraph n)
-  -- REMAINING GAP: the Cor-3.4 width bookkeeping. `SeqDominated` currently packages the width as a
-  -- FINITE code `wseq : M` (`znth wseq n`), but `ANALYSIS-2026-06-23-lap57-width-code-wall.md` shows
-  -- **no finite `wseq` works**: past `lh wseq`, `znth = 0` ⟹ `blk wseq j ∼ j`, so `iC (β (blk wseq j))
-  -- ≤ Cβ + j` fails for the complexity-growing descents Cor 3.4 targets. The width must be a
-  -- `𝚺₁` FUNCTION `W := fun t => iC (β (t+1))` (mirroring `Grz.corW`); that requires refactoring
-  -- `BlkRec`/`StdCor34`/`SeqDominated` to read `W (blk)` instead of `znth wseq (blk)`. Once refactored,
-  -- this discharges DIRECTLY: `Cβ := iC (β 0)`, `l₀' := l₀ + 1`, `hβC` via the internal `C_le_wsumc`
-  -- (`iC (β n) ≤ wsumc W n ≤ n`), width-dom `W n = iC (β (n+1)) ≤ iF l₀ (n+1) ≤ iF (l₀+1) n` from
-  -- `hβbound`. Everything else (`0<l₀'`, NF, `≠0`, descent, definability of `β`) is supplied above.
-  -- TODO(width-function-refactor): see the analysis note; this `<;> sorry` collapses to the refactor.
-  refine ⟨?_, ?_, ?_, β, ?_, hNF, h0, hβdesc, ?_, hdef, ?_⟩ <;> sorry
-
-/-- **The deep crux-1 bridge** — PROVED modulo the sharpened `seqDescent_dominated` obligation
-(was a bare `sorry` through lap 55). Chains the certificate construction into the girder. -/
+/-- **The deep crux-1 bridge — PROVED (lap-57, width-function route).** From a model-internal
+everywhere-`icmp`-descending `seq`-graph (`hdesc`) that is **realized by a total `𝚺₁` NF branch**
+(`hreal`) and **standard-width-bounded** (`hstdom`, = Rathjen Lemma 3.2 width form), the internal
+Goodstein run is non-terminating. The realizer `β` gives the descent `icmp (β (n+1)) (β n) = 0`
+(= `hdesc` on the graph-realizations) and the width domination `iC (β (n+1)) ≤ iF l₀ n`
+(= `hstdom` at the `n+1` position); these are *exactly* the inputs of the sorry-free, axiom-free
+`StdCor34F.crux1_internal_run_F` (the width-FUNCTION crux-1 run that closed the lap-57 width-code wall).
+**No remaining width gap** — the old `SeqDominated`/`seqDescent_dominated`/finite-`wseq` girder is gone. -/
 theorem nonterminating_of_seq_descent (seq : Semisentence ℒₒᵣ 2)
     (M : Type) [ORingStructure M] [M ⊧ₘ* 𝗜𝚺₁]
     (hreal : SeqRealized seq M)
     (hdesc : ∀ n y z : M, (M ⊧/![y, n] seq) → (M ⊧/![z, n + 1] seq) → icmp z y = 0)
     (hstdom : SeqStdBounded seq M) :
-    ∃ m₀ : M, ∀ k : M, 0 < igoodstein m₀ k :=
-  nonterminating_of_dominated M (seqDescent_dominated seq M hreal hdesc hstdom)
+    ∃ m₀ : M, ∀ k : M, 0 < igoodstein m₀ k := by
+  obtain ⟨β, βDef, hgraph, hNF, h0, hβdef⟩ := hreal
+  obtain ⟨l₀, hl₀, hbound⟩ := hstdom
+  have hβdesc : ∀ n, icmp (β (n + 1)) (β n) = 0 := fun n =>
+    hdesc n (β n) (β (n + 1)) (hgraph n) (hgraph (n + 1))
+  have hwdom : ∀ n, iC (β (n + 1)) ≤ iF l₀ n := fun n => hbound n (β (n + 1)) (hgraph (n + 1))
+  exact StdCor34F.crux1_internal_run_F l₀ hl₀ hNF h0 hβdesc hβdef hwdom
 
 /-- **Per-model crux-1 obligation.** In every model `M ⊧ₘ* 𝗜𝚺₁` in which `γ` holds AND `seq` is
 standard-width-bounded (`hstdom`), the PRWO instance for `seq` holds. By contradiction: `M ⊭ prwoInstance
