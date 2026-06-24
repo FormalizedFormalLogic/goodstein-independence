@@ -622,6 +622,22 @@ lemma irk_fvSubst {a t : V} (ht : IsUTerm ℒₒᵣ t) {A : V} :
   · intro p hp ihp
     rw [fvSubst_ex hp, irk_ex (IsUFormula.fvSubst ht hp), irk_ex hp, ihp]
 
+/-- **`zsubst` preserves the rule tag** (for a genuine Z-derivation): substituting a free variable
+rebuilds the same Z-rule, so `zTag` is unchanged. Feeds the tag-gated formula-hood conjuncts of the
+`zKValid` chain-validity transfer. -/
+@[simp] lemma zTag_zsubst {a t : V} {d : V} (hd : ZDerivation d) :
+    zTag (zsubst d a t) = zTag d := by
+  rcases zDerivation_iff.mp hd with ⟨s, rfl, _⟩ | ⟨s, e, p, d0, rfl, _, _, _⟩ |
+    ⟨s, p, d0, rfl, _, _, _⟩ | ⟨s, at', p, d0, d1, rfl, _, _, _⟩ |
+    ⟨s, r, ds, rfl, _, _, _⟩ | ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩
+  · rw [zsubst_zAtom]; simp
+  · rw [zsubst_zIall]; simp
+  · rw [zsubst_zIneg]; simp
+  · rw [show at' = ⟪π₁ at', π₂ at'⟫ from (pair_unpair at').symm, zsubst_zInd]; simp
+  · rw [zsubst_zK]; simp
+  · rw [zsubst_zAxAll]; simp
+  · rw [zsubst_zAxNeg]; simp
+
 /-- **Permissibility (`iperm`, Lemma 3.3) transfers under `fvSubst`.** For a genuine Z-derivation `d`,
 if its rule symbol `tp d` permits a sequent `q`, then the substituted symbol `tp (zsubst d a t)` permits
 the substituted sequent `fvSubstSeqt a t q`. The principal formula (R-symbol succedent / L-symbol cut
