@@ -1313,6 +1313,55 @@ lemma zKValid_iff_zKValidF_and_zKCritical {s r ds : V} :
 lemma zKValidF_of_zKValid {s r ds : V} (h : zKValid s r ds) : zKValidF s r ds :=
   (zKValid_iff_zKValidF_and_zKCritical.mp h).1
 
+/-- **Δ₁ arithmetization of `zKValidF`** — `zKValidDef` with the spurious criticality line
+`¬(!ipermDef ti s)` dropped. The arithmetized prerequisite for re-pointing `zblueprint`'s `zK` disjunct
+onto faithful validity. -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.zKValidFDef : 𝚫₁.Semisentence 3 := .mkDelta
+  (.mkSigma “s r ds.
+    !(isChainInfDef.sigma) s r ds ∧
+    (∃ l, !lhDef l ds ∧ ∀ i < l,
+      ∃ zi, !znthDef zi ds i ∧ ∃ ti, !tpDef ti zi ∧
+        ( (∃ fi, !fstIdxDef fi zi ∧ !ipermDef ti fi)
+          ∧ ∃ tg, !zTagDef tg zi ∧
+            ( (tg = 1 → ∃ q, !zIallFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q)
+            ∧ (tg = 2 → ∃ q, !zInegFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q)
+            ∧ (tg = 5 → ∃ q, !zAxAllFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q)
+            ∧ (tg = 6 → ∃ q, !zAxNegFDef q zi ∧ !(isUFormula ℒₒᵣ).sigma q) ) )
+        ∧ ∃ ca, !chainAsuccDef ca ds i ∧ !(isUFormula ℒₒᵣ).sigma ca )
+    ∧ (∃ sc, !seqSuccDef sc s ∧ !(isUFormula ℒₒᵣ).sigma sc)
+    ∧ (∃ sa, !seqAntDef sa s ∧ ∃ la, !lhDef la sa ∧ ∀ k < la,
+        ∃ z, !znthDef z sa k ∧ !(isUFormula ℒₒᵣ).sigma z) ”)
+  (.mkPi “s r ds.
+    !(isChainInfDef.pi) s r ds ∧
+    (∀ l, !lhDef l ds → ∀ i < l,
+      ∀ zi, !znthDef zi ds i → ∀ ti, !tpDef ti zi →
+        ( (∀ fi, !fstIdxDef fi zi → !ipermDef ti fi)
+          ∧ ∀ tg, !zTagDef tg zi →
+            ( (tg = 1 → ∀ q, !zIallFDef q zi → !(isUFormula ℒₒᵣ).pi q)
+            ∧ (tg = 2 → ∀ q, !zInegFDef q zi → !(isUFormula ℒₒᵣ).pi q)
+            ∧ (tg = 5 → ∀ q, !zAxAllFDef q zi → !(isUFormula ℒₒᵣ).pi q)
+            ∧ (tg = 6 → ∀ q, !zAxNegFDef q zi → !(isUFormula ℒₒᵣ).pi q) ) )
+        ∧ ∀ ca, !chainAsuccDef ca ds i → !(isUFormula ℒₒᵣ).pi ca )
+    ∧ (∀ sc, !seqSuccDef sc s → !(isUFormula ℒₒᵣ).pi sc)
+    ∧ (∀ sa, !seqAntDef sa s → ∀ la, !lhDef la sa → ∀ k < la,
+        ∀ z, !znthDef z sa k → !(isUFormula ℒₒᵣ).pi z) ”)
+
+instance zKValidF_defined : 𝚫₁-Relation₃ (zKValidF : V → V → V → Prop) via zKValidFDef :=
+  ⟨by intro v
+      simp [zKValidFDef, zKValidF, HierarchySymbol.Semiformula.val_sigma, znth_defined.iff,
+        tp_defined.iff, fstIdx_defined.iff, iperm_defined.iff, zTag_defined.iff, zIallF_defined.iff,
+        zInegF_defined.iff, zAxAllF_defined.iff, zAxNegF_defined.iff, chainAsucc_defined.iff,
+        seqSucc_defined.iff, seqAnt_defined.iff, lh_defined.iff],
+   by intro v
+      simp [zKValidFDef, zKValidF, HierarchySymbol.Semiformula.val_sigma, znth_defined.iff,
+        tp_defined.iff, fstIdx_defined.iff, iperm_defined.iff, zTag_defined.iff, zIallF_defined.iff,
+        zInegF_defined.iff, zAxAllF_defined.iff, zAxNegF_defined.iff, chainAsucc_defined.iff,
+        seqSucc_defined.iff, seqAnt_defined.iff, lh_defined.iff, forall_and, and_assoc,
+        numeral_eq_natCast]⟩
+
+instance zKValidF_definable : 𝚫₁-Relation₃ (zKValidF : V → V → V → Prop) :=
+  zKValidF_defined.to_definable
+
 /-! ### Rung-0.5 premise-sequent side conditions (for a rule-faithful `ZPhi`)
 
 The bare `ZPhi` I∀/I¬/Ind disjuncts pin only the *conclusion* succedent, not the premise sequents — so a

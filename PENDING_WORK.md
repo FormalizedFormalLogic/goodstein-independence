@@ -25,9 +25,27 @@ non-critical chain `iord_descent_iCritAux` (5.2.2), splice `iord_descent_iSplice
 `iord_descent_iRcrit_of_chain` (5.1). `iord_iR2_iterate_descends` assembles the ε₀-descent modulo
 `RedSound`. So crux-2 is NOT blocked on descent — the wall is purely VALIDITY (RedSound) + the dispatch.
 
-REDESIGN (revised — hardest-first; descent already done):
-1. Re-point `ZPhi`'s `zK` disjunct (`InternalZ.lean:3644,3691`) `zKValid` → `zKValidF` (drop spurious
-   criticality from `ZDerivation`). `zKValid_iff_zKValidF_and_zKCritical` makes producers mechanical.
+DONE this lap (continued): **`zKValidFDef` + `zKValidF_defined`/`_definable`** — the Δ₁ arithmetization
+of `zKValidF` (= `zKValidDef` minus the `¬(!ipermDef ti s)` line), green first try. This is the
+prerequisite for re-pointing `zblueprint`'s `zK` disjunct.
+
+⭐ **MEASURED re-point blast radius (lap 82, empirically: re-pointed ZPhi, built, reverted).** Changing
+`ZPhi` (`InternalZ.lean:3694`) + `zPhiBounded_iff` (3741, two `rintro`/`exact` spots 3754/3768) +
+`zblueprint` (3790/3808: `zKValidDef.sigma/.pi` → `zKValidFDef.sigma/.pi`) + `zPhi_definable` proof.
+Then exactly **6 lemma sites** break, all mechanical EXCEPT the descent capstone:
+- `zKValid_of_ZDerivation_zK` (~4000): change return type → `zKValidF` (rename).
+- forward constructors `ZDerivation_iR2_zInd_of_zKValid` (5094), `ZDerivation_iCritReduct_of` (5125):
+  take `zKValidF` instead of `zKValid` (the genuine reduct validates against faithful validity — these
+  become PROVABLE where they were vacuous before).
+- ⚠️ **`iord_descent_iR2_zK_of_valid` (4780) — THE hard one**: currently UNCONDITIONAL because `zKValid`
+  forced criticality (redex always found). With only `zKValidF`, must `by_cases zKCritical s ds`:
+  critical → existing `iRcrit` route; non-critical → `iR2` must do the non-critical reduct
+  (`iCritAux` replace, descent `iord_descent_iCritAux` BANKED) — needs the `iR2_zK` DISPATCH (step 2).
+
+REDESIGN (revised — hardest-first; descent already done; arithmetization now ready):
+1. Re-point `ZPhi`'s `zK` disjunct (`InternalZ.lean:3694`) `zKValid` → `zKValidF` (+ `zPhiBounded_iff` +
+   `zblueprint` → `zKValidFDef` + `zPhi_definable`; blast radius measured above).
+   `zKValid_iff_zKValidF_and_zKCritical` makes producers mechanical.
 2. Make `iR2_zK` DISPATCH (currently always `iRcrit`, `iR2_zK_eq_iRcrit`): critical (5.1, redex exists)
    → `iRcrit`; non-critical (5.2.2, `∃ i ≤ j₀ tp(dᵢ) ◁ Π`) → `iCritAux` replace premise i by `iR2 dᵢ`;
    sub-critical (5.2.1) → splice. Descent for each is ALREADY banked — only wire the selection.
