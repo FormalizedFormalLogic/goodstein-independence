@@ -59,14 +59,27 @@ With `redSound` in hand, `ZDerivesEmpty` is closed under the whole `red`-orbit a
 **unconditional** — mirrors `ZDerivesEmpty_iterate` / `iord_iR2_iterate_descends`, minus the `RedSound`
 hypothesis. Bodies left `sorry` here only because this file is uncompiled; they are pure plumbing copies. -/
 
+/-- **`red` preserves `ZDerivesEmpty`** (mirror of `ZDerivesEmpty_iR2`, now UNCONDITIONAL): a
+contradiction derivation reduces to one — `redSound` gives `ZDerivation (red d)` and `fstIdx_red`
+transfers the empty antecedent + `⊥` succedent. -/
+theorem ZDerivesEmpty_red {d : V} (h : ZDerivesEmpty d) : ZDerivesEmpty (red d) := by
+  have hfst : fstIdx (red d) = fstIdx d := fstIdx_red h.1
+  exact ⟨redSound d h, by rw [hfst]; exact h.2.1, by rw [hfst]; exact h.2.2⟩
+
 /-- `ZDerivesEmpty` is closed under the `red`-orbit (no hypothesis — `redSound` discharges it). -/
 theorem ZDerivesEmpty_red_iterate {z : V} (hz : ZDerivesEmpty z) :
-    ∀ n : ℕ, ZDerivesEmpty (red^[n] z) := sorry
+    ∀ n : ℕ, ZDerivesEmpty (red^[n] z)
+  | 0 => by simpa using hz
+  | n + 1 => by
+      rw [Function.iterate_succ_apply']
+      exact ZDerivesEmpty_red (ZDerivesEmpty_red_iterate hz n)
 
 /-- **The infinite ε₀-descent of crux-2, UNCONDITIONAL.** `n ↦ iord (red^[n] z)` strictly `≺`-descends.
 An infinite primitive-recursive ε₀-descent — exactly what `PRWO(ε₀)` forbids. -/
 theorem iord_red_iterate_descends {z : V} (hz : ZDerivesEmpty z) (n : ℕ) :
-    icmp (iord (red^[n+1] z)) (iord (red^[n] z)) = 0 := sorry
+    icmp (iord (red^[n+1] z)) (iord (red^[n] z)) = 0 := by
+  rw [Function.iterate_succ_apply']
+  exact iord_descent_red (ZDerivesEmpty_red_iterate hz n)
 
 /-! ## M2 — the C0.5 Foundation→Z bridge
 `Z ⊇ 𝗣𝗔` on closed sequents, M-internal (Bryce–Goré `Peano.v` blueprint, B1–B3; the PA-induction axiom
