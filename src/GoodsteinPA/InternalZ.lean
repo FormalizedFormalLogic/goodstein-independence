@@ -5541,6 +5541,45 @@ lemma ZDerivation_iCritReductG_of {s C rOut rIn0 rIn1 ds0 ds1 : V}
     (fun n hn => znth_iCritReductSeq_ZDerivation haux0 haux1 n hn) ?_
   exact zKValidF_iCritReductGen hsAnt hCrk hCUf hssUf hsaUf
 
+/-! ### `iRcritG` — the genuine CLOSED critical branch (Buchholz Def 3.2 case 5.1, on correct endsequents)
+
+The `red`-analogue of `iRcrit`: the redex finder `redexI`/`redexJ` is total and definable, so the genuine
+critical reduct is a closed term once the per-premise reduct supplier `ρ` (`= dᵢ[k]`/`d_j[0]`, the N1
+structural IH) is fixed. Unlike `iRcrit` (built on the ordinal-shadow `iCritReduct`, whose `iCritAux`
+auxiliaries reuse `fstIdx d` and so have the WRONG endsequent), `iRcritG` is built on `iCritReductG`, whose
+auxiliaries carry the cut's reduced endsequents `Θ→A(d)`/`A(d),Θ→D` with cut formula `A(d) = chainAsucc ds i`
+(the succedent of the redex's R-premise `i`). This is the K-case of the genuine reduct `red`. -/
+
+/-- **The genuine closed critical branch** for `red`'s tag-4 case: `K^{r-1}_Π ⟨d{0}, d{1}⟩` where the cut
+formula is `A(d) = chainAsucc (zKseq d) (redexI d)`, the auxiliaries replace the redex premises `i = redexI d`,
+`j = redexJ d` by their `ρ`-reducts, and carry the reduced endsequents. Closed term; only `ρ` (the N1 IH)
+is abstract. -/
+noncomputable def iRcritG (d : V) (ρ : V → V) : V :=
+  iCritReductG (fstIdx d) (chainAsucc (zKseq d) (redexI d)) (zKrank d - 1) (zKrank d) (zKrank d)
+    (seqUpdate (zKseq d) (redexI d) (ρ (redexI d)))
+    (seqUpdate (zKseq d) (redexJ d) (ρ (redexJ d)))
+
+@[simp] lemma fstIdx_iRcritG (d : V) (ρ : V → V) : fstIdx (iRcritG d ρ) = fstIdx d := by
+  simp [iRcritG]
+@[simp] lemma zTag_iRcritG (d : V) (ρ : V → V) : zTag (iRcritG d ρ) = 4 := by simp [iRcritG]
+
+/-- **`iRcritG` is a `ZDerivation`** (R1 done), modulo only R2 — the two genuine auxiliaries
+`d{0} = K^r (seqUpdate ds i (ρ i))` ⊢ `Θ→A(d)`, `d{1} = K^r (seqUpdate ds j (ρ j))` ⊢ `A(d),Θ→D` being
+`ZDerivation`s of their reduced endsequents (recursive Thm 3.4(a), the structural IH). The validity
+threading + cut-rank drop are banked (`zKValidF_iCritReductGen`, `irk_cut_lt_rank_*`). -/
+lemma ZDerivation_iRcritG_of {d : V} {ρ : V → V}
+    (haux0 : ZDerivation (zK (seqSetSucc (fstIdx d) (chainAsucc (zKseq d) (redexI d)))
+      (zKrank d) (seqUpdate (zKseq d) (redexI d) (ρ (redexI d)))))
+    (haux1 : ZDerivation (zK (seqAddAnt (chainAsucc (zKseq d) (redexI d)) (fstIdx d))
+      (zKrank d) (seqUpdate (zKseq d) (redexJ d) (ρ (redexJ d)))))
+    (hsAnt : Seq (seqAnt (fstIdx d)))
+    (hCrk : irk (chainAsucc (zKseq d) (redexI d)) ≤ zKrank d - 1)
+    (hCUf : IsUFormula ℒₒᵣ (chainAsucc (zKseq d) (redexI d)))
+    (hssUf : IsUFormula ℒₒᵣ (seqSucc (fstIdx d)))
+    (hsaUf : ∀ k < lh (seqAnt (fstIdx d)), IsUFormula ℒₒᵣ (znth (seqAnt (fstIdx d)) k)) :
+    ZDerivation (iRcritG d ρ) :=
+  ZDerivation_iCritReductG_of haux0 haux1 hsAnt hCrk hCUf hssUf hsaUf
+
 /-! ## The iterated descent — `n ↦ iord (iR2^[n] z)` is an infinite `≺`-descent
 
 This is the V-internal analog of `GentzenCon.gentzenDescent_descends`, on the genuine objects
