@@ -3601,6 +3601,47 @@ lemma isChainInf_seqUpdate_reduceR {s s' r ds i v : V} (hi : i < lh ds)
   · intro i' hi'
     rw [chainAsucc_seqUpdate_of_ne (ne_of_lt hi')]; exact hrank i' hi'
 
+/-- **L-rule replace — `isChainInf` conclusion-antecedent weakening (Buchholz Def 3.2 case 5.2.2, axiom
+selected premise).** When the selected premise `dᵢ` is a §5 left-axiom (`tp dᵢ = L^k_A`), the reduct is
+the IDENTITY (`red dᵢ = dᵢ`) and the conclusion gains the cut-formula instance `A(k)` in its ANTECEDENT
+(`tpReduce (isymLk …) Π 0 = A(k),Γ→D`). Adding a formula to the conclusion antecedent only RELAXES the
+threading condition (the threaded `B`'s may now also land in the new antecedent), so chain-validity is
+monotone: the same `j₀` works, with the left disjunct `inAnt B (seqAnt s)` weakened through `seqAddAnt`.
+The premises (`ds`) and rank (`r`) are untouched. -/
+lemma isChainInf_seqAddAnt {s r ds A : V} (hs : Seq (seqAnt s))
+    (hci : isChainInf s r ds) : isChainInf (seqAddAnt A s) r ds := by
+  obtain ⟨j0, hj0, hA, hthr, hrk⟩ := hci
+  refine ⟨j0, hj0, ?_, ?_, ?_⟩
+  · rw [seqSucc_seqAddAnt]; exact hA
+  · intro i hi B hB
+    rcases hthr i hi B hB with hin | hex
+    · left; exact (inAnt_seqAddAnt hs).mpr (Or.inr hin)
+    · right; exact hex
+  · exact hrk
+
+/-- **Antecedent-`seqCons` formula-hood** — prepending a `UFormula` to a wff antecedent keeps every entry
+a `UFormula`. The conclusion-antecedent wff conjunct of `zKValidF` under the L-rule weakening. -/
+lemma forall_IsUFormula_seqCons {Γ A : V} (hΓ : Seq Γ)
+    (hpar : ∀ k < lh Γ, IsUFormula ℒₒᵣ (znth Γ k)) (hA : IsUFormula ℒₒᵣ A) :
+    ∀ k < lh (seqCons Γ A), IsUFormula ℒₒᵣ (znth (seqCons Γ A) k) := by
+  intro k hk
+  rw [Seq.lh_seqCons A hΓ] at hk
+  rcases eq_or_lt_of_le (le_iff_lt_succ.mpr hk) with hkeq | hklt
+  · rw [hkeq, znth_seqCons_self hΓ A]; exact hA
+  · rw [znth_seqCons_of_lt hΓ A hklt]; exact hpar k hklt
+
+/-- **L-rule replace — `zKValidF` conclusion-antecedent weakening.** Adding a `UFormula` `A` to the
+conclusion antecedent preserves faithful chain-validity (Buchholz 5.2.2 axiom case): `isChainInf` is
+monotone (`isChainInf_seqAddAnt`), the per-premise conjuncts and rank are about `ds` (unchanged), the
+conclusion succedent is unchanged (`seqSucc_seqAddAnt`), and the conclusion-antecedent wff extends by
+`forall_IsUFormula_seqCons`. -/
+lemma zKValidF_seqAddAnt {s r ds A : V} (hs : Seq (seqAnt s)) (hA : IsUFormula ℒₒᵣ A)
+    (h : zKValidF s r ds) : zKValidF (seqAddAnt A s) r ds := by
+  obtain ⟨hci, hperm, hg1, hg2, hg5, hg6, hcf, hss, hsa⟩ := h
+  refine ⟨isChainInf_seqAddAnt hs hci, hperm, hg1, hg2, hg5, hg6, hcf, ?_, ?_⟩
+  · rw [seqSucc_seqAddAnt]; exact hss
+  · rw [seqAnt_seqAddAnt]; exact forall_IsUFormula_seqCons hs hsa hA
+
 /-- **5.2.1 splice — `isChainInf` structural reduction.** The sub-critical splice
 `cs = seqCons (seqUpdate ds j a) b` (Buchholz §3.2 case 5.2.1: premise `j` of the critical chain is
 expanded into its two halves `a = dⱼ{1}` in place and `b = dⱼ{0}` appended at the end) is chain-valid for
@@ -5502,6 +5543,19 @@ lemma ZDerivation_iCritReplaceReduce_of {s s' r ds i v : V} (hi : i < lh ds)
       · rw [chainAsucc_seqUpdate_of_ne hne]; exact hcf n (by rwa [seqUpdate_lh] at hn)
     · -- conclusion antecedent wff inherits from the parent via `hX_ant`.
       rw [hX_ant]; exact hsa
+
+/-- **L-rule replace constructor (the axiom selected-premise cut-elimination step, Buchholz Def 3.2 case
+5.2.2 for `tp dᵢ = L^k_A`).** Weakening the conclusion of a chain `ZDerivation` by a `UFormula` `A` in the
+antecedent yields a `ZDerivation` of the weakened chain. This is the genuine reduct for a §5-axiom selected
+premise: there `red dᵢ = dᵢ` (identity, premises unchanged), and the conclusion gains the cut-formula
+instance `A(k)` in its antecedent (`tpReduce (isymLk k …) Π 0 = A(k),Γ→D`). The validity is pure
+conclusion-antecedent monotonicity — `zKValidF_seqAddAnt`. -/
+lemma ZDerivation_zK_seqAddAnt {s r ds A : V} (hZ : ZDerivation (zK s r ds))
+    (hs : Seq (seqAnt s)) (hA : IsUFormula ℒₒᵣ A) :
+    ZDerivation (zK (seqAddAnt A s) r ds) := by
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  exact zDerivation_zK_intro hds hmem
+    (zKValidF_seqAddAnt hs hA (zKValidF_of_ZDerivation_zK hZ))
 
 /-- **5.2.2 replace-premise validity, K-chain reduct specialization (the dispatch-ready form).** In the
 genuine `red` dispatch the reduct `v = red dᵢ` of any reducible premise is a `K`-chain (`zK …`, via
