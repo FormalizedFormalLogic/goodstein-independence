@@ -1,6 +1,23 @@
 # STATUS — GoodsteinPA 📊
 
-> **⭐⭐⭐ Lap-105 — the natural-sum `#` RESOLUTION of the lap-104 `imax` tension (read FIRST — current).**
+> **⭐⭐⭐ Lap-106 — conclusion-tracking `ZcDer` DONE + the ∀-inversion recursion STARTED on `ZInf` (read FIRST — current).**
+> Baton `HANDOFF-2026-06-25-lap106.md`. Build 🟢 green (1325); `src/` UNTOUCHED (headline footprint intact:
+> `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]`, 0 math axioms). Closed
+> lap-105's NEXT prerequisite (conclusion-tracking): `inductive ZcDer` (= `ZcOK` + ω-∀ conclusion data) +
+> forgetful `ZcDer.toZcOK` + conclusion-faithful principal ∀-inversion (`zcDer_iord_descent_allOmega`) +
+> embedding realization (`zIall_realizes_ZcDer`) + principal-cut orbit step + the full per-node
+> inversion-step family (`wip/PathCOmega.lean`, bricks 5o–5q). Then STARTED the genuine deep core in NEW
+> `wip/PathCInf.lean`: `inductive ZInf` — the arithmetized one-sided Tait Z∞ derivation (V-internal port of
+> `Zinfty.Deriv`, 9 constructors, strictly-positive ω-rule ⟹ full structural recursor), and **`ZInf.allInv`,
+> the ∀-inversion recursion (port of `Zinfty.allInvAux`) with its STRUCTURE + the PRINCIPAL `allω` case +
+> atomic bases machine-checked** (bricks 5r–5s). The lone open obligation: `allInv`'s COMMUTING cases carry
+> a disclosed `sorry` — a term-mode HFS-`whnf` perf blowup (NOT a math gap; the verbatim `allInvAux` port
+> times out under `induction` from implicit-arg unification). NEXT (hardest-first): the `permCongr`/
+> explicit-arg perf fix to discharge the six commuting `sorry`s, then `andInv`/`orInv`/`cutElim`, then bridge
+> `ZInf`-height ↔ engine `iord` for the PRWO descent, then wire to `false_of_ZDerivesEmpty`
+> (`Crux2Blueprint.lean:588`) → headline. See `HANDOFF-2026-06-25-lap106.md`, `NEXT_STEPS.md`, `PENDING_WORK.md`.
+
+> **⭐⭐⭐ Lap-105 — the natural-sum `#` RESOLUTION of the lap-104 `imax` tension (historical — see lap-106 box above).**
 > Baton `HANDOFF-2026-06-25-lap105.md`. Build 🟢 green (1325); `src/` UNTOUCHED (headline footprint intact:
 > `peano_not_proves_goodstein = [propext, sorryAx, choice, Quot.sound]`, 0 math axioms). Lap-104's 2nd
 > in-kernel finding (the `imax` stored ordinal can't satisfy the cut node's operator-control, since the
