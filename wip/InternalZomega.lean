@@ -114,6 +114,35 @@ theorem iord_zOmegaPrem_constant {d0 a t₁ t₂ : V}
     iord (zOmegaPrem d0 a t₁) = iord (zOmegaPrem d0 a t₂) := by
   rw [iord_zOmegaPrem ht₁ hZ, iord_zOmegaPrem ht₂ hZ]
 
+/-! ## Capstone — the ω-rule ∀-node is REALIZABLE from a regular finitary I∀ node
+
+The decisive structural point: a (would-be) ω-node `zAllω s a p d0` carries the SAME finite data as the
+existing `zIall s a p d0` — premise-`t` is computed on demand (`zsubst d0 a t`), never stored. And its full
+ω-rule validity (premise family valid + conclusions correct + ordinals uniform) is DERIVED from the existing
+regular `zIall` node, with no chain machinery and no conclusion-tracking motive. So a Path-C rebuild reuses
+the existing I∀ embedding wholesale (PA's ∀-intro already produces a regular `zIall` with fresh
+eigenvariable = O3). -/
+
+/-- **Spike capstone — a regular `zIall` realizes the full ω-rule ∀-node.** From `ZDerivation (zIall s a p
+d0)`, the freshness bound `maxEigen d0 < a`, and the eigenvariable side-condition O3 (`a` not free in the
+matrix `p` or antecedent `Γ`, phrased as substitution-invariance — exactly what the embedding's fresh
+eigenvariable choice supplies), EVERY closed term `t` gives: the premise `zOmegaPrem d0 a t` is a
+`ZDerivation` of exactly `Γ→F(t)`, with ordinal `iord d0` (uniform across the family). This is the formal
+object the ω-rule cut-elimination consumes — assembled from `zOmegaPrem_valid` (motive-free validity),
+`zOmegaPrem_concl` (computed conclusion), `iord_zOmegaPrem` (finite uniform ordinal), all in-kernel. -/
+theorem zIall_realizes_omega {s a p d0 : V}
+    (hZ : ZDerivation (zIall s a p d0)) (hreg : maxEigen d0 < a)
+    (hO3p : ∀ t, IsSemiterm ℒₒᵣ 0 t → fvSubst ℒₒᵣ a t p = p)
+    (hO3Γ : ∀ t, IsSemiterm ℒₒᵣ 0 t → fvSubstSeq a t (seqAnt s) = seqAnt s) :
+    ∀ t, IsSemiterm ℒₒᵣ 0 t →
+      ZDerivation (zOmegaPrem d0 a t) ∧
+      fstIdx (zOmegaPrem d0 a t) = seqSetSucc s (substs1 ℒₒᵣ t p) ∧
+      iord (zOmegaPrem d0 a t) = iord d0 := by
+  intro t ht
+  exact ⟨zOmegaPrem_valid ht hZ hreg,
+    zOmegaPrem_concl hZ (hO3p t ht) (hO3Γ t ht) ht,
+    iord_zOmegaPrem ht.isUTerm (zDerivation_zIall_inv hZ).1⟩
+
 /-! ## Spike verdict so far + the one remaining Path-C obligation (Probe 2 — OPEN)
 
 **Evidence gathered (all axiom-clean, in-kernel):**
