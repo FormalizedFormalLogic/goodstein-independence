@@ -216,6 +216,62 @@ theorem zInd_realizes_zIndOmegaValid {s at' p d0 d1 : V}
     fun s' k hk => iord_iIndReduct_lt_storedBound (s := s) (at' := at') hk
       (isNF_iotil_of_ZDerivation _ h0) (isNF_iotil_of_ZDerivation _ h1)⟩
 
+/-! ### The `sord` projection — the stored-ordinal map the Path-C `red` descent reads
+
+`brick 4`'s `stored_ord_iterate_descends` is abstracted over a stored-ordinal map `ord : V → V`. For the
+Path-C nodes that map is `sord`: it reads the STORED ordinal field off an ω-node (tag 7 = ∀, tag 8 = ind),
+falling back to the computed `iord` on the engine's finitary nodes. This is the projection that makes the
+per-node drops (bricks 1, 3) instances of brick 4's `hdrop` hypothesis — `icmp (sord premise) (sord node)`.
+The tag dispatch is read directly off the `⟪…⟫` coding, exactly as `zTag`/`iord` do. -/
+
+@[simp] lemma zTag_zAllOmega (s d0 a α : V) : zTag (zAllOmega s d0 a α) = 7 := by
+  simp [zTag, sndIdx, zAllOmega]
+
+@[simp] lemma zTag_zIndOmega (s at' p d0 d1 α : V) : zTag (zIndOmega s at' p d0 d1 α) = 8 := by
+  simp [zTag, sndIdx, zIndOmega]
+
+/-- **The Path-C stored-ordinal projection.** On an ω-∀-node (tag 7) reads the stored `α`; on an induction
+ω-node (tag 8) reads the stored limit `α`; otherwise falls back to the engine's computed `iord`. This is
+the `ord` map brick 4's infinite descent iterates — the stored ordinals on ω-nodes, the computed ones
+elsewhere. -/
+noncomputable def sord (d : V) : V :=
+  if zTag d = 7 then π₂ (π₂ (zRest d))
+  else if zTag d = 8 then π₂ (π₂ (π₂ (π₂ (zRest d))))
+  else iord d
+
+@[simp] lemma zRest_zAllOmega (s d0 a α : V) : zRest (zAllOmega s d0 a α) = ⟪d0, a, α⟫ := by
+  simp [zRest, sndIdx, zAllOmega]
+
+@[simp] lemma zRest_zIndOmega (s at' p d0 d1 α : V) :
+    zRest (zIndOmega s at' p d0 d1 α) = ⟪at', p, d0, d1, α⟫ := by
+  simp [zRest, sndIdx, zIndOmega]
+
+@[simp] lemma sord_zAllOmega (s d0 a α : V) : sord (zAllOmega s d0 a α) = α := by
+  rw [sord, zTag_zAllOmega, if_pos rfl, zRest_zAllOmega]; simp
+
+@[simp] lemma sord_zIndOmega (s at' p d0 d1 α : V) : sord (zIndOmega s at' p d0 d1 α) = α := by
+  rw [sord, zTag_zIndOmega, if_neg (by simp), if_pos rfl, zRest_zIndOmega]; simp
+
+/-- **The ω-∀-cut drop, in `sord` form (brick 1 ∘ projection).** A critical ∀-cut on the stored-ordinal
+ω-∀-node `zAllOmega s d0 a α` selects premise `zsubst d0 a t`, whose computed `iord` is `≺` the node's
+stored `sord = α` — i.e. `icmp (iord premise) (sord node) = 0`. This is brick 1's `zAllOmega_cut_descends`
+read through `sord_zAllOmega`: the exact `hdrop`-shaped fact brick 4 consumes for the ∀-cut step. -/
+theorem sord_drop_zAllOmega {s d0 a α t : V}
+    (hvalid : zAllOmegaValid s d0 a α) (ht : IsSemiterm ℒₒᵣ 0 t) :
+    icmp (iord (zsubst d0 a t)) (sord (zAllOmega s d0 a α)) = 0 := by
+  rw [sord_zAllOmega]; exact zAllOmega_cut_descends hvalid ht
+
+/-- **The induction-cut drop, in `sord` form (brick 3 ∘ projection).** A cut on the stored-ordinal
+induction ω-node `zIndOmega s at' p d0 d1 α` selects the depth-`k` unfolding, whose computed `iord` is `≺`
+the node's stored limit `sord = α` — `icmp (iord unfolding) (sord node) = 0`, uniformly in `k > 0` and the
+unfolding's conclusion sequent `s'`. Brick 3's `zIndOmegaValid.2` read through `sord_zIndOmega`: the
+`hdrop`-shaped fact for the induction step, the genuine LIMIT case the computed `iord` cannot itself
+assign. -/
+theorem sord_drop_zIndOmega {s at' p d0 d1 α s' k : V}
+    (hvalid : zIndOmegaValid p d0 d1 α) (hk : 0 < k) :
+    icmp (iord (zK s' (irk p) (iIndReductSeq d0 d1 k))) (sord (zIndOmega s at' p d0 d1 α)) = 0 := by
+  rw [sord_zIndOmega]; exact hvalid.2 s' k hk
+
 /-! ## Brick 4 skeleton — the stored-ordinal infinite descent (path-portable)
 
 **Endgame design (clarified lap 102).** Two distinct cut-elimination reductions exist; Path C uses the
