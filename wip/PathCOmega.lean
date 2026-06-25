@@ -988,6 +988,123 @@ theorem sord_redIndExN_lt {s s' at' p d0 d1 Cnew dR αInd αEx : V}
   rw [redIndExN, sord_zCutOmega]
   exact inadd_strict_mono hLnf hAnf hRnf hEnf hLlt hRlt
 
+/-! ### Brick 5e (lap 105) — the COMPLETE cut ordinal `max(a,b)+1`: no positivity, arbitrary parent
+
+Bricks 5c/5d (`#`-storage) close operator-control only when BOTH premises have positive ordinal
+(`X ≺ X#g` needs `g ≻ 0`). But an axiom LEAF has ordinal `0` (Schütte's `o(axiom)=0`), so a cut whose
+premise is an axiom breaks the `#` operator-control. The textbook Tait/Schütte cut ordinal removes the
+gap: store `o(cut) = max(o(dL), o(dR)) + 1` (`inc (imax …)`). Then:
+- **Operator-control** holds UNCONDITIONALLY: each premise is `≼ imax ≺ imax + 1` (`lt_imax_inc_left/right`)
+  — no positivity needed (the `+1` supplies the strictness `imax` itself lacked, the exact lap-104 gap).
+- **Descent** holds against an ARBITRARY `max+1`-stored parent: `a' ≺ a, b' ≺ b ⟹ imax a' b' ≺ imax a b ⟹
+  imax a' b' + 1 ≺ imax a b + 1` (`inc_imax_strict_mono`), via the linear-order fact `max` of two things
+  each `≺ M` is `≺ M` (`icmp_imax_lt`) — no additive-principality of the parent (the lap-104 `imax` virtue,
+  now WITH operator-control too). This is the complete resolution; it supersedes lap-104's bare `imax`
+  (no op-control) and bricks 5c/5d's `#` (positivity-gated). The genuinely-deep content remaining is purely
+  the rank-mixing tower for COMPOUND cut formulas, off the principal ω-cut step entirely. -/
+
+/-- **Ordinal successor on CNF codes**: `inc α = α # 1` (`1 = ω^0`). NF-preserving; `α ≺ inc α` always
+(`1 ≻ 0`), the strictness the bare `imax` lacked. -/
+noncomputable def inc (α : V) : V := inadd α (ocOadd 0 1 0)
+
+/-- `1 = ω^0·1` is NF. -/
+theorem isNF_one_oc : isNF (ocOadd 0 1 0 : V) :=
+  (isNF_ocOadd 0 1 0).mpr ⟨_root_.one_ne_zero, isNF_zero, isNF_zero, Or.inl rfl⟩
+
+/-- `inc` preserves NF. -/
+theorem isNF_inc {α : V} (hα : isNF α) : isNF (inc α) := isNF_inadd isNF_one_oc α hα
+
+/-- **`α ≺ inc α`** (strict successor) — always, no positivity. -/
+theorem lt_inc {α : V} (hα : isNF α) : icmp α (inc α) = 0 :=
+  lt_inadd_self_right hα isNF_one_oc (icmp_zero_ocOadd 0 1 0)
+
+/-- `inc` is strictly monotone: `α ≺ β → inc α ≺ inc β`. -/
+theorem inc_strict_mono {α β : V} (hα : isNF α) (hβ : isNF β) (h : icmp α β = 0) :
+    icmp (inc α) (inc β) = 0 :=
+  inadd_right_mono hα hβ h (ocOadd 0 1 0) isNF_one_oc
+
+/-- `imax` preserves NF. -/
+theorem isNF_imax {a b : V} (ha : isNF a) (hb : isNF b) : isNF (imax a b) := by
+  unfold imax; split <;> assumption
+
+/-- **`a ≺ inc (imax a b)`** — operator-control, left premise, NO positivity. `a ≼ imax a b ≺ imax a b + 1`. -/
+theorem lt_imax_inc_left {a b : V} (ha : isNF a) (hb : isNF b) : icmp a (inc (imax a b)) = 0 := by
+  by_cases hab : icmp a b = 0
+  · simp only [imax, if_pos hab]; exact icmp_trans' hab (lt_inc hb)
+  · simp only [imax, if_neg hab]; exact lt_inc ha
+
+/-- **`b ≺ inc (imax a b)`** — operator-control, right premise, NO positivity. -/
+theorem lt_imax_inc_right {a b : V} (ha : isNF a) (hb : isNF b) : icmp b (inc (imax a b)) = 0 := by
+  by_cases hab : icmp a b = 0
+  · simp only [imax, if_pos hab]; exact lt_inc hb
+  · simp only [imax, if_neg hab]
+    rcases icmp_tri a b with h | h | h
+    · exact absurd h hab
+    · have he : a = b := icmp_eq_imp_eq (a + b) a le_self_add b le_add_self h
+      rw [he]; exact lt_inc hb
+    · exact icmp_trans' (icmp_two_iff_swap_zero.mp h) (lt_inc ha)
+
+/-- `a' ≺ a ⟹ a' ≺ imax a b` (`a ≼ imax a b`). -/
+theorem lt_imax_of_lt_left {a' a b : V} (h : icmp a' a = 0) : icmp a' (imax a b) = 0 := by
+  by_cases hab : icmp a b = 0
+  · simp only [imax, if_pos hab]; exact icmp_trans' h hab
+  · simp only [imax, if_neg hab]; exact h
+
+/-- `b' ≺ b ⟹ b' ≺ imax a b` (`b ≼ imax a b`). -/
+theorem lt_imax_of_lt_right {b' a b : V} (h : icmp b' b = 0) : icmp b' (imax a b) = 0 := by
+  by_cases hab : icmp a b = 0
+  · simp only [imax, if_pos hab]; exact h
+  · simp only [imax, if_neg hab]
+    rcases icmp_tri a b with hh | hh | hh
+    · exact absurd hh hab
+    · have he : a = b := icmp_eq_imp_eq (a + b) a le_self_add b le_add_self hh
+      rw [he]; exact h
+    · exact icmp_trans' h (icmp_two_iff_swap_zero.mp hh)
+
+/-- **`max+1` is strictly monotone in both premises** — the descent fact, against an arbitrary
+`max+1`-stored parent (no additive-principality). `a'≺a, b'≺b ⟹ imax a' b' + 1 ≺ imax a b + 1`. -/
+theorem inc_imax_strict_mono {a' a b' b : V}
+    (ha' : isNF a') (ha : isNF a) (hb' : isNF b') (hb : isNF b)
+    (h1 : icmp a' a = 0) (h2 : icmp b' b = 0) :
+    icmp (inc (imax a' b')) (inc (imax a b)) = 0 :=
+  inc_strict_mono (isNF_imax ha' hb') (isNF_imax ha hb)
+    (icmp_imax_lt (lt_imax_of_lt_left h1) (lt_imax_of_lt_right h2))
+
+/-- **The `max+1`-stored ∀/∃-cut reduct** — the complete cut ordinal. -/
+noncomputable def redAllExS (s d0 a Cnew dR : V) : V :=
+  zCutOmega s (inc (imax (sord (zsubst d0 a (zExTerm dR))) (sord (zExPrem dR))))
+    (zsubst d0 a (zExTerm dR)) (zExPrem dR) Cnew
+
+/-- **Principal ∀/∃-cut `hinv` — COMPLETE closure (axiom-clean, NO positivity).** The `max+1`-stored
+reduct of a `ZcOK` cut (left = ω-∀-node, right = ∃-node) is `ZcOK`, with operator-control discharged from
+the premises' NF ALONE (`lt_imax_inc_left/right`) — no positivity, so it holds even when a reduced premise
+is an axiom leaf (ordinal `0`), the case bricks 5c/5d's `#`-storage could not handle. This is the complete
+operator-control half of `hinv` for the principal ∀/∃ step. -/
+theorem zcOK_redAllExS {s α s' d0 a αAll sE αEx CE tE dE C : V}
+    (h : ZcOK (zCutOmega s α (zAllOmega s' d0 a αAll) (zExOmega sE αEx CE tE dE) C))
+    (htE : IsSemiterm ℒₒᵣ 0 tE)
+    (hLnf : isNF (sord (zsubst d0 a tE))) (hRnf : isNF (sord dE)) :
+    ZcOK (redAllExS s d0 a C (zExOmega sE αEx CE tE dE)) := by
+  obtain ⟨hZl, hZr⟩ := zcOK_redAllEx_premises h htE
+  rw [redAllExS]
+  simp only [zExTerm_zExOmega, zExPrem_zExOmega]
+  refine ZcOK.cut hZl hZr ?_ ?_
+  · exact lt_imax_inc_left hLnf hRnf
+  · exact lt_imax_inc_right hLnf hRnf
+
+/-- **The `max+1`-stored ∀/∃-cut reduction STRICTLY drops the stored ordinal — against an ARBITRARY
+`max+1`-stored parent.** From the reduct premises each `≺` the parent's corresponding premise ordinals,
+the reduct's `max+1`-ordinal `≺ max(αAll, αEx) + 1` (the parent's). No additive-principality needed (the
+lap-104 `imax` virtue), AND with operator-control (the lap-104 `imax` gap, now closed by the `+1`). -/
+theorem sord_redAllExS_lt {s d0 a Cnew dR αAll αEx : V}
+    (hLlt : icmp (sord (zsubst d0 a (zExTerm dR))) αAll = 0)
+    (hRlt : icmp (sord (zExPrem dR)) αEx = 0)
+    (hLnf : isNF (sord (zsubst d0 a (zExTerm dR)))) (hRnf : isNF (sord (zExPrem dR)))
+    (hAnf : isNF αAll) (hEnf : isNF αEx) :
+    icmp (sord (redAllExS s d0 a Cnew dR)) (inc (imax αAll αEx)) = 0 := by
+  rw [redAllExS, sord_zCutOmega]
+  exact inc_imax_strict_mono hLnf hAnf hRnf hEnf hLlt hRlt
+
 /-! ## NEXT BRICKS (Path C, `sorry`-disclosed milestones — PENDING_WORK lap 102)
 
 Brick 1 above pins the ω-∀-node design + its cut invariant on the existing engine. The remaining Path-C
