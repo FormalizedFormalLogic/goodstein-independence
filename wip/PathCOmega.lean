@@ -850,6 +850,18 @@ theorem zcOK_omegaAll_inv {s d0 a α : V} (h : ZcOK (zAllOmega s d0 a α)) :
   · exact absurd (congrArg zTag heq) (by simp)
   · exact absurd (congrArg zTag heq) (by simp)
 
+/-- **PRINCIPAL `∀`-inversion step (the ω-∀ case) — the central inversion case.** When the derivation's
+last rule IS the ω-∀ introduction (`zAllOmega`), inversion at a witness `t` is premise SELECTION: the
+stored premise family at `t`, `zsubst d0 a t`, is `ZcOK` and its computed ordinal `iord` is strictly below
+the node's stored `sord = α`. BOTH inversion invariants in one statement (`ZcOK` preserved + ordinal drops)
+— the principal (last-rule-introduces-the-`∀`) base case of the `∀`-inversion recursion, the case the
+non-principal (commuting) cases bottom out at. No ordinal increase (the lap-104 inversion requirement). -/
+theorem zcOK_iord_descent_zAllOmega {s d0 a α t : V}
+    (h : ZcOK (zAllOmega s d0 a α)) (ht : IsSemiterm ℒₒᵣ 0 t) :
+    ZcOK (zsubst d0 a t) ∧ icmp (iord (zsubst d0 a t)) (sord (zAllOmega s d0 a α)) = 0 := by
+  obtain ⟨hprem, hdesc⟩ := zcOK_omegaAll_inv h
+  exact ⟨hprem t ht, by rw [sord_zAllOmega]; exact hdesc t ht⟩
+
 /-- **∃-node inversion.** A `ZcOK` ∃-node decomposes into its witness premise + the operator-control
 bound. (With `zExTerm`/`zExPrem` the witness/premise are read off the node, lap 103.) -/
 theorem zcOK_ex_inv {s α C t d : V} (h : ZcOK (zExOmega s α C t d)) :
