@@ -304,6 +304,33 @@ theorem ZDerivation_zK_replace_zAxAll_of {s r ds i sᵢ p k : V}
   rw [hred_eq, seqUpdate_znth_self hds hi, htp_eq]
   exact ZDerivation_zK_seqAddAnt hZ hSeqs hAwff
 
+/-- **The ⊥-orbit "reduce-ready" obligation for a chain (the consolidated motive residual, lap 100).**
+Bundles EXACTLY the orbit-invariant data the two `ZDerivation_red_zK` replace branches need at the selected
+premise `dᵢ = znth ds (permIdx)`: (a) the chain-`Rep` conclusion-tracking (`tp dᵢ = Rep` ∧ `red dᵢ` keeps
+`fstIdx`/stays `Rep`) for a non-critical chain `dᵢ` (⊥-orbit Cor 2.1); (b) the conclusion `Seq`-wff; (c) the
+selection-bounded threading/rank (`permIdx ≤ j₀`); (d) the per-tag freshness/faithful-antecedent/wff for an
+I∀/I¬/axAll `dᵢ`. This is the SINGLE obligation the strengthened `redSoundGen` motive must produce per chain
+node; with it, `ZDerivation_red_zK` is fully assembled (modulo the lone axNeg residual in
+`ZDerivation_red_zK_nonRep`). -/
+def redZKReady (s r ds : V) : Prop :=
+  ( permIdx (zK s r ds) < lh ds → zTag (znth ds (permIdx (zK s r ds))) = 4 →
+      permIdx (znth ds (permIdx (zK s r ds))) < lh (zKseq (znth ds (permIdx (zK s r ds)))) →
+      tp (znth ds (permIdx (zK s r ds))) = isymRep ∧
+      fstIdx (red (znth ds (permIdx (zK s r ds)))) = fstIdx (znth ds (permIdx (zK s r ds))) ∧
+      tp (red (znth ds (permIdx (zK s r ds)))) = isymRep ) ∧
+  Seq (seqAnt s) ∧
+  ( ∀ i' ≤ permIdx (zK s r ds), ∀ B, inAnt B (chainAnt ds i') →
+      inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'' ) ∧
+  ( ∀ i' < permIdx (zK s r ds), irk (chainAsucc ds i') ≤ r ) ∧
+  ( ∀ sᵢ a p d0, znth ds (permIdx (zK s r ds)) = zIall sᵢ a p d0 →
+      fvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral 0) p = p ∧
+      fvSubstSeq a (Bootstrapping.Arithmetic.numeral 0) (seqAnt sᵢ) = seqAnt sᵢ ∧
+      IsUFormula ℒₒᵣ (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral 0) p) ) ∧
+  ( ∀ sᵢ p d0, znth ds (permIdx (zK s r ds)) = zIneg sᵢ p d0 →
+      seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p ∧ Seq (seqAnt sᵢ) ) ∧
+  ( ∀ sᵢ p k, znth ds (permIdx (zK s r ds)) = zAxAll sᵢ p k →
+      IsUFormula ℒₒᵣ (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral k) p) )
+
 /-- **The non-`Rep` replace dispatch, FULLY ASSEMBLED for 3/4 tags (lap 100).** Routes the non-chain,
 non-`Rep` selected premise `dᵢ = znth ds (permIdx)` by its node tag into the matching banked capstone:
 `zIall`→`ZDerivation_zK_replace_zIall_of`, `zIneg`→`_zIneg_of`, `zAxAll`→`_zAxAll_of`. The atom/Ind tags
@@ -358,8 +385,10 @@ delegates to a banked validity constructor (`ZDerivation_iRcritG_of` / `ZDerivat
 `ZDerivation_seqInsert_of_zK`). -/
 theorem ZDerivation_red_zK {s r ds : V}
     (hZ : ZDerivation (zK s r ds))
-    (hred : ∀ i < lh ds, ZDerivation (red (znth ds i))) :
+    (hred : ∀ i < lh ds, ZDerivation (red (znth ds i)))
+    (hready : redZKReady s r ds) :
     ZDerivation (red (zK s r ds)) := by
+  obtain ⟨hchainRep, hSeqs, hthread, hrank, hIall, hIneg, hAxAll⟩ := hready
   by_cases h1 : permIdx (zK s r ds) < lh ds
   · -- non-critical chain: dispatch on the GATED `iRK` (lap 95) — first on whether the selected
     -- premise `dᵢ` is a chain (`zTag dᵢ = 4`), then on `dᵢ`'s own criticality
@@ -367,12 +396,10 @@ theorem ZDerivation_red_zK {s r ds : V}
     · by_cases h2 : permIdx (znth ds (permIdx (zK s r ds)))
           < lh (zKseq (znth ds (permIdx (zK s r ds))))
       · -- chain selected premise, non-critical → 5.2.2 replace (route-B reduced conclusion).
+        -- The ⊥-orbit Cor 2.1 conclusion-tracking is supplied by `redZKReady`'s `hchainRep`.
         rw [red_zK_rep h1 h2]
-        -- OPEN (route-B residual): `ZDerivation_red_zK_replace` discharges this from the selected
-        -- premise being `Rep` (`tp dᵢ = isymRep`, ⊥-orbit Cor 2.1) PLUS the conclusion-tracking IH
-        -- `fstIdx (red dᵢ) = fstIdx dᵢ ∧ tp (red dᵢ) = isymRep`. Those come from the `redSoundF`
-        -- induction (next lap); here they are the open ⊥-orbit invariant.
-        sorry
+        obtain ⟨htp, hredfst, hredtp⟩ := hchainRep h1 htag h2
+        exact ZDerivation_red_zK_replace hZ hred h1 htp hredfst hredtp
       · -- chain selected premise, critical → 5.2.1 splice (`htag` supplies the genuine reduct-halves)
         rw [red_zK_splice h1 h2 htag]
         exact ZDerivation_red_zK_splice hZ hred h1 h2
@@ -387,13 +414,9 @@ theorem ZDerivation_red_zK {s r ds : V}
         have hdiZ : ZDerivation (znth ds (permIdx (zK s r ds))) := (zDerivation_zK_inv hZ).2 _ h1
         obtain ⟨hredfst, hredtp⟩ := red_rep_of_tp_isymRep hdiZ htp (fun h4 _ => absurd h4 htag)
         exact ZDerivation_red_zK_replace hZ hred h1 htp hredfst hredtp
-      · -- I∀ / I¬ / axAll / axNeg: genuinely conclusion-reducing (`tp dᵢ ≠ Rep`). The validity
-        -- constructors are banked (`ZDerivation_iCritReplaceReduce_of` for I∀/I¬,
-        -- `ZDerivation_zK_seqAddAnt` for axAll, axNeg residual); the OPEN data is the O3 eigenvariable
-        -- freshness (`red_zIall_tpReduce`) + the conclusion `Seq`/wff, threaded by the strengthened
-        -- `redSoundGen` motive (PENDING_WORK lap-99 path A). The `permIdx ≤ j₀` threading is banked
-        -- (`permIdx_le_of_isPermPrem`).
-        sorry
+      · -- I∀ / I¬ / axAll → the three banked capstones; axNeg the lone residual. ALL ASSEMBLED in
+        -- `ZDerivation_red_zK_nonRep`, fed the per-tag orbit data from `redZKReady`. (Lap 100.)
+        exact ZDerivation_red_zK_nonRep hZ hred h1 htag htp hSeqs hthread hrank hIall hIneg hAxAll
   · -- 5.1 critical
     rw [red_zK_crit h1]
     exact ZDerivation_red_zK_crit hZ hred h1
@@ -435,10 +458,14 @@ theorem redSoundGen : ∀ d : V, ZDerivation d → ZRegular d → ZDerivation (r
             zKValidF_iIndReduct_of_zInd hZ⟩))))
       · -- zK: the dispatch; residual supplies validity-preservation. Premise reducts from the IH,
         -- fed the premise regularity (`ZRegular_zK_premise`) from the chain's own regularity.
-        exact ZDerivation_red_zK
+        -- THE consolidated motive residual: `redZKReady s r ds` (the per-node ⊥-orbit invariant bundle
+        -- — chain-Rep Cor 2.1 + Seq-wff + selection threading + per-tag freshness). To discharge it the
+        -- motive must be strengthened to carry these hereditarily (PENDING_WORK lap-100 Path 1/A1). OPEN.
+        refine ZDerivation_red_zK
           (zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
             ⟨s, r, ds, rfl, hds, fun i hi => (hC (znth ds i) (hmem i hi)).1, hvalid⟩))))))
-          (fun i hi => (hC (znth ds i) (hmem i hi)).2 (ZRegular_zK_premise hds hreg hi))
+          (fun i hi => (hC (znth ds i) (hmem i hi)).2 (ZRegular_zK_premise hds hreg hi)) ?_
+        sorry
       · -- zAxAll: red = identity
         rw [red_zAxAll]; exact zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
           (Or.inl ⟨s, p, k, rfl, hp, hin⟩))))))
