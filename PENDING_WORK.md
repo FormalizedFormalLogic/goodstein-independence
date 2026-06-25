@@ -1,5 +1,44 @@
 # Pending work — open obligations & attack paths
 
+## ⭐ Lap 80 — `inductionSchemeUnivDelta1`: recognizer is 𝚫₁; mem_iff blocked on bv-reflection
+
+**Build 🟢 green; 6 green commits this lap.** All `PADelta1.lean` lemmas `#print axioms`-clean
+`[propext, Classical.choice, Quot.sound]`. Lone sorry still = `inductionSchemeUnivDelta1`.
+
+DONE this lap (all axiom-clean, in `PADelta1.lean`):
+- **3a `quote_univCl_eq_qqAllItr`**: `⌜univCl ψ⌝ = qqAllItr ⌜fixitr 0 fvSup ▹ ψ⌝ fvSup`. The forward
+  bridge for mem_iff (⇐).
+- **`succIndCodeRawGraph`** (`𝚺₁.Semisentence 2`) + `succIndCodeRaw.defined` — concrete model-indep
+  graph chaining numeral/substs1/qqBvar/qqAdd/imp/qqAll graphs (needed to reference inside `ch` DSL).
+- **`IsInductionAxiomCode`** (the recognizer predicate over V) + `isInductionAxiomCode_definable :
+  𝚫₁-Predicate` (via `definability`). ⟹ **the recognizer being Δ₁ is machine-checked** — the math
+  heart. `IsFVFree` inlined as `IsSemiformula ∧ shift=self` so definability sees only 𝚫₁ atoms.
+- **mem_iff (⇐) conjunct lemmas**: `freeVariables_fixitr_eq_empty`, `shift_quote_fixitr` (fv-free
+  body's quote is shift-fixed), `fvar?_fvSup_pred` (fvSup tight: var `fvSup-1` is free when fvSup>0).
+
+REMAINING (the genuine wall — DEEP Foundation-internal reflection):
+1. **CRITICALITY (⇐), the crux**: for canonical witness m=`(succInd ψ).fvSup`>0, body=⌜fixitr 0 m ▹
+   succInd ψ⌝, must show `¬ IsSemiformula ℒₒᵣ (m-1) body`. Via `IsSemiformula.def`
+   (`IsSemiformula L n p ↔ IsUFormula L p ∧ bv L p ≤ n`, `Formula/Basic.lean:1208`) this is
+   `m ≤ bv ℒₒᵣ ⌜φ''⌝`. **BLOCKED**: no Foundation lemma computes `bv ℒₒᵣ ⌜φ⌝` from φ's syntactic
+   bound-var usage; `fvar?_fvSup_pred` gives the syntactic fact (φ''=fixitr uses `^#(m-1)`) but
+   reflecting "`^#(m-1)` occurs ⟹ bv ≥ m" through the quote needs a NEW structural-induction lemma
+   `bvQuote : bv ℒₒᵣ ⌜φ⌝ = <syntactic max-bv+1 of φ>` (or a lower-bound version). Aristotle CANNOT
+   help (Foundation not in its mathlib-v4.28 env). Attack: induct on φ with `quote_rel/all/...` +
+   `bv_all/bv_rel/...` structural lemmas; OR the subst-truncation route (if body were (m-1)-ary,
+   `subst (fvarSeq m) body = subst (fvarSeq(m-1)) body` so result lacks free var m-1, contradicting
+   `succInd ψ` having free var m-1 — but this ALSO needs a `subst`-ext-on-first-n lemma +
+   free-var-occurrence reflection, equally deep).
+2. **mem_iff (⇒)**: decode p,m,body; from `subst (fvarSeq m) body = ⌜succInd ψ⌝` + body fv-free m-ary +
+   criticality ⟹ body = ⌜fixitr 0 m ▹ succInd ψ⌝ and m=fvSup (fixitr-inversion injectivity). Uses
+   `subst_fvarSeq_fixitr` (banked) + the same bv/fv reflection as (1).
+3. **`ch : 𝚫₁.Semisentence 1`** + `Defined IsInductionAxiomCode ch`: INDEPENDENT of (1)/(2) — build via
+   the `HierarchySymbol.Semiformula` combinators `bexs`/`ball`/`⋏` (have `ProperOn.bexs/.ball/.and` +
+   `val_bexs/...` for free ProperOn+eval) over the component graphs (`succIndCodeRawGraph`,
+   `qqAllItrGraph`, `fvarSeqGraph`, `substsGraph`, `isSemiformula`, graphDelta of each). Then
+   `isDelta1 := ProvablyProperOn.ofProperOn` + `Defined.proper`; `mem_iff` at ℕ via `Defined.iff` +
+   the (1)+(2) bridge. **This is the next tractable chunk** (no deep reflection; pure assembly).
+
 ## ⭐ Lap 79 — `PA_delta1Definable` front A: brick 2a (`qqAllItr`) DONE; next = free→bound rewrite
 
 Front A (`inductionSchemeUnivDelta1`) decomposes the internal `univCl'` recognizer `closeAll` into
