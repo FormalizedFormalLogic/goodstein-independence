@@ -1,5 +1,64 @@
 # Pending work — open obligations & attack paths
 
+## lap 109 — K-case branch-descent TRIO banked; the recursion wall CHARACTERIZED in-kernel
+**Build 🟢 green 1326; headline footprint intact (`peano_not_proves_goodstein = [propext, sorryAx, choice,
+Quot.sound]`).** 4 commits: critical sub-branch wired in place (`9e86a26`), replace descent (`8138b91`),
+splice descent (`7371573`), baton (`3dc2cb4`).
+
+### Banked this lap (all `RedZKDescent.lean`, axiom-clean, green-gated)
+- **`iord_descent_red`'s K-case CRITICAL sub-branch — PROVEN IN PLACE.** Dispatches on the `permIdx`
+  sentinel; critical branch fires `iord_descent_red_zK_crit` with `zKValid` = `zKValidF` (from `ZDerivation`)
+  + `zKCritical_of_not_permIdx_lt`. **Resolved lap-108's "wire zKValid into ZPhi" worry — criticality is FREE
+  from the branch dispatch.**
+- **`iord_descent_red_zK_replace_eq`** (5.2.2) — reduces to premise IH `iRedDescent (red dᵢ) dᵢ` via
+  `iotil_zK_lt_replace` + `idg_zK_le_replace` + `iord_descent_le`.
+- **`iord_descent_red_zK_splice_eq`** (5.2.1) — reduces to the two halves' bounds + rank bound `r'≤dg(parent)`
+  via the banked rank-general `iord_descent_seqInsert'`.
+
+### ⚠️ THE RECURSION WALL — kernel-confirmed obstruction (the gating crux)
+Wiring the two `_eq` lemmas needs `iord_descent_red` restructured as a strong induction (mirror
+`redSoundGen`) to supply the premise IH `iRedDescent (red dᵢ) dᵢ`. **The IH's STRICT `otil_lt` requires the
+selected premise `dᵢ = znth ds (permIdx)` to be REDUCIBLE.** Kernel facts established this lap:
+- `iperm (isymLk k A) q ↔ inAnt A (seqAnt q)` (`iperm_isymLk_iff`) — axiom leaves CAN be permissible.
+- `iperm isymRep q` is ALWAYS true (`iperm_isymRep`) — every Rep premise is permissible ⟹ `permIdx = 0` when
+  premise 0 is Rep.
+- Cor 2.1 (lap-90, `ANALYSIS-…-lap90`): on the ⊥-orbit (`Γ=∅, C=⊥`) the selected premise is ALWAYS Rep
+  (axioms need `A∈Γ=∅`, impossible; I-rules' succedent ≠ ⊥). So NO axiom-leaf selection AT THE TOP.
+- **BUT Rep = {atom(0), Ind(3), chain(4)}, and `red(atom) = atom` (atoms are normal forms ⟹ NO strict
+  `iord` descent).** If a ⊥-chain's selected (first permissible) premise is an ATOM, the replace reduct
+  equals the original ⟹ `iord_descent_red` FIXPOINTS, descent FAILS. The recursion also dives OFF the
+  ⊥-orbit (5.2.2 recurses on the Rep chain `dᵢ`, not a ⊥-derivation), where axiom-leaf selection returns.
+
+**Three resolution paths (next lap, hardest-first):**
+1. **Prove selected premise on the ⊥-orbit is never a bare ATOM (refine Cor 2.1).** An atom `dᵢ=zAtom sᵢ`
+   has `Cᵢ ∈ Γᵢ` (`zDerivation_zAtom_inv`). PARTIAL kernel result worked out this lap: an atom at position
+   **0** of a ⊥-chain is IMPOSSIBLE — threading forces `Γ₀ ⊆ seqAnt s = ∅` (no prior premise to thread to),
+   but the atom needs `C₀ ∈ Γ₀`. **SUBTLETY (blocks the naive claim):** an atom at i>0 is NOT forbidden by
+   threading alone — an earlier I-rule premise i'<i with `chainAsucc ds i' = Cᵢ` supplies the membership, and
+   since permissibility = Rep-only (I-rules non-permissible), that atom can still be the FIRST permissible (=
+   selected) premise. So path 1 needs MORE than threading: the real fix is that **the `isymRep` tag conflates
+   atoms (normal forms) with Ind/chains (reducible)** — `iperm isymRep` always-true wrongly admits atoms as
+   "permissible". The genuine engine refinement: make `permIdx`/`isPermPrem` SKIP atom premises (or route an
+   atom-selected node to critical), so the selected premise is always Ind/chain (reducible). This is a real
+   `red`/`isPermPrem` change — verify it stays faithful to Buchholz (atoms are cut-free, never the reduction
+   site). **MOST PROMISING but needs an engine tweak, not just a lemma.**
+2. **Secondary descent measure.** Augment `iord` with a lexicographic component (e.g. derivation size / cut
+   count) that strictly drops even on an atom-fixpoint replace step, so the orbit measure descends regardless.
+3. **Pivot to the Σ₁-Fixpoint ARITHMETIZATION of the ω-rule cut-elim** (lap-108 escalation note) if 1+2 both
+   fail — the finitary engine is then genuinely dead. Math doubly-proven (Bryce-Goré Coq + axiom-clean META
+   `Zinfty.lean`).
+
+### Other self-contained crux-2 sorries (any can be attacked independently of the wall)
+- `zKValidF_iIndReduct_of_zInd` (`Crux2Blueprint:79`) — Ind-reduct chain validity; mirror
+  `zKValidF_iCritReductSeq` (`InternalZ:3095`) but for the `iIndReductSeq` shape (need
+  `isChainInf_iIndReductSeq` + per-premise wff). Self-contained, ~1 lap.
+- `redZKReady` motive (`Crux2Blueprint:340/493`) — the 7-field orbit invariant carried hereditarily; SHARED
+  wall with the descent recursion.
+- `axNeg` (`ZDerivation_red_zK_nonRep`, `Crux2Blueprint:404`) — ¬-axiom premise reduct is a succedent
+  REPLACEMENT (`tpReduce(tp zAxNeg) s 0 = seqSetSucc s p`, `Γ→p`); needs Buchholz's genuine ¬-axiom cut.
+- `false_of_ZDerivesEmpty` (`Crux2Blueprint:619`) — internalize `n↦iord(red^[n] z)` as a Σ₁ graph + apply the
+  internal PRWO(ε₀) instance (`prwoInstance`, `wip/GentzenCon`). Consumes the proven `iord_red_iterate_descends`.
+
 ## lap 108 — `iord_descent_red` NARROWED to the K/cut case + the two-engine map corrected
 **Build 🟢 green 1325; `src/` headline footprint intact.** Concrete advance + a correction to the lap-107
 diagnosis (which conflated two distinct `red`s):
