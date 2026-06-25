@@ -1058,6 +1058,8 @@ instance maxEigenTable_defined : 𝚺₁-Function₁ (maxEigenTable : V → V) v
 
 instance maxEigenTable_definable : 𝚺₁-Function₁ (maxEigenTable : V → V) :=
   maxEigenTable_defined.to_definable
+instance maxEigenTable_definable' (Γ) : Γ-[m + 1]-Function₁ (maxEigenTable : V → V) :=
+  maxEigenTable_definable.of_sigmaOne
 
 noncomputable def _root_.LO.FirstOrder.Arithmetic.maxEigenDef : 𝚺₁.Semisentence 2 := .mkSigma
   “y d. ∃ t, !maxEigenTableDef t d ∧ !znthDef y t d”
@@ -1066,6 +1068,232 @@ instance maxEigen_defined : 𝚺₁-Function₁ (maxEigen : V → V) via maxEige
   simp [maxEigenDef, maxEigen, maxEigenTable_defined.iff, znth_defined.iff]
 
 instance maxEigen_definable : 𝚺₁-Function₁ (maxEigen : V → V) := maxEigen_defined.to_definable
+instance maxEigen_definable' (Γ) : Γ-[m + 1]-Function₁ (maxEigen : V → V) :=
+  maxEigen_definable.of_sigmaOne
+
+/-! ### Structural correctness of the `maxEigen` table (mirror `idg`)
+
+Identical course-of-values bookkeeping to `idgTable` (`InternalZ.lean:1920`): the length-`(N+1)`
+table `maxEigenTable N` has every in-range entry equal to the genuine `maxEigen` value, so the
+table-reduction unfolds to `maxEigen c = maxEigenNext c (maxEigenTable (c-1))` for positive `c`. -/
+
+private lemma def_maxEigenTable {k} (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ maxEigenTable (v i)) :=
+  DefinableFunction₁.comp (F := maxEigenTable) (DefinableFunction.var i)
+
+private lemma def_maxEigen {k} (i : Fin k) :
+    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ maxEigen (v i)) :=
+  DefinableFunction₁.comp (F := maxEigen) (DefinableFunction.var i)
+
+@[simp] lemma maxEigenTable_seq (n : V) : Seq (maxEigenTable n) := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₁ (def_maxEigenTable 0)
+  case zero => simp
+  case succ n ih => rw [maxEigenTable_succ]; exact ih.seqCons _
+
+@[simp] lemma maxEigenTable_lh (n : V) : lh (maxEigenTable n) = n + 1 := by
+  induction n using ISigma1.sigma1_succ_induction
+  · exact Definable.comp₂ (DefinableFunction₁.comp (F := lh) (def_maxEigenTable 0)) (by definability)
+  case zero => simp
+  case succ n ih => rw [maxEigenTable_succ, Seq.lh_seqCons _ (maxEigenTable_seq n), ih]
+
+lemma znth_maxEigenTable_succ {n k : V} (hk : k < n + 1) :
+    znth (maxEigenTable (n + 1)) k = znth (maxEigenTable n) k := by
+  rw [maxEigenTable_succ]
+  exact znth_seqCons_of_lt (maxEigenTable_seq n) _ (by rw [maxEigenTable_lh]; exact hk)
+
+/-- **Table stability**: every entry of the length-`(N+1)` table is the genuine `maxEigen` value. -/
+lemma znth_maxEigenTable_eq_maxEigen : ∀ N : V, ∀ k ≤ N, znth (maxEigenTable N) k = maxEigen k := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · refine Definable.ball_le (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := znth) (def_maxEigenTable 1) (DefinableFunction.var 0))
+      (def_maxEigen 0)
+  case zero =>
+    intro k hk; rcases (nonpos_iff_eq_zero.mp hk) with rfl; rfl
+  case succ N ih =>
+    intro k hk
+    rcases eq_or_lt_of_le hk with rfl | hlt
+    · rfl
+    · rw [znth_maxEigenTable_succ hlt]; exact ih k (le_iff_lt_succ.mpr hlt)
+
+/-- `maxEigen c = maxEigenNext c (maxEigenTable (c-1))` for positive codes. -/
+lemma maxEigen_eq_maxEigenNext {c : V} (hpos : 0 < c) :
+    maxEigen c = maxEigenNext c (maxEigenTable (c - 1)) := by
+  obtain ⟨M, rfl⟩ : ∃ M, c = M + 1 := ⟨c - 1, (sub_add_self_of_le (pos_iff_one_le.mp hpos)).symm⟩
+  have key : znth (maxEigenTable (M + 1)) (M + 1) = maxEigenNext (M + 1) (maxEigenTable M) := by
+    rw [maxEigenTable_succ]
+    have h := znth_seqCons_self (maxEigenTable_seq M) (maxEigenNext (M + 1) (maxEigenTable M))
+    rwa [maxEigenTable_lh] at h
+  simp only [maxEigen, add_tsub_cancel_right, key]
+
+/-! ### `maxEigen` recursion equations (Path-X freshness foundation)
+
+The largest eigenvariable index folds structurally: each `zIall`/`zInd` node contributes its own
+eigenvariable; chains/negations/atoms/axioms contribute nothing of their own. These mirror the
+`idg` recursion equations one-for-one. The point (lap-92 DECISION): combined with
+`maxEigen_zsubst` (next) these make a `maxEigen`-phrased freshness invariant maintainable. -/
+
+@[simp] lemma maxEigen_zAtom (s : V) : maxEigen (zAtom s) = 0 := by
+  rw [maxEigen_eq_maxEigenNext (by simp [zAtom]), maxEigenNext]; simp [zTag_zAtom]
+
+@[simp] lemma maxEigen_zIall (s a p d0 : V) :
+    maxEigen (zIall s a p d0) = max a (maxEigen d0) := by
+  rw [maxEigen_eq_maxEigenNext (by simp [zIall]), maxEigenNext, if_pos (zTag_zIall s a p d0),
+    zIallEig_zIall, zIallPrem_zIall,
+    znth_maxEigenTable_eq_maxEigen _ d0 (le_pred_of_lt (d0_lt_zIall s a p d0))]
+
+@[simp] lemma maxEigen_zIneg (s p d0 : V) : maxEigen (zIneg s p d0) = maxEigen d0 := by
+  rw [maxEigen_eq_maxEigenNext (by simp [zIneg]), maxEigenNext, if_neg (by simp),
+    if_pos (zTag_zIneg s p d0), zInegPrem_zIneg,
+    znth_maxEigenTable_eq_maxEigen _ d0 (le_pred_of_lt (d0_lt_zIneg s p d0))]
+
+@[simp] lemma maxEigen_zInd (s at' p d0 d1 : V) :
+    maxEigen (zInd s at' p d0 d1) = max (π₁ at') (max (maxEigen d0) (maxEigen d1)) := by
+  rw [maxEigen_eq_maxEigenNext (by simp [zInd]), maxEigenNext, if_neg (by simp), if_neg (by simp),
+    if_pos (zTag_zInd s at' p d0 d1), zIndEig_zInd, zIndPrem0_zInd, zIndPrem1_zInd,
+    znth_maxEigenTable_eq_maxEigen _ d0 (le_pred_of_lt (d0_lt_zInd s at' p d0 d1)),
+    znth_maxEigenTable_eq_maxEigen _ d1 (le_pred_of_lt (d1_lt_zInd s at' p d0 d1))]
+
+@[simp] lemma maxEigen_zAxAll (s p k : V) : maxEigen (zAxAll s p k) = 0 := by
+  rw [maxEigen_eq_maxEigenNext (by simp [zAxAll]), maxEigenNext]; simp [zTag_zAxAll]
+
+@[simp] lemma maxEigen_zAxNeg (s p : V) : maxEigen (zAxNeg s p) = 0 := by
+  rw [maxEigen_eq_maxEigenNext (by simp [zAxNeg]), maxEigenNext]; simp [zTag_zAxNeg]
+
+@[simp] lemma maxEigen_zAx1 (s C : V) : maxEigen (zAx1 s C) = 0 := by
+  rw [maxEigen_eq_maxEigenNext (by simp [zAx1]), maxEigenNext]; simp [zTag_zAx1]
+
+/-! ### `maxEigen`-fold over a premise sequence (for the variadic `K^r` equation)
+
+`iseqMaxEigen ds = max_{i < lh ds} maxEigen(znth ds i)` — the genuine fold (applies `maxEigen`
+directly). The `K^r` step in `maxEigenNext` reads the *table* form `iseqMaxTab (maxEigenTable M) ds`;
+under dominance the two agree (mirror `iseqMaxIdg`/`idg_zK`). -/
+
+noncomputable def iseqMaxEigenAux.blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y ds. y = 0”
+  succ := .mkSigma “y ih n ds.
+    ∃ di, !znthDef di ds n ∧ ∃ v, !maxEigenDef v di ∧ !max.dfn y ih v”
+
+noncomputable def iseqMaxEigenAux.construction : PR.Construction V iseqMaxEigenAux.blueprint where
+  zero := fun _ ↦ 0
+  succ := fun x n ih ↦ max ih (maxEigen (znth (x 0) n))
+  zero_defined := .mk fun v ↦ by simp [iseqMaxEigenAux.blueprint]
+  succ_defined := .mk fun v ↦ by
+    simp [iseqMaxEigenAux.blueprint, znth_defined.iff, maxEigen_defined.iff, max_defined.iff]
+
+/-- Partial fold: `iseqMaxEigenAux ds j = max_{i < j} maxEigen(znth ds i)`. -/
+noncomputable def iseqMaxEigenAux (ds j : V) : V := iseqMaxEigenAux.construction.result ![ds] j
+
+@[simp] lemma iseqMaxEigenAux_zero (ds : V) : iseqMaxEigenAux ds 0 = 0 := by
+  simp [iseqMaxEigenAux, iseqMaxEigenAux.construction]
+
+@[simp] lemma iseqMaxEigenAux_succ (ds j : V) :
+    iseqMaxEigenAux ds (j + 1) = max (iseqMaxEigenAux ds j) (maxEigen (znth ds j)) := by
+  simp [iseqMaxEigenAux, iseqMaxEigenAux.construction]
+
+noncomputable def _root_.LO.FirstOrder.Arithmetic.iseqMaxEigenAuxDef : 𝚺₁.Semisentence 3 :=
+  iseqMaxEigenAux.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
+
+instance iseqMaxEigenAux_defined : 𝚺₁-Function₂ (iseqMaxEigenAux : V → V → V) via iseqMaxEigenAuxDef :=
+  .mk fun v ↦ by simp [iseqMaxEigenAux.construction.result_defined_iff, iseqMaxEigenAuxDef]; rfl
+
+instance iseqMaxEigenAux_definable : 𝚺₁-Function₂ (iseqMaxEigenAux : V → V → V) :=
+  iseqMaxEigenAux_defined.to_definable
+instance iseqMaxEigenAux_definable' (Γ) : Γ-[m + 1]-Function₂ (iseqMaxEigenAux : V → V → V) :=
+  iseqMaxEigenAux_definable.of_sigmaOne
+
+/-- **`maxEigen`-fold over a sequence**: `iseqMaxEigen ds = max_{i < lh ds} maxEigen(znth ds i)`. -/
+noncomputable def iseqMaxEigen (ds : V) : V := iseqMaxEigenAux ds (lh ds)
+
+/-- **Table-fold = `maxEigen`-fold under dominance.** -/
+lemma iseqMaxAux_maxEigenTable_eq {M ds : V} (hdom : ∀ i < lh ds, znth ds i ≤ M) :
+    ∀ j ≤ lh ds, iseqMaxAux (maxEigenTable M) ds j = iseqMaxEigenAux ds j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · refine Definable.imp (by definability) ?_
+    refine Definable.comp₂
+      (DefinableFunction₃.comp (F := iseqMaxAux)
+        (DefinableFunction₁.comp (F := maxEigenTable) (DefinableFunction.const M))
+        (DefinableFunction.const ds) (DefinableFunction.var 0))
+      (DefinableFunction₂.comp (F := iseqMaxEigenAux) (DefinableFunction.const ds)
+        (DefinableFunction.var 0))
+  case zero => intro _; simp
+  case succ j ih =>
+    intro hj
+    rw [iseqMaxAux_succ, iseqMaxEigenAux_succ, ih (le_trans (by simp) hj),
+      znth_maxEigenTable_eq_maxEigen M (znth ds j) (hdom j (lt_of_lt_of_le (by simp) hj))]
+
+/-- **The variadic `K^r` eigenvariable equation**: a chain node has no eigenvariable of its own,
+so `maxEigen (zK s r ds) = max_j maxEigen(dⱼ)`. -/
+lemma maxEigen_zK (s r ds : V) (hds : Seq ds) :
+    maxEigen (zK s r ds) = iseqMaxEigen ds := by
+  have hdom : ∀ i < lh ds, znth ds i ≤ zK s r ds - 1 := fun i hi ↦
+    le_pred_of_lt (lt_trans (lt_of_mem_rng (hds.znth hi)) (ds_lt_zK s r ds))
+  rw [maxEigen_eq_maxEigenNext (by simp [zK]), maxEigenNext, if_neg (by simp), if_neg (by simp),
+    if_neg (by simp), if_pos (zTag_zK s r ds), zKseq_zK, iseqMaxTab,
+    iseqMaxAux_maxEigenTable_eq hdom (lh ds) (le_refl _), iseqMaxEigen]
+
+/-- **Fold congruence**: equal lengths + entrywise-equal `maxEigen` ⟹ equal folds (the chain step of
+`maxEigen_zsubst`). -/
+lemma iseqMaxEigenAux_congr {A B : V}
+    (hpt : ∀ i < lh A, maxEigen (znth A i) = maxEigen (znth B i)) :
+    ∀ j ≤ lh A, iseqMaxEigenAux A j = iseqMaxEigenAux B j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · refine Definable.imp (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := iseqMaxEigenAux) (DefinableFunction.const A)
+        (DefinableFunction.var 0))
+      (DefinableFunction₂.comp (F := iseqMaxEigenAux) (DefinableFunction.const B)
+        (DefinableFunction.var 0))
+  case zero => intro _; simp
+  case succ j ih =>
+    intro hj
+    rw [iseqMaxEigenAux_succ, iseqMaxEigenAux_succ, ih (le_trans (by simp) hj),
+      hpt j (lt_of_lt_of_le (by simp) hj)]
+
+/-! ### `maxEigen_zsubst` — eigenvariable indices are stable under closed-term substitution (Path-X §2b)
+
+The substitution crux of the DECISION: `zsubst d a t` rewrites every node's *data* (sequent / formula /
+term) but leaves every `zIall`/`zInd` **eigenvariable index** untouched (cf. `zsubst_zIall` keeping `e`,
+`zsubst_zInd` keeping `π₁ at'`). Hence `maxEigen` is invariant. Proved by `zDerivation_induction`, the
+`maxEigen` recursion equations, and (chain case) the fold congruence above. This is what makes a
+`maxEigen`-phrased freshness invariant maintainable through `red` — the code bound `d ≤ a` was not. -/
+theorem maxEigen_zsubst (a t : V) :
+    ∀ d, ZDerivation d → maxEigen (zsubst d a t) = maxEigen d := by
+  apply zDerivation_induction (P := fun d => maxEigen (zsubst d a t) = maxEigen d)
+  · definability
+  · intro C hC d hphi
+    rcases hphi with ⟨s, rfl, _⟩ | ⟨s, e, p, d0, rfl, hd0, _, _⟩ |
+      ⟨s, p, d0, rfl, hd0, _, _⟩ | ⟨s, at', p, d0, d1, rfl, hd0, hd1, _⟩ |
+      ⟨s, r, ds, rfl, hseq, hmem, _⟩ | ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩
+    -- atom
+    · simp [zsubst_zAtom]
+    -- zIall (eigenvariable `e` preserved)
+    · rw [zsubst_zIall, maxEigen_zIall, maxEigen_zIall, (hC d0 hd0).2]
+    -- zIneg
+    · rw [zsubst_zIneg, maxEigen_zIneg, maxEigen_zIneg, (hC d0 hd0).2]
+    -- zInd (eigenvariable `π₁ at'` preserved)
+    · rw [show at' = ⟪π₁ at', π₂ at'⟫ from (pair_unpair at').symm, zsubst_zInd,
+        maxEigen_zInd, maxEigen_zInd, (hC d0 hd0).2, (hC d1 hd1).2]
+      simp only [pi₁_pair]
+    -- zK (chain: no own eigenvariable; fold over substituted premises = fold over premises)
+    · rw [zsubst_zK, maxEigen_zK _ _ _ (tblMapSeq_seq _ _), maxEigen_zK s r ds hseq]
+      have hlh : lh (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) = lh ds := tblMapSeq_lh _ _
+      have hpt : ∀ i < lh (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds),
+          maxEigen (znth (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) i) = maxEigen (znth ds i) := by
+        intro i hi
+        rw [hlh] at hi
+        rw [znth_tblMapSeq hi, znth_zsubstTable_eq_zsubst a t _ (znth ds i)
+          (le_pred_of_lt (lt_of_le_of_lt (znth_le_self ds i) (ds_lt_zK s r ds)))]
+        exact (hC _ (hmem i hi)).2
+      simp only [iseqMaxEigen]
+      rw [iseqMaxEigenAux_congr hpt _ (le_refl _), hlh]
+    -- zAxAll / zAxNeg
+    · simp [zsubst_zAxAll]
+    · simp [zsubst_zAxNeg]
 
 /-! ## Route-B eigensubst reducts, discharged by `ZDerivation_zsubst` under a freshness bound
 

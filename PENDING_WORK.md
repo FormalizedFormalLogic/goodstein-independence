@@ -31,12 +31,15 @@ indices**, so a freshness invariant phrased on eigenvariable indices (`maxEigen 
 1. **✅ DONE (lap 92, `Zsubst.lean`, axiom-clean, green 1325):** `maxEigen d` defined + `𝚺₁`-definable
    (`maxEigenNext`/`maxEigenTable`/`maxEigenDef`) via the `idg`/`PR.Construction` template. `maxEigenNext`
    folds `zIallEig`/`zIndEig` over the premise table; chains use `iseqMaxTab`.
-2. **← START HERE: recursion equations + stability.** (a) `maxEigen_zIall : maxEigen (zIall s a p d0)
-   = max a (maxEigen d0)` etc. (mirror the `idg` "structural correctness" lemmas after `InternalZ.lean:1920`
-   — they need premises `< d` + table-indexing correctness). (b) **`maxEigen_zsubst : maxEigen (zsubst d a t)
-   = maxEigen d`** (closed `t`) — the substitution-stability crux, by `zDerivation_induction` + the
-   recursion equations + `zsubst_zIall`/`zInd` preserving the binder.
-3. **Reformulate `ZDerivation_zsubst`** from `d ≤ a` to `maxEigen d < a` (body unchanged; `e ≠ a` now from
+2. **✅ DONE (lap 93, `Zsubst.lean`, axiom-clean, green 1325): recursion equations + stability.**
+   (a) `maxEigen_zAtom`/`_zIall`(`= max a (maxEigen d0)`)/`_zIneg`/`_zInd`(`= max (π₁ at') (max …)`)/
+   `_zAxAll`/`_zAxNeg`/`_zAx1`/`_zK`(`= iseqMaxEigen ds`) — via the `idg` structural-correctness template
+   (`def_maxEigenTable`/`maxEigenTable_seq`/`_lh`/`znth_maxEigenTable_eq_maxEigen`/`maxEigen_eq_maxEigenNext`
+   + the `iseqMaxEigen` fold mirroring `iseqMaxIdg`/`idg_zK`). (b) **`maxEigen_zsubst (a t) : ∀ d,
+   ZDerivation d → maxEigen (zsubst d a t) = maxEigen d`** — the substitution-stability crux, by
+   `zDerivation_induction` + the recursion equations + `zsubst_zIall`/`zInd` preserving the eigenvariable
+   + fold congruence `iseqMaxEigenAux_congr` (chain). `#print axioms` = `[propext, choice, Quot.sound]`.
+3. **← START HERE: Reformulate `ZDerivation_zsubst`** from `d ≤ a` to `maxEigen d < a` (body unchanged; `e ≠ a` now from
    `e = zIallEig ≤ maxEigen d < a` via the recursion eq). 4. **O1:** strengthen `zIallWff`/`zIndWff` with
    `maxEigen d0 < eigenvar`, discharge in M2, prove `red` maintains it. 5. Route-B reducts discharge
    unconditionally (banked corollaries + `tpReduce`).
