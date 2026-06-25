@@ -979,4 +979,36 @@ theorem ZDerivation_zsubst {a t : V} (ht : IsSemiterm ℒₒᵣ 0 t) :
       · rw [seqAnt_fvSubstSeqt, ← fvSubst_inegF ht.isUTerm hp]
         exact inAnt_fvSubstSeq hin
 
+/-! ## Route-B eigensubst reducts, discharged by `ZDerivation_zsubst` under a freshness bound
+
+**Lap-92 corrected decomposition (`ANALYSIS-2026-06-25-lap92-criticality-wall-is-gone.md`).** Buchholz's
+conclusion-reducing reduct (route B) needs, for the `I∀` rule, `red(zIall s a p d0) = d0(a/n)` deriving
+`Γ→F(n)`, and for the `Ind` rule the step-premise substitutions `d1(a/i)`. The lap-91 handoff filed this
+as **O2 = "the lap-78 substitution wall"**, but that is a misattribution: the lap-78 wall was the
+*criticality* conjunct, which `ZPhi` no longer carries (it uses criticality-free `zKValidF`). The genuine
+eigensubst — *preserving `zKValidF`* — is **already proven** by `ZDerivation_zsubst`; its only side
+condition is the freshness bound `premise ≤ eigenvariable` (so every inner eigenvariable `e < premise ≤ a`
+differs from `a`). These two corollaries make that explicit: **O2 is discharged; the entire residual
+obligation is producing the bound (`d0 ≤ a` / `d1 ≤ π₁ at'`) = O1, the eigenvariable-freshness tracking
+that `zIallWff`/`zIndWff` must add and `red` must maintain.** -/
+
+/-- **I∀ eigensubst reduct (route B), under the freshness bound.** The premise `d0` of a valid `zIall`
+node, with the eigenvariable substituted by a closed term `t`, is a `ZDerivation` — *provided* the
+freshness bound `d0 ≤ a` holds (O1). The substitution itself (O2) is the existing `ZDerivation_zsubst`;
+no new "substitution preserves validity" lemma is needed (the lap-78 obstruction was criticality, now
+absent from `zKValidF`). -/
+theorem ZDerivation_zsubst_zIall_premise {s a p d0 t : V} (ht : IsSemiterm ℒₒᵣ 0 t)
+    (hZ : ZDerivation (zIall s a p d0)) (hle : d0 ≤ a) :
+    ZDerivation (zsubst d0 a t) :=
+  ZDerivation_zsubst ht d0 (zDerivation_zIall_inv hZ).1 hle
+
+/-- **Ind step-premise eigensubst reduct (route B), under the freshness bound.** The induction-step
+premise `d1` of a valid `zInd` node, with the eigenvariable `π₁ at'` substituted by a closed term `t`
+(Buchholz case 4: `d1(a/0)…d1(a/k-1)`), is a `ZDerivation` — provided `d1 ≤ π₁ at'` (O1). Same
+decomposition as `ZDerivation_zsubst_zIall_premise`. -/
+theorem ZDerivation_zsubst_zInd_premise1 {s at' p d0 d1 t : V} (ht : IsSemiterm ℒₒᵣ 0 t)
+    (hZ : ZDerivation (zInd s at' p d0 d1)) (hle : d1 ≤ π₁ at') :
+    ZDerivation (zsubst d1 (π₁ at') t) :=
+  ZDerivation_zsubst ht d1 (zDerivation_zInd_inv hZ).2.1 hle
+
 end GoodsteinPA.InternalZ

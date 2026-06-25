@@ -25,9 +25,16 @@ needs freshness tracking in the Wff predicates (O1). TWO honest paths now:
    eigenvariable). Measure how far it cascades through `ZPhi` producers/consumers + `zIallWffDef` Δ₁-definability.
    Localized add → **Path X wins** (drive `ZDerivation_zsubst_eigen` next). Cascades through fixpoint/reduction
    → **Path C wins** (build `wip/InternalZomega.lean`).
-2. **(Path X)** `ZDerivation_zsubst_eigen`: generalize `ZDerivation_zsubst` from `d ≤ a` to `aNotEigen d`
-   (+ `t` closed numeral). The proof is the same induction; the only changed obligation per inner ∀/Ind node
-   is `e ≠ a`, now from `aNotEigen` instead of `e < d ≤ a`. Preserves `zKValidF` (already proven for `d≤a`).
+2. **(Path X) — ✅ O2 BANKED this lap (`Zsubst.lean`, axiom-clean):** `ZDerivation_zsubst_zIall_premise`
+   and `ZDerivation_zsubst_zInd_premise1` discharge the route-B I∀/Ind eigensubst reducts **directly from
+   the existing `ZDerivation_zsubst`**, under the freshness bound `d0 ≤ a` / `d1 ≤ π₁ at'`. This
+   kernel-certifies the corrected diagnosis: O2 needs NO new substitution lemma. **The entire residual is
+   now O1** = produce the bound `premise ≤ eigenvariable`, i.e. add eigenvariable-freshness to
+   `zIallWff`/`zIndWff` AND maintain it through `red`. Sharpened next target: decide the freshness predicate
+   — a code-bound `d0 < a` (makes the corollary apply directly but is NOT substitution-stable through `red`)
+   vs the genuine Buchholz condition `e ∉ FV(ant)` + distinctness (substitution-stable by closed numeral, but
+   needs reformulating the corollary's hypothesis from `≤` to that predicate). The maintenance-through-`red`
+   of whichever freshness invariant is the real O1 difficulty — and is exactly what Path C (ω-rule) avoids.
 3. **(Path C)** `wip/InternalZomega.lean`: ω-rule ∀-node `zAllOmega s g`, premise-n `= appPrem g n` (Σ₁ lookup
    into notation `g`, reusing `zK`/`zKseq`/`iIndReductSeq`); critical-cut reduct = `appPrem g n`, no `substs1`/
    `zsubst`. Then Σ₁-definability of `appPrem`, then port the axiom-clean `iord` engine + `Zinfty` cut-elim
