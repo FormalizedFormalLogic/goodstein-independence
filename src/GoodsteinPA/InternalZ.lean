@@ -1364,6 +1364,29 @@ lemma zKValid_iff_zKValidF_and_zKCritical {s r ds : V} :
 lemma zKValidF_of_zKValid {s r ds : V} (h : zKValid s r ds) : zKValidF s r ds :=
   (zKValid_iff_zKValidF_and_zKCritical.mp h).1
 
+/-- **Δ₁-definability of `zKCritical`** — the criticality conjunct in isolation (the line dropped from
+`zKValidF`). `zKCritical s ds = ∀ i < lh ds, ¬ iperm (tp (znth ds i)) s` is bounded over the Δ₀ `iperm`
+and Σ₁ `tp`/`znth`/`lh`, hence Δ₁. This is the **branch predicate for the genuine `red` dispatch**
+(Buchholz Def 3.2 case 5: critical 5.1 vs non-critical 5.2): `iRNextG`'s tag-4 case tests `zKCritical` to
+choose its reduct, and must stay Σ₁ — so the test must be definable. -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.zKCriticalDef : 𝚫₁.Semisentence 2 := .mkDelta
+  (.mkSigma “s ds.
+    ∃ l, !lhDef l ds ∧ ∀ i < l,
+      ∃ zi, !znthDef zi ds i ∧ ∃ ti, !tpDef ti zi ∧ ¬(!ipermDef ti s) ”)
+  (.mkPi “s ds.
+    ∀ l, !lhDef l ds → ∀ i < l,
+      ∀ zi, !znthDef zi ds i → ∀ ti, !tpDef ti zi → ¬(!ipermDef ti s) ”)
+
+instance zKCritical_defined : 𝚫₁-Relation (zKCritical : V → V → Prop) via zKCriticalDef :=
+  ⟨by intro v
+      simp [zKCriticalDef, znth_defined.iff, tp_defined.iff, iperm_defined.iff, lh_defined.iff],
+   by intro v
+      simp [zKCriticalDef, zKCritical, znth_defined.iff, tp_defined.iff, iperm_defined.iff,
+        lh_defined.iff]⟩
+
+instance zKCritical_definable : 𝚫₁-Relation (zKCritical : V → V → Prop) :=
+  zKCritical_defined.to_definable
+
 /-- **Δ₁ arithmetization of `zKValidF`** — `zKValidDef` with the spurious criticality line
 `¬(!ipermDef ti s)` dropped. The arithmetized prerequisite for re-pointing `zblueprint`'s `zK` disjunct
 onto faithful validity. -/

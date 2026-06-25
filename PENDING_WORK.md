@@ -21,8 +21,11 @@ descent; the genuine `red` MUST dispatch the **5.2** cases too.
 - `red`'s tag-4 must DISPATCH 5.1 / 5.2.1 / 5.2.2 (not always `iRcritG`).
 
 **NEXT (the corrected `red` — 5.2 dispatch; descent for each is BANKED, lap-82):**
-1. **Decidability:** establish `zKCritical` (or its `i ≤ j₀` restriction) as a Δ₁/decidable predicate so
-   `iRNextG`'s tag-4 can branch on it. Reconcile `∀ i < lh ds` (repo) vs `∀ i ≤ j₀` (Buchholz).
+1. **Decidability — DONE (lap 86):** `zKCritical` is now Δ₁ (`zKCriticalDef` + `zKCritical_defined`/
+   `_definable`, axiom-clean, in `InternalZ.lean` after `zKValidF_of_zKValid`). `iRNextG`'s tag-4 can now
+   branch on `zKCritical (fstIdx d) (zKseq d)` and stay Σ₁. ⚠ Still to reconcile: `∀ i < lh ds` (repo)
+   vs Buchholz's `∀ i ≤ j₀` — the `j₀`-restricted form is the faithful branch; decide whether the
+   stronger `∀ i < lh ds` mis-classifies any Buchholz-critical chain (if some i > j₀ has tp(dᵢ) ◁ Π).
 2. **5.2.1 splice** — genuine in-place splice object + `zKValidF`; descent = `iord_descent_iSpliceEnd`.
 3. **5.2.2 replace** — `zK (tp(dᵢ)(s,n)) r (seqUpdate ds i (red dᵢ))` + `zKValidF_seqUpdate`; descent =
    `iord_descent_iCritAux`. Wire the reduced-succedent op `tp(dᵢ)(s,n)`.
