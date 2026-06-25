@@ -1655,13 +1655,14 @@ lemma red_zK_rep {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     (h2 : permIdx (znth ds (permIdx (zK s r ds)))
         < lh (zKseq (znth ds (permIdx (zK s r ds))))) :
     red (zK s r ds)
-      = iCritAux (zK s r ds) (permIdx (zK s r ds))
-          (red (znth ds (permIdx (zK s r ds)))) := by
+      = zK (tpReduce (tp (znth ds (permIdx (zK s r ds)))) s 0) r
+          (seqUpdate ds (permIdx (zK s r ds)) (red (znth ds (permIdx (zK s r ds))))) := by
   have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
     le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [red_zK, iRK]
   simp only [zKseq_zK]
-  rw [if_pos h1, if_neg (by simp [h2]), iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
+  rw [if_pos h1, if_neg (by simp [h2]), iRKr, zKseq_zK, fstIdx_zK, zKrank_zK,
+    znth_redTable_eq_red _ _ hbound]
 
 /-- **5.2.1 splice recursion equation** (lap-95 GATED dispatch): non-critical chain `d` whose
 least-permissible premise `dᵢ` is itself a CRITICAL CHAIN (`zTag dᵢ = 4` AND `dᵢ` critical) ⟹ `red`
@@ -1693,13 +1694,14 @@ gated `iRK` routes it to the replace branch `iRKr` (Buchholz Def 3.2 case 5.2.2)
 lemma red_zK_rep_nonchain {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     (htag : zTag (znth ds (permIdx (zK s r ds))) ≠ 4) :
     red (zK s r ds)
-      = iCritAux (zK s r ds) (permIdx (zK s r ds))
-          (red (znth ds (permIdx (zK s r ds)))) := by
+      = zK (tpReduce (tp (znth ds (permIdx (zK s r ds)))) s 0) r
+          (seqUpdate ds (permIdx (zK s r ds)) (red (znth ds (permIdx (zK s r ds))))) := by
   have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
     le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [red_zK, iRK]
   simp only [zKseq_zK]
-  rw [if_pos h1, if_neg (by simp [htag]), iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
+  rw [if_pos h1, if_neg (by simp [htag]), iRKr, zKseq_zK, fstIdx_zK, zKrank_zK,
+    znth_redTable_eq_red _ _ hbound]
 
 /-- **5.2.2 replace branch — regularity preserved (unconditional).** `red (zK s r ds) = K^r(i/red dᵢ)`;
 regular since every original premise is (`ZRegular_zK_premise`) and the swapped reduct `red dᵢ` is (IH). -/
@@ -1710,7 +1712,7 @@ lemma ZRegular_red_zK_replace {s r ds : V} (hds : Seq ds)
     (h2 : permIdx (znth ds (permIdx (zK s r ds)))
         < lh (zKseq (znth ds (permIdx (zK s r ds))))) :
     ZRegular (red (zK s r ds)) := by
-  rw [red_zK_rep h1 h2, iCritAux_zK]
+  rw [red_zK_rep h1 h2]
   exact ZRegular_zK_of_seqUpdate
     (fun m hm => ZRegular_zK_premise hds hreg hm) (hred _ h1)
 
@@ -1820,7 +1822,7 @@ lemma ZRegular_red_zK {s r ds : V} (hds : Seq ds)
         exact ZRegular_red_zK_splice_of_chain hds hreg hred h1 h2
           ((zDerivation_zK_inv hZ).2 _ h1) htag
     · -- NON-chain selected premise → replace (the lap-94 obstruction's cure)
-      rw [red_zK_rep_nonchain h1 htag, iCritAux_zK]
+      rw [red_zK_rep_nonchain h1 htag]
       exact ZRegular_zK_of_seqUpdate
         (fun m hm => ZRegular_zK_premise hds hreg hm) (hred _ h1)
   · have hvalid : zKValid s r ds := zKValid_iff_zKValidF_and_zKCritical.mpr

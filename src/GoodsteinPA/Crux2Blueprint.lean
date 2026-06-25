@@ -39,10 +39,14 @@ genuine recombination on correct reduced endsequents) is now defined + `𝚺₁`
 with per-rule recursion equations (`red_zAtom`/`red_zIall`/`red_zIneg`/`red_zInd`/`red_zAxAll`/`red_zAxNeg`/
 `red_zK`). The placeholder def is removed — `red` is `InternalZ.red`. -/
 
-/-- **M1a — DONE.** `red` preserves the end-sequent on the chain-reduct rules (`Ind`, `K`), which are the
-only reducible rules a ⊥-derivation visits — `InternalZ.fstIdx_red_of_tag_Ind_or_K`. -/
-theorem fstIdx_red {d : V} (hd : ZDerivation d) (htag : zTag d = 3 ∨ zTag d = 4) :
-    fstIdx (red d) = fstIdx d := fstIdx_red_of_tag_Ind_or_K hd htag
+/-- **M1a — DONE (route B, lap 96).** `red` preserves the end-sequent on the chain-reduct rules
+(`Ind`, `K`) of a `∅→⊥` derivation. With the conclusion-reducing `iRKr` the chain `K`-case keeps `Π`
+only when the selected premise is `Rep`; on the ⊥-orbit that holds by Cor 2.1
+(`InternalZ.fstIdx_red_of_emptyAnt_botSucc`). -/
+theorem fstIdx_red {d : V} (hd : ZDerivation d)
+    (hant : seqAnt (fstIdx d) = (∅ : V)) (hsucc : seqSucc (fstIdx d) = (^⊥ : V))
+    (htag : zTag d = 3 ∨ zTag d = 4) :
+    fstIdx (red d) = fstIdx d := fstIdx_red_of_emptyAnt_botSucc hd hant hsucc htag
 
 /-! ## M1b — `RedSound` for `red`: validity as the parallel-induction invariant
 Buchholz Thm 3.4(b) / Thm 6.2: principal sequent ⊆ Γ, cut-rank `< m`. Proved as a SEPARATE simultaneous
@@ -87,13 +91,14 @@ lemma red_zK_rep {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     (h2 : permIdx (znth ds (permIdx (zK s r ds)))
         < lh (zKseq (znth ds (permIdx (zK s r ds))))) :
     red (zK s r ds)
-      = iCritAux (zK s r ds) (permIdx (zK s r ds))
-          (red (znth ds (permIdx (zK s r ds)))) := by
+      = zK (tpReduce (tp (znth ds (permIdx (zK s r ds)))) s 0) r
+          (seqUpdate ds (permIdx (zK s r ds)) (red (znth ds (permIdx (zK s r ds))))) := by
   have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
     le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [red_zK, iRK]
   simp only [zKseq_zK]
-  rw [if_pos h1, if_neg (by simp [h2]), iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
+  rw [if_pos h1, if_neg (by simp [h2]), iRKr, zKseq_zK, fstIdx_zK, zKrank_zK,
+    znth_redTable_eq_red _ _ hbound]
 
 /-- **5.2.1 splice recursion equation (lap-95 GATED dispatch).** Non-critical chain whose least-permissible
 premise `dᵢ` is itself a CRITICAL CHAIN (`zTag dᵢ = 4` AND `¬ permIdx dᵢ < lh (zKseq dᵢ)`): `red` splices
@@ -121,13 +126,14 @@ lemma red_zK_splice {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
 lemma red_zK_rep_nonchain {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     (htag : zTag (znth ds (permIdx (zK s r ds))) ≠ 4) :
     red (zK s r ds)
-      = iCritAux (zK s r ds) (permIdx (zK s r ds))
-          (red (znth ds (permIdx (zK s r ds)))) := by
+      = zK (tpReduce (tp (znth ds (permIdx (zK s r ds)))) s 0) r
+          (seqUpdate ds (permIdx (zK s r ds)) (red (znth ds (permIdx (zK s r ds))))) := by
   have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
     le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [red_zK, iRK]
   simp only [zKseq_zK]
-  rw [if_pos h1, if_neg (by simp [htag]), iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
+  rw [if_pos h1, if_neg (by simp [htag]), iRKr, zKseq_zK, fstIdx_zK, zKrank_zK,
+    znth_redTable_eq_red _ _ hbound]
 
 /-- **5.1 critical sub-residual.** When the chain is critical, `red = iRcritG d ρ` with `ρ` the recursive
 premise reducts; delegates to `ZDerivation_iRcritG_of` (R2 = the two genuine auxiliaries are derivations
@@ -146,9 +152,12 @@ theorem tp_eq_isymRep_of_zTag {d : V}
 
 /-- **`red` of a `Rep` derivation preserves the endsequent and stays `Rep`.** For `tp v = isymRep`
 (i.e. `v` an atom/Ind/chain), Buchholz's `tp(v) = Rep ⟹ v[0] ⊢ end(v)`: `red v` keeps `fstIdx` and is
-again a `Rep` derivation (atom→atom, Ind→chain, chain→chain). This is the local faithfulness fact behind
-case 5.2.2 keeping the conclusion `Π`. -/
-theorem red_rep_of_tp_isymRep {v : V} (hZ : ZDerivation v) (htp : tp v = isymRep) :
+again a `Rep` derivation. **Route B (lap 96):** for the chain case the conclusion-reducing `iRKr` keeps
+`Π` only when the selected premise is `Rep`, supplied by `hsel` (vacuous for atom/Ind; on the ⊥-orbit it
+holds by Cor 2.1). This is the local faithfulness fact behind case 5.2.2 keeping the conclusion `Π`. -/
+theorem red_rep_of_tp_isymRep {v : V} (hZ : ZDerivation v) (htp : tp v = isymRep)
+    (hsel : zTag v = 4 → permIdx v < lh (zKseq v) →
+      tp (znth (zKseq v) (permIdx v)) = isymRep) :
     fstIdx (red v) = fstIdx v ∧ tp (red v) = isymRep := by
   rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, _⟩ | ⟨s, p, d0, rfl, _, _⟩ |
     ⟨s, at', p, d0, d1, rfl, _, _⟩ | ⟨s, r, ds, rfl, _, _, _⟩ |
@@ -158,9 +167,10 @@ theorem red_rep_of_tp_isymRep {v : V} (hZ : ZDerivation v) (htp : tp v = isymRep
   · exact absurd htp (by rw [tp_zIneg]; exact isymR_ne_isymRep _)
   · refine ⟨by rw [red_zInd, iRInd_zInd, fstIdx_zK, fstIdx_zInd], ?_⟩
     rw [red_zInd, iRInd_zInd, tp_zK]
-  · refine ⟨by rw [red_zK, fstIdx_iRK, fstIdx_zK], ?_⟩
-    rw [red_zK]
-    exact tp_eq_isymRep_of_zTag (by rw [zTag_iRK]; refine ⟨?_, ?_, ?_, ?_⟩ <;> simp)
+  · refine ⟨?_, ?_⟩
+    · rw [red_zK]; exact fstIdx_iRK_of_Rep (fun h1 _ => hsel (by simp) h1)
+    · rw [red_zK]
+      exact tp_eq_isymRep_of_zTag (by rw [zTag_iRK]; refine ⟨?_, ?_, ?_, ?_⟩ <;> simp)
   · exact absurd htp (by rw [tp_zAxAll]; exact isymLk_ne_isymRep _ _)
   · exact absurd htp (by rw [tp_zAxNeg]; exact isymLk_ne_isymRep _ _)
 
@@ -169,57 +179,35 @@ theorem zTag_not_iAx_of_tp_isymRep {v : V} (h : tp v = isymRep) :
     zTag v ≠ 1 ∧ zTag v ≠ 2 ∧ zTag v ≠ 5 ∧ zTag v ≠ 6 := by
   refine ⟨?_, ?_, ?_, ?_⟩ <;> intro ht <;> simp only [tp, ht] at h <;> simp at h
 
-/-- **The Rep-selection fact for ⊥-sequents (Buchholz Cor 2.1 core).** A permissible premise of a chain
-whose conclusion is `∅→⊥` (empty antecedent, `⊥` succedent) is necessarily `Rep`: an I-rule (`isymR`)
-would need succedent `⊥` (impossible — I-rules introduce `∀`/`¬`), an axiom (`isymLk`) would need a
-formula in the empty antecedent (impossible). This is THE fact that, threaded through the ⊥-orbit, makes
-the repo's `red` faithful (selected premise always `Rep` ⟹ conclusion stays `Π`). Reusable for both
-re-architecture routes. -/
-theorem tp_isymRep_of_emptyAnt_botSucc {s d : V} (hZ : ZDerivation d)
-    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (hperm : iperm (tp d) s) : tp d = isymRep := by
-  rcases zDerivation_iff.mp hZ with ⟨s', rfl, _⟩ | ⟨s', a, p, d0, rfl, _, _⟩ | ⟨s', p, d0, rfl, _, _⟩ |
-    ⟨s', at', p, d0, d1, rfl, _, _⟩ | ⟨s', r, ds, rfl, _, _, _⟩ |
-    ⟨s', p, k, rfl, _, _⟩ | ⟨s', p, rfl, _, _⟩
-  · rw [tp_zAtom]
-  · rw [tp_zIall] at hperm
-    rw [iperm_isymR_iff, hsucc] at hperm
-    exact absurd hperm (by simp [qqAll, qqFalsum])
-  · rw [tp_zIneg] at hperm
-    rw [iperm_isymR_iff, hsucc] at hperm
-    exact absurd hperm (by simp [inegF, qqFalsum, qqOr])
-  · rw [tp_zInd]
-  · rw [tp_zK]
-  · rw [tp_zAxAll] at hperm
-    rw [iperm_isymLk_iff, hant] at hperm
-    exact absurd hperm (by simp [inAnt, lh_empty])
-  · rw [tp_zAxNeg] at hperm
-    rw [iperm_isymLk_iff, hant] at hperm
-    exact absurd hperm (by simp [inAnt, lh_empty])
+-- (`tp_isymRep_of_emptyAnt_botSucc` — Buchholz Cor 2.1 — was promoted to `InternalZ` this lap, where
+-- the route-B `fstIdx_red_of_emptyAnt_botSucc` consumes it; the duplicate copy is removed.)
 
-/-- **5.2.2 replace sub-residual — PROVED under the `Rep` restriction.** Given the selected premise `dᵢ`
-is `Rep` (`tp dᵢ = isymRep`, lap-90 finding: necessary, holds on the ⊥-orbit by Cor 2.1), replacing it by
-its reduct `red dᵢ` keeps the chain valid — `red dᵢ` keeps `dᵢ`'s endsequent and own-permissibility
-(`red_rep_of_tp_isymRep` ⟹ `iperm isymRep _`), so `ZDerivation_iCritAux_of` applies. The remaining open
-part (selected premise is `Rep`) is the hypothesis `htp`, discharged from the ⊥-orbit invariant in
-`ZDerivation_red_zK`. -/
+/-- **5.2.2 replace sub-residual — PROVED for a `Rep` selected premise whose own reduct keeps its
+endsequent.** Route B (lap 96): `red (zK s r ds)` now emits the reduced conclusion `tpReduce (tp dᵢ) Π 0`;
+for a `Rep` selected premise (`htp`) `tpReduce` is the identity, so the goal collapses to the keep-`Π`
+`iCritAux` form. Validity then needs `red dᵢ` to keep `dᵢ`'s endsequent and own-permissibility
+(`hredfst`/`hredtp` — the route-B conclusion-tracking IH, `red_rep_of_tp_isymRep` instantiated for `dᵢ`),
+so `ZDerivation_iCritAux_of` applies. `hredfst`/`hredtp` are the route-B invariant supplied by the
+`redSoundF` induction; on the ⊥-orbit they hold hereditarily by Cor 2.1. -/
 theorem ZDerivation_red_zK_replace {s r ds : V}
     (hZ : ZDerivation (zK s r ds))
     (hred : ∀ i < lh ds, ZDerivation (red (znth ds i)))
     (h1 : permIdx (zK s r ds) < lh ds)
-    (h2 : permIdx (znth ds (permIdx (zK s r ds)))
-        < lh (zKseq (znth ds (permIdx (zK s r ds)))))
-    (htp : tp (znth ds (permIdx (zK s r ds))) = isymRep) :
-    ZDerivation (iCritAux (zK s r ds) (permIdx (zK s r ds))
-      (red (znth ds (permIdx (zK s r ds))))) := by
+    (htp : tp (znth ds (permIdx (zK s r ds))) = isymRep)
+    (hredfst : fstIdx (red (znth ds (permIdx (zK s r ds)))) = fstIdx (znth ds (permIdx (zK s r ds))))
+    (hredtp : tp (red (znth ds (permIdx (zK s r ds)))) = isymRep) :
+    ZDerivation (zK (tpReduce (tp (znth ds (permIdx (zK s r ds)))) s 0) r
+      (seqUpdate ds (permIdx (zK s r ds)) (red (znth ds (permIdx (zK s r ds)))))) := by
   set i := permIdx (zK s r ds) with hi_def
+  rw [htp, tpReduce_isymRep]
+  have hgoal : zK s r (seqUpdate ds i (red (znth ds i)))
+      = iCritAux (zK s r ds) i (red (znth ds i)) := by rw [iCritAux_zK]
+  rw [hgoal]
   obtain ⟨_, hmem⟩ := zDerivation_zK_inv hZ
-  have hZdi : ZDerivation (znth ds i) := hmem i h1
   have hZv : ZDerivation (red (znth ds i)) := hred i h1
-  obtain ⟨hfst, htpr⟩ := red_rep_of_tp_isymRep hZdi htp
-  obtain ⟨hne1, hne2, hne5, hne6⟩ := zTag_not_iAx_of_tp_isymRep htpr
-  exact ZDerivation_iCritAux_of h1 hZ hZv hfst
-    (by rw [htpr]; exact iperm_isymRep _)
+  obtain ⟨hne1, hne2, hne5, hne6⟩ := zTag_not_iAx_of_tp_isymRep hredtp
+  exact ZDerivation_iCritAux_of h1 hZ hZv hredfst
+    (by rw [hredtp]; exact iperm_isymRep _)
     (fun h => absurd h hne1) (fun h => absurd h hne2)
     (fun h => absurd h hne5) (fun h => absurd h hne6)
 
@@ -255,11 +243,12 @@ theorem ZDerivation_red_zK {s r ds : V}
     by_cases htag : zTag (znth ds (permIdx (zK s r ds))) = 4
     · by_cases h2 : permIdx (znth ds (permIdx (zK s r ds)))
           < lh (zKseq (znth ds (permIdx (zK s r ds))))
-      · -- chain selected premise, non-critical → 5.2.2 replace
+      · -- chain selected premise, non-critical → 5.2.2 replace (route-B reduced conclusion).
         rw [red_zK_rep h1 h2]
-        refine ZDerivation_red_zK_replace hZ hred h1 h2 ?_
-        -- OPEN (lap-90 narrowed gap): the selected minimal-permissible premise is `Rep`
-        -- (`tp dᵢ = isymRep`). TRUE on the ⊥-orbit (Cor 2.1); needs the ⊥-orbit invariant.
+        -- OPEN (route-B residual): `ZDerivation_red_zK_replace` discharges this from the selected
+        -- premise being `Rep` (`tp dᵢ = isymRep`, ⊥-orbit Cor 2.1) PLUS the conclusion-tracking IH
+        -- `fstIdx (red dᵢ) = fstIdx dᵢ ∧ tp (red dᵢ) = isymRep`. Those come from the `redSoundF`
+        -- induction (next lap); here they are the open ⊥-orbit invariant.
         sorry
       · -- chain selected premise, critical → 5.2.1 splice (`htag` supplies the genuine reduct-halves)
         rw [red_zK_splice h1 h2 htag]
@@ -333,7 +322,8 @@ hypothesis. Bodies left `sorry` here only because this file is uncompiled; they 
 contradiction derivation reduces to one — `redSound` gives `ZDerivation (red d)` and `fstIdx_red`
 transfers the empty antecedent + `⊥` succedent. -/
 theorem ZDerivesEmpty_red {d : V} (h : ZDerivesEmpty d) : ZDerivesEmpty (red d) := by
-  have hfst : fstIdx (red d) = fstIdx d := fstIdx_red h.1 (zTag_Ind_or_K_of_ZDerivesEmpty h)
+  have hfst : fstIdx (red d) = fstIdx d :=
+    fstIdx_red h.1 h.2.1 h.2.2 (zTag_Ind_or_K_of_ZDerivesEmpty h)
   exact ⟨redSound d h, by rw [hfst]; exact h.2.1, by rw [hfst]; exact h.2.2⟩
 
 /-- `ZDerivesEmpty` is closed under the `red`-orbit (no hypothesis — `redSound` discharges it). -/

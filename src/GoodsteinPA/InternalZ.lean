@@ -5799,17 +5799,28 @@ reduct of a smaller premise code is *already computed* — it is the table looku
 table-so-far, `dᵢ = znth (zKseq d) (permIdx d)` = the premise code). So the genuine 5.2.2 reduct is a
 CLOSED definable term: `iCritAux d (permIdx d) (znth s dᵢ)` (= `K^r(i/red dᵢ)`), no existential. -/
 
-/-- **5.2.2 replace-reduct** — the chain with its least-permissible premise `i = permIdx d` replaced by
-that premise's already-tabulated reduct `red dᵢ = znth s (znth (zKseq d) i)`. -/
+/-- **5.2.2 replace-reduct (route-B conclusion-reducing, lap 96).** The chain with its least-permissible
+premise `i = permIdx d` replaced by that premise's already-tabulated reduct `red dᵢ = znth s (znth (zKseq d) i)`,
+AND its conclusion reduced to Buchholz's `tp(dᵢ)(Π,0)` (`tpReduce (tp dᵢ) (fstIdx d) 0`). For a `Rep`
+selected premise (`tp dᵢ = Rep`, e.g. on the ⊥-orbit by Cor 2.1) this is `Π` unchanged, matching the old
+`iCritAux d (permIdx d) (…)`; for an I-rule/axiom selected premise it reduces the conclusion as Buchholz
+Def 3.2 case 5.2.2 demands (lap-90 finding: keep-`Π` is faithful only for `tp = Rep`). The rank and premise
+sequence are unchanged, so `iord`/`zReg` (conclusion-independent) are untouched. -/
 noncomputable def iRKr (d s : V) : V :=
-  iCritAux d (permIdx d) (znth s (znth (zKseq d) (permIdx d)))
+  zK (tpReduce (tp (znth (zKseq d) (permIdx d))) (fstIdx d) 0)
+     (zKrank d)
+     (seqUpdate (zKseq d) (permIdx d) (znth s (znth (zKseq d) (permIdx d))))
 
 noncomputable def _root_.LO.FirstOrder.Arithmetic.iRKrDef : 𝚺₁.Semisentence 3 := .mkSigma
   “y d s. ∃ i, !permIdxDef i d ∧ ∃ ds, !zKseqDef ds d ∧ ∃ di, !znthDef di ds i ∧
-    ∃ v, !znthDef v s di ∧ !iCritAuxDef y d i v”
+    ∃ v, !znthDef v s di ∧ ∃ t, !tpDef t di ∧ ∃ f, !fstIdxDef f d ∧
+    ∃ c, !tpReduceDef c t f 0 ∧ ∃ r, !zKrankDef r d ∧ ∃ u, !seqUpdateDef u ds i v ∧
+    !zKGraph y c r u”
 
 instance iRKr_defined : 𝚺₁-Function₂ (iRKr : V → V → V) via iRKrDef := .mk fun v ↦ by
-  simp [iRKrDef, iRKr, permIdx_defined.iff, zKseq_defined.iff, znth_defined.iff, iCritAux_defined.iff]
+  simp [iRKrDef, iRKr, permIdx_defined.iff, zKseq_defined.iff, znth_defined.iff, tp_defined.iff,
+    fstIdx_defined.iff, tpReduce_defined.iff, zKrank_defined.iff, seqUpdate_defined.iff,
+    zK_defined.iff]
 
 instance iRKr_definable : 𝚺₁-Function₂ (iRKr : V → V → V) := iRKr_defined.to_definable
 
@@ -6136,16 +6147,34 @@ instance iRK_defined : 𝚺₁-Function₂ (iRK : V → V → V) via iRKDef := .
 
 instance iRK_definable : 𝚺₁-Function₂ (iRK : V → V → V) := iRK_defined.to_definable
 
-@[simp] lemma fstIdx_iRKr (d s : V) : fstIdx (iRKr d s) = fstIdx d := by simp [iRKr, iCritAux]
+/-- **5.2.2 reduct conclusion (route B, lap 96)** — the reduced sequent `tpReduce (tp dᵢ) (fstIdx d) 0`. -/
+@[simp] lemma fstIdx_iRKr (d s : V) :
+    fstIdx (iRKr d s) = tpReduce (tp (znth (zKseq d) (permIdx d))) (fstIdx d) 0 := by simp [iRKr]
 @[simp] lemma fstIdx_iRKs (d s : V) : fstIdx (iRKs d s) = fstIdx d := by simp [iRKs]
-@[simp] lemma zTag_iRKr (d s : V) : zTag (iRKr d s) = 4 := by simp [iRKr, iCritAux]
+@[simp] lemma zTag_iRKr (d s : V) : zTag (iRKr d s) = 4 := by simp [iRKr]
 @[simp] lemma zTag_iRKs (d s : V) : zTag (iRKs d s) = 4 := by simp [iRKs]
 
-/-- **Dispatch invariant — `iRK` keeps the conclusion sequent.** All three branches (`iRKc`/`iRKr`/`iRKs`)
-are chains `zK (fstIdx d) …`, so the dispatched reduct has the same end-sequent regardless of which case
-fires. -/
-@[simp] lemma fstIdx_iRK (d s : V) : fstIdx (iRK d s) = fstIdx d := by
-  unfold iRK; split_ifs <;> simp
+/-- **Replace-reduct keeps `Π` for a `Rep` selected premise.** When `tp dᵢ = Rep` (e.g. on the ⊥-orbit
+by Cor 2.1) `tpReduce` is the identity, so the 5.2.2 reduct keeps the conclusion — recovering the old
+unconditional `fstIdx_iRKr`. -/
+lemma fstIdx_iRKr_of_Rep {d s : V} (htp : tp (znth (zKseq d) (permIdx d)) = isymRep) :
+    fstIdx (iRKr d s) = fstIdx d := by simp [iRKr, htp]
+
+/-- **Dispatch invariant — `iRK` keeps the conclusion sequent off the non-`Rep` replace case.** The 5.1
+(`iRKc`) and 5.2.1 (`iRKs`) branches always keep `Π`; the 5.2.2 (`iRKr`) branch keeps `Π` exactly when the
+selected premise is `Rep` (the conclusion-reduction case is the one route-B addition). On the ⊥-orbit all
+selected premises are `Rep` (Cor 2.1), so `iRK` keeps `Π` there. -/
+lemma fstIdx_iRK_of_Rep {d s : V}
+    (htp : permIdx d < lh (zKseq d) →
+      ¬ (zTag (znth (zKseq d) (permIdx d)) = 4 ∧
+         ¬ permIdx (znth (zKseq d) (permIdx d)) < lh (zKseq (znth (zKseq d) (permIdx d)))) →
+      tp (znth (zKseq d) (permIdx d)) = isymRep) :
+    fstIdx (iRK d s) = fstIdx d := by
+  unfold iRK
+  split_ifs with h1 hs
+  · simp
+  · rw [fstIdx_iRKr_of_Rep (htp h1 hs)]
+  · simp
 
 /-- **Dispatch invariant — `iRK` is a `K`-chain (tag 4)** in every branch. -/
 @[simp] lemma zTag_iRK (d s : V) : zTag (iRK d s) = 4 := by
@@ -6375,10 +6404,56 @@ lemma not_zKCritical_red_zK {s r ds : V} (hcrit : ¬ permIdx (zK s r ds) < lh ds
     ¬ zKCritical (fstIdx (red (zK s r ds))) (zKseq (red (zK s r ds))) := by
   rw [red_zK_crit hcrit]; exact not_zKCritical_iRcritG _ _
 
-/-- **`red` preserves the end-sequent on the chain-reduct rules** (`Ind`, `K`): both reducts are chains
-`zK (fstIdx d) …` (`iRInd`/`iRcritG` carry the conclusion sequent verbatim), so `fstIdx (red d) = fstIdx d`.
-(On a ⊥-derivation the visited reducible rules are exactly tags 3,4 — an I-rule never has a `⊥` succedent.) -/
-lemma fstIdx_red_of_tag_Ind_or_K {d : V} (hZ : ZDerivation d) (htag : zTag d = 3 ∨ zTag d = 4) :
+/-- **Corollary 2.1 (Buchholz): a permissible premise of a `∅→⊥` chain is `Rep`.** An I-rule premise
+(`isymR`) would need succedent `⊥` (impossible — I-rules introduce `∀`/`¬`); an axiom premise (`isymLk`)
+would need a formula in the empty antecedent (impossible). So on the ⊥-orbit the selected premise is
+always `Rep` — the fact that makes the conclusion-reducing `red` (route B, lap 96) keep `Π` there. -/
+lemma tp_isymRep_of_emptyAnt_botSucc {s d : V} (hZ : ZDerivation d)
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hperm : iperm (tp d) s) : tp d = isymRep := by
+  rcases zDerivation_iff.mp hZ with ⟨s', rfl, _⟩ | ⟨s', a, p, d0, rfl, _, _⟩ | ⟨s', p, d0, rfl, _, _⟩ |
+    ⟨s', at', p, d0, d1, rfl, _, _⟩ | ⟨s', r, ds, rfl, _, _, _⟩ |
+    ⟨s', p, k, rfl, _, _⟩ | ⟨s', p, rfl, _, _⟩
+  · rw [tp_zAtom]
+  · rw [tp_zIall] at hperm
+    rw [iperm_isymR_iff, hsucc] at hperm
+    exact absurd hperm (by simp [qqAll, qqFalsum])
+  · rw [tp_zIneg] at hperm
+    rw [iperm_isymR_iff, hsucc] at hperm
+    exact absurd hperm (by simp [inegF, qqFalsum, qqOr])
+  · rw [tp_zInd]
+  · rw [tp_zK]
+  · rw [tp_zAxAll] at hperm
+    rw [iperm_isymLk_iff, hant] at hperm
+    exact absurd hperm (by simp [inAnt, lh_empty])
+  · rw [tp_zAxNeg] at hperm
+    rw [iperm_isymLk_iff, hant] at hperm
+    exact absurd hperm (by simp [inAnt, lh_empty])
+
+/-- **The selected premise of a `∅→⊥` chain is `Rep`.** For a chain `zK s r ds` deriving `∅→⊥` whose
+least-permissible premise index is in range (`permIdx < lh ds`), that premise has `tp = Rep` (Cor 2.1
+applied to the permissible selected premise). This discharges the route-B `iRKr` conclusion-reduction on
+the ⊥-orbit (`tpReduce isymRep = id`), so `red` keeps the `∅→⊥` conclusion. -/
+lemma tp_selected_isymRep_of_emptyAnt_botSucc {s r ds : V} (hZ : ZDerivation (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hlt : permIdx (zK s r ds) < lh ds) :
+    tp (znth ds (permIdx (zK s r ds))) = isymRep := by
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  have hlt' : permIdxAux ds s (lh ds) < lh ds := by
+    simpa only [permIdx, fstIdx_zK, zKseq_zK] using hlt
+  have hperm : isPermPrem ds s (permIdx (zK s r ds)) := by
+    have := permIdxAux_isPermPrem_of_lt ds s (lh ds) hlt'
+    simpa only [permIdx, fstIdx_zK, zKseq_zK] using this
+  unfold isPermPrem at hperm
+  exact tp_isymRep_of_emptyAnt_botSucc (hmem _ hlt) hant hsucc hperm
+
+/-- **`red` preserves the end-sequent on the chain-reduct rules** (`Ind`, `K`), given a `Rep` selected
+premise for the chain case (route B, lap 96: the 5.2.2 reduct reduces the conclusion to `tpReduce (tp dᵢ)
+Π 0`, which is `Π` iff `tp dᵢ = Rep`). The `Ind` reduct (`iRInd`) and the 5.1/5.2.1 chain branches keep
+`Π` unconditionally; the chain replace branch keeps `Π` exactly under `hsel`. On the ⊥-orbit `hsel` holds
+by Cor 2.1 (`tp_selected_isymRep_of_emptyAnt_botSucc`). -/
+lemma fstIdx_red_of_tag_Ind_or_K {d : V} (hZ : ZDerivation d) (htag : zTag d = 3 ∨ zTag d = 4)
+    (hsel : zTag d = 4 → permIdx d < lh (zKseq d) → tp (znth (zKseq d) (permIdx d)) = isymRep) :
     fstIdx (red d) = fstIdx d := by
   rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, _⟩ | ⟨s, p, d0, rfl, _, _⟩ |
     ⟨s, at', p, d0, d1, rfl, _, _⟩ | ⟨s, r, ds, rfl, _, _, _⟩ |
@@ -6387,26 +6462,35 @@ lemma fstIdx_red_of_tag_Ind_or_K {d : V} (hZ : ZDerivation d) (htag : zTag d = 3
   · simp [zTag_zIall] at htag
   · simp [zTag_zIneg] at htag
   · rw [red_zInd, iRInd_zInd]; simp [fstIdx_zInd]
-  · rw [red_zK]; simp
+  · rw [red_zK]
+    refine fstIdx_iRK_of_Rep (fun h1 _ => ?_)
+    have := hsel (by simp) (by simpa only [zKseq_zK] using h1)
+    simpa only [zKseq_zK] using this
   · simp [zTag_zAxAll] at htag
   · simp [zTag_zAxNeg] at htag
 
-/-- **Route-B conclusion invariant, `Rep` half (lap 91).** For `Ind`/chain derivations (`zTag ∈ {3,4}`,
-where `tp d = Rep`), the existing `red` already satisfies Buchholz Thm 3.4(b): its conclusion is the
-reduced sequent `tpReduce (tp d) (fstIdx d) 0`. Because `tp d = Rep` here, `tpReduce` is the identity
-(`tpReduce_isymRep`), so this is `fstIdx_red_of_tag_Ind_or_K`. **Headline-relevant case:** on the ⊥-orbit
-every chain has `tp = Rep` (Cor 2.1), so `red` keeps the `∅→⊥` conclusion — exactly route B's
-specialisation, with no rewire needed. (The non-`Rep` branches — I∀, non-`Rep` chains — still need the
-`red` rewire to emit `tpReduce`; see PENDING_WORK lap-91.) -/
-lemma fstIdx_red_eq_tpReduce_of_Rep {d : V} (hZ : ZDerivation d) (htag : zTag d = 3 ∨ zTag d = 4) :
-    fstIdx (red d) = tpReduce (tp d) (fstIdx d) 0 := by
-  have htp : tp d = isymRep := by
-    have h1 : zTag d ≠ 1 := by rcases htag with h | h <;> simp [h]
-    have h2 : zTag d ≠ 2 := by rcases htag with h | h <;> simp [h]
-    have h5 : zTag d ≠ 5 := by rcases htag with h | h <;> simp [h]
-    have h6 : zTag d ≠ 6 := by rcases htag with h | h <;> simp [h]
-    unfold tp; rw [if_neg h1, if_neg h2, if_neg h5, if_neg h6]
-  rw [fstIdx_red_of_tag_Ind_or_K hZ htag, htp, tpReduce_isymRep]
+set_option maxHeartbeats 800000 in
+/-- **`red` keeps the `∅→⊥` conclusion on the ⊥-orbit.** Discharges `fstIdx_red_of_tag_Ind_or_K`'s `hsel`
+via Cor 2.1: the selected premise of a `∅→⊥` chain is `Rep`. This is the headline-relevant conclusion
+invariant — `red` of a contradiction derivation again concludes `∅→⊥`. (Stated on the raw `∅→⊥` data
+since `ZDerivesEmpty` is defined later in the file; the packaged form is `fstIdx_red_of_ZDerivesEmpty`.) -/
+lemma fstIdx_red_of_emptyAnt_botSucc {d : V} (hZ : ZDerivation d)
+    (hant : seqAnt (fstIdx d) = (∅ : V)) (hsucc : seqSucc (fstIdx d) = (^⊥ : V))
+    (htag : zTag d = 3 ∨ zTag d = 4) : fstIdx (red d) = fstIdx d := by
+  rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, _⟩ | ⟨s, p, d0, rfl, _, _⟩ |
+    ⟨s, at', p, d0, d1, rfl, _, _⟩ | ⟨s, r, ds, rfl, hds, hmem, hvalid⟩ |
+    ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩
+  · simp [zTag_zAtom] at htag
+  · simp [zTag_zIall] at htag
+  · simp [zTag_zIneg] at htag
+  · rw [red_zInd, iRInd_zInd]; simp [fstIdx_zInd]
+  · rw [red_zK]
+    refine fstIdx_iRK_of_Rep (fun h1 _ => ?_)
+    rw [fstIdx_zK] at hant hsucc
+    rw [zKseq_zK] at h1 ⊢
+    exact tp_selected_isymRep_of_emptyAnt_botSucc hZ hant hsucc h1
+  · simp [zTag_zAxAll] at htag
+  · simp [zTag_zAxNeg] at htag
 
 /-! ### The ordinal of `red`'s K-case = the ordinal of `iR2`'s K-case (the descent bridge)
 
