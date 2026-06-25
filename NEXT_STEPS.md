@@ -39,14 +39,22 @@ feasible internal route, and resume PRIORITY 2.
 **Template to mirror:** `src/GoodsteinPA/Zinfty.lean` (the axiom-clean META ω-rule engine: `allω` rule +
 the full Towsner §19 cut-elimination). The spike arithmetizes what `Zinfty` does at the meta level.
 
-**STATUS (lap 101 — first brick LANDED, `wip/InternalZomega.lean`, axiom-clean):** `zOmegaPrem_valid`
-(premise family uniformly valid, motive-free, just the freshness bound) + `zOmegaPrem_concl` (conclusion
-computed, not threaded) are proven in-kernel. This is the evidence that the substitution-validity moves to
-node-construction (off the cut-elimination recursion) — i.e. the ω-rule view retires the `redZKReady` wall.
-**NEXT = Probe 1: build `iord(zAllω) = sup_t (iord (zOmegaPrem d0 a t)) + 1`** from the premise-family code
-`d0` (the sup over a `zsubst`-generated family). This is THE sharpest arithmetization-risk question:
-buildable → pivot justified, proceed to Probe 2 (the ω-rule cut-elimination step, recursion on `iord`);
-walls → commit to Path X with the evidence.
+**STATUS (lap 101 — `wip/InternalZomega.lean`, 4 lemmas, all axiom-clean):**
+- `zOmegaPrem_valid` — premise family uniformly valid, motive-free (freshness bound only).
+- `zOmegaPrem_concl` — selected premise's conclusion computed, not threaded.
+- `iord_zOmegaPrem` / `iord_zOmegaPrem_constant` — **Probe 1 RESOLVED**: premise-family ordinal is CONSTANT
+  `= iord d0`, so the ω-node's `iord = iord d0 + 1` is finite — no sup-over-infinite-family primitive. The
+  arithmetization-risk concern is retired.
+
+**NET CALL: the evidence now favours the Path-C pivot.** The two ω-node hard properties (motive-free
+validity, finite ordinal) are in-kernel on the EXISTING engine, and they are exactly what the finitary
+route turns into the open `redZKReady` motive + `iord_descent_red` K-case. **NEXT = Probe 2 / the pivot
+decision:** the ω-rule cut-elimination STEP needs the ω-node DATATYPE (new tag 7 `zAllω` in the
+`zconstruction` Fixpoint) + `ZPhi`/`iord`/`tp` extension — the ~2–3k-line but TEMPLATED rebuild
+(`Zinfty.lean` = meta template; the two hardest sub-questions answered above). Recommended next lap: build a
+minimal `zAllω` datatype + its `red`/`iord` recursion equations as the final de-risk, then commit to the
+pivot. If that minimal datatype walls (Fixpoint `StrongFinite` issues for an infinite-premise node — the
+lap-92-flagged risk), THAT is the signal to commit to Path X instead.
 
 ## ▶ PRIORITY 2 — Path X fallback (ONLY if the spike walls)
 

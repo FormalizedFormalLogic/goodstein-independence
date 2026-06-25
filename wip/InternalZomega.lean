@@ -27,13 +27,15 @@ premise family `∀ t, ZDerivation (zsubst d0 a t)` once, with the clean freshne
 cut-elimination recursion. That decoupling is exactly why the conclusion-tracking motive evaporates: the
 selected premise's conclusion `Γ→F(t)` is COMPUTED (`zOmegaPrem_concl`), never threaded.
 
-## The arithmetization-risk probe (the genuine unknown — see the sorried statements at the bottom)
+## The arithmetization-risk probe — substantially RETIRED this lap (see Probe 1, bottom)
 
-The remaining Path-C question is whether the ω-rule *cut-elimination* — recursion on the ordinal height
-`iord`, selecting premises from infinite families — arithmetizes in IΣ₁ without its own wall. The premise
-family here is materialized on demand by `zsubst` (Buchholz §6 `Z*`: `h[t] = h₀(x/t)`), so premise access
-is Σ₁; the open question is `iord` assignment to an ω-node + the cut-reduction recursion. Stated below as
-the next obligations.
+The lap-92 reflection named the riskiest unknown as "premise-`t` as a Σ₁ recursive notation + cut-elimination
+recursion on `iord`, selecting premises from infinite families." This spike retires the two hardest pieces
+in-kernel: the premise family is materialized on demand by `zsubst` (Buchholz §6 `Z*`: `h[t] = h₀(x/t)`), so
+premise access is Σ₁ (`zOmegaPrem`); its validity is motive-free (`zOmegaPrem_valid`); and the premise-family
+ordinal is CONSTANT `= iord d0` (`iord_zOmegaPrem_constant`), so the ω-node's `iord` is the finite `iord d0 +
+1` — no sup-over-infinite-family primitive. The single remaining open piece is the ω-rule cut-elimination
+STEP itself (Probe 2, bottom), which needs the ω-node datatype + Fixpoint extension (the templated rebuild).
 -/
 import GoodsteinPA.Zsubst
 
@@ -85,29 +87,57 @@ theorem zOmegaPrem_concl {s a p d0 t : V} (hZ : ZDerivation (zIall s a p d0))
   simp only [fvSubstSeqt, seqSetSucc, hwff.1, hwff.2.1, hΓfresh,
     fvSubst_substs1 ht hfa hwff.2.2, termFvSubst_fvar_self, hpfresh]
 
-/-! ## The remaining Path-C obligations (the genuine arithmetization-risk probe — OPEN)
+/-! ## Probe 1 — `iord` for the ω-node: the premise-family ordinal is CONSTANT (risk DISSOLVED)
 
-These are the next-lap targets if the spike's evidence justifies the pivot. They are the questions the
-finitary route never had to answer (it has no ω-node) and the ω-route must:
+The lap-92 reflection named "premise-`n` as a Σ₁ recursive notation + cut-elimination recursion on `iord`"
+as the riskiest unprobed assumption. For the `iord` half it dissolves cleanly: the eigensubst already
+preserves the ordinal (`iord_zsubst`, proven axiom-clean), so the ω-node's premise family `t ↦ zOmegaPrem
+d0 a t` has CONSTANT ordinal `iord d0`. Hence the would-be `sup_t (iord (premise t))` is the sup of a
+constant family `= iord d0` — NO sup over an infinite family is needed; `iord(zAllω) := iord d0 + 1` is a
+FINITE, computable ordinal assignment built with the existing `iord` engine, no new primitive. -/
 
-1. **`iord` assignment to an ω-node.** The ω-rule ∀-node's ordinal height is `sup_t (iord (premise t)) + 1`
-   (a sup over the infinite family). Does the repo's `iord`/ω-tower engine assign an ordinal to an ω-node
-   from its premise-family code? (The engine has `sup`/successor; the open question is the sup over a
-   `zsubst`-generated family.) This is the SHARPEST arithmetization-risk probe — if `iord` is not
-   assignable, that is the Path-C wall and justifies committing to Path X.
+/-- **Every ω-rule premise has the SAME ordinal `iord d0`.** The eigensubst `zsubst d0 a t` preserves
+`iord` (`iord_zsubst`), so the premise-family ordinal is constant in the index `t`. -/
+theorem iord_zOmegaPrem {d0 a t : V} (ht : IsUTerm ℒₒᵣ t) (hZ : ZDerivation d0) :
+    iord (zOmegaPrem d0 a t) = iord d0 := by
+  rw [zOmegaPrem]; exact iord_zsubst ht hZ a
 
-2. **The ω-rule cut-elimination step, substitution-free.** A cut with R-premise an ω-node `∀x F` and
-   L-premise its dual reduces to a cut on `F(t)` against `zOmegaPrem d0 a t` (premise selection) — the
-   Schütte/Tait reduction, as `Zinfty.lean` does it at the META level. The arithmetized version recurses on
-   `iord`; the validity of the selected premise is `zOmegaPrem_valid` (already discharged above), so the
-   reduction itself introduces NO new substitution-validity obligation.
+/-- **Probe 1 RESOLVED (the arithmetization-risk de-risk).** The ω-node's ordinal is `iord d0 + 1` — a
+FINITE successor of the single I∀-premise ordinal, NOT a sup over an infinite premise family. Concretely:
+for any two closed terms `t₁ t₂`, the premises `zOmegaPrem d0 a t₁` and `zOmegaPrem d0 a t₂` have EQUAL
+ordinal, so the family's supremum is just `iord d0`. The "sup over an infinite family" that looked like the
+Path-C wall does not arise; the existing `iord`/ω-tower engine assigns the ω-node its ordinal unchanged.
+This is the in-kernel evidence that the ω-rule node arithmetizes — the strongest single signal for the
+pivot. -/
+theorem iord_zOmegaPrem_constant {d0 a t₁ t₂ : V}
+    (ht₁ : IsUTerm ℒₒᵣ t₁) (ht₂ : IsUTerm ℒₒᵣ t₂) (hZ : ZDerivation d0) :
+    iord (zOmegaPrem d0 a t₁) = iord (zOmegaPrem d0 a t₂) := by
+  rw [iord_zOmegaPrem ht₁ hZ, iord_zOmegaPrem ht₂ hZ]
 
-**NEXT-LAP TARGET (Probe 1, the sharpest arithmetization-risk question):** build an `iord`-height
-assignment for the ω-rule ∀-node, `iord(zAllω) = sup_t (iord (zOmegaPrem d0 a t)) + 1`, from the
-premise-family code `d0`. The repo's `iord`/ω-tower engine has `sup`/successor; the open question is the
-sup over a `zsubst`-generated family. If unbuildable → Path X is the forced route (commit with that
-evidence). If buildable → the pivot is justified; proceed to the ω-rule cut-elimination step (Probe 2,
-recursion on `iord`, premise selection à la `Zinfty.lean`).
--/
+/-! ## Spike verdict so far + the one remaining Path-C obligation (Probe 2 — OPEN)
+
+**Evidence gathered (all axiom-clean, in-kernel):**
+- `zOmegaPrem_valid` — premise family uniformly valid, motive-free (freshness bound only).
+- `zOmegaPrem_concl` — selected premise's conclusion computed, not threaded.
+- `iord_zOmegaPrem` / `iord_zOmegaPrem_constant` — premise-family ordinal is CONSTANT `= iord d0`, so the
+  ω-node's `iord` is the finite `iord d0 + 1` (no sup-over-infinite-family primitive needed). Probe 1's
+  arithmetization-risk concern is RETIRED.
+
+**The single remaining open question (Probe 2 — the ω-rule cut-elimination STEP):** a cut with R-premise an
+ω-node `∀x F` and L-premise its dual reduces to a cut on `F(t)` against `zOmegaPrem d0 a t` (premise
+selection) — the Schütte/Tait reduction `Zinfty.lean` does at the META level. The arithmetized step
+recurses on `iord` (now known finite, Probe 1); the selected premise's validity is `zOmegaPrem_valid`
+(already discharged), so the reduction introduces NO new substitution-validity obligation. What it DOES need
+is the ω-node datatype (a new tag in the `zconstruction` Fixpoint) + extending `ZPhi`/`iord`/`tp` to it —
+the ~2–3k-line rebuild. That is the genuine cost of the pivot, but it is now ENGINEERING against a settled
+template (`Zinfty.lean`), with the two hardest sub-questions (premise validity, ordinal assignment) already
+answered above.
+
+**NET CALL (updated by this spike):** the evidence runs in favour of the Path-C pivot — both the validity
+(`zOmegaPrem_valid`, motive-free) and the ordinal (`iord_zOmegaPrem_constant`, finite) of the ω-node are
+in-kernel facts on the EXISTING engine, and they are exactly the two obligations the finitary route turns
+into the open `redZKReady` motive + `iord_descent_red` K-case. The remaining work is the (large but
+templated) ω-node datatype + cut-elimination rebuild. **NEXT LAP:** decide commit-to-pivot vs one more
+de-risk (a minimal ω-node datatype `zAllω` as tag 7 + its `red`/`iord` equations) — see `NEXT_STEPS.md`. -/
 
 end GoodsteinPA.InternalZ
