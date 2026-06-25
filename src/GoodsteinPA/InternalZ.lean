@@ -3060,6 +3060,23 @@ lemma zKValidF_iCritReductGen {s C rOut rIn0 rIn1 ds0 ds1 : V}
   · exact hssUf
   · exact hsaUf
 
+/-- **The genuine critical reduct** `d[0] = K^{rOut}_Π d{0} d{1}` (Buchholz §3.2 case 5.1), built on the
+GENUINE auxiliaries: `d{0} = K^{rIn0}_{Θ→A(d)} ds0` concludes `Θ→A(d)` (`seqSetSucc s C`), `d{1} =
+K^{rIn1}_{A(d),Θ→D} ds1` concludes `A(d),Θ→D` (`seqAddAnt C s`), with `C = A(d)` the cut formula. Unlike
+the ordinal-shadow `iCritReduct`, the auxiliaries carry the cut's reduced endsequents — so the
+recombination's validity threading is automatic (`zKValidF_iCritReductGen`). -/
+noncomputable def iCritReductG (s C rOut rIn0 rIn1 ds0 ds1 : V) : V :=
+  zK s rOut (iCritReductSeq (zK (seqSetSucc s C) rIn0 ds0) (zK (seqAddAnt C s) rIn1 ds1))
+
+@[simp] lemma fstIdx_iCritReductG (s C rOut rIn0 rIn1 ds0 ds1 : V) :
+    fstIdx (iCritReductG s C rOut rIn0 rIn1 ds0 ds1) = s := by simp [iCritReductG]
+@[simp] lemma zTag_iCritReductG (s C rOut rIn0 rIn1 ds0 ds1 : V) :
+    zTag (iCritReductG s C rOut rIn0 rIn1 ds0 ds1) = 4 := by simp [iCritReductG]
+@[simp] lemma zKseq_iCritReductG (s C rOut rIn0 rIn1 ds0 ds1 : V) :
+    zKseq (iCritReductG s C rOut rIn0 rIn1 ds0 ds1) =
+      iCritReductSeq (zK (seqSetSucc s C) rIn0 ds0) (zK (seqAddAnt C s) rIn1 ds1) := by
+  simp [iCritReductG]
+
 /-- `õ`-fold of the critical reduct sequence: `ω^{õ d{0}} # ω^{õ d{1}}` (N3b's left side). -/
 lemma iseqNaddIdg_iCritReductSeq (d0 d1 : V) :
     iseqNaddIdg (iCritReductSeq d0 d1) =
@@ -5485,6 +5502,29 @@ lemma ZDerivation_iCritReduct_of {d i j v w : V}
   exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
     ⟨fstIdx d, zKrank d - 1, iCritReductSeq (iCritAux d i v) (iCritAux d j w), rfl,
       iCritReductSeq_seq _ _, fun n hn => znth_iCritReductSeq_ZDerivation ha hb n hn, hvalid⟩))))
+
+/-- **The genuine critical reduct is a `ZDerivation`, modulo the re-pointed chain constructor.** Given
+the re-pointed `K`-rule introduction `hZPhiK` (a `Seq` premise sequence of `ZDerivation`s that is
+`zKValidF`-valid builds a `ZDerivation` of the chain — the swap `zKValid → zKValidF` in `ZPhi`'s `zK`
+disjunct, lap-82 blast radius ~6 sites), and the two genuine auxiliaries being `ZDerivation`s of their
+reduced endsequents `Θ→A(d)`/`A(d),Θ→D` (the recursive Thm 3.4(a)), the recombination `iCritReductG` is a
+`ZDerivation`. Its validity threading is automatic via `zKValidF_iCritReductGen`; only the cut-rank drop
+`rk(A(d)) ≤ rOut` (Thm 3.4(a), banked `irk_cut_lt_rank_*`) and the conclusion formula-hood are supplied.
+This isolates the two genuine residuals of `RedSound`'s critical case: the `ZPhi` re-point (`hZPhiK`) and
+the auxiliaries' validity (the structural IH). -/
+lemma ZDerivation_iCritReductG_of {s C rOut rIn0 rIn1 ds0 ds1 : V}
+    (hZPhiK : ∀ {s' r' ds' : V}, Seq ds' → (∀ i < lh ds', ZDerivation (znth ds' i)) →
+        zKValidF s' r' ds' → ZDerivation (zK s' r' ds'))
+    (haux0 : ZDerivation (zK (seqSetSucc s C) rIn0 ds0))
+    (haux1 : ZDerivation (zK (seqAddAnt C s) rIn1 ds1))
+    (hsAnt : Seq (seqAnt s)) (hCrk : irk C ≤ rOut) (hCUf : IsUFormula ℒₒᵣ C)
+    (hssUf : IsUFormula ℒₒᵣ (seqSucc s))
+    (hsaUf : ∀ k < lh (seqAnt s), IsUFormula ℒₒᵣ (znth (seqAnt s) k)) :
+    ZDerivation (iCritReductG s C rOut rIn0 rIn1 ds0 ds1) := by
+  rw [iCritReductG]
+  refine hZPhiK (iCritReductSeq_seq _ _)
+    (fun n hn => znth_iCritReductSeq_ZDerivation haux0 haux1 n hn) ?_
+  exact zKValidF_iCritReductGen hsAnt hCrk hCUf hssUf hsaUf
 
 /-! ## The iterated descent — `n ↦ iord (iR2^[n] z)` is an infinite `≺`-descent
 

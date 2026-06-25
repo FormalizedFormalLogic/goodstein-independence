@@ -22,6 +22,11 @@ import GoodsteinPA.Reduction
 
 namespace GoodsteinPA.InternalZ
 
+open Classical
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.FirstOrder.Arithmetic.HierarchySymbol ISigma1 PeanoMinus
+open LO.FirstOrder.Arithmetic.Bootstrapping
+open GoodsteinPA.InternalONote
+
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
 /-! ## M1a — the genuine validity-faithful reduct `red` + construction correctness
@@ -68,8 +73,13 @@ theorem iord_red_iterate_descends {z : V} (hz : ZDerivesEmpty z) (n : ℕ) :
 maps directly to Z's native `Ind`, skipping their biggest sub-tower). Populates `ZDerivesEmpty` from a
 Foundation ⊥-proof. -/
 
-/-- **M2.** A Foundation derivation of `⊥` in `𝗣𝗔` yields a `Z`-derivation of the empty sequent. -/
-theorem foundation_bot_to_Z_empty {d : V} (hd : (𝗣𝗔).DerivationOf d (⊥ : Sentence ℒₒᵣ)) :
+/-- **M2.** A model-internal `𝗣𝗔`-derivation of the (coded) empty/`⊥` sequent yields a `Z`-derivation
+of the empty sequent. ⚠️ **Signature to pin against Foundation's coded-provability API:** the confirmed
+primitive `Theory.DerivationOf (d s : V) := fstIdx d = s ∧ T.Derivation d` takes a *coded sequent*
+`s : V` (here `∅`/the `⊥`-sequent), NOT a `Sentence ℒₒᵣ` (the in-repo doc was loose); the exact
+`𝗣𝗔`-internal theory term `T` is the box's to fix (it is what `¬ 𝗣𝗔.Consistent M` unfolds to internally,
+cf. `Reduction.peano_not_proves_consistency`). -/
+theorem foundation_bot_to_Z_empty {d : V} (hd : (𝗣𝗔 : Theory ℒₒᵣ).Derivation d) (h0 : fstIdx d = ∅) :
     ∃ z : V, ZDerivesEmpty z := sorry
 
 /-! ## M3 — assemble the Gentzen contradiction
