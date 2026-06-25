@@ -281,6 +281,29 @@ theorem ZDerivation_zK_replace_zIneg_of {s r ds i sᵢ p d0 : V}
   · exact (tag_uformula_of_ZDerivation hZd0).2.2.1
   · exact (tag_uformula_of_ZDerivation hZd0).2.2.2
 
+/-- **axAll non-`Rep` replace — FULLY ASSEMBLED modulo the orbit invariants (lap 100).** The §5-∀-axiom
+analogue, and the **cleanest** of the four: when the selected premise `dᵢ = zAxAll sᵢ p k` is a §5 left
+∀-axiom, the reduct is the IDENTITY (`red dᵢ = dᵢ`, Buchholz Def 3.2 case 5.2.2 axiom case — no premise
+change), so `seqUpdate ds i (red dᵢ) = ds`, and the conclusion gains the cut-formula instance `F(k) =
+substs1 (numeral k) p` in its ANTECEDENT (`tpReduce (L^k_{∀p}) Π 0 = F(k),Γ→D`). The validity is pure
+conclusion-antecedent monotonicity (`ZDerivation_zK_seqAddAnt`) — the threading only RELAXES, so **no
+`i ≤ j₀` threading datum is needed** (unlike I∀/I¬). The only un-discharged inputs are the conclusion
+`Seq`-wellformedness (`hSeqs`) and the cut-instance formula-hood (`hAwff`, the orbit/wff datum the
+strengthened `redSoundGen` motive supplies). -/
+theorem ZDerivation_zK_replace_zAxAll_of {s r ds i sᵢ p k : V}
+    (hZ : ZDerivation (zK s r ds)) (hi : i < lh ds)
+    (hdi : znth ds i = zAxAll sᵢ p k)
+    (hSeqs : Seq (seqAnt s))
+    (hAwff : IsUFormula ℒₒᵣ (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral k) p)) :
+    ZDerivation (zK (tpReduce (tp (znth ds i)) s 0) r (seqUpdate ds i (red (znth ds i)))) := by
+  have hds : Seq ds := (zDerivation_zK_inv hZ).1
+  have hred_eq : red (znth ds i) = znth ds i := by rw [hdi, red_zAxAll]
+  have htp_eq : tpReduce (tp (znth ds i)) s 0
+      = seqAddAnt (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral k) p) s := by
+    rw [hdi, tp_zAxAll, tpReduce_isymLk_all]
+  rw [hred_eq, seqUpdate_znth_self hds hi, htp_eq]
+  exact ZDerivation_zK_seqAddAnt hZ hSeqs hAwff
+
 /-- **Residual (K case of Buchholz Thm 3.4 — the cut-elimination core).** The genuine reduct `red` of a
 valid chain `zK s r ds` is again a `ZDerivation`, given that the reduct of every premise is. Dispatches
 (via `red_zK_crit` / `red_zK_rep` / `red_zK_splice`) into the three Buchholz case-5 sub-residuals; each
