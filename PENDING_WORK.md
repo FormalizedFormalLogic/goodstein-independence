@@ -1,5 +1,42 @@
 # Pending work — open obligations & attack paths
 
+## 📋 Lap 99 — FULL crux-2 sorry inventory + dependency structure (unblock-protocol)
+**Build 🟢 1325. Headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms).** Every open crux-2
+sorry and how they depend:
+
+| sorry | what | depends on | independent? |
+|---|---|---|---|
+| `Reduction.lean:68` `goodstein_implies_consistency` | THE headline obligation | crux-1 (DONE, wip) ∘ crux-2; needs WIRING | no — top |
+| `Crux2Blueprint:206` chain-replace | non-critical chain dᵢ (Rep) | `red_rep_of_tp_isymRep` hsel = dᵢ's own selected premise is Rep (hereditary ⊥-orbit invariant) | needs orbit invariant |
+| `Crux2Blueprint:227` non-Rep replace | I∀/I¬/axAll/axNeg selected premise | **strengthened motive** (Seq-wff + O3-fresh + ∃perm≤j₀); validity-layer infra DONE lap 99 | THE active front |
+| `Crux2Blueprint:183` splice | 5.2.1 `iSpliceEnd` validity | `ZDerivation_seqInsert_of` + spliced isChainInf | partial |
+| `Crux2Blueprint:80,99` | iIndReduct validity / iRcritG | banked iCrit constructors | partial |
+| `Crux2Blueprint:295` `iord_descent_red` | ordinal descent over red | **strengthened motive** (per-premise ordinal IH: iotil/idg); banked `iord_descent_iCritAux`/`_seqInsert`/critical | parallel to :227, SAME motive |
+| `Crux2Blueprint:338` `foundation_bot_to_Z_empty` | M2 embedding (Foundation⊥→ZDerivesEmptyR) | Bryce–Goré Peano.v (~1k lines) | **YES — fully independent of redSound** |
+| `Crux2Blueprint:350` `false_of_ZDerivesEmpty` | M3 (descent ⟹ False) | iord_red_iterate_descends (= :295) + PRWO well-foundedness | downstream of :295 |
+
+**KEY STRUCTURAL FINDING:** the validity side (:206,:227) AND the descent side (:295) BOTH route through one
+strengthened `redSoundGen` induction motive carrying, per premise: (1) conclusion-tracking
+(`fstIdx (red dᵢ) = tpReduce …`, banked for all node types), (2) sequent-wellformedness (`Seq (seqAnt s)`
++ wff — NOT in ZDerivation, `seqAnt s = π₁ s`; preservation banked `Seq_seqAnt_seqAddAnt`), (3) O3-freshness
+(I∀ eigenvar fresh — NOT in ZRegular/zIallWff), (4) the ordinal IH (`iotil (red dᵢ) ≺ iotil dᵢ`, `idg ≤`).
+**THE motive cascade is the single bottleneck for ~5 of the 8 sorries.** The M2 bridge (:338) is the only
+genuinely independent deep thread.
+
+### Three attack paths for the motive cascade (the bottleneck)
+- *Path 1 (recommended): define `ZGood d : Prop` as a Fixpoint* = hereditary (validity ∧ Seq-wff-conclusion
+  ∧ O3-fresh ∧ regular), prove it's `𝚫₁`-definable, the embedding produces it, `red` preserves it. Then
+  strengthen `redSoundGen`/`iord_descent_red` motives to `ZGood d → … ∧ ZGood (red d)`. Big (new Fixpoint +
+  heredity), but it's THE clean structural object. Validity-layer + descent infra all banked to consume it.
+- *Path 2: bundle the invariants into `ZDerivesEmptyR`* (the orbit predicate) as explicit conjuncts and
+  thread them as hypotheses through `redSoundGen` WITHOUT a new Fixpoint — discharge the heredity inline
+  per node. Less infrastructure, more per-lemma plumbing; risks not being hereditary without the Fixpoint.
+- *Path 3: attack M2 (`foundation_bot_to_Z_empty`) instead* — the independent thread. Port Bryce–Goré
+  Peano.v's B1–B3 (PA-axioms→Z, modus-ponens→chain-rule, induction→Z-Ind). Doesn't unblock redSound but is
+  mandatory and parallelizable; a partial embedding with disclosed sub-sorries is real progress.
+
+---
+
 ## 📍 Lap 99 — VALIDITY LAYER + selection bound DONE; remaining = O3-freshness motive + assembly
 **Build 🟢 1325. Headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms). Lap-97's
 "architectural wall" RESOLVED (the eigensubst rewire landed lap 97; `red (zIall) = zsubst d0 a 0`).**
