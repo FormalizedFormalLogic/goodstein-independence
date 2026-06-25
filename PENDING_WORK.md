@@ -1,5 +1,34 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 88 — 5.2.1 GENUINE-OBJECT stack complete (descent + ZDerivation) + 5.2 dispatch index
+
+**Build 🟢 1325 jobs, axiom base clean. 5 green commits.** All new lemmas in `InternalZ.lean`,
+`[propext, choice, Quot.sound]`.
+
+**LANDED:**
+- ✅ **`iord_descent_seqInsert`** (+ `_of_ZDerivation`/`_of_iSpliceDescent`) — ordinal descent DIRECTLY on
+  the genuine `seqInsert` object via rotation kernel `icmp_iseqNaddIdg_seqInsert` (J-shifted induction,
+  `isNF` carried; base = F2; suffix folds via `inadd_right_mono`). **No `inadd_assoc`/permutation needed**
+  — the lap-87 "needs an `iseqNaddIdg`-reindex" worry was avoidable. + `idg`-side
+  `iseqMaxIdg_seqInsert_le`/`idg_seqInsert_le` + `iseqMaxIdgAux_le_of_all`.
+- ✅ **`ZDerivation_seqInsert_of`** / `_of_zK` — 5.2.1 validity: spliced chain is a genuine `ZDerivation`
+  (analogue of `ZDerivation_iCritAux_of`). + reusable `forall_znth_seqInsert`.
+- ✅ **`permIdxAux`/`permIdx`** — 5.2 dispatch index = least permissible premise `i` (`iperm (tp dᵢ) s`);
+  full spec stack + Σ₁-def + `permIdx_lt_of_not_zKCritical`.
+
+**⟹ all three dispatch branches (5.1/5.2.1/5.2.2) now object-complete + co-located validity+descent.**
+
+**NEXT (the assembly — not new math; see HANDOFF-lap88 ▶ NEXT):**
+1. **Rewrite `iRNextG` tag-4 to DISPATCH** (zKCritical → 5.1; else `permIdx` → sub-dispatch 5.2.1/5.2.2).
+   Large blast radius (`iRNextGDef`, `iRNextG_defined`, `red_zK`, `not_zKCritical_*`). Consider a separate
+   definable `iRNextGD` to contain it, then swap `redTable`.
+2. **Wire genuine halves** `a=dᵢ{0}, b=dᵢ{1}` from `inference_critical_pair` on the critical premise;
+   discharge `isChainInf_seqInsert` end-sequent hyps + build `iSpliceDescent`.
+3. **`redSound`** via `zDerivation_induction`, tag-4 split → each ZDerivation constructor; then
+   `iord_descent_red` unconditional → `false_of_ZDerivesEmpty` → headline.
+
+---
+
 ## 📍 Lap 87 — 5.2.1 splice VALIDITY object is ordered insert-at-`i`, NOT the banked end-append model
 
 **Build 🟢 1325 jobs, axiom base clean (headline 0 math axioms).** See
