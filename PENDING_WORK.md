@@ -17,19 +17,26 @@ critical-sub-dispatch is ill-typed. ⟹ **`redSoundGen` (∀ ZDerivation) is FAL
 Buchholz Cor 2.1:** on the ⊥-orbit (`ZDerivesEmpty`, Π = `→⊥`) every selected premise is `Rep`, so
 `red = d[0]` faithfully THERE. The TRUE target is `redSound` over `ZDerivesEmpty`.
 
-**NEXT (resume point) — re-architect `redSound` off the false general form:**
-1. **Decide route A vs B** (analysis doc §Consequence): (A) ⊥-orbit induction carrying the invariant
-   `tp d = isymRep` (hereditary all-`Rep`, via Cor 2.1) — cheapest; (B) build the general conclusion-
-   reducing `d[n]` + prove Thm 3.4(b) `red d ⊢ tp(d)(Π,0)` verbatim, specialise to ⊥-orbit. Try A first.
-2. **Add `htp : tp (znth ds (permIdx …)) = isymRep` hypothesis** to the K-replace/splice residuals
-   (makes them TRUE), then `ZDerivation_red_zK` must DISCHARGE `htp` from the ⊥-orbit invariant. The
-   discharge = "a permissible premise of a `→⊥` chain is `Rep`" (no axiom: `A∈∅` impossible; no I-rule:
-   succ ≠ `⊥`).
-3. **Caveat for route A:** the 5.1 critical case recurses into the auxiliaries' premise-reducts
-   `dᵢ[k]/dⱼ[0]` (NON-⊥ subformula sequents) — these may force route B's endsequent tracking. Check
-   whether `ZDerivation_iRcritG_of`'s `haux0/haux1` (the R2 residual) already absorbs this.
-4. REUSABLE regardless of route: `red_zK_rep`/`red_zK_splice` (proved), the 5 trivial `redSoundGen`
-   cases, `zKValidF_iIndReduct_of_zInd` (Ind, independent of the `Rep` issue — tractable side thread).
+**⛔ ROUTE A REFUTED (lap 90, later — see analysis doc §UPDATE).** Concrete kill: `red` of a `∅→⊥`
+chain recurses into `red d₀` where `d₀` (the selected `Rep` premise) derives `∅→A₀` (threading forces
+`Γ₀=∅`, but succedent `A₀ ≠ ⊥`). For `∅→A₀`, `iperm` admits an I-rule premise (`isymR A₀`), so `red d₀`
+mis-keeps the conclusion → invalid. The ⊥-condition is NOT preserved one level down, so no ⊥-orbit
+invariant closes the recursion. `tp_isymRep_of_emptyAnt_botSucc` (proved) saves only the TOP step.
+
+**NEXT (resume point) — ROUTE B: faithfully port Def 3.2 with conclusion reduction `tp(dᵢ)(Π,n)`:**
+1. **Define `tpReduce I Π n` = Buchholz `I(Π,n)`** (the reduced conclusion): `R_∀xF → Γ→F(n)`,
+   `R_¬A → …`, `L^k_A → ` left-reduction, `Rep → Π` (identity). Σ₁-definable.
+2. **Re-point the reduct's conclusion**: chain branches build `zK (tpReduce (tp dᵢ) Π 0) …` instead of
+   keeping `Π`; `iRKr`/the I-rule reducts get the reduced conclusion.
+3. **Invariant = Buchholz Thm 3.4(b) verbatim**: `∀ d, ZDerivation d → ZDerivation (red d) ∧
+   fstIdx (red d) = tpReduce (tp d) (fstIdx d) 0` — provable by PLAIN structural induction (no orbit
+   restriction). Specialise to headline at `tp d = Rep` (⊥-orbit: `tpReduce Rep Π 0 = Π`).
+4. **I-rule conclusion-tracking**: `red (zIall) = d0` omits Buchholz's `a/n` substitution `d₀(a/n)`;
+   under route B it should derive `Γ→F(0)`. Use `Zsubst.lean` eigen-subst machinery (laps 72–76).
+5. **REUSABLE (become route-B's `tp(dᵢ)=Rep` branch):** `red_zK_rep`/`red_zK_splice`,
+   `tp_eq_isymRep_of_zTag`, `red_rep_of_tp_isymRep`, `zTag_not_iAx_of_tp_isymRep`,
+   `ZDerivation_red_zK_replace` (5.2.2 validity under `tp dᵢ=Rep`), `tp_isymRep_of_emptyAnt_botSucc`.
+6. **Independent tractable thread:** `zKValidF_iIndReduct_of_zInd` (Ind reduct validity, unaffected).
 
 ## 📍 Lap 89 (FRESH-MIND REVIEW) — endgame SINGLE-FRONT + tag-4 dispatch `iRK` DEFINED
 
