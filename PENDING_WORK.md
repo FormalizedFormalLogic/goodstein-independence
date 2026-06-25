@@ -8,20 +8,27 @@ TWO independent pieces. **`closeAll p = qqAllItr (freeToBound m p) m` where `m =
 
 - ✅ **brick 2a DONE (lap 79, axiom-clean): `qqAllItr p k = ^∀^[k] p`** — PR.Construction, `𝚺₁-Function₂`,
   `qqAllItr_succ'` (front-peel) + `qqAllItr_quote` (`qqAllItr ⌜φ⌝ n = ⌜∀⁰* φ⌝`). `PADelta1.lean §Brick 2a`.
-- ⏳ **brick 2b (NEXT) = internal `freeToBound`** (the `Rew.fixitr 0 m` analog): rewrite a code `p`,
-  sending every free var `^&i` (i<m) to bound `^#(i+depth)` (depth = enclosing-binder count). Build via
-  `UformulaRec1.Construction` paralleling `shift` (`Functions.lean §shift`): param = depth `k`,
-  `allChanges/exsChanges := k+1`, leaf rewrites the term-vector's `^&i`→`^#(i+k)`. Then quote-correctness
-  `freeToBound m ⌜φ⌝ = ⌜Rew.fixitr 0 m ▹ φ⌝` (structural induction matching the internal recursion vs
-  external `Rew.fixitr`, using `fixitr_fvar`/`fixitr_bvar`, `Rew.q` lifting). NB term-level: need an
-  internal term `fixitr`-rewrite too (free term var `^&i`→`^#(i+k)`); check `Term/Functions.lean` for an
-  existing free-var term map first (there is `termShift`, `termBShift`).
-- ⏳ **brick 2c = internal `fvSup`** (max free-var index + 1): `UformulaRec1` returning `max(...)+1` over
-  `^&i` leaves; needed to PIN `m` (else vacuous-extra-∀ variants get falsely recognized, breaking
-  `mem_iff`). Σ₁ function.
-- ⏳ **brick 2d = assembly**: `closeAll`, `ch(y) := ∃ p ≤ y, IsSemiformula 1 p ∧ y = closeAll (succIndCodeRaw p)`
-  (bounded ∃ ⟹ Δ₁), `mem_iff` (via `succIndCodeRaw_quote` + `closeAll`-quote), `isDelta1`
-  (`ProvablyProperOn.ofProperOn` + properness of bounded ∃). Then rewire `Reduction.lean` to `paDelta1`.
+- ✅ **brick 2b DONE (lap 79, axiom-clean): `freeToBound`** (the forward `Rew.fixitr 0 m` analog) —
+  term-level `termFreeToBound d t` (`^&x↦^#(x+d)`, `TermRec`) + formula-level `freeToBound d p`
+  (`UformulaRec1`, depth-threaded, full rel/nrel/⊤/⊥/∧/∨/∀/∃ simp set), both `𝚺₁-Function₂`.
+  **BANKED ASSET — but the recognizer below does NOT use it** (see pivot).
+- ⚠️ **PIVOT (lap 79): the recognizer goes BACKWARD via existing `subst`, not forward via `freeToBound`.**
+  Matching `freeToBound ⌜φ⌝ = ⌜Rew.fixitr 0 m ▹ φ⌝` hits a dependent-arity wall: `(Rew.fixitr n m).q =
+  Rew.fixitr (n+1) m` is ILL-TYPED (codomains `n+m+1` vs `n+1+m`, not defeq) — Foundation omits it on
+  purpose. Cleaner recognizer reusing **existing** Foundation lemmas (`subst_comp_fixitr`,
+  `typed_quote_substs`):
+  `ch(y) := ∃ p ≤ y, IsSemiformula 1 p ∧ ∃ m ≤ y, ∃ body ≤ y, y = qqAllItr body m ∧ L.IsFVFree m body ∧`
+  `(m = 0 ∨ ¬ L.IsFVFree (m-1) body) ∧ subst ℒₒᵣ (fvarSeq m) body = succIndCodeRaw p`
+  where `fvarSeq m = ⟨^&0,…,^&(m-1)⟩` (internal). KEY BRIDGES (all from existing Foundation):
+  · `qqAllItr_quote` (DONE) gives `⌜univCl(succInd ψ)⌝ = qqAllItr ⌜fixitr 0 m ▹ succInd ψ⌝ m`, m = fvSup.
+  · `subst (fvarSeq m) ⌜fixitr 0 m ▹ ψ⌝ = ⌜(fixitr 0 m ▹ ψ)⇜(&·)⌝ = ⌜ψ⌝` via `typed_quote_substs` +
+    `subst_comp_fixitr` (`Basic/Syntax/Rew.lean:412`, `(fixitr 0 m ▹ φ)⇜(&·) = φ`). Soundness: `body`
+    fv-free m-ary ⟹ `subst (fvarSeq·)` is injective (inverse of fixitr), so `body` is pinned.
+  · `IsFVFree`-pin replaces the need for an internal `fvSup` function (m forced = fvSup, max bound +1).
+  NEXT pieces: (1) internal `fvarSeq m` (`⟨^&0..^&(m-1)⟩`, PR over m) + quote-correctness
+  `fvarSeq m = ⌜fun i:Fin m ↦ &i⌝`; (2) the two bridge lemmas above; (3) build `ch : 𝚫₁.Semisentence 1`
+  (bounded ∃ over the Σ₁/Δ₁ graphs); (4) `mem_iff` at ℕ; (5) `isDelta1` (`ProvablyProperOn.ofProperOn`).
+  Then rewire `Reduction.lean` to `paDelta1`.
 
 Front B (crux-2 criticality redesign) stays DEEP-REFLECTION-blocked — see lap-78 box below.
 
