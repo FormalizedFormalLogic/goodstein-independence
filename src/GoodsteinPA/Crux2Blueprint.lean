@@ -304,6 +304,53 @@ theorem ZDerivation_zK_replace_zAxAll_of {s r ds i sᵢ p k : V}
   rw [hred_eq, seqUpdate_znth_self hds hi, htp_eq]
   exact ZDerivation_zK_seqAddAnt hZ hSeqs hAwff
 
+/-- **The non-`Rep` replace dispatch, FULLY ASSEMBLED for 3/4 tags (lap 100).** Routes the non-chain,
+non-`Rep` selected premise `dᵢ = znth ds (permIdx)` by its node tag into the matching banked capstone:
+`zIall`→`ZDerivation_zK_replace_zIall_of`, `zIneg`→`_zIneg_of`, `zAxAll`→`_zAxAll_of`. The atom/Ind tags
+are excluded by `htp` (their `tp = isymRep`), the chain tag by `htag`. The per-tag orbit invariants
+(freshness/faithful-antecedent/wff) are supplied as the bundled hypotheses `hIall`/`hIneg`/`hAxAll`
+(conditioned on the node shape, so the caller proves only the branch that fires), the conclusion `Seq`-wff
+as `hSeqs`, and the selection-bounded threading/rank as `hthread`/`hrank` (from `permIdx_le_of_isPermPrem`
++ `thread_rank_restrict_of_le`). **axNeg (tag 6) is the lone residual** (`sorry`, Path C): its reduct is a
+succedent REPLACEMENT (`Γ→p`) with no premise carrying succedent `p`, so the membership-`isChainInf` route
+does not apply — it needs Buchholz's genuine ¬-axiom cut (premise restructuring). This lemma DISCHARGES the
+non-`Rep` branch of `ZDerivation_red_zK` modulo (a) the orbit-invariant bundle and (b) axNeg. -/
+theorem ZDerivation_red_zK_nonRep {s r ds : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hred : ∀ i < lh ds, ZDerivation (red (znth ds i)))
+    (h1 : permIdx (zK s r ds) < lh ds)
+    (htag : zTag (znth ds (permIdx (zK s r ds))) ≠ 4)
+    (htp : ¬ tp (znth ds (permIdx (zK s r ds))) = isymRep)
+    (hSeqs : Seq (seqAnt s))
+    (hthread : ∀ i' ≤ permIdx (zK s r ds), ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank : ∀ i' < permIdx (zK s r ds), irk (chainAsucc ds i') ≤ r)
+    (hIall : ∀ sᵢ a p d0, znth ds (permIdx (zK s r ds)) = zIall sᵢ a p d0 →
+        fvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral 0) p = p ∧
+        fvSubstSeq a (Bootstrapping.Arithmetic.numeral 0) (seqAnt sᵢ) = seqAnt sᵢ ∧
+        IsUFormula ℒₒᵣ (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral 0) p))
+    (hIneg : ∀ sᵢ p d0, znth ds (permIdx (zK s r ds)) = zIneg sᵢ p d0 →
+        seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p ∧ Seq (seqAnt sᵢ))
+    (hAxAll : ∀ sᵢ p k, znth ds (permIdx (zK s r ds)) = zAxAll sᵢ p k →
+        IsUFormula ℒₒᵣ (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral k) p)) :
+    ZDerivation (zK (tpReduce (tp (znth ds (permIdx (zK s r ds)))) s 0) r
+      (seqUpdate ds (permIdx (zK s r ds)) (red (znth ds (permIdx (zK s r ds)))))) := by
+  have hdiZ : ZDerivation (znth ds (permIdx (zK s r ds))) := (zDerivation_zK_inv hZ).2 _ h1
+  rcases zDerivation_iff.mp hdiZ with ⟨s', heq, _⟩ | ⟨s', a, p, d0, heq, _, _, _⟩ |
+    ⟨s', p, d0, heq, _, _, _⟩ | ⟨s', at', p, d0, d1, heq, _, _, _⟩ | ⟨s', r', ds', heq, _, _, _⟩ |
+    ⟨s', p, k, heq, _, _⟩ | ⟨s', p, heq, _, _⟩
+  · exact absurd (by rw [heq]; exact tp_zAtom s') htp
+  · obtain ⟨hpfresh, hΓfresh, hsucc_wff⟩ := hIall s' a p d0 heq
+    exact ZDerivation_zK_replace_zIall_of hZ h1 heq (heq ▸ hred _ h1)
+      hpfresh hΓfresh hsucc_wff hthread hrank
+  · obtain ⟨hd0ant, hSeqsi⟩ := hIneg s' p d0 heq
+    exact ZDerivation_zK_replace_zIneg_of hZ h1 heq hd0ant hSeqs hSeqsi hthread hrank
+  · exact absurd (by rw [heq]; exact tp_zInd s' at' p d0 d1) htp
+  · exact absurd (by rw [heq, zTag_zK]) htag
+  · exact ZDerivation_zK_replace_zAxAll_of hZ h1 heq hSeqs (hAxAll s' p k heq)
+  · -- axNeg (Path C residual): succedent-replacement `Γ→p`, needs Buchholz's ¬-axiom cut. OPEN.
+    sorry
+
 /-- **Residual (K case of Buchholz Thm 3.4 — the cut-elimination core).** The genuine reduct `red` of a
 valid chain `zK s r ds` is again a `ZDerivation`, given that the reduct of every premise is. Dispatches
 (via `red_zK_crit` / `red_zK_rep` / `red_zK_splice`) into the three Buchholz case-5 sub-residuals; each
