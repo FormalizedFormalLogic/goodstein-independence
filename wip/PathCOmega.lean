@@ -170,6 +170,31 @@ theorem iord_iIndReduct_lt_storedBound {s s' at' p d0 d1 k : V} (hk : 0 < k)
       (ocOadd (iotil d0) 1 0) (isNF_omega_pow hd0))
     (idg (zInd s at' p d0 d1))
 
+/-! ## Brick 4 skeleton — the stored-ordinal infinite descent (path-portable)
+
+**Endgame design (clarified lap 102).** Two distinct cut-elimination reductions exist; Path C uses the
+RIGHT one:
+- *Towsner/Zinfty `cutElimStep`* (rank `c+1→c`, ordinal `α↦ω^α`) — used for the META proof (`Zinfty.lean`),
+  iterated `c` times by `cutElim`. The ordinal INCREASES per step; this gives "terminates at cut-free", not
+  a single-step drop. NOT the Path-C reduction.
+- *Buchholz `red`* (Def 3.2, operator-controlled) — a single reduction step that STRICTLY DROPS the
+  (stored) ordinal while preserving the conclusion. This is the repo's finitary `red`, and the right Path-C
+  reduction: iterating it on an ∅→⊥ derivation gives an infinite ε₀-descent (the ∅→⊥ sequent has no
+  cut-free proof, so `red` never terminates), which crux-1's PRWO(ε₀) forbids. The bricks above ARE the
+  per-node drops of this `red`: brick 1 (∀-cut selects premise, ord ≺ stored αR), brick 3 (induction node,
+  ord bounded by the stored limit). The descent skeleton below packages the iteration, exactly mirroring
+  `Crux2Blueprint.iord_red_iterate_descends` but on STORED ordinals (path-portable, no `iord` engine). -/
+
+/-- **Brick 4 skeleton — iterated stored-ordinal descent.** A per-step strict drop of the stored ordinal
+gives an infinite `≺`-descent `n ↦ ord (red^[n] z)`. The Path-C analogue of
+`Crux2Blueprint.iord_red_iterate_descends`, abstracted over the stored-ordinal map `ord` and the
+single-step reduction `step` — so it consumes exactly the per-node drops (bricks 1, 3) and feeds crux-1's
+PRWO(ε₀)/`gentzen_descent_of_inconsistent`. Path-portable: no dependence on the computed `iord` engine. -/
+theorem stored_ord_iterate_descends {step ord : V → V} {z : V}
+    (hdrop : ∀ w, icmp (ord (step w)) (ord w) = 0) (n : ℕ) :
+    icmp (ord (step^[n+1] z)) (ord (step^[n] z)) = 0 := by
+  rw [Function.iterate_succ_apply']; exact hdrop _
+
 /-! ## NEXT BRICKS (Path C, `sorry`-disclosed milestones — PENDING_WORK lap 102)
 
 Brick 1 above pins the ω-∀-node design + its cut invariant on the existing engine. The remaining Path-C
@@ -182,9 +207,12 @@ datatype (each a `wip/` milestone, ported from `ZinftyF.Deriv`/`o`/`cr`):
   the stored limit ordinal provably dominates every finite unfolding's `iord`, uniformly in `k`. Remaining:
   package it as a node + validity (premise-family `ZDerivation`s via `znth_iIndReductSeq_ZDerivation`, the
   conclusion-tracking `F(k)`, the Σ₁ side-condition), mirroring `zAllOmega`/`zAllOmegaValid`.
-- **Brick 4 — `false_of_ZDerivesEmpty` (Path C).** `red` = one `cutElimStep`; the ∅→⊥ sequent has no
-  cut-free proof, so `red` never terminates ⟹ the stored ordinal strictly descends forever ⟹ infinite
-  ε₀-descent ⟹ contradicts PRWO(ε₀) (crux-1). No chain, no `redZKReady`.
+- **Brick 4 — `false_of_ZDerivesEmpty` (Path C).** SKELETON DONE (`stored_ord_iterate_descends`): the
+  iteration of a per-step stored-ordinal drop. `red` = one Buchholz `red` step (NOT Zinfty `cutElimStep` —
+  see the endgame design note above); the ∅→⊥ sequent has no cut-free proof, so `red` never terminates ⟹
+  stored ordinal strictly descends forever ⟹ infinite ε₀-descent ⟹ contradicts PRWO(ε₀) (crux-1). Remaining:
+  define `red` on the datatype (so `hdrop` is discharged by bricks 1/3) + wire to
+  `gentzen_descent_of_inconsistent`. No chain, no `redZKReady`.
 - **Σ₁-definability** of `zAllOmega`/`zAllOmegaValid` (the `⟪…⟫`/`icmp`/`iord` pieces are all already
   `𝚺₁`/`𝚫₁`; this is bookkeeping, deferred until the datatype shape stabilizes). -/
 

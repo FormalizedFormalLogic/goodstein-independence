@@ -20,8 +20,12 @@ Probe 2 lemmas in `wip/InternalZomega.lean` (axiom-clean): `iotil_zK_iIndReduct(
   unfolding's `iord`, uniformly in `k` — the side-condition the computed `iord` can't compute, discharged).
   Remaining: package as node + validity (premise `ZDerivation`s via `znth_iIndReductSeq_ZDerivation`,
   conclusion-tracking `F(k)`, Σ₁ side-condition), mirroring `zAllOmega`/`zAllOmegaValid`.
-- **Brick 4 — `false_of_ZDerivesEmpty` (Path C)**: `red` = one `cutElimStep`; ∅→⊥ has no cut-free proof ⟹
-  stored ordinal descends forever ⟹ infinite ε₀-descent ⟹ contradicts PRWO(ε₀) (crux-1).
+- **Brick 4 — `false_of_ZDerivesEmpty` (Path C)**: SKELETON DONE (`stored_ord_iterate_descends`).
+  **Endgame design clarified:** Path C uses Buchholz's single-step ordinal-DROPPING `red` (Def 3.2), NOT
+  Zinfty's rank-by-rank `cutElimStep` (which raises the ordinal; that's the META proof). Iterating `red`
+  on ∅→⊥ = infinite ε₀-descent ⟹ contradicts PRWO(ε₀) (crux-1), exactly the existing finitary formulation
+  (`Crux2Blueprint.iord_red_iterate_descends`). Bricks 1/3 ARE the per-node drops feeding it. Remaining:
+  `red` on the datatype + wire to `gentzen_descent_of_inconsistent`.
 - **Σ₁-definability** of `zAllOmega`/`zAllOmegaValid` (bookkeeping; `⟪…⟫`/`icmp`/`iord` are `𝚺₁`/`𝚫₁`).
 - **Cut-tree carrier for the induction node** — brick 3's ordinal bound uses the FINITARY `iIndReductSeq`
   carrier (re-imports the K-chain). The ordinal fact is path-portable (cut-trees use the same `#`-natural
