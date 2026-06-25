@@ -1,5 +1,16 @@
 # DEEP REFLECTION — lap 92 · 2026-06-25 · the ω-rule pivot (route C)
 
+> **⭐ ADDENDUM (later same lap — read with `ANALYSIS-2026-06-25-lap92-criticality-wall-is-gone.md`).**
+> Deeper in-kernel check refined this: `ZPhi` ALREADY uses criticality-free `zKValidF`, so the lap-78
+> "substitution wall" (which attacked only the criticality conjunct) is **gone**, and lap-91's O2 is
+> **misattributed** to it. The real residual is the **O1↔O2 freshness/eigensubst coupling** intrinsic to
+> finitary ∀. This yields TWO honest paths — **Path X** (stay finitary: add freshness O1 + prove
+> eigensubst O2 under `zKValidF`, no longer known-blocked, lower risk) and **Path C** (the ω-rule pivot
+> below, which dissolves the coupling permanently). The de-risk spike's sharp first probe = measure Path
+> X's O1 cost; localized → Path X, cascades → Path C. The ω-rule case below stands but is now ONE of two
+> options, not the sole recommendation.
+
+
 > Primary deliverable of the every-9th reflection lap. Build green (1325 jobs); headline
 > `peano_not_proves_goodstein = [propext, sorryAx, choice, Quot.sound]` (0 math axioms),
 > `peano_not_proves_consistency` clean, faithfulness anchor `goodsteinSentence_faithful` clean.

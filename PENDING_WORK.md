@@ -5,23 +5,33 @@
 **Build 🟢 1325. Headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms). No proof code — synthesis lap.**
 Primary deliverable: `REFLECTION-2026-06-25-lap92.md`. STATUS lap-92 box + HANDOFF-lap92 updated.
 
-**The call.** crux-2 `redSound` is the right target; the *finitary eigenvariable* sub-route is not. Route A
-refuted (lap-90); route B (`tpReduce`, laps 90–91) still needs validity-preserving eigenvariable substitution
-(O2/lap-78 wall), no validity-free bypass (lap-90 lines 132–143). **Pivot: arithmetize the infinitary ω-rule
-system** (Buchholz §6 `Z^∞`), as `Zinfty.lean` (meta, axiom-clean) + Bryce–Goré's Coq `Con(PA)` do. A critical
-cut *selects* premise `dₙ` (already deriving `Γ→F(n)`) instead of substituting ⟹ O1+O2+`tpReduce` collapse.
+**The call.** crux-2 `redSound` is the right target; the *finitary eigenvariable* sub-route is the source of
+the laps-78–91 stall. ⭐ **CORRECTION (later this lap, in-kernel — `ANALYSIS-2026-06-25-lap92-criticality-wall-is-gone.md`):**
+`ZPhi` already uses criticality-free **`zKValidF`** (lap-82 re-point is LIVE), and `ZDerivation_zsubst` is green
+⟹ **the lap-78 "substitution wall" is GONE** (CE-1/CE-2 attack ONLY the criticality conjunct, no longer in
+validity). Lap-91's **O2 is mislabeled** — it is NOT the lap-78 wall. The genuine residual is the **O1↔O2
+freshness/eigensubst COUPLING** intrinsic to finitary ∀: eigensubst (O2) needs `aNotEigen` regularity, which
+needs freshness tracking in the Wff predicates (O1). TWO honest paths now:
+- **Path X (stay finitary):** add eigenvariable-freshness to `zIallWff`/`zIndWff` (O1) + prove
+  `ZDerivation_zsubst_eigen` (substitute eigenvariable by closed numeral, `aNotEigen`, preserving `zKValidF`)
+  (O2). Lower architectural risk; NO LONGER known-blocked (lap-78's blocker removed).
+- **Path C (ω-rule pivot):** Buchholz §6 `Z^∞`, as `Zinfty.lean` (meta, axiom-clean) + Bryce–Goré's Coq do.
+  A critical cut *selects* premise `dₙ` instead of substituting ⟹ O1+O2+`tpReduce` all vanish. Higher one-time
+  cost, removes the coupling permanently.
 
-**NEXT — de-risked, three attack paths for the spike `wip/InternalZomega.lean`:**
-1. **Define the ω-rule ∀-node + critical reduct, confirm substitution-free.** `zAllOmega s g` with premise-n
-   `= appPrem g n` (`appPrem`: a Σ₁ application of premise-notation `g` to index `n`, reusing
-   `zK`/`zKseq`/`iIndReductSeq`/`iRepeatSeq`). State the critical-cut reduct on `∀xF` and elaborate-check it is
-   `appPrem g n` with no `substs1`/`zsubst` obligation. RISKIEST ASSUMPTION — probe FIRST. Aristotle-fodder.
-2. **Σ₁-definability of `appPrem`** (the premise selector). If (1)'s notation encoding makes `appPrem`
-   Σ₁-definable cheaply (it is a bounded lookup into a notation code), the ω-rule node is Σ₁-definable and
-   `zDerivation_induction` can be re-cast as `iord`-recursion. Probe second.
-3. **Port the ordinal engine + `Zinfty` cut-elim cases onto the internal ω-rule.** Only after (1)+(2) pass:
-   `iord`/`icmp`/`idg`/`iõ`/ω-tower reused unchanged; each `Zinfty.lean` reduction case (`orInv`/`allInv`/
-   `cutElimStep`) is a worked meta template for the internal version. This is the ~2–3k-line rebuild.
+**NEXT — sharp first probe: measure Path X's O1 cost (cheapest decisive test between X and C).**
+1. **Probe O1 blast radius.** In a `wip/` copy (or behind a flag), strengthen `zIallWff` with an
+   eigenvariable-freshness clause (`a ∉ FV(seqAnt s)`, i.e. `a` not free in the antecedent / not an inner
+   eigenvariable). Measure how far it cascades through `ZPhi` producers/consumers + `zIallWffDef` Δ₁-definability.
+   Localized add → **Path X wins** (drive `ZDerivation_zsubst_eigen` next). Cascades through fixpoint/reduction
+   → **Path C wins** (build `wip/InternalZomega.lean`).
+2. **(Path X)** `ZDerivation_zsubst_eigen`: generalize `ZDerivation_zsubst` from `d ≤ a` to `aNotEigen d`
+   (+ `t` closed numeral). The proof is the same induction; the only changed obligation per inner ∀/Ind node
+   is `e ≠ a`, now from `aNotEigen` instead of `e < d ≤ a`. Preserves `zKValidF` (already proven for `d≤a`).
+3. **(Path C)** `wip/InternalZomega.lean`: ω-rule ∀-node `zAllOmega s g`, premise-n `= appPrem g n` (Σ₁ lookup
+   into notation `g`, reusing `zK`/`zKseq`/`iIndReductSeq`); critical-cut reduct = `appPrem g n`, no `substs1`/
+   `zsubst`. Then Σ₁-definability of `appPrem`, then port the axiom-clean `iord` engine + `Zinfty` cut-elim
+   cases (`orInv`/`allInv`/`cutElimStep` are worked meta templates). ~2–3k-line rebuild.
 
 **STOP:** finitary `tpReduce` conclusion-tracking + new `Zsubst`/`ZDerivation_zsubst` eigenvariable lemmas.
 **KEEP (reusable under route C):** `red_zK_rep/_splice`, `tp_*`, `red_rep_of_tp_isymRep`,
