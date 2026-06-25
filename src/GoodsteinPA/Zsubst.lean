@@ -1294,11 +1294,11 @@ the chain (`zK`) case is the remaining frontier (the `iRK` dispatch). -/
 lemma ZRegular_red_of_not_zK {d : V} (hZ : ZDerivation d) (hreg : ZRegular d)
     (hnK : zTag d ≠ 4) : ZRegular (red d) := by
   unfold ZRegular at hreg ⊢
-  rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, _⟩ | ⟨s, p, d0, rfl, _, _⟩ |
+  rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, hd0, _⟩ | ⟨s, p, d0, rfl, _, _⟩ |
     ⟨s, at', p, d0, d1, rfl, _, _⟩ | ⟨s, r, ds, rfl, _, _, _⟩ |
     ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩
   · rw [red_zAtom]; simpa using hreg
-  · rw [red_zIall]; rw [zReg_zIall] at hreg
+  · rw [red_zIall, zReg_zsubst _ _ _ hd0]; rw [zReg_zIall] at hreg
     exact nonpos_iff_eq_zero.mp (hreg ▸ le_max_right _ _)
   · rw [red_zIneg]; rwa [zReg_zIneg] at hreg
   · -- Ind: reduct is the chain ⟨d1, d0⟩, regular since both premises are

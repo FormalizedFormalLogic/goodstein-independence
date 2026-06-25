@@ -18,6 +18,7 @@ M1a → M1b → M2 → M3. Deliberately NOT imported by `GoodsteinPA.lean`, so i
 `lake build GoodsteinPA`. Literature + lap budgets: `E-CRUX2-ROADMAP-2026-06-24.md`.
 -/
 import GoodsteinPA.InternalZ
+import GoodsteinPA.Zsubst
 import GoodsteinPA.Reduction
 
 namespace GoodsteinPA.InternalZ
@@ -84,56 +85,9 @@ theorem zKValidF_iIndReduct_of_zInd {s at' p d0 d1 : V}
 equations resolve the `redTable` lookups to `red dᵢ` (via `znth_redTable_eq_red`, exactly as `red_zK_crit`
 does for the 5.1 branch), so each branch is stated over the genuine per-premise reduct the IH supplies. -/
 
-/-- **5.2.2 replace recursion equation.** Non-critical chain (`permIdx d < lh ds`) whose least-permissible
-premise `dᵢ` is itself non-critical (`permIdx dᵢ < lh (zKseq dᵢ)`): `red` replaces premise `i` by its
-reduct `red dᵢ`. -/
-lemma red_zK_rep {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
-    (h2 : permIdx (znth ds (permIdx (zK s r ds)))
-        < lh (zKseq (znth ds (permIdx (zK s r ds))))) :
-    red (zK s r ds)
-      = zK (tpReduce (tp (znth ds (permIdx (zK s r ds)))) s 0) r
-          (seqUpdate ds (permIdx (zK s r ds)) (red (znth ds (permIdx (zK s r ds))))) := by
-  have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
-    le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
-  rw [red_zK, iRK]
-  simp only [zKseq_zK]
-  rw [if_pos h1, if_neg (by simp [h2]), iRKr, zKseq_zK, fstIdx_zK, zKrank_zK,
-    znth_redTable_eq_red _ _ hbound]
-
-/-- **5.2.1 splice recursion equation (lap-95 GATED dispatch).** Non-critical chain whose least-permissible
-premise `dᵢ` is itself a CRITICAL CHAIN (`zTag dᵢ = 4` AND `¬ permIdx dᵢ < lh (zKseq dᵢ)`): `red` splices
-`dᵢ`'s two reduct-halves `znth (zKseq (red dᵢ)) {0,1}` in place at `i`, rank rising to `max(rk(A), r)`. -/
-lemma red_zK_splice {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
-    (h2 : ¬ permIdx (znth ds (permIdx (zK s r ds)))
-        < lh (zKseq (znth ds (permIdx (zK s r ds)))))
-    (htag : zTag (znth ds (permIdx (zK s r ds))) = 4) :
-    red (zK s r ds)
-      = zK s
-          (max (irk (seqSucc (fstIdx
-            (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 0)))) r)
-          (seqInsert ds (permIdx (zK s r ds))
-            (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 0)
-            (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 1)) := by
-  have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
-    le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
-  rw [red_zK, iRK]
-  simp only [zKseq_zK]
-  rw [if_pos h1, if_pos ⟨htag, h2⟩, iRKs, zKseq_zK, znth_redTable_eq_red _ _ hbound,
-    fstIdx_zK, zKrank_zK]
-
-/-- **5.2.2 replace for a NON-CHAIN selected premise (lap-95 GATED dispatch).** `zTag dᵢ ≠ 4` ⟹ the gated
-`iRK` routes `dᵢ` to the replace branch `iRKr` regardless of its `permIdx` sentinel (the lap-94 cure). -/
-lemma red_zK_rep_nonchain {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
-    (htag : zTag (znth ds (permIdx (zK s r ds))) ≠ 4) :
-    red (zK s r ds)
-      = zK (tpReduce (tp (znth ds (permIdx (zK s r ds)))) s 0) r
-          (seqUpdate ds (permIdx (zK s r ds)) (red (znth ds (permIdx (zK s r ds))))) := by
-  have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
-    le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
-  rw [red_zK, iRK]
-  simp only [zKseq_zK]
-  rw [if_pos h1, if_neg (by simp [htag]), iRKr, zKseq_zK, fstIdx_zK, zKrank_zK,
-    znth_redTable_eq_red _ _ hbound]
+-- (`red_zK_rep` / `red_zK_splice` / `red_zK_rep_nonchain` now live in `Zsubst.lean` and are imported;
+-- the former local copies here were removed to avoid duplicate declarations once Crux2Blueprint imports
+-- `GoodsteinPA.Zsubst` for the route-B regularity threading.)
 
 /-- **5.1 critical sub-residual.** When the chain is critical, `red = iRcritG d ρ` with `ρ` the recursive
 premise reducts; delegates to `ZDerivation_iRcritG_of` (R2 = the two genuine auxiliaries are derivations
@@ -269,77 +223,92 @@ minimal-permissible premise `dᵢ` is an I-rule/axiom (`tp(dᵢ) ≠ Rep`), Buch
 conclusion to `tp(dᵢ)(Π,0) ≠ Π`, so the repo's `red` is unfaithful and `red d` is not a `ZDerivation`.
 The TRUE target is `redSound` over `ZDerivesEmpty` (the ⊥-orbit, all-`Rep` by Cor 2.1). The 5 trivial
 cases below + `red_zK_rep`/`red_zK_splice` are reusable; the two deep cases are the open frontier. -/
-theorem redSoundGen : ∀ d : V, ZDerivation d → ZDerivation (red d) := by
-  apply zDerivation_induction (P := fun d : V => ZDerivation (red d))
-  · definability
-  · intro C hC d hphi
-    rcases hphi with ⟨s, rfl, hin⟩ | ⟨s, a, p, d0, rfl, hd0, hsucc, hwff⟩ |
-      ⟨s, p, d0, rfl, hd0, hsucc, hwff⟩ |
-      ⟨s, at', p, d0, d1, rfl, hd0, hd1, hwff⟩ | ⟨s, r, ds, rfl, hds, hmem, hvalid⟩ |
-      ⟨s, p, k, rfl, hp, hin⟩ | ⟨s, p, rfl, hp, hin⟩
-    · -- zAtom: red = identity
-      rw [red_zAtom]; exact zDerivation_iff.mpr (Or.inl ⟨s, rfl, hin⟩)
-    · -- zIall: red = d0 (the premise)
-      rw [red_zIall]; exact (hC d0 hd0).1
-    · -- zIneg: red = d0
-      rw [red_zIneg]; exact (hC d0 hd0).1
-    · -- zInd: red = chain reduct; residual supplies validity
-      have hZ : ZDerivation (zInd s at' p d0 d1) := zDerivation_iff.mpr
-        (Or.inr (Or.inr (Or.inr (Or.inl
-          ⟨s, at', p, d0, d1, rfl, (hC d0 hd0).1, (hC d1 hd1).1, hwff⟩))))
-      rw [red_zInd, iRInd_zInd, zDerivation_iff]
-      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
-        ⟨s, irk p, iIndReductSeq d0 d1 1, rfl, iIndReductSeq_seq d0 d1 1,
-          fun i hi => znth_iIndReductSeq_ZDerivation (hC d0 hd0).1 (hC d1 hd1).1 i hi,
-          zKValidF_iIndReduct_of_zInd hZ⟩))))
-    · -- zK: the dispatch; residual supplies validity-preservation
-      exact ZDerivation_red_zK
-        (zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
-          ⟨s, r, ds, rfl, hds, fun i hi => (hC (znth ds i) (hmem i hi)).1, hvalid⟩))))))
-        (fun i hi => (hC (znth ds i) (hmem i hi)).2)
-    · -- zAxAll: red = identity
-      rw [red_zAxAll]; exact zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        (Or.inl ⟨s, p, k, rfl, hp, hin⟩))))))
-    · -- zAxNeg: red = identity
-      rw [red_zAxNeg]; exact zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        (Or.inr ⟨s, p, rfl, hp, hin⟩))))))
+theorem redSoundGen : ∀ d : V, ZDerivation d → ZRegular d → ZDerivation (red d) := by
+  have key : ∀ d : V, ZDerivation d → (ZRegular d → ZDerivation (red d)) := by
+    apply zDerivation_induction (P := fun d : V => ZRegular d → ZDerivation (red d))
+    · definability
+    · intro C hC d hphi hreg
+      rcases hphi with ⟨s, rfl, hin⟩ | ⟨s, a, p, d0, rfl, hd0, hsucc, hwff⟩ |
+        ⟨s, p, d0, rfl, hd0, hsucc, hwff⟩ |
+        ⟨s, at', p, d0, d1, rfl, hd0, hd1, hwff⟩ | ⟨s, r, ds, rfl, hds, hmem, hvalid⟩ |
+        ⟨s, p, k, rfl, hp, hin⟩ | ⟨s, p, rfl, hp, hin⟩
+      · -- zAtom: red = identity
+        rw [red_zAtom]; exact zDerivation_iff.mpr (Or.inl ⟨s, rfl, hin⟩)
+      · -- zIall: red = zsubst d0 a (numeral 0); regularity ⟹ maxEigen d0 < a ⟹ ZDerivation_zsubst.
+        rw [red_zIall]
+        rw [ZRegular, zReg_zIall] at hreg
+        have hlt : maxEigen d0 < a :=
+          ltFlag_eq_zero_iff.mp (nonpos_iff_eq_zero.mp (hreg ▸ le_max_left _ _))
+        exact ZDerivation_zsubst (by simp) d0 (hC d0 hd0).1 hlt
+      · -- zIneg: red = d0
+        rw [red_zIneg]; exact (hC d0 hd0).1
+      · -- zInd: red = chain reduct; residual supplies validity
+        have hZ : ZDerivation (zInd s at' p d0 d1) := zDerivation_iff.mpr
+          (Or.inr (Or.inr (Or.inr (Or.inl
+            ⟨s, at', p, d0, d1, rfl, (hC d0 hd0).1, (hC d1 hd1).1, hwff⟩))))
+        rw [red_zInd, iRInd_zInd, zDerivation_iff]
+        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+          ⟨s, irk p, iIndReductSeq d0 d1 1, rfl, iIndReductSeq_seq d0 d1 1,
+            fun i hi => znth_iIndReductSeq_ZDerivation (hC d0 hd0).1 (hC d1 hd1).1 i hi,
+            zKValidF_iIndReduct_of_zInd hZ⟩))))
+      · -- zK: the dispatch; residual supplies validity-preservation. Premise reducts from the IH,
+        -- fed the premise regularity (`ZRegular_zK_premise`) from the chain's own regularity.
+        exact ZDerivation_red_zK
+          (zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+            ⟨s, r, ds, rfl, hds, fun i hi => (hC (znth ds i) (hmem i hi)).1, hvalid⟩))))))
+          (fun i hi => (hC (znth ds i) (hmem i hi)).2 (ZRegular_zK_premise hds hreg hi))
+      · -- zAxAll: red = identity
+        rw [red_zAxAll]; exact zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+          (Or.inl ⟨s, p, k, rfl, hp, hin⟩))))))
+      · -- zAxNeg: red = identity
+        rw [red_zAxNeg]; exact zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+          (Or.inr ⟨s, p, rfl, hp, hin⟩))))))
+  exact key
+
+/-- **The regular ⊥-orbit predicate.** Route B threads eigenvariable regularity (`ZRegular`, O1) alongside
+`ZDerivesEmpty`: the genuine reduct `red` does the I∀ eigensubst `zsubst d0 a 0`, which is a `ZDerivation`
+only when the node is regular (`maxEigen d0 < a`). The embedding (M2) produces a regular derivation; `red`
+preserves both (`ZRegular_red` for O1, `fstIdx_red` for the conclusion). -/
+def ZDerivesEmptyR (d : V) : Prop := ZDerivesEmpty d ∧ ZRegular d
 
 /-- **M1b — THE nut.** The `red`-reduct of a contradiction derivation is again a genuine `ZDerivation`.
-(Re-pointed `RedSound`, off the dead `iR2`.) Now a direct corollary of the general `redSoundGen`. -/
-theorem redSound : ∀ d : V, ZDerivesEmpty d → ZDerivation (red d) :=
-  fun d h => redSoundGen d h.1
+(Re-pointed `RedSound`, off the dead `iR2`.) A corollary of `redSoundGen`; the regularity comes from the
+regular ⊥-orbit (`ZDerivesEmptyR`). -/
+theorem redSound : ∀ d : V, ZDerivesEmptyR d → ZDerivation (red d) :=
+  fun d h => redSoundGen d h.1.1 h.2
 
 /-- **M1b (descent re-point, one step).** The banked ordinal descent, restated over `red`
 (`iR2` analogue: `iord_descent_iR2_of_ZDerivesEmpty`). -/
-theorem iord_descent_red {d : V} (hd : ZDerivesEmpty d) : icmp (iord (red d)) (iord d) = 0 := sorry
+theorem iord_descent_red {d : V} (hd : ZDerivesEmptyR d) : icmp (iord (red d)) (iord d) = 0 := sorry
 
 /-! ## Connectives — PROVEN from the leaves (this is the "no wiring step" demonstration)
 With `redSound` in hand, `ZDerivesEmpty` is closed under the whole `red`-orbit and the ε₀-descent is
 **unconditional** — mirrors `ZDerivesEmpty_iterate` / `iord_iR2_iterate_descends`, minus the `RedSound`
 hypothesis. Bodies left `sorry` here only because this file is uncompiled; they are pure plumbing copies. -/
 
-/-- **`red` preserves `ZDerivesEmpty`** (mirror of `ZDerivesEmpty_iR2`, now UNCONDITIONAL): a
-contradiction derivation reduces to one — `redSound` gives `ZDerivation (red d)` and `fstIdx_red`
-transfers the empty antecedent + `⊥` succedent. -/
-theorem ZDerivesEmpty_red {d : V} (h : ZDerivesEmpty d) : ZDerivesEmpty (red d) := by
+/-- **`red` preserves `ZDerivesEmptyR`** (mirror of `ZDerivesEmpty_iR2`, now route-B): a regular
+contradiction derivation reduces to one — `redSound` gives `ZDerivation (red d)`, `fstIdx_red` transfers
+the empty antecedent + `⊥` succedent, and `ZRegular_red` (O1) preserves regularity. -/
+theorem ZDerivesEmptyR_red {d : V} (h : ZDerivesEmptyR d) : ZDerivesEmptyR (red d) := by
   have hfst : fstIdx (red d) = fstIdx d :=
-    fstIdx_red h.1 h.2.1 h.2.2 (zTag_Ind_or_K_of_ZDerivesEmpty h)
-  exact ⟨redSound d h, by rw [hfst]; exact h.2.1, by rw [hfst]; exact h.2.2⟩
+    fstIdx_red h.1.1 h.1.2.1 h.1.2.2 (zTag_Ind_or_K_of_ZDerivesEmpty h.1)
+  exact ⟨⟨redSound d h, by rw [hfst]; exact h.1.2.1, by rw [hfst]; exact h.1.2.2⟩,
+    ZRegular_red d h.1.1 h.2⟩
 
-/-- `ZDerivesEmpty` is closed under the `red`-orbit (no hypothesis — `redSound` discharges it). -/
-theorem ZDerivesEmpty_red_iterate {z : V} (hz : ZDerivesEmpty z) :
-    ∀ n : ℕ, ZDerivesEmpty (red^[n] z)
+/-- `ZDerivesEmptyR` is closed under the `red`-orbit (no hypothesis — `redSound`+`ZRegular_red` discharge it). -/
+theorem ZDerivesEmptyR_red_iterate {z : V} (hz : ZDerivesEmptyR z) :
+    ∀ n : ℕ, ZDerivesEmptyR (red^[n] z)
   | 0 => by simpa using hz
   | n + 1 => by
       rw [Function.iterate_succ_apply']
-      exact ZDerivesEmpty_red (ZDerivesEmpty_red_iterate hz n)
+      exact ZDerivesEmptyR_red (ZDerivesEmptyR_red_iterate hz n)
 
-/-- **The infinite ε₀-descent of crux-2, UNCONDITIONAL.** `n ↦ iord (red^[n] z)` strictly `≺`-descends.
-An infinite primitive-recursive ε₀-descent — exactly what `PRWO(ε₀)` forbids. -/
-theorem iord_red_iterate_descends {z : V} (hz : ZDerivesEmpty z) (n : ℕ) :
+/-- **The infinite ε₀-descent of crux-2.** `n ↦ iord (red^[n] z)` strictly `≺`-descends along the regular
+⊥-orbit. An infinite primitive-recursive ε₀-descent — exactly what `PRWO(ε₀)` forbids. -/
+theorem iord_red_iterate_descends {z : V} (hz : ZDerivesEmptyR z) (n : ℕ) :
     icmp (iord (red^[n+1] z)) (iord (red^[n] z)) = 0 := by
   rw [Function.iterate_succ_apply']
-  exact iord_descent_red (ZDerivesEmpty_red_iterate hz n)
+  exact iord_descent_red (ZDerivesEmptyR_red_iterate hz n)
 
 /-! ## M2 — the C0.5 Foundation→Z bridge
 `Z ⊇ 𝗣𝗔` on closed sequents, M-internal (Bryce–Goré `Peano.v` blueprint, B1–B3; the PA-induction axiom
@@ -353,7 +322,7 @@ primitive `Theory.DerivationOf (d s : V) := fstIdx d = s ∧ T.Derivation d` tak
 `𝗣𝗔`-internal theory term `T` is the box's to fix (it is what `¬ 𝗣𝗔.Consistent M` unfolds to internally,
 cf. `Reduction.peano_not_proves_consistency`). -/
 theorem foundation_bot_to_Z_empty {d : V} (hd : (𝗣𝗔 : Theory ℒₒᵣ).Derivation d) (h0 : fstIdx d = ∅) :
-    ∃ z : V, ZDerivesEmpty z := sorry
+    ∃ z : V, ZDerivesEmptyR z := sorry
 
 /-! ## M3 — assemble the Gentzen contradiction
 An inconsistency gives a `ZDerivesEmpty` (M2) whose `red`-orbit is an infinite ε₀-descent (M1b ⟹
@@ -365,6 +334,6 @@ headline — no new top-level wiring. -/
 /-- **M3.** From a `ZDerivesEmpty` witness, the unconditional ε₀-descent contradicts well-foundedness of
 the internal ordinal order — the Gentzen `False`. (Internalize `n ↦ iord (red^[n] z)` as the `Σ₁` graph
 `gentzenDescentφ`; the descent is `iord_red_iterate_descends`.) -/
-theorem false_of_ZDerivesEmpty {z : V} (hz : ZDerivesEmpty z) : False := sorry
+theorem false_of_ZDerivesEmpty {z : V} (hz : ZDerivesEmptyR z) : False := sorry
 
 end GoodsteinPA.InternalZ

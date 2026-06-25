@@ -6556,7 +6556,7 @@ instance zsubst_definable' (Γ) : Γ-[m + 1]-Function₃ (zsubst : V → V → V
 /-- Table step of `red`: dispatch on `zTag d`; tag-4 = the genuine Buchholz Def-3.2 case-5 DISPATCH `iRK`
 (5.1 critical / 5.2.1 splice / 5.2.2 replace), reading per-premise reducts from the table `s`. -/
 noncomputable def iRNextG (d s : V) : V :=
-  if zTag d = 1 then zIallPrem d
+  if zTag d = 1 then zsubst (zIallPrem d) (zIallEig d) (Bootstrapping.Arithmetic.numeral 0)
   else if zTag d = 2 then zInegPrem d
   else if zTag d = 3 then iRInd d
   else if zTag d = 4 then iRK d s
@@ -6564,14 +6564,16 @@ noncomputable def iRNextG (d s : V) : V :=
 
 noncomputable def _root_.LO.FirstOrder.Arithmetic.iRNextGDef : 𝚺₁.Semisentence 3 := .mkSigma
   “y d s. ∃ t, !zTagDef t d ∧
-    ( (t = 1 ∧ !zIallPremDef y d)
+    ( (t = 1 ∧ ∃ d0, !zIallPremDef d0 d ∧ ∃ e, !zIallEigDef e d ∧
+        ∃ z, !(Bootstrapping.Arithmetic.numeralGraph) z 0 ∧ !zsubstDef y d0 e z)
     ∨ (t = 2 ∧ !zInegPremDef y d)
     ∨ (t = 3 ∧ !iRIndDef y d)
     ∨ (t = 4 ∧ !iRKDef y d s)
     ∨ (t ≠ 1 ∧ t ≠ 2 ∧ t ≠ 3 ∧ t ≠ 4 ∧ y = d) )”
 
 instance iRNextG_defined : 𝚺₁-Function₂ (iRNextG : V → V → V) via iRNextGDef := .mk fun v ↦ by
-  simp [iRNextGDef, iRNextG, zTag_defined.iff, zIallPrem_defined.iff,
+  simp [iRNextGDef, iRNextG, zTag_defined.iff, zIallPrem_defined.iff, zIallEig_defined.iff,
+    zsubst_defined.iff, (Bootstrapping.Arithmetic.numeral_defined (V := V)).iff,
     zInegPrem_defined.iff, iRInd_defined.iff, iRK_defined.iff]
   by_cases h1 : zTag (v 1) = 1
   · simp [h1]
@@ -6687,9 +6689,10 @@ lemma iRcritG_congr {d : V} {ρ ρ' : V → V} (hi : ρ (redexI d) = ρ' (redexI
 @[simp] lemma red_zAtom (s : V) : red (zAtom s) = zAtom s := by
   rw [red_eq_iRNextG (by simp [zAtom]), iRNextG]; simp [zTag_zAtom]
 
-@[simp] lemma red_zIall (s a p d0 : V) : red (zIall s a p d0) = d0 := by
+@[simp] lemma red_zIall (s a p d0 : V) :
+    red (zIall s a p d0) = zsubst d0 a (Bootstrapping.Arithmetic.numeral 0) := by
   rw [red_eq_iRNextG (by simp [zIall]), iRNextG, if_pos (zTag_zIall s a p d0)]
-  simp [zIallPrem_zIall]
+  simp [zIallPrem_zIall, zIallEig_zIall]
 
 @[simp] lemma red_zIneg (s p d0 : V) : red (zIneg s p d0) = d0 := by
   rw [red_eq_iRNextG (by simp [zIneg]), iRNextG, if_neg (by simp), if_pos (zTag_zIneg s p d0)]
@@ -6988,22 +6991,21 @@ lemma iR2_zK_eq_iRcrit (s r ds : V) :
     iR2 (zK s r ds) = iRcrit (zK s r ds) (fun n => zAxReduct (iR2 (znth ds n))) := by
   rw [iR2_zK, iRcrit]
 
-/-- **`red` and `iR2` agree off the critical K-case.** `iRNextG` and `iRNext` have identical I-rule/`Ind`
-branches (none reads the table), so on any non-tag-4 code the genuine reduct equals the ordinal-shadow.
-The two differ ONLY at tag 4 (`iRcritG` vs `iCritReduct`), and even there the ordinal is preserved
-(`iord_iRcritG_eq_iRcrit`). -/
-lemma red_eq_iR2_of_tag_ne_four {x : V} (h : zTag x ≠ 4) : red x = iR2 x := by
+/-- **`red` and `iR2` agree off the critical K-case and the I∀ rule.** `iRNextG` and `iRNext` have
+identical I¬/`Ind` branches (none reads the table), so on any non-tag-{1,4} code the genuine reduct equals
+the ordinal-shadow. They differ at tag 4 (`iRcritG` vs `iCritReduct`) and — since the lap-97 route-B
+rewire — at tag 1 (`red` does the I∀ eigensubst `zsubst d0 a 0`, `iR2` keeps `d0`); the ordinal is
+preserved at both (`iord_iRcritG_eq_iRcrit`; `iord_zsubst`). -/
+lemma red_eq_iR2_of_tag_ne_one_four {x : V} (h1 : zTag x ≠ 1) (h : zTag x ≠ 4) : red x = iR2 x := by
   rcases eq_or_ne x 0 with rfl | hpos
   · simp [red, iR2]
   · have hp := pos_iff_ne_zero.mpr hpos
     rw [red_eq_iRNextG hp, iR2_eq_iRNext hp, iRNextG, iRNext]
-    by_cases h1 : zTag x = 1
-    · simp [h1]
-    · by_cases h2 : zTag x = 2
-      · simp [h1, h2]
-      · by_cases h3 : zTag x = 3
-        · simp [h1, h2, h3]
-        · simp [h1, h2, h3, h]
+    by_cases h2 : zTag x = 2
+    · simp [h1, h2]
+    · by_cases h3 : zTag x = 3
+      · simp [h1, h2, h3]
+      · simp [h1, h2, h3, h]
 
 /-- **The redexI premise's `iR2`-reduct satisfies the IH bundle, concretely** (the recursive-`iR2`
 analog of lap-71's `iRedDescent_iR_of_tp_isymR`). A premise `d` with `tp d = R_A` is an I-rule
