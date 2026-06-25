@@ -1159,6 +1159,129 @@ theorem maxEigen_zsubst (a t : V) :
     · simp [zsubst_zAxAll]
     · simp [zsubst_zAxNeg]
 
+/-! ### `iord_zsubst` — the eigensubst preserves the ordinal assignment (route-B I∀ bridge, lap 96)
+
+The route-B faithful `red` must, on the I∀ rule, perform Buchholz's eigenvariable substitution
+`red (zIall) = d0(a/n)` (currently `red (zIall) = d0`, conclusion untracked). For the ε₀-descent to
+survive that rewire, the eigensubst must not change the ordinal: `iord (zsubst d a t) = iord d`. This
+holds because `zsubst` rewrites node *data* (sequents/formulae/terms) but preserves every node's TAG and
+RANK and maps premises recursively (`zsubst_zK` keeps `r`; `zsubst_zIall`/`_zInd` keep the eigenvariable),
+and `iord = iotower (iotil d) (idg d)` reads only tags/ranks/premise-ordinals. Proved by the same
+`zDerivation_induction` + fold-congruence template as `maxEigen_zsubst`. -/
+
+/-- **idg-fold value-congruence**: entrywise-equal `idg` ⟹ equal partial folds (the chain step of
+`idg_zsubst`; the existing `iseqMaxIdgAux_congr` requires `znth`-equality, too strong here since `zsubst`
+changes the premises but preserves their `idg`). Mirror of `iseqMaxEigenAux_congr`. -/
+lemma iseqMaxIdgAux_congr_val {A B : V}
+    (hpt : ∀ i < lh A, idg (znth A i) = idg (znth B i)) :
+    ∀ j ≤ lh A, iseqMaxIdgAux A j = iseqMaxIdgAux B j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · refine Definable.imp (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := iseqMaxIdgAux) (DefinableFunction.const A)
+        (DefinableFunction.var 0))
+      (DefinableFunction₂.comp (F := iseqMaxIdgAux) (DefinableFunction.const B)
+        (DefinableFunction.var 0))
+  case zero => intro _; simp
+  case succ j ih =>
+    intro hj
+    rw [iseqMaxIdgAux_succ, iseqMaxIdgAux_succ, ih (le_trans (by simp) hj),
+      hpt j (lt_of_lt_of_le (by simp) hj)]
+
+/-- **iõ-fold value-congruence**: entrywise-equal `iotil` ⟹ equal partial folds (the chain step of
+`iotil_zsubst`). Mirror of `iseqMaxIdgAux_congr_val`. -/
+lemma iseqNaddIdgAux_congr_val {A B : V}
+    (hpt : ∀ i < lh A, iotil (znth A i) = iotil (znth B i)) :
+    ∀ j ≤ lh A, iseqNaddIdgAux A j = iseqNaddIdgAux B j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · refine Definable.imp (by definability) ?_
+    exact Definable.comp₂
+      (DefinableFunction₂.comp (F := iseqNaddIdgAux) (DefinableFunction.const A)
+        (DefinableFunction.var 0))
+      (DefinableFunction₂.comp (F := iseqNaddIdgAux) (DefinableFunction.const B)
+        (DefinableFunction.var 0))
+  case zero => intro _; simp
+  case succ j ih =>
+    intro hj
+    rw [iseqNaddIdgAux_succ, iseqNaddIdgAux_succ, ih (le_trans (by simp) hj),
+      hpt j (lt_of_lt_of_le (by simp) hj)]
+
+/-- **`idg` is invariant under the eigensubst.** `idg (zsubst d a t) = idg d` for `ZDerivation d`,
+substituting a genuine closed term `t` (`IsUTerm`, needed only for the `zInd` rank `irk p` invariance
+`irk_fvSubst`; on the headline path `t` is a numeral). -/
+theorem idg_zsubst {t : V} (ht : IsUTerm ℒₒᵣ t) (a : V) :
+    ∀ d, ZDerivation d → idg (zsubst d a t) = idg d := by
+  apply zDerivation_induction (P := fun d => idg (zsubst d a t) = idg d)
+  · definability
+  · intro C hC d hphi
+    rcases hphi with ⟨s, rfl, _⟩ | ⟨s, e, p, d0, rfl, hd0, _, _⟩ |
+      ⟨s, p, d0, rfl, hd0, _, _⟩ | ⟨s, at', p, d0, d1, rfl, hd0, hd1, hwff⟩ |
+      ⟨s, r, ds, rfl, hseq, hmem, _⟩ | ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩
+    · simp [zsubst_zAtom]
+    · rw [zsubst_zIall, idg_zIall, idg_zIall, (hC d0 hd0).2]
+    · rw [zsubst_zIneg, idg_zIneg, idg_zIneg, (hC d0 hd0).2]
+    · have hp : IsSemiformula ℒₒᵣ 1 p := by
+        have := hwff.2.2.2.1; rwa [zIndP_zInd] at this
+      rw [show at' = ⟪π₁ at', π₂ at'⟫ from (pair_unpair at').symm, zsubst_zInd,
+        idg_zInd, idg_zInd, (hC d0 hd0).2, (hC d1 hd1).2, irk_fvSubst ht hp.isUFormula]
+    · rw [zsubst_zK, idg_zK _ _ _ (tblMapSeq_seq _ _), idg_zK s r ds hseq]
+      have hlh : lh (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) = lh ds := tblMapSeq_lh _ _
+      have hpt : ∀ i < lh (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds),
+          idg (znth (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) i) = idg (znth ds i) := by
+        intro i hi
+        rw [hlh] at hi
+        rw [znth_tblMapSeq hi, znth_zsubstTable_eq_zsubst a t _ (znth ds i)
+          (le_pred_of_lt (lt_of_le_of_lt (znth_le_self ds i) (ds_lt_zK s r ds)))]
+        exact (hC _ (hmem i hi)).2
+      simp only [iseqMaxIdg]
+      rw [iseqMaxIdgAux_congr_val hpt _ (le_refl _), hlh]
+    · simp [zsubst_zAxAll]
+    · simp [zsubst_zAxNeg]
+
+/-- **`iotil` (pre-ordinal `õ`) is invariant under the eigensubst.** Needs `IsUTerm t` for the axiom
+cases (`õ(Ax) = oAtomLk` reads the principal formula's `irk`, invariant under `fvSubst` of a real term). -/
+theorem iotil_zsubst {t : V} (ht : IsUTerm ℒₒᵣ t) (a : V) :
+    ∀ d, ZDerivation d → iotil (zsubst d a t) = iotil d := by
+  apply zDerivation_induction (P := fun d => iotil (zsubst d a t) = iotil d)
+  · definability
+  · intro C hC d hphi
+    rcases hphi with ⟨s, rfl, _⟩ | ⟨s, e, p, d0, rfl, hd0, _, _⟩ |
+      ⟨s, p, d0, rfl, hd0, _, _⟩ | ⟨s, at', p, d0, d1, rfl, hd0, hd1, _⟩ |
+      ⟨s, r, ds, rfl, hseq, hmem, _⟩ | ⟨s, p, k, rfl, hp, _⟩ | ⟨s, p, rfl, hp, _⟩
+    · simp [zsubst_zAtom]
+    · rw [zsubst_zIall, iotil_zIall, iotil_zIall, (hC d0 hd0).2]
+    · rw [zsubst_zIneg, iotil_zIneg, iotil_zIneg, (hC d0 hd0).2]
+    · rw [show at' = ⟪π₁ at', π₂ at'⟫ from (pair_unpair at').symm, zsubst_zInd,
+        iotil_zInd, iotil_zInd, (hC d0 hd0).2, (hC d1 hd1).2]
+    · rw [zsubst_zK, iotil_zK _ _ _ (tblMapSeq_seq _ _), iotil_zK s r ds hseq]
+      have hlh : lh (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) = lh ds := tblMapSeq_lh _ _
+      have hpt : ∀ i < lh (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds),
+          iotil (znth (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) i) = iotil (znth ds i) := by
+        intro i hi
+        rw [hlh] at hi
+        rw [znth_tblMapSeq hi, znth_zsubstTable_eq_zsubst a t _ (znth ds i)
+          (le_pred_of_lt (lt_of_le_of_lt (znth_le_self ds i) (ds_lt_zK s r ds)))]
+        exact (hC _ (hmem i hi)).2
+      simp only [iseqNaddIdg]
+      rw [iseqNaddIdgAux_congr_val hpt _ (le_refl _), hlh]
+    · -- zAxAll: õ = oAtomLk(^∀ F), invariant since irk(^∀ (fvSubst F)) = irk(^∀ F)
+      have hirk : irk (^∀ (fvSubst ℒₒᵣ a t p) : V) = irk (^∀ p : V) := by
+        rw [irk_all (IsUFormula.fvSubst ht hp), irk_all hp, irk_fvSubst ht hp]
+      rw [zsubst_zAxAll, iotil_zAxAll, iotil_zAxAll, oAtomLk, oAtomLk, hirk]
+    · -- zAxNeg: õ = oAtomLk(¬F), invariant since irk(¬ (fvSubst F)) = irk(¬ F)
+      have hirk : irk (inegF (fvSubst ℒₒᵣ a t p) : V) = irk (inegF p : V) := by
+        rw [irk_inegF (IsUFormula.fvSubst ht hp), irk_inegF hp, irk_fvSubst ht hp]
+      rw [zsubst_zAxNeg, iotil_zAxNeg, iotil_zAxNeg, oAtomLk, oAtomLk, hirk]
+
+/-- **The eigensubst preserves the ordinal `iord`** (route-B I∀ bridge). With this, rewiring
+`red (zIall) = d0(a/n)` keeps the ε₀-descent (`iord (zsubst d0 e n) = iord d0`, so the banked
+`iord_descent_zIall` transfers). -/
+theorem iord_zsubst {d t : V} (ht : IsUTerm ℒₒᵣ t) (hZ : ZDerivation d) (a : V) :
+    iord (zsubst d a t) = iord d := by
+  rw [iord, iord, idg_zsubst ht a d hZ, iotil_zsubst ht a d hZ]
+
 /-! ## `zReg` — hereditary eigenvariable freshness (Path-X O1 foundation)
 
 `zReg d` = **violation count**: `0` iff `d` is *regular*, i.e. every `zIall`/`zInd` node `n` in `d` has
