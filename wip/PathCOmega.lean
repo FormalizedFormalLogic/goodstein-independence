@@ -1178,6 +1178,29 @@ theorem sord_redIndExS_lt {s s' at' p d0 d1 Cnew dR αInd αEx : V}
   rw [redIndExS, sord_zCutOmega]
   exact inc_imax_strict_mono hLnf hAnf hRnf hEnf hLlt hRlt
 
+/-! ### Brick 5h (lap 105) — the canonical `max+1` cut CONSTRUCTOR (the orbit invariant's cut builder)
+
+The red-specific bricks (5c–5g) all instantiate ONE fact: a cut node built over two `ZcOK` premises with
+the canonical stored ordinal `max(sord dL, sord dR) + 1` is itself `ZcOK`, operator-control discharged from
+NF alone. This is the "smart constructor" `zcOK_cutS` — the cut builder the orbit invariant `P = ZcOK ∧ …`
+uses for EVERY cut, side-condition-free (NF auto for leaf premises, brick 5f). `redAllExS`/`redIndExS` are
+its instances; it is also the parent-cut shape the descent lemmas (`sord_red*ExS_lt`) drop against. -/
+
+/-- **Canonical `max+1` cut constructor (axiom-clean).** Over two `ZcOK` premises with NF `sord`s, the cut
+node storing `max(sord dL, sord dR) + 1` is `ZcOK` — operator-control from NF alone, no positivity, no
+externally-supplied control bounds. The reusable cut builder for the Path-C orbit. -/
+theorem zcOK_cutS {s dL dR C : V} (hL : ZcOK dL) (hR : ZcOK dR)
+    (hLnf : isNF (sord dL)) (hRnf : isNF (sord dR)) :
+    ZcOK (zCutOmega s (inc (imax (sord dL) (sord dR))) dL dR C) :=
+  ZcOK.cut hL hR (lt_imax_inc_left hLnf hRnf) (lt_imax_inc_right hLnf hRnf)
+
+/-- **Canonical `max+1` cut constructor for LEAF premises (zero side conditions).** When both premises are
+engine `ZDerivation`s, their `sord` NF is automatic (`isNF_sord_of_ZDerivation`), so the `max+1` cut is
+`ZcOK` with NO hypotheses beyond the premises' derivation-hood. -/
+theorem zcOK_cutS_leaf {s dL dR C : V} (hLZ : ZDerivation dL) (hRZ : ZDerivation dR) :
+    ZcOK (zCutOmega s (inc (imax (sord dL) (sord dR))) dL dR C) :=
+  zcOK_cutS (.leaf hLZ) (.leaf hRZ) (isNF_sord_of_ZDerivation hLZ) (isNF_sord_of_ZDerivation hRZ)
+
 /-! ## NEXT BRICKS (Path C, `sorry`-disclosed milestones — PENDING_WORK lap 102)
 
 Brick 1 above pins the ω-∀-node design + its cut invariant on the existing engine. The remaining Path-C

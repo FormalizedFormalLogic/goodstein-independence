@@ -1,5 +1,31 @@
 # Pending work — open obligations & attack paths
 
+## lap 105 — ✅ the cut-node ORDINAL bookkeeping is CLOSED; ⏭ the structural `hinv` (inversion) is the bottleneck
+**See `HANDOFF-2026-06-25-lap105.md`, STATUS lap-105 box.** Build green 1325; `src/` untouched (headline 0
+math axioms). This lap CLOSED the lap-104 ordinal obstruction (the `imax`-can't-do-operator-control finding):
+the textbook cut ordinal `max(o(dL),o(dR))+1` (`inc (imax …)`, brick 5e) gives operator-control (no
+positivity — handles axiom leaves) AND descent against an arbitrary parent (no additive-principality),
+UNIFORMLY for both ω-nodes (∀ brick 5e, induction 5g) + the canonical cut constructor `zcOK_cutS`/`_leaf`
+(brick 5h) + leaf-NF auto-discharge (5f). All axiom-clean in `wip/PathCOmega.lean`.
+
+**⏭ THE REMAINING BOTTLENECK (next lap, hardest-first) — the STRUCTURAL `hinv`, two genuinely-deep pieces:**
+1. **Conclusion-tracking on the datatype.** `ZcOK` currently tracks only ordinal operator-control, NOT the
+   conclusion sequent each node derives. Inversion ("from a derivation of `Γ, ∀x F` extract one of `Γ, F(t)`")
+   is INEXPRESSIBLE without it. Enrich `ZcOK` (or a paired predicate) so each node carries/constrains its
+   conclusion `fstIdx d`. This is the prerequisite for both inversion AND "∅→⊥ has no cut-free proof" (the
+   fact that forces `red` to run forever).
+2. **General ∀/∧/∨-inversion `redInv*`.** The recursion that RE-PRINCIPALIZES a reduct premise that is NOT
+   literally an ω-node (the lap-104 stall: after the ∀/∃ reduction the new left premise `zsubst d0 a t` is an
+   engine leaf, tag ≤ 6, so `red` can't fire again). `Zinfty.allInvAux`/`andInvAux`/`orInvAux`
+   (`src/Zinfty.lean`) are the axiom-clean META templates to port. Inversion preserves the stored ordinal
+   (`≼`), so it composes with the `max+1` descent.
+
+**⭐ Strategic lead (handoff "Strategic finding"):** the engine `iord d = iotower (iotil d) (idg d)` is ALREADY
+the `ω_{rank}^{õ}` tower, and `iord_descent_cut` (`InternalZ.lean:2596`) already proves a higher-rank cut node
+strictly dominates its lower-rank premises (the rank-mixing the `max+1`/`#` measures cannot do). For the
+COMPOUND-cut commuting reductions, relate the cut node's stored ordinal to `iord` and reuse `iord_descent_cut`
+rather than re-deriving the tower.
+
 ## lap 104 — ⚠ ENDGAME CORRECTION: the naive `red_iterate_descends` `hinv` is unsatisfiable (in-kernel cert)
 **See `HANDOFF-2026-06-25-lap104.md`, STATUS lap-104 box, `NEXT_STEPS.md`.** Build green 1325; `src/`
 untouched (headline 0 math axioms). Lap 103 packaged crux-2 as `red_iterate_descends {P} (hinv) (hdrop) (hz)`
