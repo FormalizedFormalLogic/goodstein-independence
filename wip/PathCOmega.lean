@@ -350,6 +350,49 @@ theorem sord_drop_zCutOmega_right {s α dL dR C : V} (hvalid : zCutOmegaValid α
     icmp (sord dR) (sord (zCutOmega s α dL dR C)) = 0 := by
   rw [sord_zCutOmega]; exact hvalid.2.2.2
 
+/-! ### Brick 2 — the ∀-cut reduction step (the cut-elimination ordinal DROP)
+
+The heart of Path C: the single `red` step on a cut whose cut-formula is `∀x F` and whose `dL` is the
+ω-∀-node. By premise SELECTION (lap 102 (A)) the reduct is a SMALLER cut on `F(t)` between the selected
+witness premise `zsubst d0 a t` (brick 1) and the `∃`-side's witness sub-derivation `dR_t`. Its stored
+ordinal is the ε₀-max of the two reduced premises' stored ordinals — and that max is STRICTLY `≺ α`
+because BOTH premises are (`zAllOmega_cut_descends` gives the left, the cut's operator-control gives the
+right). This is the strict per-step ordinal descent that, iterated on the ⊥-orbit, contradicts PRWO(ε₀).
+
+The max trick is the whole point: in ANY linear order, `max(a,b) ≺ α` whenever `a ≺ α ∧ b ≺ α` — no
+additive-principality of `α` needed (unlike the natural sum `#`), so the reduct ordinal drops below `α`
+for an arbitrary stored `α`. -/
+
+/-- **ε₀-code max** via `icmp` (`icmp a b = 0 ⟺ a ≺ b`): `imax a b = b` if `a ≺ b`, else `a`. -/
+noncomputable def imax (a b : V) : V := if icmp a b = 0 then b else a
+
+/-- **Max of two ordinals each `≺ α` is `≺ α`** — the linear-order fact (no additive-principality of `α`).
+`imax a b ∈ {a, b}`, and both are `≺ α`, so `imax a b ≺ α`. This is what lets the cut-reduct's stored
+ordinal (the max of its premises') drop strictly below the cut's `α` for an ARBITRARY stored `α`. -/
+theorem icmp_imax_lt {a b α : V} (ha : icmp a α = 0) (hb : icmp b α = 0) :
+    icmp (imax a b) α = 0 := by
+  unfold imax; split <;> assumption
+
+/-- **The ∀-cut reduct** (Path C `red`, the `cut`-vs-`∀x F` case). Selects the witness premise `zsubst d0 a
+t` (brick 1) and the `∃`-side witness sub-derivation `dR_t`, rebuilding a smaller cut on `Cnew = F(t)` whose
+stored ordinal is the ε₀-max of the two reduced premises' stored ordinals. NO chain, NO `zKValid` reduct —
+pure premise selection. -/
+noncomputable def redCutAll (s d0 a t Cnew dR_t : V) : V :=
+  zCutOmega s (imax (iord (zsubst d0 a t)) (sord dR_t)) (zsubst d0 a t) dR_t Cnew
+
+/-- **Brick 2 — the ∀-cut reduction STRICTLY drops the stored ordinal.** From the ω-∀-node's validity
+(brick 1, giving `iord (zsubst d0 a t) ≺ α`) and the `∃`-side premise's operator-control bound (`sord dR_t
+≺ α`, supplied by the original cut's `zCutOmegaValid`), the reduct cut's stored ordinal `sord (redCutAll …)
+= imax(…) ≺ α`. This is the genuine per-step cut-elimination ordinal descent — `red` on a `cut`-vs-`∀`
+node, axiom-clean, with NO appeal to chain validity (the Path-X wall). Combined with brick 3 (induction)
+this discharges the ⊥-orbit `hdrop` brick 4 iterates into the infinite ε₀-descent. -/
+theorem sord_redCutAll_lt {s d0 a α t Cnew dR_t : V}
+    (hAll : zAllOmegaValid s d0 a α) (ht : IsSemiterm ℒₒᵣ 0 t)
+    (hR : icmp (sord dR_t) α = 0) :
+    icmp (sord (redCutAll s d0 a t Cnew dR_t)) α = 0 := by
+  rw [redCutAll, sord_zCutOmega]
+  exact icmp_imax_lt (zAllOmega_cut_descends hAll ht) hR
+
 /-! ## Brick 4 skeleton — the stored-ordinal infinite descent (path-portable)
 
 **Endgame design (clarified lap 102).** Two distinct cut-elimination reductions exist; Path C uses the
