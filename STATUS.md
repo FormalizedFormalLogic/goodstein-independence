@@ -21,12 +21,15 @@ criticality crux's one reusable lemma) · 2026-06-25 · `3bf9f93`
 > (lap-78 structural-criticality redesign decision still pending altitude); (2) `PA_delta1Definable` — the
 > actively-movable front, well-scoped, advancing lap-over-lap. **Decision: keep driving the Δ₁ thread** (a
 > genuine axiom-discharge = CORE work; the operator's literal target is the axiom-free headline, and this is
-> the named upstream axiom that's chippable now). **This lap:** landed **`subst_eq_subst_of`** (axiom-clean)
-> — formula-subst congruence (`subst` of an `n`-ary semiformula depends only on the first `n` entries of the
-> substitution vector), via `pi1_structural_induction` mirroring Foundation's `subst_eq_self`; the one
-> reusable lemma the mem_iff criticality crux needs (the `IsSemiformula.sound` route, lap-80 KEY FINDING).
-> NEXT: mem_iff (⇐ criticality via sound+subst_eq_subst_of, ⇒ inversion), then the independent `ch : 𝚫₁.Sem`
-> assembly. See `HANDOFF-2026-06-25-lap81.md`, `PENDING_WORK.md` lap-81 box.
+> the named upstream axiom that's chippable now). **This lap:** PROVED the **criticality crux**
+> `not_criticality_aux` (axiom-clean) — the math heart of the `inductionSchemeUnivDelta1` mem_iff:
+> `0 < ψ.fvSup → ¬(IsSemiformula ℒₒᵣ (ψ.fvSup-1) ⌜fixitr 0 fvSup ▹ ψ⌝ ∧ shift=self)`, which pins
+> `m = fvSup` in the recognizer. Full lap-80 `IsSemiformula.sound` route, now machine-checked, via 6
+> new axiom-clean helpers: `subst_eq_subst_of` (formula-subst congruence), `subst_fvarSeq_quote`,
+> `fvar?_substs_lt`, `freeVariables_eq_empty_of_shift`, `subst_fvarSeq_le`/`subst_fvarSeq_succ` (the
+> last two dodge the `V=ℕ` order diamond by bundling bounds at generic V). NEXT: assemble mem_iff
+> (⇐ uses `not_criticality_aux`; ⇒ inversion) + the independent `ch : 𝚫₁.Semisentence 1`. See
+> `HANDOFF-2026-06-25-lap81.md`, `PENDING_WORK.md` lap-81 box.
 
 > **⭐⭐⭐ Lap-78 FRESH-MIND REVIEW (historical — see lap-81 box above).** Re-verified kernel (real `#print axioms`,
 > build green **1324**): headline `peano_not_proves_goodstein = [propext, sorryAx, choice, Quot.sound]`

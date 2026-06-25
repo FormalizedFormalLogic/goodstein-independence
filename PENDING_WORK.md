@@ -1,38 +1,42 @@
 # Pending work — open obligations & attack paths
 
-## ⭐ Lap 81 (FRESH-MIND REVIEW) — `subst_eq_subst_of` landed; mem_iff criticality is next
+## ⭐ Lap 81 (FRESH-MIND REVIEW) — criticality crux `not_criticality_aux` PROVED (axiom-clean)
 
-**Build 🟢 green. Direction KEPT (Δ₁ thread is the actively-movable front; crux 2 stays
-DEEP-REFLECTION-blocked).** This lap discharged the lone reusable prerequisite the mem_iff
-criticality crux needs.
+**Build 🟢 green (1324 jobs). Direction KEPT (Δ₁ thread is the actively-movable front; crux 2 stays
+DEEP-REFLECTION-blocked).** This lap discharged the criticality crux — the math heart of the
+`inductionSchemeUnivDelta1` mem_iff.
 
-DONE (axiom-clean, `PADelta1.lean` §Recognizer):
-- **`subst_eq_subst_of`** — formula substitution congruence: `IsSemiformula ℒₒᵣ n p →
-  IsUTermVec ℒₒᵣ (len w) w → IsUTermVec ℒₒᵣ (len w') w' → n ≤ len w → n ≤ len w' →
-  (∀ i < n, w.[i] = w'.[i]) → subst ℒₒᵣ w p = subst ℒₒᵣ w' p`. Via `pi1_structural_induction`
-  mirroring `subst_eq_self`; ∀/∃ cases thread `IsUTermVec`+`n≤len` through `qVec` (entry `i+1`
-  reads `termBShift (w.[i])`, needs `i < len w`). Helper **`isUTermVec_qVec`** (qVec preserves
-  IsUTermVec, via `IsUTermVec.isSemitermVec` + `IsSemitermVec.qVec` — dodges needing a
-  nonexistent `IsUTerm.termBShift`).
+DONE (all axiom-clean `[propext, choice, Quot.sound]`, `PADelta1.lean` §Recognizer):
+- **`subst_eq_subst_of`** + `isUTermVec_qVec` — formula substitution congruence (`subst` of an
+  `n`-ary semiformula depends only on the first `n` entries); via `pi1_structural_induction`.
+- **`subst_fvarSeq_quote`** — `subst (fvarSeq k) ⌜F⌝ = ⌜F ⇜ (&·)⌝` (mirrors `subst_fvarSeq_fixitr`).
+- **`fvar?_substs_lt`** — fv-free `k`-ary `F` ⟹ `(F ⇜ (&·)).FVar? x → x < k` (via `Semiformula.fvar?_rew`).
+- **`freeVariables_eq_empty_of_shift`** — shift-fixpoint ⟹ fv-free (strong-induction descent on free vars).
+- **`subst_fvarSeq_le` / `subst_fvarSeq_succ`** — `subst (fvarSeq m) F = subst (fvarSeq k) F` for
+  `k ≤ m` / `m = k+1`; stated at GENERIC V to dodge the `V = ℕ` order diamond. ⚠️ KEY GOTCHA: V's `+`
+  on `ℕ` IS native, but its `≤`/`-` are NOT (`instLE_foundation ≠ instLENat`); bundle order bounds at
+  generic V (where `le_self_add` picks V's order), invoke at `V := ℕ` (then `+` is native, omega-friendly).
+- **⭐ `not_criticality_aux`** — THE crux: `0 < ψ.fvSup → ¬(IsSemiformula ℒₒᵣ (ψ.fvSup-1)
+  ⌜fixitr 0 ψ.fvSup ▹ ψ⌝ ∧ shift ⌜..⌝ = ⌜..⌝)`. Pins `m = fvSup` in the recognizer. Route:
+  `IsSemiformula.sound` → F (m-1)-ary, ⌜F⌝=body; F fv-free; `subst (fvarSeq m)` both sides
+  (`subst_fvarSeq_fixitr` rhs, `subst_fvarSeq_succ`+`subst_fvarSeq_quote` lhs) ⟹ `ψ = F⇜(&·)`,
+  free vars <m-1, contradicting `ψ.FVar?(m-1)`. ⚠️ `Semiformula.quote_inj_iff` needs `(V:=ℕ)(L:=ℒₒᵣ)`
+  explicit (ambiguous with `Bootstrapping.Semiformula.quote_inj_iff`); `natCast_nat` normalizes the
+  `(k:V)` cast; `rw [← heq] at hfv` rewrites ψ in the INDEX too — use `apply ... ; rw [heq]` instead.
 
 REMAINING (priority order):
-1. **mem_iff (⇐) CRITICALITY crux** — the §KEY-FINDING route (lap-80, now unblocked by
-   `subst_eq_subst_of`): for canonical witness m=`(succInd ψ).fvSup`>0, body=`⌜fixitr 0 m ▹ succInd ψ⌝`,
-   show `¬ IsSemiformula ℒₒᵣ (m-1) body`. Suppose it held; `IsSemiformula.sound`
-   (`Formula/Coding.lean:323`) ⟹ ∃ F:(m-1)-ary SyntacticSemiformula, `⌜F⌝ = body` (at V=ℕ). Apply
-   `subst ℒₒᵣ (fvarSeq m)` to both: RHS = `⌜succInd ψ⌝` (`subst_fvarSeq_fixitr`, banked). LHS:
-   F is (m-1)-ary so `subst (fvarSeq m) ⌜F⌝ = subst (fvarSeq (m-1)) ⌜F⌝` by **`subst_eq_subst_of`**
-   (n=m-1, w=fvarSeq m len m, w'=fvarSeq(m-1) len m-1, agree on 0..m-2) `= ⌜F ⇜ (&·)⌝`
-   (`typed_quote_substs` + `fvarSeqVec_val`). So `succInd ψ = F ⇜ (&·)` syntactically; F (m-1)-ary
-   ⟹ `(succInd ψ).fvSup ≤ m-1`, contradicting `fvSup = m > 0` (`fvar?_fvSup_pred`, banked).
-   GOTCHAS: need `IsUTermVec ℒₒᵣ (len (fvarSeq m)) (fvarSeq m)` (fvarSeq entries are `^&i`, all
-   UTerms — should be `simp`/from `fvarSeq` defn `IsSemitermVec`) + `len (fvarSeq m) = m`.
-2. **mem_iff (⇒)** — decode p,m,body; from `subst (fvarSeq m) body = ⌜succInd ψ⌝` + body fv-free
-   m-ary + criticality ⟹ body=`⌜fixitr 0 m ▹ succInd ψ⌝`, m=fvSup. Same `sound`+`subst_eq_subst_of`.
+1. **mem_iff (⇐)** — `∃ p₀, χ = univCl (succInd p₀)` ⟹ `IsInductionAxiomCode (⌜χ⌝:ℕ)`. Canonical
+   witness p=⌜p₀⌝, m=`(succInd p₀).fvSup`, body=⌜fixitr 0 m ▹ succInd p₀⌝, ψ:=succInd p₀. Conjuncts:
+   `⌜χ⌝=qqAllItr body m` (`quote_univCl_eq_qqAllItr`); body fv-free m-ary (`quote_isSemiformula` +
+   `shift_quote_fixitr`); criticality m=0∨¬(..) — m>0 case is **`not_criticality_aux`** (DONE);
+   subst-eq `subst (fvarSeq m) body = succIndCodeRaw ⌜p₀⌝` via `subst_fvarSeq_fixitr` + `succIndCodeRaw_quote`.
+2. **mem_iff (⇒)** — `IsInductionAxiomCode (⌜χ⌝:ℕ)` ⟹ `∃ p₀, χ = univCl (succInd p₀)`. Decode p,m,body
+   (`IsSemiformula.sound` on p ⟹ p₀; succIndCodeRaw-inversion); from subst-eq + fv-free + criticality
+   ⟹ body=⌜fixitr 0 m ▹ succInd p₀⌝, m=fvSup, χ=univCl(succInd p₀). Reuses the same machinery.
 3. **`ch : 𝚫₁.Semisentence 1`** + `Defined IsInductionAxiomCode ch` — INDEPENDENT of (1)/(2), pure
    assembly via `HierarchySymbol.Semiformula` combinators (`bexs`/`ball`/`⋏` + `ProperOn.*`/`val_*`)
-   over the component graphs. Then `isDelta1 := ProvablyProperOn.ofProperOn`. **Tractable; no deep
-   reflection.** Can be done before/parallel to (1)/(2).
+   over the component graphs (`succIndCodeRawGraph`, `qqAllItrGraph`, `fvarSeqGraph`, `substsGraph`,
+   `isSemiformula`). Then `isDelta1 := ProvablyProperOn.ofProperOn`. **Tractable; no deep reflection.**
 4. Assemble `inductionSchemeUnivDelta1 := { ch, mem_iff, isDelta1 }`; rewire `Reduction.lean`
    (`peano_not_proves_consistency := @consistent_unprovable 𝗣𝗔 paDelta1 _ _`) ONLY when sorry-free
    (anti-fraud). Headline ALSO needs crux 2 — still DEEP-REFLECTION-blocked.
