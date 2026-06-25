@@ -249,6 +249,98 @@ instance termFreeToBoundVec.definable' : Γ-[i + 1]-Function₃ termFreeToBoundV
 
 end
 
+/-! ### Formula-level `freeToBound` (lap 79) -/
+
+namespace FreeToBoundF
+
+variable (L)
+
+noncomputable def blueprint : UformulaRec1.Blueprint where
+  rel    := .mkSigma “y param k R v. ∃ v', !(termFreeToBoundVecGraph L) v' k param v ∧ !qqRelDef y k R v'”
+  nrel   := .mkSigma “y param k R v. ∃ v', !(termFreeToBoundVecGraph L) v' k param v ∧ !qqNRelDef y k R v'”
+  verum  := .mkSigma “y param. !qqVerumDef y”
+  falsum := .mkSigma “y param. !qqFalsumDef y”
+  and    := .mkSigma “y param p₁ p₂ y₁ y₂. !qqAndDef y y₁ y₂”
+  or     := .mkSigma “y param p₁ p₂ y₁ y₂. !qqOrDef y y₁ y₂”
+  all    := .mkSigma “y param p₁ y₁. !qqAllDef y y₁”
+  exs    := .mkSigma “y param p₁ y₁. !qqExsDef y y₁”
+  allChanges := .mkSigma “param' param. param' = param + 1”
+  exsChanges := .mkSigma “param' param. param' = param + 1”
+
+noncomputable def construction : UformulaRec1.Construction V (blueprint L) where
+  rel (param)  := fun k R v ↦ ^rel k R (termFreeToBoundVec L k param v)
+  nrel (param) := fun k R v ↦ ^nrel k R (termFreeToBoundVec L k param v)
+  verum _      := ^⊤
+  falsum _     := ^⊥
+  and _        := fun _ _ y₁ y₂ ↦ y₁ ^⋏ y₂
+  or _         := fun _ _ y₁ y₂ ↦ y₁ ^⋎ y₂
+  all _        := fun _ y₁ ↦ ^∀ y₁
+  exs _        := fun _ y₁ ↦ ^∃ y₁
+  allChanges (param) := param + 1
+  exsChanges (param) := param + 1
+  rel_defined := .mk fun v ↦ by simp [blueprint]
+  nrel_defined := .mk fun v ↦ by simp [blueprint]
+  verum_defined := .mk fun v ↦ by simp [blueprint]
+  falsum_defined := .mk fun v ↦ by simp [blueprint]
+  and_defined := .mk fun v ↦ by simp [blueprint]
+  or_defined := .mk fun v ↦ by simp [blueprint]
+  all_defined := .mk fun v ↦ by simp [blueprint]
+  exs_defined := .mk fun v ↦ by simp [blueprint]
+  allChanges_defined := .mk fun v ↦ by simp [blueprint]
+  exChanges_defined := .mk fun v ↦ by simp [blueprint]
+
+end FreeToBoundF
+
+section
+
+open FreeToBoundF
+
+variable (L)
+
+/-- Internal formula free→bound: `freeToBound d p` sends each free var `^&x` at binder-depth `δ`
+to the bound var `^#(x + d + δ)`, incrementing the depth under each `^∀`/`^∃`. Mirrors
+`Rew.fixitr 0 m ▹ ·` (with `d` the running offset, `0` at the top level). -/
+noncomputable def freeToBound (d p : V) : V := (construction L).result L d p
+
+noncomputable def freeToBoundGraph : 𝚺₁.Semisentence 3 := (blueprint L).result L
+
+variable {L}
+
+instance freeToBound.defined : 𝚺₁-Function₂[V] freeToBound L via freeToBoundGraph L :=
+  (construction L).result_defined
+
+instance freeToBound.definable : 𝚺₁-Function₂[V] freeToBound L := freeToBound.defined.to_definable
+
+instance freeToBound.definable' : Γ-[m + 1]-Function₂[V] freeToBound L := freeToBound.definable.of_sigmaOne
+
+@[simp] lemma freeToBound_rel {k R v : V} (hR : L.IsRel k R) (hv : IsUTermVec L k v) :
+    freeToBound L d (^relk R v) = ^rel k R (termFreeToBoundVec L k d v) := by
+  simp [freeToBound, hR, hv, construction]
+
+@[simp] lemma freeToBound_nrel {k R v : V} (hR : L.IsRel k R) (hv : IsUTermVec L k v) :
+    freeToBound L d (^nrelk R v) = ^nrel k R (termFreeToBoundVec L k d v) := by
+  simp [freeToBound, hR, hv, construction]
+
+@[simp] lemma freeToBound_verum (d : V) : freeToBound L d ^⊤ = ^⊤ := by simp [freeToBound, construction]
+
+@[simp] lemma freeToBound_falsum (d : V) : freeToBound L d ^⊥ = ^⊥ := by simp [freeToBound, construction]
+
+@[simp] lemma freeToBound_and {p q : V} (hp : IsUFormula L p) (hq : IsUFormula L q) :
+    freeToBound L d (p ^⋏ q) = freeToBound L d p ^⋏ freeToBound L d q := by
+  simp [freeToBound, hp, hq, construction]
+
+@[simp] lemma freeToBound_or {p q : V} (hp : IsUFormula L p) (hq : IsUFormula L q) :
+    freeToBound L d (p ^⋎ q) = freeToBound L d p ^⋎ freeToBound L d q := by
+  simp [freeToBound, hp, hq, construction]
+
+@[simp] lemma freeToBound_all {p : V} (hp : IsUFormula L p) :
+    freeToBound L d (^∀ p) = ^∀ (freeToBound L (d + 1) p) := by simp [freeToBound, hp, construction]
+
+@[simp] lemma freeToBound_exs {p : V} (hp : IsUFormula L p) :
+    freeToBound L d (^∃ p) = ^∃ (freeToBound L (d + 1) p) := by simp [freeToBound, hp, construction]
+
+end
+
 end FreeToBound
 
 /-- **`𝗣𝗔⁻` is Δ₁-definable** (axiom-clean). `𝗣𝗔⁻` is a finite theory (`PeanoMinus.finite`:
