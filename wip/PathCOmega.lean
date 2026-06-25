@@ -695,6 +695,114 @@ theorem naive_dispatch_P_not_red_closed {s s' d0 a αAll α C sE CE tE dE : V}
   rw [hfire, redAllEx, zCutL_zCutOmega, zTag_zsubst hd0] at hL
   exact zTag_ne_seven_of_ZDerivation hd0 hL
 
+/-! ### Brick 5 (lap 104→) — the Path-C derivation predicate `ZcOK` as a clean inductive `Prop`
+
+The corrected `hinv` needs a genuine derivation predicate to recurse over (inversion). Rather than pay the
+full Σ₁-`Fixpoint` arithmetization first (heavy — `zconstruction` template), we PROTOTYPE the cut-elimination
+math on a clean Lean `inductive ZcOK : V → Prop`: the ω-∀ constructor is INFINITARY (a premise family
+indexed by closed terms `t`), strictly positive (`ZcOK (zsubst d0 a t)` — no `ZcOK` under the index), so
+Lean accepts it (W-type style). `leaf` wraps an engine `ZDerivation` (the embedding's image / the cut-free
+sub-derivations). Each node carries Buchholz operator-control (premise `sord ≺` node's stored `α`). This
+develops + machine-checks the inversion/`red`/`hinv` MATH; the Σ₁ port (so the descent is V-internal for
+PRWO) is the deferred final brick. -/
+inductive ZcOK : V → Prop where
+  | leaf {d : V} (hd : ZDerivation d) : ZcOK d
+  | omegaAll {s d0 a α : V}
+      (hprem : ∀ t, IsSemiterm ℒₒᵣ 0 t → ZcOK (zsubst d0 a t))
+      (hdesc : ∀ t, IsSemiterm ℒₒᵣ 0 t → icmp (iord (zsubst d0 a t)) α = 0) :
+      ZcOK (zAllOmega s d0 a α)
+  | ex {s α C t d : V} (hprem : ZcOK d) (hdesc : icmp (sord d) α = 0) :
+      ZcOK (zExOmega s α C t d)
+  | cut {s α dL dR C : V} (hL : ZcOK dL) (hR : ZcOK dR)
+      (hLdesc : icmp (sord dL) α = 0) (hRdesc : icmp (sord dR) α = 0) :
+      ZcOK (zCutOmega s α dL dR C)
+
+/-- A `ZDerivation` never carries the cut tag `9` (engine tags are `0..6`; cf. `zTag_ne_seven`). -/
+theorem zTag_ne_nine_of_ZDerivation {d : V} (hd : ZDerivation d) : zTag d ≠ 9 := by
+  rcases zDerivation_iff.mp hd with ⟨s, rfl, _⟩ | ⟨s, e, p, d0, rfl, _, _, _⟩ |
+    ⟨s, p, d0, rfl, _, _, _⟩ | ⟨s, at', p, d0, d1, rfl, _, _, _⟩ |
+    ⟨s, r, ds, rfl, _, _, _⟩ | ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩ <;> simp
+
+/-- A `ZDerivation` never carries the ∃-node tag `10`. -/
+theorem zTag_ne_ten_of_ZDerivation {d : V} (hd : ZDerivation d) : zTag d ≠ 10 := by
+  rcases zDerivation_iff.mp hd with ⟨s, rfl, _⟩ | ⟨s, e, p, d0, rfl, _, _, _⟩ |
+    ⟨s, p, d0, rfl, _, _, _⟩ | ⟨s, at', p, d0, d1, rfl, _, _, _⟩ |
+    ⟨s, r, ds, rfl, _, _, _⟩ | ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩ <;> simp
+
+/-- **One-step `ZcOK` rule predicate** — the disjunction characterizing each node, the analogue of the
+engine's `ZPhi`. `C` is the recursion set (the premise sub-derivations). -/
+def ZcPhi (C : V → Prop) (d : V) : Prop :=
+  ZDerivation d ∨
+  (∃ s d0 a α, d = zAllOmega s d0 a α ∧ (∀ t, IsSemiterm ℒₒᵣ 0 t → C (zsubst d0 a t)) ∧
+      (∀ t, IsSemiterm ℒₒᵣ 0 t → icmp (iord (zsubst d0 a t)) α = 0)) ∨
+  (∃ s α C0 t d0, d = zExOmega s α C0 t d0 ∧ C d0 ∧ icmp (sord d0) α = 0) ∨
+  (∃ s α dL dR C0, d = zCutOmega s α dL dR C0 ∧ C dL ∧ C dR ∧
+      icmp (sord dL) α = 0 ∧ icmp (sord dR) α = 0)
+
+/-- **Recursion equation for `ZcOK`** (the inductive-over-`V` analogue of `zDerivation_iff`). Proved by
+`cases` on a FREE variable (which Lean CAN dependent-eliminate, unlike `cases` on a specific node), this
+is the clean inversion vehicle: all node-inversion lemmas `rcases zcOK_iff.mp h` on the `∨`, then
+discriminate by `zTag`. -/
+theorem zcOK_iff {d : V} : ZcOK d ↔ ZcPhi ZcOK d := by
+  constructor
+  · intro h
+    cases h with
+    | leaf hd => exact Or.inl hd
+    | omegaAll hprem hdesc => exact Or.inr (Or.inl ⟨_, _, _, _, rfl, hprem, hdesc⟩)
+    | ex hprem hdesc => exact Or.inr (Or.inr (Or.inl ⟨_, _, _, _, _, rfl, hprem, hdesc⟩))
+    | cut hL hR hLd hRd => exact Or.inr (Or.inr (Or.inr ⟨_, _, _, _, _, rfl, hL, hR, hLd, hRd⟩))
+  · intro h
+    rcases h with hd | ⟨s, d0, a, α, rfl, hprem, hdesc⟩ | ⟨s, α, C0, t, d0, rfl, hprem, hdesc⟩ |
+      ⟨s, α, dL, dR, C0, rfl, hL, hR, hLd, hRd⟩
+    · exact .leaf hd
+    · exact .omegaAll hprem hdesc
+    · exact .ex hprem hdesc
+    · exact .cut hL hR hLd hRd
+
+/-- **Cut-node inversion.** A `ZcOK` cut node decomposes into its two premise derivations + the
+operator-control bounds. The leaf/ω-∀/∃ disjuncts of `zcOK_iff` are ruled out by `zTag` (9 vs engine,
+7, 10). The template for all node-inversion lemmas. -/
+theorem zcOK_cut_inv {s α dL dR C : V} (h : ZcOK (zCutOmega s α dL dR C)) :
+    ZcOK dL ∧ ZcOK dR ∧ icmp (sord dL) α = 0 ∧ icmp (sord dR) α = 0 := by
+  rcases zcOK_iff.mp h with hd | ⟨s', d0, a, α', heq, _, _⟩ | ⟨s', α', C0, t, d0, heq, _, _⟩ |
+    ⟨s', α', dL', dR', C0, heq, hL, hR, hLd, hRd⟩
+  · exact absurd (zTag_zCutOmega s α dL dR C) (zTag_ne_nine_of_ZDerivation hd)
+  · exact absurd (congrArg zTag heq) (by simp)
+  · exact absurd (congrArg zTag heq) (by simp)
+  · have hdL : dL = dL' := by have := congrArg zCutL heq; simpa using this
+    have hdR : dR = dR' := by have := congrArg zCutR heq; simpa using this
+    have hα : α = α' := by have := congrArg sord heq; simpa using this
+    subst hdL hdR hα
+    exact ⟨hL, hR, hLd, hRd⟩
+
+/-- **ω-∀-node inversion.** A `ZcOK` ω-∀-node decomposes into its uniformly-valid premise family + the
+operator-control bounds — exactly the data the ∀-inversion `redInv∀` reads at the principal case. -/
+theorem zcOK_omegaAll_inv {s d0 a α : V} (h : ZcOK (zAllOmega s d0 a α)) :
+    (∀ t, IsSemiterm ℒₒᵣ 0 t → ZcOK (zsubst d0 a t)) ∧
+    (∀ t, IsSemiterm ℒₒᵣ 0 t → icmp (iord (zsubst d0 a t)) α = 0) := by
+  rcases zcOK_iff.mp h with hd | ⟨s', d0', a', α', heq, hprem, hdesc⟩ |
+    ⟨s', α', C0, t, d0', heq, _, _⟩ | ⟨s', α', dL', dR', C0, heq, _, _, _, _⟩
+  · exact absurd (zTag_zAllOmega s d0 a α) (zTag_ne_seven_of_ZDerivation hd)
+  · have hd0 : d0 = d0' := by have := congrArg zAllD0 heq; simpa using this
+    have ha : a = a' := by have := congrArg zAllEig heq; simpa using this
+    have hα : α = α' := by have := congrArg sord heq; simpa using this
+    subst hd0 ha hα; exact ⟨hprem, hdesc⟩
+  · exact absurd (congrArg zTag heq) (by simp)
+  · exact absurd (congrArg zTag heq) (by simp)
+
+/-- **∃-node inversion.** A `ZcOK` ∃-node decomposes into its witness premise + the operator-control
+bound. (With `zExTerm`/`zExPrem` the witness/premise are read off the node, lap 103.) -/
+theorem zcOK_ex_inv {s α C t d : V} (h : ZcOK (zExOmega s α C t d)) :
+    ZcOK d ∧ icmp (sord d) α = 0 := by
+  rcases zcOK_iff.mp h with hd | ⟨s', d0', a', α', heq, _, _⟩ |
+    ⟨s', α', C0, t', d0, heq, hprem, hdesc⟩ | ⟨s', α', dL', dR', C0, heq, _, _, _, _⟩
+  · exact absurd (zTag_zExOmega s α C t d) (zTag_ne_ten_of_ZDerivation hd)
+  · exact absurd (congrArg zTag heq) (by simp)
+  · have hd0 : d = d0 := by have := congrArg zExPrem heq; simpa using this
+    have hα : α = α' := by have := congrArg sord heq; simpa using this
+    subst hd0 hα; exact ⟨hprem, hdesc⟩
+  · exact absurd (congrArg zTag heq) (by simp)
+
 /-! ## NEXT BRICKS (Path C, `sorry`-disclosed milestones — PENDING_WORK lap 102)
 
 Brick 1 above pins the ω-∀-node design + its cut invariant on the existing engine. The remaining Path-C
@@ -717,4 +825,5 @@ datatype (each a `wip/` milestone, ported from `ZinftyF.Deriv`/`o`/`cr`):
   `𝚺₁`/`𝚫₁`; this is bookkeeping, deferred until the datatype shape stabilizes). -/
 
 end GoodsteinPA.InternalZ.PathC
+
 

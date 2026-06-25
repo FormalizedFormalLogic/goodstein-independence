@@ -26,6 +26,17 @@ irreducible deep content of crux-2. The lap-103 bricks (nodes/`sord`/per-step dr
 — NOT more `hdrop` cut-shape cases (easy leaves on an unsatisfiable `hinv`).** See `NEXT_STEPS.md` PRIORITY 1
 (updated lap 104).
 
+**Brick 5 STARTED this lap (axiom-clean, `wip/PathCOmega.lean`).** The datatype as a clean Lean
+`inductive ZcOK : V → Prop` (constructors: `leaf` wrapping an engine `ZDerivation`, `omegaAll` [INFINITARY
+premise family, strictly positive], `ex`, `cut`; each carries Buchholz operator-control `sord ≺ α`). The
+inductive-over-`V` `cases` dependent-elim wall is handled exactly as the engine does: `zcOK_iff` (the
+`ZcPhi`-disjunction recursion equation, proved by `cases` on a FREE variable) is the inversion vehicle.
+Landed `zcOK_cut_inv` / `zcOK_omegaAll_inv` / `zcOK_ex_inv` (node inversions, `zTag`-discriminated) +
+`zTag_ne_nine/ten_of_ZDerivation`. This is the prototype on which inversion (`redInv∀`/…) + `red` + `hinv`
+get developed; the Σ₁-`Fixpoint` port (so the descent is V-internal for PRWO) is the deferred final brick.
+**NEXT: the ∀-inversion operator `redInv∀ : V → V → V` + `ZcOK d → ZcOK (redInv∀ d t)` (the recursion that
+re-principalizes; principal ω-∀ case = `zcOK_omegaAll_inv`).**
+
 ## lap 102 — Probe 2 settled the fork → Path C (stored ordinals); brick 1 landed
 **See `HANDOFF-2026-06-25-lap102.md`, `NEXT_STEPS.md` PRIORITY 1.** The crux-2 sub-route fork is resolved
 in favour of **Path C** (ω-rule, Buchholz operator-controlled derivations with STORED ordinals). Path X
