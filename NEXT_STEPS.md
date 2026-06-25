@@ -52,21 +52,24 @@ the full Towsner §19 cut-elimination). The spike arithmetizes what `Zinfty` doe
 - `zIall_realizes_omega` — capstone: a regular `zIall` realizes the full ω-node (premise family valid +
   conclusion-tracked + uniform ordinal), so the existing I∀ embedding is reused wholesale.
 
-**NET CALL: the evidence favours the Path-C pivot — EVERY load-bearing sub-question is now answered
-in-kernel** (premise validity motive-free, conclusion computed, ordinal finite, node realizable, per-step
-∀-cut descent), all on the existing engine, all axiom-clean. These are exactly what the finitary route
-turns into the open `redZKReady` motive + `iord_descent_red` K-case. The ω-node carries the SAME finite data
-as `zIall` (premise-`t` computed on demand) — no `Fixpoint.StrongFinite` obstruction.
+**NET CALL (honestly scoped): the evidence favours the Path-C pivot, with one decisive probe left.**
+SETTLED in-kernel: the ω-rule ∀-NODE arithmetizes (premise validity motive-free, conclusion computed,
+ordinal finite, node realizable from regular `zIall`, per-step ∀-cut descent) — the lap-92 "riskiest
+assumption" is retired, all on the existing engine, axiom-clean. NOT yet settled: the actual crux-2 wall is
+the **chain (`zK`) cut-elimination on the ⊥-orbit** (`ZDerivesEmpty` is Ind-or-chain; `redZKReady` is a
+CHAIN obligation). The ∀-node is necessary infrastructure, not the chain itself. The lap-92 claim — that the
+ω-rule's premise-selection ALSO dissolves the chain's conclusion-tracking motive — is plausible and
+supported by the ∀-node result, but the chain is unprobed.
 
-**NEXT = COMMIT to the pivot (Probe 2 / the rebuild).** Start the `zAllω` datatype: tag 7 in the
-`zconstruction` Fixpoint, data `⟪s, 7, a, p, d0⟫ + 1` (same shape as `zIall`), with `ZPhi` disjunct =
-the ω-rule validity (`∀ t closed, ZDerivation (zsubst d0 a t) ∧ fstIdx … = Γ→F(t)` — derivable via
-`zIall_realizes_omega`), `iord (zAllω …) = iord d0 + 1`, and `red`/cut-elimination by the Schütte/Tait
-recursion (template: `Zinfty.lean`). The per-step ∀-cut reduction is `iord_descent_zOmegaPrem`. Replace the
-chain (`zK`) machinery's role in the embedding with the ω-rule directly. This retires the finitary
-`redZKReady` motive + axNeg + the K-case ordinal descent. ~2–3k-line templated rebuild; if the Fixpoint
-extension genuinely walls, THAT is the signal to fall back to Path X — but the de-risk evidence says it
-won't.
+**NEXT = Probe 2: the ⊥-orbit Ind/chain ω-rule reduct (the node that actually walls).** Buchholz §6:
+induction (`zInd`) becomes an ω-rule node (premises `F(0), F(1), …` from iterating the step); the chain's
+repetition is absorbed into the ω-rule. Define the ω-rule reduct of an Ind/chain ⊥-orbit node and check it
+avoids the `redZKReady` hereditary-Rep motive — the direct analogue of this lap's ∀-node result, on the
+node that walls. This is the decisive test before a full commit. If it dissolves the motive (as the ∀-node
+result predicts) → commit to the rebuild (`zAllω` tag 7 in the `zconstruction` Fixpoint, `ZPhi` disjunct =
+ω-rule validity derivable via `zIall_realizes_omega`, `iord = iord d0 + 1`, Schütte/Tait recursion templated
+by `Zinfty.lean`). If it walls → fall back to Path X (the finitary motive) with the evidence. ~2–3k-line
+rebuild either way for the full pivot.
 
 ## ▶ PRIORITY 2 — Path X fallback (ONLY if the spike walls)
 

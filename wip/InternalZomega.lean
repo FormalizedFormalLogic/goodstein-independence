@@ -168,21 +168,28 @@ premise for witness `t` strictly drops the ordinal (`iord d0 ≺ iord (zIall …
 `zOmegaPrem_valid` (selected premise valid) this is the full cut-elimination invariant for the ∀-cut —
 validity-preserving AND ordinal-decreasing — proven on the existing nodes, no chain machinery.
 
-**The single remaining open piece (Probe 2 — assembling the cut-elimination RECURSION):** wrap the per-step
-∀-cut reduction (above) into the full Schütte/Tait cut-elimination by recursion on `iord` + cut-rank — the
-reduction `Zinfty.lean` does at the META level. This needs the ω-node DATATYPE (a new tag in the
-`zconstruction` Fixpoint) + extending `ZPhi`/`iord`/`tp` to it — the ~2–3k-line rebuild. That is the genuine
-remaining cost of the pivot, but every load-bearing sub-question is now answered in-kernel: premise validity
-(`zOmegaPrem_valid`), conclusion-tracking (`zOmegaPrem_concl`), ordinal assignment (`iord_zOmegaPrem_constant`,
-finite), node realizability (`zIall_realizes_omega`), and the per-step descent (`iord_descent_zOmegaPrem`).
-The ω-node carries the SAME finite data as `zIall` (no `StrongFinite` issue). What remains is ENGINEERING
-against a settled template, not unsolved mathematics.
+**HONEST SCOPING — what this spike does and does NOT settle.** What it settles: the ω-rule ∀-NODE
+arithmetizes cleanly (validity motive-free, ordinal finite, per-step ∀-cut descent), which was the lap-92
+"riskiest assumption" — solid evidence the ω-rule infrastructure is realizable in IΣ₁ on the existing
+engine. What it does NOT yet settle: the ACTUAL crux-2 wall is the **chain (`zK`) cut-elimination on the
+⊥-orbit** (`ZDerivesEmpty` is Ind-or-chain by `zTag_Ind_or_K_of_ZDerivesEmpty`; the `redZKReady` motive is a
+CHAIN obligation). The ∀-node is necessary infrastructure but is not itself the chain. The lap-92 claim is
+that the ω-rule's premise-selection ALSO dissolves the chain's conclusion-tracking motive — plausible and
+SUPPORTED by the ∀-node result (the same selection-is-conclusion-automatic mechanism), but **the chain
+itself is not yet probed.**
 
-**NET CALL (updated by this spike):** the evidence runs in favour of the Path-C pivot — both the validity
-(`zOmegaPrem_valid`, motive-free) and the ordinal (`iord_zOmegaPrem_constant`, finite) of the ω-node are
-in-kernel facts on the EXISTING engine, and they are exactly the two obligations the finitary route turns
-into the open `redZKReady` motive + `iord_descent_red` K-case. The remaining work is the (large but
-templated) ω-node datatype + cut-elimination rebuild. **NEXT LAP:** decide commit-to-pivot vs one more
-de-risk (a minimal ω-node datatype `zAllω` as tag 7 + its `red`/`iord` equations) — see `NEXT_STEPS.md`. -/
+**Probe 2 (the genuine remaining design):** how the ⊥-orbit chain/Ind cut-elimination looks in the ω-rule
+view. Buchholz §6: induction (`zInd`) becomes an ω-rule node (premises `F(0), F(1), …` from iterating the
+step), and the chain's repetition is absorbed into the ω-rule. The probe: define the ω-rule reduct of an
+Ind/chain ⊥-orbit node and check it avoids the `redZKReady` hereditary-Rep motive — the direct analogue of
+this spike's ∀-node result, on the node that actually walls. Needs the chain's ω-rule reformulation +
+likely an ω-node datatype tag in the `zconstruction` Fixpoint (the ~2–3k-line rebuild; `Zinfty.lean`
+template).
+
+**NET CALL (honestly scoped):** the evidence favours the Path-C pivot — the ω-rule infrastructure
+arithmetizes (this spike), and the lap-92 mechanism (selection dissolves conclusion-tracking) is confirmed
+for the ∀-node and plausibly extends to the chain. But the chain probe is the decisive next step before a
+full commit. **NEXT LAP:** Probe 2 — the ⊥-orbit Ind/chain ω-rule reduct, the direct test of whether the
+ω-rule retires the `redZKReady` motive on the node that actually walls. See `NEXT_STEPS.md`. -/
 
 end GoodsteinPA.InternalZ
