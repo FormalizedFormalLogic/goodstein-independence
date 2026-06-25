@@ -875,6 +875,24 @@ theorem zcOK_ex_inv {s α C t d : V} (h : ZcOK (zExOmega s α C t d)) :
     subst hd0 hα; exact ⟨hprem, hdesc⟩
   · exact absurd (congrArg zTag heq) (by simp)
 
+/-- **∃-node inversion step (complete).** Peeling a `ZcOK` ∃-node to its witness premise `d` yields
+`ZcOK d` with strictly smaller orbit measure (`sord d ≺ sord node`). The ∃-side analogue of the principal
+`∀`-inversion step (5k); together they are the two sides of the principal ∀/∃ cut the orbit reduces. -/
+theorem zcOK_sord_descent_zExOmega {s α C t d : V} (h : ZcOK (zExOmega s α C t d)) :
+    ZcOK d ∧ icmp (sord d) (sord (zExOmega s α C t d)) = 0 := by
+  obtain ⟨hd, hdesc⟩ := zcOK_ex_inv h
+  exact ⟨hd, by rw [sord_zExOmega]; exact hdesc⟩
+
+/-- **Cut-node inversion step (complete).** A `ZcOK` cut node decomposes into BOTH premises, each `ZcOK`
+with strictly smaller orbit measure (`sord premise ≺ sord node = α`). Completes the per-node
+inversion-step family (∀ 5k, leaf-I∀/I¬ 5j, ∃, cut) — every `ZcOK` node shape exposes its premises as
+`ZcOK` with a strict `sord`-drop, the uniform `hinv`+`hdrop` building block. -/
+theorem zcOK_sord_descent_zCutOmega {s α dL dR C : V} (h : ZcOK (zCutOmega s α dL dR C)) :
+    ZcOK dL ∧ ZcOK dR ∧ icmp (sord dL) (sord (zCutOmega s α dL dR C)) = 0
+      ∧ icmp (sord dR) (sord (zCutOmega s α dL dR C)) = 0 := by
+  obtain ⟨hL, hR, hLd, hRd⟩ := zcOK_cut_inv h
+  rw [sord_zCutOmega]; exact ⟨hL, hR, hLd, hRd⟩
+
 /-! ### Brick 5b — principal ∀/∃-cut `hinv`: the STRUCTURAL closure (clean) + the ordinal obligation (isolated)
 
 `hinv` (`red` preserves `ZcOK`) on a PRINCIPAL ∀/∃-cut (left = ω-∀-node, right = ∃-node) splits cleanly:
