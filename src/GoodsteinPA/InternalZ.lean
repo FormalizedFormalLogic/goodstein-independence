@@ -1044,6 +1044,64 @@ lemma inAnt_seqAddAnt {A s B : V} (hs : Seq (seqAnt s)) :
     inAnt B (seqAnt (seqAddAnt A s)) ↔ B = A ∨ inAnt B (seqAnt s) := by
   rw [seqAnt_seqAddAnt]; exact inAnt_seqCons hs
 
+/-! ### `tpReduce` — Buchholz's reduced sequent `I(Π,n)` (Def 3.2 / §2 13.2, 13.5)
+
+**Route-B keystone (lap 91).** Lap-90 found the repo's `red` keeps the chain conclusion `Π`, so it
+equals Buchholz `d[n]` only when `tp(d) = Rep`; the faithful port (route B) requires the reduct to
+compute the **reduced** conclusion `tp(d)(Π,n)`. `tpReduce I s n` is exactly Buchholz's `I(Π,n)` — the
+result of applying inference symbol `I` to sequent `Π = Θ→D` under choice `n` (paper §2 14.23/14.252,
+read from the PDF pp. 4–6):
+
+* `Rep(Π,n) = Π` — identity (Def 3.2 clause 3);
+* `R_{∀xF}(Π,n) = Θ→F(n)` — right-∀: succedent `∀xF` reduced to its `n`-instance `F(n)` (14.23);
+* `R_{¬A}(Π,0) = A,Θ→⊥` — right-¬: `A` adjoined to antecedent, succedent becomes `⊥` (14.23);
+* `L^k_{∀xF}(Π,n) = F(k),Θ→D` — left-∀: instance `F(k)` adjoined to antecedent (14.252, `B = ∀xF`);
+* `L^0_{¬A}(Π,n) = Θ→A` — left-¬: succedent becomes `A` (14.252/14.253, `B = ¬A`).
+
+The `∀`/`¬` dispatch is on the principal formula's top connective: `^∀ p = ⟪6,p⟫+1` (`π₁(A∸1)=6`) vs
+`inegF p = (neg p) ^⋎ ^⊥` (`π₁(A∸1)=5`). The `¬`-body `A` is recovered from `inegF A = (neg A)^⋎^⊥`
+via `neg (neg A) = A` (`IsUFormula.neg_neg`, hence the `IsUFormula` hypotheses on the `¬` equations). -/
+noncomputable def tpReduce (I s n : V) : V :=
+  if π₁ I = 2 then s
+  else if π₁ I = 0 then
+    (if π₁ (π₂ I - 1) = 6 then
+        seqSetSucc s (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral n) (π₂ (π₂ I - 1)))
+      else
+        seqAddAnt (neg ℒₒᵣ (π₁ (π₂ (π₂ I - 1)))) (seqSetSucc s (^⊥ : V)))
+  else
+    (if π₁ (π₂ (π₂ I) - 1) = 6 then
+        seqAddAnt (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral (π₁ (π₂ I)))
+          (π₂ (π₂ (π₂ I) - 1))) s
+      else
+        seqSetSucc s (neg ℒₒᵣ (π₁ (π₂ (π₂ (π₂ I) - 1)))))
+
+/-- `Rep(Π,n) = Π` — the identity reduction. The headline-critical case: on the ⊥-orbit every chain has
+`tp = Rep` (Cor 2.1), so `tpReduce (tp d) (fstIdx d) 0 = fstIdx d`, keeping `ZDerivesEmpty`. -/
+@[simp] lemma tpReduce_isymRep (s n : V) : tpReduce (isymRep : V) s n = s := by
+  simp [tpReduce, isymRep]
+
+/-- `R_{∀xF}(Θ→D,n) = Θ→F(n)` (matrix `p = F`, instance `F(n) = substs1 (numeral n) p`). -/
+lemma tpReduce_isymR_all (p s n : V) :
+    tpReduce (isymR (^∀ p) : V) s n
+      = seqSetSucc s (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral n) p) := by
+  simp [tpReduce, isymR, qqAll]
+
+/-- `R_{¬A}(Θ→D,n) = A,Θ→⊥` (the `n` is unused; `A = p` recovered from `inegF p`). -/
+lemma tpReduce_isymR_neg (p s n : V) (hp : IsUFormula ℒₒᵣ p) :
+    tpReduce (isymR (inegF p) : V) s n = seqAddAnt p (seqSetSucc s (^⊥ : V)) := by
+  simp [tpReduce, isymR, inegF, qqOr, hp.neg_neg]
+
+/-- `L^k_{∀xF}(Θ→D,n) = F(k),Θ→D` (instance `F(k) = substs1 (numeral k) p` adjoined to antecedent). -/
+lemma tpReduce_isymLk_all (k p s n : V) :
+    tpReduce (isymLk k (^∀ p) : V) s n
+      = seqAddAnt (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral k) p) s := by
+  simp [tpReduce, isymLk, qqAll]
+
+/-- `L^0_{¬A}(Θ→D,n) = Θ→A` (succedent replaced by `A = p`, antecedent unchanged). -/
+lemma tpReduce_isymLk_neg (k p s n : V) (hp : IsUFormula ℒₒᵣ p) :
+    tpReduce (isymLk k (inegF p) : V) s n = seqSetSucc s p := by
+  simp [tpReduce, isymLk, inegF, qqOr, hp.neg_neg]
+
 /-! ### Lemma 3.3 (`tp(d) ◁ Π`) for the I-rule cases (Buchholz p.8)
 
 For the rules where `tp` is faithfully defined, permissibility `tp(d) ◁ end(d)` reduces to **end-sequent
