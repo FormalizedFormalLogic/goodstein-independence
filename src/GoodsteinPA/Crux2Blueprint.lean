@@ -172,7 +172,8 @@ theorem ZDerivation_corrected_haux1 {s r ds sⱼ p k' C : V}
     (hdj : znth ds (redexJ (zK s r ds)) = zAxAll sⱼ p k')
     (hSeqs : Seq (seqAnt s))
     (hCwff : IsUFormula ℒₒᵣ (cutFormula (zK s r ds)))
-    (hZredL : ZDerivation (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C))
+    (hSeqsj : Seq (seqAnt sⱼ))
+    (hsj : seqSucc sⱼ = cutFormula (zK s r ds))
     (hci : isChainInf (seqAddAnt (cutFormula (zK s r ds)) s) r
         (seqUpdate ds (redexJ (zK s r ds))
           (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C))) :
@@ -184,6 +185,11 @@ theorem ZDerivation_corrected_haux1 {s r ds sⱼ p k' C : V}
   have hsuccj : IsUFormula ℒₒᵣ (seqSucc sⱼ) := by
     have := hcf (redexJ (zK s r ds)) hj
     rwa [chainAsucc, hdj, fstIdx_zAxAll] at this
+  -- **(O-L1) DISCHARGED.** The §5 logical axiom `Ax^1` is a `ZDerivation` (`zDerivation_zAx1_intro`):
+  -- its succedent `seqSucc sⱼ = cutFormula d` is the head of the grown antecedent `cutFormula d, seqAnt sⱼ`.
+  have hZredL : ZDerivation (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C) :=
+    zDerivation_zAx1_intro (by
+      rw [seqSucc_seqAddAnt]; exact (inAnt_seqAddAnt hSeqsj).mpr (Or.inl hsj))
   refine ZDerivation_iCritReplaceReduce_general hj hZ hZredL hci
     (by rw [seqSucc_seqAddAnt]; exact hss)
     (by rw [seqAnt_seqAddAnt]; exact forall_IsUFormula_seqCons hSeqs hsa hCwff)
