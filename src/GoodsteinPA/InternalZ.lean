@@ -5436,6 +5436,73 @@ lemma ZDerivation_iCritAux_of {s r ds i v : V} (hi : i < lh ds)
   · rw [znth_seqUpdate_self hi]; exact hZv
   · rw [znth_seqUpdate_of_ne hne]; exact hmem n hn
 
+/-- **5.2.2 replace-premise validity, CONCLUSION-REDUCING (the R-rule cut-elimination core, Buchholz Thm
+3.4(b) / Def 3.2 case 5.2.2 for a NON-`Rep` selected premise).** The analogue of `ZDerivation_iCritAux_of`
+where the conclusion succedent itself REDUCES in lockstep with the swapped premise: replacing premise `i`
+of a valid chain `zK s r ds` by a reduct `v` whose end-sequent IS the reduced sequent `s'` (same
+antecedent `chainAnt ds i = seqAnt (fstIdx v)`, reduced succedent `seqSucc (fstIdx v) = seqSucc s'`) yields
+a `ZDerivation` of the conclusion-reduced chain `zK s' r (seqUpdate ds i v)`, where `s'` keeps the parent
+antecedent (`hX_ant : seqAnt s' = seqAnt s`). This is the genuine cut-elimination step `ZDerivation_iCritAux_of`
+(keep-`Π`) cannot do — the selected premise serves as the distinguished `j₀ = i`, so the threading/rank up
+to `i` (`hthread`/`hrank`, caller-supplied from the parent `zKValidF` + the I-rule selection forcing `i ≤ j₀`)
+suffices for the reduced `isChainInf` (`isChainInf_seqUpdate_reduceR`). The conclusion succedent wff
+(`hsucc_wff`) is the reduced principal instance (`F(0)` etc.); the conclusion antecedent wff inherits from
+the parent via `hX_ant`. -/
+lemma ZDerivation_iCritReplaceReduce_of {s s' r ds i v : V} (hi : i < lh ds)
+    (hZ : ZDerivation (zK s r ds)) (hZv : ZDerivation v)
+    (hant : seqAnt (fstIdx v) = chainAnt ds i)
+    (hsucc_v : seqSucc (fstIdx v) = seqSucc s')
+    (hX_ant : seqAnt s' = seqAnt s)
+    (hthread : ∀ i' ≤ i, ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank : ∀ i' < i, irk (chainAsucc ds i') ≤ r)
+    (hsucc_wff : IsUFormula ℒₒᵣ (seqSucc s'))
+    (hperm_v : iperm (tp v) (fstIdx v))
+    (hf1_v : zTag v = 1 → IsUFormula ℒₒᵣ (zIallF v))
+    (hf2_v : zTag v = 2 → IsUFormula ℒₒᵣ (zInegF v))
+    (hf5_v : zTag v = 5 → IsUFormula ℒₒᵣ (zAxAllF v))
+    (hf6_v : zTag v = 6 → IsUFormula ℒₒᵣ (zAxNegF v)) :
+    ZDerivation (zK s' r (seqUpdate ds i v)) := by
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  obtain ⟨hci, hperm, hg1, hg2, hg5, hg6, hcf, _hss, hsa⟩ := zKValidF_of_ZDerivation_zK hZ
+  refine zDerivation_zK_intro (seqUpdate_seq ds i v) ?_ ?_
+  · -- premise membership
+    intro n hn
+    rw [seqUpdate_lh] at hn
+    rcases eq_or_ne n i with rfl | hne
+    · rw [znth_seqUpdate_self hi]; exact hZv
+    · rw [znth_seqUpdate_of_ne hne]; exact hmem n hn
+  · -- conclusion-reduced validity `zKValidF s' r (seqUpdate ds i v)`
+    refine ⟨isChainInf_seqUpdate_reduceR hi hant hsucc_v hX_ant hthread hrank,
+      ?_, ?_, ?_, ?_, ?_, ?_, hsucc_wff, ?_⟩
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hperm_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hperm n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hf1_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hg1 n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hf2_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hg2 n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hf5_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hg5 n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hf6_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hg6 n (by rwa [seqUpdate_lh] at hn)
+    · -- chainAsucc wff: at `i` the succedent is the reduced `seqSucc s'`; off `i` inherits.
+      intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [chainAsucc_seqUpdate_self hi, hsucc_v]; exact hsucc_wff
+      · rw [chainAsucc_seqUpdate_of_ne hne]; exact hcf n (by rwa [seqUpdate_lh] at hn)
+    · -- conclusion antecedent wff inherits from the parent via `hX_ant`.
+      rw [hX_ant]; exact hsa
+
 /-- **5.2.2 replace-premise validity, K-chain reduct specialization (the dispatch-ready form).** In the
 genuine `red` dispatch the reduct `v = red dᵢ` of any reducible premise is a `K`-chain (`zK …`, via
 `iRcritG`/`iRInd`), so its own-permissibility is automatic (`tp = isymRep`, `iperm_isymRep`) and the
