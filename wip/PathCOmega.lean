@@ -1314,6 +1314,115 @@ theorem zcOK_cutS_leaf {s dL dR C : V} (hLZ : ZDerivation dL) (hRZ : ZDerivation
     ZcOK (zCutOmega s (inc (imax (sord dL) (sord dR))) dL dR C) :=
   zcOK_cutS (.leaf hLZ) (.leaf hRZ) (isNF_sord_of_ZDerivation hLZ) (isNF_sord_of_ZDerivation hRZ)
 
+/-! ### Brick 5o (lap 106) — CONCLUSION-TRACKING on the Path-C ω-∀ node (the inversion prerequisite)
+
+Lap 105 closed the cut-node ORDINAL layer. The next obstacle (handoff NEXT item 1a) is that `ZcOK` tracks
+only ordinal control, NOT the end-sequent (`fstIdx d`). So the commuting `∀`-inversion — which must read
+"the conclusion succedent is `^∀ p`, and the premise at witness `t` derives `Γ ⟹ p(t)`" — is
+*inexpressible* over `ZcOK`. `ZcDer` refines `ZcOK` by carrying the conclusion-tracking data on the ω-∀
+node (exactly the banked `zAllOmega_concl`/`zAllOmegaValidFull` facts: succedent `^∀ p`, and premise-`t`
+derives `seqSetSucc s (p(t))`). The forgetful `ZcDer.toZcOK` keeps EVERY lap-105 ordinal brick applicable
+to a `ZcDer` orbit; the conclusion-faithful principal `∀`-inversion (`zcDer_allOmega_inv` /
+`zcDer_iord_descent_allOmega`) is then the banked base case of the commuting `∀`-inversion recursion. -/
+
+@[simp] lemma fstIdx_zAllOmega (s d0 a α : V) : fstIdx (zAllOmega s d0 a α) = s := by
+  simp [fstIdx, zAllOmega]
+@[simp] lemma fstIdx_zExOmega (s α C t d : V) : fstIdx (zExOmega s α C t d) = s := by
+  simp [fstIdx, zExOmega]
+
+/-- **The conclusion-tracking Path-C derivation predicate.** Identical to `ZcOK` except the ω-∀ node
+additionally records (a) its conclusion succedent is `^∀ p`, and (b) the premise at each closed witness
+`t` derives `Γ ⟹ p(t)` (`seqSetSucc s (substs1 t p)`). This is precisely the data ∀-inversion reads. The
+infinitary `omegaAll` constructor is strictly positive (`ZcDer` only under the closed-term index), so Lean
+accepts it (W-type style) and gives a structural recursor — including an IH for the ω-premise family. -/
+inductive ZcDer : V → Prop where
+  | leaf {d : V} (hd : ZDerivation d) : ZcDer d
+  | omegaAll {s d0 a α p : V}
+      (hconcl : seqSucc s = (^∀ p : V))
+      (hprem : ∀ t, IsSemiterm ℒₒᵣ 0 t → ZcDer (zsubst d0 a t))
+      (hpremC : ∀ t, IsSemiterm ℒₒᵣ 0 t →
+        fstIdx (zsubst d0 a t) = seqSetSucc s (substs1 ℒₒᵣ t p))
+      (hdesc : ∀ t, IsSemiterm ℒₒᵣ 0 t → icmp (iord (zsubst d0 a t)) α = 0) :
+      ZcDer (zAllOmega s d0 a α)
+  | ex {s α C t d : V} (hprem : ZcDer d) (hdesc : icmp (sord d) α = 0) :
+      ZcDer (zExOmega s α C t d)
+  | cut {s α dL dR C : V} (hL : ZcDer dL) (hR : ZcDer dR)
+      (hLdesc : icmp (sord dL) α = 0) (hRdesc : icmp (sord dR) α = 0) :
+      ZcDer (zCutOmega s α dL dR C)
+
+/-- **Forgetful map `ZcDer → ZcOK`** (drop the conclusion-tracking conjuncts). Structural induction over
+`ZcDer`, including the infinitary ω-∀ case (the recursor supplies an IH for the whole premise family). So
+every lap-105 ordinal lemma stated for `ZcOK` applies verbatim to a `ZcDer` orbit. -/
+theorem ZcDer.toZcOK {d : V} (h : ZcDer d) : ZcOK d := by
+  induction h with
+  | leaf hd => exact .leaf hd
+  | omegaAll _ _ _ hdesc ih => exact .omegaAll ih hdesc
+  | ex _ hdesc ih => exact .ex ih hdesc
+  | cut _ _ hLd hRd ihL ihR => exact .cut ihL ihR hLd hRd
+
+/-- Recursion-equation functional for `ZcDer` (cf. `ZcPhi`). -/
+def ZcPhiD (C : V → Prop) (d : V) : Prop :=
+  ZDerivation d ∨
+  (∃ s d0 a α p, d = zAllOmega s d0 a α ∧ seqSucc s = (^∀ p : V) ∧
+      (∀ t, IsSemiterm ℒₒᵣ 0 t → C (zsubst d0 a t)) ∧
+      (∀ t, IsSemiterm ℒₒᵣ 0 t → fstIdx (zsubst d0 a t) = seqSetSucc s (substs1 ℒₒᵣ t p)) ∧
+      (∀ t, IsSemiterm ℒₒᵣ 0 t → icmp (iord (zsubst d0 a t)) α = 0)) ∨
+  (∃ s α C0 t d0, d = zExOmega s α C0 t d0 ∧ C d0 ∧ icmp (sord d0) α = 0) ∨
+  (∃ s α dL dR C0, d = zCutOmega s α dL dR C0 ∧ C dL ∧ C dR ∧
+      icmp (sord dL) α = 0 ∧ icmp (sord dR) α = 0)
+
+/-- **Recursion equation for `ZcDer`** (the inversion vehicle, cf. `zcOK_iff`). -/
+theorem zcDer_iff {d : V} : ZcDer d ↔ ZcPhiD ZcDer d := by
+  constructor
+  · intro h
+    cases h with
+    | leaf hd => exact Or.inl hd
+    | omegaAll hc hp hpc hd => exact Or.inr (Or.inl ⟨_, _, _, _, _, rfl, hc, hp, hpc, hd⟩)
+    | ex hp hd => exact Or.inr (Or.inr (Or.inl ⟨_, _, _, _, _, rfl, hp, hd⟩))
+    | cut hL hR hLd hRd => exact Or.inr (Or.inr (Or.inr ⟨_, _, _, _, _, rfl, hL, hR, hLd, hRd⟩))
+  · intro h
+    rcases h with hd | ⟨s, d0, a, α, p, rfl, hc, hp, hpc, hd⟩ | ⟨s, α, C0, t, d0, rfl, hp, hd⟩ |
+      ⟨s, α, dL, dR, C0, rfl, hL, hR, hLd, hRd⟩
+    · exact .leaf hd
+    · exact .omegaAll hc hp hpc hd
+    · exact .ex hp hd
+    · exact .cut hL hR hLd hRd
+
+/-- **Conclusion-faithful ω-∀-node inversion.** A `ZcDer` ω-∀-node `zAllOmega s d0 a α` exposes (a) its
+conclusion matrix `p` (succedent `^∀ p`), and for each closed witness `t`: (b) the premise `zsubst d0 a t`
+is `ZcDer`, (c) it derives the instance `Γ ⟹ p(t)`, (d) its ordinal `iord ≺ α`. The first time the
+end-sequent is recoverable on the Path-C layer — exactly what the commuting `∀`-inversion recursion reads
+at the principal node. -/
+theorem zcDer_allOmega_inv {s d0 a α : V} (h : ZcDer (zAllOmega s d0 a α)) :
+    ∃ p, seqSucc s = (^∀ p : V) ∧
+      (∀ t, IsSemiterm ℒₒᵣ 0 t → ZcDer (zsubst d0 a t)) ∧
+      (∀ t, IsSemiterm ℒₒᵣ 0 t → fstIdx (zsubst d0 a t) = seqSetSucc s (substs1 ℒₒᵣ t p)) ∧
+      (∀ t, IsSemiterm ℒₒᵣ 0 t → icmp (iord (zsubst d0 a t)) α = 0) := by
+  rcases zcDer_iff.mp h with hd | ⟨s', d0', a', α', p, heq, hc, hp, hpc, hd⟩ |
+    ⟨s', α', C0, t, d0', heq, _, _⟩ | ⟨s', α', dL', dR', C0, heq, _, _, _, _⟩
+  · exact absurd (zTag_zAllOmega s d0 a α) (zTag_ne_seven_of_ZDerivation hd)
+  · have hd0 : d0 = d0' := by have := congrArg zAllD0 heq; simpa using this
+    have ha : a = a' := by have := congrArg zAllEig heq; simpa using this
+    have hα : α = α' := by have := congrArg sord heq; simpa using this
+    have hs : s = s' := by have := congrArg fstIdx heq; simpa using this
+    subst hd0 ha hα hs; exact ⟨p, hc, hp, hpc, hd⟩
+  · exact absurd (congrArg zTag heq) (by simp)
+  · exact absurd (congrArg zTag heq) (by simp)
+
+/-- **PRINCIPAL `∀`-inversion step, conclusion-faithful (the banked base case).** When the last rule IS
+the ω-∀ introduction, inversion at a witness `t` selects the premise `zsubst d0 a t`, which (i) is `ZcDer`,
+(ii) derives the instance `Γ ⟹ p(t)` (CONCLUSION-tracked, the new content over lap-105's
+`zcOK_iord_descent_zAllOmega`), and (iii) has `iord` strictly below the node's stored `sord = α` — no
+ordinal increase (the lap-104 inversion requirement). This is the principal base case the commuting
+(non-`∀`-introducing last rule) cases of the `∀`-inversion recursion bottom out at. -/
+theorem zcDer_iord_descent_allOmega {s d0 a α t : V}
+    (h : ZcDer (zAllOmega s d0 a α)) (ht : IsSemiterm ℒₒᵣ 0 t) :
+    ZcDer (zsubst d0 a t) ∧
+    (∃ p, seqSucc s = (^∀ p : V) ∧ fstIdx (zsubst d0 a t) = seqSetSucc s (substs1 ℒₒᵣ t p)) ∧
+    icmp (iord (zsubst d0 a t)) (sord (zAllOmega s d0 a α)) = 0 := by
+  obtain ⟨p, hc, hp, hpc, hd⟩ := zcDer_allOmega_inv h
+  exact ⟨hp t ht, ⟨p, hc, hpc t ht⟩, by rw [sord_zAllOmega]; exact hd t ht⟩
+
 /-! ## NEXT BRICKS (Path C, `sorry`-disclosed milestones — PENDING_WORK lap 102)
 
 Brick 1 above pins the ω-∀-node design + its cut invariant on the existing engine. The remaining Path-C
