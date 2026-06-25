@@ -3189,6 +3189,47 @@ lemma isChainInf_seqUpdate {s r ds i v : V} (hi : i < lh ds) (hv : fstIdx v = fs
   unfold isChainInf
   simp only [seqUpdate_lh, chainAsucc_seqUpdate hi hv, chainAnt_seqUpdate hi hv]
 
+/-- **T2/T3 validity-preservation (full `zKValidF`).** Replacing premise `i` of a faithfully-valid chain
+by a reduct `v` with the same end-sequent (`fstIdx v = fstIdx (znth ds i)`) preserves faithful chain
+validity `zKValidF`, given `v`'s own well-formedness: its own-permissibility (`iperm (tp v) (fstIdx v)`,
+Buchholz Lemma 3.3, automatic for a `ZDerivation`) and the tag-gated principal-formula-hood. The
+`isChainInf` core is preserved by `isChainInf_seqUpdate`; the off-index per-premise conjuncts inherit
+(unchanged `znth`/`chainAsucc`), the at-index ones come from `v`'s well-formedness. This is the reusable
+"replace a premise of a valid `K^r` chain by a same-endsequent reduct ⟹ still valid" fact for `RedSound`. -/
+lemma zKValidF_seqUpdate {s r ds i v : V} (hi : i < lh ds)
+    (hv : fstIdx v = fstIdx (znth ds i))
+    (hperm_v : iperm (tp v) (fstIdx v))
+    (hf1_v : zTag v = 1 → IsUFormula ℒₒᵣ (zIallF v))
+    (hf2_v : zTag v = 2 → IsUFormula ℒₒᵣ (zInegF v))
+    (hf5_v : zTag v = 5 → IsUFormula ℒₒᵣ (zAxAllF v))
+    (hf6_v : zTag v = 6 → IsUFormula ℒₒᵣ (zAxNegF v))
+    (h : zKValidF s r ds) :
+    zKValidF s r (seqUpdate ds i v) := by
+  obtain ⟨hci, hperm, hg1, hg2, hg5, hg6, hcf, hss, hsa⟩ := h
+  refine ⟨(isChainInf_seqUpdate hi hv).mpr hci, ?_, ?_, ?_, ?_, ?_, ?_, hss, hsa⟩
+  · intro n hn
+    rcases eq_or_ne n i with rfl | hne
+    · rw [znth_seqUpdate_self hi]; exact hperm_v
+    · rw [znth_seqUpdate_of_ne hne]; exact hperm n (by rwa [seqUpdate_lh] at hn)
+  · intro n hn
+    rcases eq_or_ne n i with rfl | hne
+    · rw [znth_seqUpdate_self hi]; exact hf1_v
+    · rw [znth_seqUpdate_of_ne hne]; exact hg1 n (by rwa [seqUpdate_lh] at hn)
+  · intro n hn
+    rcases eq_or_ne n i with rfl | hne
+    · rw [znth_seqUpdate_self hi]; exact hf2_v
+    · rw [znth_seqUpdate_of_ne hne]; exact hg2 n (by rwa [seqUpdate_lh] at hn)
+  · intro n hn
+    rcases eq_or_ne n i with rfl | hne
+    · rw [znth_seqUpdate_self hi]; exact hf5_v
+    · rw [znth_seqUpdate_of_ne hne]; exact hg5 n (by rwa [seqUpdate_lh] at hn)
+  · intro n hn
+    rcases eq_or_ne n i with rfl | hne
+    · rw [znth_seqUpdate_self hi]; exact hf6_v
+    · rw [znth_seqUpdate_of_ne hne]; exact hg6 n (by rwa [seqUpdate_lh] at hn)
+  · intro n hn
+    rw [chainAsucc_seqUpdate hi hv]; exact hcf n (by rwa [seqUpdate_lh] at hn)
+
 /-- The critical auxiliary `d{ν} = K^r(i/v)`: the chain `d` with premise `i` replaced by `v`. -/
 noncomputable def iCritAux (d i v : V) : V := zK (fstIdx d) (zKrank d) (seqUpdate (zKseq d) i v)
 
