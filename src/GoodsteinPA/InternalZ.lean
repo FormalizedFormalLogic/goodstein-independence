@@ -3569,6 +3569,38 @@ lemma chainAnt_seqUpdate_of_ne {ds j a k : V} (hk : k ≠ j) :
     chainAnt (seqUpdate ds j a) k = chainAnt ds k := by
   unfold chainAnt; rw [znth_seqUpdate_of_ne hk]
 
+/-- **R-rule replace — `isChainInf` succedent reduction (Buchholz Thm 3.4(b), I∀/I¬ non-`Rep` 5.2.2).**
+When the selected premise `i` carries the conclusion succedent (so it serves as the distinguished `j₀`),
+replacing it by a reduct `v` with the SAME antecedent (`hant`) and a REDUCED succedent matching the
+reduced conclusion `s'` (`hsucc_v`), where `s'` keeps the antecedent (`hX_ant`), preserves chain-validity
+— take `j₀ = i`. The off-`i` premises and the conclusion antecedent are unchanged, so the threading/rank
+data up to `i` (supplied by the caller from the chain's `zKValidF` + the permIdx/criticality selection
+forcing `i ≤ j₀`) transfers verbatim. This is the `isChainInf` core of the conclusion-reducing replace for
+an R-rule (`tp dᵢ = R_∀xF` / `R_¬A`) selected premise — the genuine cut-elimination step the keep-`Π`
+`isChainInf_seqUpdate` cannot do. -/
+lemma isChainInf_seqUpdate_reduceR {s s' r ds i v : V} (hi : i < lh ds)
+    (hant : seqAnt (fstIdx v) = chainAnt ds i)
+    (hsucc_v : seqSucc (fstIdx v) = seqSucc s')
+    (hX_ant : seqAnt s' = seqAnt s)
+    (hthread : ∀ i' ≤ i, ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank : ∀ i' < i, irk (chainAsucc ds i') ≤ r) :
+    isChainInf s' r (seqUpdate ds i v) := by
+  refine ⟨i, by rwa [seqUpdate_lh], Or.inl ?_, ?_, ?_⟩
+  · rw [chainAsucc_seqUpdate_self hi, hsucc_v]
+  · intro i' hi' B hB
+    have hchAnt : chainAnt (seqUpdate ds i v) i' = chainAnt ds i' := by
+      rcases eq_or_ne i' i with rfl | hne
+      · rw [chainAnt_seqUpdate_self hi, hant]
+      · rw [chainAnt_seqUpdate_of_ne hne]
+    rw [hchAnt] at hB
+    rcases hthread i' hi' B hB with hin | ⟨i'', hi'', hB'⟩
+    · left; rwa [hX_ant]
+    · exact Or.inr ⟨i'', hi'', by
+        rw [chainAsucc_seqUpdate_of_ne (ne_of_lt (lt_of_lt_of_le hi'' hi')), hB']⟩
+  · intro i' hi'
+    rw [chainAsucc_seqUpdate_of_ne (ne_of_lt hi')]; exact hrank i' hi'
+
 /-- **5.2.1 splice — `isChainInf` structural reduction.** The sub-critical splice
 `cs = seqCons (seqUpdate ds j a) b` (Buchholz §3.2 case 5.2.1: premise `j` of the critical chain is
 expanded into its two halves `a = dⱼ{1}` in place and `b = dⱼ{0}` appended at the end) is chain-valid for
