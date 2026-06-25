@@ -1,7 +1,7 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 113 · 2026-06-25
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 113 · 2026-06-25 (splice branch FULLY closed)
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**,
 re-verified in-kernel lap 113).
 
