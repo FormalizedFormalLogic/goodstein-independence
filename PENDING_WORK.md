@@ -12,20 +12,38 @@ Lap-90 forced route B (faithful Buchholz reduct with conclusion reduction). Step
 - ✅ **`tpReduceDef` / `tpReduce_defined` / `_definable` / `_definable'`** (after `seqAddAnt_definable`)
   — `tpReduce` is `𝚺₁`-definable (subDef peels the qq `+1`).
 
-**NEXT (route-B continuation — the big re-architecture):**
-1. **Rewire `red`'s chain + I-rule branches to emit `tpReduce (tp dᵢ) Π 0`** instead of keeping `Π`.
-   - I∀ (`red zIall = d0`): under route B should derive `Γ→F(0) = tpReduce (R_∀xF) Π 0` — needs the
-     eigen-subst `d₀(a/0)` (`Zsubst.lean`). I¬ (`red zIneg = d0`) already derives `A,Γ→⊥` = `tpReduce (R_¬A) Π 0`.
-   - 5.2.2 (`iRKr`): conclusion `tpReduce (tp dᵢ) Π 0` (was `Π` via `iCritAux`/`seqUpdate`).
-   - Ind (`iIndReductSeq … 1`): conclusion `Γ→F(k)`, `k`=value of `t`, `k` copies of `d1(a/·)` (lap-90:
-     current fixed `k=1` only faithful when `t` evals to 1).
-2. **Prove Thm 3.4(b) invariant** `∀ d, ZDerivation d → ZDerivation (red d) ∧
-   fstIdx (red d) = tpReduce (tp d) (fstIdx d) 0` by PLAIN structural induction (`zDerivation_induction`).
-   Specialise to headline at `tp d = Rep` (`tpReduce_isymRep` ⟹ `fstIdx (red d) = Π`, `ZDerivesEmpty` kept).
-3. Reusable Rep-branch lemmas from lap-90 (`red_zK_rep`/`_splice`, `ZDerivation_red_zK_replace`,
-   `tp_isymRep_of_emptyAnt_botSucc`). New work = the `tp(dᵢ) ≠ Rep` branches + conclusion tracking.
-4. Then `iord_descent_red` (ordinal side unaffected by route B — `iord` endsequent-independent),
-   `false_of_ZDerivesEmpty`, M2 bridge, wire to `Reduction.goodstein_implies_consistency` + headline.
+**✅ lap-91 also landed `fstIdx_red_eq_tpReduce_of_Rep`** (`InternalZ.lean`): the route-B conclusion
+invariant for the `Rep` case (`zTag ∈ {3,4}`), = the headline ⊥-orbit specialisation, axiom-clean.
+
+**⚠️ TWO OBSTRUCTIONS FOUND (lap 91, the genuine route-B walls — map before grinding):**
+
+**(O1) `zIallWff` does NOT track the eigenvariable freshness `a ∉ FV(Γ)`** (`InternalZ.lean:1542`:
+`zIallWff = seqAnt(fstIdx d0)=seqAnt s ∧ seqSucc(fstIdx d0)=substs1 (^&a) p ∧ IsSemiformula 1 p`).
+So `ZDerivation (zIall …)` carries no freshness. Route B's I∀ conclusion `Γ→F(0)` needs `Γ[a/0]=Γ`,
+i.e. `a ∉ FV(Γ)`. ⟹ **rung-0.5 redux**: strengthen `zIallWff` (and `zIndWff`) with the freshness
+conjunct (blast radius: every `zIall`/`zInd` builder must supply it). On the headline ⊥-orbit the
+sub-derivations reached have `Γ = ∅` (lap-90), so freshness is MOOT there — a restricted
+empty-antecedent I∀ lemma sidesteps O1 for the headline, IF O2 is solved.
+
+**(O2) eigenvariable substitution `d₀(a/n)` is NOT `ZDerivation_zsubst`** (`Zsubst.lean:834`). That
+theorem requires `d ≤ a` (substitution variable larger than all codes — fresh, non-clashing). The
+route-B I∀ reduct substitutes the *eigenvariable* `e = zIallEig` which genuinely occurs in `d₀`
+(small index, `d₀ ⋬ e`), so `ZDerivation_zsubst` does not apply. This is the lap-78 "criticality
+substitution wall" again: eigen-subst is a SEPARATE, harder substitution lemma (the eigenvar appears
+in the derivation, not a fresh slot). **Genuine next deep target** = an eigenvariable-substitution
+ZDerivation lemma (`zsubst d₀ e t` valid when `e` is `d₀`'s genuine eigenvar, freshness from the rule).
+
+**NEXT (route-B continuation, in dependency order):**
+1. **O2 first** (eigen-subst lemma) — it gates the I∀ reduct; without it route B's I∀/Ind branches
+   can't produce valid reducts. Decompose: does `zsubst` already compute the right *term* substitution
+   on the eigenvar, only lacking the `d≤a` discharge? If so, a freshness-from-the-rule variant.
+2. **O1** (freshness in `zIallWff`/`zIndWff`) — needed for non-empty `Γ`; deferrable if the headline
+   ⊥-orbit only reaches empty-`Γ` I∀ sub-derivations (verify via the recursion trace).
+3. **Rewire `red`'s I∀/chain/Ind branches to emit `tpReduce (tp dᵢ) Π 0`** (5.2.2 `iRKr`→reduced
+   conclusion; Ind→`Γ→F(k)`, `k`=val `t`).
+4. **Thm 3.4(b) invariant** `ZDerivation (red d) ∧ fstIdx (red d) = tpReduce (tp d) (fstIdx d) 0` by
+   `zDerivation_induction`; the `Rep` cases already done (`fstIdx_red_eq_tpReduce_of_Rep`).
+5. Then `iord_descent_red` (ordinal side unaffected), `false_of_ZDerivesEmpty`, M2 bridge → headline.
 
 ## 📍 Lap 90 — `redSound` DECOMPOSED + faithfulness finding (`red` faithful only for `Rep`)
 
