@@ -2903,6 +2903,49 @@ noncomputable def iCritReductSeq (d0 d1 : V) : V := seqCons (seqCons ∅ d0) d1
   have := znth_seqCons_self seq_empty d0
   rwa [lh_empty] at this
 
+@[simp] lemma znth_iCritReductSeq_one (d0 d1 : V) : znth (iCritReductSeq d0 d1) 1 = d1 := by
+  have h := znth_seqCons_self (seq_empty.seqCons d0) d1
+  rw [Seq.lh_seqCons _ seq_empty, lh_empty, zero_add] at h
+  rw [iCritReductSeq]; exact h
+
+/-- **Critical recombination validity (Thm 3.4(a) → outer `K^{r-1}` chain).** The two-element chain
+`⟨d{0}, d{1}⟩` underlying the critical reduct `d[0] = K^{r-1}_Π d{0} d{1}` (Buchholz §3.2 case 5.1) is
+`isChainInf`-valid with conclusion `s = Π` and rank `r`, given the Thm-3.4(a) end-sequent threading:
+`d{1}`'s succedent is `Π`'s succedent (`d{1} ⊢ A(d),Π`); `d{0}`'s antecedent threads to `Π`
+(`d{0} ⊢ Π·A(d)`); `d{1}`'s antecedent threads to `Π` or to the cut formula `A(d)` = `d{0}`'s succedent
+(the genuine R/L cut on `A(d)`); and `rk(A(d)) ≤ r` (Thm 3.4(a) `rk(A(d)) < r`, here the rank-`(r-1)`
+chain reads its cut formula `A(d)` at `≤ r`). This is the validity half of the critical case of
+`RedSound`, modulo the genuine reduct supplying these sequents (the current `iCritReduct` is the
+ordinal shadow with all-`fstIdx d` premises — see the Option-B obstruction). -/
+lemma isChainInf_iCritReductSeq {s r d0 d1 : V}
+    (hsucc1 : seqSucc (fstIdx d1) = seqSucc s)
+    (hthread0 : ∀ B, inAnt B (seqAnt (fstIdx d0)) → inAnt B (seqAnt s))
+    (hthread1 : ∀ B, inAnt B (seqAnt (fstIdx d1)) →
+        inAnt B (seqAnt s) ∨ B = seqSucc (fstIdx d0))
+    (hrank0 : irk (seqSucc (fstIdx d0)) ≤ r) :
+    isChainInf s r (iCritReductSeq d0 d1) := by
+  have eA0 : chainAsucc (iCritReductSeq d0 d1) 0 = seqSucc (fstIdx d0) := by
+    unfold chainAsucc; rw [znth_iCritReductSeq_zero]
+  have eN0 : chainAnt (iCritReductSeq d0 d1) 0 = seqAnt (fstIdx d0) := by
+    unfold chainAnt; rw [znth_iCritReductSeq_zero]
+  have eN1 : chainAnt (iCritReductSeq d0 d1) 1 = seqAnt (fstIdx d1) := by
+    unfold chainAnt; rw [znth_iCritReductSeq_one]
+  refine ⟨1, ?_, ?_, ?_, ?_⟩
+  · rw [iCritReductSeq_lh]; exact one_lt_two
+  · left; unfold chainAsucc; rw [znth_iCritReductSeq_one]; exact hsucc1
+  · intro i hi B hB
+    rcases eq_or_lt_of_le hi with rfl | hlt
+    · rw [eN1] at hB
+      rcases hthread1 B hB with h | h
+      · exact Or.inl h
+      · exact Or.inr ⟨0, one_pos, by rw [h, eA0]⟩
+    · obtain rfl := lt_one_iff_eq_zero.mp hlt
+      rw [eN0] at hB
+      exact Or.inl (hthread0 B hB)
+  · intro i hi
+    obtain rfl := lt_one_iff_eq_zero.mp hi
+    rw [eA0]; exact hrank0
+
 /-- `õ`-fold of the critical reduct sequence: `ω^{õ d{0}} # ω^{õ d{1}}` (N3b's left side). -/
 lemma iseqNaddIdg_iCritReductSeq (d0 d1 : V) :
     iseqNaddIdg (iCritReductSeq d0 d1) =
