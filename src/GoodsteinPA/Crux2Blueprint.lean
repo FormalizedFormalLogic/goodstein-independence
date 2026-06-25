@@ -222,6 +222,65 @@ theorem ZDerivation_zK_replace_zIall_of {s r ds i sᵢ a p d0 : V}
   · exact (tag_uformula_of_ZDerivation hZred).2.2.1
   · exact (tag_uformula_of_ZDerivation hZred).2.2.2
 
+/-- **I¬ non-`Rep` replace — FULLY ASSEMBLED modulo the orbit invariants (lap 100).** The I¬ analogue of
+`ZDerivation_zK_replace_zIall_of`: when the selected premise `dᵢ = zIneg sᵢ p d0` is an I¬ node, the
+genuine reduct `red dᵢ = d0` (Buchholz Def 3.2 clause 3 — `d[0] := d₀`, **no** substitution, unlike I∀)
+derives `p,Γ→⊥`, which IS the reduced sequent `tpReduce (R_¬p) Π 0 = p,Γ→⊥` (antecedent gains the cut
+formula `p`, succedent → `⊥`). It feeds the unifying `ZDerivation_iCritReplaceReduce_general` (membership-
+form `isChainInf`, since here the antecedent GROWS rather than being kept) to produce the conclusion-reduced
+chain `zK (tpReduce (tp dᵢ) s 0) r (seqUpdate ds i (red dᵢ))`. EVERYTHING is discharged from banked lemmas
+(`isChainInf_reduceR_membership`, `inAnt_seqAddAnt`, `forall_IsUFormula_seqCons`,
+`iperm_tp_fstIdx_of_ZDerivation` + `tag_uformula_of_ZDerivation` for the reduct's wff). The ONLY
+un-discharged inputs are the genuine orbit data: the faithful premise-antecedent `hd0ant`
+(`seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p` — the I¬ analogue of I∀'s O3 freshness; `zInegWff` pins only
+`p ∈ antecedent`), the conclusion `Seq`-wellformedness (`hSeqs`/`hSeqsi`), and the threading/rank up to `i`
+(`hthread`/`hrank`, from `permIdx ≤ j₀`) — exactly what the strengthened `redSoundGen` motive must supply.
+This DE-RISKS the I¬ branch: it is mechanically complete given the invariants. -/
+theorem ZDerivation_zK_replace_zIneg_of {s r ds i sᵢ p d0 : V}
+    (hZ : ZDerivation (zK s r ds)) (hi : i < lh ds)
+    (hdi : znth ds i = zIneg sᵢ p d0)
+    (hd0ant : seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p)
+    (hSeqs : Seq (seqAnt s)) (hSeqsi : Seq (seqAnt sᵢ))
+    (hthread : ∀ i' ≤ i, ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank : ∀ i' < i, irk (chainAsucc ds i') ≤ r) :
+    ZDerivation (zK (tpReduce (tp (znth ds i)) s 0) r (seqUpdate ds i (red (znth ds i)))) := by
+  have hZdi : ZDerivation (zIneg sᵢ p d0) := hdi ▸ (zDerivation_zK_inv hZ).2 i hi
+  obtain ⟨hZd0, _hsucceq, hbot, hmem, hp⟩ := zDerivation_zIneg_inv hZdi
+  have hSeqs' : Seq (seqAnt (seqSetSucc s (^⊥ : V))) := by rw [seqAnt_seqSetSucc]; exact hSeqs
+  have hchain_i : chainAnt ds i = seqAnt sᵢ := by unfold chainAnt; rw [hdi, fstIdx_zIneg]
+  -- conclusion-antecedent wff of the parent chain (`zKValidF` field 9)
+  obtain ⟨-, -, -, -, -, -, -, -, hsa⟩ := zKValidF_of_ZDerivation_zK hZ
+  rw [hdi, tp_zIneg, tpReduce_isymR_neg p s 0 hp, red_zIneg]
+  refine ZDerivation_iCritReplaceReduce_general hi hZ hZd0 ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_
+  · -- the membership-form `isChainInf` for the reduced conclusion `p,Γ→⊥`
+    refine isChainInf_reduceR_membership hi (Or.inr hbot) ?_ ?_ hrank
+    · -- at-`i` antecedent threading: `B ∈ seqAnt (fstIdx d0) = (seqAnt sᵢ),p`
+      intro B hB
+      rw [hd0ant] at hB
+      rcases (inAnt_seqCons hSeqsi).mp hB with rfl | hBin
+      · left; exact (inAnt_seqAddAnt hSeqs').mpr (Or.inl rfl)
+      · rcases hthread i le_rfl B (by rw [hchain_i]; exact hBin) with hins | hex
+        · left; exact (inAnt_seqAddAnt hSeqs').mpr (Or.inr (by rw [seqAnt_seqSetSucc]; exact hins))
+        · right; exact hex
+    · -- below-`i` antecedent threading inherits, weakened through the new antecedent
+      intro i' hi' B hB
+      rcases hthread i' (le_of_lt hi') B hB with hins | hex
+      · left; exact (inAnt_seqAddAnt hSeqs').mpr (Or.inr (by rw [seqAnt_seqSetSucc]; exact hins))
+      · right; exact hex
+  · -- conclusion succedent wff: `⊥`
+    rw [seqSucc_seqAddAnt, seqSucc_seqSetSucc]; simp
+  · -- conclusion antecedent wff: `(seqAnt s),p`, each entry a `UFormula`
+    rw [seqAnt_seqAddAnt, seqAnt_seqSetSucc]
+    exact forall_IsUFormula_seqCons hSeqs hsa hp
+  · -- reduct succedent wff: `⊥`
+    rw [hbot]; simp
+  · exact iperm_tp_fstIdx_of_ZDerivation hZd0
+  · exact (tag_uformula_of_ZDerivation hZd0).1
+  · exact (tag_uformula_of_ZDerivation hZd0).2.1
+  · exact (tag_uformula_of_ZDerivation hZd0).2.2.1
+  · exact (tag_uformula_of_ZDerivation hZd0).2.2.2
+
 /-- **Residual (K case of Buchholz Thm 3.4 — the cut-elimination core).** The genuine reduct `red` of a
 valid chain `zK s r ds` is again a `ZDerivation`, given that the reduct of every premise is. Dispatches
 (via `red_zK_crit` / `red_zK_rep` / `red_zK_splice`) into the three Buchholz case-5 sub-residuals; each
