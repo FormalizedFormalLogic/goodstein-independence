@@ -423,6 +423,48 @@ end
 
 end FvarSeq
 
+/-! ## Brick 2d — the `fixitr`-inversion bridge (lap 79)
+
+`subst (fvarSeq m) ⌜fixitr 0 m ▹ φ⌝ = ⌜φ⌝` (m = `φ.fvSup`): the internal `subst` by the free-var
+vector `fvarSeq` undoes the closure rewrite `fixitr`, recovering the quote of `φ`. This is the crux
+bridge for `mem_iff` — proved by lifting `Semiformula.subst_comp_fixitr` (`(fixitr 0 φ.fvSup ▹ φ)⇜(&·)
+= φ`) through `typed_quote_substs` + `val_substs`, with `fvarSeqVec_val` matching the typed free-var
+substitution vector to the raw `fvarSeq`. **Avoids the `(fixitr n m).q` arity wall entirely.** -/
+
+section FixitrBridge
+
+open LO.FirstOrder.Arithmetic.Bootstrapping
+open LO.FirstOrder.Arithmetic.Bootstrapping.Arithmetic
+
+variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+
+/-- The typed free-var substitution vector `fun i ↦ ⌜&i⌝` codes to the raw `fvarSeq`. -/
+lemma fvarSeqVec_val (n : ℕ) :
+    SemitermVec.val ((fun i : Fin n ↦ (Semiterm.fvar (↑(i : ℕ)))) : SemitermVec V ℒₒᵣ n 0)
+      = fvarSeq (n : V) := by
+  apply nth_ext' (n : V) (by simp) (by simp)
+  intro i hi
+  rw [nth_fvarSeq hi]
+  rcases (lt_numeral_iff (M := V)).mp (by simpa [numeral_eq_natCast] using hi) with ⟨j, rfl⟩
+  have : (ORingStructure.numeral (↑j) : V) = ((j : ℕ) : V) := by simp [numeral_eq_natCast]
+  rw [this, SemitermVec.val_nth_eq (L := ℒₒᵣ)
+    (fun i : Fin n ↦ (Semiterm.fvar (↑(i : ℕ)) : Bootstrapping.Semiterm V ℒₒᵣ 0)) j]
+  simp
+
+/-- **The `fixitr`-inversion bridge.** Substituting the free-var vector `fvarSeq` into the quote of the
+closure-rewritten formula `fixitr 0 φ.fvSup ▹ φ` recovers `⌜φ⌝`. -/
+lemma subst_fvarSeq_fixitr (φ₀ : SyntacticFormula ℒₒᵣ) :
+    subst ℒₒᵣ (fvarSeq ((0 + φ₀.fvSup : ℕ) : V)) (⌜Rew.fixitr 0 φ₀.fvSup ▹ φ₀⌝ : V) = (⌜φ₀⌝ : V) := by
+  have key := Semiformula.typed_quote_substs (V := V)
+    (φ := Rew.fixitr 0 φ₀.fvSup ▹ φ₀)
+    (w := fun x ↦ (&(↑x) : SyntacticSemiterm ℒₒᵣ 0))
+  rw [Semiformula.subst_comp_fixitr] at key
+  have hval := congrArg (fun g : Bootstrapping.Semiformula V ℒₒᵣ 0 => g.val) key
+  simp only [Semiformula.val_substs, Semiterm.typed_quote_fvar, fvarSeqVec_val] at hval
+  exact hval.symm
+
+end FixitrBridge
+
 /-- **`𝗣𝗔⁻` is Δ₁-definable** (axiom-clean). `𝗣𝗔⁻` is a finite theory (`PeanoMinus.finite`:
 `𝗣𝗔⁻ = 𝗘𝗤 ∪ {17 axioms}`, all over the finite-symbol language `ℒₒᵣ`), so the finite-theory
 combinator `Theory.Δ₁.ofFinite` enumerates it into a `𝚫₁.Semisentence 1`. -/
