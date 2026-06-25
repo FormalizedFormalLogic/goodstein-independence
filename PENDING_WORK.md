@@ -46,10 +46,26 @@ suffices to rebuild parent chains. **`tpReduce` gives the canonical representati
 up-to-`inAnt`-equality to it.** (Headline ⊥-orbit's `fstIdx_red_eq_tpReduce_of_Rep` is EXACT — `Π=∅→⊥`,
 no antecedent ambiguity — so O3 only bites in the general structural induction, not the headline rung.)
 
+**⭐ O2 FULLY DECOMPOSED (lap 91) — the route-B I∀ reduct `d₀(a/n) = zsubst d0 a (numeral n)` needs
+exactly THREE lemmas, all gated on the eigenvariable freshness (O1, `a ∉ FV(Γ→∀xF)`):**
+- **(O2a) eigenvar-plug commutation** `fvSubst a t (substs1 ℒₒᵣ ^&a p) = substs1 ℒₒᵣ t p` under
+  `a ∉ FV(p)` — the succedent `F(a)→F(t)` step. NOT in repo/Foundation (only the `a'≠a` variant
+  `fvSubst_substs1_fvar` exists, `FvSubst.lean:567`). A Foundation-level formula-induction lemma.
+- **(O2b) antecedent freshness** `fvSubstSeq a t Γ = Γ` under `a ∉ FV(Γ)` (= `seqAnt s`). The repo's
+  `fvSubst_eq_self_of_le` (`FvSubst.lean:441`) gives this only for the SIZE-fresh `p ≤ a` form; need the
+  genuine-freshness `a ∉ FV` form (per-element of the `Γ` sequence).
+- **(O2c) eigen-subst validity** `ZDerivation (zsubst d0 a (numeral n))`. `ZDerivation_zsubst`
+  (`Zsubst.lean:834`) needs `d₀ ≤ a` (fresh large slot) — FALSE for an eigenvar. Generalize its
+  hypothesis from `d ≤ a` to "`a` avoids every nested eigenvariable of `d`" (the only use of `d≤a` is
+  deriving `e ≠ a` per nested I∀, `Zsubst.lean:852`); discharge via O1 (distinct eigenvariables).
+- The CONCLUSION-TRACKING (`fstIdx (zsubst d0 a (num n)) = tpReduce (tp d) (fstIdx d) n`) then follows
+  from `fstIdx_zsubst` (needs only `ZDerivation d0`, `Zsubst.lean:504`) + O2a (succedent) + O2b
+  (antecedent). So conclusion-tracking is PURE plumbing once O2a/O2b land.
+
 **NEXT (route-B continuation, in dependency order):**
-1. **O2 first** (eigen-subst lemma) — it gates the I∀ reduct; without it route B's I∀/Ind branches
-   can't produce valid reducts. Decompose: does `zsubst` already compute the right *term* substitution
-   on the eigenvar, only lacking the `d≤a` discharge? If so, a freshness-from-the-rule variant.
+1. **O1 freshness FIRST** (it gates O2a/O2b/O2c): add `a ∉ FV(seqAnt s) ∧ a ∉ FV(p)` to `zIallWff`
+   (and the analogue to `zIndWff`). Blast radius = every `zIall`/`zInd` builder. Then O2a (Foundation
+   formula lemma), O2b (per-element `fvSubstSeq` freshness), O2c (generalize `ZDerivation_zsubst`).
 2. **O1** (freshness in `zIallWff`/`zIndWff`) — needed for non-empty `Γ`; deferrable if the headline
    ⊥-orbit only reaches empty-`Γ` I∀ sub-derivations (verify via the recursion trace).
 3. **Rewire `red`'s I∀/chain/Ind branches to emit `tpReduce (tp dᵢ) Π 0`** (5.2.2 `iRKr`→reduced
