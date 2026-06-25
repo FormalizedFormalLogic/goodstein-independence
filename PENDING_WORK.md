@@ -9,19 +9,18 @@ Quot.sound]`, 0 math axioms). 2 commits (synthesis + grind).** See `REFLECTION-2
 branch genuinely closed** via `Or.inl (red_zK_fixpoint_of_atom_selected …)` (a TRUE node-fixpoint:
 `tp=isymRep`, `tpReduce_isymRep s 0 = s`).
 
-**KEY finding — the obstruction is the SELECTION INVARIANT, now precisely located.** axAll/axNeg (tags 5/6)
-are NOT clean node-fixpoints: `red dᵢ = dᵢ` but `tp dᵢ = isymLk`, so `red_zK_rep_nonchain` STRIPS the
-conclusion (`tpReduce isymLk s 0 ≠ s`) while `iord` (premise-only, lap-110) is UNCHANGED ⟹ at those nodes
-NEITHER disjunct holds. The only honest close is **vacuity**: a valid ⊥-orbit K-node's `permIdx` never
-selects a lone axiom L-leaf (a `L^k_A` without a matching `R_A` is not a redex). THIS is the single named
-crux now — prove it from `zKValid`/`hvalid` + the critical-pair structure, and the axAll/axNeg branches
-become vacuous (atom is already covered by the fixpoint).
+**axAll/axNeg CLOSED via the SELECTION INVARIANT — which already existed.** axAll/axNeg (tags 5/6) are NOT
+clean node-fixpoints (`red dᵢ=dᵢ` but `tp=isymLk` strips the conclusion while `iord` is unchanged ⟹ neither
+disjunct holds), so they close ONLY by vacuity. The vacuity is Cor 2.1, **already proved**:
+`tp_selected_isymRep_of_emptyAnt_botSucc` (`InternalZ:7163`) — the selected premise of a `∅→⊥` K-node has
+`tp = isymRep`, but an L-axiom has `tp = isymLk ≠ isymRep`. Both branches discharged by `exfalso` + that
+lemma. No new infrastructure needed.
 
-**Residual `sorry`s in `iord_descent_red` (4, was 5):**
-1. **axAll / axNeg** (2) — the SELECTION INVARIANT (above). Highest-value next: it dissolves both.
-2. **chain-REPLACE IH** — the strong-induction recursion (`red dᵢ` fixpoint ⟹ node fixpoint LEFT; else
-   premise IH descent RIGHT). Needs WF recursion on the derivation code.
-3. **splice `hr'`** — the lap-110 `iCritReductG` cut-formula strip (cut on stripped `A(d)`, strict rank).
+**Residual `sorry`s in `iord_descent_red` (2, was 5 at lap start):**
+1. **chain-REPLACE IH** — the strong-induction recursion (`red dᵢ` fixpoint ⟹ node fixpoint LEFT; else
+   the disjunctive premise IH on `dᵢ` + `iord_descent_red_zK_chain_replace` gives descent RIGHT). Needs WF
+   recursion on the derivation code. Highest-value next.
+2. **splice `hr'`** — the lap-110 `iCritReductG` cut-formula strip (cut on stripped `A(d)`, strict rank).
 
 Then the prize: ∀/¬-INVERSION (`ZDerivation_red_zK_crit`, template `Zinfty.allInv`); then M3
 `false_of_ZDerivesEmpty` (fixpoint-or-descent endgame: a `red`-fixpoint ⊥-orbit is cut-free ⟹ absurd; else

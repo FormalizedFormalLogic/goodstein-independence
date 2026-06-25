@@ -612,16 +612,24 @@ theorem iord_descent_red {d : V} (hd : ZDerivesEmptyR d) :
             rw [← heq] at ha hb hag hbg hNFa hNFb
             refine Or.inr (iord_descent_red_zK_chain_splice hds hmem hcrit h2 htag4 ?_ ha hb hag hbg hNFa hNFb)
             sorry
-        · -- axAll (tag 5): NOT a clean node-fixpoint. `red dᵢ = dᵢ` (axiom normal) BUT `tp dᵢ = isymLk`,
-          -- so `red_zK_rep_nonchain` strips the CONCLUSION (`tpReduce isymLk s 0 ≠ s`) while `iord`
-          -- (premise-only) is UNCHANGED ⟹ neither `red d = d` nor strict `iord` descent holds here.
-          -- This closes ONLY via the SELECTION INVARIANT (lap 111, the genuine remaining obstruction):
-          -- `permIdx` of a valid ⊥-orbit K-node never selects a lone axiom L-leaf, so this branch is
-          -- VACUOUS. Residual `sorry` = that invariant (then the disjunction holds vacuously).
-          sorry
-        · -- axNeg (tag 6): same as axAll — `tp dᵢ = isymLk` strips the conclusion, `iord` unchanged;
-          -- closes via the SELECTION INVARIANT (vacuous in a valid ⊥-orbit). Residual.
-          sorry
+        · -- axAll (tag 5): VACUOUS in a ⊥-orbit — the SELECTION INVARIANT (lap 111). Cor 2.1
+          -- (`tp_selected_isymRep_of_emptyAnt_botSucc`) forces the selected premise of a `∅→⊥` K-node
+          -- to have `tp = isymRep`, but an L-axiom has `tp = isymLk ≠ isymRep`. So `permIdx` never
+          -- selects a lone axiom L-leaf; this branch cannot occur.
+          exfalso
+          have hant : seqAnt s = (∅ : V) := by have h := hd.1.2.1; rwa [fstIdx_zK] at h
+          have hsucc : seqSucc s = (^⊥ : V) := by have h := hd.1.2.2; rwa [fstIdx_zK] at h
+          have hrep := tp_selected_isymRep_of_emptyAnt_botSucc hd.1.1 hant hsucc hcrit
+          rw [heq, tp_zAxAll] at hrep
+          exact isymLk_ne_isymRep _ _ hrep
+        · -- axNeg (tag 6): VACUOUS — same Cor 2.1 selection invariant (`tp = isymRep` vs an L-axiom's
+          -- `isymLk`).
+          exfalso
+          have hant : seqAnt s = (∅ : V) := by have h := hd.1.2.1; rwa [fstIdx_zK] at h
+          have hsucc : seqSucc s = (^⊥ : V) := by have h := hd.1.2.2; rwa [fstIdx_zK] at h
+          have hrep := tp_selected_isymRep_of_emptyAnt_botSucc hd.1.1 hant hsucc hcrit
+          rw [heq, tp_zAxNeg] at hrep
+          exact isymLk_ne_isymRep _ _ hrep
       · -- CRITICAL (5.1): `red (zK s r ds) = iRcritG …`, banked descent. Criticality is supplied by the
         -- `permIdx = lh ds` sentinel (`zKCritical_of_not_permIdx_lt`), so the full `zKValid` is in hand.
         exact Or.inr (iord_descent_red_zK_crit hcrit hds hmem hreg
