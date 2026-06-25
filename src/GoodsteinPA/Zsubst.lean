@@ -1714,6 +1714,15 @@ lemma ZRegular_red_zK_crit {s r ds : V} (hds : Seq ds)
   · exact ZRegular_zK_of_seqUpdate
       (fun m hm => ZRegular_zK_premise hds hreg hm) (ZRegular_zAxReduct hJ)
 
+/-- **Premise extraction from a critical reduct `iRcritG d ρ`.** Its premise sequence is the two-element
+`iCritReductSeq`, so when the whole reduct is regular both halves `znth (zKseq (iRcritG d ρ)) {0,1}` are.
+The extraction the 5.2.1 splice needs for the halves of `red dᵢ` once `dᵢ` is known to be a chain. -/
+lemma ZRegular_iRcritG_premise {d ρk : V} {ρ : V → V} (h : ZRegular (iRcritG d ρ)) (hk : ρk < 2) :
+    ZRegular (znth (zKseq (iRcritG d ρ)) ρk) := by
+  rw [iRcritG, iCritReductG] at h ⊢
+  rw [zKseq_zK]
+  exact ZRegular_zK_premise (iCritReductSeq_seq _ _) h (by rw [iCritReductSeq_lh]; exact hk)
+
 /-- **5.2.1 splice branch — regularity preserved, given the halves are regular.** `red (zK s r ds)`
 splices the two halves `a,b = znth (zKseq (red dᵢ)) {0,1}` in place at `i`; regular when every original
 premise is (`ZRegular_zK_premise`) and `a,b` are. The halves' regularity holds when `red dᵢ` is a chain
@@ -1730,6 +1739,42 @@ lemma ZRegular_red_zK_splice {s r ds : V} (hds : Seq ds)
   rw [red_zK_splice h1 h2]
   exact ZRegular_zK_of_seqInsert h1
     (fun m hm => ZRegular_zK_premise hds hreg hm) ha hb
+
+/-- **5.2.1 splice branch — regularity preserved, from the selected premise being a CHAIN.** Strengthens
+`ZRegular_red_zK_splice`: the two splice halves' regularity is *derived* from `zTag dᵢ = 4` (the selected
+premise `dᵢ` is itself a chain) together with the IH `ZRegular (red dᵢ)`. Since the splice branch is taken
+exactly when `dᵢ` is *critical* (`h2`), `red dᵢ = iRcritG dᵢ …` is a two-premise critical reduct, so its
+halves are premises of a regular chain (`ZRegular_iRcritG_premise`). This is the interface `redSound`
+consumes — the `zTag dᵢ = 4` fact comes from the `zKValidF` validity data threaded through the induction
+(lap-93 finding). -/
+lemma ZRegular_red_zK_splice_of_chain {s r ds : V} (hds : Seq ds)
+    (hreg : ZRegular (zK s r ds))
+    (hred : ∀ i < lh ds, ZRegular (red (znth ds i)))
+    (h1 : permIdx (zK s r ds) < lh ds)
+    (h2 : ¬ permIdx (znth ds (permIdx (zK s r ds)))
+        < lh (zKseq (znth ds (permIdx (zK s r ds)))))
+    (hchain : ZDerivation (znth ds (permIdx (zK s r ds))))
+    (htag : zTag (znth ds (permIdx (zK s r ds))) = 4) :
+    ZRegular (red (zK s r ds)) := by
+  -- reconstruct the selected premise dᵢ as a chain `zK s' r' ds'`
+  rcases zDerivation_iff.mp hchain with ⟨s', heq, _⟩ | ⟨s', a, p, d0, heq, _, _⟩ |
+    ⟨s', p, d0, heq, _, _⟩ | ⟨s', at', p, d0, d1, heq, _, _⟩ |
+    ⟨s', r', ds', heq, hds', _, _⟩ | ⟨s', p, k, heq, _, _⟩ | ⟨s', p, heq, _, _⟩
+  · rw [heq] at htag; simp at htag
+  · rw [heq] at htag; simp at htag
+  · rw [heq] at htag; simp at htag
+  · rw [heq] at htag; simp at htag
+  · -- the chain case: dᵢ = zK s' r' ds', so red dᵢ = iRcritG dᵢ … (critical by h2)
+    have hcrit : ¬ permIdx (zK s' r' ds') < lh ds' := by
+      rw [heq, zKseq_zK] at h2; exact h2
+    have hregred : ZRegular (iRcritG (zK s' r' ds') (fun n => zAxReduct (red (znth ds' n)))) := by
+      have h := hred (permIdx (zK s r ds)) h1
+      rwa [heq, red_zK_crit hcrit] at h
+    refine ZRegular_red_zK_splice hds hreg h1 h2 ?_ ?_
+    · rw [heq, red_zK_crit hcrit]; exact ZRegular_iRcritG_premise hregred zero_lt_two
+    · rw [heq, red_zK_crit hcrit]; exact ZRegular_iRcritG_premise hregred one_lt_two
+  · rw [heq] at htag; simp at htag
+  · rw [heq] at htag; simp at htag
 
 /-! ## `ZDerivation_zsubst` — eigenvariable substitution preserves Z-derivability (rung-1 step C)
 
