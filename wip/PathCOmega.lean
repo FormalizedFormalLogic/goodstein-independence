@@ -564,6 +564,27 @@ theorem stored_ord_iterate_descends {step ord : V → V} {z : V}
     icmp (ord (step^[n+1] z)) (ord (step^[n] z)) = 0 := by
   rw [Function.iterate_succ_apply']; exact hdrop _
 
+/-- **Brick 4, the REALISTIC form — `red`-orbit infinite descent relative to an invariant `P`.** The
+abstract `stored_ord_iterate_descends` assumes the drop holds at EVERY `w`; but the cut-elimination drop
+only holds on VALID reducible nodes (`sord_red_lt_AllEx` needs the ∀/∃-cut validity). So the iteration must
+carry an orbit invariant `P` ("valid reducible ⊥-derivation"): if `P` is closed under `red` (`hinv` — the
+reduct is again valid+reducible, the structural cut-elimination soundness) and `red` drops `sord` on `P`
+(`hdrop` — bricks above), then `n ↦ sord (red^[n] z)` strictly `≺`-descends forever. This is the EXACT
+shape the endgame needs (`Crux2Blueprint.iord_red_iterate_descends` analogue): `P` carries the validity
+licensing each step's drop, the descent then contradicts crux-1's PRWO(ε₀). Reduces crux-2 to: define `P`
++ prove `hinv` (orbit closure) + `hdrop` (per-step drop, ✔ for the ∀/∃ case via `sord_red_lt_AllEx`). -/
+theorem red_iterate_descends {P : V → Prop}
+    (hinv : ∀ w, P w → P (red w))
+    (hdrop : ∀ w, P w → icmp (sord (red w)) (sord w) = 0)
+    {z : V} (hz : P z) (n : ℕ) :
+    icmp (sord (red^[n+1] z)) (sord (red^[n] z)) = 0 := by
+  have hmem : ∀ m : ℕ, P (red^[m] z) := by
+    intro m
+    induction m with
+    | zero => simpa using hz
+    | succ k ih => rw [Function.iterate_succ_apply']; exact hinv _ ih
+  rw [Function.iterate_succ_apply']; exact hdrop _ (hmem n)
+
 /-! ## NEXT BRICKS (Path C, `sorry`-disclosed milestones — PENDING_WORK lap 102)
 
 Brick 1 above pins the ω-∀-node design + its cut invariant on the existing engine. The remaining Path-C
