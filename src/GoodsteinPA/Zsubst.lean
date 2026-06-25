@@ -1533,6 +1533,21 @@ lemma seqSucc_corrected_redexI_eq_cutFormula {d sᵢ a p d0 : V}
     unfold chainAsucc; rw [hIall, fstIdx_zIall]; exact (zDerivation_zIall_inv hpremZ).2.1
   rw [seqSucc_zsubst_zIall_premise (by simp) hpremZ hpfresh, cutFormula_all hprincipal]
 
+/-- **The corrected reduct's FULL end-sequent (general instance `t`).** Generalizes `red_zIall_tpReduce`
+from the fixed `t = 0` to any closed term: the eigensubst premise `zsubst d0 a t` of a valid I∀ node has
+end-sequent `Γ → F(t) = seqSetSucc s (substs1 t p)` (antecedent `Γ` kept by `hΓfresh`, succedent the
+instance `F(t)`). The antecedent half is what `haux0`'s `hant`/`hX_ant` need; the succedent half is
+linchpin #1. -/
+lemma fstIdx_zsubst_zIall_premise {s a p d0 t : V} (ht : IsSemiterm ℒₒᵣ 0 t)
+    (hZ : ZDerivation (zIall s a p d0)) (hpfresh : fvSubst ℒₒᵣ a t p = p)
+    (hΓfresh : fvSubstSeq a t (seqAnt s) = seqAnt s) :
+    fstIdx (zsubst d0 a t) = seqSetSucc s (substs1 ℒₒᵣ t p) := by
+  obtain ⟨hd0, _, hwff⟩ := zDerivation_zIall_inv hZ
+  have hfa : IsSemiterm ℒₒᵣ 0 (^&a : V) := by simp
+  rw [fstIdx_zsubst _ _ hd0]
+  simp only [fvSubstSeqt, seqSetSucc, hwff.1, hwff.2.1, hΓfresh,
+    fvSubst_substs1 ht hfa hwff.2.2, termFvSubst_fvar_self, hpfresh]
+
 /-- **5.2.2 replace branch — regularity preserved (unconditional).** `red (zK s r ds) = K^r(i/red dᵢ)`;
 regular since every original premise is (`ZRegular_zK_premise`) and the swapped reduct `red dᵢ` is (IH). -/
 lemma ZRegular_red_zK_replace {s r ds : V} (hds : Seq ds)

@@ -90,6 +90,65 @@ does for the 5.1 branch), so each branch is stated over the genuine per-premise 
 -- the former local copies here were removed to avoid duplicate declarations once Crux2Blueprint imports
 -- `GoodsteinPA.Zsubst` for the route-B regularity threading.)
 
+/-- **`haux0` — the corrected inversion's R-side half (Buchholz Thm 3.4(a), ∀-case), DISCHARGED.** The exact
+analogue of `ZDerivation_zK_replace_zIall_of` at the cut INSTANCE `k` instead of `0`: replacing the R-redex
+premise `zIall sᵢ a p d0` of a critical chain by the re-principalized reduct `zsubst d0 a (numeral k)`
+(deriving `Γ → F(k) = Γ → cutFormula d`), with the conclusion succedent reduced to `cutFormula d`, yields a
+`ZDerivation`. This is one of the two halves `ZDerivation_iRcritG_of` needs — the half `red`'s instance-`0`
+reduct provably cannot supply (lap-114 finding). Discharged ENTIRELY by the banked
+`ZDerivation_iCritReplaceReduce_of` + the lap-114 linchpins (`fstIdx_zsubst_zIall_premise`,
+`seqSucc_corrected_redexI_eq_cutFormula` via `cutFormula_all`), modulo only the orbit data: O1
+(`maxEigen d0 < a`), O3 freshness (`hpfresh`/`hΓfresh`), the cut-formula wff, and the threading/rank up to
+`redexI` (`redexI ≤ j₀`, from the parent `zKValid`; lap-113 `irk_chainAsucc_redexI_le`). `k` is the L-redex
+instance `π₁(π₂(tp (redexJ premise)))` — the SAME `k` `cutFormula` reads. This proves the corrected reduct's
+R-half is sound; the `red`-redefinition (re-key `iRNextG` tag-4 to emit this reduct) + `haux1` (the
+symmetric L-half) + threading-data supply remain. -/
+theorem ZDerivation_corrected_haux0 {s r ds sᵢ a p d0 : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hi : redexI (zK s r ds) < lh ds)
+    (hdi : znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0)
+    (hfresh_eig : maxEigen d0 < a)
+    (hpfresh : fvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral
+        (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) p = p)
+    (hΓfresh : fvSubstSeq a (Bootstrapping.Arithmetic.numeral
+        (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) (seqAnt sᵢ) = seqAnt sᵢ)
+    (hsucc_wff : IsUFormula ℒₒᵣ (cutFormula (zK s r ds)))
+    (hthread : ∀ i' ≤ redexI (zK s r ds), ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank : ∀ i' < redexI (zK s r ds), irk (chainAsucc ds i') ≤ r) :
+    ZDerivation (zK (seqSetSucc s (cutFormula (zK s r ds))) r
+      (seqUpdate ds (redexI (zK s r ds))
+        (zsubst d0 a (Bootstrapping.Arithmetic.numeral
+          (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds)))))))))) := by
+  have hst : IsSemiterm ℒₒᵣ 0 (Bootstrapping.Arithmetic.numeral
+      (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds)))))) : V) := by simp
+  have hZdi : ZDerivation (zIall sᵢ a p d0) := hdi ▸ (zDerivation_zK_inv hZ).2 _ hi
+  have hZred : ZDerivation (zsubst d0 a (Bootstrapping.Arithmetic.numeral
+      (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds)))))))) :=
+    ZDerivation_zsubst_zIall_premise hst hZdi hfresh_eig
+  have htrack : fstIdx (zsubst d0 a (Bootstrapping.Arithmetic.numeral
+      (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds)))))))) =
+        seqSetSucc sᵢ (substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral
+          (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) p) :=
+    fstIdx_zsubst_zIall_premise hst hZdi hpfresh hΓfresh
+  have hchain_i : chainAnt ds (redexI (zK s r ds)) = seqAnt sᵢ := by
+    unfold chainAnt; rw [hdi, fstIdx_zIall]
+  have hA : chainAsucc (zKseq (zK s r ds)) (redexI (zK s r ds)) = (^∀ p : V) := by
+    rw [zKseq_zK]; unfold chainAsucc; rw [hdi, fstIdx_zIall]; exact (zDerivation_zIall_inv hZdi).2.1
+  have hcut : substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral
+      (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) p = cutFormula (zK s r ds) := by
+    rw [cutFormula_all hA, zKseq_zK]
+  refine ZDerivation_iCritReplaceReduce_of hi hZ hZred ?_ ?_ ?_ hthread hrank ?_ ?_ ?_ ?_ ?_ ?_
+  · rw [htrack, seqAnt_seqSetSucc, hchain_i]
+  · rw [htrack, seqSucc_seqSetSucc, seqSucc_seqSetSucc, hcut]
+  · rw [seqAnt_seqSetSucc]
+  · rw [seqSucc_seqSetSucc]; exact hsucc_wff
+  · exact iperm_tp_fstIdx_of_ZDerivation hZred
+  · exact (tag_uformula_of_ZDerivation hZred).1
+  · exact (tag_uformula_of_ZDerivation hZred).2.1
+  · exact (tag_uformula_of_ZDerivation hZred).2.2.1
+  · exact (tag_uformula_of_ZDerivation hZred).2.2.2
+
 /-- **5.1 critical sub-residual — THE cut-elimination prize.** When the chain is critical, `red = iRcritG
 d ρ` with `ρ` the recursive premise reducts; delegates to `ZDerivation_iRcritG_of`, which reduces it to the
 two stripped half-derivations `haux0` (`Γ → cutFormula d`) / `haux1` (Buchholz Thm 3.4(a) inversion).
