@@ -1,6 +1,49 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 99 — VALIDITY LAYER + selection bound DONE; remaining = O3-freshness motive + assembly
+**Build 🟢 1325. Headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms). Lap-97's
+"architectural wall" RESOLVED (the eigensubst rewire landed lap 97; `red (zIall) = zsubst d0 a 0`).**
+
+The two open `sorry`s are `ZDerivation_red_zK`'s replace branches (`Crux2Blueprint.lean:206,214`). Lap 99
+built **the entire validity layer** for them, all axiom-clean:
+- `ZDerivation_iCritReplaceReduce_of` (R-rule succedent-reduction constructor)
+- `ZDerivation_zK_seqAddAnt` (L-rule axAll antecedent-weakening constructor)
+- `tpReduce_tp_zAxAll/zAxNeg` (conclusion-tracking, all node types — frontier item 1 DONE)
+- `permIdx_le_of_isPermPrem` ⟹ **`permIdx ≤ j₀`** (Buchholz §5.2 selection bound)
+
+### The THREE remaining pieces to discharge the two `sorry`s (attack paths)
+**A. O3-freshness invariant + motive strengthening (THE gating residual).** `red_zIall_tpReduce` (the I∀
+conclusion-tracking) needs `fvSubst a 0 p = p` and `fvSubstSeq a 0 (seqAnt sᵢ) = seqAnt sᵢ` — the
+eigenvariable `a` fresh in the matrix `p` and antecedent `Γ`. **CONFIRMED lap 99: this is NOT in
+`ZRegular` (`zReg_zIall` gives only `maxEigen d0 < a`) nor `zIallWff` (gives only `seqAnt(fstIdx d0)=seqAnt s`,
+`seqSucc=p(a)`, `IsSemiformula 1 p`).** It is a genuine extra embedding invariant (O3).
+  - *Path A1 (recommended):* define a hereditary `ZFresh d : Prop` (eigenvars fresh in their matrices+ants,
+    hereditarily) + prove `ZFresh` preserved by `red`/the embedding produces it; thread it as a second
+    motive conjunct in `redSoundGen` alongside `ZRegular`.
+  - *Path A2:* fold O3 into `ZRegular` itself (extend `zReg_zIall` to also flag `a ∈ FV(p)∪FV(Γ)`), so the
+    existing `ZRegular` threading carries it. Cleaner if `zReg`'s definition can name `fvSubst` cheaply.
+  - *Path A3 (cheapest unblock):* take O3 as an explicit hypothesis on `redSound`/`ZDerivesEmptyR` (the
+    orbit predicate) and discharge it at the M2 embedding (`foundation_bot_to_Z_empty`) where the fresh
+    eigenvariable is CHOSEN. Defers the heredity proof to the embedding.
+
+**B. Threading restriction (trivial, ~5 lines).** From the parent `isChainInf` witness `j₀` + `permIdx ≤ j₀`
+(via `permIdx_le_of_isPermPrem` given a permissible premise ≤ j₀), restrict `∀i'≤j₀`/`∀i'<j₀` to
+`∀i'≤permIdx`/`∀i'<permIdx` by `le_trans`. Feeds `ZDerivation_iCritReplaceReduce_of`'s `hthread`/`hrank`.
+
+**C. axNeg succedent-replacement constructor (medium).** `tpReduce_tp_zAxNeg = seqSetSucc Π p` (succedent
+REPLACEMENT, not weakening — distinct from axAll). Needs a `ZDerivation (zK (seqSetSucc s p) r ds)` from
+`ZDerivation (zK s r ds)` constructor; Buchholz §5 ¬-axiom cut restructures premises, so read the PDF
+(buchholz-on-gentzens md line 90, the `Θ→A` conclusion). Also: confirm axNeg CAN be selected (`¬p ∈ Γ`).
+
+Then: dispatch line 206 (chain dᵢ = Rep) via `ZDerivation_red_zK_replace`; line 214 (non-chain) by node
+type — atom/Ind→Rep, I∀/I¬→`ZDerivation_iCritReplaceReduce_of`, axAll→`ZDerivation_zK_seqAddAnt`,
+axNeg→(C). Wff side-conditions (hf1_v…) extract from the premise's `ZDerivation` (note `zIallF` wff is
+`IsSemiformula 1`, reconcile with `IsUFormula`).
+
+---
+
 ## 📍 Lap 97 — ⛔ THE WALL IS ARCHITECTURAL: `red` cannot do the eigenvariable substitution
+(SUPERSEDED — the architectural wall was resolved by the lap-97 eigensubst rewire; kept for history.)
 
 **Build 🟢 1325. Headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms). `ZRegular_red` banked
 (axiom-clean) — full O1 regularity-preservation, `Zsubst.lean`.**
