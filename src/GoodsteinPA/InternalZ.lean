@@ -6546,7 +6546,7 @@ formula is `A(d) = chainAsucc (zKseq d) (redexI d)`, the auxiliaries replace the
 `j = redexJ d` by their `ρ`-reducts, and carry the reduced endsequents. Closed term; only `ρ` (the N1 IH)
 is abstract. (Soundness `ZDerivation_iRcritG_of` is proved later, after `ZDerivation_iCritReductG_of`.) -/
 noncomputable def iRcritG (d : V) (ρ : V → V) : V :=
-  iCritReductG (fstIdx d) (chainAsucc (zKseq d) (redexI d)) (zKrank d - 1) (zKrank d) (zKrank d)
+  iCritReductG (fstIdx d) (cutFormula d) (zKrank d - 1) (zKrank d) (zKrank d)
     (seqUpdate (zKseq d) (redexI d) (ρ (redexI d)))
     (seqUpdate (zKseq d) (redexJ d) (ρ (redexJ d)))
 
@@ -6569,7 +6569,7 @@ noncomputable def iRKc (d s : V) : V :=
 noncomputable def _root_.LO.FirstOrder.Arithmetic.iRKcDef : 𝚺₁.Semisentence 3 := .mkSigma
   “y d s. ∃ f, !fstIdxDef f d ∧ ∃ ds, !zKseqDef ds d ∧
     ∃ i, !redexIDef i d ∧ ∃ j, !redexJDef j d ∧
-    ∃ C, !chainAsuccDef C ds i ∧ ∃ rk, !zKrankDef rk d ∧ ∃ rk1, !subDef rk1 rk 1 ∧
+    ∃ C, !cutFormulaDef C d ∧ ∃ rk, !zKrankDef rk d ∧ ∃ rk1, !subDef rk1 rk 1 ∧
     ∃ ai, !znthDef ai ds i ∧ ∃ vi, !znthDef vi s ai ∧ ∃ wi, !zAxReductDef wi vi ∧
     ∃ aj, !znthDef aj ds j ∧ ∃ vj, !znthDef vj s aj ∧ ∃ wj, !zAxReductDef wj vj ∧
     ∃ u0, !seqUpdateDef u0 ds i wi ∧ ∃ ss, !seqSetSuccDef ss f C ∧ ∃ d0, !zKGraph d0 ss rk u0 ∧
@@ -6579,7 +6579,7 @@ noncomputable def _root_.LO.FirstOrder.Arithmetic.iRKcDef : 𝚺₁.Semisentence
 set_option maxHeartbeats 1600000 in
 instance iRKc_defined : 𝚺₁-Function₂ (iRKc : V → V → V) via iRKcDef := .mk fun v ↦ by
   simp [iRKcDef, iRKc, iRcritG, iCritReductG, fstIdx_defined.iff, zKseq_defined.iff,
-    redexI_defined.iff, redexJ_defined.iff, chainAsucc_defined.iff, zKrank_defined.iff,
+    redexI_defined.iff, redexJ_defined.iff, cutFormula_defined.iff, zKrank_defined.iff,
     sub_defined.iff, znth_defined.iff, zAxReduct_defined.iff, seqUpdate_defined.iff,
     seqSetSucc_defined.iff, seqAddAnt_defined.iff, iCritReductSeq_defined.iff, zK_defined.iff]
 
@@ -8245,13 +8245,13 @@ auxiliaries carry the cut's reduced endsequents `Θ→A(d)`/`A(d),Θ→D` with c
 `ZDerivation`s of their reduced endsequents (recursive Thm 3.4(a), the structural IH). The validity
 threading + cut-rank drop are banked (`zKValidF_iCritReductGen`, `irk_cut_lt_rank_*`). -/
 lemma ZDerivation_iRcritG_of {d : V} {ρ : V → V}
-    (haux0 : ZDerivation (zK (seqSetSucc (fstIdx d) (chainAsucc (zKseq d) (redexI d)))
+    (haux0 : ZDerivation (zK (seqSetSucc (fstIdx d) (cutFormula d))
       (zKrank d) (seqUpdate (zKseq d) (redexI d) (ρ (redexI d)))))
-    (haux1 : ZDerivation (zK (seqAddAnt (chainAsucc (zKseq d) (redexI d)) (fstIdx d))
+    (haux1 : ZDerivation (zK (seqAddAnt (cutFormula d) (fstIdx d))
       (zKrank d) (seqUpdate (zKseq d) (redexJ d) (ρ (redexJ d)))))
     (hsAnt : Seq (seqAnt (fstIdx d)))
-    (hCrk : irk (chainAsucc (zKseq d) (redexI d)) ≤ zKrank d - 1)
-    (hCUf : IsUFormula ℒₒᵣ (chainAsucc (zKseq d) (redexI d)))
+    (hCrk : irk (cutFormula d) ≤ zKrank d - 1)
+    (hCUf : IsUFormula ℒₒᵣ (cutFormula d))
     (hssUf : IsUFormula ℒₒᵣ (seqSucc (fstIdx d)))
     (hsaUf : ∀ k < lh (seqAnt (fstIdx d)), IsUFormula ℒₒᵣ (znth (seqAnt (fstIdx d)) k)) :
     ZDerivation (iRcritG d ρ) :=

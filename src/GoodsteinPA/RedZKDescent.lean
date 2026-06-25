@@ -196,12 +196,12 @@ lemma iCrit_halves_descend {s r ds : V} (hcrit : ¬ permIdx (zK s r ds) < lh ds)
   set vI : V := zAxReduct (red (znth ds (redexI (zK s r ds)))) with hvI
   set vJ : V := zAxReduct (red (znth ds (redexJ (zK s r ds)))) with hvJ
   have e0 : znth (zKseq (red (zK s r ds))) 0
-      = zK (seqSetSucc s (chainAsucc ds (redexI (zK s r ds)))) r
+      = zK (seqSetSucc s (cutFormula (zK s r ds))) r
           (seqUpdate ds (redexI (zK s r ds)) vI) := by
     rw [red_zK_crit hcrit, iRcritG]
     simp only [fstIdx_zK, zKseq_zK, zKrank_zK, zKseq_iCritReductG, znth_iCritReductSeq_zero, hvI]
   have e1 : znth (zKseq (red (zK s r ds))) 1
-      = zK (seqAddAnt (chainAsucc ds (redexI (zK s r ds))) s) r
+      = zK (seqAddAnt (cutFormula (zK s r ds)) s) r
           (seqUpdate ds (redexJ (zK s r ds)) vJ) := by
     rw [red_zK_crit hcrit, iRcritG]
     simp only [fstIdx_zK, zKseq_zK, zKrank_zK, zKseq_iCritReductG, znth_iCritReductSeq_one, hvJ]
