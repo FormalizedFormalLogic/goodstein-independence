@@ -6398,6 +6398,23 @@ lemma fstIdx_red_of_tag_Ind_or_K {d : V} (hZ : ZDerivation d) (htag : zTag d = 3
   · simp [zTag_zAxAll] at htag
   · simp [zTag_zAxNeg] at htag
 
+/-- **Route-B conclusion invariant, `Rep` half (lap 91).** For `Ind`/chain derivations (`zTag ∈ {3,4}`,
+where `tp d = Rep`), the existing `red` already satisfies Buchholz Thm 3.4(b): its conclusion is the
+reduced sequent `tpReduce (tp d) (fstIdx d) 0`. Because `tp d = Rep` here, `tpReduce` is the identity
+(`tpReduce_isymRep`), so this is `fstIdx_red_of_tag_Ind_or_K`. **Headline-relevant case:** on the ⊥-orbit
+every chain has `tp = Rep` (Cor 2.1), so `red` keeps the `∅→⊥` conclusion — exactly route B's
+specialisation, with no rewire needed. (The non-`Rep` branches — I∀, non-`Rep` chains — still need the
+`red` rewire to emit `tpReduce`; see PENDING_WORK lap-91.) -/
+lemma fstIdx_red_eq_tpReduce_of_Rep {d : V} (hZ : ZDerivation d) (htag : zTag d = 3 ∨ zTag d = 4) :
+    fstIdx (red d) = tpReduce (tp d) (fstIdx d) 0 := by
+  have htp : tp d = isymRep := by
+    have h1 : zTag d ≠ 1 := by rcases htag with h | h <;> simp [h]
+    have h2 : zTag d ≠ 2 := by rcases htag with h | h <;> simp [h]
+    have h5 : zTag d ≠ 5 := by rcases htag with h | h <;> simp [h]
+    have h6 : zTag d ≠ 6 := by rcases htag with h | h <;> simp [h]
+    unfold tp; rw [if_neg h1, if_neg h2, if_neg h5, if_neg h6]
+  rw [fstIdx_red_of_tag_Ind_or_K hZ htag, htp, tpReduce_isymRep]
+
 /-! ### The ordinal of `red`'s K-case = the ordinal of `iR2`'s K-case (the descent bridge)
 
 `iRcritG` (genuine, correct endsequents) and `iRcrit` (ordinal-shadow) differ ONLY in the auxiliaries'
