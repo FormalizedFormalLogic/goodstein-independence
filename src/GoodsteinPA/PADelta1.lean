@@ -87,6 +87,27 @@ defined functions). -/
 instance succIndCodeRaw_definable : 𝚺₁-Function₁ (succIndCodeRaw : V → V) := by
   unfold succIndCodeRaw; definability
 
+/-- **Concrete graph semisentence for `succIndCodeRaw`** (a `𝚺₁.Semisentence 2`, output then input):
+chains the component graphs `numeralGraph`/`substs1Graph`/`qqBvarDef`/`qqAddGraph`/`impGraph`/`qqAllDef`.
+Needed (unlike the `Definable` instance above) to reference `succIndCodeRaw` inside the recognizer's
+own DSL semisentence `ch`. -/
+noncomputable def succIndCodeRawGraph : 𝚺₁.Semisentence 2 := .mkSigma
+  “y p.
+    ∃ n0, !numeralGraph n0 0 ∧
+    ∃ s1, !(substs1Graph ℒₒᵣ) s1 n0 p ∧
+    ∃ b0, !qqBvarDef b0 0 ∧
+    ∃ n1, !numeralGraph n1 1 ∧
+    ∃ ad, !qqAddGraph ad b0 n1 ∧
+    ∃ s2, !(substs1Graph ℒₒᵣ) s2 ad p ∧
+    ∃ inr, !(impGraph ℒₒᵣ) inr p s2 ∧
+    ∃ qin, !qqAllDef qin inr ∧
+    ∃ qp, !qqAllDef qp p ∧
+    ∃ rhs, !(impGraph ℒₒᵣ) rhs qin qp ∧
+    !(impGraph ℒₒᵣ) y s1 rhs”
+
+instance succIndCodeRaw.defined : 𝚺₁-Function₁[V] succIndCodeRaw via succIndCodeRawGraph := .mk fun v ↦ by
+  simp [succIndCodeRawGraph, succIndCodeRaw, substs1]
+
 end SuccIndCode
 
 /-! ## Brick 2a — the internal iterated universal quantifier `qqAllItr` (lap 79)
@@ -521,4 +542,5 @@ to `@consistent_unprovable 𝗣𝗔 paDelta1 _ _`, dropping `PA_delta1Definable`
   paMinusDelta1.add inductionSchemeUnivDelta1
 
 end GoodsteinPA
+
 
