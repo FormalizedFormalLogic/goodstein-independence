@@ -16,12 +16,13 @@ ANTI-FRAUD: the headline `Statement.peano_not_proves_goodstein` itself is left a
 `sorry` (per `DIRECTION.md`: discharge it only when `#print axioms` is clean). This file does
 *not* smuggle that — `goodstein_implies_consistency` carries the only open obligation, openly.
 
-⚠️ **Foundation-side axiom dependency.** Gödel II for `𝗣𝗔` needs the instance `𝗣𝗔.Δ₁`
-(`𝗣𝗔` is Δ₁-definable). Foundation currently provides this as an **axiom**
-(`PA_delta1Definable`, a disclosed TODO in `Incompleteness/Examples.lean` — the arithmetization
-of the full induction scheme is not yet formalized there). Hence `peano_not_proves_consistency`
-and anything chaining through it carry `PA_delta1Definable` in `#print axioms`. Discharging that
-axiom (Δ₁-definability of `𝗣𝗔`) is a separate residual on the path to a fully clean headline.
+✅ **Foundation-side axiom dependency — DISCHARGED (lap 89).** Gödel II for `𝗣𝗔` needs the
+instance `𝗣𝗔.Δ₁` (`𝗣𝗔` is Δ₁-definable). Foundation *formerly* provided this as an axiom
+(`PA_delta1Definable`); it now proves it as a real `noncomputable instance`
+(`Incompleteness/InductionSchemeDelta1.lean`), so `peano_not_proves_consistency` and everything
+chaining through it are axiom-clean — `#print axioms peano_not_proves_consistency =
+[propext, Classical.choice, Quot.sound]` (re-verified in-kernel lap 111). No Foundation-side
+residual remains; the only open obligation to a clean headline is crux-2 (the ordinal analysis).
 -/
 import Foundation.FirstOrder.Incompleteness.Examples
 import GoodsteinPA.Encoding
@@ -61,8 +62,9 @@ resolution, see memory `route-resolved-prwo-gentzen`).** Two girders, both deep:
 
 The free-X back-end `Thm56.peano_not_proves_TI` (Buchholz §5, axiom-clean) does NOT chain here
 (free-X-TI ⊢ PRWO, wrong direction); it is a banked asset, off the headline path. NB: this route
-surfaces Gödel II for `𝗣𝗔`, hence carries Foundation's `PA_delta1Definable` — a separate residual
-to a fully clean headline. ANTI-FRAUD: do not discharge until `#print axioms` is clean. -/
+surfaces Gödel II for `𝗣𝗔`; its Δ₁-definability dependency was discharged upstream (lap 89), so the
+ONLY remaining residual to a clean headline is crux-2 itself. ANTI-FRAUD: do not discharge until
+`#print axioms` is clean. -/
 theorem goodstein_implies_consistency :
     𝗣𝗔 ⊢ ↑goodsteinSentence → 𝗣𝗔 ⊢ ↑𝗣𝗔.consistent := by
   sorry

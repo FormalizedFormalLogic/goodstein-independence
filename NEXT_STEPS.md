@@ -1,3 +1,45 @@
+# NEXT STEPS — crux-2 (lap 111 DEEP REFLECTION: reformulate the descent, then the INVERSION is the prize)
+
+> **⭐⭐⭐ LAP-111 DEEP REFLECTION — read FIRST (refines, does not overturn, lap 107/110).** Build 🟢 1326;
+> direction KEPT (Σ₁ engine `red`/`iord`, axiom-free destination). Three altitude findings + an ordered plan:
+>
+> **Finding 1 — the FIXPOINT branches are a SELECTION bug, not descent gaps.** `iord_descent_red`'s
+> atom/axAll/axNeg-selected branches (`Crux2Blueprint:568/610/612`) and the chain-REPLACE IH (`:594`, false at
+> atom-fixpoints, lap 109) are all `red d = d` — the engine selecting an axiom LEAF (no cut) as the redex. Same
+> "stall after one step" defect diagnosed laps 104/107; it keeps re-surfacing branch by branch. Grinding a
+> per-branch descent for these is futile.
+>
+> **Finding 2 — the effort is imbalanced.** The ordinal-DESCENT side (`iord_descent_red`) is ~80% done; the
+> cut-elimination CONTENT — the ∀/¬-INVERSION (`ZDerivation_red_zK_crit`, `Crux2Blueprint:96/100`) — is ≈0% on
+> the engine and was AVOIDED (only attempt `ZInf.allInv` killed VACUOUS lap 107). Per hardest-first, the
+> inversion is the prize.
+>
+> **Finding 3 — lap 110 is sound** (the `iCritReductG` principal-vs-stripped cut-formula root cause is real and
+> its fix is correct).
+>
+> **PLAN (ordered):**
+> 1. **(structural, do FIRST — collapses ~4 sorries)** Reformulate `iord_descent_red` to the **disjunctive**
+>    `red d = d ∨ icmp (iord (red d)) (iord d) = 0`, and `false_of_ZDerivesEmpty` to **"the orbit terminates at
+>    a `red`-fixpoint (by PRWO well-foundedness) and a fixpoint `∅→⊥` derivation is cut-free, hence absurd."**
+>    The fixpoint branches then discharge via the LEFT disjunct (`red d = d`, already banked as
+>    `red_zK_fixpoint_of_atom_selected`). The real obligation becomes the SINGLE pair: `red d = d ⟹ d cut-free`
+>    (selection correctness) + `no cut-free derivation of ∅→⊥`. Contained change: `iord_descent_red` is consumed
+>    only via `iord_red_iterate_descends → false_of_ZDerivesEmpty` (`Crux2Blueprint:644/673`). Test the
+>    hypothesis that this is cleaner; if the engine resists, fall back to per-branch but record why.
+> 2. **(mechanical, concrete — lap-110's plan)** Redefine `iCritReductG`'s cut formula to the STRIPPED `A(d)`
+>    (∀xF ⟹ F(k) via `substs1`; ¬A ⟹ A); close the splice `hr'` with the strict stripped rank bound
+>    (`irk_cut_lt_rank_forall`/`_neg`, `InternalZ:409/415`). Descent lemmas are IMMUNE (they read only the
+>    premise sequence). See `ANALYSIS-2026-06-25-lap110-iCritReductG-cut-formula-strip.md`.
+> 3. **(THE PRIZE, hardest-first)** Start the ∀/¬-INVERSION on the Σ₁ engine (`ZDerivation_red_zK_crit`): the
+>    two halves derive the stripped endsequents `d{0} ⊢ Θ→A(d)`, `d{1} ⊢ A(d),Θ→D`. Template `Zinfty.allInv` /
+>    `andInv` / `orInv` (`src/Zinfty.lean`, META, axiom-clean). Bridge the one-sided-Tait / two-sided-Buchholz
+>    fork (lap 106) on V-codes. This is the multi-year core; do NOT defer it further behind descent leaves.
+>
+> Then the path-independent downstream: M3 `false_of_ZDerivesEmpty` (Σ₁ graph + crux-1 PRWO), M2
+> `foundation_bot_to_Z_empty` (the ~1k-line Foundation→Z embedding), then wire crux-1 ∘ crux-2 →
+> `Reduction.goodstein_implies_consistency` → headline (ONLY when `#print axioms` clean). See
+> `REFLECTION-2026-06-25-lap111.md`, `STATUS.md`, `HANDOFF-2026-06-25-lap111.md`.
+
 # NEXT STEPS — crux-2 (lap 107: PIVOT off the external-inductive prototypes onto the Σ₁ engine `red` redesign)
 
 > **⭐⭐⭐ LAP-107 FRESH-MIND REVIEW — DIRECTION CHANGE (read FIRST; supersedes the lap-102→106 `ZInf`/`ZcDer`

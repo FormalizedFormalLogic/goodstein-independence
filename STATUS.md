@@ -1,6 +1,32 @@
 # STATUS — GoodsteinPA 📊
 
-> **⭐⭐⭐ Lap-110 — splice branch 6/7 CLOSED (`iCrit_halves_descend`); `hr'` degree-drop crux isolated (read FIRST — current).**
+**`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 111 · 2026-06-25 · `0885638`
+· Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**,
+re-verified in-kernel this lap).
+
+> **⭐⭐⭐ Lap-111 DEEP REFLECTION — direction KEPT, ONE structural lever identified (read FIRST — current).**
+> Primary deliverable `REFLECTION-2026-06-25-lap111.md`. Build 🟢 green (1326); statement re-audited vs paper
+> (no drift); headline + `goodstein_implies_consistency` + `peano_not_proves_consistency` + faithfulness anchor
+> all re-verified in-kernel (`lake env lean`). **Findings:** (1) lap 110 was NOT circling — it produced a genuine
+> kernel-grounded root cause (`iCritReductG` cuts the critical reduct on the PRINCIPAL `A_i`; Buchholz 3.4(a)
+> cuts on the STRIPPED `A(d)`, strictly lower rank). (2) But the work is IMBALANCED: the ordinal-DESCENT
+> bookkeeping (`iord_descent_red`, ~80% done) has soaked up the laps while the genuine cut-elimination
+> CONTENT — the ∀/¬-INVERSION (`ZDerivation_red_zK_crit`, ≈0% on the engine; its only attempt `ZInf.allInv`
+> was killed VACUOUS at lap 107) — sits untouched. The inversion is the prize and it is the avoided piece.
+> (3) The `iord_descent_red` FIXPOINT branches (atom/axAll/axNeg-selected, `red d = d`; + the chain-REPLACE IH
+> false-at-fixpoint) are a SELECTION bug masquerading as descent gaps — the same "engine stalls after one step"
+> defect re-surfacing branch by branch (laps 104/107/109/110). **HIGHEST-VALUE STRUCTURAL MOVE (do first):**
+> reformulate `iord_descent_red` to the disjunctive `red d = d ∨ iord ≺` and `false_of_ZDerivesEmpty` to
+> "terminate-at-cut-free ⟹ absurd" — the fixpoint branches then close TRIVIALLY (left disjunct) and the whole
+> remaining crux-2 obligation sharpens to `red d = d ⟹ cut-free` (selection correctness) + `no cut-free ∅→⊥` +
+> the inversion. Contained: `iord_descent_red` is consumed only via `iord_red_iterate_descends →
+> false_of_ZDerivesEmpty`. **Then** land lap-110's cut-formula strip (closes `hr'`), **then** the inversion
+> (the prize). Doc-drift fixed: `Reduction.lean` no longer claims `peano_not_proves_consistency` carries
+> `PA_delta1Definable` (kernel-clean since lap 89). See `REFLECTION-2026-06-25-lap111.md`, `NEXT_STEPS.md`,
+> `HANDOFF-2026-06-25-lap111.md`, `PENDING_WORK.md` lap-110.
+
+> **⭐⭐⭐ Lap-110 — splice branch 6/7 CLOSED (`iCrit_halves_descend`); `hr'` degree-drop crux isolated (historical).**
 > Baton `HANDOFF-2026-06-25-lap110.md`. Build 🟢 green (`lake build GoodsteinPA`, **1326**); headline footprint
 > intact (`peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]`, 0 math axioms;
 > `iCrit_halves_descend` axiom-clean `[propext, choice, Quot.sound]`). Banked `iCrit_halves_descend`
@@ -565,7 +591,24 @@ pure mathlib ordinal arithmetic it is **Aristotle-eligible** (the one piece with
 E **pins which `≺` F may use** (co-design). See newest `HANDOFF`.
 
 ## Where it stands
-**(lap-107 FRESH-MIND REVIEW — CURRENT read.)** Build green **1325**; `src/` UNTOUCHED; headline honest
+**(lap-111 DEEP REFLECTION — CURRENT read.)** Build green **1326**; headline honest `sorry` (real in-kernel
+`#print axioms = [propext, sorryAx, Classical.choice, Quot.sound]`, 0 math axioms; `goodstein_implies_consistency`
+= same lone `sorryAx`; `peano_not_proves_consistency` + `not_proves_of_implies_consistency` + faithfulness
+anchor all axiom-clean). Statement re-audited vs paper — no drift. Single open obligation =
+`goodstein_implies_consistency` = crux-1 (γ→PRWO, DONE lap 57) ∘ **crux-2** (PRWO→Con, IΣ₁-internal Gentzen
+ordinal analysis). **Direction KEPT; one structural lever surfaced.** crux-2 lives in the Σ₁ engine `red`/`iord`
+(load-bearing, re-confirmed lap 107); its remaining surface is `iord_descent_red` (descent, ~80% done),
+`ZDerivation_red_zK_crit` (critical-case soundness = the ∀/¬-inversion, ≈0% done), `false_of_ZDerivesEmpty`
+(M3 PRWO-plumbing), `foundation_bot_to_Z_empty` (M2 embedding, ~1k lines). The descent side has soaked up the
+laps while the inversion (the genuine cut-elimination content, prize) sits untouched — its only attempt
+(external `ZInf.allInv`) was killed VACUOUS at lap 107. The `iord_descent_red` fixpoint branches
+(atom/axAll/axNeg-selected `red d = d` + chain-REPLACE IH false-at-fixpoint) are a SELECTION bug, not descent
+gaps. **NEXT (synthesis call):** (1) reformulate `iord_descent_red` → disjunctive `red d = d ∨ iord ≺` and
+`false_of_ZDerivesEmpty` → "terminate-at-cut-free ⟹ absurd" (fixpoint branches close trivially; obligation
+sharpens to `red d = d ⟹ cut-free` + `no cut-free ∅→⊥`); (2) lap-110 cut-formula strip → `hr'`; (3) the ∀/¬
+inversion on the engine (template `Zinfty.allInv`). See `REFLECTION-2026-06-25-lap111.md`, `NEXT_STEPS.md`.
+
+**(lap-107 FRESH-MIND REVIEW — historical read.)** Build green **1325**; `src/` UNTOUCHED; headline honest
 `sorry` (real `#print axioms = [propext, sorryAx, Classical.choice, Quot.sound]`, 0 math axioms;
 `peano_not_proves_consistency` + `not_proves_of_implies_consistency` axiom-clean). Single open obligation =
 `goodstein_implies_consistency` = crux-1 (γ→PRWO, DONE axiom-clean lap 57) ∘ **crux-2** (PRWO→Con = the
@@ -860,6 +903,20 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-25 (lap 111 — DEEP REFLECTION):** Re-verified kernel in-kernel (`lake env lean`, green 1326):
+  headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms), `goodstein_implies_consistency` same lone
+  `sorryAx`, `peano_not_proves_consistency` + `not_proves_of_implies_consistency` + `goodsteinSentence_faithful`
+  all clean; statement re-audited vs paper (Π₂ `∀m∃N goodsteinSeq m N=0`) — no drift. **Direction KEPT.**
+  Found: lap 110 was real progress (the `iCritReductG` principal-vs-stripped cut-formula root cause), but the
+  effort is IMBALANCED — the ordinal-DESCENT bookkeeping (`iord_descent_red`, ~80%) has absorbed the laps while
+  the ∀/¬-INVERSION (`ZDerivation_red_zK_crit`, the genuine cut-elimination content, ≈0% on the engine; its only
+  attempt `ZInf.allInv` killed VACUOUS lap 107) sits untouched. The `iord_descent_red` fixpoint branches are a
+  SELECTION bug re-surfacing across laps 104/107/109/110, not descent gaps. **CALL:** (1) reformulate
+  `iord_descent_red` → disjunctive `red d = d ∨ iord ≺` + `false_of_ZDerivesEmpty` → terminate-at-cut-free-absurd
+  (fixpoint branches close trivially; obligation sharpens to selection-correctness + no-cut-free-⊥); (2) lap-110
+  cut-formula strip → `hr'`; (3) the inversion (prize). Fixed `Reduction.lean` doc-drift (no longer claims
+  `peano_not_proves_consistency` carries `PA_delta1Definable` — clean since lap 89). Wrote
+  `REFLECTION-2026-06-25-lap111.md`; refreshed STATUS + NEXT_STEPS + HANDOFF.
 - **2026-06-25 (lap 101 — DEEP REFLECTION):** Re-verified kernel in-kernel (`lake env lean`, green 1325):
   headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms), `peano_not_proves_consistency` clean,
   faithfulness anchor clean, statement re-audited vs paper (genuine hereditary base bump) — no drift.
@@ -1139,7 +1196,7 @@ closes axiom-clean with no remaining upstream-axiom reconciliation.
 ## Axiom ledger (per headline / landmark theorem — the fidelity spine)
 | theorem | paper claim | `#print axioms` shows | status |
 |---|---|---|---|
-| `peano_not_proves_goodstein` (headline, `Statement.lean`) | uncond. (Kirby–Paris) | `propext, sorryAx, Classical.choice, Quot.sound` (**lap-107 real, re-verified in-kernel `lake env lean`**) | 🔓 open `sorry` (LOCKED, anti-fraud) — **0** math axioms; `sorryAx` traces the lone math `sorry` `goodstein_implies_consistency` = crux-2. Route A: reduces (axiom-clean) to `goodstein_implies_consistency` via `not_proves_of_implies_consistency` + Gödel II. **⭐ Lap-107 DIRECTION CHANGE:** the lap-102→106 external-inductive prototypes (`ZInf`/`ZcOK`/`ZcDer`) are a DEAD END — `ZInf.allInv` is VACUOUS (kernel-verified: one-weakening proof, ignores `ht` + membership; `ZInf` has no ordinal index + doesn't erase `^∀φ`, so it's a weakening of the META `Zinfty.allInvAux`'s ordinal-preservation+erasure content) AND external inductives can't carry a non-standard-code descent (so `foundation_bot_to_Z_empty` is unprovable on them). The load-bearing carrier is the Σ₁ engine `red`/`iord`; THE crux is that engine `red` (via `iRNextG`) dispatches only on the top `zTag` ⟹ stalls after one K-reduction (lap-104) ⟹ `iord_descent_red` unprovable for current `red`. FIX = redesign `red` to find+reduce the lowest cut anywhere in the ∅→⊥ code. Multi-month. Statement re-audited vs paper (genuine hereditary base bump) — no drift. |
+| `peano_not_proves_goodstein` (headline, `Statement.lean`) | uncond. (Kirby–Paris) | `propext, sorryAx, Classical.choice, Quot.sound` (**lap-107 real, re-verified in-kernel `lake env lean`**) | 🔓 open `sorry` (LOCKED, anti-fraud) — **0** math axioms; `sorryAx` traces the lone math `sorry` `goodstein_implies_consistency` = crux-2. Route A: reduces (axiom-clean) to `goodstein_implies_consistency` via `not_proves_of_implies_consistency` + Gödel II. **⭐ Lap-107 DIRECTION CHANGE:** the lap-102→106 external-inductive prototypes (`ZInf`/`ZcOK`/`ZcDer`) are a DEAD END — `ZInf.allInv` is VACUOUS (kernel-verified: one-weakening proof, ignores `ht` + membership; `ZInf` has no ordinal index + doesn't erase `^∀φ`, so it's a weakening of the META `Zinfty.allInvAux`'s ordinal-preservation+erasure content) AND external inductives can't carry a non-standard-code descent (so `foundation_bot_to_Z_empty` is unprovable on them). The load-bearing carrier is the Σ₁ engine `red`/`iord`; THE crux is that engine `red` (via `iRNextG`) dispatches only on the top `zTag` ⟹ stalls after one K-reduction (lap-104) ⟹ `iord_descent_red` unprovable for current `red`. FIX = redesign `red` to find+reduce the lowest cut anywhere in the ∅→⊥ code. Multi-month. Statement re-audited vs paper (genuine hereditary base bump) — no drift. **⭐ Lap-111 DEEP REFLECTION (re-verified in-kernel, 0 math axioms):** direction KEPT. The lap-107 "stall" defect = a SELECTION bug (`red d = d` at axiom-leaf selections); it re-surfaces as the `iord_descent_red` fixpoint branches (`Crux2Blueprint:568/610/612` + the `:594` chain-REPLACE IH false-at-fixpoint). **Highest-value lever:** reformulate `iord_descent_red` → disjunctive `red d = d ∨ iord ≺` and `false_of_ZDerivesEmpty` → "terminate-at-cut-free ⟹ absurd" — fixpoint branches close trivially, obligation sharpens to `red d=d ⟹ cut-free` + `no cut-free ∅→⊥`. Then lap-110 cut-formula strip (`hr'`), then the ∀/¬-INVERSION on the engine (`ZDerivation_red_zK_crit`; the genuine cut-elim content, ≈0% done, only attempt `ZInf.allInv` killed vacuous lap 107; template `Zinfty.allInv`). See `REFLECTION-2026-06-25-lap111.md`. |
 | `goodstein_implies_consistency` (Route-A girder, `src/Reduction`) | Rathjen Cor 3.7: `𝗣𝗔⊢γ → 𝗣𝗔⊢Con(𝗣𝗔)` | `sorryAx` only (**lap-89 real** — `PA_delta1Definable` no longer appears; discharged upstream) | 🎯 **THE single open obligation = crux 1 ∘ crux 2.** §3 `γ→PRWO(ε₀)` = **crux 1 — DONE, axiom-clean (lap 57)** via the width-FUNCTION refactor (`BlkRecF`/`StdCor34F`/`crux1_internal_run_F`); in `wip/GentzenCon.lean`. Gentzen Thm 2.8 `PRWO→Con(PA)` = **crux 2, 🟡 ACTIVE FRONTIER**, now localized to the blueprint nut **`redSound`** (`Crux2Blueprint.lean`) = the `red`-reduct of a contradiction derivation is a genuine `ZDerivation` = real internalized cut-elimination; lap 70 forced **Option A** (genuine validity-preserving reduct), lap 82 re-pointed validity to criticality-free `zKValidF`, laps 84–85 DEFINED the genuine reduct `red` (5.1 case). **Lap 86: gating finding (in-kernel, `not_zKCritical_red_zK`) — the critical-only `red` is itself non-critical after one step, so `red`'s tag-4 MUST dispatch Buchholz Def-3.2 cases 5.1/5.2.1/5.2.2** (descent for each banked; new content = dispatch def + 5.2 `zKValidF` validity). Feasibility settled by Bryce–Goré Coq, Feb 2026; must be fully discharged — operator: axiom-free or abandoned. **⭐ Lap-95 FRESH-MIND REVIEW — wall pinned to ONE surgical fix (corrects the lap-92 "ω-rule pivot" framing).** Reading the kernel: **O2 is DONE** (`ZDerivation_zsubst`, `Zsubst.lean:1855`, axiom-clean = benign criticality-free eigensubst; the lap-78 "substitution wall" was the criticality conjunct, dropped when `ZPhi` moved to `zKValidF`) and **O1 is DONE except `ZRegular_red_zK`'s lone false hypothesis `hseltag`** (splice ⟹ `zTag dᵢ = 4`, FALSE under the current `iRK` — splice mis-fires on non-chain selected premises, `not_permIdx_lt_zKseq_zAtom`). The fix is a **surgical gate** on `iRK`'s splice (`zTag dᵢ = 4 ∧ ¬ permIdx dᵢ < lh(zKseq dᵢ)` = critical chain; non-chains → replace 5.2.2), NOT a 2–3k-line ω-rule rewrite — the finitary engine + O1 + O2 are reused; the ω-rule *selection* reading is just the soundness justification. **LANDED IN-KERNEL lap 95 (green 1325, axiom-clean):** `iRK` gated (`iRKDef`/`iRK_defined`/invariants updated), `red_zK_splice` gains `htag`, new `red_zK_rep_nonchain`, and **`ZRegular_red_zK` is now UNCONDITIONAL** (`hseltag` dropped, `[propext, choice, Quot.sound]`). The lap-94 regularity wall is cleared. Residual deep work = the validity half (`red` preserves `ZDerivation` with `tpReduce` conclusion-reduction, lap-90 — `ZDerivation_red_zK` non-chain replace is the new disclosed sorry) + `iord_descent_red`. See `ANALYSIS-2026-06-25-lap95-dispatch-fix-not-pivot.md`. **⭐ Lap-101 DEEP REFLECTION — sub-route fork REOPENED.** Laps 95–100 (Path X) closed the I∀/I¬/axAll non-Rep replace cases but the wall *relocated* to the `redZKReady` "hereditary all-Rep selected spine" motive (`Crux2Blueprint.redSoundGen` K-case `sorry`) — the conclusion-tracking the ω-rule retires for free — and its hard core looks shaky (∅→⊥ chain premises have *growing* antecedents ⟹ Cor 2.1 doesn't reapply down the spine). The lap-92 ω-rule pivot (Path C) was recommended with a de-risk spike *first*; lap-95 committed to Path X **without running it**. CALL: run `wip/InternalZomega.lean` (internal ω-rule ∀-node + substitution-free critical-cut reduct) to settle the fork with evidence; STOP investing in the motive/axNeg until then. Math doubly-proven in the ω-rule presentation (Bryce–Goré Coq + the repo's own axiom-clean meta `Zinfty.lean`). See `REFLECTION-2026-06-25-lap101.md`. |
 | `not_proves_of_implies_consistency` / `peano_not_proves_consistency` (Phase 1, `src/Reduction`) | meta-reduction + Gödel II for `𝗣𝗔` | `propext, choice, Quot.sound` (**lap-89 real — axiom-clean**) | 🟢 **CLEAN — the Route-A Gödel-II hook.** ⭐ **Lap 89: `PA_delta1Definable` DISCHARGED UPSTREAM.** Foundation now proves `𝗣𝗔.Δ₁` as a real `noncomputable instance` (`Foundation/FirstOrder/Incompleteness/InductionSchemeDelta1.lean:1379`, no longer an axiom), so `consistent_unprovable 𝗣𝗔` — and hence `peano_not_proves_consistency` and everything chaining through it — carries NO custom axiom. This RETIRES the entire lap-74/78/81 second-front campaign (the `src/PADelta1.lean` Δ₁-recognizer work is now moot/superseded). |
 | `InternalThm35.bbeta_*` / `iwtower_cofinal` (internal Thm 3.5, **lap 47**, `src/InternalThm35`) | Rathjen Thm 3.5: slow α → `β` with tight `C(βᵣ)≤r+1` | `propext, choice, Quot.sound` | 🟢 **CLEAN + COMPLETE** — `bbeta_isNF`/`bbeta_C_le`/`bbeta_desc_exists`; ω-tower cofinality `iwtower_cofinal` discharges the seam. Route-independent; consumed by Lemma 3.6 (`nonterminating_internal`). |
