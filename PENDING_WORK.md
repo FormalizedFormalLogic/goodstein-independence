@@ -1,5 +1,40 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 84 — RedSound validity-preservation toolkit BANKED (3 green commits) + judge's parallel-induction unlock
+
+**Build 🟢 green (1324 jobs), axiom base untouched.** Three reusable `RedSound` building blocks landed in
+`InternalZ.lean` (the `E-CRUX2 §8` T2/T3 "replace-a-premise stays a valid K^r chain" leaf), right after
+the `seqUpdate` read-outs and after `fstIdx_iR2_of_tag_Ind_or_K`:
+- `isChainInf_seqUpdate` — chain-validity (`isChainInf`: j₀/threading/rank) is INVARIANT under replacing
+  premise `i` by a same-end-sequent reduct `v` (`fstIdx v = fstIdx (znth ds i)`). Helpers:
+  `fstIdx_znth_seqUpdate`, `chainAsucc_seqUpdate`, `chainAnt_seqUpdate`.
+- `zKValidF_seqUpdate` — full faithful-validity preservation, taking `v`'s own well-formedness
+  (own-perm `iperm (tp v)(fstIdx v)` = Lemma 3.3; tag-gated I/Ax formula-hood) as hypotheses.
+- `zKValidF_seqUpdate_iR2` — CONCRETE non-critical case (Buchholz 5.2.2): when premise `i` is itself
+  `Ind`/`K`-tagged, its `iR2`-reduct is a `Rep`-tagged chain (`iR2_eq_zK_of_tag_Ind_or_K`,
+  `zTag_iR2_…=4`, `tp_iR2_…=isymRep`), so own-perm is automatic (`iperm_isymRep`) and the I/Ax
+  conjuncts are vacuous; end-sequent invariance from `fstIdx_iR2_of_tag_Ind_or_K`. ⟹ `zKValidF` preserved.
+
+⭐ **JUDGE UNLOCK (Buchholz both papers, validate-don't-trust):** validity is a **PARALLEL invariant**,
+NOT post-hoc recovery. Buchholz proves validity (Thm 3.4 / Thm 6.2 = our `zKValidF`/D₁) and
+ordinal-descent (Lemma 4.1/4.2 = our banked `iord_descent_*` / D₃) as TWO SIMULTANEOUS inductions over
+the SAME primrec reduct `red` (Def 3.2 / Beweistheorie Thm 6.6 — 5-case tag dispatch; only search =
+Lemma 3.1 least redex pair = our `inference_critical_pair`). `RedSound`-on-`iR2` was false ONLY because
+`iR2` was built ordinal-first. BUILD `red` (the dispatch) and prove its validity IN the same recursion
+that gives descent. §7 D₁=`∀n d[n]⊢tp(d)(Π,n)` (=RedSound), D₃=descent — the spec. Sources:
+`papers/buchholz-beweistheorie-lecture-notes.md` (red/Thm 6.2), `papers/buchholz-on-gentzens-first-consistency-proof.md`
+(Def 3.2 / §7 D₁–D₃). Fallback ONLY if critical case can't be zKValidF-faithful: Siders' Howard vector
+(`papers/siders-gentzen-consistency-proofs-arithmetic.md`) — HA/intuitionistic redesign, exhaust Buchholz first.
+
+**NEXT (resume here):** (a) the SUB-CRITICAL splice (Buchholz 5.2.1) validity-preservation analog
+`zKValidF_seqSplice` over `seqCons (seqUpdate ds j a) b` — harder (lh+1, threading shift), pairs with banked
+`iord_descent_iSpliceEnd`. (b) the CRITICAL case (5.1): `iCritReduct = zK (fstIdx d)(r-1) ⟨d{0},d{1}⟩` —
+its two auxiliaries `d{ν}=iCritAux` are `seqUpdate`-replacements, so `zKValidF_seqUpdate_iR2` gives each
+auxiliary's validity; the OUTER rank-(r-1) chain validity needs the recombination threading (Thm 3.4(a),
+`rk(A(d))<r` already banked as `irk_cut_lt_rank_*`). (c) Re-point `ZPhi`'s zK disjunct `zKValid`→`zKValidF`
+(blast radius measured lap-82: ~6 sites; `zKValidFDef` banked) and quantify RedSound + descent over `red`.
+
+
 ## 📍 Lap 83 fresh-mind REFINEMENT (read before executing the lap-82 re-point) — "descent = just wiring" is OVERSTATED
 
 Re-read `iord_descent_iR2_zK_of_valid` (`InternalZ.lean:4755`) end-to-end. The lap-82 KEY FINDING

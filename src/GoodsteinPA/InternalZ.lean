@@ -4972,6 +4972,52 @@ lemma fstIdx_iR2_of_tag_Ind_or_K {d : V} (hZ : ZDerivation d) (htag : zTag d = 3
   · simp [zTag_zAxAll] at htag
   · simp [zTag_zAxNeg] at htag
 
+/-- The `iR2`-reduct of an `Ind`/`K` derivation is a `Rep`-tagged chain `zK (fstIdx d) …` (`iRInd` for
+`Ind`, `iCritReduct` for `K`). The shape that makes its principal-formula well-formedness automatic. -/
+lemma iR2_eq_zK_of_tag_Ind_or_K {d : V} (hZ : ZDerivation d) (htag : zTag d = 3 ∨ zTag d = 4) :
+    ∃ r ds, iR2 d = zK (fstIdx d) r ds := by
+  rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, _⟩ | ⟨s, p, d0, rfl, _, _⟩ |
+    ⟨s, at', p, d0, d1, rfl, _, _⟩ | ⟨s, r, ds, rfl, _, _, _⟩ |
+    ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩
+  · simp [zTag_zAtom] at htag
+  · simp [zTag_zIall] at htag
+  · simp [zTag_zIneg] at htag
+  · exact ⟨irk p, iIndReductSeq d0 d1 1, by rw [iR2_zInd, iRInd_zInd, fstIdx_zInd]⟩
+  · exact ⟨_, _, by rw [iR2_zK, iCritReduct, fstIdx_zK]⟩
+  · simp [zTag_zAxAll] at htag
+  · simp [zTag_zAxNeg] at htag
+
+/-- The `iR2`-reduct of an `Ind`/`K` derivation is tag-4 (`zK`). -/
+lemma zTag_iR2_of_tag_Ind_or_K {d : V} (hZ : ZDerivation d) (htag : zTag d = 3 ∨ zTag d = 4) :
+    zTag (iR2 d) = 4 := by
+  obtain ⟨r, ds, h⟩ := iR2_eq_zK_of_tag_Ind_or_K hZ htag; rw [h, zTag_zK]
+
+/-- The `iR2`-reduct of an `Ind`/`K` derivation has `tp = isymRep` (it is a chain). -/
+lemma tp_iR2_of_tag_Ind_or_K {d : V} (hZ : ZDerivation d) (htag : zTag d = 3 ∨ zTag d = 4) :
+    tp (iR2 d) = isymRep := by
+  obtain ⟨r, ds, h⟩ := iR2_eq_zK_of_tag_Ind_or_K hZ htag; rw [h, tp_zK]
+
+/-- **Non-critical validity-preservation, concrete.** Replacing a premise `i` of a faithfully-valid
+chain by its own `iR2`-reduct preserves `zKValidF`, when the premise `i` is itself an `Ind`/`K`
+derivation. End-sequent invariance (`fstIdx_iR2_of_tag_Ind_or_K`) feeds `isChainInf` preservation; the
+reduct is a `Rep`-tagged chain (`zTag = 4`, `tp = isymRep`), so its own-permissibility is automatic
+(`iperm_isymRep`) and the tag-gated I/Ax formula-hood conjuncts are vacuous. This is exactly the
+non-critical (Buchholz §3.2 case 5.2.2) step of the `RedSound` validity invariant. -/
+lemma zKValidF_seqUpdate_iR2 {s r ds i : V} (hi : i < lh ds)
+    (hZi : ZDerivation (znth ds i)) (htagi : zTag (znth ds i) = 3 ∨ zTag (znth ds i) = 4)
+    (h : zKValidF s r ds) :
+    zKValidF s r (seqUpdate ds i (iR2 (znth ds i))) := by
+  have hfst : fstIdx (iR2 (znth ds i)) = fstIdx (znth ds i) :=
+    fstIdx_iR2_of_tag_Ind_or_K hZi htagi
+  have htagv : zTag (iR2 (znth ds i)) = 4 := zTag_iR2_of_tag_Ind_or_K hZi htagi
+  have htpv : tp (iR2 (znth ds i)) = isymRep := tp_iR2_of_tag_Ind_or_K hZi htagi
+  refine zKValidF_seqUpdate hi hfst ?_ ?_ ?_ ?_ ?_ h
+  · rw [htpv]; exact iperm_isymRep _
+  · intro hc; rw [htagv] at hc; simp at hc
+  · intro hc; rw [htagv] at hc; simp at hc
+  · intro hc; rw [htagv] at hc; simp at hc
+  · intro hc; rw [htagv] at hc; simp at hc
+
 /-- **A `ZDerivesEmpty` code is built by an `Ind` or `K` rule** (tag 3 or 4). Beyond leaf-soundness
 (empty antecedent rules out the axiom leaves), the `⊥`-succedent rules out the two I-rules: a valid
 `I^a_∀xF`/`I_¬A` inference has succedent `∀xF`/`¬A` (the refined `ZPhi` now carries `seqSucc s = ^∀ p`
