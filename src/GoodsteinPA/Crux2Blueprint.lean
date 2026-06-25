@@ -528,9 +528,21 @@ theorem iord_descent_red_zInd (d : V) (hd : ZDerivation d) (htag : zTag d = 3) :
   · simp at htag
   · simp at htag
 
-/-- **M1b (descent re-point, one step).** The banked ordinal descent, restated over `red`
-(`iR2` analogue: `iord_descent_iR2_of_ZDerivesEmpty`). -/
-theorem iord_descent_red {d : V} (hd : ZDerivesEmptyR d) : icmp (iord (red d)) (iord d) = 0 := sorry
+/-- **M1b (descent re-point, one step).** The banked ordinal descent, restated over `red`. A `∅→⊥`
+derivation has top tag `3` (Ind) or `4` (K/cut) (`zTag_Ind_or_K_of_ZDerivesEmpty`).
+
+**lap-108 narrowing:** the **Ind branch is now PROVEN in place** (via the banked `iord_descent_red_zInd`);
+the residual `sorry` is isolated to exactly the **K/cut case** (tag 4), where `red (zK s r ds) = iRK …`
+dispatches the three Buchholz Def-3.2 case-5 sub-reducts (5.1 critical `iRcritG` / 5.2.1 splice / 5.2.2
+replace, `red_zK_crit`/`_splice`/`_rep`). Only the *critical* sub-reduct's descent is banked
+(`iord_descent_iR2_zK_of_valid`, for the `iR2`-ρ — needs re-pointing to the `red`-ρ); the splice/replace
+sub-reduct descents are the genuine open ordinal-analysis core. See `STATUS.md` / `PENDING_WORK.md` lap-107. -/
+theorem iord_descent_red {d : V} (hd : ZDerivesEmptyR d) : icmp (iord (red d)) (iord d) = 0 := by
+  rcases zTag_Ind_or_K_of_ZDerivesEmpty hd.1 with htag | htag
+  · -- Ind (tag 3): `red d = iRInd d`, banked descent. PROVEN.
+    exact iord_descent_red_zInd d hd.1.1 htag
+  · -- K/cut (tag 4): the dispatched `iRK` cut-reduct's ordinal descent — the genuine open core.
+    sorry
 
 /-! ## Connectives — PROVEN from the leaves (this is the "no wiring step" demonstration)
 With `redSound` in hand, `ZDerivesEmpty` is closed under the whole `red`-orbit and the ε₀-descent is

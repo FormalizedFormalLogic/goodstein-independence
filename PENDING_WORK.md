@@ -1,5 +1,43 @@
 # Pending work — open obligations & attack paths
 
+## lap 108 — `iord_descent_red` NARROWED to the K/cut case + the two-engine map corrected
+**Build 🟢 green 1325; `src/` headline footprint intact.** Concrete advance + a correction to the lap-107
+diagnosis (which conflated two distinct `red`s):
+
+- **`iord_descent_red` (`Crux2Blueprint.lean`) — Ind branch PROVEN in place.** A `∅→⊥` derivation has top
+  tag 3 (Ind) or 4 (K), `zTag_Ind_or_K_of_ZDerivesEmpty`. The Ind branch now closes via the banked
+  `iord_descent_red_zInd`; the residual `sorry` is isolated to exactly the **K/cut case** (tag 4). This is
+  the headline-WIRED finitary engine (`InternalZ`, tags 0-6), the real crux-2 obligation.
+
+- **TWO distinct `red`s (lap-107 docs conflated them — corrected here):**
+  1. **`src/InternalZ.lean` finitary engine `red` (tags 0-6)** — the HEADLINE-WIRED one
+     (`Crux2Blueprint.iord_descent_red`/`redSoundGen`/`false_of_ZDerivesEmpty`/`ZDerivesEmptyR`). Open
+     pieces: (a) `iord_descent_red` K/cut case — `red (zK s r ds) = iRK …` dispatches 3 Buchholz branches
+     (5.1 critical `iRcritG`, 5.2.1 splice, 5.2.2 replace); only the CRITICAL descent is banked
+     (`iord_descent_iR2_zK_of_valid`, for the `iR2`-ρ — needs re-pointing to `red`-ρ); splice/replace descents
+     are unbanked. (b) `redSoundGen` K-case needs the `redZKReady` "spine" motive (lap-101 flagged it shaky:
+     ∅→⊥ chain premises have growing antecedents ⟹ Cor 2.1 may not reapply down the spine) + the `axNeg`
+     sub-residual (`ZDerivation_red_zK_nonRep` tag-6 `sorry`, Buchholz ¬-axiom cut). (c) `foundation_bot_to_Z_empty`
+     embedding (`Crux2Blueprint:587`).
+  2. **`wip/PathCOmega.lean` prototype `red` (tags 7-10, ω-rule)** — the lap-104 STALL (`red_redAllEx_eq`,
+     `sord_red_iterate_stalls_AllEx`) is about THIS one, NOT the finitary engine. It is an external inductive
+     (non-load-bearing, lap-107 Finding 2), so it cannot reach the headline regardless.
+
+- **Strategic state (honest).** crux-2 is a genuine multi-month milestone with deep open walls on BOTH the
+  finitary engine (K-descent splice/replace + the shaky `redZKReady` spine + axNeg) and the ω-rule prototype
+  (non-load-bearing + stall). The mathematically-clean route is the ω-rule (Bryce-Goré + the repo's own
+  axiom-clean META `Zinfty.lean`), but it needs Σ₁ ARITHMETIZATION (a Fixpoint predicate over coded
+  ω-derivations — the node shapes `zAllOmega s d0 a α` already code the ω-family finitely via `zsubst d0 a t`;
+  the deferred work is making the validity predicate a `PR.Blueprint`/`Construction` Fixpoint, not an external
+  inductive). **NEXT (hardest-first):** either (A) re-point `iord_descent_iR2_zK_of_valid` to the `red`-ρ and
+  bank the splice/replace branch descents to finish `iord_descent_red`'s K case on the finitary engine; or
+  (B) start the Σ₁-Fixpoint arithmetization of the ω-rule cut-elimination. (A) is closer to the wired
+  headline; (B) is mathematically cleaner. Lean toward (A) first (the finitary engine is what's wired and the
+  K-descent is concrete), escalating to (B) if the `redZKReady` spine proves genuinely broken (settle it
+  in-kernel like lap-104 settled the prototype stall — don't leave it "shaky" indefinitely).
+
+---
+
 ## lap 107 — ⭐⭐⭐ FRESH-MIND REVIEW: the external-inductive prototype track is a DEAD END (kernel-verified); pivot to the Σ₁ engine `red` redesign
 
 **Two in-kernel findings this lap force a direction change (build 🟢 green 1325; `src/` untouched).**
