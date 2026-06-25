@@ -1,5 +1,30 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 84 (continued) — D₁ VALIDITY INTERFACE complete for all 3 reduct cases (9 green commits)
+
+**Build 🟢 green, axiom base untouched.** Beyond the 3 preservation lemmas below, banked (all in
+`InternalZ.lean`, kernel-checked):
+- **Critical (5.1) D₁ — COMPLETE as a hypothesis interface.** `isChainInf_iCritReductSeq` (the 2-element
+  recombination chain `⟨d{0},d{1}⟩` is `isChainInf`-valid given Thm 3.4(a) cut-threading) → lifted to full
+  `zKValidF_iCritReductSeq` (auxiliaries are `Rep`-chains ⟹ own-perm auto, I/Ax conjuncts vacuous;
+  threading + formula-hood supplied). Helpers `znth_iCritReductSeq_one`, `forall_lt_iCritReductSeq`.
+  ⭐ **VERIFIED FAITHFUL to Buchholz §2 p.6 / Thm 3.4(a):** `d{0}⊢Θ→A(d)`, `d{1}⊢A(d),Θ→D`, the cut on
+  `A(d)`; my hyps `hsucc1`/`hthread0`/`hthread1`/`hrank0` map exactly (hthread1's `B=seqSucc(fstIdx d0)`
+  disjunct IS the cut formula `A(d)`).
+- **General congruence** `isChainInf_congr` (validity reads `ds` only through `lh`+`chainAsucc`/`chainAnt`).
+- **Splice (5.2.1) prereqs**: read-outs `znth_seqCons_seqUpdate_top`/`_lt`, `lh_seqCons_seqUpdate`.
+- **Genuine-reduct sequent ops** (replace the ordinal-shadow `iCritAux`'s reuse of `fstIdx d`):
+  `seqSetSucc s C` (= `Θ→C`), `seqAddAnt A s` (= `A,Θ→D`), with `inAnt_seqCons`/`inAnt_seqAddAnt`.
+
+**NEXT (genuine reduct, the remaining M1 core — STARTED):** define the genuine critical auxiliaries
+`d{0} = zK (seqSetSucc s (A(d))) r (seqUpdate ds i (reduct dᵢ))`, `d{1} = zK (seqAddAnt (A(d)) s) r
+(seqUpdate ds j (reduct dⱼ))` — i.e. like `iCritAux` BUT with the correct conclusion sequents from the
+new ops. Then `A(d)` is read from the redex via `inference_critical_pair` (∀xF case: `A(d)=F(k)`;
+¬A case: `A(d)=A`); prove the auxiliaries derive those sequents (Thm 3.4(a), structural IH) so
+`zKValidF_iCritReductSeq`'s hyps are MET. Then re-point `ZPhi` zK disjunct `zKValid→zKValidF` (~6 sites,
+`zKValidFDef` banked) and run the D₁/D₃ structural induction = `RedSound`. M1 checkpoint per
+`E-CRUX2-ROADMAP`: validity proved IN the same induction as the (banked) descent.
+
 ## 📍 Lap 84 — RedSound validity-preservation toolkit BANKED (3 green commits) + judge's parallel-induction unlock
 
 **Build 🟢 green (1324 jobs), axiom base untouched.** Three reusable `RedSound` building blocks landed in
