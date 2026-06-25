@@ -129,6 +129,24 @@ Buchholz `d[n]` only when `tp(d) = Rep`. The fix is to make the reduct compute t
   but part of the conclusion-tracking under route B (`red (zIall)` should derive `Γ→F(0)`, i.e. `d₀(a/0)`).
   The `Zsubst.lean` eigenvariable-substitution machinery (laps 72–76) is the tool.
 
+### ✗ Ruled-out shortcut: "skip `redSound`, run a purely-structural ordinal descent"
+
+Tempting idea: the contradiction only needs an infinite ε₀-descent `n ↦ iord(red^[n] z)`, and `iord` is
+endsequent-independent — so maybe carry only a structural NF invariant and avoid validity entirely.
+**This does NOT close.** The non-critical descents (`iord_descent_iCritAux`/`iord_descent_seqInsert'`)
+are indeed purely NF+ordinal, BUT the **critical (5.1) descent needs a positive-rank redex**, found by
+`inference_critical_pair`, which consumes the chain's `isChainInf` **antecedent-threading**
+(`Γᵢ ⊆ Γ,A₀…A_{i−1}`) and the premises' **formula-rank** well-formedness (`hwfR`/`hwfL`, from
+`zKValidF`'s `hf1/hf2/hf5/hf6`). Both are endsequent-dependent validity data. So the descent's critical
+case genuinely needs `zKValidF` to be PRESERVED by `red` (= the validity-preservation core), and that
+preservation is exactly what the conclusion-reduction (route B) is needed for. There is no cheap
+endsequent-independent bypass. (Confirmed by reading `iord_descent_iR2_zK_of_valid`, lap 90.)
+
+Note the **Ind residual has the same disease**: `red(zInd)` uses `iIndReductSeq d0 d1 1` (fixed `k=1`,
+conclusion kept `Γ→F(t)`), but Buchholz case 4 is `K^r_{Γ→F(k)} d0 d1(a/0)…d1(a/k−1)` with `k = value
+of t` — conclusion reduced to `Γ→F(k)` and `k` copies. So `zKValidF_iIndReduct_of_zInd` is ALSO only
+faithful when `t` evaluates to `1`; it too belongs under route B (conclusion + count tracking).
+
 **Reusable from this lap regardless:** `red_zK_rep`/`red_zK_splice` (the dispatch equations),
 `tp_eq_isymRep_of_zTag`, `red_rep_of_tp_isymRep`, `zTag_not_iAx_of_tp_isymRep`, `ZDerivation_red_zK_replace`
 (the 5.2.2 validity, under `tp dᵢ = Rep` — the Rep sub-case of route B's 5.2.2), and
