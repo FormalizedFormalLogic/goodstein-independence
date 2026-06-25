@@ -4791,6 +4791,20 @@ lemma permIdx_lt_of_not_zKCritical {s r ds : V} (h : ¬ zKCritical s ds) :
   simp only [permIdx, zKseq_zK, fstIdx_zK]
   exact hf
 
+/-- **`permIdx` is `𝚺₁`-definable** — the dispatch index `permIdx d = permIdxAux (zKseq d) (fstIdx d)
+(lh (zKseq d))` composes the already-definable `zKseq`/`fstIdx`/`lh`/`permIdxAux`. Required so the
+tag-4 `red` dispatch can branch on `permIdx` and stay `𝚺₁`. -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.permIdxDef : 𝚺₁.Semisentence 2 := .mkSigma
+  “y d. ∃ ds, !zKseqDef ds d ∧ ∃ f, !fstIdxDef f d ∧ ∃ l, !lhDef l ds ∧ !permIdxAuxDef y ds f l”
+
+instance permIdx_defined : 𝚺₁-Function₁ (permIdx : V → V) via permIdxDef := .mk fun v ↦ by
+  simp [permIdxDef, permIdx, zKseq_defined.iff, fstIdx_defined.iff, lh_defined.iff,
+    permIdxAux_defined.iff]
+
+instance permIdx_definable : 𝚺₁-Function₁ (permIdx : V → V) := permIdx_defined.to_definable
+instance permIdx_definable' (Γ) : Γ-[m + 1]-Function₁ (permIdx : V → V) :=
+  permIdx_definable.of_sigmaOne
+
 /-! ## `iRcrit` — the CLOSED iR critical branch (Buchholz Def 3.2 case 5.1)
 
 The redex finder (`redexCode`/`redexI`/`redexJ`) is now a total definable function of the chain, so the
@@ -5680,6 +5694,28 @@ instance iCritAux_defined : 𝚺₁-Function₃ (iCritAux : V → V → V → V)
   fun v ↦ by simp [iCritAuxDef, iCritAux, fstIdx_defined.iff, zKrank_defined.iff, zKseq_defined.iff,
     seqUpdate_defined.iff, zK_defined.iff]
 instance iCritAux_definable : 𝚺₁-Function₃ (iCritAux : V → V → V → V) := iCritAux_defined.to_definable
+
+/-! ## The 5.2.2 replace-reduct dispatch helper `iRKr` (Buchholz Def 3.2 case 5.2.2)
+
+When the chain `d` is non-critical and the least permissible premise `dᵢ` (`i = permIdx d`) is *itself*
+non-critical, Buchholz replaces premise `i` by its own reduct `red dᵢ`. In the `red` table recursion the
+reduct of a smaller premise code is *already computed* — it is the table lookup `znth s dᵢ` (`s` = the
+table-so-far, `dᵢ = znth (zKseq d) (permIdx d)` = the premise code). So the genuine 5.2.2 reduct is a
+CLOSED definable term: `iCritAux d (permIdx d) (znth s dᵢ)` (= `K^r(i/red dᵢ)`), no existential. -/
+
+/-- **5.2.2 replace-reduct** — the chain with its least-permissible premise `i = permIdx d` replaced by
+that premise's already-tabulated reduct `red dᵢ = znth s (znth (zKseq d) i)`. -/
+noncomputable def iRKr (d s : V) : V :=
+  iCritAux d (permIdx d) (znth s (znth (zKseq d) (permIdx d)))
+
+noncomputable def _root_.LO.FirstOrder.Arithmetic.iRKrDef : 𝚺₁.Semisentence 3 := .mkSigma
+  “y d s. ∃ i, !permIdxDef i d ∧ ∃ ds, !zKseqDef ds d ∧ ∃ di, !znthDef di ds i ∧
+    ∃ v, !znthDef v s di ∧ !iCritAuxDef y d i v”
+
+instance iRKr_defined : 𝚺₁-Function₂ (iRKr : V → V → V) via iRKrDef := .mk fun v ↦ by
+  simp [iRKrDef, iRKr, permIdx_defined.iff, zKseq_defined.iff, znth_defined.iff, iCritAux_defined.iff]
+
+instance iRKr_definable : 𝚺₁-Function₂ (iRKr : V → V → V) := iRKr_defined.to_definable
 
 /-- `redexCode d = redexAux (zKseq d) ⟪lh(zKseq d), lh(zKseq d)⟫` (the least valid redex pair). -/
 noncomputable def _root_.LO.FirstOrder.Arithmetic.redexCodeDef : 𝚺₁.Semisentence 2 := .mkSigma
