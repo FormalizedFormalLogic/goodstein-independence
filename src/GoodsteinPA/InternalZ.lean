@@ -6107,28 +6107,31 @@ embedding `zKCriticalDef`. The sub-dispatch (5.2.1 splice vs 5.2.2 replace) test
 the *selected premise* `dᵢ = znth (zKseq d) (permIdx d)`: `dᵢ` critical → 5.2.1 (`iRKs`), else 5.2.2 (`iRKr`). -/
 noncomputable def iRK (d s : V) : V :=
   if permIdx d < lh (zKseq d) then
-    (if permIdx (znth (zKseq d) (permIdx d)) < lh (zKseq (znth (zKseq d) (permIdx d)))
-     then iRKr d s else iRKs d s)
+    (if zTag (znth (zKseq d) (permIdx d)) = 4 ∧
+        ¬ permIdx (znth (zKseq d) (permIdx d)) < lh (zKseq (znth (zKseq d) (permIdx d)))
+     then iRKs d s else iRKr d s)
   else iRKc d s
 
 noncomputable def _root_.LO.FirstOrder.Arithmetic.iRKDef : 𝚺₁.Semisentence 3 := .mkSigma
   “y d s. ∃ p, !permIdxDef p d ∧ ∃ ds, !zKseqDef ds d ∧ ∃ l, !lhDef l ds ∧
     ( ( p < l ∧
-        ∃ di, !znthDef di ds p ∧ ∃ pdi, !permIdxDef pdi di ∧ ∃ dsi, !zKseqDef dsi di ∧
-          ∃ li, !lhDef li dsi ∧
-          ( ( pdi < li ∧ !iRKrDef y d s )
-          ∨ ( li ≤ pdi ∧ !iRKsDef y d s ) ) )
+        ∃ di, !znthDef di ds p ∧ ∃ tdi, !zTagDef tdi di ∧ ∃ pdi, !permIdxDef pdi di ∧
+          ∃ dsi, !zKseqDef dsi di ∧ ∃ li, !lhDef li dsi ∧
+          ( ( tdi = 4 ∧ li ≤ pdi ∧ !iRKsDef y d s )
+          ∨ ( (tdi ≠ 4 ∨ pdi < li) ∧ !iRKrDef y d s ) ) )
     ∨ ( l ≤ p ∧ !iRKcDef y d s ) )”
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 1600000 in
 instance iRK_defined : 𝚺₁-Function₂ (iRK : V → V → V) via iRKDef := .mk fun v ↦ by
   simp [iRKDef, iRK, permIdx_defined.iff, zKseq_defined.iff, lh_defined.iff, znth_defined.iff,
-    iRKr_defined.iff, iRKs_defined.iff, iRKc_defined.iff]
+    zTag_defined.iff, iRKr_defined.iff, iRKs_defined.iff, iRKc_defined.iff]
   by_cases h1 : permIdx (v 1) < lh (zKseq (v 1))
-  · by_cases h2 : permIdx (znth (zKseq (v 1)) (permIdx (v 1)))
-        < lh (zKseq (znth (zKseq (v 1)) (permIdx (v 1))))
-    · simp [h1, h2, not_le.mpr h1, not_le.mpr h2]
-    · simp [h1, h2, not_le.mpr h1, not_lt.mp h2]
+  · by_cases ht : zTag (znth (zKseq (v 1)) (permIdx (v 1))) = 4
+    · by_cases h2 : permIdx (znth (zKseq (v 1)) (permIdx (v 1)))
+          < lh (zKseq (znth (zKseq (v 1)) (permIdx (v 1))))
+      · simp [h1, ht, h2, not_le.mpr h1, not_le.mpr h2]
+      · simp [h1, ht, h2, not_le.mpr h1, not_lt.mp h2]
+    · simp [h1, ht, not_le.mpr h1]
   · simp [h1, not_lt.mp h1]
 
 instance iRK_definable : 𝚺₁-Function₂ (iRK : V → V → V) := iRK_defined.to_definable
@@ -6142,21 +6145,11 @@ instance iRK_definable : 𝚺₁-Function₂ (iRK : V → V → V) := iRK_define
 are chains `zK (fstIdx d) …`, so the dispatched reduct has the same end-sequent regardless of which case
 fires. -/
 @[simp] lemma fstIdx_iRK (d s : V) : fstIdx (iRK d s) = fstIdx d := by
-  unfold iRK
-  by_cases h1 : permIdx d < lh (zKseq d)
-  · by_cases h2 : permIdx (znth (zKseq d) (permIdx d)) < lh (zKseq (znth (zKseq d) (permIdx d)))
-    · simp [h1, h2]
-    · simp [h1, h2]
-  · simp [h1]
+  unfold iRK; split_ifs <;> simp
 
 /-- **Dispatch invariant — `iRK` is a `K`-chain (tag 4)** in every branch. -/
 @[simp] lemma zTag_iRK (d s : V) : zTag (iRK d s) = 4 := by
-  unfold iRK
-  by_cases h1 : permIdx d < lh (zKseq d)
-  · by_cases h2 : permIdx (znth (zKseq d) (permIdx d)) < lh (zKseq (znth (zKseq d) (permIdx d)))
-    · simp [h1, h2]
-    · simp [h1, h2]
-  · simp [h1]
+  unfold iRK; split_ifs <;> simp
 
 /-! ## The GENUINE reduct `red` (Buchholz §6 `red` / Def 3.2) — replaces the dead `iR2`
 

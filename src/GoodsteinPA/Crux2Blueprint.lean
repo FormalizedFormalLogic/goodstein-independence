@@ -93,14 +93,15 @@ lemma red_zK_rep {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [red_zK, iRK]
   simp only [zKseq_zK]
-  rw [if_pos h1, if_pos h2, iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
+  rw [if_pos h1, if_neg (by simp [h2]), iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
 
-/-- **5.2.1 splice recursion equation.** Non-critical chain whose least-permissible premise `dᵢ` is itself
-*critical* (`permIdx dᵢ = lh (zKseq dᵢ)`, i.e. `¬ permIdx dᵢ < lh (zKseq dᵢ)`): `red` splices `dᵢ`'s two
-reduct-halves `znth (zKseq (red dᵢ)) {0,1}` in place at `i`, rank rising to `max(rk(A), r)`. -/
+/-- **5.2.1 splice recursion equation (lap-95 GATED dispatch).** Non-critical chain whose least-permissible
+premise `dᵢ` is itself a CRITICAL CHAIN (`zTag dᵢ = 4` AND `¬ permIdx dᵢ < lh (zKseq dᵢ)`): `red` splices
+`dᵢ`'s two reduct-halves `znth (zKseq (red dᵢ)) {0,1}` in place at `i`, rank rising to `max(rk(A), r)`. -/
 lemma red_zK_splice {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     (h2 : ¬ permIdx (znth ds (permIdx (zK s r ds)))
-        < lh (zKseq (znth ds (permIdx (zK s r ds))))) :
+        < lh (zKseq (znth ds (permIdx (zK s r ds)))))
+    (htag : zTag (znth ds (permIdx (zK s r ds))) = 4) :
     red (zK s r ds)
       = zK s
           (max (irk (seqSucc (fstIdx
@@ -112,8 +113,21 @@ lemma red_zK_splice {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [red_zK, iRK]
   simp only [zKseq_zK]
-  rw [if_pos h1, if_neg h2, iRKs, zKseq_zK, znth_redTable_eq_red _ _ hbound,
+  rw [if_pos h1, if_pos ⟨htag, h2⟩, iRKs, zKseq_zK, znth_redTable_eq_red _ _ hbound,
     fstIdx_zK, zKrank_zK]
+
+/-- **5.2.2 replace for a NON-CHAIN selected premise (lap-95 GATED dispatch).** `zTag dᵢ ≠ 4` ⟹ the gated
+`iRK` routes `dᵢ` to the replace branch `iRKr` regardless of its `permIdx` sentinel (the lap-94 cure). -/
+lemma red_zK_rep_nonchain {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
+    (htag : zTag (znth ds (permIdx (zK s r ds))) ≠ 4) :
+    red (zK s r ds)
+      = iCritAux (zK s r ds) (permIdx (zK s r ds))
+          (red (znth ds (permIdx (zK s r ds)))) := by
+  have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
+    le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
+  rw [red_zK, iRK]
+  simp only [zKseq_zK]
+  rw [if_pos h1, if_neg (by simp [htag]), iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
 
 /-- **5.1 critical sub-residual.** When the chain is critical, `red = iRcritG d ρ` with `ρ` the recursive
 premise reducts; delegates to `ZDerivation_iRcritG_of` (R2 = the two genuine auxiliaries are derivations
@@ -236,20 +250,25 @@ theorem ZDerivation_red_zK {s r ds : V}
     (hred : ∀ i < lh ds, ZDerivation (red (znth ds i))) :
     ZDerivation (red (zK s r ds)) := by
   by_cases h1 : permIdx (zK s r ds) < lh ds
-  · -- non-critical chain: dispatch on the selected premise's criticality
-    by_cases h2 : permIdx (znth ds (permIdx (zK s r ds)))
-        < lh (zKseq (znth ds (permIdx (zK s r ds))))
-    · -- 5.2.2 replace
-      rw [red_zK_rep h1 h2]
-      refine ZDerivation_red_zK_replace hZ hred h1 h2 ?_
-      -- OPEN (lap-90 narrowed gap): the selected minimal-permissible premise is `Rep`
-      -- (`tp dᵢ = isymRep`). TRUE on the ⊥-orbit (Π = ∅→⊥ ⟹ no axiom/I-rule is permissible,
-      -- Cor 2.1); NOT true for general chains, so it needs the ⊥-orbit invariant threaded
-      -- through the induction (the route-A re-architecture). See PENDING_WORK lap-90.
+  · -- non-critical chain: dispatch on the GATED `iRK` (lap 95) — first on whether the selected
+    -- premise `dᵢ` is a chain (`zTag dᵢ = 4`), then on `dᵢ`'s own criticality
+    by_cases htag : zTag (znth ds (permIdx (zK s r ds))) = 4
+    · by_cases h2 : permIdx (znth ds (permIdx (zK s r ds)))
+          < lh (zKseq (znth ds (permIdx (zK s r ds))))
+      · -- chain selected premise, non-critical → 5.2.2 replace
+        rw [red_zK_rep h1 h2]
+        refine ZDerivation_red_zK_replace hZ hred h1 h2 ?_
+        -- OPEN (lap-90 narrowed gap): the selected minimal-permissible premise is `Rep`
+        -- (`tp dᵢ = isymRep`). TRUE on the ⊥-orbit (Cor 2.1); needs the ⊥-orbit invariant.
+        sorry
+      · -- chain selected premise, critical → 5.2.1 splice (`htag` supplies the genuine reduct-halves)
+        rw [red_zK_splice h1 h2 htag]
+        exact ZDerivation_red_zK_splice hZ hred h1 h2
+    · -- NON-chain selected premise → 5.2.2 replace with conclusion-reduction `tpReduce (tp dᵢ) Π n`.
+      -- (Lap-95 GATED dispatch — the OLD `iRK` mis-spliced here.) The deep validity residual:
+      -- a keep-Π replace is faithful only for `tp = Rep`, so the conclusion must reduce (lap-90).
+      rw [red_zK_rep_nonchain h1 htag]
       sorry
-    · -- 5.2.1 splice
-      rw [red_zK_splice h1 h2]
-      exact ZDerivation_red_zK_splice hZ hred h1 h2
   · -- 5.1 critical
     rw [red_zK_crit h1]
     exact ZDerivation_red_zK_crit hZ hred h1

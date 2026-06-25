@@ -1,5 +1,12 @@
 # Lap 95 (FRESH-MIND REVIEW) — the wall is a SURGICAL dispatch gate, not a 2–3k-line ω-rule pivot
 
+> **✅ UPDATE (same lap, after the synthesis below): the gate is LANDED IN-KERNEL.** `iRK` is now gated
+> on `zTag dᵢ = 4` (`InternalZ.lean`), `red_zK_splice` gains `htag`, new `red_zK_rep_nonchain`, and
+> **`ZRegular_red_zK` is UNCONDITIONAL** (`hseltag` dropped, `#print axioms = [propext, choice,
+> Quot.sound]`). Build 🟢 1325, headline `[propext, sorryAx, choice, Quot.sound]` unchanged. The lap-94
+> regularity wall is cleared. The de-risk `wip/` spike was removed (promoted to src/). Remaining = the
+> validity half (`tpReduce` conclusion-reduction) + `iord_descent_red` (steps 3–4 below).
+
 > Build 🟢 green (`lake build GoodsteinPA`, 1325). Headline
 > `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms;
 > `sorryAx` traces the lone math `sorry` `goodstein_implies_consistency` = crux-2 = `redSound`).

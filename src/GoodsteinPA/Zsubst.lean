@@ -1661,14 +1661,16 @@ lemma red_zK_rep {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [red_zK, iRK]
   simp only [zKseq_zK]
-  rw [if_pos h1, if_pos h2, iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
+  rw [if_pos h1, if_neg (by simp [h2]), iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
 
-/-- **5.2.1 splice recursion equation** (port of `Crux2Blueprint` `red_zK_splice`): non-critical chain
-whose least-permissible premise `dᵢ` is itself critical ⟹ `red` splices `dᵢ`'s two reduct-halves
-`znth (zKseq (red dᵢ)) {0,1}` in place at `i`. -/
+/-- **5.2.1 splice recursion equation** (lap-95 GATED dispatch): non-critical chain `d` whose
+least-permissible premise `dᵢ` is itself a CRITICAL CHAIN (`zTag dᵢ = 4` AND `dᵢ` critical) ⟹ `red`
+splices `dᵢ`'s two reduct-halves `znth (zKseq (red dᵢ)) {0,1}` in place at `i`. The `zTag dᵢ = 4` gate
+(`htag`) is the lap-95 faithfulness fix: only a genuine chain has meaningful reduct-halves. -/
 lemma red_zK_splice {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     (h2 : ¬ permIdx (znth ds (permIdx (zK s r ds)))
-        < lh (zKseq (znth ds (permIdx (zK s r ds))))) :
+        < lh (zKseq (znth ds (permIdx (zK s r ds)))))
+    (htag : zTag (znth ds (permIdx (zK s r ds))) = 4) :
     red (zK s r ds)
       = zK s
           (max (irk (seqSucc (fstIdx
@@ -1680,8 +1682,24 @@ lemma red_zK_splice {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
     le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
   rw [red_zK, iRK]
   simp only [zKseq_zK]
-  rw [if_pos h1, if_neg h2, iRKs, zKseq_zK, znth_redTable_eq_red _ _ hbound,
+  rw [if_pos h1, if_pos ⟨htag, h2⟩, iRKs, zKseq_zK, znth_redTable_eq_red _ _ hbound,
     fstIdx_zK, zKrank_zK]
+
+/-- **5.2.2 replace recursion equation for a NON-CHAIN selected premise** (lap-95 GATED dispatch).
+When the least-permissible premise `dᵢ` is not a chain (`zTag dᵢ ≠ 4`) — atom / I-rule / axiom — the
+gated `iRK` routes it to the replace branch `iRKr` (Buchholz Def 3.2 case 5.2.2) regardless of `dᵢ`'s
+`permIdx` sentinel. This is the lap-94 obstruction's cure: the OLD `iRK` mis-spliced such premises
+(`permIdx dᵢ = 0 = lh(zKseq dᵢ)` triggered the splice by default); the gate now sends them to replace. -/
+lemma red_zK_rep_nonchain {s r ds : V} (h1 : permIdx (zK s r ds) < lh ds)
+    (htag : zTag (znth ds (permIdx (zK s r ds))) ≠ 4) :
+    red (zK s r ds)
+      = iCritAux (zK s r ds) (permIdx (zK s r ds))
+          (red (znth ds (permIdx (zK s r ds)))) := by
+  have hbound : znth ds (permIdx (zK s r ds)) ≤ zK s r ds - 1 :=
+    le_trans (znth_le_self ds _) (le_pred_of_lt (ds_lt_zK s r ds))
+  rw [red_zK, iRK]
+  simp only [zKseq_zK]
+  rw [if_pos h1, if_neg (by simp [htag]), iRKr, zKseq_zK, znth_redTable_eq_red _ _ hbound]
 
 /-- **5.2.2 replace branch — regularity preserved (unconditional).** `red (zK s r ds) = K^r(i/red dᵢ)`;
 regular since every original premise is (`ZRegular_zK_premise`) and the swapped reduct `red dᵢ` is (IH). -/
@@ -1733,10 +1751,11 @@ lemma ZRegular_red_zK_splice {s r ds : V} (hds : Seq ds)
     (h1 : permIdx (zK s r ds) < lh ds)
     (h2 : ¬ permIdx (znth ds (permIdx (zK s r ds)))
         < lh (zKseq (znth ds (permIdx (zK s r ds)))))
+    (htag : zTag (znth ds (permIdx (zK s r ds))) = 4)
     (ha : ZRegular (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 0))
     (hb : ZRegular (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 1)) :
     ZRegular (red (zK s r ds)) := by
-  rw [red_zK_splice h1 h2]
+  rw [red_zK_splice h1 h2 htag]
   exact ZRegular_zK_of_seqInsert h1
     (fun m hm => ZRegular_zK_premise hds hreg hm) ha hb
 
@@ -1770,54 +1789,58 @@ lemma ZRegular_red_zK_splice_of_chain {s r ds : V} (hds : Seq ds)
     have hregred : ZRegular (iRcritG (zK s' r' ds') (fun n => zAxReduct (red (znth ds' n)))) := by
       have h := hred (permIdx (zK s r ds)) h1
       rwa [heq, red_zK_crit hcrit] at h
-    refine ZRegular_red_zK_splice hds hreg h1 h2 ?_ ?_
+    refine ZRegular_red_zK_splice hds hreg h1 h2 htag ?_ ?_
     · rw [heq, red_zK_crit hcrit]; exact ZRegular_iRcritG_premise hregred zero_lt_two
     · rw [heq, red_zK_crit hcrit]; exact ZRegular_iRcritG_premise hregred one_lt_two
   · rw [heq] at htag; simp at htag
   · rw [heq] at htag; simp at htag
 
-/-- **`red` preserves `ZRegular` — the full `zK` chain case.** Dispatches on the two `iRK` sentinels and
-calls the three branch lemmas. The critical branch's redex bounds are now discharged INTERNALLY from the
-chain's own validity: `zKValidF_of_ZDerivation_zK hZ` + criticality (`zKCritical_of_not_permIdx_lt`) gives
-`zKValid`, and `redexI_redexJ_lt_of_zKValid` puts the redex indices in range. The ONLY remaining validity
-leaf is `hseltag`: on the splice branch the selected premise `dᵢ` is a chain (`zTag dᵢ = 4`), so its reduct
-is a critical-reduct with regular halves (the Rep/chain selection — `zKValidF`'s permissibility data, the
-genuine open sub-wall). The selected premise's `ZDerivation` is free (`zDerivation_zK_inv`). This is the
-regularity half of the combined "red preserves valid+regular" induction; the validity half stays
-route-B-blocked (lap-90). -/
+/-- **`red` preserves `ZRegular` — the full `zK` chain case (lap-95: `hseltag` DISCHARGED).** Dispatches
+on the GATED `iRK` (lap 95): `permIdx (zK s r ds) < lh ds` (chain non-critical) splits on whether the
+selected premise `dᵢ` is a chain (`zTag dᵢ = 4`); a chain dispatches further on `dᵢ`'s own criticality
+(non-critical → replace `ZRegular_red_zK_replace`, critical → splice `ZRegular_red_zK_splice_of_chain`
+with `zTag dᵢ = 4` now supplied by the gate), while a NON-chain goes to the conclusion-replace
+`red_zK_rep_nonchain` (the lap-94 obstruction's cure — the OLD `iRK` mis-spliced non-chains). The 5.1
+critical branch's redex bounds are discharged INTERNALLY from the chain's own validity
+(`zKValidF_of_ZDerivation_zK` + `zKCritical_of_not_permIdx_lt` + `redexI_redexJ_lt_of_zKValid`). The
+former leaf `hseltag` is **GONE**: under the gated dispatch the splice branch IS the `zTag dᵢ = 4` case.
+This is the regularity (O1) half of "red preserves valid+regular", now UNCONDITIONAL; the validity half
+needs the `tpReduce` conclusion-reduction (lap-90). -/
 lemma ZRegular_red_zK {s r ds : V} (hds : Seq ds)
     (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds))
-    (hred : ∀ i < lh ds, ZRegular (red (znth ds i)))
-    (hseltag : permIdx (zK s r ds) < lh ds →
-      ¬ permIdx (znth ds (permIdx (zK s r ds)))
-          < lh (zKseq (znth ds (permIdx (zK s r ds)))) →
-      zTag (znth ds (permIdx (zK s r ds))) = 4) :
+    (hred : ∀ i < lh ds, ZRegular (red (znth ds i))) :
     ZRegular (red (zK s r ds)) := by
   by_cases h1 : permIdx (zK s r ds) < lh ds
-  · by_cases h2 : permIdx (znth ds (permIdx (zK s r ds)))
-        < lh (zKseq (znth ds (permIdx (zK s r ds))))
-    · exact ZRegular_red_zK_replace hds hreg hred h1 h2
-    · exact ZRegular_red_zK_splice_of_chain hds hreg hred h1 h2
-        ((zDerivation_zK_inv hZ).2 _ h1) (hseltag h1 h2)
+  · by_cases htag : zTag (znth ds (permIdx (zK s r ds))) = 4
+    · by_cases h2 : permIdx (znth ds (permIdx (zK s r ds)))
+          < lh (zKseq (znth ds (permIdx (zK s r ds))))
+      · -- chain selected premise, non-critical → replace
+        exact ZRegular_red_zK_replace hds hreg hred h1 h2
+      · -- chain selected premise, critical → splice (`htag` from the gate)
+        exact ZRegular_red_zK_splice_of_chain hds hreg hred h1 h2
+          ((zDerivation_zK_inv hZ).2 _ h1) htag
+    · -- NON-chain selected premise → replace (the lap-94 obstruction's cure)
+      rw [red_zK_rep_nonchain h1 htag, iCritAux_zK]
+      exact ZRegular_zK_of_seqUpdate
+        (fun m hm => ZRegular_zK_premise hds hreg hm) (hred _ h1)
   · have hvalid : zKValid s r ds := zKValid_iff_zKValidF_and_zKCritical.mpr
       ⟨zKValidF_of_ZDerivation_zK hZ, zKCritical_of_not_permIdx_lt h1⟩
     obtain ⟨hI, hJ⟩ := redexI_redexJ_lt_of_zKValid hvalid
     exact ZRegular_red_zK_crit hds hreg (hred _ hI) (hred _ hJ) h1
 
-/-! ### ⛔ The `hseltag` leaf is FALSE — the `iRK` splice dispatch is unfaithful (lap-94 obstruction)
+/-! ### ✅ The `hseltag` leaf — RESOLVED (lap 95) by the gated `iRK` dispatch
 
-The last `ZRegular_red_zK` leaf `hseltag` claims the splice-branch selected premise `dᵢ` is a chain
-(`zTag dᵢ = 4`). **This is false.** `iRK`'s inner sentinel `permIdx dᵢ < lh (zKseq dᵢ)` routes to *replace*
-(5.2.2) when true and *splice* (5.2.1) when false. For a NON-chain `dᵢ` (atom/I-rule/axiom) `zKseq dᵢ` is
-junk of length `0`, so the sentinel is `0 < 0 = false` → the **splice branch fires by default**, even
-though `dᵢ` is not a chain. So the splice branch does NOT imply `zTag dᵢ = 4`; on the contrary it is
-entered for every non-chain selected premise (then `red dᵢ`'s "halves" `znth (zKseq (red dᵢ)) {0,1}` are
-junk). The witness below (atom case) is the concrete refutation — the regularity analog of
-`not_zKValid_iCritReduct`. **Consequence:** the genuine fix is the route-B dispatch on `tp dᵢ` (Buchholz
-Def 3.2 case 5.2 branches on the inference SYMBOL of `dᵢ`, not on a chain-criticality sentinel) — a
-selected atom/I-rule/axiom is Buchholz case 5.2.2 (replace + conclusion reduction `tp(dᵢ)(Π,n)`), never the
-5.2.1 splice. Both the regularity-half (`hseltag`) and the validity-half (`ZDerivation_red_zK_splice`,
-Crux2Blueprint sorry) are blocked at this same point. -/
+**Historical (lap 94 obstruction, now fixed).** The former `ZRegular_red_zK` leaf `hseltag` claimed the
+splice-branch selected premise `dᵢ` is a chain (`zTag dᵢ = 4`). Under the OLD `iRK` this was FALSE: the
+inner sentinel `permIdx dᵢ < lh (zKseq dᵢ)` routed to *replace* when true and *splice* when false, and for
+a NON-chain `dᵢ` (atom/I-rule/axiom) `lh (zKseq dᵢ) = 0`, so `0 < 0 = false` fired the splice by default —
+the splice did NOT imply `zTag dᵢ = 4`. **Lap-95 fix (`iRK`, `InternalZ.lean`):** the splice is now GATED
+on `zTag dᵢ = 4 ∧ ¬ permIdx dᵢ < lh (zKseq dᵢ)` (= dᵢ a genuine *critical chain*); a non-chain selected
+premise is routed to the replace `iRKr` (Buchholz Def 3.2 case 5.2.2, via `red_zK_rep_nonchain`). So the
+splice branch now CONTAINS `zTag dᵢ = 4`, `hseltag` is derivable, and `ZRegular_red_zK` (above) is
+UNCONDITIONAL. The witness `not_permIdx_lt_zKseq_zAtom` below stays as the in-kernel record of *why* the
+gate is needed (the OLD dispatch mis-fired on atoms). The validity-half (`ZDerivation_red_zK`,
+Crux2Blueprint) still needs the `tpReduce` conclusion-reduction for the non-`Rep` replace (lap-90). -/
 
 /-- **`zKseq` of a non-chain atom node is the empty code** (`length 0`). -/
 @[simp] lemma zKseq_zAtom (s : V) : zKseq (zAtom s) = 0 := by
