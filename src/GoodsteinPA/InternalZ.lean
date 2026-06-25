@@ -1005,6 +1005,45 @@ lemma iperm_isymLk_iff {k A q : V} : iperm (isymLk k A) q ↔ inAnt A (seqAnt q)
     · exact absurd h (by simp)
   · intro h; exact Or.inr (Or.inl ⟨k, A, rfl, h⟩)
 
+/-! ### Genuine-reduct sequent operations (Buchholz §3.2 case 5.1 endsequents)
+
+The critical recombination's auxiliaries derive the *modified* sequents `d{0} ⊢ Θ→A(d)` and
+`d{1} ⊢ A(d),Θ→D` (Buchholz §2 p.6 / Thm 3.4(a)): `Θ→A(d)` keeps the antecedent `Θ = seqAnt s` and
+swaps the succedent to the cut formula `A(d)`; `A(d),Θ→D` adds `A(d)` to the antecedent and keeps the
+succedent `D = seqSucc s`. These two operations build the genuine auxiliaries' conclusions (unlike the
+ordinal-shadow `iCritAux`, which reuses `fstIdx d = s` for both). -/
+
+/-- `Θ→C`: the sequent `s` with its succedent replaced by `C` (the cut-formula succedent of `d{0}`). -/
+noncomputable def seqSetSucc (s C : V) : V := mkSeqt (seqAnt s) C
+@[simp] lemma seqAnt_seqSetSucc (s C : V) : seqAnt (seqSetSucc s C) = seqAnt s := by simp [seqSetSucc]
+@[simp] lemma seqSucc_seqSetSucc (s C : V) : seqSucc (seqSetSucc s C) = C := by simp [seqSetSucc]
+
+/-- `A,Θ→D`: the sequent `s` with `A` added to its antecedent (membership-wise, appended), succedent
+unchanged (the conclusion of `d{1}`). -/
+noncomputable def seqAddAnt (A s : V) : V := mkSeqt (seqCons (seqAnt s) A) (seqSucc s)
+@[simp] lemma seqAnt_seqAddAnt (A s : V) : seqAnt (seqAddAnt A s) = seqCons (seqAnt s) A := by
+  simp [seqAddAnt]
+@[simp] lemma seqSucc_seqAddAnt (A s : V) : seqSucc (seqAddAnt A s) = seqSucc s := by simp [seqAddAnt]
+
+/-- Antecedent membership splits over a `seqCons` append: `B ∈ Γ⌢A ↔ B = A ∨ B ∈ Γ`. -/
+lemma inAnt_seqCons {Γ A B : V} (hΓ : Seq Γ) :
+    inAnt B (seqCons Γ A) ↔ B = A ∨ inAnt B Γ := by
+  unfold inAnt
+  rw [Seq.lh_seqCons A hΓ]
+  constructor
+  · rintro ⟨i, hi, hz⟩
+    rcases eq_or_lt_of_le (le_iff_lt_succ.mpr hi) with rfl | hlt
+    · left; rw [znth_seqCons_self hΓ A] at hz; exact hz.symm
+    · right; rw [znth_seqCons_of_lt hΓ A hlt] at hz; exact ⟨i, hlt, hz⟩
+  · rintro (rfl | ⟨i, hi, hz⟩)
+    · exact ⟨lh Γ, le_iff_lt_succ.mp le_rfl, znth_seqCons_self hΓ _⟩
+    · exact ⟨i, le_iff_lt_succ.mp (le_of_lt hi), by rw [znth_seqCons_of_lt hΓ A hi]; exact hz⟩
+
+/-- Antecedent membership of `A,Θ→D`: `B ∈ A,Θ ↔ B = A ∨ B ∈ Θ`. -/
+lemma inAnt_seqAddAnt {A s B : V} (hs : Seq (seqAnt s)) :
+    inAnt B (seqAnt (seqAddAnt A s)) ↔ B = A ∨ inAnt B (seqAnt s) := by
+  rw [seqAnt_seqAddAnt]; exact inAnt_seqCons hs
+
 /-! ### Lemma 3.3 (`tp(d) ◁ Π`) for the I-rule cases (Buchholz p.8)
 
 For the rules where `tp` is faithfully defined, permissibility `tp(d) ◁ end(d)` reduces to **end-sequent
