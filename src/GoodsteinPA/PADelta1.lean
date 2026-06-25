@@ -343,6 +343,86 @@ end
 
 end FreeToBound
 
+/-! ## Brick 2c — internal free-variable sequence `fvarSeq` (lap 79)
+
+`fvarSeq m = ⟨^&0, ^&1, …, ^&(m-1)⟩` — the substitution vector that, fed to `subst`, sends bound
+`#i ↦ ^&i` (undoing `fixitr`). Built exactly like `qVec` (`Term/Functions.lean §qVec`) but with the
+free-var head `^&0` and the free-var shift `termShiftVec` (`^&x ↦ ^&(x+1)`):
+`fvarSeq (m+1) = ^&0 ∷ termShiftVec L m (fvarSeq m)`. -/
+
+section FvarSeq
+
+open LO.FirstOrder.Arithmetic.Bootstrapping
+open LO.FirstOrder.Arithmetic.Bootstrapping.Arithmetic
+
+variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+
+namespace FvarSeqC
+
+noncomputable def blueprint : PR.Blueprint 0 where
+  zero := .mkSigma “y. y = 0”
+  succ := .mkSigma “y ih k. ∃ sv, !(termShiftVecGraph ℒₒᵣ) sv k ih ∧ ∃ fz, !qqFvarDef fz 0 ∧ !adjoinDef y fz sv”
+
+noncomputable def construction : PR.Construction V blueprint where
+  zero _ := 0
+  succ _ k ih := ^&0 ∷ termShiftVec ℒₒᵣ k ih
+  zero_defined := .mk fun v ↦ by simp [blueprint]
+  succ_defined := .mk fun v ↦ by simp [blueprint]
+
+end FvarSeqC
+
+section
+
+open FvarSeqC
+
+/-- Internal free-variable sequence `fvarSeq m = ⟨^&0, …, ^&(m-1)⟩`. -/
+noncomputable def fvarSeq (m : V) : V := construction.result ![] m
+
+noncomputable def fvarSeqGraph : 𝚺₁.Semisentence 2 := blueprint.resultDef
+
+@[simp] lemma fvarSeq_zero : fvarSeq (0 : V) = 0 := by simp [fvarSeq, construction]
+
+@[simp] lemma fvarSeq_succ (m : V) :
+    fvarSeq (m + 1) = ^&0 ∷ termShiftVec ℒₒᵣ m (fvarSeq m) := by simp [fvarSeq, construction]
+
+instance fvarSeq.defined : 𝚺₁-Function₁[V] fvarSeq via fvarSeqGraph := .mk fun v ↦ by
+  simp [construction.result_defined_iff, fvarSeqGraph, fvarSeq, Matrix.comp_vecCons',
+    Matrix.constant_eq_singleton, Matrix.empty_eq]
+
+instance fvarSeq.definable : 𝚺₁-Function₁ (fvarSeq : V → V) := fvarSeq.defined.to_definable
+
+instance fvarSeq.definable' : Γ-[m + 1]-Function₁ (fvarSeq : V → V) := .of_sigmaOne fvarSeq.definable
+
+@[simp] lemma IsSemitermVec_fvarSeq (m : V) : IsSemitermVec ℒₒᵣ m 0 (fvarSeq m) := by
+  induction m using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ m ih =>
+    rw [fvarSeq_succ]
+    exact (ih.termShiftVec).adjoin (by simp)
+
+@[simp] lemma len_fvarSeq (m : V) : len (fvarSeq m) = m := by
+  induction m using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ m ih => simp [len_termShiftVec (IsSemitermVec_fvarSeq m).isUTerm]
+
+@[simp] lemma nth_fvarSeq {m i : V} (hi : i < m) : (fvarSeq m).[i] = ^&i := by
+  induction m using ISigma1.sigma1_succ_induction generalizing i
+  · definability
+  case zero => simp at hi
+  case succ m ih =>
+    rcases zero_or_succ i with (rfl | ⟨i, rfl⟩)
+    · simp
+    · have him : i < m := by simpa using hi
+      rw [fvarSeq_succ, nth_adjoin_succ,
+        nth_termShiftVec (L := ℒₒᵣ) (IsSemitermVec_fvarSeq m).isUTerm him, ih him,
+        termShift_fvar (L := ℒₒᵣ)]
+
+end
+
+end FvarSeq
+
 /-- **`𝗣𝗔⁻` is Δ₁-definable** (axiom-clean). `𝗣𝗔⁻` is a finite theory (`PeanoMinus.finite`:
 `𝗣𝗔⁻ = 𝗘𝗤 ∪ {17 axioms}`, all over the finite-symbol language `ℒₒᵣ`), so the finite-theory
 combinator `Theory.Δ₁.ofFinite` enumerates it into a `𝚫₁.Semisentence 1`. -/
