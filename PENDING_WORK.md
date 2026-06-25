@@ -1,5 +1,41 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 87 — 5.2.1 splice VALIDITY object is ordered insert-at-`i`, NOT the banked end-append model
+
+**Build 🟢 1325 jobs, axiom base clean (headline 0 math axioms).** See
+`ANALYSIS-2026-06-25-lap87-splice-order-sensitivity.md`.
+
+**LANDED (axiom-clean `[propext, choice, Quot.sound]`, `InternalZ.lean` after `zKValidF_seqUpdate`):**
+splice end-sequent read-outs (`chainAsucc`/`chainAnt`_{`seqCons_seqUpdate_{top,lt}`,`seqUpdate_{self,of_ne}`});
+`isChainInf_iSpliceEnd` + `zKValidF_iSpliceEnd` — the order-independent validity REDUCTIONS (take threading
+as hypotheses; reusable as the ordinal-side interface + `forall`-premise template).
+
+**FINDING (confirmed vs Buchholz Def 3.2, paper md line 75–76):** the banked ordinal-descent splice model
+`seqCons (seqUpdate ds i a) b` (half `a` in place at `i`, half `b` appended at the END) serves the ordinal
+`õ` (= order-independent `#`-fold) but is WRONG for `isChainInf` validity, which threads each antecedent
+only to STRICTLY-EARLIER succedents. The genuine reduct `K^{r'}_Π(i/dᵢ{0},dᵢ{1})` is the ORDERED
+in-place splice `d₀…d_{i−1} dᵢ{0} dᵢ{1} d_{i+1}…dₗ` (insert two halves at `i`, shift tail). So
+`zKValidF_iSpliceEnd`'s `isChainInf` hypothesis is generically unsatisfiable for the genuine halves — it's
+the ordinal packaging, not the validity object.
+
+**NEXT (the corrected 5.2.1 validity — build the ordered insert object):**
+1. **`seqInsert ds i a b := d₀…d_{i−1} a b d_{i+1}…dₗ`** (length `lh ds + 1`) — a `PR.Construction`
+   coded-sequence op (mirror `seqUpdateAux`, ~100 lines: `Seq`/`lh`/`znth` read-outs + `𝚺₁`-def). Entry at
+   index `n` = `if n<i then znth ds n else if n=i then a else if n=i+1 then b else znth ds (n−1)`. May
+   stage as ABSTRACT read-outs first (hypothesis bundle, like `isChainInf_iSpliceEnd`) to land the math
+   before the arithmetization plumbing.
+2. **`isChainInf s r' (seqInsert ds i a b)`** from original `isChainInf s r ds` (distinguished `j₀`) + the
+   halves' genuine end-sequents (`dᵢ{0} ⊢ Γᵢ→A(dᵢ)`, `dᵢ{1} ⊢ A(dᵢ),Γᵢ→Aᵢ`, Thm 3.4(a)) + `rk(A(dᵢ)) ≤ r'`.
+   New distinguished `j₀+1`; threading: `<i` unchanged, `dᵢ{0}` at `i` keeps `Γᵢ`-threading (succ now
+   `A(dᵢ)`), `dᵢ{1}` at `i+1` threads `A(dᵢ)→i` + rest of `Γᵢ`, `>i` shift `+1` (threading preserved). THE
+   hard math piece (index-shift arithmetic in V — no `omega`; use `le_iff_lt_succ`/`tsub` lemmas).
+3. **`zKValidF`** via the `forall`-premise packaging (reuse `zKValidF_iSpliceEnd`'s `key` pattern).
+4. **Descent transfer**: `õ(seqInsert ds i a b) = õ(seqCons (seqUpdate ds i a) b)` (same `#`-multiset,
+   `iseqNaddIdg` permutation-invariant) ⟹ inherit banked `iord_descent_iSpliceEnd`. (Or direct `iord`
+   descent on the insert object mirroring `iotil_iSpliceEnd_lt`.)
+
+---
+
 ## 📍 Lap 86 (FRESH-MIND REVIEW) — gating criticality question RESOLVED: `red` needs the 5.2 dispatch
 
 **Build 🟢 1325 jobs, axiom base clean. Headline `peano_not_proves_goodstein = [propext, sorryAx,
