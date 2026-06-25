@@ -5272,6 +5272,29 @@ lemma iord_descent_iSpliceEnd_of_iSpliceDescent {s s' r ds j a b : V}
   iord_descent_iSpliceEnd_of_ZDerivation hZ hj hd.a_otil_lt hd.b_otil_lt hd.a_dg_le hd.b_dg_le
     hd.a_nf hd.b_nf
 
+/-- **LH5 over `ZDerivation`, on the GENUINE insert object** — the splice descent on `seqInsert`
+(the object `zKValidF_seqInsert` validity lives on), NF side conditions discharged from the chain's
+`ZDerivation`. Mirror of `iord_descent_iSpliceEnd_of_ZDerivation`. -/
+lemma iord_descent_seqInsert_of_ZDerivation {s s' r ds j a b : V}
+    (hZ : ZDerivation (zK s r ds)) (hj : j < lh ds)
+    (ha : icmp (iotil a) (iotil (znth ds j)) = 0) (hb : icmp (iotil b) (iotil (znth ds j)) = 0)
+    (hag : idg a ≤ idg (znth ds j)) (hbg : idg b ≤ idg (znth ds j))
+    (hNFa : isNF (iotil a)) (hNFb : isNF (iotil b)) :
+    icmp (iord (zK s' r (seqInsert ds j a b))) (iord (zK s r ds)) = 0 := by
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  have hNFall := isNF_iotil_znth_of_ZDerivation_zK hZ
+  have hnf : isNF (iotil (zK s r ds)) :=
+    isNF_iotil_zK hds (fun n hn => isNF_iotil_of_ZDerivation (znth ds n) (hmem n hn))
+  exact iord_descent_seqInsert hds hj hnf ha hb hag hbg hNFall hNFa hNFb
+
+/-- **Splice step from the IH interface, on the GENUINE insert object** — `iSpliceDescent` plugs
+straight into the `seqInsert` descent. The LH5 case of Thm-4.2 packaged for the genuine reduct. -/
+lemma iord_descent_seqInsert_of_iSpliceDescent {s s' r ds j a b : V}
+    (hZ : ZDerivation (zK s r ds)) (hj : j < lh ds) (hd : iSpliceDescent a b (znth ds j)) :
+    icmp (iord (zK s' r (seqInsert ds j a b))) (iord (zK s r ds)) = 0 :=
+  iord_descent_seqInsert_of_ZDerivation hZ hj hd.a_otil_lt hd.b_otil_lt hd.a_dg_le hd.b_dg_le
+    hd.a_nf hd.b_nf
+
 /-! ### `tp`-inversion + concrete discharge of the critical R-redex premise's IH
 
 The critical-case redex (`inference_critical_pair_of_chain`) returns indices with `tp(dᵢ)=R_{Aᵢ}`,
