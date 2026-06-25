@@ -775,6 +775,20 @@ theorem sord_descent_zIneg {s p d0 : V} (hZ : ZDerivation (zIneg s p d0)) :
   rw [sord_eq_iord_of_ZDerivation (zDerivation_zIneg_inv hZ).1, sord_eq_iord_of_ZDerivation hZ]
   exact iord_descent_zIneg s p d0
 
+/-- **Complete leaf I∀-inversion step.** Peeling an I∀-node leaf `zIall s a p d0` yields a `ZcOK` premise
+`d0` (an engine `ZDerivation` by `zDerivation_zIall_inv`) with strictly smaller orbit measure. The base
+case of the `∀`-inversion recursion the structural `hinv` needs: it both PRESERVES `ZcOK` and DROPS `sord`,
+exactly the two invariants `red_iterate_descends` consumes (`hinv` + `hdrop`). -/
+theorem zcOK_sord_descent_zIall {s a p d0 : V} (hZ : ZDerivation (zIall s a p d0)) :
+    ZcOK d0 ∧ icmp (sord d0) (sord (zIall s a p d0)) = 0 :=
+  ⟨.leaf (zDerivation_zIall_inv hZ).1, sord_descent_zIall hZ⟩
+
+/-- **Complete leaf I¬-inversion step.** I¬-node analogue of `zcOK_sord_descent_zIall`: the peeled premise
+is `ZcOK` with strictly smaller `sord`. -/
+theorem zcOK_sord_descent_zIneg {s p d0 : V} (hZ : ZDerivation (zIneg s p d0)) :
+    ZcOK d0 ∧ icmp (sord d0) (sord (zIneg s p d0)) = 0 :=
+  ⟨.leaf (zDerivation_zIneg_inv hZ).1, sord_descent_zIneg hZ⟩
+
 /-- **One-step `ZcOK` rule predicate** — the disjunction characterizing each node, the analogue of the
 engine's `ZPhi`. `C` is the recursion set (the premise sub-derivations). -/
 def ZcPhi (C : V → Prop) (d : V) : Prop :=
