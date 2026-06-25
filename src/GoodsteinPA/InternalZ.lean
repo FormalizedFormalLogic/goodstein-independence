@@ -3027,6 +3027,39 @@ lemma zKValidF_iCritReductSeq {s r d0 d1 : V}
       (fun hc => by rw [htag0] at hc; simp at hc) (fun hc => by rw [htag1] at hc; simp at hc)
   · exact forall_lt_iCritReductSeq (P := fun x => IsUFormula ℒₒᵣ (seqSucc (fstIdx x))) hUf0 hUf1
 
+/-- **Critical recombination validity on the GENUINE auxiliaries — threading is AUTOMATIC.** When the two
+auxiliaries carry the genuine Buchholz §2 p.6 / Thm 3.4(a) endsequents — `d{0}` concludes `Θ→A(d)`
+(`seqSetSucc s C`), `d{1}` concludes `A(d),Θ→D` (`seqAddAnt C s`), with `C = A(d)` the cut formula — the
+cut-threading hypotheses of `zKValidF_iCritReductSeq` hold *by construction* (`seqSetSucc`/`seqAddAnt`
+read-outs + `inAnt_seqCons`), leaving only the cut-rank drop `rk(A(d)) ≤ rOut` (Thm 3.4(a), `< r`) and
+the formula-hood of `A(d)` and the conclusion's antecedent/succedent. The inner ranks `rIn0/rIn1` and
+premise sequences `ds0/ds1` are immaterial to the outer chain's validity. This is the validity (D₁) of
+the critical reduct, modulo only the (banked) rank arithmetic and the auxiliaries being `ZDerivation`s. -/
+lemma zKValidF_iCritReductGen {s C rOut rIn0 rIn1 ds0 ds1 : V}
+    (hsAnt : Seq (seqAnt s))
+    (hCrk : irk C ≤ rOut)
+    (hCUf : IsUFormula ℒₒᵣ C)
+    (hssUf : IsUFormula ℒₒᵣ (seqSucc s))
+    (hsaUf : ∀ k < lh (seqAnt s), IsUFormula ℒₒᵣ (znth (seqAnt s) k)) :
+    zKValidF s rOut
+      (iCritReductSeq (zK (seqSetSucc s C) rIn0 ds0) (zK (seqAddAnt C s) rIn1 ds1)) := by
+  apply zKValidF_iCritReductSeq
+  · rw [tp_zK]
+  · rw [tp_zK]
+  · rw [zTag_zK]
+  · rw [zTag_zK]
+  · rw [fstIdx_zK, seqSucc_seqAddAnt]
+  · intro B hB; rw [fstIdx_zK, seqAnt_seqSetSucc] at hB; exact hB
+  · intro B hB
+    rw [fstIdx_zK, seqAnt_seqAddAnt] at hB
+    rw [fstIdx_zK, seqSucc_seqSetSucc]
+    exact ((inAnt_seqCons hsAnt).mp hB).symm
+  · rw [fstIdx_zK, seqSucc_seqSetSucc]; exact hCrk
+  · rw [fstIdx_zK, seqSucc_seqSetSucc]; exact hCUf
+  · rw [fstIdx_zK, seqSucc_seqAddAnt]; exact hssUf
+  · exact hssUf
+  · exact hsaUf
+
 /-- `õ`-fold of the critical reduct sequence: `ω^{õ d{0}} # ω^{õ d{1}}` (N3b's left side). -/
 lemma iseqNaddIdg_iCritReductSeq (d0 d1 : V) :
     iseqNaddIdg (iCritReductSeq d0 d1) =
