@@ -1,5 +1,36 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 90 — `redSound` DECOMPOSED + faithfulness finding (`red` faithful only for `Rep`)
+
+**Build 🟢 1325 jobs. Headline still `[propext, sorryAx, choice, Quot.sound]` (0 math axioms).**
+3 green commits: (1) `redSound` decomposed into `redSoundGen` skeleton + 2 Thm-3.4 residuals; (2) Ind
+residual restated at `zKValidF` (criticality-free); (3) K-core dispatch split into 3 case-5 sub-residuals
+with `red_zK_rep`/`red_zK_splice` recursion equations PROVED.
+
+**⭐ MAJOR FINDING (read `ANALYSIS-2026-06-25-lap90-red-faithful-only-for-rep.md`):** the lap-89 tag-4
+dispatch + the repo's `red` are **faithful to Buchholz `d[0]` ONLY for `Rep`-reducible chains**
+(`tp(d) = isymRep`). Two gaps for non-`Rep` chains: (1) Buchholz 5.2.2 reduces the conclusion to
+`tp(dᵢ)(Π,0) ≠ Π`, but `red`/`iRKr` keep `Π` (`fstIdx_iRK = fstIdx d`); (2) the selected minimal-permissible
+premise `dᵢ` can be an I-rule/axiom (`iperm` admits `isymR`/`isymLk`), not just a chain, so the
+critical-sub-dispatch is ill-typed. ⟹ **`redSoundGen` (∀ ZDerivation) is FALSE**; the K-branch residuals
+`ZDerivation_red_zK_replace/_splice` are FALSE as stated (flagged ⚠ in docstrings). **Saving grace —
+Buchholz Cor 2.1:** on the ⊥-orbit (`ZDerivesEmpty`, Π = `→⊥`) every selected premise is `Rep`, so
+`red = d[0]` faithfully THERE. The TRUE target is `redSound` over `ZDerivesEmpty`.
+
+**NEXT (resume point) — re-architect `redSound` off the false general form:**
+1. **Decide route A vs B** (analysis doc §Consequence): (A) ⊥-orbit induction carrying the invariant
+   `tp d = isymRep` (hereditary all-`Rep`, via Cor 2.1) — cheapest; (B) build the general conclusion-
+   reducing `d[n]` + prove Thm 3.4(b) `red d ⊢ tp(d)(Π,0)` verbatim, specialise to ⊥-orbit. Try A first.
+2. **Add `htp : tp (znth ds (permIdx …)) = isymRep` hypothesis** to the K-replace/splice residuals
+   (makes them TRUE), then `ZDerivation_red_zK` must DISCHARGE `htp` from the ⊥-orbit invariant. The
+   discharge = "a permissible premise of a `→⊥` chain is `Rep`" (no axiom: `A∈∅` impossible; no I-rule:
+   succ ≠ `⊥`).
+3. **Caveat for route A:** the 5.1 critical case recurses into the auxiliaries' premise-reducts
+   `dᵢ[k]/dⱼ[0]` (NON-⊥ subformula sequents) — these may force route B's endsequent tracking. Check
+   whether `ZDerivation_iRcritG_of`'s `haux0/haux1` (the R2 residual) already absorbs this.
+4. REUSABLE regardless of route: `red_zK_rep`/`red_zK_splice` (proved), the 5 trivial `redSoundGen`
+   cases, `zKValidF_iIndReduct_of_zInd` (Ind, independent of the `Rep` issue — tractable side thread).
+
 ## 📍 Lap 89 (FRESH-MIND REVIEW) — endgame SINGLE-FRONT + tag-4 dispatch `iRK` DEFINED
 
 **Build 🟢 1325 jobs, headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms).**

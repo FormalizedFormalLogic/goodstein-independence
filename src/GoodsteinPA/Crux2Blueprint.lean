@@ -124,8 +124,11 @@ theorem ZDerivation_red_zK_crit {s r ds : V}
     (h1 : ¬ permIdx (zK s r ds) < lh ds) :
     ZDerivation (iRcritG (zK s r ds) (fun n => zAxReduct (red (znth ds n)))) := sorry
 
-/-- **5.2.2 replace sub-residual.** Delegates to `ZDerivation_iCritAux_of_zK`: the selected premise `dᵢ`
-and its reduct `red dᵢ` are both chains with matching end-sequent. -/
+/-- **5.2.2 replace sub-residual. ⚠ FALSE as stated** (lap-90 finding): needs `tp dᵢ = isymRep` (the
+selected premise is `Rep` — a chain/Ind/atom). Only then does `red dᵢ` keep `dᵢ`'s endsequent
+(`fstIdx (red dᵢ) = fstIdx dᵢ`) and the replace `iCritAux d i (red dᵢ)` stay a valid chain. For
+`tp dᵢ = R_∀xF`/`L^k` the conclusion must reduce to `tp(dᵢ)(Π,0) ≠ Π`. Holds on the ⊥-orbit (all-`Rep`,
+Cor 2.1). Delegates (under the `Rep` restriction) to `ZDerivation_iCritAux_of_zK`. -/
 theorem ZDerivation_red_zK_replace {s r ds : V}
     (hZ : ZDerivation (zK s r ds))
     (hred : ∀ i < lh ds, ZDerivation (red (znth ds i)))
@@ -135,8 +138,10 @@ theorem ZDerivation_red_zK_replace {s r ds : V}
     ZDerivation (iCritAux (zK s r ds) (permIdx (zK s r ds))
       (red (znth ds (permIdx (zK s r ds))))) := sorry
 
-/-- **5.2.1 splice sub-residual.** Delegates to `ZDerivation_seqInsert_of_zK`: the two reduct-halves are
-genuine derivations and the spliced `isChainInf` threading holds at rank `max(rk(A), r)`. -/
+/-- **5.2.1 splice sub-residual. ⚠ FALSE as stated** (lap-90 finding): needs `tp dᵢ = isymRep` AND `dᵢ`
+critical (so `red dᵢ = iRcritG dᵢ …` genuinely has the two reduct-halves `znth (zKseq (red dᵢ)) {0,1}`).
+For a non-`Rep` `dᵢ` the halves are junk. Holds on the ⊥-orbit. Delegates (under the restriction) to
+`ZDerivation_seqInsert_of_zK` with the spliced `isChainInf` at rank `max(rk(A), r)`. -/
 theorem ZDerivation_red_zK_splice {s r ds : V}
     (hZ : ZDerivation (zK s r ds))
     (hred : ∀ i < lh ds, ZDerivation (red (znth ds i)))
@@ -173,9 +178,13 @@ theorem ZDerivation_red_zK {s r ds : V}
     rw [red_zK_crit h1]
     exact ZDerivation_red_zK_crit hZ hred h1
 
-/-- **`redSound`, general form.** The `red`-reduct of ANY genuine `ZDerivation` is again a `ZDerivation`
-(full cut-elimination soundness). Structural induction over `ZDerivation`; the two deep cases delegate to
-`zKValid_iIndReduct_of_zInd` (Ind) and `ZDerivation_red_zK` (K). -/
+/-- **`redSound`, general form. ⚠ FALSE IN FULL GENERALITY — scaffold only.** See
+`ANALYSIS-2026-06-25-lap90-red-faithful-only-for-rep.md`: the repo's `red` keeps the chain conclusion
+`Π` (`fstIdx_iRK = fstIdx d`), so it equals Buchholz's `d[0]` only when `tp(d) = Rep`. For a chain whose
+minimal-permissible premise `dᵢ` is an I-rule/axiom (`tp(dᵢ) ≠ Rep`), Buchholz 5.2.2 reduces the
+conclusion to `tp(dᵢ)(Π,0) ≠ Π`, so the repo's `red` is unfaithful and `red d` is not a `ZDerivation`.
+The TRUE target is `redSound` over `ZDerivesEmpty` (the ⊥-orbit, all-`Rep` by Cor 2.1). The 5 trivial
+cases below + `red_zK_rep`/`red_zK_splice` are reusable; the two deep cases are the open frontier. -/
 theorem redSoundGen : ∀ d : V, ZDerivation d → ZDerivation (red d) := by
   apply zDerivation_induction (P := fun d : V => ZDerivation (red d))
   · definability
