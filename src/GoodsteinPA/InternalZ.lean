@@ -7206,6 +7206,25 @@ lemma fstIdx_red_of_emptyAnt_botSucc {d : V} (hZ : ZDerivation d)
   · simp [zTag_zAxAll] at htag
   · simp [zTag_zAxNeg] at htag
 
+/-- **`red` keeps the chain conclusion when the selected premise is `Rep` (the GENERAL Rep-reduction, lap
+100).** Generalizes `fstIdx_red_of_emptyAnt_botSucc`'s K-case OFF the `∅→⊥` hypothesis: `fstIdx (red (zK s r
+ds)) = fstIdx (zK s r ds)` holds whenever the chain's selected premise is `Rep`-or-a-critical-chain (the
+exact `fstIdx_iRK_of_Rep` precondition). This is the precise content of `redZKReady`'s chain-`Rep` residual
+`fstIdx (red dᵢ) = fstIdx dᵢ`: it is NOT `∅→⊥` that matters but the (hereditary) Rep-ness of the selected
+premise. On the ⊥-orbit `tp_selected_isymRep_of_emptyAnt_botSucc` discharges `hsel` at the top; the motive
+must propagate it down selected-premise chains (the core hereditary obligation). -/
+lemma fstIdx_red_zK_of_selected_Rep {s r ds : V}
+    (hsel : permIdx (zK s r ds) < lh ds →
+      ¬ (zTag (znth ds (permIdx (zK s r ds))) = 4 ∧
+         ¬ permIdx (znth ds (permIdx (zK s r ds)))
+           < lh (zKseq (znth ds (permIdx (zK s r ds))))) →
+      tp (znth ds (permIdx (zK s r ds))) = isymRep) :
+    fstIdx (red (zK s r ds)) = fstIdx (zK s r ds) := by
+  rw [red_zK]
+  refine fstIdx_iRK_of_Rep (fun h1 h2 => ?_)
+  rw [zKseq_zK] at h1 h2 ⊢
+  exact hsel h1 h2
+
 /-! ### The ordinal of `red`'s K-case = the ordinal of `iR2`'s K-case (the descent bridge)
 
 `iRcritG` (genuine, correct endsequents) and `iRcrit` (ordinal-shadow) differ ONLY in the auxiliaries'
