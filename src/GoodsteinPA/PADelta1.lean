@@ -89,6 +89,73 @@ instance succIndCodeRaw_definable : 𝚺₁-Function₁ (succIndCodeRaw : V → 
 
 end SuccIndCode
 
+/-! ## Brick 2a — the internal iterated universal quantifier `qqAllItr` (lap 79)
+
+`qqAllItr p k = ^∀^[k] p` (wrap the code `p` in `k` leading `^∀`s). A primitive recursion
+(`PR.Construction`), hence `𝚺₁`. Quote-correctness `qqAllItr ⌜φ⌝ n = ⌜∀⁰* φ⌝` lets the
+universal-closure half of `closeAll` commute with the quote. This is the FIRST of the two pieces of
+the internal `univCl'`; the second is the free-variable→bound rewrite (`fixitr` analog), still open. -/
+
+section QQAllItr
+
+open LO.FirstOrder.Arithmetic.Bootstrapping
+open LO.FirstOrder.Arithmetic.Bootstrapping.Arithmetic
+
+variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+
+namespace QQAllItr
+
+noncomputable def blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y p. y = p”
+  succ := .mkSigma “y ih k p. !qqAllDef y ih”
+
+noncomputable def construction : PR.Construction V blueprint where
+  zero param := param 0
+  succ _ _ ih := qqAll ih
+  zero_defined := .mk fun v ↦ by simp [blueprint]
+  succ_defined := .mk fun v ↦ by simp [blueprint]
+
+end QQAllItr
+
+open QQAllItr
+
+/-- Internal iterated universal quantifier: `qqAllItr p k = ^∀^[k] p`. -/
+noncomputable def qqAllItr (p k : V) : V := construction.result ![p] k
+
+@[simp] lemma qqAllItr_zero (p : V) : qqAllItr p 0 = p := by simp [qqAllItr, construction]
+
+@[simp] lemma qqAllItr_succ (p k : V) : qqAllItr p (k + 1) = qqAll (qqAllItr p k) := by
+  simp [qqAllItr, construction]
+
+noncomputable def qqAllItrGraph : 𝚺₁.Semisentence 3 := blueprint.resultDef |>.rew (Rew.subst ![#0, #2, #1])
+
+instance qqAllItr.defined : 𝚺₁-Function₂[V] qqAllItr via qqAllItrGraph := .mk fun v ↦ by
+  simp [construction.result_defined_iff, qqAllItrGraph, qqAllItr, Matrix.comp_vecCons',
+    Matrix.constant_eq_singleton]
+
+instance qqAllItr.definable : 𝚺₁-Function₂ (qqAllItr : V → V → V) := qqAllItr.defined.to_definable
+
+instance qqAllItr.definable' : Γ-[m + 1]-Function₂ (qqAllItr : V → V → V) := .of_sigmaOne qqAllItr.definable
+
+/-- `^∀` can be peeled from the front of the iteration: `qqAllItr p (k+1) = qqAllItr (^∀ p) k`. -/
+lemma qqAllItr_succ' (p k : V) : qqAllItr p (k + 1) = qqAllItr (qqAll p) k := by
+  induction k using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => rw [qqAllItr_succ, qqAllItr_zero, qqAllItr_zero]
+  case succ k ih => rw [qqAllItr_succ, ih, ← qqAllItr_succ]
+
+/-- **Quote-correctness of `qqAllItr`:** the internal `k`-fold `^∀` wrap of a quoted `n`-ary formula
+computes the quote of its external universal closure. -/
+lemma qqAllItr_quote {n : ℕ} (φ : Semiformula ℒₒᵣ ℕ n) :
+    qqAllItr (⌜φ⌝ : V) (n : V) = (⌜(∀⁰* φ : Formula ℒₒᵣ ℕ)⌝ : V) := by
+  induction n
+  case zero => simp
+  case succ n ih =>
+    rw [Nat.cast_succ, qqAllItr_succ']
+    exact ih (∀⁰ φ)
+
+end QQAllItr
+
 /-- **`𝗣𝗔⁻` is Δ₁-definable** (axiom-clean). `𝗣𝗔⁻` is a finite theory (`PeanoMinus.finite`:
 `𝗣𝗔⁻ = 𝗘𝗤 ∪ {17 axioms}`, all over the finite-symbol language `ℒₒᵣ`), so the finite-theory
 combinator `Theory.Δ₁.ofFinite` enumerates it into a `𝚫₁.Semisentence 1`. -/
