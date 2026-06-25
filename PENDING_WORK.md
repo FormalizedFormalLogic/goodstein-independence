@@ -19,16 +19,23 @@ DONE this lap (axiom-clean, `InternalZ.lean` after `zKValid_definable`):
   `zKValid_iff_zKValidF_and_zKCritical` (in-kernel: criticality IS a separable conjunct),
   `zKValidF_of_zKValid`.
 
-REDESIGN (multi-lap, hardest-first):
-1. Re-point `ZPhi`'s `zK` disjunct (`InternalZ.lean:3644,3691`) `zKValid` → `zKValidF`. Lone hard fallout
-   = K-descent (`iord_descent_*` ~4657) loses free criticality.
-2. Repair K-descent with the critical/non-critical split (Buchholz Lemma 4.1):
-   - critical: existing redex route, now gated on `zKCritical` supplied at the reduction site.
-   - non-critical (Def 3.2 case 5.2.2): NEW — `d[n] := K^r_{tp(d)(Π,n)}(i/dᵢ[n])`; descent 4.1(a) via
-     natural-sum strict monotonicity in one summand's ω-exponent (reusable `iord`/`õ` lemma to build).
-3. Build genuine reduct = Def 3.2 case 5 dispatch (long-notes `red`, Thm 6.6; align `h[ι]↔d[n]`). Do NOT
-   retrofit `iR2`; re-point `RedSound`+descent onto the new reduct if needed.
-4. Prove `RedSound` = Thm 3.4(b)/D₁ as the parallel validity invariant (carry `zKValidF`).
+⭐ **KEY FINDING (lap 82): DESCENT (D₃, Lemma 4.1/Thm 4.2) is ALREADY FULLY BANKED.** Every Buchholz
+reduction case has its closed `iord_descent_*` proved (`InternalZ.lean` 2529–3293): I-rules, Ind (LH4),
+non-critical chain `iord_descent_iCritAux` (5.2.2), splice `iord_descent_iSpliceEnd` (5.2.1), critical
+`iord_descent_iRcrit_of_chain` (5.1). `iord_iR2_iterate_descends` assembles the ε₀-descent modulo
+`RedSound`. So crux-2 is NOT blocked on descent — the wall is purely VALIDITY (RedSound) + the dispatch.
+
+REDESIGN (revised — hardest-first; descent already done):
+1. Re-point `ZPhi`'s `zK` disjunct (`InternalZ.lean:3644,3691`) `zKValid` → `zKValidF` (drop spurious
+   criticality from `ZDerivation`). `zKValid_iff_zKValidF_and_zKCritical` makes producers mechanical.
+2. Make `iR2_zK` DISPATCH (currently always `iRcrit`, `iR2_zK_eq_iRcrit`): critical (5.1, redex exists)
+   → `iRcrit`; non-critical (5.2.2, `∃ i ≤ j₀ tp(dᵢ) ◁ Π`) → `iCritAux` replace premise i by `iR2 dᵢ`;
+   sub-critical (5.2.1) → splice. Descent for each is ALREADY banked — only wire the selection.
+3. **Prove `RedSound` = Thm 3.4(b)/D₁** (THE new content): the reduct is a genuine `ZDerivation`
+   (`zKValidF`), by the same `ZDerivation` induction that drives descent. Critical case: recombination
+   `K^{r−1}_Π d{0} d{1}` valid via Thm 3.4(a) (`d{0} ⊢ Π·A(d)`, `d{1} ⊢ A(d),Π`, `rk(A(d)) < r`) — the
+   `inference_critical_pair` redex + the `zDerivation_z*_inv` peeling primitives are in place. Non-critical:
+   `isChainInf s' r (seqUpdate ds i (iR2 dᵢ))` for the reduced end-sequent `s' = tp(d)(Π,n)`.
 Fallback: Siders' Howard vector (`papers/siders-gentzen-consistency-proofs-arithmetic.md`, cross-check only).
 
 ## ⭐ Lap 81 (FRESH-MIND REVIEW) — criticality crux `not_criticality_aux` PROVED (axiom-clean)

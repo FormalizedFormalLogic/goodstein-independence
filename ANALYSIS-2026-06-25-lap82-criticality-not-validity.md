@@ -71,6 +71,31 @@ These are the load-bearing bridge for the swap below; nothing existing changed, 
 Fallback descent mechanism if the degree-drop stays intractable: Siders' Howard vector assignment
 (`papers/siders-gentzen-consistency-proofs-arithmetic.md`) — HA/intuitionistic, cross-check only.
 
+## ⭐ KEY FINDING (lap 82): the DESCENT side is already fully banked
+
+Surveying `InternalZ.lean` lines 2529–3293, **every** Buchholz reduction case already has its closed
+ordinal-descent lemma proved (axiom-clean), each isolating only the N1 IH facts (`õ(reduct) ≺ õ(prem)`,
+`dg ≤`) as hypotheses:
+- I-rules (LH1/LH2): `iord_descent_zIall` / `iord_descent_zIneg`.
+- Ind (LH4, case 4): `iord_descent_*` via `icmp_iotil_iIndReduct` + `idg` (2708–2790).
+- non-critical chain (LH3, case 5.2.2): `iord_descent_iCritAux` (replace premise i by smaller).
+- sub-critical splice (LH5, case 5.2.1 / 14.254): `iord_descent_iSpliceEnd`.
+- critical (5.1): `iord_descent_iRcrit_of_chain` (redex-finder + `iord_descent_iCritReduct_object`).
+
+And `iord_iR2_iterate_descends` already assembles the infinite ε₀-descent **modulo `RedSound`**. So
+Buchholz Lemma 4.1 / Thm 4.2 (D₃) is DONE. **Crux 2 is therefore NOT blocked on descent.** The entire
+remaining wall is:
+1. **`RedSound` = validity of the reduct** (Thm 3.4(b) / D₁) — the parallel invariant, currently the
+   only `InternalZ` `sorry`-equivalent obligation.
+2. **The reduct dispatch** — `iR2_zK` currently *always* applies the critical reduct `iRcrit`
+   (`iR2_zK_eq_iRcrit`). The genuine reduct must dispatch on critical (5.1) / sub-critical (5.2.1) /
+   non-critical (5.2.2). The descent for each target is already banked (above), so the dispatch only
+   needs to *select* the matching banked descent.
+
+This sharply narrows the redesign: steps 1–2 of the plan above stay, but step 2's "repair K-descent"
+is *not* new descent math — it is wiring the already-banked `iord_descent_iCritAux` / `_iSpliceEnd` into
+the dispatch. The genuinely new content is **validity** (RedSound) under the faithful `zKValidF`.
+
 ## Why this is the unblock, not a reshuffle
 
 `not_zKValid_iCritReduct` is *not refuted* — it correctly says the reduct fails the OLD validity. The
