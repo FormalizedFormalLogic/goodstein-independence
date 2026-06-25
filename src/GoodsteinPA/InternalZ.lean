@@ -3155,6 +3155,40 @@ lemma znth_seqUpdate_of_ne {ds i v m : V} (h : m ≠ i) :
   · exact znth_seqUpdateAux_of_ne h (lh ds) hm
   · rw [znth_prop_not (Or.inr (by rw [seqUpdate_lh]; exact hm)), znth_prop_not (Or.inr hm)]
 
+/-! ### T2/T3 — `isChainInf` is preserved by replacing a premise with a same-end-sequent reduct
+
+Buchholz's reduction (Thm 3.4(a) / `E-CRUX2-DECOMPOSITION §8` leaf T2/T3): the validity *structure* of a
+`K^r` chain (`isChainInf`: distinguished `j₀`, antecedent threading, rank bound) depends on the premises
+only through their **end-sequents** (`chainAsucc`/`chainAnt` = `seqSucc`/`seqAnt ∘ fstIdx ∘ znth`). So
+replacing premise `i` by any reduct `v` with the SAME end-sequent (`fstIdx v = fstIdx (znth ds i)`)
+leaves `isChainInf` literally invariant. This is the reusable validity-preservation core of `RedSound`
+for the critical (`iCritAux`-replace) and non-critical reducts. -/
+
+/-- End-sequent invariance of `seqUpdate` under a same-`fstIdx` replacement: every premise's `fstIdx`
+is unchanged. -/
+lemma fstIdx_znth_seqUpdate {ds i v : V} (hi : i < lh ds) (hv : fstIdx v = fstIdx (znth ds i)) (n : V) :
+    fstIdx (znth (seqUpdate ds i v) n) = fstIdx (znth ds n) := by
+  rcases eq_or_ne n i with rfl | hne
+  · rw [znth_seqUpdate_self hi, hv]
+  · rw [znth_seqUpdate_of_ne hne]
+
+/-- `chainAsucc` is unchanged under a same-end-sequent premise replacement. -/
+lemma chainAsucc_seqUpdate {ds i v : V} (hi : i < lh ds) (hv : fstIdx v = fstIdx (znth ds i)) (n : V) :
+    chainAsucc (seqUpdate ds i v) n = chainAsucc ds n := by
+  unfold chainAsucc; rw [fstIdx_znth_seqUpdate hi hv]
+
+/-- `chainAnt` is unchanged under a same-end-sequent premise replacement. -/
+lemma chainAnt_seqUpdate {ds i v : V} (hi : i < lh ds) (hv : fstIdx v = fstIdx (znth ds i)) (n : V) :
+    chainAnt (seqUpdate ds i v) n = chainAnt ds n := by
+  unfold chainAnt; rw [fstIdx_znth_seqUpdate hi hv]
+
+/-- **T2/T3 validity-preservation (`isChainInf` core).** Replacing premise `i` of a chain by a reduct
+`v` with the same end-sequent (`fstIdx v = fstIdx (znth ds i)`) preserves chain-validity `isChainInf`. -/
+lemma isChainInf_seqUpdate {s r ds i v : V} (hi : i < lh ds) (hv : fstIdx v = fstIdx (znth ds i)) :
+    isChainInf s r (seqUpdate ds i v) ↔ isChainInf s r ds := by
+  unfold isChainInf
+  simp only [seqUpdate_lh, chainAsucc_seqUpdate hi hv, chainAnt_seqUpdate hi hv]
+
 /-- The critical auxiliary `d{ν} = K^r(i/v)`: the chain `d` with premise `i` replaced by `v`. -/
 noncomputable def iCritAux (d i v : V) : V := zK (fstIdx d) (zKrank d) (seqUpdate (zKseq d) i v)
 
