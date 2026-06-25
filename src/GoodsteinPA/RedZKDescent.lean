@@ -210,6 +210,47 @@ lemma iRedDescent_red_zIall {s a p d0 : V} (hZ : ZDerivation (zIall s a p d0)) :
     by rw [iotil_zsubst hut0 a d0 hd0]; exact hb0.otil_lt,
     by rw [iotil_zsubst hut0 a d0 hd0]; exact hb0.nf⟩
 
+/-- **Chain sub-case, REPLACE dispatch (`dᵢ` a non-critical chain), reduced to the premise IH.** When the
+selected premise `dᵢ = znth ds (permIdx)` is a chain (`zTag = 4`) that is itself non-critical
+(`permIdx dᵢ < lh (zKseq dᵢ)`), `red (zK s r ds) = K^r(i/red dᵢ)` (`red_zK_rep`), so the descent is exactly
+`iord_descent_red_zK_replace_eq` fed the recursive IH `iRedDescent (red dᵢ) dᵢ`. This is the precise interface
+the strong-induction recursion supplies for the chain-replace branch. -/
+lemma iord_descent_red_zK_chain_replace {s r ds : V}
+    (hds : Seq ds) (hmem : ∀ n < lh ds, ZDerivation (znth ds n))
+    (h1 : permIdx (zK s r ds) < lh ds)
+    (h2 : permIdx (znth ds (permIdx (zK s r ds)))
+        < lh (zKseq (znth ds (permIdx (zK s r ds)))))
+    (hIH : iRedDescent (red (znth ds (permIdx (zK s r ds)))) (znth ds (permIdx (zK s r ds)))) :
+    icmp (iord (red (zK s r ds))) (iord (zK s r ds)) = 0 :=
+  iord_descent_red_zK_replace_eq hds hmem h1 (red_zK_rep h1 h2) hIH
+
+/-- **Chain sub-case, SPLICE dispatch (`dᵢ` a critical chain), reduced to the two halves' descent.** When
+the selected premise `dᵢ` is a critical chain (`zTag = 4`, `¬ permIdx dᵢ < lh (zKseq dᵢ)`),
+`red (zK s r ds)` splices `dᵢ`'s critical-reduct halves (`red_zK_splice`); the descent is
+`iord_descent_red_zK_splice_eq` fed the per-half `õ`/`idg` bounds + rank bound (from `dᵢ`'s critical
+reduction). The genuine reduct rank is `max{rk(A(dᵢ)), r}`; here the halves `a,b` and the rank-bound `hr'`
+are the recursion's outputs. -/
+lemma iord_descent_red_zK_chain_splice {s r ds : V}
+    (hds : Seq ds) (hmem : ∀ n < lh ds, ZDerivation (znth ds n))
+    (h1 : permIdx (zK s r ds) < lh ds)
+    (h2 : ¬ permIdx (znth ds (permIdx (zK s r ds)))
+        < lh (zKseq (znth ds (permIdx (zK s r ds)))))
+    (htag : zTag (znth ds (permIdx (zK s r ds))) = 4)
+    (hr' : max (irk (seqSucc (fstIdx
+        (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 0)))) r ≤ idg (zK s r ds))
+    (ha : icmp (iotil (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 0))
+        (iotil (znth ds (permIdx (zK s r ds)))) = 0)
+    (hb : icmp (iotil (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 1))
+        (iotil (znth ds (permIdx (zK s r ds)))) = 0)
+    (hag : idg (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 0)
+        ≤ idg (znth ds (permIdx (zK s r ds))))
+    (hbg : idg (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 1)
+        ≤ idg (znth ds (permIdx (zK s r ds))))
+    (hNFa : isNF (iotil (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 0)))
+    (hNFb : isNF (iotil (znth (zKseq (red (znth ds (permIdx (zK s r ds))))) 1))) :
+    icmp (iord (red (zK s r ds))) (iord (zK s r ds)) = 0 :=
+  iord_descent_red_zK_splice_eq hds hmem h1 (red_zK_splice h1 h2 htag) hr' ha hb hag hbg hNFa hNFb
+
 /-- **The atom-selection FIXPOINT defect, formalized (lap 109).** If the selected (least-permissible)
 premise of a non-critical chain is a bare identity-atom `zAtom sᵢ` (`zTag = 0`, a `red`-normal form), the
 genuine reduct is a **FIXPOINT**: `red (zK s r ds) = zK s r ds`. Because the non-chain replace dispatch

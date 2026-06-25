@@ -583,8 +583,24 @@ theorem iord_descent_red {d : V} (hd : ZDerivesEmptyR d) : icmp (iord (red d)) (
             (red_zK_rep_nonchain hcrit htag_ne4) ?_
           rw [heq, red_zInd]
           exact iRedDescent_zInd (isNF_iotil_of_ZDerivation d0 hd0) (isNF_iotil_of_ZDerivation d1 hd1)
-        · -- chain (tag 4): the recursive core — `red dᵢ` reduces a sub-chain (replace/splice).
-          sorry
+        · -- chain (tag 4): the recursive core. Dispatch on `dᵢ`'s OWN criticality; each branch is reduced
+          -- to its recursion output by the banked interface wrappers, so the residual `sorry`s are now
+          -- EXACTLY the strong-induction IH (replace) / the critical-reduct halves' descent (splice).
+          have htag4 : zTag (znth ds (permIdx (zK s r ds))) = 4 := by rw [heq]; exact zTag_zK _ _ _
+          by_cases h2 : permIdx (znth ds (permIdx (zK s r ds)))
+              < lh (zKseq (znth ds (permIdx (zK s r ds))))
+          · -- `dᵢ` non-critical → REPLACE; residual = the premise IH `iRedDescent (red dᵢ) dᵢ`.
+            refine iord_descent_red_zK_chain_replace hds hmem hcrit h2 ?_
+            sorry
+          · -- `dᵢ` critical → SPLICE; residual = the two halves' `õ`/`idg` bounds + rank bound.
+            refine iord_descent_red_zK_chain_splice hds hmem hcrit h2 htag4 ?_ ?_ ?_ ?_ ?_ ?_ ?_
+            · sorry
+            · sorry
+            · sorry
+            · sorry
+            · sorry
+            · sorry
+            · sorry
         · -- axAll (tag 5): `red dᵢ = dᵢ`, FIXPOINT (axiom normal form).
           sorry
         · -- axNeg (tag 6): `red dᵢ = dᵢ`, FIXPOINT (axiom normal form).
