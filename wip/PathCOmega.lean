@@ -484,6 +484,61 @@ theorem sord_redAllEx_lt {s d0 a αAll Cnew dR α : V}
   -- selected ∀-premise: iord ≺ αAll (brick 1) ≺ α, so ≺ α (transitivity); ∃-premise ≺ α (hEx)
   exact icmp_imax_lt (icmp_trans' (zAllOmega_cut_descends hAll ht) hAlllt) hEx.2
 
+/-! ### Node projections + the cut-orbit `red` (first dispatch case)
+
+The total `red` reduces the topmost cut by reading its premises' node types off the data. Here are the
+projections + the FIRST dispatch case (cut-vs-`∀/∃`), with the orbit drop on a concretely-built node so the
+projections compute by `simp`. The other cases (induction-cut, `∧`/`∨`) extend the dispatch identically. -/
+
+/-- The ∀-node's base premise `d0`. -/
+noncomputable def zAllD0 (d : V) : V := π₁ (zRest d)
+/-- The ∀-node's eigenvariable. -/
+noncomputable def zAllEig (d : V) : V := π₁ (π₂ (zRest d))
+/-- A cut node's left premise. -/
+noncomputable def zCutL (d : V) : V := π₁ (π₂ (zRest d))
+/-- A cut node's right premise. -/
+noncomputable def zCutR (d : V) : V := π₁ (π₂ (π₂ (zRest d)))
+/-- A cut node's cut formula. -/
+noncomputable def zCutC (d : V) : V := π₂ (π₂ (π₂ (zRest d)))
+
+@[simp] lemma fstIdx_zCutOmega (s α dL dR C : V) : fstIdx (zCutOmega s α dL dR C) = s := by
+  simp [fstIdx, zCutOmega]
+@[simp] lemma zAllD0_zAllOmega (s d0 a α : V) : zAllD0 (zAllOmega s d0 a α) = d0 := by
+  simp [zAllD0, zRest_zAllOmega]
+@[simp] lemma zAllEig_zAllOmega (s d0 a α : V) : zAllEig (zAllOmega s d0 a α) = a := by
+  simp [zAllEig, zRest_zAllOmega]
+@[simp] lemma zCutL_zCutOmega (s α dL dR C : V) : zCutL (zCutOmega s α dL dR C) = dL := by
+  simp [zCutL, zRest_zCutOmega]
+@[simp] lemma zCutR_zCutOmega (s α dL dR C : V) : zCutR (zCutOmega s α dL dR C) = dR := by
+  simp [zCutR, zRest_zCutOmega]
+@[simp] lemma zCutC_zCutOmega (s α dL dR C : V) : zCutC (zCutOmega s α dL dR C) = C := by
+  simp [zCutC, zRest_zCutOmega]
+
+/-- **The cut-orbit `red` (first dispatch case).** On a cut node (tag 9) whose left premise is an ω-∀-node
+(tag 7) and right premise is an ∃-node (tag 10), reduce by the self-contained `redAllEx` (witness selection).
+Other shapes: identity for now (the induction-cut and `∧`/`∨` cases extend this dispatch). -/
+noncomputable def red (w : V) : V :=
+  if zTag w = 9 ∧ zTag (zCutL w) = 7 ∧ zTag (zCutR w) = 10 then
+    redAllEx (fstIdx w) (zAllD0 (zCutL w)) (zAllEig (zCutL w)) (zCutC w) (zCutR w)
+  else w
+
+/-- **The cut-orbit `red` STRICTLY drops the stored ordinal on a ∀/∃-cut.** On a concretely-built cut node
+`zCutOmega s α (zAllOmega …) (zExOmega …) C`, `red` fires the ∀/∃ dispatch and the stored ordinal drops
+below `α = sord w` — the per-step `hdrop` brick 4 iterates, on the actual node `red` produces. The genuine
+cut-elimination descent step, end to end (dispatch + selection + ordinal drop), axiom-clean. -/
+theorem sord_red_lt_AllEx {s s' d0 a αAll α C sE CE tE dE : V}
+    (hAll : zAllOmegaValid s' d0 a αAll) (ht : IsSemiterm ℒₒᵣ 0 tE)
+    (hAlllt : icmp αAll α = 0) (hEx : zExOmegaValid α dE) :
+    icmp (sord (red (zCutOmega s α (zAllOmega s' d0 a αAll) (zExOmega sE α CE tE dE) C)))
+      (sord (zCutOmega s α (zAllOmega s' d0 a αAll) (zExOmega sE α CE tE dE) C)) = 0 := by
+  have hfire : red (zCutOmega s α (zAllOmega s' d0 a αAll) (zExOmega sE α CE tE dE) C)
+      = redAllEx s d0 a C (zExOmega sE α CE tE dE) := by
+    rw [red, if_pos (by simp)]; simp
+  rw [hfire, sord_zCutOmega]
+  refine sord_redAllEx_lt hAll ?_ hAlllt ?_
+  · simpa using ht
+  · simpa using hEx
+
 /-! ## Brick 4 skeleton — the stored-ordinal infinite descent (path-portable)
 
 **Endgame design (clarified lap 102).** Two distinct cut-elimination reductions exist; Path C uses the
