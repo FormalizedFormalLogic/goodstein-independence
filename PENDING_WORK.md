@@ -1,5 +1,51 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 95 — FRESH-MIND REVIEW: the wall is a SURGICAL dispatch gate (confirms Path X)
+
+**Build 🟢 1325. Headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms), re-verified in-kernel.**
+Primary deliverables: `ANALYSIS-2026-06-25-lap95-dispatch-fix-not-pivot.md` + `wip/InternalZdispatch.lean`
+(de-risk spike, axiom-clean). **Direction KEPT, Path X (lap-92 DECISION) CONFIRMED + SHARPENED.**
+
+**The sharpened picture (corrects the "2–3k-line ω-rule pivot" framing).** Reading the kernel state:
+- **O2 DONE** — `ZDerivation_zsubst` (`Zsubst.lean:1855`, axiom-clean) is the benign criticality-free
+  eigensubst lemma; route-B reducts consume it. NOT a wall.
+- **O1 DONE except one leaf** — `ZRegular_red_zK` (`Zsubst.lean:1788`) is fully proved *modulo the single
+  hypothesis `hseltag`* (not a sorry — a clean lemma awaiting one true fact).
+- **The wall = ONE false hypothesis.** `hseltag` (splice ⟹ `zTag dᵢ = 4`) is FALSE under the current `iRK`
+  (`not_permIdx_lt_zKseq_zAtom`): the splice fires by default on non-chain selected premises.
+- **Fix = surgical gate**, NOT a rewrite. Gate `iRK`'s splice on `zTag dᵢ = 4 ∧ ¬ permIdx dᵢ < lh(zKseq dᵢ)`
+  (= dᵢ a *critical chain*); route non-chains to replace (= Buchholz Def 3.2 case 5.2.2). Behaviour is
+  identical for chains; only non-chain selected premises change (junk splice → replace). The ω-rule
+  *selection* reading is the SOUNDNESS justification, not a reason to rebuild a new node/`Fixpoint`.
+
+**✅ THIS LAP (lap 95).** `wip/InternalZdispatch.lean` spike: gated `iRKfix` + invariants
+(`fstIdx_iRKfix`/`zTag_iRKfix`) + reuse eqns (`red_eq_iRKfix_splice`/`red_eq_iRKc_crit`) + **`ZRegular_iRKfix`**
+— the regularity assembly that closes `hseltag` from the GATE (`h2.1`), axiom-clean `[propext, choice,
+Quot.sound]`. Proves the gated dispatch cures the lap-94 wall for the regularity (O1) half. Only one genuinely
+new sub-case (non-chain replace); chain splice / non-crit replace / 5.1 critical reuse the banked bricks.
+
+**▶ NEXT (priority order).**
+1. **Port the gate in-place into `iRK`** (`InternalZ.lean:6108`) + `iRKDef`/`iRK_defined` (add the `zTag dᵢ=4`
+   conjunct, mirror `iRKDef`). Then fix the dependents: `red_zK_rep`/`red_zK_splice` hypotheses
+   (`Zsubst.lean:1654/1669` — splice gains `zTag dᵢ=4`; replace covers the complement), `ZRegular_red_zK`
+   (DROP `hseltag` — now derivable), and `Crux2Blueprint.lean`'s `ZDerivation_red_zK_dispatch` (compiled,
+   uses `red_zK_rep h1 h2`/`red_zK_splice h1 h2`). Green `lake build GoodsteinPA`. The `iord`-descent lemmas
+   are NOT in the radius (per-branch facts on `iRKs`/`iRKr`/`iRKc`; `iord_descent_red` is still open). The
+   spike's invariants/eqns port verbatim — `iRKfix` IS the new `iRK` body.
+2. **Validity half** (the genuinely deep residual): rewire the replace branch to emit the conclusion-reduced
+   `tpReduce (tp dᵢ) Π n` (`tpReduce` Σ₁-def'd `InternalZ.lean:1064`); prove `ZDerivation_red_zK_rep`/`_splice`/
+   `_crit` (Crux2Blueprint sorries) on the reduced conclusions. Lap-90 stands: keep-Π `red` is faithful only
+   for `tp = Rep`, so conclusion-reduction is mandatory here.
+3. **`iord_descent_red`** (`icmp (iord (red d)) (iord d) = 0`, Crux2Blueprint:306) — assemble from the banked
+   per-branch descent lemmas under the now-faithful dispatch.
+4. **Wire** `Crux2Blueprint → false_of_ZDerivesEmpty → goodstein_implies_consistency → headline`; drop the
+   `Statement.lean` headline `sorry`; confirm `#print axioms peano_not_proves_goodstein` is trust-base-clean.
+
+**Aristotle:** idle (all jobs IDLE). Fodder candidate = the in-place `iRKfix_defined` (Σ₁ semisentence,
+mechanical port of `iRKDef`) once the gate is ported, or a self-contained `tpReduce` commutation lemma.
+
+---
+
 ## 📍 Lap 92 — DEEP REFLECTION: ω-rule pivot (route C) recommended
 
 **Build 🟢 1325. Headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms). No proof code — synthesis lap.**
