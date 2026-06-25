@@ -1,5 +1,44 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 89 (FRESH-MIND REVIEW) — endgame SINGLE-FRONT + tag-4 dispatch `iRK` DEFINED
+
+**Build 🟢 1325 jobs, headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms).**
+
+**⭐ REVIEW FINDING the lap-88 handoff missed:** `PA_delta1Definable` is **discharged UPSTREAM** —
+Foundation now proves `𝗣𝗔.Δ₁` as a real `noncomputable instance` (`InductionSchemeDelta1.lean:1379`),
+so `peano_not_proves_consistency = [propext, choice, Quot.sound]` (axiom-clean). The whole lap-74/78/81
+second-front campaign (`src/PADelta1.lean`) is moot. **The headline has exactly ONE open blocker:**
+`goodstein_implies_consistency` (`Reduction.lean:68`) = crux-1 (done lap 57) ∘ crux-2 = `redSound`.
+STATUS.md refreshed; memory `pa-delta1-discharged-upstream` written.
+
+**LANDED this lap (3 green commits, all axiom-clean, all in `InternalZ.lean`):**
+- ✅ **`permIdxDef`/`permIdx_defined`** — the dispatch index `permIdx` is now Σ₁-definable (was missing).
+- ✅ **`iRKr`** (5.2.2 replace) = `iCritAux d (permIdx d) (znth s dᵢ)` + def. ⭐ key insight: the genuine
+  reduct halves come from the **recursive table lookup `red dᵢ = znth s dᵢ`**, NOT `inference_critical_pair`
+  — so each branch is a CLOSED definable term, no existential.
+- ✅ **`iRKs`** (5.2.1 splice) = `zK (fstIdx d) r' (seqInsert (zKseq d) i dᵢ{0} dᵢ{1})`, halves
+  `= znth (zKseq (znth s dᵢ)) {0,1}`, **rank `r' = max(irk(seqSucc(fstIdx dᵢ{0})), zKrank d)`** — VERIFIED
+  to be exactly the minimal `r'` `isChainInf_seqInsert` requires (`irk(seqSucc(fstIdx a)) ≤ r' ∧ r ≤ r'`).
+- ✅ **`iRKc`** (5.1 critical) — standalone extraction of the original tag-4 `iRcritG` branch.
+- ✅ **`iRK`** (the dispatch) — 3-way, branching on the **Δ₀ sentinel `permIdx d < lh (zKseq d)`** (=
+  criticality, via `permIdxAux_eq_self_of_none`/`_isPermPrem_of_lt`) rather than embedding Δ₁ `zKCriticalDef`;
+  sub-dispatch on the same test for the selected premise. `iRK_defined` via nested `by_cases`.
+
+**NEXT (resume point):**
+1. **Rewire `iRNextG` tag-4 → `iRK d s`** (`InternalZ.lean:~6011`). Change `iRNextG`'s tag-4 from the inline
+   `iRcritG d (…)` to `iRK d s`; replace the tag-4 block in `iRNextGDef` with `!iRKDef y d s`; the
+   `iRNextG_defined` proof simplifies (tag-4 case = `!iRKDef`). ⚠ Blast radius: `red_zK` and the lap-86
+   `not_zKCritical_*` lemmas (now apply only to the 5.1 sub-case where `permIdx d = lh`). Recheck `red_zK`
+   and the descent-bridge lemmas after the rewire.
+2. **Semantic dispatch equivalences for `redSound`**: `permIdx d = lh (zKseq d) ↔ zKCritical (fstIdx d)
+   (zKseq d)` (both directions banked at `permIdxAux` level) — wire as named lemmas so `redSound`'s tag-4
+   case knows which Buchholz branch fired.
+3. **`redSound`** = `zDerivation_induction`, tag-4 split via the sentinel into 5.1 (`ZDerivation_iRcritG_of`),
+   5.2.1 (`ZDerivation_seqInsert_of_zK` — supply genuine halves from the critical premise's
+   `inference_critical_pair`; discharge `isChainInf_seqInsert`'s end-sequent hyps + `r' ≤ dg(parent)` i.e.
+   `rk(A(dᵢ)) ≤ dg(parent)`), 5.2.2 (`ZDerivation_iCritAux_of_zK`); then `iord_descent_red` UNCONDITIONAL
+   → `iord_red_iterate_descends` → `false_of_ZDerivesEmpty` (`Crux2Blueprint`) → `Reduction.lean:68`.
+
 ## 📍 Lap 88 — 5.2.1 GENUINE-OBJECT stack complete (descent + ZDerivation) + 5.2 dispatch index
 
 **Build 🟢 1325 jobs, axiom base clean. 5 green commits.** All new lemmas in `InternalZ.lean`,
