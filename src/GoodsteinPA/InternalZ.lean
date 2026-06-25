@@ -5593,6 +5593,63 @@ lemma ZDerivation_iCritReplaceReduce_of {s s' r ds i v : V} (hi : i < lh ds)
     · -- conclusion antecedent wff inherits from the parent via `hX_ant`.
       rw [hX_ant]; exact hsa
 
+/-- **5.2.2 replace-premise validity, GENERAL conclusion-reduction (the unifying non-`Rep` constructor).**
+The most general replace step: replacing premise `i` of a valid chain by a `ZDerivation` `v`, with the
+reduced conclusion `s'` SUPPLIED through an explicit `isChainInf s' r (seqUpdate ds i v)` (`hci`), plus the
+conclusion well-formedness (`hsucc_wff`/`hant_wff`) and `v`'s own well-formedness, yields `ZDerivation (zK
+s' r (seqUpdate ds i v))`. Factoring `isChainInf` OUT (mirroring `ZDerivation_seqInsert_of`) is what lets the
+FOUR non-`Rep` cases share one constructor despite their distinct conclusion bookkeeping: I∀ (succedent →
+`F(0)`, antecedent kept), I¬ (antecedent gains `p`, succedent → `⊥`), axAll (antecedent gains `F(k)`), axNeg
+(succedent → `p`). Each case builds its own `hci` from the banked `isChainInf_seqUpdate_reduceR` /
+`isChainInf_seqAddAnt` plus the `permIdx ≤ j₀` threading; the off-`i` premise conjuncts (perm/tag-formula-hood)
+inherit from the parent `zKValidF`, the at-`i` ones from `v`. `hv_succ_wff` is `v`'s succedent well-formedness
+(the at-`i` `chainAsucc` conjunct). -/
+lemma ZDerivation_iCritReplaceReduce_general {s s' r ds i v : V} (hi : i < lh ds)
+    (hZ : ZDerivation (zK s r ds)) (hZv : ZDerivation v)
+    (hci : isChainInf s' r (seqUpdate ds i v))
+    (hsucc_wff : IsUFormula ℒₒᵣ (seqSucc s'))
+    (hant_wff : ∀ k < lh (seqAnt s'), IsUFormula ℒₒᵣ (znth (seqAnt s') k))
+    (hv_succ_wff : IsUFormula ℒₒᵣ (seqSucc (fstIdx v)))
+    (hperm_v : iperm (tp v) (fstIdx v))
+    (hf1_v : zTag v = 1 → IsUFormula ℒₒᵣ (zIallF v))
+    (hf2_v : zTag v = 2 → IsUFormula ℒₒᵣ (zInegF v))
+    (hf5_v : zTag v = 5 → IsUFormula ℒₒᵣ (zAxAllF v))
+    (hf6_v : zTag v = 6 → IsUFormula ℒₒᵣ (zAxNegF v)) :
+    ZDerivation (zK s' r (seqUpdate ds i v)) := by
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  obtain ⟨_, hperm, hg1, hg2, hg5, hg6, hcf, _, _⟩ := zKValidF_of_ZDerivation_zK hZ
+  refine zDerivation_zK_intro (seqUpdate_seq ds i v) ?_ ?_
+  · intro n hn
+    rw [seqUpdate_lh] at hn
+    rcases eq_or_ne n i with rfl | hne
+    · rw [znth_seqUpdate_self hi]; exact hZv
+    · rw [znth_seqUpdate_of_ne hne]; exact hmem n hn
+  · refine ⟨hci, ?_, ?_, ?_, ?_, ?_, ?_, hsucc_wff, hant_wff⟩
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hperm_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hperm n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hf1_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hg1 n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hf2_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hg2 n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hf5_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hg5 n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [znth_seqUpdate_self hi]; exact hf6_v
+      · rw [znth_seqUpdate_of_ne hne]; exact hg6 n (by rwa [seqUpdate_lh] at hn)
+    · intro n hn
+      rcases eq_or_ne n i with rfl | hne
+      · rw [chainAsucc_seqUpdate_self hi]; exact hv_succ_wff
+      · rw [chainAsucc_seqUpdate_of_ne hne]; exact hcf n (by rwa [seqUpdate_lh] at hn)
+
 /-- **L-rule replace constructor (the axiom selected-premise cut-elimination step, Buchholz Def 3.2 case
 5.2.2 for `tp dᵢ = L^k_A`).** Weakening the conclusion of a chain `ZDerivation` by a `UFormula` `A` in the
 antecedent yields a `ZDerivation` of the weakened chain. This is the genuine reduct for a §5-axiom selected
