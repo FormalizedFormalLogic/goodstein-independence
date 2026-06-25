@@ -39,9 +39,14 @@ indices**, so a freshness invariant phrased on eigenvariable indices (`maxEigen 
    ZDerivation d → maxEigen (zsubst d a t) = maxEigen d`** — the substitution-stability crux, by
    `zDerivation_induction` + the recursion equations + `zsubst_zIall`/`zInd` preserving the eigenvariable
    + fold congruence `iseqMaxEigenAux_congr` (chain). `#print axioms` = `[propext, choice, Quot.sound]`.
-3. **← START HERE: Reformulate `ZDerivation_zsubst`** from `d ≤ a` to `maxEigen d < a` (body unchanged; `e ≠ a` now from
-   `e = zIallEig ≤ maxEigen d < a` via the recursion eq). 4. **O1:** strengthen `zIallWff`/`zIndWff` with
-   `maxEigen d0 < eigenvar`, discharge in M2, prove `red` maintains it. 5. Route-B reducts discharge
+3. **✅ DONE (lap 93, `Zsubst.lean`, axiom-clean, green 1325): `ZDerivation_zsubst` reformulated** from
+   `d ≤ a` to `maxEigen d < a`. Relocated the `maxEigen` block above `ZDerivation_zsubst`; added the
+   fold-bound `le_iseqMaxEigen` (mirror `le_iseqMaxTab`); each case derives `e ≠ a` + the recursive
+   premise bound from the `maxEigen` recursion eqs (`le_max_left/right` for `zIall`/`zInd`, `le_iseqMaxEigen`
+   for `zK`). The dead sequent bound `hsa : s ≤ a` is removed (never used). Corollaries
+   `ZDerivation_zsubst_zIall_premise`/`_zInd_premise1` retargeted to `maxEigen d0 < a` / `maxEigen d1 < π₁ at'`.
+4. **← START HERE: O1** — strengthen `zIallWff`/`zIndWff` with `maxEigen d0 < eigenvar`, discharge in M2,
+   prove `red` maintains it (stable by `maxEigen_zsubst`). 5. Route-B reducts discharge
    unconditionally (banked corollaries + `tpReduce`).
 2. **(Path X) — ✅ O2 BANKED this lap (`Zsubst.lean`, axiom-clean):** `ZDerivation_zsubst_zIall_premise`
    and `ZDerivation_zsubst_zInd_premise1` discharge the route-B I∀/Ind eigensubst reducts **directly from

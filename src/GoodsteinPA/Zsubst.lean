@@ -823,161 +823,6 @@ lemma zAxNegF_zsubst {a t d : V} (hd : ZDerivation d) (h : zTag d = 6) :
   · simp at h
   · rw [zsubst_zAxNeg]; simp
 
-/-! ## `ZDerivation_zsubst` — eigenvariable substitution preserves Z-derivability (rung-1 step C)
-
-Substituting the closed term `t` for the free variable `^&a` throughout a Z-derivation `d ≤ a` yields a
-Z-derivation of the substituted end-sequent. Proved by `zDerivation_induction` on `d`, dispatching the
-one-step `ZPhi` rule and rebuilding the same rule on the substituted data; each rule's well-formedness
-transfers through the `fvSubst` commutation lemmas (`fvSubst_all`/`fvSubst_substs1`/`fvSubst_substs1_fvar`/
-`fvSubst_inegF`/`inAnt_fvSubstSeq`) and the step-A term helpers. The bound `d ≤ a` makes every
-eigenvariable `e < d ≤ a` differ from `a`, so the freshness-gated substitutions apply. -/
-theorem ZDerivation_zsubst {a t : V} (ht : IsSemiterm ℒₒᵣ 0 t) :
-    ∀ d, ZDerivation d → d ≤ a → ZDerivation (zsubst d a t) := by
-  apply zDerivation_induction (P := fun d => d ≤ a → ZDerivation (zsubst d a t))
-  · definability
-  · intro C hC d hphi
-    rcases hphi with ⟨s, rfl, hatom⟩ | ⟨s, e, p, d0, rfl, hd0, hsc, hwff⟩ |
-      ⟨s, p, d0, rfl, hd0, hsc, hwff⟩ | ⟨s, at', p, d0, d1, rfl, hd0, hd1, hwff⟩ |
-      ⟨s, r, ds, rfl, hseq, hmem, hvalid⟩ | ⟨s, p, k, rfl, hp, hin⟩ | ⟨s, p, rfl, hp, hin⟩
-    -- atom
-    · intro _
-      rw [zsubst_zAtom]
-      refine zDerivation_iff.mpr (Or.inl ⟨fvSubstSeqt a t s, rfl, ?_⟩)
-      rw [seqSucc_fvSubstSeqt, seqAnt_fvSubstSeqt]
-      exact inAnt_fvSubstSeq hatom
-    -- zIall
-    · intro hda
-      have hd0Z : ZDerivation d0 := (hC d0 hd0).1
-      have hp1 : IsSemiformula ℒₒᵣ 1 p := hwff.2.2
-      have hea : e ≠ a := (lt_of_lt_of_le (a_lt_zIall s e p d0) hda).ne
-      rw [zsubst_zIall]
-      refine zDerivation_iff.mpr (Or.inr (Or.inl
-        ⟨fvSubstSeqt a t s, e, fvSubst ℒₒᵣ a t p, zsubst d0 a t, rfl, ?_, ?_, ?_, ?_, ?_⟩))
-      · exact (hC d0 hd0).2 (le_of_lt (lt_of_lt_of_le (d0_lt_zIall s e p d0) hda))
-      · rw [seqSucc_fvSubstSeqt, hsc, fvSubst_all hp1.isUFormula]
-      · rw [fstIdx_zsubst a t hd0Z, seqAnt_fvSubstSeqt, seqAnt_fvSubstSeqt, hwff.1]
-      · rw [fstIdx_zsubst a t hd0Z, seqSucc_fvSubstSeqt, hwff.2.1,
-          fvSubst_substs1_fvar ht hea hp1]
-      · exact fvSubst_isSemiformula ht hp1
-    -- zIneg
-    · intro hda
-      have hd0Z : ZDerivation d0 := (hC d0 hd0).1
-      have hpU : IsUFormula ℒₒᵣ p := hwff.2.2
-      rw [zsubst_zIneg]
-      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inl
-        ⟨fvSubstSeqt a t s, fvSubst ℒₒᵣ a t p, zsubst d0 a t, rfl, ?_, ?_, ?_, ?_, ?_⟩)))
-      · exact (hC d0 hd0).2 (le_of_lt (lt_of_lt_of_le (d0_lt_zIneg s p d0) hda))
-      · rw [seqSucc_fvSubstSeqt, hsc, fvSubst_inegF ht.isUTerm hpU]
-      · rw [fstIdx_zsubst a t hd0Z, seqSucc_fvSubstSeqt, hwff.1, fvSubst_falsum (L := ℒₒᵣ)]
-      · rw [fstIdx_zsubst a t hd0Z, seqAnt_fvSubstSeqt]
-        exact inAnt_fvSubstSeq hwff.2.1
-      · exact IsUFormula.fvSubst ht.isUTerm hpU
-    -- zInd
-    · intro hda
-      have hd0Z : ZDerivation d0 := (hC d0 hd0).1
-      have hd1Z : ZDerivation d1 := (hC d1 hd1).1
-      simp only [zIndWff, zIndEig_zInd, zIndTerm_zInd, zIndP_zInd, zIndPrem0_zInd, zIndPrem1_zInd,
-        fstIdx_zInd] at hwff
-      obtain ⟨⟨h1a, h1b⟩, ⟨h2a, h2b⟩, h3, h4, h5⟩ := hwff
-      have hea : π₁ at' ≠ a :=
-        (lt_of_le_of_lt (pi₁_le_self at') (lt_of_lt_of_le (at_lt_zInd s at' p d0 d1) hda)).ne
-      rw [show at' = ⟪π₁ at', π₂ at'⟫ from (pair_unpair at').symm, zsubst_zInd]
-      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inl
-        ⟨fvSubstSeqt a t s, ⟪π₁ at', termFvSubst ℒₒᵣ a t (π₂ at')⟫, fvSubst ℒₒᵣ a t p,
-          zsubst d0 a t, zsubst d1 a t, rfl, ?_, ?_, ?_⟩))))
-      · exact (hC d0 hd0).2 (le_of_lt (lt_of_lt_of_le (d0_lt_zInd s at' p d0 d1) hda))
-      · exact (hC d1 hd1).2 (le_of_lt (lt_of_lt_of_le (d1_lt_zInd s at' p d0 d1) hda))
-      · simp only [zIndWff, zIndEig_zInd, zIndTerm_zInd, zIndP_zInd, zIndPrem0_zInd, zIndPrem1_zInd,
-          fstIdx_zInd, pi₁_pair, pi₂_pair]
-        refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ?_, ?_, ?_⟩
-        · rw [fstIdx_zsubst a t hd0Z, seqAnt_fvSubstSeqt, seqAnt_fvSubstSeqt, h1a]
-        · rw [fstIdx_zsubst a t hd0Z, seqSucc_fvSubstSeqt, h1b,
-            fvSubst_substs1 ht (by simp) h4, termFvSubst_numeral]
-        · rw [fstIdx_zsubst a t hd1Z, seqAnt_fvSubstSeqt, ← fvSubst_substs1_fvar ht hea h4]
-          exact inAnt_fvSubstSeq h2a
-        · rw [fstIdx_zsubst a t hd1Z, seqSucc_fvSubstSeqt, h2b,
-            fvSubst_substs1 ht (isSemiterm_succVar _) h4, termFvSubst_succVar hea]
-        · rw [seqSucc_fvSubstSeqt, h3, fvSubst_substs1 ht h5 h4]
-        · exact fvSubst_isSemiformula ht h4
-        · exact IsSemitermVec.termFvSubst ht h5
-    -- zK: rebuild the chain on the substituted premises; validity transfers because `d ≤ a` makes
-    -- every premise/conclusion `^&a`-free, so `isChainInf`/`iperm`/criticality all carry over.
-    · intro hda
-      obtain ⟨hci, hperm, hf1, hf2, hf5, hf6, hcf, hssf, hsaf⟩ := hvalid
-      have hsa : s ≤ a := le_of_lt (lt_of_lt_of_le (seq_lt_zK s r ds) hda)
-      have hZpr : ∀ i < lh ds, ZDerivation (znth ds i) := fun i hi => (hC _ (hmem i hi)).1
-      have hprle : ∀ i < lh ds, znth ds i ≤ a := fun i hi =>
-        le_trans (znth_le_self ds i) (le_of_lt (lt_of_lt_of_le (ds_lt_zK s r ds) hda))
-      have hmap : ∀ i < lh ds,
-          znth (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) i = zsubst (znth ds i) a t := by
-        intro i hi
-        rw [znth_tblMapSeq hi, znth_zsubstTable_eq_zsubst a t _ (znth ds i)
-          (le_pred_of_lt (lt_of_le_of_lt (znth_le_self ds i) (ds_lt_zK s r ds)))]
-      have hlh : lh (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) = lh ds := tblMapSeq_lh _ _
-      rw [zsubst_zK]
-      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
-        ⟨fvSubstSeqt a t s, r, tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds, rfl, ?_, ?_, ?_⟩)))))
-      · exact tblMapSeq_seq _ _
-      · intro i hi
-        rw [hlh] at hi
-        rw [hmap i hi]
-        exact (hC _ (hmem i hi)).2 (hprle i hi)
-      · refine ⟨isChainInf_zsubst ht.isUTerm hlh hZpr hmap hcf hci, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-        · intro i hi
-          rw [hlh] at hi
-          rw [hmap i hi, fstIdx_zsubst a t (hZpr i hi)]
-          exact iperm_tp_zsubst ht (hZpr i hi) (hperm i hi)
-        · intro i hi htag
-          rw [hlh] at hi
-          rw [hmap i hi] at htag ⊢
-          rw [zTag_zsubst (hZpr i hi)] at htag
-          rw [zIallF_zsubst (hZpr i hi) htag]
-          exact IsUFormula.fvSubst ht.isUTerm (hf1 i hi htag)
-        · intro i hi htag
-          rw [hlh] at hi
-          rw [hmap i hi] at htag ⊢
-          rw [zTag_zsubst (hZpr i hi)] at htag
-          rw [zInegF_zsubst (hZpr i hi) htag]
-          exact IsUFormula.fvSubst ht.isUTerm (hf2 i hi htag)
-        · intro i hi htag
-          rw [hlh] at hi
-          rw [hmap i hi] at htag ⊢
-          rw [zTag_zsubst (hZpr i hi)] at htag
-          rw [zAxAllF_zsubst (hZpr i hi) htag]
-          exact IsUFormula.fvSubst ht.isUTerm (hf5 i hi htag)
-        · intro i hi htag
-          rw [hlh] at hi
-          rw [hmap i hi] at htag ⊢
-          rw [zTag_zsubst (hZpr i hi)] at htag
-          rw [zAxNegF_zsubst (hZpr i hi) htag]
-          exact IsUFormula.fvSubst ht.isUTerm (hf6 i hi htag)
-        · intro i hi
-          rw [hlh] at hi
-          simp only [chainAsucc, hmap i hi, fstIdx_zsubst a t (hZpr i hi), seqSucc_fvSubstSeqt]
-          exact IsUFormula.fvSubst ht.isUTerm (hcf i hi)
-        · rw [seqSucc_fvSubstSeqt]
-          exact IsUFormula.fvSubst ht.isUTerm hssf
-        · intro k hk
-          rw [seqAnt_fvSubstSeqt] at hk ⊢
-          rw [fvSubstSeq_lh] at hk
-          rw [znth_fvSubstSeq hk]
-          exact IsUFormula.fvSubst ht.isUTerm (hsaf k hk)
-    -- zAxAll
-    · intro _
-      rw [zsubst_zAxAll]
-      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
-        ⟨fvSubstSeqt a t s, fvSubst ℒₒᵣ a t p, k, rfl, ?_, ?_⟩))))))
-      · exact IsUFormula.fvSubst ht.isUTerm hp
-      · rw [seqAnt_fvSubstSeqt, ← fvSubst_all hp]
-        exact inAnt_fvSubstSeq hin
-    -- zAxNeg
-    · intro _
-      rw [zsubst_zAxNeg]
-      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
-        ⟨fvSubstSeqt a t s, fvSubst ℒₒᵣ a t p, rfl, ?_, ?_⟩))))))
-      · exact IsUFormula.fvSubst ht.isUTerm hp
-      · rw [seqAnt_fvSubstSeqt, ← fvSubst_inegF ht.isUTerm hp]
-        exact inAnt_fvSubstSeq hin
 
 /-! ## `maxEigen` — the largest eigenvariable index in a derivation (Path-X freshness foundation)
 
@@ -1235,6 +1080,25 @@ lemma maxEigen_zK (s r ds : V) (hds : Seq ds) :
     if_neg (by simp), if_pos (zTag_zK s r ds), zKseq_zK, iseqMaxTab,
     iseqMaxAux_maxEigenTable_eq hdom (lh ds) (le_refl _), iseqMaxEigen]
 
+/-- Every premise's `maxEigen` is dominated by the partial fold. -/
+lemma le_iseqMaxEigenAux {ds : V} :
+    ∀ j : V, ∀ i < j, maxEigen (znth ds i) ≤ iseqMaxEigenAux ds j := by
+  intro j
+  induction j using ISigma1.sigma1_succ_induction
+  · refine Definable.ball_lt (by definability) ?_
+    apply Definable.comp₂ <;> definability
+  case zero => intro i hi; exact absurd hi (by simp)
+  case succ j ih =>
+    intro i hi
+    rw [iseqMaxEigenAux_succ]
+    rcases eq_or_lt_of_le (le_iff_lt_succ.mpr hi) with h | h
+    · subst h; exact le_max_right _ _
+    · exact le_trans (ih i h) (le_max_left _ _)
+
+/-- The full fold dominates each premise's `maxEigen` (for `i < lh ds`). -/
+lemma le_iseqMaxEigen {ds i : V} (hi : i < lh ds) :
+    maxEigen (znth ds i) ≤ iseqMaxEigen ds := le_iseqMaxEigenAux _ i hi
+
 /-- **Fold congruence**: equal lengths + entrywise-equal `maxEigen` ⟹ equal folds (the chain step of
 `maxEigen_zsubst`). -/
 lemma iseqMaxEigenAux_congr {A B : V}
@@ -1295,6 +1159,175 @@ theorem maxEigen_zsubst (a t : V) :
     · simp [zsubst_zAxAll]
     · simp [zsubst_zAxNeg]
 
+/-! ## `ZDerivation_zsubst` — eigenvariable substitution preserves Z-derivability (rung-1 step C)
+
+Substituting the closed term `t` for the free variable `^&a` throughout a Z-derivation `d` whose every
+eigenvariable index is `< a` (i.e. `maxEigen d < a`) yields a Z-derivation of the substituted end-sequent.
+Proved by `zDerivation_induction` on `d`, dispatching the one-step `ZPhi` rule and rebuilding the same rule
+on the substituted data; each rule's well-formedness transfers through the `fvSubst` commutation lemmas
+(`fvSubst_all`/`fvSubst_substs1`/`fvSubst_substs1_fvar`/`fvSubst_inegF`/`inAnt_fvSubstSeq`) and the step-A
+term helpers.
+
+**Lap-93 reformulation (Path-X §3).** The hypothesis is now `maxEigen d < a` (the genuine *freshness*
+bound) rather than the code bound `d ≤ a`. The two facts the proof needs from it — eigenvariable
+freshness `e ≠ a` and the recursive premise bound — both follow from the `maxEigen` recursion equations:
+each node's own eigenvariable and each premise's `maxEigen` are `≤ maxEigen d < a`. Critically, unlike
+`d ≤ a`, this bound is **stable under `zsubst`** (`maxEigen_zsubst`), so it is maintainable through `red`. -/
+theorem ZDerivation_zsubst {a t : V} (ht : IsSemiterm ℒₒᵣ 0 t) :
+    ∀ d, ZDerivation d → maxEigen d < a → ZDerivation (zsubst d a t) := by
+  apply zDerivation_induction (P := fun d => maxEigen d < a → ZDerivation (zsubst d a t))
+  · definability
+  · intro C hC d hphi
+    rcases hphi with ⟨s, rfl, hatom⟩ | ⟨s, e, p, d0, rfl, hd0, hsc, hwff⟩ |
+      ⟨s, p, d0, rfl, hd0, hsc, hwff⟩ | ⟨s, at', p, d0, d1, rfl, hd0, hd1, hwff⟩ |
+      ⟨s, r, ds, rfl, hseq, hmem, hvalid⟩ | ⟨s, p, k, rfl, hp, hin⟩ | ⟨s, p, rfl, hp, hin⟩
+    -- atom
+    · intro _
+      rw [zsubst_zAtom]
+      refine zDerivation_iff.mpr (Or.inl ⟨fvSubstSeqt a t s, rfl, ?_⟩)
+      rw [seqSucc_fvSubstSeqt, seqAnt_fvSubstSeqt]
+      exact inAnt_fvSubstSeq hatom
+    -- zIall
+    · intro hda
+      rw [maxEigen_zIall] at hda
+      have hd0Z : ZDerivation d0 := (hC d0 hd0).1
+      have hp1 : IsSemiformula ℒₒᵣ 1 p := hwff.2.2
+      have hea : e ≠ a := (lt_of_le_of_lt (le_max_left e (maxEigen d0)) hda).ne
+      rw [zsubst_zIall]
+      refine zDerivation_iff.mpr (Or.inr (Or.inl
+        ⟨fvSubstSeqt a t s, e, fvSubst ℒₒᵣ a t p, zsubst d0 a t, rfl, ?_, ?_, ?_, ?_, ?_⟩))
+      · exact (hC d0 hd0).2 (lt_of_le_of_lt (le_max_right e (maxEigen d0)) hda)
+      · rw [seqSucc_fvSubstSeqt, hsc, fvSubst_all hp1.isUFormula]
+      · rw [fstIdx_zsubst a t hd0Z, seqAnt_fvSubstSeqt, seqAnt_fvSubstSeqt, hwff.1]
+      · rw [fstIdx_zsubst a t hd0Z, seqSucc_fvSubstSeqt, hwff.2.1,
+          fvSubst_substs1_fvar ht hea hp1]
+      · exact fvSubst_isSemiformula ht hp1
+    -- zIneg
+    · intro hda
+      rw [maxEigen_zIneg] at hda
+      have hd0Z : ZDerivation d0 := (hC d0 hd0).1
+      have hpU : IsUFormula ℒₒᵣ p := hwff.2.2
+      rw [zsubst_zIneg]
+      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inl
+        ⟨fvSubstSeqt a t s, fvSubst ℒₒᵣ a t p, zsubst d0 a t, rfl, ?_, ?_, ?_, ?_, ?_⟩)))
+      · exact (hC d0 hd0).2 hda
+      · rw [seqSucc_fvSubstSeqt, hsc, fvSubst_inegF ht.isUTerm hpU]
+      · rw [fstIdx_zsubst a t hd0Z, seqSucc_fvSubstSeqt, hwff.1, fvSubst_falsum (L := ℒₒᵣ)]
+      · rw [fstIdx_zsubst a t hd0Z, seqAnt_fvSubstSeqt]
+        exact inAnt_fvSubstSeq hwff.2.1
+      · exact IsUFormula.fvSubst ht.isUTerm hpU
+    -- zInd
+    · intro hda
+      rw [maxEigen_zInd] at hda
+      have hd0Z : ZDerivation d0 := (hC d0 hd0).1
+      have hd1Z : ZDerivation d1 := (hC d1 hd1).1
+      -- derive freshness + premise bounds from `hda` BEFORE the `at' = ⟪…⟫` rewrite (which touches `hda`)
+      have hea : π₁ at' ≠ a := (lt_of_le_of_lt (le_max_left _ _) hda).ne
+      have hZ0 : ZDerivation (zsubst d0 a t) := (hC d0 hd0).2
+        (lt_of_le_of_lt (le_trans (le_max_left (maxEigen d0) (maxEigen d1)) (le_max_right _ _)) hda)
+      have hZ1 : ZDerivation (zsubst d1 a t) := (hC d1 hd1).2
+        (lt_of_le_of_lt (le_trans (le_max_right (maxEigen d0) (maxEigen d1)) (le_max_right _ _)) hda)
+      simp only [zIndWff, zIndEig_zInd, zIndTerm_zInd, zIndP_zInd, zIndPrem0_zInd, zIndPrem1_zInd,
+        fstIdx_zInd] at hwff
+      obtain ⟨⟨h1a, h1b⟩, ⟨h2a, h2b⟩, h3, h4, h5⟩ := hwff
+      rw [show at' = ⟪π₁ at', π₂ at'⟫ from (pair_unpair at').symm, zsubst_zInd]
+      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨fvSubstSeqt a t s, ⟪π₁ at', termFvSubst ℒₒᵣ a t (π₂ at')⟫, fvSubst ℒₒᵣ a t p,
+          zsubst d0 a t, zsubst d1 a t, rfl, ?_, ?_, ?_⟩))))
+      · exact hZ0
+      · exact hZ1
+      · simp only [zIndWff, zIndEig_zInd, zIndTerm_zInd, zIndP_zInd, zIndPrem0_zInd, zIndPrem1_zInd,
+          fstIdx_zInd, pi₁_pair, pi₂_pair]
+        refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ?_, ?_, ?_⟩
+        · rw [fstIdx_zsubst a t hd0Z, seqAnt_fvSubstSeqt, seqAnt_fvSubstSeqt, h1a]
+        · rw [fstIdx_zsubst a t hd0Z, seqSucc_fvSubstSeqt, h1b,
+            fvSubst_substs1 ht (by simp) h4, termFvSubst_numeral]
+        · rw [fstIdx_zsubst a t hd1Z, seqAnt_fvSubstSeqt, ← fvSubst_substs1_fvar ht hea h4]
+          exact inAnt_fvSubstSeq h2a
+        · rw [fstIdx_zsubst a t hd1Z, seqSucc_fvSubstSeqt, h2b,
+            fvSubst_substs1 ht (isSemiterm_succVar _) h4, termFvSubst_succVar hea]
+        · rw [seqSucc_fvSubstSeqt, h3, fvSubst_substs1 ht h5 h4]
+        · exact fvSubst_isSemiformula ht h4
+        · exact IsSemitermVec.termFvSubst ht h5
+    -- zK: rebuild the chain on the substituted premises; validity transfers because every premise's
+    -- eigenvariables are `< a` (freshness), so `isChainInf`/`iperm`/criticality all carry over.
+    · intro hda
+      rw [maxEigen_zK s r ds hseq] at hda
+      obtain ⟨hci, hperm, hf1, hf2, hf5, hf6, hcf, hssf, hsaf⟩ := hvalid
+      have hZpr : ∀ i < lh ds, ZDerivation (znth ds i) := fun i hi => (hC _ (hmem i hi)).1
+      have hprle : ∀ i < lh ds, maxEigen (znth ds i) < a := fun i hi =>
+        lt_of_le_of_lt (le_iseqMaxEigen hi) hda
+      have hmap : ∀ i < lh ds,
+          znth (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) i = zsubst (znth ds i) a t := by
+        intro i hi
+        rw [znth_tblMapSeq hi, znth_zsubstTable_eq_zsubst a t _ (znth ds i)
+          (le_pred_of_lt (lt_of_le_of_lt (znth_le_self ds i) (ds_lt_zK s r ds)))]
+      have hlh : lh (tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds) = lh ds := tblMapSeq_lh _ _
+      rw [zsubst_zK]
+      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨fvSubstSeqt a t s, r, tblMapSeq (zsubstTable a t (zK s r ds - 1)) ds, rfl, ?_, ?_, ?_⟩)))))
+      · exact tblMapSeq_seq _ _
+      · intro i hi
+        rw [hlh] at hi
+        rw [hmap i hi]
+        exact (hC _ (hmem i hi)).2 (hprle i hi)
+      · refine ⟨isChainInf_zsubst ht.isUTerm hlh hZpr hmap hcf hci, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+        · intro i hi
+          rw [hlh] at hi
+          rw [hmap i hi, fstIdx_zsubst a t (hZpr i hi)]
+          exact iperm_tp_zsubst ht (hZpr i hi) (hperm i hi)
+        · intro i hi htag
+          rw [hlh] at hi
+          rw [hmap i hi] at htag ⊢
+          rw [zTag_zsubst (hZpr i hi)] at htag
+          rw [zIallF_zsubst (hZpr i hi) htag]
+          exact IsUFormula.fvSubst ht.isUTerm (hf1 i hi htag)
+        · intro i hi htag
+          rw [hlh] at hi
+          rw [hmap i hi] at htag ⊢
+          rw [zTag_zsubst (hZpr i hi)] at htag
+          rw [zInegF_zsubst (hZpr i hi) htag]
+          exact IsUFormula.fvSubst ht.isUTerm (hf2 i hi htag)
+        · intro i hi htag
+          rw [hlh] at hi
+          rw [hmap i hi] at htag ⊢
+          rw [zTag_zsubst (hZpr i hi)] at htag
+          rw [zAxAllF_zsubst (hZpr i hi) htag]
+          exact IsUFormula.fvSubst ht.isUTerm (hf5 i hi htag)
+        · intro i hi htag
+          rw [hlh] at hi
+          rw [hmap i hi] at htag ⊢
+          rw [zTag_zsubst (hZpr i hi)] at htag
+          rw [zAxNegF_zsubst (hZpr i hi) htag]
+          exact IsUFormula.fvSubst ht.isUTerm (hf6 i hi htag)
+        · intro i hi
+          rw [hlh] at hi
+          simp only [chainAsucc, hmap i hi, fstIdx_zsubst a t (hZpr i hi), seqSucc_fvSubstSeqt]
+          exact IsUFormula.fvSubst ht.isUTerm (hcf i hi)
+        · rw [seqSucc_fvSubstSeqt]
+          exact IsUFormula.fvSubst ht.isUTerm hssf
+        · intro k hk
+          rw [seqAnt_fvSubstSeqt] at hk ⊢
+          rw [fvSubstSeq_lh] at hk
+          rw [znth_fvSubstSeq hk]
+          exact IsUFormula.fvSubst ht.isUTerm (hsaf k hk)
+    -- zAxAll
+    · intro _
+      rw [zsubst_zAxAll]
+      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨fvSubstSeqt a t s, fvSubst ℒₒᵣ a t p, k, rfl, ?_, ?_⟩))))))
+      · exact IsUFormula.fvSubst ht.isUTerm hp
+      · rw [seqAnt_fvSubstSeqt, ← fvSubst_all hp]
+        exact inAnt_fvSubstSeq hin
+    -- zAxNeg
+    · intro _
+      rw [zsubst_zAxNeg]
+      refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+        ⟨fvSubstSeqt a t s, fvSubst ℒₒᵣ a t p, rfl, ?_, ?_⟩))))))
+      · exact IsUFormula.fvSubst ht.isUTerm hp
+      · rw [seqAnt_fvSubstSeqt, ← fvSubst_inegF ht.isUTerm hp]
+        exact inAnt_fvSubstSeq hin
+
 /-! ## Route-B eigensubst reducts, discharged by `ZDerivation_zsubst` under a freshness bound
 
 **Lap-92 corrected decomposition (`ANALYSIS-2026-06-25-lap92-criticality-wall-is-gone.md`).** Buchholz's
@@ -1303,28 +1336,29 @@ conclusion-reducing reduct (route B) needs, for the `I∀` rule, `red(zIall s a 
 as **O2 = "the lap-78 substitution wall"**, but that is a misattribution: the lap-78 wall was the
 *criticality* conjunct, which `ZPhi` no longer carries (it uses criticality-free `zKValidF`). The genuine
 eigensubst — *preserving `zKValidF`* — is **already proven** by `ZDerivation_zsubst`; its only side
-condition is the freshness bound `premise ≤ eigenvariable` (so every inner eigenvariable `e < premise ≤ a`
-differs from `a`). These two corollaries make that explicit: **O2 is discharged; the entire residual
-obligation is producing the bound (`d0 ≤ a` / `d1 ≤ π₁ at'`) = O1, the eigenvariable-freshness tracking
-that `zIallWff`/`zIndWff` must add and `red` must maintain.** -/
+condition is the genuine freshness bound `maxEigen premise < eigenvariable` (every eigenvariable index of
+the premise is `< a`, so it differs from `a`). These two corollaries make that explicit: **O2 is
+discharged; the entire residual obligation is producing the bound (`maxEigen d0 < a` /
+`maxEigen d1 < π₁ at'`) = O1, the eigenvariable-freshness tracking that `zIallWff`/`zIndWff` must add and
+`red` must maintain** — now phrased on `maxEigen` (substitution-stable by `maxEigen_zsubst`, lap 93). -/
 
 /-- **I∀ eigensubst reduct (route B), under the freshness bound.** The premise `d0` of a valid `zIall`
 node, with the eigenvariable substituted by a closed term `t`, is a `ZDerivation` — *provided* the
-freshness bound `d0 ≤ a` holds (O1). The substitution itself (O2) is the existing `ZDerivation_zsubst`;
-no new "substitution preserves validity" lemma is needed (the lap-78 obstruction was criticality, now
-absent from `zKValidF`). -/
+freshness bound `maxEigen d0 < a` holds (O1: every eigenvariable index of `d0` is below the bound `a`).
+The substitution itself (O2) is the existing `ZDerivation_zsubst`; no new "substitution preserves
+validity" lemma is needed (the lap-78 obstruction was criticality, now absent from `zKValidF`). -/
 theorem ZDerivation_zsubst_zIall_premise {s a p d0 t : V} (ht : IsSemiterm ℒₒᵣ 0 t)
-    (hZ : ZDerivation (zIall s a p d0)) (hle : d0 ≤ a) :
+    (hZ : ZDerivation (zIall s a p d0)) (hfresh : maxEigen d0 < a) :
     ZDerivation (zsubst d0 a t) :=
-  ZDerivation_zsubst ht d0 (zDerivation_zIall_inv hZ).1 hle
+  ZDerivation_zsubst ht d0 (zDerivation_zIall_inv hZ).1 hfresh
 
 /-- **Ind step-premise eigensubst reduct (route B), under the freshness bound.** The induction-step
 premise `d1` of a valid `zInd` node, with the eigenvariable `π₁ at'` substituted by a closed term `t`
-(Buchholz case 4: `d1(a/0)…d1(a/k-1)`), is a `ZDerivation` — provided `d1 ≤ π₁ at'` (O1). Same
+(Buchholz case 4: `d1(a/0)…d1(a/k-1)`), is a `ZDerivation` — provided `maxEigen d1 < π₁ at'` (O1). Same
 decomposition as `ZDerivation_zsubst_zIall_premise`. -/
 theorem ZDerivation_zsubst_zInd_premise1 {s at' p d0 d1 t : V} (ht : IsSemiterm ℒₒᵣ 0 t)
-    (hZ : ZDerivation (zInd s at' p d0 d1)) (hle : d1 ≤ π₁ at') :
+    (hZ : ZDerivation (zInd s at' p d0 d1)) (hfresh : maxEigen d1 < π₁ at') :
     ZDerivation (zsubst d1 (π₁ at') t) :=
-  ZDerivation_zsubst ht d1 (zDerivation_zInd_inv hZ).2.1 hle
+  ZDerivation_zsubst ht d1 (zDerivation_zInd_inv hZ).2.1 hfresh
 
 end GoodsteinPA.InternalZ
