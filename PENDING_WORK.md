@@ -1,5 +1,33 @@
 # Pending work — open obligations & attack paths
 
+## 📍 Lap 84 (FINAL) — RedSound CRITICAL case reduced to TWO named residuals (12 green commits)
+
+**Build 🟢 green, axiom base untouched.** The genuine critical reduct is now named and its validity
+isolated. Banked beyond the D₁ interface below:
+- `iCritReductG s C rOut rIn0 rIn1 ds0 ds1` — the GENUINE critical reduct
+  `K^{rOut}_Π ⟨K^{rIn0}_{Θ→A(d)} ds0, K^{rIn1}_{A(d),Θ→D} ds1⟩`, auxiliaries carrying the real Thm-3.4(a)
+  endsequents (`seqSetSucc s C` / `seqAddAnt C s`). Read-outs `fstIdx`/`zTag`/`zKseq`.
+- `zKValidF_iCritReductGen` — its outer-chain D₁ validity, **threading AUTOMATIC** from the genuine
+  sequent ops (only needs `irk C ≤ rOut` + formula-hood).
+- `ZDerivation_iCritReductG_of` — `iCritReductG` is a `ZDerivation` **modulo exactly two residuals**:
+  - **(R1) the re-point** `hZPhiK : Seq ds → (∀i<lh, ZDerivation(znth ds i)) → zKValidF s r ds →
+    ZDerivation (zK s r ds)` — i.e. `ZPhi`'s `zK` disjunct `zKValid → zKValidF`. ⚠️ INTERLOCKED with the
+    descent: `zDerivation_zK_inv` then yields only `zKValidF` (no criticality), breaking
+    `iord_descent_iR2_zK_of_valid` (which uses criticality to FIND the redex via
+    `inference_critical_pair_of_chain`). So the re-point MUST land together with a descent that dispatches
+    criticality as a SEPARATE fact (supply `zKCritical` at the reduction site, where Buchholz case-5
+    establishes it — `zKValid_iff_zKValidF_and_zKCritical` is the bridge). Do this as a FOCUSED turn.
+  - **(R2) auxiliary IH** — the two auxiliaries are `ZDerivation`s of `Θ→A(d)` / `A(d),Θ→D` (recursive
+    Thm 3.4(a)). Needs: extract `A(d)` from the redex (`A_i = chainAsucc ds i`; `A_i = ^∀ p ⟹ A(d) =
+    substs1 (num k) p`, `A_i = inegF q ⟹ A(d) = q`) + prove d{0}'s isChainInf with distinguished premise
+    `j0' = i` (the replaced premise `dᵢ[k]` carries succedent `A(d)`), threading = original ≤i threading.
+    rank drop `irk(A(d)) < irk(A_i) ≤ r` is BANKED (`irk_cut_lt_rank_forall`/`_neg`).
+
+**Recommended next sequencing:** R2 first (independent of re-point, pure Thm-3.4(a) structural content),
+then the focused R1 re-point+dispatch turn. Non-critical (5.2.2) is already done (`zKValidF_seqUpdate_iR2`);
+splice (5.2.1) prereqs banked. After R1+R2 the critical case closes ⟹ assemble the 5-case `red` +
+RedSound structural induction (D₁ ∥ banked D₃).
+
 ## 📍 Lap 84 (continued) — D₁ VALIDITY INTERFACE complete for all 3 reduct cases (9 green commits)
 
 **Build 🟢 green, axiom base untouched.** Beyond the 3 preservation lemmas below, banked (all in
