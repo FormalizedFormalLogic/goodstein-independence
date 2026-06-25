@@ -547,6 +547,73 @@ lemma termSubst_eq_termSubst_of {n w w' t : V} (ht : IsSemiterm ℒₒᵣ n t)
     intro i hi
     rw [nth_termSubstVec hv.isUTerm hi, nth_termSubstVec hv.isUTerm hi, ih i hi]
 
+/-- `qVec` preserves `IsUTermVec` (the length grows by one). -/
+lemma isUTermVec_qVec {w : V} (hw : IsUTermVec ℒₒᵣ (len w) w) :
+    IsUTermVec ℒₒᵣ (len (qVec ℒₒᵣ w)) (qVec ℒₒᵣ w) := by
+  rw [len_qVec hw]
+  exact (hw.isSemitermVec.qVec).isUTerm
+
+/-- **Formula substitution congruence.** `subst` of an `n`-ary semiformula depends only on the
+first `n` entries of the substitution vector. Mirrors `subst_eq_self` (`Functions.lean`); the term
+analogue is `termSubst_eq_termSubst_of` above. The `IsUTermVec`/`n ≤ len` hypotheses thread through
+the `∀`/`∃` cases, where the recursion descends to `qVec` (entry `i+1` reads `termBShift (w.[i])`,
+needing `i < len w`). -/
+lemma subst_eq_subst_of {n w w' p : V} (hp : IsSemiformula ℒₒᵣ n p)
+    (hw : IsUTermVec ℒₒᵣ (len w) w) (hw' : IsUTermVec ℒₒᵣ (len w') w')
+    (hnw : n ≤ len w) (hnw' : n ≤ len w')
+    (H : ∀ i < n, w.[i] = w'.[i]) :
+    subst ℒₒᵣ w p = subst ℒₒᵣ w' p := by
+  revert w w'
+  apply IsSemiformula.pi1_structural_induction ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ hp
+  · definability
+  · intro n k R v hR hv w w' hw hw' hnw hnw' H
+    simp only [substs_rel hR hv.isUTerm, qqRel_inj, true_and]
+    apply nth_ext' k (by simp [len_termSubstVec, hv.isUTerm]) (by simp [len_termSubstVec, hv.isUTerm])
+    intro i hi
+    rw [nth_termSubstVec hv.isUTerm hi, nth_termSubstVec hv.isUTerm hi,
+      termSubst_eq_termSubst_of (hv.nth hi) H]
+  · intro n k R v hR hv w w' hw hw' hnw hnw' H
+    simp only [substs_nrel hR hv.isUTerm, qqNRel_inj, true_and]
+    apply nth_ext' k (by simp [len_termSubstVec, hv.isUTerm]) (by simp [len_termSubstVec, hv.isUTerm])
+    intro i hi
+    rw [nth_termSubstVec hv.isUTerm hi, nth_termSubstVec hv.isUTerm hi,
+      termSubst_eq_termSubst_of (hv.nth hi) H]
+  · intro n w w' hw hw' hnw hnw' H; simp
+  · intro n w w' hw hw' hnw hnw' H; simp
+  · intro n p q hp hq ihp ihq w w' hw hw' hnw hnw' H
+    rw [substs_and hp.isUFormula hq.isUFormula, substs_and hp.isUFormula hq.isUFormula,
+      ihp hw hw' hnw hnw' H, ihq hw hw' hnw hnw' H]
+  · intro n p q hp hq ihp ihq w w' hw hw' hnw hnw' H
+    rw [substs_or hp.isUFormula hq.isUFormula, substs_or hp.isUFormula hq.isUFormula,
+      ihp hw hw' hnw hnw' H, ihq hw hw' hnw hnw' H]
+  · intro n p hp ih w w' hw hw' hnw hnw' H
+    rw [substs_all hp.isUFormula, substs_all hp.isUFormula]
+    congr 1
+    apply ih (isUTermVec_qVec hw) (isUTermVec_qVec hw')
+      (by rw [len_qVec hw]; simpa using hnw)
+      (by rw [len_qVec hw']; simpa using hnw')
+    intro i hi
+    rcases zero_or_succ i with (rfl | ⟨i, rfl⟩)
+    · simp [qVec]
+    · have hi' : i < n := by simpa using hi
+      have hiw : i < len w := lt_of_lt_of_le hi' hnw
+      have hiw' : i < len w' := lt_of_lt_of_le hi' hnw'
+      simp only [qVec, nth_adjoin_succ]
+      rw [nth_termBShiftVec hw hiw, nth_termBShiftVec hw' hiw', H i hi']
+  · intro n p hp ih w w' hw hw' hnw hnw' H
+    rw [substs_ex hp.isUFormula, substs_ex hp.isUFormula]
+    congr 1
+    apply ih (isUTermVec_qVec hw) (isUTermVec_qVec hw')
+      (by rw [len_qVec hw]; simpa using hnw)
+      (by rw [len_qVec hw']; simpa using hnw')
+    intro i hi
+    rcases zero_or_succ i with (rfl | ⟨i, rfl⟩)
+    · simp [qVec]
+    · have hi' : i < n := by simpa using hi
+      have hiw : i < len w := lt_of_lt_of_le hi' hnw
+      have hiw' : i < len w' := lt_of_lt_of_le hi' hnw'
+      simp only [qVec, nth_adjoin_succ]
+      rw [nth_termBShiftVec hw hiw, nth_termBShiftVec hw' hiw', H i hi']
 
 /-- The closure-rewritten body `fixitr 0 ψ'.fvSup ▹ ψ'` has no free variables (the `fixitr` closure
 binds every free variable of `ψ'`). -/
