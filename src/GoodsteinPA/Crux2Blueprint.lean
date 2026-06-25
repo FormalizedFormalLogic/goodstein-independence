@@ -554,15 +554,37 @@ theorem iord_descent_red {d : V} (hd : ZDerivesEmptyR d) : icmp (iord (red d)) (
       have hreg : ∀ i < lh ds, ZRegular (znth ds i) :=
         fun i hi => ZRegular_zK_premise hds hd.2 hi
       by_cases hcrit : permIdx (zK s r ds) < lh ds
-      · -- NON-critical: `red (zK s r ds) = K^r(i/red dᵢ)` (replace, 5.2.2) or splices `dᵢ`'s halves
-        -- (splice, 5.2.1), `i = permIdx`. The REPLACE descent is banked as
-        -- `iord_descent_red_zK_replace_eq` (RedZKDescent) — it reduces to the premise IH
-        -- `iRedDescent (red dᵢ) dᵢ`. Wiring needs `iord_descent_red` restructured as a strong induction
-        -- on the derivation code to supply that IH for the structurally-smaller premise `dᵢ < zK s r ds`
-        -- (and the splice branch's two-half IH). The lone genuine subtlety: a selected (permissible)
-        -- premise must be reducible for the IH's STRICT `otil_lt` to hold (a normal-form leaf would
-        -- stall) — guaranteed by the `zKValidF`/`isChainInf` chain structure, the open obligation.
-        sorry
+      · -- NON-critical: `red (zK s r ds) = K^r(i/red dᵢ)` (replace, 5.2.2), `i = permIdx`. Dispatch on the
+        -- selected premise's tag and feed the banked premise-IH to `iord_descent_red_zK_replace_eq`.
+        -- The I-rule/Ind sub-cases have NON-recursive banked `iRedDescent` bundles (`iRedDescent_zIneg`/
+        -- `_zInd`); the chain sub-case needs the strong-induction recursion; atom/axiom sub-cases are the
+        -- engine FIXPOINT defect (`red dᵢ = dᵢ` ⟹ no descent, `red_zK_fixpoint_of_atom_selected`, PENDING
+        -- lap-109). The I∀ sub-case needs the eigensubst regularity bundle.
+        have hdiZ : ZDerivation (znth ds (permIdx (zK s r ds))) := hmem _ hcrit
+        rcases zDerivation_iff.mp hdiZ with ⟨s', heq, _⟩ | ⟨s', a', p', d0, heq, hd0, _⟩ |
+          ⟨s', p', d0, heq, hd0, _⟩ | ⟨s', at'', p', d0, d1, heq, hd0, hd1, _⟩ |
+          ⟨s', r', ds', heq, _, _, _⟩ | ⟨s', p', k, heq, _, _⟩ | ⟨s', p', heq, _, _⟩
+        · -- atom (tag 0): `red dᵢ = dᵢ`, FIXPOINT — no `iord` descent (engine defect).
+          sorry
+        · -- I∀ (tag 1): `red dᵢ = zsubst d0 a 0`, needs the eigensubst regularity bundle.
+          sorry
+        · -- I¬ (tag 2): `red dᵢ = d0`, banked `iRedDescent_zIneg` — no recursion.
+          have htag_ne4 : zTag (znth ds (permIdx (zK s r ds))) ≠ 4 := by rw [heq]; simp
+          refine iord_descent_red_zK_replace_eq hds hmem hcrit
+            (red_zK_rep_nonchain hcrit htag_ne4) ?_
+          rw [heq, red_zIneg]; exact iRedDescent_zIneg (isNF_iotil_of_ZDerivation d0 hd0)
+        · -- Ind (tag 3): `red dᵢ = iRInd dᵢ`, banked `iRedDescent_zInd` — no recursion.
+          have htag_ne4 : zTag (znth ds (permIdx (zK s r ds))) ≠ 4 := by rw [heq]; simp
+          refine iord_descent_red_zK_replace_eq hds hmem hcrit
+            (red_zK_rep_nonchain hcrit htag_ne4) ?_
+          rw [heq, red_zInd]
+          exact iRedDescent_zInd (isNF_iotil_of_ZDerivation d0 hd0) (isNF_iotil_of_ZDerivation d1 hd1)
+        · -- chain (tag 4): the recursive core — `red dᵢ` reduces a sub-chain (replace/splice).
+          sorry
+        · -- axAll (tag 5): `red dᵢ = dᵢ`, FIXPOINT (axiom normal form).
+          sorry
+        · -- axNeg (tag 6): `red dᵢ = dᵢ`, FIXPOINT (axiom normal form).
+          sorry
       · -- CRITICAL (5.1): `red (zK s r ds) = iRcritG …`, banked descent. Criticality is supplied by the
         -- `permIdx = lh ds` sentinel (`zKCritical_of_not_permIdx_lt`), so the full `zKValid` is in hand.
         exact iord_descent_red_zK_crit hcrit hds hmem hreg
