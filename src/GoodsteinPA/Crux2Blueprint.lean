@@ -549,6 +549,49 @@ theorem ZDerivation_corrected_haux1 {s r ds sⱼ p k' C : V}
   -- the `(j := redexJ, Cc := cutFormula)` instance of the explicit-pair `_at` lemma
   ZDerivation_corrected_haux1_at hZ hj hdj hSeqs hCwff hSeqsj hsj
 
+/-- **`haux1_neg_at` — the EXPLICIT-PAIR ¬-case ANTECEDENT half.** `ZDerivation_corrected_haux1_neg` with the
+R-redex index abstracted to arbitrary `i` and the cut formula to arbitrary `Cc` (used only via `hcut : Cc = p`
+and `hCwff`). `ZDerivation_corrected_haux1_neg` is the `(i := redexI, Cc := cutFormula)` instance. -/
+theorem ZDerivation_corrected_haux1_neg_at {s r ds i sᵢ p d0 Cc : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hi : i < lh ds)
+    (hdi : znth ds i = zIneg sᵢ p d0)
+    (hcut : Cc = p)
+    (hCwff : IsUFormula ℒₒᵣ Cc)
+    (hSeqs : Seq (seqAnt s)) (hSeqsi : Seq (seqAnt sᵢ))
+    (hd0ant : seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p)
+    (hthread : ∀ i' ≤ i, ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank : ∀ i' < i, irk (chainAsucc ds i') ≤ r) :
+    ZDerivation (zK (seqAddAnt Cc s) r (seqUpdate ds i d0)) := by
+  have hZdi : ZDerivation (zIneg sᵢ p d0) := hdi ▸ (zDerivation_zK_inv hZ).2 i hi
+  obtain ⟨hZd0, _hsucceq, ⟨hbot, hmem, hp⟩, _, _⟩ := zDerivation_zIneg_inv hZdi
+  obtain ⟨-, -, -, -, -, -, -, hss, hsa⟩ := zKValidF_of_ZDerivation_zK hZ
+  have hchain_i : chainAnt ds i = seqAnt sᵢ := by unfold chainAnt; rw [hdi, fstIdx_zIneg]
+  rw [hcut]
+  refine ZDerivation_iCritReplaceReduce_general hi hZ hZd0 ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_
+  · refine isChainInf_reduceR_membership hi (Or.inr hbot) ?_ ?_ hrank
+    · intro B hB
+      rw [hd0ant] at hB
+      rcases (inAnt_seqCons hSeqsi).mp hB with rfl | hBin
+      · left; exact (inAnt_seqAddAnt hSeqs).mpr (Or.inl rfl)
+      · rcases hthread i le_rfl B (by rw [hchain_i]; exact hBin) with hins | hex
+        · left; exact (inAnt_seqAddAnt hSeqs).mpr (Or.inr hins)
+        · right; exact hex
+    · intro i' hi' B hB
+      rcases hthread i' (le_of_lt hi') B hB with hins | hex
+      · left; exact (inAnt_seqAddAnt hSeqs).mpr (Or.inr hins)
+      · right; exact hex
+  · rw [seqSucc_seqAddAnt]; exact hss
+  · rw [seqAnt_seqAddAnt]
+    exact forall_IsUFormula_seqCons hSeqs hsa (hcut ▸ hCwff)
+  · rw [hbot]; simp
+  · exact iperm_tp_fstIdx_of_ZDerivation hZd0
+  · exact (tag_uformula_of_ZDerivation hZd0).1
+  · exact (tag_uformula_of_ZDerivation hZd0).2.1
+  · exact (tag_uformula_of_ZDerivation hZd0).2.2.1
+  · exact (tag_uformula_of_ZDerivation hZd0).2.2.2
+
 /-- **`haux1_neg` — the ¬-case inversion's ANTECEDENT half (Buchholz Thm 3.4(a), ¬-subcase `d{1}`).**
 For a critical cut on `¬A` (so `cutFormula d = A`, via `cutFormula_neg`), the antecedent half `d{1} =
 K^r_{A,Π}(i/dᵢ[0])` replaces the **R**-redex `i = redexI d` (the `I¬` rule `zIneg sᵢ A d0`) by its reduct
@@ -572,41 +615,36 @@ theorem ZDerivation_corrected_haux1_neg {s r ds sᵢ p d0 : V}
         inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
     (hrank : ∀ i' < redexI (zK s r ds), irk (chainAsucc ds i') ≤ r) :
     ZDerivation (zK (seqAddAnt (cutFormula (zK s r ds)) s) r
-      (seqUpdate ds (redexI (zK s r ds)) d0)) := by
-  set i := redexI (zK s r ds) with hidef
-  have hZdi : ZDerivation (zIneg sᵢ p d0) := hdi ▸ (zDerivation_zK_inv hZ).2 i hi
-  obtain ⟨hZd0, _hsucceq, ⟨hbot, hmem, hp⟩, _, _⟩ := zDerivation_zIneg_inv hZdi
-  obtain ⟨-, -, -, -, -, -, -, hss, hsa⟩ := zKValidF_of_ZDerivation_zK hZ
-  have hchain_i : chainAnt ds i = seqAnt sᵢ := by unfold chainAnt; rw [hdi, fstIdx_zIneg]
-  rw [hcut]
-  refine ZDerivation_iCritReplaceReduce_general hi hZ hZd0 ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_
-  · -- the membership-form `isChainInf` for the reduced conclusion `p,Γ→D` (D kept, tip re-pointed to `i`)
-    refine isChainInf_reduceR_membership hi (Or.inr hbot) ?_ ?_ hrank
-    · -- at-`i` antecedent threading: `B ∈ seqAnt (fstIdx d0) = (seqAnt sᵢ),p`
-      intro B hB
-      rw [hd0ant] at hB
-      rcases (inAnt_seqCons hSeqsi).mp hB with rfl | hBin
-      · left; exact (inAnt_seqAddAnt hSeqs).mpr (Or.inl rfl)
-      · rcases hthread i le_rfl B (by rw [hchain_i]; exact hBin) with hins | hex
-        · left; exact (inAnt_seqAddAnt hSeqs).mpr (Or.inr hins)
-        · right; exact hex
-    · -- below-`i` antecedent threading inherits, weakened through the new antecedent
-      intro i' hi' B hB
-      rcases hthread i' (le_of_lt hi') B hB with hins | hex
-      · left; exact (inAnt_seqAddAnt hSeqs).mpr (Or.inr hins)
-      · right; exact hex
-  · -- conclusion succedent wff: `D = seqSucc s` (kept)
-    rw [seqSucc_seqAddAnt]; exact hss
-  · -- conclusion antecedent wff: `(seqAnt s),p`, each entry a `UFormula`
-    rw [seqAnt_seqAddAnt]
-    exact forall_IsUFormula_seqCons hSeqs hsa (hcut ▸ hCwff)
-  · -- reduct succedent wff: `⊥`
-    rw [hbot]; simp
-  · exact iperm_tp_fstIdx_of_ZDerivation hZd0
-  · exact (tag_uformula_of_ZDerivation hZd0).1
-  · exact (tag_uformula_of_ZDerivation hZd0).2.1
-  · exact (tag_uformula_of_ZDerivation hZd0).2.2.1
-  · exact (tag_uformula_of_ZDerivation hZd0).2.2.2
+      (seqUpdate ds (redexI (zK s r ds)) d0)) :=
+  -- the `(i := redexI, Cc := cutFormula)` instance of the explicit-pair `_at` lemma
+  ZDerivation_corrected_haux1_neg_at hZ hi hdi hcut hCwff hSeqs hSeqsi hd0ant hthread hrank
+
+/-- **`haux0_neg_at` — the EXPLICIT-PAIR ¬-case SUCCEDENT half.** `ZDerivation_corrected_haux0_neg` with the
+L-redex index abstracted to arbitrary `j` and the cut formula to arbitrary `Cc` (used only via `hcut : Cc = p`
+and `hCwff`). `ZDerivation_corrected_haux0_neg` is the `(j := redexJ, Cc := cutFormula)` instance. -/
+theorem ZDerivation_corrected_haux0_neg_at {s r ds j sⱼ p Cc : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hj : j < lh ds)
+    (hdj : znth ds j = zAxNeg sⱼ p)
+    (hcut : Cc = p)
+    (hCwff : IsUFormula ℒₒᵣ Cc)
+    (hthread : ∀ i' ≤ j, ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank : ∀ i' < j, irk (chainAsucc ds i') ≤ r) :
+    ZDerivation (zK (seqSetSucc s Cc) r
+      (seqUpdate ds j (zAx1 (seqSetSucc sⱼ p) p))) := by
+  have hpmem : inAnt p (seqAnt sⱼ) :=
+    (zDerivation_zAxNeg_inv (hdj ▸ (zDerivation_zK_inv hZ).2 _ hj)).2.2
+  have hZv : ZDerivation (zAx1 (seqSetSucc sⱼ p) p) :=
+    zDerivation_zAx1_intro (by rw [seqSucc_seqSetSucc, seqAnt_seqSetSucc]; exact hpmem)
+  have hchain_j : chainAnt ds j = seqAnt sⱼ := by unfold chainAnt; rw [hdj, fstIdx_zAxNeg]
+  refine ZDerivation_iCritReplaceReduce_of hj hZ hZv ?_ ?_ ?_ hthread hrank ?_ ?_
+    (fun h => by simp at h) (fun h => by simp at h) (fun h => by simp at h) (fun h => by simp at h)
+  · rw [fstIdx_zAx1, seqAnt_seqSetSucc, hchain_j]
+  · rw [fstIdx_zAx1, seqSucc_seqSetSucc, seqSucc_seqSetSucc, hcut]
+  · rw [seqAnt_seqSetSucc]
+  · rw [seqSucc_seqSetSucc]; exact hCwff
+  · rw [tp_zAx1, fstIdx_zAx1]; exact iperm_isymRep _
 
 /-- **`haux0_neg` — the ¬-case inversion's SUCCEDENT half (Buchholz Thm 3.4(a), ¬-subcase `d{0}`).**
 For a critical cut on `¬A` (so `cutFormula d = A`, via `cutFormula_neg`), the succedent half `d{0} =
@@ -632,25 +670,9 @@ theorem ZDerivation_corrected_haux0_neg {s r ds sⱼ p : V}
         inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
     (hrank : ∀ i' < redexJ (zK s r ds), irk (chainAsucc ds i') ≤ r) :
     ZDerivation (zK (seqSetSucc s (cutFormula (zK s r ds))) r
-      (seqUpdate ds (redexJ (zK s r ds)) (zAx1 (seqSetSucc sⱼ p) p))) := by
-  set j := redexJ (zK s r ds) with hjdef
-  have hpmem : inAnt p (seqAnt sⱼ) :=
-    (zDerivation_zAxNeg_inv (hdj ▸ (zDerivation_zK_inv hZ).2 _ hj)).2.2
-  have hZv : ZDerivation (zAx1 (seqSetSucc sⱼ p) p) :=
-    zDerivation_zAx1_intro (by rw [seqSucc_seqSetSucc, seqAnt_seqSetSucc]; exact hpmem)
-  have hchain_j : chainAnt ds j = seqAnt sⱼ := by unfold chainAnt; rw [hdj, fstIdx_zAxNeg]
-  refine ZDerivation_iCritReplaceReduce_of hj hZ hZv ?_ ?_ ?_ hthread hrank ?_ ?_
-    (fun h => by simp at h) (fun h => by simp at h) (fun h => by simp at h) (fun h => by simp at h)
-  · -- hant: reduct antecedent = the axNeg's antecedent `Γⱼ`
-    rw [fstIdx_zAx1, seqAnt_seqSetSucc, hchain_j]
-  · -- hsucc_v: reduct succedent = the reduced conclusion succedent `cutFormula d = p`
-    rw [fstIdx_zAx1, seqSucc_seqSetSucc, seqSucc_seqSetSucc, hcut]
-  · -- hX_ant: conclusion antecedent kept
-    rw [seqAnt_seqSetSucc]
-  · -- hsucc_wff: reduced conclusion succedent is a `UFormula`
-    rw [seqSucc_seqSetSucc]; exact hCwff
-  · -- hperm_v: the §5 logical axiom is permissible for its own conclusion
-    rw [tp_zAx1, fstIdx_zAx1]; exact iperm_isymRep _
+      (seqUpdate ds (redexJ (zK s r ds)) (zAx1 (seqSetSucc sⱼ p) p))) :=
+  -- the `(j := redexJ, Cc := cutFormula)` instance of the explicit-pair `_at` lemma
+  ZDerivation_corrected_haux0_neg_at hZ hj hdj hcut hCwff hthread hrank
 
 /-- **THE corrected critical-cut inversion, ¬-case — SOUNDNESS PROVEN (modulo the §5 `A∈Γⱼ` orbit datum).**
 The negation analogue of `ZDerivation_iRcritG_corrected`: for a critical cut on `¬A` whose redex pair is an
