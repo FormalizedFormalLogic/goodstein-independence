@@ -1,5 +1,34 @@
 # Pending work — open obligations & attack paths
 
+## lap 134 (late) — ✅ ZPhi `zIneg`-disjunct STRENGTHENED with `zInegAntWff` (I¬ exact-shape; the `hNeg` residual)
+**Build 🟢 1326, footprint unchanged (no new axioms).** Wired the exact I¬ premise-antecedent shape into the
+fixpoint skeleton, mirroring the lap-130/131 `zAxAllSuccWff` precedent:
+- **`zInegAntWff s p d0 := Seq (seqAnt s) ∧ seqAnt (fstIdx d0) = seqCons (seqAnt s) p`** — the `Seq` is
+  BUNDLED (not separate) so the shape is SELF-PRESERVING under eigensubst. Updated its `…Def` semisentence
+  (`!seqDef sa1` conjunct) + definability instance (`seq_defined.iff`).
+- Added `∧ zInegAntWff s p d0` to: `ZPhi` (5365), `zphi_iff` (5415), `zblueprint` sigma (5469) + pi (5490),
+  `zPhi_definable` simp (5513).
+- **`zDerivation_zIneg_inv` now yields `zInegAntWff s p d0`** — so `hNeg`'s exact-shape eq
+  `seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p` IS NOW DERIVABLE by inversion (no longer a hypothesis to beg).
+- **Preservation:** `ZDerivation_zsubst`'s zIneg case discharges the substituted `zInegAntWff` via
+  `fvSubstSeq_seqCons hSeqs` (Seq from the bundle) + `fvSubstSeq_seq` (new node's Seq free). Note: anon-ctor
+  flattening only works at the TAIL — `zInegWff` is now a left-child, so it must be bundled `⟨?_,?_,?_⟩`.
+- Projection ripple `.2.2 → .1.2.2` at the 5 zIneg-wff sites (`iperm_tp_zsubst`, `tp_zsubst_eq`,
+  `tag_uformula`-style, `tp_isymR_form_wff`); inversion-consumer destructures `⟨…, ⟨hbot,hmem,hp⟩, _, _⟩`
+  at Crux2Blueprint 234/881.
+
+**RESIDUAL after this — only the `hAll` (zAxAll) half remains** of the two exact-shape ZPhi facts:
+- `hAll` needs `seqSucc sⱼ = cutFormula (zK s r ds)`. `zDerivation_zAxAll_inv` already yields
+  `zAxAllSuccWff sⱼ pj k' = (seqSucc sⱼ = substs1 (numeral k') pj)`. **GAP:** bridge
+  `cutFormula (zK s r ds) = substs1 (numeral k') pj` — the cut formula equals the SELECTED axiom instance
+  (Buchholz §3.2 case 5.1 `cutFormula_all`, the critical-pair principality from `zKValid`). THE next target.
+- `hNeg`'s exact-shape eq is now FREE (this lap) — so `ZDerivation_iRKcCrit_*`'s `hNeg` hypothesis can be
+  discharged at any call site by `(zDerivation_zIneg_inv (premise)).2.2.2`.
+**NEXT:** discharge `hNeg` fully at the botOrbit call site from the inversion, then attack the `hAll`
+cut-formula/instance bridge (`cutFormula_all`). Then both per-node bundles are free and the soundness front
+(`ZDerivation_iRKcCrit_botOrbit`) is hypothesis-free → assemble into `false_of_ZDerivesEmpty` / the existence
+form. (Or pivot to `wip/ExistenceEndgame.lean` which consumes the same now-lighter bundle.)
+
 ## lap 134 — ✅ `ZSeqAnt` threaded + the `Seq(seqAnt·)` obligation DISCHARGED at the soundness front
 **Build 🟢 1326, footprint unchanged.** Both lap-133 turnkey sub-steps LANDED:
 1. **`ZDerivesEmptyR` now carries `∧ ZSeqAnt d`** (`Crux2Blueprint:1103`); `ZDerivesEmptyR_red` produces
