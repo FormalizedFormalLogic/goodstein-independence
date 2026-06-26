@@ -1689,7 +1689,9 @@ theorem exists_sigma1_descent_of_sigma1_step
   -- every orbit point is a regular ⊥-derivation (internal 𝚺₁-induction with the descending step)
   have hmem : ∀ n : V, ZDerivesEmptyR (orbit n) := by
     have hP : 𝚺₁-Predicate (fun n => ZDerivesEmptyR (orbit n)) := by
-      sorry  -- definability: ZDerivesEmptyR is 𝚫₁, orbit is 𝚺₁ (horbit); composition
+      haveI : 𝚺₁-Function₁ orbit := horbit
+      unfold ZDerivesEmptyR ZDerivesEmpty ZRegular ZFresh ZSeqAnt
+      definability
     intro n
     induction n using ISigma1.sigma1_succ_induction
     · exact hP
@@ -1697,8 +1699,8 @@ theorem exists_sigma1_descent_of_sigma1_step
     case succ n ih => rw [horbit_succ]; exact (hg_step (orbit n) ih).1
   refine ⟨fun n => iord (orbit n), ?_, fun n => ?_, fun n => ?_⟩
   · -- 𝚺₁-Function₁ (iord ∘ orbit)
-    have : 𝚺₁-Function₁ orbit := horbit
-    sorry  -- definability: composition of iord (𝚺₁) and orbit (𝚺₁)
+    haveI : 𝚺₁-Function₁ orbit := horbit
+    definability
   · -- NF: isNF (iord (orbit n)) = isNF (iotower (iotil (orbit n)) (idg (orbit n)))
     exact isNF_iotower (isNF_iotil_of_ZDerivation _ (hmem n).1.1) _
   · -- descent: icmp (iord (orbit (n+1))) (iord (orbit n)) = 0
