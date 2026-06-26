@@ -1,11 +1,37 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 115 · 2026-06-25 (inversion: BOTH halves proven; gate = zAx1-as-ZDerivation)
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 117 · 2026-06-26 (¬-case inversion soundness proven; BOTH critical sub-cases now done)
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**).
 The lone `sorryAx` traces to crux-2 (the internalized cut-elimination).
 
-> **⭐⭐⭐ Lap-115 — the inversion's L-half PROVEN; remaining gate = make `zAx1` a sound ZDerivation (read FIRST — current).**
+> **⭐⭐⭐ Lap-117 — the ¬-case critical-cut inversion SOUNDNESS PROVEN; BOTH critical sub-cases now complete (read FIRST — current).**
+> The lap-116 ∀-case (`iRcritG`/`critReductCorr`) had a documented CAVEAT: it handled only the I∀ R-redex; the
+> I¬ R-redex was open. This lap closes it — and surfaces the genuine reason it is NOT a mechanical mirror.
+> **THE structural finding (Buchholz Def 3.2 case 5.1, ¬-subcase):** for a cut on `¬A` the two half-derivations
+> SWAP polarity — `d{0}` (succedent `Π.A`) replaces the **L**-redex `j` (axNeg), `d{1}` (antecedent `A,Π`) the
+> **R**-redex `i` (I¬) — the OPPOSITE of the ∀-case. The repo's `iRcritG` (∀-convention `seqUpdate` slots) cannot
+> express this, so a new **swapped-half constructor `iRcritGNeg`** (InternalZ) is required. Built + proven sound,
+> all axiom-clean `[propext, Classical.choice, Quot.sound]`:
+> - `iRcritGNeg` + `ZDerivation_iRcritGNeg_of` (InternalZ): swapped-half reduct + assembly.
+> - `ZDerivation_corrected_haux0_neg` (succedent half): redexJ=axNeg ↦ §5 reduct `Ax^1_{Γⱼ→A}` (Buchholz Lemma
+>   5.1 case 2.2), via `iCritReplaceReduce_of`.
+> - `ZDerivation_corrected_haux1_neg` (antecedent half): redexI=I¬ ↦ child `d0` (`A,Γᵢ→⊥`), via
+>   `iCritReplaceReduce_general` + `isChainInf_reduceR_membership` (the `⊥`-tip re-point makes arbitrary
+>   conclusion succedent OK — why the I¬ child fits a non-`⊥` endform chain).
+> - `ZDerivation_iRcritGNeg_corrected_neg`: the ¬-case soundness capstone.
+> **ONE documented §5 residual:** `hpmem : inAnt A (seqAnt sⱼ)` — Buchholz 2.2's side condition `A,¬A∈Γ`, of
+> which the repo's `zAxNeg` ZPhi disjunct supplies only `¬A∈Γ` (`zDerivation_zAxNeg_inv`). Discharge = strengthen
+> the `zAxNeg` disjunct to carry both `A,¬A` (the L-side analogue of lap-116's `zAx1` 8th-disjunct), OR derive
+> `A∈Γⱼ` from the redex-pair chain context.
+> **NEXT (the engine re-key, now de-risked):** with BOTH ∀ (`iRcritG`/`critReductCorr`) and ¬ (`iRcritGNeg`)
+> soundness proven, re-key `red`'s tag-4 critical branch to DISPATCH on the redex polarity (`zIall` redexI →
+> `iRcritG`+`critReductCorr`; `zIneg` redexI → `iRcritGNeg`+the ¬-reducts) and emit the correct constructor.
+> Then `ZDerivation_red_zK_crit` closes via `red_zK_crit` + the two soundness capstones, and the descent
+> re-points (ρ-invariant via `iord_iRcritG_eq_iRcrit`; needs an `iRcritGNeg` iord-invariance twin). See
+> `HANDOFF-2026-06-26-lap117.md`, `PENDING_WORK.md` lap-117.
+
+> **⭐⭐⭐ Lap-115 — the inversion's L-half PROVEN; remaining gate = make `zAx1` a sound ZDerivation (historical).**
 > Both halves of the corrected critical-cut inversion are now axiom-clean: R-half `ZDerivation_corrected_haux0`
 > (lap 114) + **L-half `ZDerivation_corrected_haux1`** (`Crux2Blueprint`, this lap). Grounded the L-side in
 > **Buchholz §5 case 2.1** (scratchpad `buchholz-gentzen.txt:903`): the L-redex `axAll` axiom `Ax^{∀p,k}` (which
@@ -955,6 +981,13 @@ choice, but it is Towsner-specific and now OFF the critical path (banked, not de
 escape hatch; it re-introduces the `PA_delta1Definable` Foundation axiom 🟡.)
 
 ## What's happened (newest first)
+- **2026-06-26 (lap 117 — FRESH-MIND REVIEW + ¬-case inversion):** Validated the lap-116 "engine re-key"
+  direction but found its hidden prerequisite: a CLEAN re-key needs the I¬ critical sub-case (else the
+  sorry-free descent/regularity lemmas regress). Proved it: the ¬-case critical-cut inversion SOUNDNESS
+  (`iRcritGNeg` + `ZDerivation_iRcritGNeg_of` + `_haux0_neg`/`_haux1_neg` + `ZDerivation_iRcritGNeg_corrected_neg`),
+  all axiom-clean. Key structural finding: the ¬-case SWAPS the two halves' redex assignment (Buchholz 5.1
+  ¬-subcase), so `iRcritG` cannot express it. One §5 residual: `zAxNeg` needs the `A∈Γ` side condition. Build
+  green 1326; headline footprint + 8 Crux2 sorries unchanged.
 - **2026-06-25 (lap 111 — DEEP REFLECTION):** Re-verified kernel in-kernel (`lake env lean`, green 1326):
   headline `[propext, sorryAx, choice, Quot.sound]` (0 math axioms), `goodstein_implies_consistency` same lone
   `sorryAx`, `peano_not_proves_consistency` + `not_proves_of_implies_consistency` + `goodsteinSentence_faithful`

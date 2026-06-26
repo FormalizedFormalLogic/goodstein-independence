@@ -1,5 +1,31 @@
 # Pending work — open obligations & attack paths
 
+## lap 117 — ¬-case critical-cut inversion SOUNDNESS proven; BOTH critical sub-cases complete
+**Build 🟢 green 1326; headline footprint intact (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms).
+1 commit (9507db8). No sorries added; the ¬-case lemmas are axiom-clean `[propext, choice, Quot.sound]`.**
+See `HANDOFF-2026-06-26-lap117.md`.
+
+**Closed the lap-116 CAVEAT (the I¬ R-redex sub-case).** Buchholz Def 3.2 case 5.1's ¬-subcase SWAPS the two
+halves' redex assignment (`d{0}↦`L-redex `j`, `d{1}↦`R-redex `i`; the OPPOSITE of ∀), so `iRcritG` can't
+express it ⟹ built a new swapped-half constructor **`iRcritGNeg`** (`InternalZ`) + `ZDerivation_iRcritGNeg_of`.
+Proven sound: succedent half `ZDerivation_corrected_haux0_neg` (redexJ=axNeg ↦ §5 `Ax^1_{Γⱼ→A}`, Buchholz
+Lemma 5.1 case 2.2) + antecedent half `ZDerivation_corrected_haux1_neg` (redexI=I¬ ↦ child `d0`,
+`isChainInf_reduceR_membership` re-points the tip to the `⊥`-endform ⟹ arbitrary conclusion succedent OK) +
+capstone `ZDerivation_iRcritGNeg_corrected_neg`.
+
+**THE one residual** (the ¬-side twin of lap-116's `zAx1`-as-ZDerivation gate): `haux0_neg` needs
+`hpmem : inAnt A (seqAnt sⱼ)` (Buchholz 2.2's `A,¬A∈Γ`), but the repo's `zAxNeg` ZPhi disjunct pins only
+`¬A∈Γ`. **DISCHARGE = strengthen the `zAxNeg` (tag-6) ZPhi disjunct to also require `inAnt A (seqAnt s)`** —
+a `ZPhi` ripple (`zphi_monotone`/`_strong_finite`/`zphi_iff`/`zblueprint` σ+π/`zPhi_definable` + ~64
+`rcases zDerivation_iff.mp` axNeg arms, each +1 conjunct), mechanically mirroring the lap-116 `zAx1`
+8th-disjunct work — OR derive `A∈Γⱼ` from the redex-pair chain context.
+
+**NEXT (hardest-first):** the engine re-key, now de-risked on BOTH polarities — re-key `iRKc` to DISPATCH
+(`zTag dᵢ = 1` → `iRcritG`+`critReductCorr`; I¬ → `iRcritGNeg`+ρ_neg) and emit the polarity-correct
+constructor. Then `ZDerivation_red_zK_crit` closes via `red_zK_crit` + the two soundness capstones; descent
+re-points (need an `iord_iRcritGNeg_eq_iRcrit` twin — short, `#` is commutative). See HANDOFF lap-117 steps.
+Suggested sequencing: (a) strengthen `zAxNeg` disjunct (additive, removes `hpmem`), THEN (b) the re-key.
+
 ## lap 115 — the inversion's L-half PROVEN; gate = make `zAx1` a sound ZDerivation
 **Build 🟢 green 1326; headline footprint intact (`[propext, sorryAx, choice, Quot.sound]`, 0 math
 axioms). 1 commit (L-half + finding). No sorries added.** See `HANDOFF-2026-06-25-lap115.md`.
