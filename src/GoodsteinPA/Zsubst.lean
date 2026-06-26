@@ -1251,6 +1251,53 @@ theorem zReg_zsubst (a t : V) : ∀ d, ZDerivation d → zReg (zsubst d a t) = z
     · simp [zsubst_zAxNeg]
     · simp [zsubst_zAx1]
 
+/-! ### Regularity of the corrected-reduct premises (engine re-key prerequisite, lap 119)
+
+The re-keyed tag-4 critical reduct `iRKcCrit` (`InternalZ`) replaces each redex premise by its genuine
+§3.2-case-5.1 reduct: the I∀ R-redex by `zsubst (zIallPrem dᵢ) (zIallEig dᵢ) (numeral k)` (re-principalized
+child), the I¬ R-redex by `zInegPrem dᵢ` (the I¬ child), and the L-redex axioms by `zAx1` nodes. For the
+`ZRegular_red` (O1) front of the engine swap, these new premises must be shown regular. The `zAx1` slots are
+free (`zReg_zAx1 = 0`); the two below are the genuine facts. -/
+
+/-- **The ∀ R-redex's corrected-reduct premise is regular.** The §3.2-case-5.1 reduct re-principalizes the
+I∀ child `d0` at a closed numeral; `zReg_zsubst` (closed-term substitution preserves regularity) plus the
+I∀ node's own regularity (`zReg d0 = 0`) gives that the substituted premise is regular. -/
+lemma ZRegular_zsubst_zIallPrem {e k : V} (he : ZDerivation e) (hreg : ZRegular e) (htag : zTag e = 1) :
+    ZRegular (zsubst (zIallPrem e) (zIallEig e) (Bootstrapping.Arithmetic.numeral k)) := by
+  rcases zDerivation_iff.mp he with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, hd0, _, _⟩ |
+    ⟨s, p, d0, rfl, _, _, _⟩ | ⟨s, at', p, d0, d1, rfl, _, _, _⟩ |
+    ⟨s, r, ds, rfl, _, _, _⟩ | ⟨s, p, kk, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩ | ⟨s, C, rfl, _⟩
+  · simp at htag
+  · rw [zIallPrem_zIall, zIallEig_zIall]
+    unfold ZRegular
+    rw [zReg_zsubst a (Bootstrapping.Arithmetic.numeral k) d0 hd0]
+    unfold ZRegular at hreg; rw [zReg_zIall] at hreg
+    exact nonpos_iff_eq_zero.mp (hreg ▸ le_max_right _ _)
+  · simp at htag
+  · simp at htag
+  · simp at htag
+  · simp at htag
+  · simp at htag
+  · simp at htag
+
+/-- **The ¬ R-redex's corrected-reduct premise is regular.** The §3.2-case-5.1 ¬-reduct is the I¬ child
+`d0 = zInegPrem e`; regularity is hereditary (`zReg_zIneg : zReg (zIneg ..) = zReg d0`). -/
+lemma ZRegular_zInegPrem {e : V} (he : ZDerivation e) (hreg : ZRegular e) (htag : zTag e = 2) :
+    ZRegular (zInegPrem e) := by
+  rcases zDerivation_iff.mp he with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, _, _⟩ |
+    ⟨s, p, d0, rfl, hd0, _, _⟩ | ⟨s, at', p, d0, d1, rfl, _, _, _⟩ |
+    ⟨s, r, ds, rfl, _, _, _⟩ | ⟨s, p, kk, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩ | ⟨s, C, rfl, _⟩
+  · simp at htag
+  · simp at htag
+  · rw [zInegPrem_zIneg]
+    unfold ZRegular at hreg ⊢
+    rwa [zReg_zIneg] at hreg
+  · simp at htag
+  · simp at htag
+  · simp at htag
+  · simp at htag
+  · simp at htag
+
 /-! ## `red` preserves `ZRegular` — the structural and Ind cases (Path-X O1, lap 93)
 
 `red` is the genuine one-step reduction. For regularity preservation `ZRegular d → ZRegular (red d)`:
@@ -1405,6 +1452,34 @@ lemma ZRegular_zK_of_seqUpdate {s' r' ds i v : V}
 lemma ZRegular_zK_of_iCritReductSeq {s' r' d0 d1 : V} (h0 : ZRegular d0) (h1 : ZRegular d1) :
     ZRegular (zK s' r' (iCritReductSeq d0 d1)) :=
   ZRegular_zK_of_premises (iCritReductSeq_seq d0 d1) (forall_lt_iCritReductSeq h0 h1)
+
+/-- **The re-keyed critical reduct `iRKcCrit` is regular.** The engine swap's `ZRegular_red_zK_crit` re-proof
+target: each of the two `iCritReductSeq` halves is a `seqUpdate` of the chain's premise sequence swapping one
+redex premise for its §3.2-case-5.1 corrected reduct. Regular when (a) every original premise is
+(`hprem`, from the chain's own regularity) and (b) the swapped reduct is — the I∀ slot via
+`ZRegular_zsubst_zIallPrem`, the I¬ slot via `ZRegular_zInegPrem`, the L-redex `zAx1` slots free
+(`zReg_zAx1`). The R-redex must be an I-rule (`htagI`: tag 1 or 2), which holds on the orbit
+(`tp dᵢ = isymR`). Polarity-dispatch matches `iRKcCrit`'s own `zTag dᵢ = 1` branch. -/
+lemma ZRegular_iRKcCrit {d : V}
+    (hprem : ∀ m < lh (zKseq d), ZRegular (znth (zKseq d) m))
+    (hdI : ZDerivation (znth (zKseq d) (redexI d)))
+    (hregI : ZRegular (znth (zKseq d) (redexI d)))
+    (htagI : zTag (znth (zKseq d) (redexI d)) = 1 ∨ zTag (znth (zKseq d) (redexI d)) = 2) :
+    ZRegular (iRKcCrit d) := by
+  have hax : ∀ a b : V, ZRegular (zAx1 a b) := fun a b => by unfold ZRegular; exact zReg_zAx1 _ _
+  rw [iRKcCrit]
+  split
+  case isTrue h1 =>
+    rw [iCritReductG]
+    exact ZRegular_zK_of_iCritReductSeq
+      (ZRegular_zK_of_seqUpdate hprem (ZRegular_zsubst_zIallPrem hdI hregI h1))
+      (ZRegular_zK_of_seqUpdate hprem (hax _ _))
+  case isFalse h1 =>
+    have h2 : zTag (znth (zKseq d) (redexI d)) = 2 := htagI.resolve_left h1
+    rw [iCritReductG]
+    exact ZRegular_zK_of_iCritReductSeq
+      (ZRegular_zK_of_seqUpdate hprem (hax _ _))
+      (ZRegular_zK_of_seqUpdate hprem (ZRegular_zInegPrem hdI hregI h2))
 
 /-- **Regularity of a `seqInsert` chain** (5.2.1 splice `iRKs`): inserting two regular halves `a,b` in
 place of premise `i` keeps the chain regular. The 5.2.1 analogue of `ZRegular_zK_of_seqUpdate`, via the
