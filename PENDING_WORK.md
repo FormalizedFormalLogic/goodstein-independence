@@ -45,6 +45,23 @@ the endgame into named leaves (mirrors how `redSound` was decomposed):
   INSUFFICIENT — the B-cut must still be reduced. An M2 orbit-invariant (axiom-free spine) is fragile (a B→B
   axiom is a normal sub-derivation, hard to exclude globally). PROBE whether `ZRegular w` constrains it, but
   expect the axiom-cut reduction to be the real fix.
+- **⚠️⚠️ FURTHER REFINEMENT (lap-120, deeper scouting of `iperm`) — a CONCRETE provable sub-target emerges.**
+  At the ⊥-orbit conclusion `s` (`seqAnt s = ∅`, `seqSucc s = ^⊥`), `iperm (tp dᵢ) s` (def InternalZ:976:
+  `tp = isymR(seqSucc s) ∨ (isymLk k A ∧ A∈ant s) ∨ tp = isymRep`) holds **iff `tp dᵢ = isymRep`**: the
+  `isymR(⊥)` disjunct needs a premise with succedent `⊥` (I-rules have succedent `∀p`/`¬A`, never `⊥`), and
+  the `isymLk` disjunct needs the L-formula `∈ ant s = ∅` (impossible). So at a ⊥-orbit K-node the PERMISSIBLE
+  premises are exactly the `isymRep` ones (atoms / Ind / K / `zAx1`); I-rules and L-axioms are NON-permissible.
+  `permIdx` = first `isymRep` premise. **The decisive sub-question:** can that first-`isymRep` premise be an
+  ATOM? If the atom is at **index 0**, the `isChainInf` threading (`∀ B, inAnt B (chainAnt 0) → inAnt B ∅ ∨
+  ∃ i'<0, …`) forces its antecedent EMPTY (no earlier cut formulas) ⟹ atom-validity `inAnt (seqSucc sᵢ) ∅`
+  FAILS ⟹ **vacuity fires after all.** So the stall requires the atom to be first-`isymRep` at **index > 0**,
+  with every earlier premise NON-permissible (I-rules `isymR(C≠⊥)` / L-axioms `isymLk`), and the atom's
+  antecedent `= {chainAsucc i'}` for some `i' < permIdx`. **CONCRETE NEXT-LAP TARGET:** prove the first-`isymRep`
+  premise of a valid ⊥-orbit chain is forced to index 0 (or otherwise forces the vacuity-firing empty
+  antecedent) — via the chain structure / `ZRegular` / the exit `j0` (`chainAsucc j0 = ^⊥`). If provable →
+  (A) closes by vacuity, **no engine surgery**. If a genuine index-`>0` atom-stall chain is constructible →
+  the axiom-cut elimination is forced. The question is now sharp and in-kernel decidable — attack
+  `red_zK_fixpoint_of_atom_selected`'s reachability, not the abstract claim.
 - **(B) no cut-free `∅→⊥`:** standard; only needed if (A) routes through "cut-free" rather than direct
   sequent-shape absurdity.
 - **(C) descent-internalization:** `gentzenDescentφ` as the real Σ₁ graph of `n ↦ iord(red^[n] z)`. Probably
