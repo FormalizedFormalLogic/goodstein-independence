@@ -1,6 +1,55 @@
 # Pending work — open obligations & attack paths
 
-## lap 148 (latest) — §14.254 REPLACE plumbing banked + no-redex residual re-split, judge-C3-aligned
+## lap 149 (latest) — FRESH-MIND REVIEW: tag-3 freshFlag DROP teed up, then the general code-recursion crux
+**Build 🟢 1326. Re-verified in-kernel: headline + `false_of_ZDerivesEmpty` + `ZDerivesEmptyR_descent_step` +
+`descent_step_K_noncrit_recurse` all `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms) — no
+drift.** Operator SOLE-OBJECTIVE = M1b-term. Crux-2 termination is now reduced to **4 disclosed `sorryAx`
+leaves**: (1) tag-3 freshFlag `Crux2Blueprint:2974`; (2) tag-4 K-recursion `descent_step_K_noncrit_repMajor_K`
+:2934; (3) tag-5/6 cut-partner `descent_step_K_noncrit_axMajor`:3002; (4) (A) gDef `exists_sigma1_descending_step`
+:3125. Leaves (2)+(3) ARE the genuine crux (general `Γ→⊥` cut-reduction); (4) the parallel Σ₁-definability crux;
+(1) the LAST tractable leaf. (DIRECTION.md CURRENT DIRECTIVE = lap-149, OUTRANKS this file.)
+
+### ▶ MANDATED next move — DROP tag-3 freshFlag (`Crux2Blueprint:2974`). A real src-sorry DROP.
+The residual is `have hfreshΓ : freshFlag (π₁ at'') p' (seqAnt s') = 0 := sorry` — the I∀-style eigenvariable
+freshness of the `zInd` major premise. `ind_reduct_botSucc_of_fresh` already CONSUMES it; producing it makes
+`descent_step_K_noncrit_repMajor`'s tag-3 branch sorry-free. **`zFresh`/`zFreshNext` does not yet carry it for
+`zInd` — the fix mirrors the tag-1 I∀ clause** (which DOES carry `freshFlag`, `Zsubst.lean:1671`). It is the
+EXACT shape of the lap-146 `zIndWff` membership→shape ripple that DROPPED `descent_step_Ind` — a focused,
+definability-dominated ripple, NOT a 64-site cascade (`zFresh` is C-free → `zphi_monotone`/`_strong_finite`
+untouched). Concrete steps:
+1. **`zFreshNext` body** `Zsubst.lean:1673` — change the tag-3 branch from
+   `max (znth s (zIndPrem0 d)) (znth s (zIndPrem1 d))` to
+   `max (freshFlag (zIndEig d) (zIndP d) (seqAnt (fstIdx d))) (max (znth s (zIndPrem0 d)) (znth s (zIndPrem1 d)))`.
+   (`zIndEig (zInd s at' p d0 d1)=π₁ at'`, `zIndP (zInd …)=p`, both confirmed; `seqAnt (fstIdx (zInd …))=seqAnt s`.)
+2. **`zFreshNextDef`** σ-clause `:1683-1684` — mirror the tag-1 σ-block `:1679-1681`: insert
+   `!zIndEigDef ea d ∧ !zIndPDef pf d ∧ !fstIdxDef f d ∧ !seqAntDef ga f ∧ !freshFlagDef fl ea pf ga` and
+   `!max.dfn` the flag with the prem-fold.
+3. **`zFreshNext_defined`** simp set `:1691-1694` — add `zIndEig_defined.iff`, `zIndP_defined.iff`
+   (`freshFlag_defined.iff`/`fstIdx_defined.iff`/`seqAnt_defined.iff` already present). Re-run the by_cases h3 leg.
+4. **`zFresh_zInd`** simp `:1812` — restate as the new `max freshFlag (max prem0 prem1)`.
+5. **`zFresh_zsubst`** tag-3 case `:1947-1955` — mirror the tag-1 case `:1935-1941`: the new freshFlag component
+   is preserved by closed-numeral subst via `freshFlag_zsubst_eq_zero` + `seqAnt_fvSubstSeqt`; add the trivial
+   extractor `freshFlag_eq_zero_of_zfresh_zInd` (mirror `:1872` `freshFlag_eq_zero_of_zfresh_zIall`).
+6. **Re-project the 4 max-extraction sites** that read `ZFresh d0/d1` off `zFresh_zInd`
+   (`Crux2Blueprint:2657/2660/2801/2804`, + `Zsubst:2894`) — they now need one extra `le_max_right` to skip the
+   new outer freshFlag slot before the inner `le_max_left/right`.
+7. **Discharge `:2974`** — from `hfreshm : ZFresh (znth ds (majorIdx …))` (= `zFresh (zInd s' at'' p' d0' d1')=0`,
+   which now carries `freshFlag (π₁ at'') p' (seqAnt s')` in its outer `max`): `le_max_left` + `nonpos_iff_eq_zero`
+   + `fstIdx_zInd`. **tag-3 repMajor goes sorry-free.**
+
+### ▶ THEN — the CRUX (do NOT hunt more leaves): general `Γ→⊥` cut-reduction by code-induction
+With freshFlag closed, the only live crux-2 sorries are the **general reduction** (leaves 2934 + 3002) and
+**gDef** (3125). The general reduction = produce a `ZDerivation`-valued same-end-sequent strictly-`iord`-
+descending `Rep`-reduct of a structurally-SMALLER premise (`Γ′→⊥`, `Γ′` possibly nonempty), closure by strong
+induction on the finite derivation CODE (Buchholz Thm 2.1 / §14.253-254 — NOT `iord`-recursion, which is
+PRWO/Gödel-barred since we're PROVING no-iord-descent). NEXT crux lap = decompose THIS into the code-induction
+skeleton (re-read `scratchpad/buchholz-gentzen.txt` §14.253-254); a disclosed sub-`sorry` decomposition is a
+successful crux lap. **FORBIDDEN:** `red` witnesses; `iord`-recursion; `redLeast`/μ-min for gDef (refuted
+lap-139); collapsing the repMajor/axMajor §14.254a/b split; jumping to the crux before freshFlag drops.
+
+---
+
+## lap 148 — §14.254 REPLACE plumbing banked + no-redex residual re-split, judge-C3-aligned
 **Build 🟢 1326. Headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms) — no drift.**
 Operator SOLE-OBJECTIVE = M1b-term. This lap acted on the host-flagged judge review
 (`E-2026-06-26-JUDGE-codex-review.md`, point **C3** — converged with Codex): **prove the two no-redex

@@ -14,53 +14,61 @@ autonomous treadmill campaign. Read both.
 > over every few review laps. Keep it SHORT; detail lives in `PENDING_WORK.md` / `REFLECTION-*.md`.
 > (Live milestone map = `E-CRUX2-ROADMAP-2026-06-24.md`; the phase list below is the standing charter.)
 
-**Set: lap-146 (FRESH-MIND REVIEW). Supersedes lap-143. Direction KEPT (existence-form pivot, lap-132);
-lap-143's mandated moves are DONE — the live `false_of_ZDerivesEmpty` path is now FULLY off `red`
-(lap-144). The binding move advances to CLOSING the first genuine live-path sorry of the post-red era.**
+**Set: lap-149 (FRESH-MIND REVIEW). Supersedes lap-146. Direction KEPT (existence-form pivot off `red`).
+lap-146's mandate is DONE — `descent_step_Ind` DROPPED (lap 146); laps 147-148 correctly advanced into
+Buchholz §5.2 noncritical, decomposing it faithfully per §14.254a/b (judge-C3). The binding move: take the
+LAST tractable live leaf (tag-3 freshFlag), THEN turn to the genuine crux that has been deferred ~5 laps.**
 
 - **THE objective (only this):** **M1b-term** = close the live `false_of_ZDerivesEmpty` termination path.
-  The off-`red` STRUCTURAL goal is ACHIEVED: `ZDerivesEmptyR_descent_step` (`Crux2Blueprint:2270`) is
-  sorry-free and dispatches Ind→`descent_step_Ind` (genuine `iIndReductSeqG`) / K→`descent_step_K_majorIdx`
-  (critical off `red`, ¬-case CLOSED lap-144) — NO `red`, NO kernel-FALSE soundness on the live path. What
-  remains are **three co-equal genuine live sorries**, none generational, none needing `red`:
-  `descent_step_Ind` (:2262), `descent_step_K_noncritical` (:2139, Buchholz §5.2 atomic reduct),
-  and (A) `exists_sigma1_descending_step` (:2327, the `gDef` Σ₁-Semisentence packaging).
-- **MANDATED next move (hardest-first among teed-up work — DROP `descent_step_Ind`):**
-  Strengthen the `zIndWff` STEP-premise clause (`InternalZ.lean:1684`) from MEMBERSHIP
-  `inAnt (F(a)) (seqAnt(fstIdx prem1))` to SHAPE
-  `seqAnt(fstIdx prem1) = seqCons (seqAnt(fstIdx d)) (F(a))` (faithful Buchholz Ind rule: step antecedent
-  EXACTLY `Γ,F(a)`). This is **REQUIRED**, not convenient: the membership-only clause admits *unsound* Ind
-  nodes (a lax `d1 ⊢ {⊥,X}→⊥` lets stray `X` leak past the rule, so the conclusion `Γ→F(t)` doesn't
-  actually follow), and `ZSeqAnt` only flags sequence-wellformedness, not antecedent content — neither the
-  ZSeqAnt nor the "no-cascade-docstring" reframe delivers the shape (both CHECKED + refuted lap-146). It is a
-  **FOCUSED, definability-dominated ripple, NOT a 64-site cascade** (`zIndWff` is C-free, so `zphi_monotone`/
-  `_strong_finite` are untouched): edit (a) `zIndWff` body :1684; (b) `zIndWffDef` σ+π :1704/1718 — use
-  `seqConsDef` with `sas = seqAnt(fstIdx d)` already bound at :1700/1714 (or the available `seqAddAntDef`
-  :6318); (c) `zIndWff_defined` simp set :1725 (+ `seqCons_defined.iff`); (d) the `zsubst`-preservation site
-  `Zsubst.lean:3595/3604` (seqCons commutes with substitution); (e) assemble `descent_step_Ind` from the
-  now-derivable shape. The DESCENT half (`iord_descent_iIndReductSeqG_one`) and the `p=⊥` collapse
-  (`eq_falsum_of_substs1_falsum`) are ALREADY BANKED — the strengthening is the WHOLE remaining content.
-  After it: on the ⊥-orbit `seqAnt(fstIdx d1) = {⊥}`, the telescope threads, soundness closes via
-  `zDerivation_zK_intro` + `isChainInf_telescope`. (⚠️ if the build surfaces a LIVE constructor of a `zInd`
-  ZDerivation beyond `zsubst`, discharge the new shape there too — but M4/embedding isn't wired, so expect
-  only `zsubst`.) THEN: `descent_step_K_noncritical` (§5.2), THEN (A) `gDef`.
-- **Success metric:** `descent_step_Ind`'s sorry DROPS — a live-path src sorry, the operator's bar. NOT:
-  banking more support lemmas without dropping the sorry; relocating dead `red`-machinery for count-management.
-- **FORBIDDEN:** witnessing any `ZDerivesEmptyR_descent_step` branch with `red`; attacking the now-off-path
-  dead `red`-soundness sorries {`zKValidF_iIndReduct_of_zInd`:80, `ZDerivation_red_zK_crit`:1108, `_splice`
-  :1257-ish, `_nonRep`:1367-ish, `redSoundGen`:1471-ish} AS STATED (relocate to `wip/` only as a DELIBERATE
-  cleanup pass AFTER `descent_step_Ind` drops, never as count-management, never before); the
-  ZSeqAnt/"no-cascade" reframes (CHECKED lap-146 — neither delivers the shape); jumping to
-  `descent_step_K_noncritical`/(A) before `descent_step_Ind` drops (Ind is teed-up and validates the
-  red-free pivot end-to-end — keep focus); the `redLeast`/μ-min route for (A) (refuted lap-139);
-  `zReg`/`zFresh`/`zSeqAnt` folds as a *goal*; off-critical-path easy `sorry`s; M2 / M4 wiring.
-- **Why:** lap-144 got the live path off `red`; lap-145 cracked `descent_step_Ind` down to a single
-  well-understood obstruction with both prerequisites (descent + `p=⊥`) already banked. Closing it DROPS the
-  FIRST genuine live-path sorry of the post-`red` era and confirms the existence-form + genuine-reduct pivot
-  actually yields a sound, dropping proof — the thing the campaign has built toward for ~13 laps. The
-  remaining {§5.2, (A) `gDef`} are then the last two genuine pieces, both decomposed and none generational.
+  VERIFIED axiom-clean (lap 149): `false_of_ZDerivesEmpty`, `ZDerivesEmptyR_descent_step`,
+  `descent_step_K_noncrit_recurse` all `= [propext, sorryAx, Classical.choice, Quot.sound]` — ZERO custom
+  math axioms; the whole crux-2 chain is reduced to **four disclosed live `sorryAx` leaves**, none needing
+  `red`, none generational: (1) tag-3 freshFlag residual `Crux2Blueprint:2974`; (2) tag-4 K-recursion
+  `descent_step_K_noncrit_repMajor_K`:2934; (3) tag-5/6 cut-partner `descent_step_K_noncrit_axMajor`:3002;
+  (4) (A) `exists_sigma1_descending_step` gDef:3125. Leaves (2)+(3) ARE the genuine crux (the general
+  `Γ→⊥` cut-reduction); (4) is the parallel Σ₁-definability crux; (1) is the last tractable leaf.
+- **MANDATED next move (a real DROP — close tag-3 freshFlag, `Crux2Blueprint:2974`):** Strengthen
+  `zFreshNext`'s tag-3 (`zInd`) branch (`Zsubst.lean:1673`) to carry the I∀-style eigenvariable freshness,
+  mirroring the tag-1 clause :1671. Change the body from `max (znth s (zIndPrem0 d)) (znth s (zIndPrem1 d))`
+  to `max (freshFlag (zIndEig d) (zIndP d) (seqAnt (fstIdx d))) (max (znth s (zIndPrem0 d)) (znth s
+  (zIndPrem1 d)))` (`zIndEig (zInd …)=π₁ at'`, `zIndP (zInd …)=p`, both confirmed). This is a **FOCUSED,
+  definability-dominated ripple** (the EXACT shape of the lap-146 `zIndWff` strengthening that dropped
+  `descent_step_Ind`; `zFresh` is C-free so `zphi_*` untouched): edit (a) `zFreshNext` body :1673;
+  (b) `zFreshNextDef` σ-clause :1683-1684 (mirror the tag-1 σ-block :1679-1681 — add `freshFlagDef` +
+  `zIndEigDef` + `zIndPDef` + `seqAntDef∘fstIdxDef`); (c) `zFreshNext_defined` simp set :1691-1694 (add
+  `zIndEig_defined`/`zIndP_defined`; `freshFlag_defined`/`fstIdx`/`seqAnt` already present); (d) `zFresh_zInd`
+  simp :1812 (new `max freshFlag (max …)`); (e) `zFresh_zsubst` tag-3 case :1947-1955 — mirror the tag-1
+  case :1935-1941 (`freshFlag_zsubst_eq_zero` + `seqAnt_fvSubstSeqt`); add the trivial extractor
+  `freshFlag_eq_zero_of_zfresh_zInd` (mirror :1872); (f) re-project the 4 max-extraction sites that read
+  `ZFresh d0/d1` off `zFresh_zInd` (`Crux2Blueprint:2657/2660/2801/2804`, +`Zsubst:2894`) through the new
+  outer `max`. Then at :2974 the residual `freshFlag (π₁ at'') p' (seqAnt s')=0` falls directly from
+  `hfreshm : ZFresh (znth ds majorIdx)` (= `zFresh (zInd …)=0` now carries it; `le`-project + `fstIdx_zInd`).
+  **tag-3 repMajor goes fully sorry-free** → `descent_step_K_noncrit_repMajor` drops its `htag3` branch.
+- **THEN — the CRUX (do NOT hunt more leaves; this is what's left):** with freshFlag closed, the only live
+  crux-2 sorries are the **general `Γ→⊥` cut-reduction by strong induction on derivation CODE** (leaves 2934
+  + 3002; Buchholz Thm 2.1 / §14.253-254 — NOT `iord`-recursion, PRWO/Gödel-barred) and **gDef** (3125).
+  START the general reduction: decompose it into the code-induction skeleton (a `ZDerivation`-valued
+  same-end-sequent descending `Rep`-reduct of a structurally-smaller premise, recursion on the finite code,
+  not the ordinal), re-reading §14.253-254 in `scratchpad/buchholz-gentzen.txt`. A disclosed sub-`sorry`
+  decomposition of THIS is a successful crux lap even with nothing closed.
+- **Success metric:** tag-3 freshFlag sorry DROPS (a live-path src sorry, the operator's bar). NOT: banking
+  support lemmas without the drop; relocating dead `red`-machinery for count-management.
+- **FORBIDDEN:** witnessing any `ZDerivesEmptyR_descent_step` branch with `red`; the general step by
+  `iord`-recursion (PRWO/Gödel-barred — structural/code induction ONLY); the `redLeast`/μ-min route for (A)
+  gDef (refuted lap-139); collapsing the repMajor/axMajor §14.254a/b split (judge-C2/C3 endorsed); attacking
+  the off-path dead `red`-soundness sorries {:82,:1257,:1367,:1563,:1653,:1765,:1868} AS STATED (relocate to
+  `wip/` only as a DELIBERATE cleanup AFTER freshFlag drops, never count-management); jumping to gDef / the
+  general recursion BEFORE freshFlag drops (it is teed-up and validates the no-redex machinery end-to-end);
+  `zReg`/`zFresh`/`zSeqAnt` folds as a *goal* (the tag-3 fold is mandated here ONLY because it directly drops
+  :2974 — not as engine-work); off-critical-path easy `sorry`s; M2 / M4 wiring.
+- **Why:** freshFlag is the LAST teed-up tractable DROP; closing it validates the entire no-redex repMajor
+  machinery (`descent_step_K_replace` + `ind_reduct_botSucc_of_fresh`) end-to-end, exactly as
+  `descent_step_Ind` validated the pivot at lap 146 — de-risking before the big recursion investment. After
+  it, the residual is PURELY the two genuine cruxes (general code-recursion + gDef), now isolated and
+  unavoidable, which is the correct setup to attack them head-on instead of deferring to ever-smaller leaves.
 
 ### Directive history (newest first; append one line per altitude lap — never delete)
+- **lap-149** (FRESH-MIND REVIEW): direction KEPT (existence-form pivot off `red`); lap-146's mandate is DONE (`descent_step_Ind` DROPPED lap 146; laps 147-148 advanced §5.2 noncritical, decomposed faithfully per Buchholz §14.254a/b). VERIFIED axiom-clean: `false_of_ZDerivesEmpty`/`ZDerivesEmptyR_descent_step`/`descent_step_K_noncrit_recurse` all `[propext, sorryAx, choice, Quot.sound]` — 0 math axioms; crux-2 = 4 disclosed `sorryAx` leaves {tag-3 freshFlag :2974, tag-4 K-recursion :2934, axMajor 5/6 :3002, gDef :3125}. FINDING = crux-neglect signal forming — recent laps closed surrounding machinery (Ind reducts, replace plumbing, dispatchers) while the genuine crux (general `Γ→⊥` cut-reduction by code-induction, leaves 2934+3002) stays untouched; tag-3 freshFlag is the LAST tractable leaf. MANDATE = DROP tag-3 freshFlag via the focused `zFreshNext` tag-3→freshFlag strengthening (mirror tag-1 I∀ :1671, exact shape of the proven lap-146 `zIndWff` ripple), THEN turn to the crux (general code-recursion + gDef) — NO more leaf-hunting. FORBIDDEN = `red` witnesses; `iord`-recursion for the general step; `redLeast` for gDef; jumping to the crux before freshFlag drops.
 - **lap-146** (FRESH-MIND REVIEW): direction KEPT; lap-143's mandate is DONE (live path FULLY off `red`, lap-144; `ZDerivesEmptyR_descent_step` sorry-free). FINDING = the live termination path now has exactly THREE co-equal genuine sorries {`descent_step_Ind`, `descent_step_K_noncritical` §5.2, (A) `gDef`}, none generational. VERIFIED lap-145's `zIndWff` diagnosis is REAL not stale (step clause :1684 is membership `inAnt(F(a))`, base clause :1682 is an equation — genuine asymmetry) AND that the strengthening is REQUIRED for soundness (membership-only admits unsound Ind nodes) + more faithful to Buchholz; the ZSeqAnt + "no-cascade-docstring" reframes both CHECKED and refuted. MANDATE = DROP `descent_step_Ind` via the focused, definability-dominated `zIndWff` step-clause→shape ripple (`seqAnt(fstIdx prem1) = seqCons (seqAnt(fstIdx d)) (F(a))`); descent + `p=⊥` already banked. FORBIDDEN = `red` witnesses; the refuted reframes; jumping to §5.2/(A) before Ind drops.
 - **lap-143** (DEEP REFLECTION): direction KEPT (existence-form pivot); FINDING = laps 141-142 regressed it — `descent_step_K_critical` re-witnesses with `red` (= the kernel-FALSE `redSoundGen`/:80/:1108 chain) and the genuine `ZDerivation_iRKcCrit_critical_all` (lap-142) is banked but UNWIRED. MANDATE = finish the pivot: derive `ZSeqAnt_iRKcCrit`, split `descent_step_K_critical` into ∀ (wire `iRKcCrit`, red-free) + ¬ (named `redexJ≤j0` sorry), then re-witness the Ind branch with `iIndReductSeqG`. FORBIDDEN = witnessing any descent branch with `red`. Retires lap-140's `descent_step_K_majorIdx`-by-major-tag mandate (abandoned lap-141).
 - **lap-140** (altitude review): RETIRED lap-137's two stale mandates (orbit (B) DONE lap-138; `redLeast` μ-route REFUTED lap-139). Crux-2 termination collapses to ONE lemma `descent_step_K_majorIdx`; (A) folds in via concrete `redStep`. MANDATE = decompose it into per-tag {3,4,5/6} src sub-`sorry`s + assemble a banked sub-piece to a DROP (tag-5/6 explicit-pair soundness, or tag-3 `isChainInf_iIndReductSeqG`).
