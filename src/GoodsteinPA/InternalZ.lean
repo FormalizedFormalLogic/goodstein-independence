@@ -7310,6 +7310,26 @@ lemma red_zK_crit {s r ds : V} (hcrit : ¬ permIdx (zK s r ds) < lh ds) :
     simp only [zKseq_zK] <;>
     rw [znth_redTable_eq_red _ _ (hbound _)]
 
+/-- **The genuine re-principalized critical reduct supplier** — the concrete `ρ` that `red`'s tag-4 critical
+branch MUST emit (the corrected version of the engine's `fun n => zAxReduct (red (znth ds n))`). At the two
+redexes it reads the cut data from `d`'s own structure:
+- **R-redex** (`n = redexI d`, the I∀ premise): `zsubst (zIallPrem dᵢ) (zIallEig dᵢ) (numeral k)` —
+  re-principalized at the L-instance `k = π₁(π₂(tp dⱼ))` (instead of the engine's instance-`0`).
+- **L-redex** (`n = redexJ d`, the axAll premise): `zAx1 (seqAddAnt (cutFormula d) (fstIdx dⱼ)) (cutFormula d)`
+  — the §5 logical axiom `Ax^1`, antecedent grown by the cut instance, succedent `= cutFormula d`.
+- elsewhere: the engine reduct `zAxReduct (red dₙ)` (irrelevant: `iRcritG` only reads `ρ` at the redexes).
+This is a `noncomputable` function of `d` (engine-definable: every accessor is `𝚺₁`), so the re-keying
+swaps `iRKc` to `iRcritG d (critReductCorr d)` and its `iRKcDef` arithmetization to match. Both halves of
+the genuine reduct's correctness are proven against it: SOUNDNESS (`ZDerivation_iRcritG_critReductCorr`,
+Crux2Blueprint) and DESCENT (`iord_descent_iRcritG_critReductCorr`, RedZKDescent). -/
+noncomputable def critReductCorr (d n : V) : V :=
+  if n = redexJ d then
+    zAx1 (seqAddAnt (cutFormula d) (fstIdx (znth (zKseq d) n))) (cutFormula d)
+  else if n = redexI d then
+    zsubst (zIallPrem (znth (zKseq d) n)) (zIallEig (znth (zKseq d) n))
+      (Bootstrapping.Arithmetic.numeral (π₁ (π₂ (tp (znth (zKseq d) (redexJ d))))))
+  else zAxReduct (red (znth (zKseq d) n))
+
 /-! ### The critical-only reduct is NON-critical (lap 86) — the 5.2 dispatch is mandatory
 
 **Gating finding (Buchholz Def 3.2 case 5, validated in-kernel).** Buchholz's reduction of a chain

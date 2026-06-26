@@ -356,6 +356,83 @@ lemma iRedDescent_red_zIall {s a p d0 : V} (hZ : ZDerivation (zIall s a p d0)) :
     by rw [iotil_zsubst hut0 a d0 hd0]; exact hb0.otil_lt,
     by rw [iotil_zsubst hut0 a d0 hd0]; exact hb0.nf⟩
 
+/-- **The CORRECTED critical R-reduct's descent bundle (instance-general).** The §5 critical reduct of an
+`I∀` redex is the re-principalized `zsubst d0 a t` for the L-instance term `t` (= `numeral k`, NOT the
+engine's `numeral 0`). Since `iotil`/`idg` are INVARIANT under eigenvariable substitution
+(`iotil_zsubst`/`idg_zsubst`, for ANY closed term `t`), the descent bundle `iRedDescent_zIall` (the
+unsubstituted I∀ fact `õ` drops by one) transfers verbatim to `zsubst d0 a t` — this is precisely why the
+ε₀-descent is instance-invariant and survives the `0 ↦ k` re-principalization. Generalises
+`iRedDescent_red_zIall` (the engine reduct `zsubst d0 a (numeral 0)`) to the corrected instance. -/
+lemma iRedDescent_zsubst_zIall {s a p d0 t : V} (ht : IsUTerm ℒₒᵣ t)
+    (hZ : ZDerivation (zIall s a p d0)) :
+    iRedDescent (zsubst d0 a t) (zIall s a p d0) := by
+  obtain ⟨hd0, _, _⟩ := zDerivation_zIall_inv hZ
+  have hb0 := iRedDescent_zIall (s := s) (a := a) (p := p) (isNF_iotil_of_ZDerivation d0 hd0)
+  exact ⟨by rw [idg_zsubst ht a d0 hd0]; exact hb0.dg_le,
+    by rw [iotil_zsubst ht a d0 hd0]; exact hb0.otil_lt,
+    by rw [iotil_zsubst ht a d0 hd0]; exact hb0.nf⟩
+
+/-- **THE corrected critical reduct DESCENDS — the ε₀-side of the re-keying, PROVEN.** The genuine
+re-principalized critical reduct `iRcritG d (critReductCorr d)` strictly `≺`-descends below the chain `d`,
+exactly like the engine reduct (`iord_descent_red_zK_crit`). The descent assembly
+`iord_descent_iRcrit_of_chain'` reads the reduct supplier only through six per-redex bundle facts
+(`õ`-drop, `dg`-non-raise, NF at `redexI`/`redexJ`); for `critReductCorr` these are supplied by the
+corrected bundles `iRedDescent_zsubst_zIall` (R-redex, instance-`k`, õ/dg INVARIANT under the eigensubst)
+and `iRedDescent_zAx1_zAxAll_of_irk` (L-redex, `oAtom1 (cutFormula d)` one rank below the principal). So the
+descent is genuinely INSTANCE-INVARIANT — it survives the `0 ↦ k` re-principalization with no õ-bookkeeping
+change. **This + `ZDerivation_iRcritG_critReductCorr` (soundness) are the two halves of "red preserves valid
++ descends" for the corrected reduct;** only the engine re-keying (`red_zK_crit ↦ critReductCorr`) remains.
+Unlike the engine version this needs NO regularity hypothesis (the corrected R-bundle uses `iotil_zsubst`,
+invariant for ANY closed term). -/
+theorem iord_descent_iRcritG_critReductCorr {s r ds sᵢ sⱼ a p pj k' d0 : V}
+    (hds : Seq ds) (hmem : ∀ i < lh ds, ZDerivation (znth ds i))
+    (hvalid : zKValid s r ds)
+    (hIlt : redexI (zK s r ds) < lh ds) (hJlt : redexJ (zK s r ds) < lh ds)
+    (hIJ : redexI (zK s r ds) < redexJ (zK s r ds))
+    (hdi : znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0)
+    (hdj : znth ds (redexJ (zK s r ds)) = zAxAll sⱼ pj k')
+    (hirk : irk (^∀ pj : V) = irk (cutFormula (zK s r ds)) + 1) :
+    icmp (iord (iRcritG (zK s r ds) (critReductCorr (zK s r ds)))) (iord (zK s r ds)) = 0 := by
+  obtain ⟨hci, hperm0, hnperm0, hf1, hf2, hf5, hf6, _hsucc, _hssf, _hsaf⟩ := hvalid
+  obtain ⟨j0, hj0, hAj0, hchain, hrank⟩ := hci
+  have hwfR : ∀ i ≤ j0, ∀ A, tp (znth ds i) = isymR A → 0 < irk A ∨ False :=
+    fun i hi A h => Or.inl (tp_isymR_pos h (hf1 i (lt_of_le_of_lt hi hj0))
+      (hf2 i (lt_of_le_of_lt hi hj0)))
+  have hwfL : ∀ i ≤ j0, ∀ k A, tp (znth ds i) = isymLk k A → 0 < irk A ∨ (A = (^⊥ : V)) :=
+    fun i hi k A h => Or.inl (tp_isymLk_pos h (hf5 i (lt_of_le_of_lt hi hj0))
+      (hf6 i (lt_of_le_of_lt hi hj0)))
+  have hperm : ∀ i ≤ j0, iperm (tp (znth ds i)) (fstIdx (znth ds i)) :=
+    fun i hi => hperm0 i (lt_of_le_of_lt hi hj0)
+  have hnperm : ∀ i ≤ j0, ¬ iperm (tp (znth ds i)) s :=
+    fun i hi => hnperm0 i (lt_of_le_of_lt hi hj0)
+  have hnf : isNF (iotil (zK s r ds)) :=
+    isNF_iotil_zK hds (fun i hi => isNF_iotil_of_ZDerivation _ (hmem i hi))
+  have hNF : ∀ n, isNF (iotil (znth ds n)) := by
+    intro n
+    rcases lt_or_ge n (lh ds) with hn | hn
+    · exact isNF_iotil_of_ZDerivation _ (hmem n hn)
+    · rw [znth_prop_not (Or.inr hn)]; exact isNF_iotil_zero
+  -- corrected R-bundle (instance-`k`, õ/dg invariant under the eigensubst — no regularity needed)
+  have hbI : iRedDescent (critReductCorr (zK s r ds) (redexI (zK s r ds)))
+      (znth ds (redexI (zK s r ds))) := by
+    rw [critReductCorr, if_neg (ne_of_lt hIJ), if_pos rfl, zKseq_zK, hdi,
+      zIallPrem_zIall, zIallEig_zIall]
+    exact iRedDescent_zsubst_zIall
+      (by simp : IsSemiterm ℒₒᵣ 0 (Bootstrapping.Arithmetic.numeral
+        (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds)))))) : V)).isUTerm (hdi ▸ hmem _ hIlt)
+  -- corrected L-bundle (the §5 logical axiom, `oAtom1 (cutFormula d)` one rank below the principal)
+  have hbJ : iRedDescent (critReductCorr (zK s r ds) (redexJ (zK s r ds)))
+      (znth ds (redexJ (zK s r ds))) := by
+    rw [critReductCorr, if_pos rfl]
+    simp only [zKseq_zK, hdj, fstIdx_zAxAll]
+    exact iRedDescent_zAx1_zAxAll_of_irk hirk
+  rw [iord_iRcritG_eq_iRcrit]
+  exact iord_descent_iRcrit_of_chain' (Tr := fun _ => False) (Fa := fun A => A = (^⊥ : V))
+    hds hnf hj0 hAj0 hchain hrank hwfR hwfL hperm hnperm (fun _ h => h.1)
+    (fun A h => by rw [h]; exact irk_falsum) rfl hNF
+    hbI.otil_lt hbJ.otil_lt hbI.dg_le hbJ.dg_le hbI.nf hbJ.nf
+
+
 /-- **Chain sub-case, REPLACE dispatch (`dᵢ` a non-critical chain), reduced to the premise IH.** When the
 selected premise `dᵢ = znth ds (permIdx)` is a chain (`zTag = 4`) that is itself non-critical
 (`permIdx dᵢ < lh (zKseq dᵢ)`), `red (zK s r ds) = K^r(i/red dᵢ)` (`red_zK_rep`), so the descent is exactly
