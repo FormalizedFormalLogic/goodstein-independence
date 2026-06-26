@@ -1830,9 +1830,10 @@ the producer-principal obstruction is gone; what remains is the standard red-R2 
 non-critical 5.2 recursion. -/
 
 /-- **CRITICAL case (Buchholz §3.2 case 5.1).** A regular `∅→⊥` chain that is critical (`¬ permIdx < lh ds`)
-has `red (zK s r ds) = iRcritG …` as a sound, strictly-`iord`-descending reduct. DESCENT =
-`iord_descent_red_zK_crit` (banked, sorry-free); SOUNDNESS = `ZDerivesEmptyR_red` (red's standard orbit
-soundness, gated on the PRE-EXISTING red-R2 `ZDerivation_red_zK_crit`, `Crux2Blueprint:1108`). **NO
+has `red (zK s r ds) = iRcritG …` as a strictly-`iord`-descending reduct. DESCENT = `iord_descent_red_zK_crit`
+(banked, sorry-free); SOUNDNESS = `ZDerivesEmptyR_red` (red's standard orbit soundness, gated on the
+PRE-EXISTING red-R2 `ZDerivation_red_zK_crit`, `Crux2Blueprint:1108` — the lap-114 instance-0→k
+re-principalization gap, shared by EVERY `red`-soundness use incl. the Ind case below, NOT new here). **NO
 "cutPartner-is-principal-R-intro" obligation** — Lemma 3.1 (`inference_critical_pair`, inside the descent
 lemma) supplies the principal redex pair from criticality alone. This is the lap-141 payoff: the tag-5/6 wall
 does not arise in the faithful Buchholz split, and the critical case introduces NO new sorry (it reuses red's

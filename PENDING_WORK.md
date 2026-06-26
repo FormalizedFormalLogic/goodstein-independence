@@ -42,8 +42,18 @@ Both feed the recursive reduction-soundness (Buchholz Thm 3.4(b)): the critical 
 are `ZDerivation`s of their reduced endsequents (`ZDerivation_iRcritG_of`/`ZDerivation_iCritReductG_of` recombine
 once supplied), the non-critical splice/replace from the structural IH. **NEXT ATTACK:** the Buchholz Thm
 3.4(a)+(b) **simultaneous induction on the build-up of `d`**:
-1. `ZDerivation_red_zK_crit` (1108): supply the two genuine auxiliaries `haux0`/`haux1` (the recursive IH) to
-   `ZDerivation_iRcritG_of`/`_iRcritGNeg_of` (banked). This is red's R2 — discharging it CLOSES the critical case.
+1. `ZDerivation_red_zK_crit` (1108): ⚠️ **NOT just "supply auxiliaries" — it is FALSE-as-stated for the current
+   `red`** (lap-114 crux finding, docstring at `Crux2Blueprint:1095`): `red`'s critical reduct substitutes the
+   I∀ R-redex at instance **0** (`zAxReduct (red premise) = zsubst d0 a (numeral 0)`, `red_zIall`), which is
+   correct for DESCENT (`iord` is instance-invariant — why `iord_descent_red_zK_crit` is sorry-free) but WRONG
+   for SOUNDNESS: `haux0`'s threading forces the R-redex succedent `= cutFormula d = F(k)` at the L-redex
+   instance **k**, not 0. **The genuine fix = re-principalization at k** (Buchholz §3.2 case 5.1): re-key red's
+   tag-4 critical branch to `zsubst d0 a (numeral k)` (banked blocks `seqSucc_zsubst_zIall_premise`,
+   `ZDerivation_zsubst_zIall_premise`), OR route through `iRKcCrit`/`ZDerivation_iRKcCrit_all` (the engine-swap
+   variant, `Crux2Blueprint:961/993`). The descent survives the 0→k change. ⚠️ NOTE the whole repo's
+   `ZDerivesEmptyR_red`/`redSound` (incl. the Ind case of `ZDerivesEmptyR_descent_step`, line ~1925, and the new
+   `descent_step_K_critical`) is ALREADY gated on this same 1108 — it is the standing red-soundness gap, not new.
+   See `ANALYSIS-2026-06-25-lap114-inversion-instance-mismatch.md`.
 2. `descent_step_K_noncritical` (1865): dispatch on the `permIdx`-selected premise's tag (mirror `iord_descent_red`,
    `Crux2Blueprint:1560`): I-rule/Ind → `red`-replace (banked); chain → recursion (cf. `iord_descent_red`'s sorry
    at ~1620); atom/`Ax¹` → §5 atomic reduct (`zAxReduct`/`zAx1`, banked descent bundles `iRedDescent_zAx1_zAx{All,Neg}`,
