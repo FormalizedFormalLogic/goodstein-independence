@@ -1,6 +1,38 @@
 # Pending work — open obligations & attack paths
 
-## lap 137 (latest) — ⚠️ ALTITUDE REVIEW: existence-form termination half was MIS-TYPED (Gödel-barred); FIXED + decomposed
+## lap 138 (latest) — (B0) iteration linchpin DISCHARGED via the repo's own `IIter`; Σ₁-orbit half VALIDATED
+**Build 🟢 1326. Headline footprint UNCHANGED** (`[propext, sorryAx, Classical.choice, Quot.sound]`, 0 math axioms).
+
+### THE advance (a real src `sorry` dropped on the termination path)
+**(B0) `exists_sigma1_iterate` PROVEN** (was `sorry`); with it **(B) `exists_sigma1_descent_of_sigma1_step` fully
+PROVEN** (was proven-modulo-(B0)). Both axiom-clean. The lap-137 baton's "no generic Foundation iteration combinator
+exists (HFS has none)" **missed that the repo already built one for crux-1**: `IIter.iIter fDef f hf x c = f^[c] x`
+(`src/GoodsteinPA/IIter.lean`), a genuine `𝚺₁` `PR.Construction` over an arbitrary parameter-free-defined `f`.
+So `orbit n := IIter.iIter gDef g hg z n` discharges (B0) in three lines (`iIter_zero`/`iIter_succ` + a
+`DefinableFunction₂.comp` on `iIter_definable'`). The lap-137 parameter-free SUBTLETY is now **resolved by the
+statement**: (B0)'s hypothesis is the explicit `hg : 𝚺₁.DefinedFunction₁ g gDef` (parameter-free `gDef`), threaded
+back through (B) and (A). (Added acyclic `import GoodsteinPA.IIter`.)
+
+**De-risks the pivot:** the handoff flagged (B0) as the decisive test — "if the `𝚺₁`-orbit can't be built, the pivot
+is hollow." **It builds cleanly; the pivot is NOT hollow.** The orbit→NF→descent→PRWO machinery is now fully closed.
+
+### NEXT (PRIMARY, hardest-first) — termination half = (A) [concrete `redStep`] + `descent_step_K_majorIdx` [deep core]
+Two open sorries on the path. **(A) and `descent_step_K_majorIdx` share one need: a CONCRETE deterministic descending
+reduct FUNCTION (not a bare `∃`).** Route:
+1. Define concrete `redStep : V → V` (parameter-free `𝚺₁` ⟹ explicit `redStepDef`): Ind root `redStep d := red d`
+   (concrete; descent `iord_descent_red_zInd` PROVEN); K root `redStep d :=` major-premise-replace reduct
+   (`seqUpdate`/`zKseq` with the `majorIdx` premise replaced by its reduct — all concrete `𝚺₁`).
+2. (A) `exists_sigma1_descending_step` (`Crux2Blueprint:1669`) becomes immediate: `g := redStep`, `gDef := redStepDef`,
+   descent = `ZDerivesEmptyR_descent_step` re-cast to return `redStep d`.
+3. `descent_step_K_majorIdx` (`Crux2Blueprint:1614`) stays the deep `𝗜𝚺₁` Gentzen cut-reduction (tag-3 Ind via the
+   corrected `iIndReductSeqG`, tag-5/6 principal-cut via banked `cutPartner`/`hAll`, tag-4 chain `<`-recursion).
+
+Order: **(i) define `redStep`/`redStepDef`** (mechanical, banks (A)'s shell), **(ii) grind `descent_step_K_majorIdx`**.
+⚠️ Avoid the `μ`/witness-bound route for (A) — the concrete engine reduct sidesteps the wrong-polarity totality guard.
+
+---
+
+## lap 137 — ⚠️ ALTITUDE REVIEW: existence-form termination half was MIS-TYPED (Gödel-barred); FIXED + decomposed
 **Build 🟢 1326. Headline footprint UNCHANGED** (`[propext, sorryAx, Classical.choice, Quot.sound]`, 0 math axioms).
 Fresh-mind review of the lap-135 existence-form pivot + lap-136 Ind-reduct work.
 

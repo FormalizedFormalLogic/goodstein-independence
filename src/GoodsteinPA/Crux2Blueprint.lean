@@ -21,6 +21,7 @@ import GoodsteinPA.InternalZ
 import GoodsteinPA.Zsubst
 import GoodsteinPA.RedZKDescent
 import GoodsteinPA.Reduction
+import GoodsteinPA.IIter
 
 namespace GoodsteinPA.InternalZ
 
@@ -1654,33 +1655,39 @@ def InternalPRWO : Prop :=
 a *total* `𝚺₁`-definable `g : V → V` that, on every `ZDerivesEmptyR` point `w`, returns a strictly-`iord`-
 descending `ZDerivesEmptyR`-reduct `g w`. This is the deterministic carrier the orbit iterates.
 
-⚠️ **DEFINABILITY crux (lap-137 finding):** the natural witness `g w := μ d'. [ZDerivesEmptyR d' ∧
-icmp (iord d') (iord w) = 0]` has a `𝚫₁` matrix (`ZDerivesEmptyR` `𝚫₁`; `iord` `𝚺₁`; `icmp _ = 0` `𝚫₁`), so
-its *minimality* clause `∀ z < d', ¬P w z` is `𝚫₁` — BUT the *totality guard* `∃ d', P w d'` is `𝚺₁`
-(unbounded witness; reducts can be larger codes than `w`), which is the wrong polarity for a `𝚺₁` graph.
-**Fix = a primrec WITNESS BOUND** `∃ d' ≤ B(w), P w d'` (then bounded-`μ` is `𝚫₁`-total; see `wip/WitnessBound.lean`),
-OR derive `g` deterministically once `ZDerivesEmptyR_descent_step`/`descent_step_K_majorIdx` give a *constructive*
-reduct (Ind = `red d`; K = the critical reduct) rather than a bare `∃`. -/
+⚠️ **DEFINABILITY crux (lap-137 finding) + parameter-free strengthening (lap 138):** the conclusion now
+demands an **explicit parameter-free graph** `gDef : 𝚺₁.Semisentence 2` for `g` (not just the parametrized
+`𝚺₁-Function₁ g`), because the orbit (B0)/`IIter.iIter` needs a `Semisentence` to fill `PR.Blueprint.succ`.
+A concrete engine reduct supplies it for free (`iord`/`icmp`/`ZDerivesEmptyR` are all parameter-free).
+The natural witness `g w := μ d'. [ZDerivesEmptyR d' ∧ icmp (iord d') (iord w) = 0]` has a `𝚫₁` matrix
+(`ZDerivesEmptyR` `𝚫₁`; `iord` `𝚺₁`; `icmp _ = 0` `𝚫₁`), so its *minimality* clause `∀ z < d', ¬P w z` is
+`𝚫₁` — BUT the *totality guard* `∃ d', P w d'` is `𝚺₁` (unbounded witness; reducts can be larger codes than
+`w`), the wrong polarity for a `𝚺₁` graph. **Fix = a primrec WITNESS BOUND** `∃ d' ≤ B(w), P w d'` (then
+bounded-`μ` is `𝚫₁`-total; see `wip/WitnessBound.lean`), OR derive `g` deterministically once
+`ZDerivesEmptyR_descent_step`/`descent_step_K_majorIdx` give a *constructive* reduct (Ind = `red d`; K = the
+critical reduct) rather than a bare `∃`. Either route delivers the `gDef`. -/
 theorem exists_sigma1_descending_step
     (hstep : ∀ d : V, ZDerivesEmptyR d → ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord d) = 0) :
-    ∃ g : V → V, (𝚺₁-Function₁ g) ∧
+    ∃ (g : V → V) (gDef : 𝚺₁.Semisentence 2), 𝚺₁.DefinedFunction₁ g gDef ∧
       (∀ w : V, ZDerivesEmptyR w → ZDerivesEmptyR (g w) ∧ icmp (iord (g w)) (iord w) = 0) := sorry
 
-/-- **(B0) NAMED sub-`sorry` (lap 137) — the reusable internal-iteration linchpin.** Any `𝚺₁`-definable
-`g : V → V` has a `𝚺₁`-definable internal iteration `orbit : V → V` with `orbit 0 = z`, `orbit (n+1) = g (orbit n)`
-over INTERNAL `n : V`. (META `Function.iterate` only takes `n : ℕ`; the internal `n : V` orbit is a
-`PR.Construction` — `iotower`/`zRegTable` template, `Blueprint 1` param `z`, `succ := g`.) This is the
-genuine Foundation-level gap of the termination internalization; once banked it serves any descending step from (A).
+/-- **(B0) PROVEN (lap 138) — the reusable internal-iteration linchpin.** Any `𝚺₁`-definable
+`g : V → V` *with an explicit parameter-free graph* `gDef : 𝚺₁.Semisentence 2` has a `𝚺₁`-definable
+internal iteration `orbit : V → V` with `orbit 0 = z`, `orbit (n+1) = g (orbit n)` over INTERNAL `n : V`.
 
-⚠️ **(B0) SUBTLETY (lap-137 finding, do FIRST next lap):** `PR.Blueprint.succ` is a *parameter-free*
-`𝚺₁.Semisentence (k+2)`, but `𝚺₁-Function₁ g` (`= Definable …`) only provides a *parametrized*
-`Semiformula V k` (params from `V` allowed). So the manual `PR.Construction` for a *fully-abstract* `g`
-doesn't go through directly. **Fix:** EITHER strengthen the hypothesis to a parameter-free `DefinedFunction₁ g φ`
-(an explicit `φ : 𝚺₁.Semisentence 2`) — which the CONCRETE step from (A) (built from `iord`/`icmp`/`ZDerivesEmptyR`,
-all parameter-free) supplies — and build the `Blueprint` `succ := φ` rewired; OR specialize (B0) to that concrete
-step. No generic Foundation iteration combinator exists (checked: HFS has none). -/
-theorem exists_sigma1_iterate (g : V → V) (hg : 𝚺₁-Function₁ g) (z : V) :
-    ∃ orbit : V → V, (𝚺₁-Function₁ orbit) ∧ orbit 0 = z ∧ (∀ n : V, orbit (n + 1) = g (orbit n)) := sorry
+**Discharge (lap 138):** the generic Foundation iteration combinator the lap-137 baton looked for in HFS
+DOES exist — the repo built it for crux-1 in `IIter.lean` (`IIter.iIter gDef g hg x c = g^[c] x`, a genuine
+`𝚺₁` `PR.Construction` with `iIter_zero`/`iIter_succ`/`iIter_definable'`). So `orbit n := iIter gDef g hg z n`.
+The lap-137 parameter-free SUBTLETY is exactly why the hypothesis is the explicit `DefinedFunction₁ g gDef`
+(parameter-free `gDef`) and NOT the parametrized `𝚺₁-Function₁ g`: `PR.Blueprint.succ` needs a `Semisentence`,
+which the concrete descending step from (A) (built from `iord`/`icmp`/`ZDerivesEmptyR`, all parameter-free)
+supplies. -/
+theorem exists_sigma1_iterate (g : V → V) {gDef : 𝚺₁.Semisentence 2}
+    (hg : 𝚺₁.DefinedFunction₁ g gDef) (z : V) :
+    ∃ orbit : V → V, (𝚺₁-Function₁ orbit) ∧ orbit 0 = z ∧ (∀ n : V, orbit (n + 1) = g (orbit n)) := by
+  refine ⟨fun n => IIter.iIter gDef g hg z n, ?_, by simp, fun n => by simp⟩
+  exact DefinableFunction₂.comp (F := IIter.iIter gDef g hg)
+    (hF := IIter.iIter_definable' (hf := hg) 𝚺) (DefinableFunction.const z) (DefinableFunction.var 0)
 
 /-- **(B) the internal `𝚺₁` ORBIT of a descending step → the `𝚺₁` `ε₀`-descent** — now a composition of the
 iteration linchpin (B0) with `𝚺₁`-induction. Given a total `𝚺₁` step `g` descending on `ZDerivesEmptyR`,
@@ -1688,7 +1695,8 @@ iteration linchpin (B0) with `𝚺₁`-induction. Given a total `𝚺₁` step `
 `ZDerivation`), and `icmp`-descends (`hg_step` at each point). Membership `∀ n, ZDerivesEmptyR (orbit n)` is
 internal `𝚺₁`-induction. This internalizes the EXTERNAL-ℕ `iord_iR2_iterate_descends` (`InternalZ:9816`). -/
 theorem exists_sigma1_descent_of_sigma1_step
-    {z : V} (hz : ZDerivesEmptyR z) (g : V → V) (hg : 𝚺₁-Function₁ g)
+    {z : V} (hz : ZDerivesEmptyR z) (g : V → V) {gDef : 𝚺₁.Semisentence 2}
+    (hg : 𝚺₁.DefinedFunction₁ g gDef)
     (hg_step : ∀ w : V, ZDerivesEmptyR w → ZDerivesEmptyR (g w) ∧ icmp (iord (g w)) (iord w) = 0) :
     ∃ f : V → V, (𝚺₁-Function₁ f) ∧ (∀ n : V, isNF (f n)) ∧
       (∀ n : V, icmp (f (n + 1)) (f n) = 0) := by
@@ -1724,7 +1732,7 @@ theorem exists_sigma1_descent_of_step
     {z : V} (hz : ZDerivesEmptyR z) :
     ∃ f : V → V, (𝚺₁-Function₁ f) ∧ (∀ n : V, isNF (f n)) ∧
       (∀ n : V, icmp (f (n + 1)) (f n) = 0) := by
-  obtain ⟨g, hg, hg_step⟩ := exists_sigma1_descending_step hstep
+  obtain ⟨g, gDef, hg, hg_step⟩ := exists_sigma1_descending_step hstep
   exact exists_sigma1_descent_of_sigma1_step hz g hg hg_step
 
 /-- **⚠️ TYPE-CORRECTED (lap 137) — the M3 PRWO contradiction, now with the PRWO hypothesis it needs.**
