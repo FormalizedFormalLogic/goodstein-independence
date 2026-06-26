@@ -3679,6 +3679,47 @@ lemma isChainInf_seqAddAnt {s r ds A : V} (hs : Seq (seqAnt s))
     · right; exact hex
   · exact hrk
 
+/-- **L-rule replace — `isChainInf` antecedent-growth at an interior premise (Buchholz Def 3.2 case 5.1,
+critical L-redex).** When an interior premise `dᵢ` is replaced by a reduct `v` that keeps the SAME succedent
+(`seqSucc (fstIdx v) = chainAsucc ds i`) and grows its antecedent by a single head formula `A`
+(`seqAnt (fstIdx v) = seqCons (chainAnt ds i) A`), and the conclusion gains the same `A` in its antecedent
+(`seqAddAnt A s`), chain-validity is preserved with the SAME distinguished tip `j0`: `chainAsucc` is
+preserved at *every* index (so the tip's succedent and all ranks are untouched), the grown antecedent head
+`A` threads to the grown conclusion antecedent, and the surviving antecedent entries thread exactly as in the
+parent (their prior-succedent witnesses `chainAsucc ds i'` are unchanged). This is the L-side `isChainInf`
+reconstruction for the corrected critical-cut reduct `zAx1 (seqAddAnt (cutFormula d) sⱼ) C` — it discharges
+the `haux1` threading obligation (O-L2) directly from the parent chain validity, with NO tip recomputation
+(contrast `isChainInf_reduceR_membership`, which re-points `j0 := i` and so needs the reduct succedent to be
+the conclusion succedent or `⊥` — false for an interior L-redex whose succedent is the cut formula). -/
+lemma isChainInf_growAnt {s r ds i v A : V} (hi : i < lh ds) (hs : Seq (seqAnt s))
+    (hsi : Seq (chainAnt ds i))
+    (hsucc_v : seqSucc (fstIdx v) = chainAsucc ds i)
+    (hant_v : seqAnt (fstIdx v) = seqCons (chainAnt ds i) A)
+    (hci : isChainInf s r ds) :
+    isChainInf (seqAddAnt A s) r (seqUpdate ds i v) := by
+  obtain ⟨j0, hj0, hA, hthr, hrk⟩ := hci
+  -- `chainAsucc` is preserved at EVERY index: off `i` trivially, at `i` because `v` keeps the succedent.
+  have hsucc_all : ∀ k, chainAsucc (seqUpdate ds i v) k = chainAsucc ds k := by
+    intro k
+    rcases eq_or_ne k i with rfl | hne
+    · rw [chainAsucc_seqUpdate_self hi, hsucc_v]
+    · rw [chainAsucc_seqUpdate_of_ne hne]
+  refine ⟨j0, by rwa [seqUpdate_lh], ?_, ?_, ?_⟩
+  · rw [hsucc_all, seqSucc_seqAddAnt]; exact hA
+  · intro k hk B hB
+    rcases eq_or_ne k i with rfl | hne
+    · rw [chainAnt_seqUpdate_self hi, hant_v] at hB
+      rcases (inAnt_seqCons hsi).mp hB with rfl | hin
+      · left; exact (inAnt_seqAddAnt hs).mpr (Or.inl rfl)
+      · rcases hthr k hk B hin with h | ⟨i', hi', hB'⟩
+        · left; exact (inAnt_seqAddAnt hs).mpr (Or.inr h)
+        · right; exact ⟨i', hi', by rw [hsucc_all]; exact hB'⟩
+    · rw [chainAnt_seqUpdate_of_ne hne] at hB
+      rcases hthr k hk B hB with h | ⟨i', hi', hB'⟩
+      · left; exact (inAnt_seqAddAnt hs).mpr (Or.inr h)
+      · right; exact ⟨i', hi', by rw [hsucc_all]; exact hB'⟩
+  · intro k hk; rw [hsucc_all]; exact hrk k hk
+
 /-- **Antecedent-`seqCons` formula-hood** — prepending a `UFormula` to a wff antecedent keeps every entry
 a `UFormula`. The conclusion-antecedent wff conjunct of `zKValidF` under the L-rule weakening. -/
 lemma forall_IsUFormula_seqCons {Γ A : V} (hΓ : Seq Γ)

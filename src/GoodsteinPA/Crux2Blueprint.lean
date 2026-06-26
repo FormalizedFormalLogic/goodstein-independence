@@ -173,14 +173,11 @@ theorem ZDerivation_corrected_haux1 {s r ds sⱼ p k' C : V}
     (hSeqs : Seq (seqAnt s))
     (hCwff : IsUFormula ℒₒᵣ (cutFormula (zK s r ds)))
     (hSeqsj : Seq (seqAnt sⱼ))
-    (hsj : seqSucc sⱼ = cutFormula (zK s r ds))
-    (hci : isChainInf (seqAddAnt (cutFormula (zK s r ds)) s) r
-        (seqUpdate ds (redexJ (zK s r ds))
-          (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C))) :
+    (hsj : seqSucc sⱼ = cutFormula (zK s r ds)) :
     ZDerivation (zK (seqAddAnt (cutFormula (zK s r ds)) s) r
       (seqUpdate ds (redexJ (zK s r ds))
         (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C))) := by
-  obtain ⟨_, _, _, _, _, _, hcf, hss, hsa⟩ := zKValidF_of_ZDerivation_zK hZ
+  obtain ⟨hciParent, _, _, _, _, _, hcf, hss, hsa⟩ := zKValidF_of_ZDerivation_zK hZ
   -- the L-redex's succedent `seqSucc sⱼ = chainAsucc ds (redexJ d)` is a `UFormula` (chain field 7)
   have hsuccj : IsUFormula ℒₒᵣ (seqSucc sⱼ) := by
     have := hcf (redexJ (zK s r ds)) hj
@@ -190,6 +187,16 @@ theorem ZDerivation_corrected_haux1 {s r ds sⱼ p k' C : V}
   have hZredL : ZDerivation (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C) :=
     zDerivation_zAx1_intro (by
       rw [seqSucc_seqAddAnt]; exact (inAnt_seqAddAnt hSeqsj).mpr (Or.inl hsj))
+  -- **(O-L2) DISCHARGED.** The threading reconstruction `isChainInf` follows from the parent chain validity
+  -- `hciParent` via `isChainInf_growAnt`: the §5 reduct `zAx1 …` keeps the axAll premise's succedent
+  -- (`seqSucc sⱼ`, so `chainAsucc` is preserved and the tip `j0` survives) and grows its antecedent by the
+  -- cut instance `cutFormula d` — exactly the conclusion's own antecedent growth.
+  have hci : isChainInf (seqAddAnt (cutFormula (zK s r ds)) s) r
+      (seqUpdate ds (redexJ (zK s r ds)) (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C)) := by
+    refine isChainInf_growAnt hj hSeqs ?_ ?_ ?_ hciParent
+    · rw [chainAnt, hdj, fstIdx_zAxAll]; exact hSeqsj
+    · rw [fstIdx_zAx1, seqSucc_seqAddAnt, chainAsucc, hdj, fstIdx_zAxAll]
+    · rw [fstIdx_zAx1, seqAnt_seqAddAnt, chainAnt, hdj, fstIdx_zAxAll]
   refine ZDerivation_iCritReplaceReduce_general hj hZ hZredL hci
     (by rw [seqSucc_seqAddAnt]; exact hss)
     (by rw [seqAnt_seqAddAnt]; exact forall_IsUFormula_seqCons hSeqs hsa hCwff)
