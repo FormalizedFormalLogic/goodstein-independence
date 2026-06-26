@@ -274,6 +274,37 @@ lemma znth_iIndReductSeqG_step (d0 d1 a : V) : ∀ k, ∀ i < k,
         (zsubst d1 a (Bootstrapping.Arithmetic.numeral k))
       rwa [iIndReductSeqG_lh] at h
 
+/-! ### `chainAsucc`/`chainAnt` readouts of the corrected reduct (prerequisites for the tag-3 `isChainInf`)
+
+The threading/exit/rank conditions of `isChainInf s (irk p) (iIndReductSeqG d0 d1 a k)` (via the reusable
+`isChainInf_of_last`) read the reduct only through its per-premise end-sequent projections `chainAsucc`/
+`chainAnt` (`= seqSucc/seqAnt ∘ fstIdx ∘ znth`). These four resolve those projections to the base premise
+`d0` (index 0) and the eigensubstituted step premise `d1[a:=numeral i]` (index `i+1`, `i < k`), so the
+`isChainInf` assembly can apply `seqSucc_zsubst_zInd_step` (succedent `F(i+1)`) + the antecedent-threading
+data directly. Pure `znth_iIndReductSeqG_zero`/`_step` rewrites — no `ZDerivation` hypothesis. -/
+
+/-- Succedent of the base premise (index 0) of the corrected reduct = `seqSucc (fstIdx d0)`. -/
+lemma chainAsucc_iIndReductSeqG_zero (d0 d1 a k : V) :
+    chainAsucc (iIndReductSeqG d0 d1 a k) 0 = seqSucc (fstIdx d0) := by
+  unfold chainAsucc; rw [znth_iIndReductSeqG_zero d0 d1 a k]
+
+/-- Succedent of step premise `i+1` (`i < k`) of the corrected reduct = succedent of `d1[a:=numeral i]`. -/
+lemma chainAsucc_iIndReductSeqG_step (d0 d1 a : V) {k i : V} (hi : i < k) :
+    chainAsucc (iIndReductSeqG d0 d1 a k) (i + 1)
+      = seqSucc (fstIdx (zsubst d1 a (Bootstrapping.Arithmetic.numeral i))) := by
+  unfold chainAsucc; rw [znth_iIndReductSeqG_step d0 d1 a k i hi]
+
+/-- Antecedent of the base premise (index 0) of the corrected reduct = `seqAnt (fstIdx d0)`. -/
+lemma chainAnt_iIndReductSeqG_zero (d0 d1 a k : V) :
+    chainAnt (iIndReductSeqG d0 d1 a k) 0 = seqAnt (fstIdx d0) := by
+  unfold chainAnt; rw [znth_iIndReductSeqG_zero d0 d1 a k]
+
+/-- Antecedent of step premise `i+1` (`i < k`) of the corrected reduct = antecedent of `d1[a:=numeral i]`. -/
+lemma chainAnt_iIndReductSeqG_step (d0 d1 a : V) {k i : V} (hi : i < k) :
+    chainAnt (iIndReductSeqG d0 d1 a k) (i + 1)
+      = seqAnt (fstIdx (zsubst d1 a (Bootstrapping.Arithmetic.numeral i))) := by
+  unfold chainAnt; rw [znth_iIndReductSeqG_step d0 d1 a k i hi]
+
 /-- **Ind-step succedent under eigensubstitution.** The step premise `d1 : Γ,F(a)→F(a+1)` of a valid Ind
 node, substituted `a := t`, has succedent `F(t+1) = substs1 (t ^+ 𝟏) p` (modulo eigenvar freshness on `p`,
 `fvSubst a t p = p`). The Ind-step analog of `seqSucc_zsubst_zIall_premise`; this is the telescoping

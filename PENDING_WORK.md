@@ -54,6 +54,19 @@ the last premise `d1[a:=k-1]` deriving `F(k)=seqSucc s`; threading `F(i)→F(i+1
 `seqSucc_zsubst_zInd_step`) and `iord(iIndReductSeqG-reduct) ≺ iord(zInd…)`. This is the deep lap-136 core, on the
 tag-3 critical path; it is what BOTH `descent_step_K_majorIdx` tag-3 AND (via (A)) the whole termination half need.
 
+**lap-138 (later) — readouts BANKED toward the `isChainInf` assembly.** Sorry-free `chainAsucc`/`chainAnt`
+readouts of the corrected reduct landed (`Crux2Blueprint`, after `znth_iIndReductSeqG_step`):
+`chainAsucc_iIndReductSeqG_zero/_step`, `chainAnt_iIndReductSeqG_zero/_step` — resolving the per-premise
+end-sequent projections that `isChainInf_of_last` (`InternalZ:1208`, the reusable last-premise reduction) consumes.
+**NEXT (assemble `isChainInf_iIndReductSeqG` via `isChainInf_of_last`, j0 = last index k):** three sub-goals —
+(i) **last-succedent**: `chainAsucc … k = seqSucc s` — for `k>0`, `= F((k-1)+1)` via `chainAsucc_iIndReductSeqG_step`
+(`i:=k-1`) + `seqSucc_zsubst_zInd_step`; needs the internal-numeral identity `qqAdd (numeral (k-1)) (numeral 1) =
+numeral k` (a `numeral_succ_pos`-type lemma — CHECK if banked) + the Ind hyp `seqSucc s = substs1 (numeral k) p`
+(the Ind term is the numeral `k`) + freshness `fvSubst a (numeral i) p = p`. (ii) **threading**: premise `i+1`
+antecedent `Γ,F(i)` — `Γ` → `seqAnt s`, `F(i)` → `chainAsucc … i` (prior premise); reads `chainAnt_iIndReductSeqG_step`
++ d1's antecedent structure (`Γ,F(a)` substituted). (iii) **rank**: `irk (chainAsucc … i) ≤ irk p` — substitution-
+invariance of `irk` on the `F(i)` succedents (`irk (F(i)) = irk p`?). Likely k=0 needs a separate (base-only) branch.
+
 ---
 
 ## lap 137 — ⚠️ ALTITUDE REVIEW: existence-form termination half was MIS-TYPED (Gödel-barred); FIXED + decomposed
