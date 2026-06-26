@@ -29,13 +29,21 @@ re-principalized `zsubst`+`Ax^1`-antgrow; else ¬ swapped-slot `Ax^1`-succset+`z
 graph (closed first try, `by_cases` on `ti`, reusing `cutFormulaDef`'s `k=π₁(π₂(tp dⱼ))`+`numeralGraph`).
 THE arithmetization wall is DOWN.
 
+**ALSO banked this lap — the ¬-case DESCENT** `iord_descent_iRcritGNeg_critReductNeg` (`RedZKDescent`, the
+twin of `iord_descent_iRcritG_critReductCorr`) + the sequent-general L-bundle `iRedDescent_zAx1_zAxNeg_gen`.
+**ALL corrected-reduct lemmas are now BANKED for BOTH polarities** (arithmetization `iRKcCrit_defined`;
+bridges `iRKcCrit_eq_corr`/`_eq_neg`; soundness `ZDerivation_iRcritG_critReductCorr`/`_iRcritGNeg_critReductNeg`;
+iord re-points `iord_iRcritG_eq_iRcrit`/`_iRcritGNeg_eq_iRcrit`; descents
+`iord_descent_iRcritG_critReductCorr`/`_iRcritGNeg_critReductNeg`). The engine swap is now PURE WIRING.
+
 **NEXT (hardest-first):** the engine SWAP (atomic, one unit, breaks build mid-way — don't commit until green):
 (3) re-key `iRK`'s critical branch `else iRKc d s` → `else iRKcCrit d` + `iRKDef`/`iRK_defined`; (4)
 `red_zK_crit` SIMPLIFIES to `red (zK s r ds) = iRKcCrit (zK s r ds)`; (5) close `ZDerivation_red_zK_crit`
-via `iRKcCrit_eq_corr`/`_eq_neg` + the two soundness lemmas — the real residual is the `redZKReady` orbit
-bundle (`hdi`/`hdj`/`hIJ`/`hthread`/`hrank`/… at the call site, itself an open sorry); (6) re-prove
-`iord_descent_red_zK_crit` (the descent consumer of `red_zK_crit`) via the banked `iord_…_eq_iRcrit` twins.
-Full 6-step list (with line numbers) in HANDOFF lap-118.
+(restate target to `ZDerivation (iRKcCrit …)`) via `iRKcCrit_eq_corr`/`_eq_neg` + the two soundness lemmas —
+the real residual is the `redZKReady` orbit bundle (`hdi`/`hdj`/`hIJ`/`hthread`/`hrank`/… derived at the call
+site via `tp`-inversion `redexPair_tp`+`tp_isymR_form_wff`, itself an open sorry); (6) re-prove
+`iord_descent_red_zK_crit` via the banked descent twins. Full 6-step list + the all-banked table in
+HANDOFF lap-118.
 
 ## lap 117 — ¬-case critical-cut inversion SOUNDNESS proven; BOTH critical sub-cases complete
 **Build 🟢 green 1326; headline footprint intact (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms).
