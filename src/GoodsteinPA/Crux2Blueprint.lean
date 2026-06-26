@@ -2128,19 +2128,73 @@ dispatcher case-splits on the `permIdx` criticality sentinel:
   hands back the principal pair from criticality alone);
 - non-critical (`permIdx < lh ds`) → `descent_step_K_noncritical`, Buchholz case 5.2 (the one open leaf). -/
 
-/-- **Non-critical case (Buchholz §3.2 case 5.2) — the genuine remaining K-step content.** When the chain is
-NOT critical (`permIdx < lh ds`: the `permIdx` finder selects a premise `dᵢ` permissible for `∅→⊥`, necessarily
-`tp dᵢ = Rep` — an Ind/K/atom/Ax¹ node), a strictly-`iord`-descending sound reduct still EXISTS. The
-selected-premise dispatch (cf. `iord_descent_red`): I-rule/Ind premises → `red`-replace (banked descent);
-chain premise → structural recursion; atom/`Ax¹` premise → §5 atomic reduction (Buchholz Lemma 5.2 gives
-`o(d[n]) < o(d)` even for atomic `d` — the genuine resolution of the lap-129 `red`-fixpoint stall, which `red`
-alone cannot deliver since `red` is the identity on those leaves). RESIDUAL = the chain recursion + the §5
-atomic reduct. -/
+/-! ### Non-critical K-step (Buchholz §3.2 case 5.2) — DECOMPOSED on the MAJOR-premise tag (lap 147)
+
+**The lap-129/130 major-premise machinery, finally WIRED into the live path** (it was banked but UNUSED — the
+"bank, don't wire" anti-pattern). Buchholz's faithful reduction (§14.25) acts NOT on the `permIdx`-permissible
+premise (whose first hit can be an atom/`Ax¹` LEAF → the lap-129 `red`-STALL) but on the **major premise** =
+the first `⊥`-exit (`majorIdx`). On a regular `∅→⊥` chain `majorPrem_tag_mem` pins that premise's tag ∈
+{3,4,5,6}: never an atom/`Ax¹` leaf (0/7, `majorIdx_botOrbit_reducible`), never an `I∀`/`I¬` R-intro (1/2,
+whose succedent is `^∀p`/`inegF p ≠ ^⊥`). So the §5.2 reduction splits on EXACTLY two Buchholz cases:
+
+- **`repMajor` (tag 3/4, §14.254)** — the major premise is a `zInd` (3) or sub-`zK` (4), a `Rep` node. Buchholz
+  reduces it by REPLACING it with its own reduct (Ind unfolding / sub-chain reduction). On the ⊥-orbit the
+  major premise derives `Γₘ→⊥` with `Γₘ ⊆ {A₀,…,A_{m−1}}` (threading), possibly NONEMPTY — so this is the
+  genuine GENERAL reduction (recursion on a smaller-`iord` premise), the one piece `red`/`redSound` was for.
+- **`axMajor` (tag 5/6, §14.253 principal case)** — the major premise is an L-axiom `zAxAll` (5) / `zAxNeg` (6),
+  a `red`-FIXPOINT. Its active L-formula (`^∀p`/`inegF p`) is the succedent of a STRICTLY EARLIER premise `i′`
+  (`majorPrem_zAxAll_cutPartner` / `majorPrem_zAxNeg_cutPartner`) — the principal CUT partner. The reduct is the
+  genuine critical cut `iRKcCrit` against `(i′, m)`. NOT cleanly the lap-143/144 critical machinery: that keys
+  the redex off `redexCode` via `inference_critical_pair_of_chain`, which needs CRITICALITY (`hnperm`), absent
+  here; and the cut-partner `i′` need only have SUCCEDENT `^∀p`, not be a direct R-intro (it can be a chain) —
+  so this is also recursive in general. Concrete next attack: derive `redexI < j₀` from the cut-partner redex
+  alone (the `chainInf_redexI_data` pair-monotone bound, but with redex existence supplied by the cut-partner,
+  bypassing criticality), then feed `ZDerivation_iRKcCrit_all`/`_neg` the `isChainInf` threading.
+
+Both halves bottom out in the GENERAL Z-derivation reduction (premises with nonempty antecedents); the natural
+closure is a strong induction on `iord` generalized to "regular `Γ→⊥`, not in endform ⟹ ∃ same-sequent
+descending reduct" (= Buchholz Theorem 2.1 / Corollary 2.1). See `PENDING_WORK.md` lap-147. -/
+
+/-- **§14.254 — `Rep` major premise (tag 3/4): GENERAL reduction (named sub-`sorry`).** The major premise of
+the `∅→⊥` chain is a `zInd` (3) or sub-`zK` (4) deriving `Γₘ→⊥` (`Γₘ` possibly nonempty). Buchholz reduces by
+REPLACING it with its own strictly-`iord`-descending reduct (Ind unfolding for `zInd`; sub-chain
+reduction/splice for `zK`), keeping the chain valid (same end-sequents, `isChainInf_congr`). The genuine
+GENERAL Z-derivation reduction — closure via strong `iord`-induction on a `Γ→⊥`-generalized descent step. -/
+theorem descent_step_K_noncrit_repMajor {s r ds : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 3 ∨ zTag (znth ds (majorIdx (zK s r ds))) = 4) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+
+/-- **§14.253 (principal case) — L-axiom major premise (tag 5/6): critical cut vs the upstream R-partner
+(named sub-`sorry`).** The major premise is `zAxAll`/`zAxNeg` (a `red`-FIXPOINT); its active L-formula is the
+succedent of a strictly earlier premise `i′` (`majorPrem_zAxAll_cutPartner`/`majorPrem_zAxNeg_cutPartner`),
+forming the principal cut `(i′, m)`. The reduct is the genuine `iRKcCrit` cut. Attack: redex bound `redexI < j₀`
+from the cut-partner (not criticality) ⟹ `ZDerivation_iRKcCrit_all`/`_neg` + `iord_descent_iRKcCrit_*`. -/
+theorem descent_step_K_noncrit_axMajor {s r ds : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 5 ∨ zTag (znth ds (majorIdx (zK s r ds))) = 6) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+
+/-- **Non-critical case (Buchholz §3.2 case 5.2) — sorry-FREE major-premise DISPATCHER (lap 147).** On a
+regular `∅→⊥` chain `majorPrem_tag_mem` forces the major premise's tag ∈ {3,4,5,6}: routes tag-3/4 (`Rep`
+major) → `descent_step_K_noncrit_repMajor` (§14.254 general reduction), tag-5/6 (L-axiom major) →
+`descent_step_K_noncrit_axMajor` (§14.253 principal cut). This wires the banked `majorIdx` machinery into the
+live path, dissolving the lap-129 `permIdx` atom/`Ax¹` STALL (the major premise is never a leaf). The
+non-criticality hypothesis `hncrit` is not consumed — the major-premise dispatch is faithful for any ⊥-orbit
+chain — but is kept to match the `descent_step_K_majorIdx` split. -/
 theorem descent_step_K_noncritical {s r ds : V}
     (hd : ZDerivesEmptyR (zK s r ds))
     (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
     (hncrit : permIdx (zK s r ds) < lh ds) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
+  have hZ : ZDerivation (zK s r ds) := hd.1.1
+  rcases majorPrem_tag_mem hZ hant hsucc with h | h | h | h
+  · exact descent_step_K_noncrit_repMajor hd hant hsucc (Or.inl h)
+  · exact descent_step_K_noncrit_repMajor hd hant hsucc (Or.inr h)
+  · exact descent_step_K_noncrit_axMajor hd hant hsucc (Or.inl h)
+  · exact descent_step_K_noncrit_axMajor hd hant hsucc (Or.inr h)
 
 /-- **NAMED sub-`sorry` #1 — the per-step K-case math, a sorry-FREE critical/non-critical DISPATCHER
 (lap 141).** A regular `∅→⊥` K-node has a SOUND, strictly-`iord`-descending reduct. Case-splits on the
