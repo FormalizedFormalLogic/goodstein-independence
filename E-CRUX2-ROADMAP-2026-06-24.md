@@ -7,12 +7,18 @@
 > remaining blocker. State at write time: lap 83, src sorries 3 (all crux-2/headline), descent banked,
 > wall = validity + dispatch.
 
+> **⚙️ OPERATOR DECISION (Trevor, 2026-06-25): M2 is NOT parallelized.** This roadmap originally floated
+> running M2 (the Foundation→Z bridge) in a second box concurrently with M1. Trevor has decided against it:
+> **M2 runs serial in the one box, after M1.** Do NOT spin a second worktree/treadmill for M2. The "parallel
+> floor" numbers below are kept for reference only — the **serial path (~115 laps from lap 83) is the plan of
+> record.** M1/M2 file-disjointness is still a true (and useful) fact; it just isn't being used to parallelize.
+
 ## The four milestones
 | # | Milestone | Delivers / clears | Laps | Conf | Parallel? |
 |---|---|---|---|---|---|
 | **M1a** | Build the reduct `red` + auxiliary objects (construction only) | `red` 5-case primrec (Buchholz §6 Thm 6.6 / Def 3.2); critical case `d{0}=K^r(i/d_i[k])`, `d{1}=K^r(j/d_j[0])`, `red(d)=K^{r-1}d{0}d{1}` per 3.2(5.1); end-sequent (`tp`/`fstIdx`) transfer + `rk(A(d))<r` (T3.4(a)), on the built `inference_critical_pair` (L3.1) + rank cases (T4). **✔ `red` defined, end-sequent correct, T3.4(a) proven** | **10–18** | 65% | no |
 | **M1b** | Prove `RedSound` (validity) + re-point (the cut-elim core) | `RedSound : ∀ d, ZDerivesEmpty d → ZDerivation (red d)` as the parallel-induction invariant (Thm 3.4(b)/Thm 6.2: principal sequent ⊆ Γ, cut-rank `< m`), threading banked `zKValidFDef`; re-point `RedSound`+descent onto `red`, off dead `iR2`. **✔ `RedSound` proven + chain `#print axioms`-clean** | **12–22** | 60% | no |
-| **M2** | C0.5 Foundation→Z bridge | `foundation_bot_to_Z_empty : 𝗣𝗔.DerivationOf d ⊥ → ∃ z, ZDerivesEmpty z` (M-internal). Bryce–Goré `Peano.v` blueprint B1–B3: PA axioms→Z atomic; cut→`K^r`, ∀→`I_∀`, **PA-induction→native `Ind` (cheap)**; compose | **15–30** | 65% | **YES (2nd box)** |
+| **M2** | C0.5 Foundation→Z bridge | `foundation_bot_to_Z_empty : 𝗣𝗔.DerivationOf d ⊥ → ∃ z, ZDerivesEmpty z` (M-internal). Bryce–Goré `Peano.v` blueprint B1–B3: PA axioms→Z atomic; cut→`K^r`, ∀→`I_∀`, **PA-induction→native `Ind` (cheap)**; compose | **15–30** | 65% | **no** (operator 2026-06-25: serial) |
 | **M3** | Descent assembly → `PA ⊢ (PRWO(ε₀)→Con(PA))` | wire M1+M2+banked ε₀-descent → `gentzen_descent_of_inconsistent` → no-infinite-primrec-descent ⊥ → `ZDerivesEmpty→False` → Con(PA). Clears `DescentSemantic:582`. Leaves: C4 (`isNF`/≠0 of `iord` on ⊥-derivs), C5 (descent as Σ₁ graph; least ⊥-proof via bridge) | **15–30** | 60% | no |
 | **M4** | Headline wire-up + axiom-clean cert | discharge `goodstein_implies_consistency` (`Reduction.lean:68`) = crux-1 (γ→PRWO, done) ∘ M3; discharge `peano_not_proves_goodstein` (`Statement.lean:22`) via Gödel II | **5–15** | 70% | no |
 
@@ -41,14 +47,16 @@ M1a─►M1b─┐
    M2 ───┘
 ```
 M1 and M2 are **independent + file-disjoint** (M1 = `InternalZ.lean`/reduct; M2 = a new bridge module + the
-Foundation calculus), so **M2 runs in a second box in parallel** (the play that just won front-2 — except
-M2 won't get gifted, so actually spin it; `lean-create-worktree` + a scoped treadmill).
+Foundation calculus). That disjointness *would* permit running M2 in a second box concurrently — but
+**operator decision (Trevor, 2026-06-25): we are NOT parallelizing. M2 runs serial, in the one box, after
+M1.** Do not spin a second worktree/treadmill for it.
 
-- **Parallel (M1‖M2):** ~max(40,30) + 25 + 12 ≈ **75 laps**
-- **Serial (one box):** ~40 + 30 + 30 + 15 ≈ **115 laps**
+- **Serial (one box) — THE PLAN OF RECORD:** ~40 + 30 + 30 + 15 ≈ **115 laps**
 - **+ research tail on M1:** up to ~150
+- *(Reference only, not chosen)* Parallel (M1‖M2): ~max(40,30) + 25 + 12 ≈ **75 laps**
 
-Decomposing **tightens** the prior 80–160 to ~**75–150**; the parallel path is the floor.
+Planned path is the serial **~115–150 laps** (from lap 83). The ~75-lap parallel floor is documented for
+context but is **not** being pursued.
 
 ## Measurable checkpoints (watch for drift, don't trust "progress")
 - **M1 alive:** `red` exists as a 5-case function AND validity is proved *in the same induction* as descent

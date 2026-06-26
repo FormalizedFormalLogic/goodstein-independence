@@ -1481,6 +1481,24 @@ lemma ZRegular_iRKcCrit {d : V}
       (ZRegular_zK_of_seqUpdate hprem (hax _ _))
       (ZRegular_zK_of_seqUpdate hprem (ZRegular_zInegPrem hdI hregI h2))
 
+/-- **The corrected reduct of a valid critical chain is regular — front-1 of the engine swap, CLOSED
+additively.** Discharges every hypothesis of `ZRegular_iRKcCrit` directly from a valid critical chain
+`zK s r ds`: premise regularity from the chain's own `ZRegular` (`ZRegular_zK_premise`), the R-redex
+premise's `ZDerivation` from chain inversion (`zDerivation_zK_inv`), and `htagI` (R-redex is an I-rule)
+from the redex-pair certificate (`zTag_redexI_of_zKValid`). Once the engine swaps `red (zK s r ds) ↦
+iRKcCrit (zK s r ds)`, `ZRegular_red_zK_crit` is `rw [red_zK_crit hcrit]; exact this` — the O1 front of the
+swap is now pure wiring. -/
+lemma ZRegular_iRKcCrit_of_zK {s r ds : V} (hds : Seq ds)
+    (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds))
+    (hvalid : zKValid s r ds) :
+    ZRegular (iRKcCrit (zK s r ds)) := by
+  obtain ⟨hIlt, _⟩ := redexI_redexJ_lt_of_zKValid hvalid
+  refine ZRegular_iRKcCrit ?_ ?_ ?_ ?_
+  · rw [zKseq_zK]; intro m hm; exact ZRegular_zK_premise hds hreg hm
+  · rw [zKseq_zK]; exact (zDerivation_zK_inv hZ).2 _ hIlt
+  · rw [zKseq_zK]; exact ZRegular_zK_premise hds hreg hIlt
+  · rw [zKseq_zK]; exact zTag_redexI_of_zKValid hvalid
+
 /-- **Regularity of a `seqInsert` chain** (5.2.1 splice `iRKs`): inserting two regular halves `a,b` in
 place of premise `i` keeps the chain regular. The 5.2.1 analogue of `ZRegular_zK_of_seqUpdate`, via the
 pointwise read-out `forall_znth_seqInsert`. -/

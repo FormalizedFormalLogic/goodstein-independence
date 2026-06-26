@@ -35,7 +35,7 @@ C0'  iR : V→V  (= d↦d[0]) SKELETON   (Def 3.2 dispatch on zTag)       ← bo
 C3a  Lemma 4.1 — LOW-HANGING cases   (atomic,I∀,I¬,Ind,5.2) ← do FIRST, cheap, validates engine
 C3b  Lemma 4.1(b)(ii) — case 5.1     (the cut-elim nut)     ← THE NUT, needs L3.1+T3.4
 C3c  Theorem 4.2                     (tower combine)         ← ~3 lines given C3a+C3b + tower mono
-C0.5 Foundation→Z bridge             (PA-⊥-proof → Z-⊥-deriv)← parallel; Bryce–Goré Peano.v blueprint
+C0.5 Foundation→Z bridge             (PA-⊥-proof → Z-⊥-deriv)← independent, but SERIAL (operator 2026-06-25, no 2nd box); Bryce–Goré Peano.v blueprint
 C4   isNF/≠0 of iord on ⊥-derivs     (feeds gentzenDescentφ_realized)
 C5   assembly: gentzenDescentφ, d₀    (least ⊥-proof via C0.5)
 ```
@@ -93,9 +93,10 @@ The genuine work in the nut is **constructing `d{0}`/`d{1}` as `ZDerivation`s** 
 So even the nut is mostly the **object construction** `iR`-critical-branch, which is C0'/T3.4 work, with a
 short ordinal tail.
 
-## 5. C0.5 bridge — sub-decomposition (Foundation-PA-⊥ → Z-⊥), parallelizable
+## 5. C0.5 bridge — sub-decomposition (Foundation-PA-⊥ → Z-⊥), independent of §§3–4
 `Z ⊇ PA` on closed sequents: discharge each PA axiom in Z + simulate each Foundation rule, composing to
-`𝗣𝗔.DerivationOf d ⊥ → ∃ z, ZDerivesEmpty z` (M-internal). Independent of §§3–4 — run in a worktree.
+`𝗣𝗔.DerivationOf d ⊥ → ∃ z, ZDerivesEmpty z` (M-internal). Independent of §§3–4, so it *could* run in a
+separate worktree — but **operator decision (2026-06-25): run it SERIAL in the one box, no parallel box.**
 
 **Bryce–Goré `Peano.v` skeleton (the worked PA→infinitary analogue, extracted from the Coq source):** their
 bridge `PA_Base_closed_PA_omega` is `PA_Base → (annotate degree+ordinal) PA_Implication → (per-constructor)

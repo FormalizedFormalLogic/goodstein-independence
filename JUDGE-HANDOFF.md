@@ -55,6 +55,10 @@ git -C ~/src/goodstein-ab-xhigh log --oneline 2beac51..HEAD             # what x
   headline (that cop-out is forbidden — I pitched it twice and was corrected). `PA_delta1Definable`
   (Foundation axiom under Gödel II) must ALSO be discharged. You MAY state+prove PRWO→Con as its own result;
   you may NOT rest the target on it. (See memory `feedback-formalization-no-axiom-copout`.)
+- **OPERATOR DIRECTIVE (Trevor, 2026-06-25): M2 is SERIAL — do NOT parallelize.** The `E-CRUX2-ROADMAP`
+  floated running M2 (Foundation→Z bridge) in a second box concurrently with M1. Trevor decided against it:
+  **M2 runs serial in the one box, after M1. Do not spin a second worktree/treadmill for M2.** The roadmap's
+  "parallel floor" (~75 laps) is reference-only; the serial path (~115–150 laps from lap 83) is the plan.
 - **HARVEST.md** (box-built, judge-verified): reusable spin-offs with real `#print axioms` + destinations.
 
 ## Catch-up recipe (every session)

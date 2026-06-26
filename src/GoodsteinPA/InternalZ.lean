@@ -8082,6 +8082,49 @@ lemma redexI_redexJ_lt_of_zKValid {s r ds : V}
   simp only [zKseq_zK] at hrc
   exact ⟨lt_trans hrc.1 hrc.2.1, hrc.2.1⟩
 
+/-- **The `redexCode` redex of a valid critical chain — the full `isRedexPair` certificate (over `ds`).**
+Strengthens `redexI_redexJ_lt_of_zKValid` to return the whole redex-pair, from which BOTH the index
+bounds and the redex `tp` polarities (`redexPair_tp`) follow. The orbit-data supplier the engine re-key's
+`ZRegular_red_zK_crit` re-proof needs (`htagI : zTag dᵢ ∈ {1,2}` via `tp_isymR_tag`). Same finder body as
+`redexI_redexJ_lt_of_zKValid`, returning `hrc` instead of just its order projections. -/
+lemma isRedexPair_redexCode_of_zKValid {s r ds : V} (hvalid : zKValid s r ds) :
+    isRedexPair ds (redexCode (zK s r ds)) := by
+  obtain ⟨hci, hperm0, hnperm0, hf1, hf2, hf5, hf6, _hsucc, _hssf, _hsaf⟩ := hvalid
+  obtain ⟨j0, hj0, hAj0, hchain, hrank⟩ := hci
+  have hwfR : ∀ i ≤ j0, ∀ A, tp (znth ds i) = isymR A → 0 < irk A ∨ False :=
+    fun i hi A h => Or.inl (tp_isymR_pos h (hf1 i (lt_of_le_of_lt hi hj0))
+      (hf2 i (lt_of_le_of_lt hi hj0)))
+  have hwfL : ∀ i ≤ j0, ∀ k A, tp (znth ds i) = isymLk k A → 0 < irk A ∨ (A = (^⊥ : V)) :=
+    fun i hi k A h => Or.inl (tp_isymLk_pos h (hf5 i (lt_of_le_of_lt hi hj0))
+      (hf6 i (lt_of_le_of_lt hi hj0)))
+  have hperm : ∀ i ≤ j0, iperm (tp (znth ds i)) (fstIdx (znth ds i)) :=
+    fun i hi => hperm0 i (lt_of_le_of_lt hi hj0)
+  have hnperm : ∀ i ≤ j0, ¬ iperm (tp (znth ds i)) s :=
+    fun i hi => hnperm0 i (lt_of_le_of_lt hi hj0)
+  obtain ⟨i0, j1, k0, hij, hjle, hRi, hLj, hrkpos, hrkr⟩ :=
+    inference_critical_pair_of_chain (Tr := fun _ => False) (Fa := fun A => A = (^⊥ : V))
+      hj0 hAj0 hchain hrank hwfR hwfL hperm hnperm (fun _ h => h.1)
+      (fun A h => by rw [h]; exact irk_falsum) rfl
+  have hjlt : j1 < lh ds := lt_of_le_of_lt hjle hj0
+  have hilt : i0 < lh ds := lt_trans hij hjlt
+  have hredex : isRedexPair ds (⟪i0, j1⟫ : V) := by
+    simp only [isRedexPair, pi₁_pair, pi₂_pair]
+    refine ⟨hij, hjlt, ?_, ?_, ?_⟩
+    · rw [hRi]; simp [isymR]
+    · rw [hLj]; simp [isymLk]
+    · rw [hRi, hLj]; simp [isymR, isymLk]
+  have hex : ∃ c < (⟪lh (zKseq (zK s r ds)), lh (zKseq (zK s r ds))⟫ : V),
+      isRedexPair (zKseq (zK s r ds)) c := by
+    simp only [zKseq_zK]; exact ⟨⟪i0, j1⟫, pair_lt_pair hilt hjlt, hredex⟩
+  have hrc : isRedexPair (zKseq (zK s r ds)) (redexCode (zK s r ds)) := redexCode_isRedexPair hex
+  simpa only [zKseq_zK] using hrc
+
+/-- **The R-redex of a valid critical chain is an I-rule** (`tp dᵢ = isymR` ⟹ `zTag dᵢ ∈ {1,2}`). The
+`htagI` input the engine re-key's `ZRegular_iRKcCrit` (Zsubst) needs at the chain call site. -/
+lemma zTag_redexI_of_zKValid {s r ds : V} (hvalid : zKValid s r ds) :
+    zTag (znth ds (redexI (zK s r ds))) = 1 ∨ zTag (znth ds (redexI (zK s r ds))) = 2 :=
+  tp_isymR_tag (redexPair_tp (isRedexPair_redexCode_of_zKValid hvalid)).1
+
 /-- **T3.4(a) chain-rank invariant — the `redexCode` redex's R-principal has rank `≤ r`.** For a valid
 critical `K`-chain `zK s r ds`, `irk (chainAsucc ds (redexI)) ≤ r`. This is the rank input the
 cut-formula strip needs (`irk_cutFormula_lt` ⟹ `rk(A(d)) < r`), closing the splice/critical degree drop.
