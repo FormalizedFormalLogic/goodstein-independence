@@ -1,9 +1,29 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 132 · 2026-06-26 (DEEP REFLECTION — direction KEPT, faithfulness re-verified clean; **course-test recommended**: the `red`-STALL that has driven laps 120→131 is an ARTIFACT of demanding `red` be a total deterministic Σ₁ function — an *existence / least-descending-reduct* reformulation of `false_of_ZDerivesEmpty` makes "fixpoint ⟹ cut-free" definitional and obviates the permIdx-selection campaign while reusing all banked soundness/folds/descent. Highest-value next = a `wip/` spike. See `REFLECTION-2026-06-26-lap132.md`.)
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 137 · 2026-06-26 · `ddda795` (ALTITUDE REVIEW — existence-form spike DONE/ported; **TYPE-CORRECTED the PRWO seam**: lap-135's `false_of_ZDerivesEmpty`/`prwo_forbids_existence_descent` concluded `False` in bare 𝗜𝚺₁ with NO PRWO hypothesis = UNPROVABLE (≈ `Con(𝗣𝗔)`, Gödel-barred). PRWO now enters via the honest `InternalPRWO V` hypothesis (crux-1's deliverable); the termination half's genuine remaining content is the NEW named sub-sorry `exists_sigma1_descent_of_step` (build a 𝚺₁ ε₀-descent — neglected through laps 135-136). See `HANDOFF-2026-06-26-lap137.md`, `DIRECTION.md` CURRENT DIRECTIVE.)
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**).
 The lone `sorryAx` traces to crux-2 (the internalized cut-elimination).
+
+> **⭐⭐⭐ Lap-137 ALTITUDE REVIEW — the existence-form pivot's termination half was MIS-TYPED; FIXED (read FIRST — current).**
+> Build re-verified 🟢 green (1326); headline re-verified in-kernel (`[propext, sorryAx, Classical.choice, Quot.sound]`,
+> **0 math axioms**), no drift. **Where laps 135-136 left it:** the lap-132 existence-form reframe was run (lap 135)
+> and PORTED to src — `false_of_ZDerivesEmpty` is a sorry-free composition of `descent_step_K_majorIdx` (per-step
+> descent) + `prwo_forbids_existence_descent` (termination); lap 136 found the stated Ind reduct FALSE and built the
+> corrected `iIndReductSeqG`. **THE altitude finding (decisive):** `prwo_forbids_existence_descent` concluded `False`
+> in bare `[V ⊧ₘ* 𝗜𝚺₁]` with **NO PRWO/γ hypothesis** — **UNPROVABLE**: with the per-step descent `hstep`
+> (= `ZDerivesEmptyR_descent_step`, a genuine `𝗜𝚺₁` cut-reduction fact) it would give `𝗜𝚺₁ ⊢ ¬∃z, ZDerivesEmptyR z`
+> ≈ `Con(𝗣𝗔)`, Gödel-barred. PRWO(ε₀) is exactly the PA-unprovable principle and MUST be a hypothesis. The lap-136
+> grind sank into the *other* (legitimately-`𝗜𝚺₁`) sub-sorry's Ind-reduct redesign while this structural hole sat
+> undiagnosed. **FIXED this lap (green, banked):** new `InternalPRWO V` (no `𝚺₁` NF `ε₀`-descent — crux-1's
+> deliverable, from `V ⊧ γ`); `prwo_forbids_existence_descent`/`false_of_ZDerivesEmpty` now sorry-FREE compositions
+> taking `hprwo`; the genuine remaining termination content isolated as the NEW named sub-sorry
+> `exists_sigma1_descent_of_step` (build the `𝚺₁` `ε₀`-descent: `redLeast` `μ`-witness over the `𝚫₁` matrix →
+> internal `𝚺₁` orbit → `iord∘orbit`). Feasibility verified: `ZDerivesEmptyR` is `𝚫₁` (`zReg`/`zFresh`/`zSeqAnt`
+> are `𝚺₁`-fns `= 0`), `iord` is `𝚺₁`. **NEXT (PRIMARY, hardest-first):** discharge `exists_sigma1_descent_of_step`
+> — the never-built M3 internalization of the EXTERNAL-ℕ orbit (`iord_iR2_iterate_descends`, `InternalZ:9816`);
+> it VALIDATES the whole existence-form pivot end-to-end. Secondary = `descent_step_K_majorIdx` (Ind-reduct +
+> tag-4 chain). See `HANDOFF-2026-06-26-lap137.md`, `DIRECTION.md`, `PENDING_WORK.md` lap-137.
 
 > **⭐⭐⭐ Lap-132 DEEP REFLECTION — direction KEPT, a structural course-TEST recommended (read FIRST — current).**
 > Primary deliverable `REFLECTION-2026-06-26-lap132.md`. Build re-verified 🟢 green (1326); headline footprint

@@ -1,6 +1,64 @@
 # Pending work — open obligations & attack paths
 
-## lap 136 (latest) — ⚠️ KERNEL-VERIFIED OBSTRUCTION: `zKValidF_iIndReduct_of_zInd` is FALSE; the `red` Ind reduct is fundamentally wrong
+## lap 137 (latest) — ⚠️ ALTITUDE REVIEW: existence-form termination half was MIS-TYPED (Gödel-barred); FIXED + decomposed
+**Build 🟢 1326. Headline footprint UNCHANGED** (`[propext, sorryAx, Classical.choice, Quot.sound]`, 0 math axioms).
+Fresh-mind review of the lap-135 existence-form pivot + lap-136 Ind-reduct work.
+
+### THE finding (decisive, structural)
+`prwo_forbids_existence_descent` (lap-135) concluded `False` in bare `[V ⊧ₘ* 𝗜𝚺₁]` with **NO PRWO/γ hypothesis**.
+**That is UNPROVABLE.** Argument: its hypothesis `hstep` = `ZDerivesEmptyR_descent_step` (the per-step cut-reduction
+descent) is a genuine `𝗜𝚺₁` fact (cut-reduction lowering the ordinal is primrec/arithmetizable). If
+`prwo_forbids_existence_descent` were ALSO `𝗜𝚺₁`-provable, then `𝗜𝚺₁ ⊢ (hstep) → ZDerivesEmptyR z → False`, i.e.
+`𝗜𝚺₁ ⊢ ¬∃z, ZDerivesEmptyR z` = "Z proves no `∅→⊥`" ≈ `Con(𝗣𝗔)` (via M2 `Z ⊇ 𝗣𝗔`) — **Gödel-barred**. Since the
+per-step descent IS `𝗜𝚺₁`, the termination half is the one carrying the PA-unprovable strength `PRWO(ε₀)`, which
+**must enter as a hypothesis**. The lap-136 grind went deep into the *other* (legitimately-`𝗜𝚺₁`) sub-sorry's
+Ind-reduct redesign while this structural hole sat undiagnosed → crux-neglect on the termination half.
+
+### FIXED this lap (green, banked — `Crux2Blueprint.lean`)
+- **`InternalPRWO V`** (new `def`): `∀ f : V→V, 𝚺₁-Function₁ f → (∀ n, isNF (f n)) → ¬(∀ n : V, icmp (f(n+1)) (f n)=0)`
+  — no `𝚺₁`-definable internal NF sequence is everywhere `icmp`-descending = **PRWO(ε₀)**. NOT an `𝗜𝚺₁` theorem;
+  crux-1's deliverable, derived from `V ⊧ γ` (an `icmp`-descending `𝚺₁` seq feeds `bbeta`/`nonterminating_internal`
+  → non-terminating Goodstein run → contradicts `V ⊧ γ`).
+- **`prwo_forbids_existence_descent (hprwo : InternalPRWO V) (hstep) (hz)`** + **`false_of_ZDerivesEmpty (hprwo) (hz)`**
+  — now sorry-FREE compositions threading `hprwo`.
+- **`exists_sigma1_descent_of_step (hstep) (hz) : ∃ f, (𝚺₁-Function₁ f) ∧ (∀ n, isNF (f n)) ∧ (∀ n : V, icmp (f(n+1)) (f n)=0)`**
+  — the NEW named sub-sorry = the genuine remaining termination content (build the `𝚺₁` `ε₀`-descent).
+
+### NEXT (PRIMARY, hardest-first) — discharge `exists_sigma1_descent_of_step`
+The never-built **M3 internalization**: `iord_iR2_iterate_descends` (`InternalZ:9816`) already builds the descent as
+an EXTERNAL-ℕ iteration (`n : ℕ`, `iord (iR2^[n] z)`); the gap is internalizing it as a `𝚺₁` function over INTERNAL
+`n : V`. Decompose in `src/`:
+1. **`redLeast : V → V`** — `μ d'. [ZDerivesEmptyR d' ∧ icmp (iord d') (iord d) = 0]`. Well-defined & `𝚺₁` because the
+   matrix is `𝚫₁`: `ZDerivesEmptyR` = `ZDerivation` (`𝚫₁`, `InternalZ:5542`) ∧ `seqAnt=∅` ∧ `seqSucc=⊥` ∧ `ZRegular`/
+   `ZFresh`/`ZSeqAnt` (= `zReg`/`zFresh`/`zSeqAnt` `= 0`, each a `𝚺₁`-`Function₁` — `Zsubst:1298` etc.); `iord` is
+   `𝚺₁` (`InternalZ:2536`); `icmp _ _ = 0` is `𝚫₁`. Totality on the orbit from `hstep`. Look for an existing
+   least-number / `μ` operator in Foundation (`ISigma1`, `Vorspiel`); else `findLeast`-style via `𝚺₁`-LNP.
+2. **internal `𝚺₁` orbit `redOrbit z : V → V`** — `n ↦ redLeast^[n] z` as a course-of-values `𝚺₁` recursion
+   (internal `n : V`). This is THE load-bearing internalization. Check Foundation for a `𝚺₁` iteration primitive
+   (the descent infra so far uses meta `Function.iterate`, external ℕ — see the `InternalZ:9807` note "internalizing
+   the (external-ℕ) iteration as a `𝚺₁` graph is what discharges the crux-2 deep axiom"). If none, this is its own
+   sub-tower (decompose further; expected multi-lap but RIGHT — it is the termination internalization).
+3. **`f n := iord (redOrbit z n)`** — `𝚺₁` (iord ∘ `𝚺₁`), NF (`isNF_iotower` on `isNF_iotil_of_ZDerivation`, since
+   each orbit point is `ZDerivesEmptyR` ⟹ `ZDerivation`), descends (`hstep` at each orbit point, kept in
+   `ZDerivesEmptyR` by `ZDerivesEmptyR`-closure under the chosen reduct).
+
+**Why PRIMARY (hardest-first):** closing `exists_sigma1_descent_of_step` VALIDATES the existence-form pivot
+end-to-end (proves "existence step ⟹ `𝚺₁` descent ⟹ (under PRWO) False" actually works). If it WALLS (e.g. the
+`𝚺₁`-orbit can't be built), the whole pivot is hollow and we must know before more `descent_step_K_majorIdx` grind.
+
+### Secondary front (genuinely required, resume after the termination half is locked)
+`descent_step_K_majorIdx` (`Crux2Blueprint:1613`) — the per-step `𝗜𝚺₁` cut-reduction descent. tag-3 Ind soundness
+via the corrected reduct `iIndReductSeqG` (lap-136, mid-redesign; assemble `zKValidF_iIndReductSeqG` per lap-136
+handoff). tag-4 (chain) = the deep core, untouched. tag-5/6 = banked `cutPartner` + `hAll`.
+
+### Downstream (M3 wiring, do NOT attack now — forbidden by directive)
+`false_of_ZDerivesEmpty` now correctly takes `hprwo : InternalPRWO V`. Its eventual consumers must supply PRWO from
+crux-1: `M ⊧ 𝗣𝗔` + `M ⊧ γ` ⟹ (crux-1, Rathjen §3) `M ⊧ PRWO(ε₀)` ⟹ `InternalPRWO M`. That `InternalPRWO`-from-crux-1
+lemma + M2 `foundation_bot_to_Z_empty` + the headline wiring are the M3 endgame (separate from M1b-term).
+
+---
+
+## lap 136 — ⚠️ KERNEL-VERIFIED OBSTRUCTION: `zKValidF_iIndReduct_of_zInd` is FALSE; the `red` Ind reduct is fundamentally wrong
 **Build 🟢 1326. Headline axiom footprint UNCHANGED.** Attacked the lap-135 handoff's recommended "tractable"
 target `zKValidF_iIndReduct_of_zInd` (Crux2Blueprint:79 — gates tag-3 (Ind) soundness of `descent_step_K_majorIdx`
 AND `redSoundGen`'s Ind branch). Found it is **FALSE as stated**, and proved the obstruction IN-KERNEL (two new

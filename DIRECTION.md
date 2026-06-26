@@ -14,30 +14,42 @@ autonomous treadmill campaign. Read both.
 > over every few review laps. Keep it SHORT; detail lives in `PENDING_WORK.md` / `REFLECTION-*.md`.
 > (Live milestone map = `E-CRUX2-ROADMAP-2026-06-24.md`; the phase list below is the standing charter.)
 
-**Set: pre-lap-135 (operator + judge).**
+**Set: lap-137 (altitude review). Supersedes pre-lap-135 — the existence-form spike is DONE (lap 135,
+ported to src); the open question is no longer "which form" but "close the existence form's two halves."**
 
-- **THE objective (only this):** **M1b-term** — resolve the `red`-engine **STALL / termination** of
-  crux-2. Make a `red`-fixpoint on a ∅→⊥ orbit yield a contradiction, so the ordinal descent
-  terminates and the fixpoint branch of `false_of_ZDerivesEmpty` (`Crux2Blueprint:1144`) closes.
-- **Success metric:** *advance the crux toward discharge* — a sub-lemma of M1b-term CLOSED, OR the
-  crux honestly **DECOMPOSED into named `src/` sub-`sorry`s** (this RAISES the src count, and that is
-  PROGRESS, not regress — a monolithic `sorry` is worse than five named, individually-attackable
-  ones). What does NOT count: off-path lemma-banking, count-management, or relocating an active sorry
-  to `wip/` to keep `src/` "clean." The decomposition belongs in `src/`. (The "drop a src sorry"
-  framing was wrong — it punished exactly the decomposition this crux needs.)
-- **Mandated FIRST move:** run the **lap-132 existence-form reframe** as a cheap `wip/` spike BEFORE
-  any more invariant-fold work — reframe the endgame from "`red` is a total Σ₁ function that descends
-  every step" to the **existence / least-descending-reduct** form, where "fixpoint ⟹ cut-free" is
-  definitional. If it holds it obviates the `majorIdx`/`firstBotPrem`/`zReg`/`zFresh`/`zSeqAnt`
-  campaign and reuses the banked per-reduct soundness (laps 112–119). Settle it like the lap-101 spike.
-- **FORBIDDEN until the spike is decided:** more `zReg`/`zFresh`/`zSeqAnt` folds; the engine swap as a
-  goal; off-critical-path easy `sorry`s; M2 / M3 / M4. If you judge M1b-term blocked, record in
-  `PENDING_WORK.md` why + one concrete attack — don't silently switch threads.
-- **Why:** altitude laps 120 + 132 found the project circling — reduct-soundness / the swap got
-  polished while the TERMINATION question (does cut-elim reach a contradiction, or stall?) sat open
-  since lap 104, because each grind lap read the handoff, not the reflection. This layer is the fix.
+- **THE objective (only this):** **M1b-term** — the crux-2 **termination** endgame, now =
+  `false_of_ZDerivesEmpty` resting on its TWO sub-`sorry`s. After the lap-137 type-correction those are:
+  1. **`exists_sigma1_descent_of_step`** (`Crux2Blueprint`, NEW) — build a `𝚺₁`-definable infinite
+     `ε₀`-descent from the existence step. **← PRIMARY this & next laps (the literal "termination").**
+  2. **`descent_step_K_majorIdx`** (`Crux2Blueprint:1613`) — the per-step cut-reduction descent
+     (Ind-reduct redesign `iIndReductSeqG` underway; tag-4 chain = deep core). Secondary deep front.
+- **⚠️ lap-137 STRUCTURAL FIX (do NOT undo):** the lap-135 `prwo_forbids_existence_descent`/
+  `false_of_ZDerivesEmpty` concluded `False` in bare `𝗜𝚺₁` with NO PRWO hypothesis — **UNPROVABLE**
+  (it ≈ `Con(𝗣𝗔)`, Gödel-barred; the per-step descent IS `𝗜𝚺₁`, so the termination half carries the
+  PA-unprovable strength). Now corrected: PRWO enters via the explicit hypothesis **`InternalPRWO V`**
+  (= crux-1's deliverable, "no `𝚺₁` `ε₀`-descent"), and `prwo_forbids_existence_descent` is a sorry-FREE
+  composition of `exists_sigma1_descent_of_step` + `InternalPRWO`. The two halves above are what remain.
+- **PRIMARY next move:** discharge `exists_sigma1_descent_of_step`. Decompose it in `src/` into the
+  `𝚺₁` least-witness `redLeast` (`μ`-min over the `𝚫₁` matrix `ZDerivesEmptyR d' ∧ icmp(iord d')(iord d)=0`),
+  its **internal `𝚺₁` orbit** `n ↦ redLeast^[n] z` (course-of-values recursion — internalize the
+  EXTERNAL-ℕ iteration of `iord_iR2_iterate_descends`, `InternalZ:9816`), and `f n := iord(orbit n)`
+  (`𝚺₁`, NF via `isNF_iotower`+`isNF_iotil_of_ZDerivation`, descends via `hstep`). This is the
+  never-built M3 internalization — the load-bearing piece, neglected through laps 135-136.
+- **Success metric:** *advance the crux toward discharge* — a sub-lemma CLOSED, OR honest
+  DECOMPOSITION into named `src/` sub-`sorry`s (RAISES src count = PROGRESS, not regress). NOT: off-path
+  lemma-banking, count-management, or hiding an active sorry in `wip/`.
+- **FORBIDDEN:** re-deriving the deterministic `red`-fixpoint stall (the existence form RETIRED it);
+  more `zReg`/`zFresh`/`zSeqAnt` folds as a *goal*; off-critical-path easy `sorry`s; M2 / M3 / M4 wiring.
+  `descent_step_K_majorIdx` Ind-reduct work is permitted as the secondary front but the termination
+  half (`exists_sigma1_descent_of_step`) is hardest-first: it VALIDATES the whole pivot end-to-end and
+  was the dropped piece. If genuinely blocked, record in `PENDING_WORK.md` why + one concrete attack.
+- **Why:** the lap-135 pivot was sound at the top but its termination half was MIS-TYPED (dropped PRWO)
+  and the lap-136 grind sank into the *other* (legitimately-`𝗜𝚺₁`) sub-sorry's Ind-reduct redesign while
+  the structural hole sat undiagnosed. Fixing the seam (lap 137) + closing the `𝚺₁`-descent is what
+  actually locks the existence-form endgame.
 
 ### Directive history (newest first; append one line per altitude lap — never delete)
+- **lap-137** (altitude review): existence-form spike DONE; TYPE-CORRECTED the PRWO seam (`InternalPRWO` hyp; `→ False` in bare 𝗜𝚺₁ was Gödel-barred). PRIMARY = `exists_sigma1_descent_of_step` (the 𝚺₁ ε₀-descent — neglected through laps 135-136); secondary = `descent_step_K_majorIdx`.
 - **pre-lap-135** (operator + judge): focus to **M1b-term only**; existence-form spike FIRST; success = a `src/` sorry drops.
 
 ---
