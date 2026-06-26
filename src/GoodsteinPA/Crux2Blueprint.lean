@@ -80,6 +80,76 @@ theorem zKValidF_iIndReduct_of_zInd {s at' p d0 d1 : V}
     (hZ : ZDerivation (zInd s at' p d0 d1)) :
     zKValidF s (irk p) (iIndReductSeq d0 d1 1) := sorry
 
+/-! ### ⚠️ OBSTRUCTION (lap 136) — `zKValidF_iIndReduct_of_zInd` is FALSE as stated
+
+The `k=1` Ind reduct sequence `iIndReductSeq d0 d1 1 = ⟨d1, d0⟩` (index 0 = `d1` the step premise, index
+1 = `d0` the base premise; `lh = 2`). Its `zKValidF` REQUIRES `isChainInf s (irk p) ⟨d1,d0⟩`, whose exit
+clause demands SOME premise `j0 ∈ {0,1}` carry the conclusion succedent (`chainAsucc ds j0 = seqSucc s`)
+or `⊥`. The two premise succedents are `seqSucc (fstIdx d1) = F(a+1)` and `seqSucc (fstIdx d0) = F(0)`
+(`zIndWff`), while the conclusion succedent is `seqSucc s = F(t)` for the Ind term `t = π₂ at'`. So a valid
+reduct chain FORCES `F(t) ∈ {F(a+1), F(0)}` (modulo `⊥`) — true only for a DEGENERATE term (`t = 0`, or
+`t` substituting like `a+1`). For a genuine Ind node with an arbitrary closed term (e.g. `t = numeral 5`,
+`a` fresh) this is violated: `substs1 5 p ≠ substs1 0 p`, `≠ substs1 (a+1) p`. The reduct also has the
+WRONG order vs the proven critical reduct (`isChainInf_iCritReductSeq`: source FIRST, cut-user LAST —
+`⟨d0,d1⟩`), and threading at premise `d1` would need `F(a) ∈ Γ` (eigenvar, fresh → false).
+
+The two theorems below prove this obstruction IN-KERNEL. Consequence: the genuine Ind reduct cannot be a
+single `k=1` finite chain; it is the recursive predecessor cut `red(Ind@F(t)) = K^{irk p}⟨Ind@F(t'),
+d1[a:=t']⟩` for `t = t'+1` (and `= d0` for `t = 0`), which decreases the term and recurses. See
+`PENDING_WORK.md` lap-136 for the corrected-reduct attack. -/
+
+/-- **OBSTRUCTION ½ (pure chain combinatorics).** `isChainInf s r (iIndReductSeq d0 d1 1)` forces ONE of
+the two premise succedents to coincide with the conclusion succedent `seqSucc s` (or `⊥`): the only exit
+indices for a length-2 chain are `0` (succedent `seqSucc (fstIdx d1)`) and `1` (succedent
+`seqSucc (fstIdx d0)`). No `ZDerivation`/`zIndWff` hypothesis. -/
+theorem isChainInf_iIndReduct_exit {s r d0 d1 : V}
+    (hc : isChainInf s r (iIndReductSeq d0 d1 1)) :
+    seqSucc (fstIdx d1) = seqSucc s ∨ seqSucc (fstIdx d1) = (^⊥ : V) ∨
+      seqSucc (fstIdx d0) = seqSucc s ∨ seqSucc (fstIdx d0) = (^⊥ : V) := by
+  have hlh : lh (iIndReductSeq d0 d1 1) = 2 := by
+    rw [iIndReductSeq, Seq.lh_seqCons d0 (iRepeatSeq_seq d1 1), iRepeatSeq_lh, one_add_one_eq_two]
+  have h0 : znth (iIndReductSeq d0 d1 1) 0 = d1 := by
+    rw [iIndReductSeq,
+      znth_seqCons_of_lt (iRepeatSeq_seq d1 1) d0 (by rw [iRepeatSeq_lh]; exact one_pos),
+      znth_iRepeatSeq 0 one_pos]
+  have h1 : znth (iIndReductSeq d0 d1 1) 1 = d0 := by
+    have hself := znth_seqCons_self (iRepeatSeq_seq d1 1) d0
+    rw [iRepeatSeq_lh] at hself
+    rw [iIndReductSeq]; exact hself
+  obtain ⟨j0, hj0, hexit, _, _⟩ := hc
+  rw [hlh] at hj0
+  rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hj0) with rfl | rfl
+  · rw [show chainAsucc (iIndReductSeq d0 d1 1) 0 = seqSucc (fstIdx d1) from by
+      unfold chainAsucc; rw [h0]] at hexit
+    rcases hexit with h | h
+    · exact Or.inl h
+    · exact Or.inr (Or.inl h)
+  · rw [show chainAsucc (iIndReductSeq d0 d1 1) 1 = seqSucc (fstIdx d0) from by
+      unfold chainAsucc; rw [h1]] at hexit
+    rcases hexit with h | h
+    · exact Or.inr (Or.inr (Or.inl h))
+    · exact Or.inr (Or.inr (Or.inr h))
+
+/-- **OBSTRUCTION 2/2 (the term constraint).** With the `zIndWff` succedent data, a valid `k=1` Ind reduct
+chain forces the conclusion succedent `seqSucc s = F(t)` to equal `F(a+1)` or `F(0)` (or a premise
+succedent to be `⊥`). For a genuine Ind node (`t = π₂ at'` an arbitrary closed term) this is FALSE — the
+kernel-verified refutation of `zKValidF_iIndReduct_of_zInd` as stated. -/
+theorem zKValidF_iIndReduct_forces_degenerate {s at' p d0 d1 : V}
+    (hwff : zIndWff (zInd s at' p d0 d1))
+    (hv : zKValidF s (irk p) (iIndReductSeq d0 d1 1)) :
+    seqSucc s = substs1 ℒₒᵣ (Bootstrapping.Arithmetic.qqAdd (qqFvar (π₁ at'))
+        (Bootstrapping.Arithmetic.numeral 1)) p
+      ∨ seqSucc s = substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral 0) p
+      ∨ seqSucc (fstIdx d1) = (^⊥ : V) ∨ seqSucc (fstIdx d0) = (^⊥ : V) := by
+  obtain ⟨hc, _⟩ := hv
+  obtain ⟨⟨_, h0succ⟩, ⟨_, h1succ⟩, _, _, _⟩ := hwff
+  simp only [zIndPrem0_zInd, zIndPrem1_zInd, zIndP_zInd, zIndEig_zInd, fstIdx_zInd] at h0succ h1succ
+  rcases isChainInf_iIndReduct_exit hc with h | h | h | h
+  · exact Or.inl (by rw [← h]; exact h1succ)
+  · exact Or.inr (Or.inr (Or.inl h))
+  · exact Or.inr (Or.inl (by rw [← h]; exact h0succ))
+  · exact Or.inr (Or.inr (Or.inr h))
+
 /-! ### Branch recursion equations for the tag-4 dispatch (table lookups resolved to `red dᵢ`)
 
 `red (zK s r ds) = iRK (zK s r ds) (redTable …)` dispatches on two `permIdx` sentinels. These three

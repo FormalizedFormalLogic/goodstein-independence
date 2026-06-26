@@ -1,6 +1,73 @@
 # Pending work — open obligations & attack paths
 
-## lap 135 (latest) — ✅ existence-form PIVOT **PORTED TO SRC**: monolithic `false_of_ZDerivesEmpty` DECOMPOSED
+## lap 136 (latest) — ⚠️ KERNEL-VERIFIED OBSTRUCTION: `zKValidF_iIndReduct_of_zInd` is FALSE; the `red` Ind reduct is fundamentally wrong
+**Build 🟢 1326. Headline axiom footprint UNCHANGED.** Attacked the lap-135 handoff's recommended "tractable"
+target `zKValidF_iIndReduct_of_zInd` (Crux2Blueprint:79 — gates tag-3 (Ind) soundness of `descent_step_K_majorIdx`
+AND `redSoundGen`'s Ind branch). Found it is **FALSE as stated**, and proved the obstruction IN-KERNEL (two new
+sorry-free theorems, green): `isChainInf_iIndReduct_exit` + `zKValidF_iIndReduct_forces_degenerate`.
+
+### The finding (decisive, kernel-verified)
+The engine's Ind reduct is `red (zInd s at' p d0 d1) = iRInd = zK s (irk p) (iIndReductSeq d0 d1 1)` with
+`iIndReductSeq d0 d1 1 = ⟨d1, d0⟩` (index 0 = step `d1`, index 1 = base `d0`; `lh = 2`). For this `zK` to be a
+genuine `ZDerivation` it needs `zKValidF`, whose `isChainInf` conjunct has an **exit clause**: some premise
+`j0 ∈ {0,1}` must carry the conclusion succedent (`chainAsucc ds j0 = seqSucc s`) or `⊥`. But:
+- premise succedents are `seqSucc (fstIdx d1) = F(a+1)` and `seqSucc (fstIdx d0) = F(0)` (from `zIndWff`),
+- conclusion succedent is `seqSucc s = F(t)` where `t = π₂ at'` is the Ind term.
+
+So a valid reduct chain **forces `F(t) ∈ {F(a+1), F(0)}`** (modulo `⊥`) — i.e. the term must be degenerate
+(`t=0`, or `t` substituting into `p` like `a+1`). For a genuine Ind node with an arbitrary closed term (e.g.
+`t = numeral 5`, `a` fresh) this is **violated**. `zKValidF_iIndReduct_forces_degenerate` proves exactly this
+constraint in-kernel. (Also: the order is BACKWARDS vs the proven good reduct `isChainInf_iCritReductSeq`
+— source FIRST, cut-user LAST — and threading at `d1` would need the eigenvar formula `F(a) ∈ Γ`, false.)
+
+### Why no finite fix is both valid AND descending (the deep point — also kernel-checked)
+`iotil_zInd` (proven simp lemma) shows `iotil (zInd s at' p d0 d1)` depends **only on `iotil d0`/`iotil d1`** —
+NOT on `at'` (term/eigenvar) or `p`. Consequences:
+- The current `⟨d1,d0⟩` reduct **descends** (`iord_descent_iRInd_zInd`, PROVEN) but is **not valid** (above).
+  It is purely the *ordinal shadow*; that's why `zKValidF_iIndReduct_of_zInd` was always left `sorry`.
+- A "predecessor cut" reduct `⟨Ind@F(t'), d1[a:=t']⟩` (for `t=t'+1`) WOULD validate but **cannot descend**:
+  the predecessor `Ind@F(t')` has the SAME `d0,d1`, hence the SAME `iotil` as the original, so the chain fold
+  exceeds the original ordinal. Valid xor descending — you cannot have both with a *finite, single-step* reduct.
+
+### The genuine correct reduct (the concrete next attack, math verified by hand)
+`red (Ind@F(t))` must be the **substituted multi-step chain** of length `k+1` where `k =` the VALUE of the term `t`:
+```
+⟨ d0,  d1[a:=numeral 0],  d1[a:=numeral 1],  …,  d1[a:=numeral (k-1)] ⟩   -- base FIRST, substituted steps after
+```
+- **Validity** ✓: premise 0 = `d0 : Γ→F(0)` threads (`Γ⊆Γ`); premise `i+1 = d1[a:=i] : Γ,F(i)→F(i+1)`
+  threads its `F(i)` against premise `i`'s succedent `F(i)`; exit `j0=k` carries `F(k)=F(t)=seqSucc s`.
+- **Descent** ✓: each `d1[a:=i]` has `iotil = iotil d1` (substitution preserves structure), so the fold is
+  `ω^{õd1}·k ⊕ ω^{õd0} < ω^{õd0} ⊕ ω^{õd1+ω} = iotil(Ind)` (since `ω^{õd1}·k < ω^{õd1+ω}` for any `k`).
+- `k` (nonstandard-safe) is the decoded value of `t = π₂ at'`; the substituted-step block is a primitive-recursive
+  `Seq` construction (a `seqRec` over `i ↦ d1[a:=numeral i]`). This is the real redesign.
+
+**This redesign ripples** through every descent lemma keyed to the current `iIndReductSeq d0 d1 1`
+(`iseqNaddIdg_iIndReductSeq`, `icmp_iotil_iIndReduct`, `idg_zK_iIndReduct`, `iRedDescent_zInd`,
+`iord_descent_iRInd_zInd`, `descent_K_majorIdx_Ind_descends`) — multi-lap, but it is the genuine Buchholz Ind→cut-chain.
+
+### Ordered next attacks (all on M1b-term)
+1. **Build the corrected reduct** `iIndReductSeqG d0 d1 a k := ⟨d0, d1[a:=0..k-1]⟩` (seqRec) + prove
+   `zKValidF` for it (now PROVABLE — the threading is the `isChainInf_iCritReductSeq` pattern, generalized to
+   `k` steps) + re-prove the iotil fold descent. Then re-key `iRInd`/`red_zInd` and ripple-fix the descent infra.
+   This is the genuine fix and the right hardest-first target.
+2. **Alternative (cheaper, if the orbit is Ind-free):** investigate whether the regular ⊥-orbit
+   (`ZDerivesEmptyR`) is or can be made **Ind-free** (tag-3 absent from the tree), discharging tag-3 by VACUITY
+   in both `redSoundGen` and `descent_step_K_majorIdx`. Pushes the induction realization upstream to M2's
+   `foundation_bot_to_Z_empty` (PA-induction → chain at embedding). M2-adjacent; check feasibility before M1b commit.
+3. **Parallel M1b-term piece (unblocked):** `descent_step_K_majorIdx`'s **tag-5/6** (principal cut via banked
+   `majorPrem_zAx{All,Neg}_cutPartner` + the shared `hAll` bridge) and **tag-4** (structural `<`-recursion) do
+   NOT depend on the Ind reduct. These remain the genuine open content and are attackable now.
+
+### What this lap proved (sorry-free, green)
+- `isChainInf_iIndReduct_exit` (Crux2Blueprint, after :81) — pure chain combinatorics: the length-2 reduct's
+  validity forces a premise succedent = `seqSucc s` or `⊥`.
+- `zKValidF_iIndReduct_forces_degenerate` — with `zIndWff`, the term-degeneracy constraint = the refutation.
+- `zKValidF_iIndReduct_of_zInd` STAYS a `sorry` (it is false; left in place as the interface marker with a
+  ⚠️ OBSTRUCTION doc block pointing here). Do NOT attack it as stated — fix the reduct (attack 1) instead.
+
+---
+
+## lap 135 — ✅ existence-form PIVOT **PORTED TO SRC**: monolithic `false_of_ZDerivesEmpty` DECOMPOSED
 **Build 🟢 1326. Headline axiom footprint UNCHANGED** (`[propext, sorryAx, Classical.choice, Quot.sound]` —
 faithful, no new axioms). Ran the operator-mandated lap-132 existence-form spike to decision (PIVOT), then
 ported the decomposition into `src/GoodsteinPA/Crux2Blueprint.lean`:
