@@ -1,5 +1,63 @@
 # Pending work — open obligations & attack paths
 
+## lap 122 — the generalized redex finder is ASSEMBLED; the "L-axiom caveat" is REFUTED
+**Build 🟢 1326; new theorem axiom-clean `[propext, choice, Quot.sound]`.** Banked
+`inference_critical_pair_of_chain_reroute` (InternalZ, right after `exit_nonRep_of_reroute`).
+
+**THE DELIVERABLE.** The full Sub-lemma A + Sub-lemma B assembly the lap-121 baton scheduled. It is
+`inference_critical_pair_of_chain` with its `hnperm` **isymRep clause replaced by a re-route hypothesis**
+`hreroute : ∀ i ≤ j0, tp(znth ds i) = isymRep → ∃ i' < i, chainAsucc ds i' = chainAsucc ds i`. It still
+produces the genuine `(R_A, L^k_A)` redex with `0 < rk A ≤ r`. So a valid ⊥-chain whose ONLY
+criticality-failures are re-routable permissible premises STILL drives the K-descent
+(`iord_descent_iRcrit_of_redex`) — the threaded-atom stall dissolved with no engine surgery, **modulo
+discharging `hreroute`**. Proof structure: Step A = `exit_nonRep_of_reroute` (non-Rep exit ⟹ left symbol);
+Step B = least left symbol `j` (search over `tpSeq ds`, NOT `tp(znth ds ·)` — the latter blows up aesop
+depth, see below); Step C = least source `i'` of the cut formula `B` via `least_number` on the definable
+`chainAsucc ds · = B`.
+
+**⭐ THE L-AXIOM CAVEAT IS REFUTED (the decisive lap-121 sub-question, settled).** The lap-121 baton flagged
+as a genuine risk: "the threading may bottom out at an `isymLk` L-axiom (succ B), not an `isymR(B)`
+producer — then the generalized finder FAILS." It does NOT. Step B takes the **LEAST** left-symbol index
+`j`; the cut formula `B = A_i` (i < j) is re-routed to its **least** source `i'`, and `i' ≤ i < j`, so
+every re-route lands strictly below `j` — where by minimality of `j` there are **no left symbols at all**.
+Hence the source can never be an `isymLk` L-axiom. The least source `i'` is non-left (minimality of `j`) and
+non-`isymRep` (a re-route would hand back a strictly smaller source, contradicting `i'` least), therefore
+`I_{i'} = R_B`. The redex is `(i', j)`. So path (i) is sound on the L-axiom front; the baton's pessimism
+was over-cautious.
+
+**THE GENUINE RESIDUAL (sharpened, replaces the refuted caveat) — discharge `hreroute`.** The finder is
+banked modulo its one open input `hreroute`, which must hold for **every** `isymRep` premise `≤ j0`.
+`chainAsucc_threaded_of_leaf` (lap 121) discharges it for the LEAF isymRep shapes (`zAtom`/`zAx1`, tags
+0/7) — their succedent sits in their own antecedent, so chain-threading routes it to an earlier premise.
+But `isymRep` ALSO arises from **chain (tag-3) and Ind (tag-4)** premises (`tp_zK`/`tp_zInd`), whose
+succedent need NOT appear in their own antecedent — so the leaf lemma does not re-route them. **Decisive
+next sub-question:** in a valid ⊥-chain, can a chain/Ind premise (isymRep, succedent = the cut formula `B`,
+`0 < rk B`) appear at the least source `i'` (i.e. below the least left symbol)? Two ways to close:
+- **(α) exclude / defer them:** likely the right framing — a chain/Ind premise with succ `B` (`0 < rk B`) is
+  itself a smaller derivation of `B`, so the *outer* descent recursion (`iord`) covers it; the finder need
+  only handle the genuinely-atomic stall. Show the least source ≤ j0 is never tag-3/4, or split the
+  descent so tag-3/4 sources route to the IH.
+- **(β) re-route them too** — probably FALSE in general (a chain's succedent is free), so (α) is likelier.
+
+**Definability recipe worth remembering (lap 122).** `simp only [isymIsL]; definability` on
+`isymIsL (tp (znth ds x))` TIMES OUT at whnf (aesop depth-blowup on the composed `tp`, per memory
+`definability-aesop-depth-blowup`). Two fixes were both needed: (i) search over the coded map `tpSeq ds`
+via `znth (tpSeq ds) x` (`znth_tpSeq` bridges `= tp (znth ds x)` for `x < lh ds`) instead of `tp(znth ds ·)`;
+(ii) `set Is := tpSeq ds with hIs; clear_value Is` BEFORE `definability`, else `definability` recurses into
+`tpSeq`'s heavy `PR.Construction` and times out. The whole theorem also needs `set_option maxHeartbeats
+1000000`. The `chainAsucc ds · = B` predicate uses the hand-built comp term from `exit_nonRep_of_reroute`.
+
+**NEXT-LAP TARGETS (in order):**
+1. **[lap 123] Discharge `hreroute` for chain/Ind premises** — attack path (α): prove that in a valid
+   ⊥-chain, the least source of the cut formula is never a tag-3/4 node, OR that such a node is covered by
+   the outer `iord` descent recursion rather than the finder. THE remaining gate on path (i).
+2. Wire the assembled finder + discharged `hreroute` into `iord_descent_iRcrit_of_redex` to obtain a
+   stall-free K-descent lemma for valid ⊥-chains.
+3. Re-point the endgame `false_of_ZDerivesEmpty` (M3) strict-descent disjunct onto this stall-free track
+   (cf. lap-121 note: `iR2`-track and `red`-track share the ordinal `iord_iRcritG_eq_iRcrit`).
+4. Sibling (independent of the stall): `zKValidF_iIndReduct_of_zInd` (lap-120 found it false as stated;
+   fix = instance-correct Ind reduct via `zsubst`). Then `foundation_bot_to_Z_empty` (M2) + `gentzenDescentφ`.
+
 ## lap 121 — the stall SPLITS: junk-beyond-j0 is provably harmless; only threaded atom ≤ j0 is open
 **Build 🟢 1326; new lemma axiom-clean `[propext, choice, Quot.sound]`.** Banked
 `iord_descent_iR2_zK_of_validF_critUpTo` (InternalZ, right after `iord_descent_iR2_zK_of_valid`).
