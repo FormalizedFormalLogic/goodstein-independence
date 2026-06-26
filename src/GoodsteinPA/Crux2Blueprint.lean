@@ -1807,74 +1807,114 @@ theorem descent_K_majorIdx_Ind_descends {s r ds : V}
     · rw [heq] at hind; simp at hind
   exact iord_descent_zK_replace_explicit hds hmem hmlt hIH
 
-/-! ### `descent_step_K_majorIdx` — DECOMPOSED by major-premise tag (lap 140)
+/-! ### Critical/non-critical reframe (lap 141 SPIKE) — Buchholz §3.2 case 5.1 vs 5.2, the FAITHFUL split
 
-`majorPrem_tag_mem` (`InternalZ`) proves the faithful major premise `dⱼ = znth ds (majorIdx (zK s r ds))` of a
-regular `∅→⊥` K-node has `zTag ∈ {3,4,5,6}` (the `{0,7}` atom/`Ax¹` leaves never stall it; `{1,2}` R-intro
-succedents are `≠ ^⊥`). Each tag is a structurally-distinct reduct + soundness, so the single fat per-step
-`sorry` splits into four independently-attackable per-tag obligations (RAISES src count = progress). The
-dispatcher `descent_step_K_majorIdx` below is sorry-FREE — it is pure `rcases` plumbing on the four. -/
+The lap-140 tag-{3,4,5,6} decomposition keys the reduct on the *major premise's* inference symbol, and its
+tag-5/6 leaves wall on proving the major premise's cut partner is a PRINCIPAL R-intro (Buchholz criticality,
+not merely "a premise with that succedent"). **That wall is an ARTIFACT of the major-premise framing.**
+Buchholz's actual reduction (Def 3.2 case 5) splits on whether the chain is CRITICAL, not on the major
+premise's tag:
+- **5.1 critical** (`∀ i ≤ j0, ¬ iperm (tp dᵢ) Π`): Lemma 3.1 (`inference_critical_pair`, banked) produces a
+  PRINCIPAL redex pair `(i,j)` with `tp dᵢ = R_{Aᵢ}` **for free** — no separate "producer is principal" proof.
+  The reduct is `iR2 (zK s r ds)`; its DESCENT is the banked `iord_descent_iR2_zK_of_validF_critUpTo`.
+- **5.2 non-critical** (`∃ i ≤ j0, iperm (tp dᵢ) Π`): replace/splice the minimal permissible premise `i` with
+  its own reduct (Buchholz 5.2.1/5.2.2) — structural recursion via the banked `iord_descent_zK_replace_explicit`.
 
-/-- **tag-3 (Ind major premise).** `dⱼ = zInd …`. The genuine reduct is the lap-136 *corrected substituted
-chain* `iIndReductSeqG d0 d1 a k` (NOT the `red dⱼ` single-replace witness — that is the ordinal-shadow FALSE
-sorry, lap-138: `zKValidF_iIndReduct_of_zInd` is false-at-degenerate). DESCENT of the `seqUpdate`-replace is
-`descent_K_majorIdx_Ind_descends` (proven). RESIDUAL = the chain VALIDITY `isChainInf_iIndReductSeqG` (assemble
-via `isChainInf_of_last`, readouts banked; ⚠️ pin the `t=t'+1`-vs-`numeral k` exit subtlety first, lap-138). -/
-theorem descent_step_K_tag3 {s r ds : V}
+The lemma below is the lap-141 spike result: the **critical case closes** modulo only the recursive soundness
+residual `ZDerivesEmptyR (iR2 …)` (Buchholz Thm 3.4 R2). It overturns lap-139's "the existence reframe does not
+obviate the deep content" *for the tag-5/6 sub-case*: the producer-principal obstruction is gone, replaced by
+the standard textbook R2 + non-critical recursion. -/
+
+/-- **SPIKE (lap 141) — the CRITICAL-case K-step descent.** For a regular `∅→⊥` chain `zK s r ds` that is
+critical up to its chain exit `j0` (Buchholz Def 3.2 case 5.1), the genuine reduct `iR2 (zK s r ds)` is a
+sound, strictly-`iord`-descending `ZDerivesEmptyR`-reduct. DESCENT = `iord_descent_iR2_zK_of_validF_critUpTo`
+(banked, sorry-free); SOUNDNESS `hsound` = the recursive Buchholz Thm 3.4(b)/R2 residual (taken as a
+hypothesis here). **Crucially, this case has NO "cutPartner-is-principal-R-intro" obligation** — Lemma 3.1,
+inside the descent lemma, supplies the principal redex pair from criticality alone. The `j0`/`hAj0`/`hchain`/
+`hrank` data come from the `isChainInf` conjunct of `zKValidF_of_ZDerivation_zK hZ`; `hcrit` is the case
+assumption. -/
+theorem descent_step_K_critical {s r ds j0 : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hsound : ZDerivesEmptyR (iR2 (zK s r ds)))
+    (hj0 : j0 < lh ds)
+    (hAj0 : chainAsucc ds j0 = seqSucc s ∨ chainAsucc ds j0 = (^⊥ : V))
+    (hchain : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+      inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hcrit : ∀ i ≤ j0, ¬ iperm (tp (znth ds i)) s) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  exact ⟨iR2 (zK s r ds), hsound,
+    iord_descent_iR2_zK_of_validF_critUpTo hds hmem (zKValidF_of_ZDerivation_zK hZ)
+      hj0 hAj0 hchain hrank hcrit⟩
+
+/-! ### `descent_step_K_majorIdx` — DECOMPOSED critical / non-critical (lap 141, Buchholz §3.2 case 5)
+
+**Reframed from the lap-140 major-premise-tag split** (which walled on tag-5/6 "the major premise's cut
+partner is a PRINCIPAL R-intro"). The lap-141 spike `descent_step_K_critical` confirmed IN-KERNEL that
+Buchholz's own critical/non-critical split (Def 3.2 case 5) obviates that wall: in the critical case Lemma
+3.1 (`inference_critical_pair`) supplies the principal redex pair FOR FREE — no producer-principal proof.
+So the dispatcher case-splits on criticality up to the chain exit `j0` (read off `isChainInf`), reducing the
+four tag-leaves to TWO obligations, and the producer-principal residual (the lap-139/140 obstruction) is GONE:
+- `descent_step_K_critical_soundness` = the recursive R2 soundness `ZDerivesEmptyR (iR2 …)` (Buchholz Thm
+  3.4(b)); the critical-case DESCENT is already banked (`iord_descent_iR2_zK_of_validF_critUpTo`).
+- `descent_step_K_noncritical` = Buchholz case 5.2 (replace/splice the minimal Π-permissible premise). -/
+
+/-- **Critical-case SOUNDNESS residual (Buchholz Thm 3.4(b) / `RedSound` restricted to the critical chain).**
+For a regular `∅→⊥` chain `zK s r ds` critical up to `j0`, the genuine reduct `iR2 (zK s r ds)` is again a
+`ZDerivesEmptyR`. This is the recursive reduction-soundness: `iCritReductG`'s two auxiliaries `d{0}`/`d{1}`
+are `ZDerivation`s of their reduced endsequents `Θ→A(d)` / `A(d),Θ→D` (the structural IH; `ZDerivation_iCritReductG_of`
+discharges the recombination once the auxiliaries are supplied). The DESCENT half is banked
+(`iord_descent_iR2_zK_of_validF_critUpTo`); this soundness is the one remaining critical-case gap. -/
+theorem descent_step_K_critical_soundness {s r ds j0 : V}
     (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
     (hsa : ZSeqAnt (zK s r ds))
     (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 3) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+    (hj0 : j0 < lh ds)
+    (hAj0 : chainAsucc ds j0 = seqSucc s ∨ chainAsucc ds j0 = (^⊥ : V))
+    (hchain : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+      inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hcrit : ∀ i ≤ j0, ¬ iperm (tp (znth ds i)) s) :
+    ZDerivesEmptyR (iR2 (zK s r ds)) := sorry
 
-/-- **tag-4 (chain major premise).** `dⱼ = zK …` — a sub-K-chain whose succedent is `^⊥`. The relocated
-structural `<`-recursion (Buchholz: recurse into the sub-chain, generalized over premises with non-empty
-antecedent). The deep structural core; the recursion's well-foundedness is `iord`-descent on the sub-chain. -/
-theorem descent_step_K_tag4 {s r ds : V}
+/-- **Non-critical case (Buchholz §3.2 case 5.2).** When the chain is NOT critical up to `j0` — i.e. some
+premise `i ≤ j0` is permissible for the conclusion `∅→⊥` (necessarily `tp dᵢ = Rep`: an Ind/K/atom/Ax¹
+node) — the reduction works at the minimal such premise `i`: 5.2.1 `dᵢ` critical → splice `dᵢ{0}dᵢ{1}`;
+5.2.2 `dᵢ` not critical → replace premise `i` with its own reduct `dᵢ[0]`. DESCENT via the banked
+`iord_descent_zK_replace_explicit` (replace) / the splice descent; the recursion is structural on `dᵢ`.
+(This is where the lap-129 atom/`Ax¹`-leaf stall is genuinely resolved — by the §5 atomic reduction, not by
+a deterministic redex-finder.) -/
+theorem descent_step_K_noncritical {s r ds j0 : V}
     (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
     (hsa : ZSeqAnt (zK s r ds))
     (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 4) :
+    (hj0 : j0 < lh ds)
+    (hAj0 : chainAsucc ds j0 = seqSucc s ∨ chainAsucc ds j0 = (^⊥ : V))
+    (hchain : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+      inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hncrit : ∃ i ≤ j0, iperm (tp (znth ds i)) s) :
     ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
 
-/-- **tag-5 (∀-axiom major premise).** `dⱼ = zAxAll …` (`Ax^k_{∀p}`, a `red`-FIXPOINT). The faithful reduct is
-the PRINCIPAL `(R,L)` CUT at `(i', majorIdx)` where `i' < majorIdx` is the upstream R-introduction of `∀p`,
-PINNED by `majorPrem_zAxAll_cutPartner` (banked, `InternalZ:9217`). Built `iCritReductG`-style on the
-pair-parametric `_at` half-layer (lap-139: `haux0_at`/`haux1_at` + `cutFormulaAt`). RESIDUAL = the cutPartner
-`i'` is a PRINCIPAL R-intro of `∀p` (`znth ds i' = zIall …`), not merely a premise with succedent `^∀p`
-(Buchholz criticality — the deep tag-5/6 gap). -/
-theorem descent_step_K_tag5 {s r ds : V}
-    (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
-    (hsa : ZSeqAnt (zK s r ds))
-    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 5) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
-
-/-- **tag-6 (¬-axiom major premise).** `dⱼ = zAxNeg …` (`Ax^k_{¬p}`, a `red`-FIXPOINT). Dual to tag-5: the
-PRINCIPAL `(R,L)` CUT at `(i', majorIdx)` with `i'` the upstream R-introduction of `inegF p`, PINNED by
-`majorPrem_zAxNeg_cutPartner` (banked, `InternalZ:9245`); built on the `_neg` `_at` halves (`haux0_neg_at`/
-`haux1_neg_at`). RESIDUAL = the cutPartner is a PRINCIPAL R-intro of `¬p` (`znth ds i' = zIneg …`). -/
-theorem descent_step_K_tag6 {s r ds : V}
-    (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
-    (hsa : ZSeqAnt (zK s r ds))
-    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 6) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
-
-/-- **NAMED sub-`sorry` #1 — the per-step K-case math, now a sorry-FREE tag-DISPATCHER (lap 140).** A regular
-`∅→⊥` K-node has a SOUND, strictly-`iord`-descending reduct. Dispatches on the faithful major premise tag
-`∈ {3,4,5,6}` (`majorPrem_tag_mem`) to the four per-tag obligations above. The deep content now lives in the
-four `descent_step_K_tag{3,4,5,6}` leaves; this theorem is pure plumbing. -/
+/-- **NAMED sub-`sorry` #1 — the per-step K-case math, a sorry-FREE critical/non-critical DISPATCHER
+(lap 141).** A regular `∅→⊥` K-node has a SOUND, strictly-`iord`-descending reduct. Reads the chain exit
+`j0` off `isChainInf` (the first conjunct of `zKValidF`) and case-splits on criticality up to `j0` (Buchholz
+Def 3.2 case 5): critical → `descent_step_K_critical` (banked descent + the R2 soundness residual);
+non-critical → `descent_step_K_noncritical` (case 5.2). Pure plumbing — the deep content lives in the two
+leaves, and the tag-5/6 producer-principal wall is gone. -/
 theorem descent_step_K_majorIdx {s r ds : V}
     (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
     (hsa : ZSeqAnt (zK s r ds))
     (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V)) :
     ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
-  rcases majorPrem_tag_mem hZ hant hsucc with h3 | h4 | h5 | h6
-  · exact descent_step_K_tag3 hZ hreg hfr hsa hant hsucc h3
-  · exact descent_step_K_tag4 hZ hreg hfr hsa hant hsucc h4
-  · exact descent_step_K_tag5 hZ hreg hfr hsa hant hsucc h5
-  · exact descent_step_K_tag6 hZ hreg hfr hsa hant hsucc h6
+  obtain ⟨j0, hj0, hAj0, hchain, hrank⟩ := (zKValidF_of_ZDerivation_zK hZ).1
+  by_cases hcrit : ∀ i ≤ j0, ¬ iperm (tp (znth ds i)) s
+  · exact descent_step_K_critical hZ
+      (descent_step_K_critical_soundness hZ hreg hfr hsa hant hsucc hj0 hAj0 hchain hrank hcrit)
+      hj0 hAj0 hchain hrank hcrit
+  · push_neg at hcrit
+    exact descent_step_K_noncritical hZ hreg hfr hsa hant hsucc hj0 hAj0 hchain hrank hcrit
 
 /-- **(E') the existence-form one-step descent.** Every regular ⊥-orbit code has a sound, strictly-
 descending reduct — Ind root PROVEN (`iord_descent_red_zInd`), K root reduces to `descent_step_K_majorIdx`.
