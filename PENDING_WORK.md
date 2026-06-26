@@ -13,11 +13,12 @@ the stall; a leaf-stall ⊥-orbit `ZDerivation` exists. The fix is Buchholz §14
 are `zK`/`zInd` `isymRep`; its `hreroute`-for-non-leaf residual is false).
 
 **ATTACK PATH — the faithful-selection engine re-key (next lap's HIGHEST VALUE):**
-1. **`majorIdx d`** (new, mirror `permIdxAux`): least `i < lh (zKseq d)` with `chainAsucc (zKseq d) i =
-   seqSucc (fstIdx d)`. `𝚺₁`-definable. On the ⊥-orbit = first `⊥`-exit.
-2. **No-stall, end-to-end:** `ZDerivesEmptyR d → red d ≠ d` (or: the `majorIdx`-selected premise is
-   `red`-reducible). Core = `firstBotPrem_reducible` (tag ∈ {3,4,5,6}); add `red (zInd/zK/zAxAll/zAxNeg) ≠ id`
-   per tag.
+1. ✅ **DONE — `majorIdx d`** (`InternalZ.lean`, mirror `permIdxAux`): least `i < lh (zKseq d)` with
+   `chainAsucc (zKseq d) i = seqSucc (fstIdx d)` (`isMajorPrem`). Full `𝚺₁`-definable PR.Blueprint +
+   `_le`/`_isMajorPrem_of_lt`/`_eq_self_of_none`/`_found`/`_le_of_isMajorPrem`. On the ⊥-orbit = first `⊥`-exit.
+2. ✅ **DONE (selector form) — `majorIdx_botOrbit_reducible`:** on a `∅→⊥` chain, `majorIdx` lands IN-RANGE on
+   a `⊥`-succedent premise with `zTag ∉ {0,7}` — the end-to-end no-stall guarantee. (The `red d ≠ d`
+   consequence falls out once `iRK` uses `majorIdx`: the selected premise is non-leaf hence `red`-reducible.)
 3. **Re-key `iRK`** replace branch: dispatch on `majorIdx` (was `permIdx`). Critical/splice fires when the
    major premise's OWN reduction is an `(R,L)` cut (Buchholz 14.253). Ripples: `permIdx`/`permIdxAux`-family
    `𝚺₁` defs, `iord_descent_red` (atom/`zAx1` fixpoint branches → UNREACHABLE, drop), `fstIdx_red_*` /
