@@ -1,6 +1,55 @@
 # Pending work — open obligations & attack paths
 
-## lap 141 (latest) — SPIKE DECIDED: existence/critical-pair reframe OBVIATES the tag-5/6 wall; K-step restructured
+## lap 142 (latest) — CRITICAL ∀-case soundness PROVEN via the genuine `iRKcCrit`, orbit-only (no `red`/`redSound`)
+**Build 🟢 green. Headline footprint UNCHANGED** (`[propext, sorryAx, Classical.choice, Quot.sound]`). New lemmas
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`, **no `sorryAx`**).
+
+### THE advance — the operator's existence-form spike, REALIZED in-kernel for the dominant critical sub-case
+`ZDerivation_iRKcCrit_critical_all` (`Crux2Blueprint`, **sorry-FREE**) proves: for a regular `∅→⊥` chain that is
+critical (`¬ permIdx < lh ds`) whose R-redex is an `I∀`, the GENUINE re-keyed critical reduct `iRKcCrit (zK s r ds)`
+is a `ZDerivation` — derived **purely from the orbit** (`ZDerivesEmptyR + criticality`), reusing the BANKED
+per-reduct soundness `ZDerivation_iRKcCrit_all` (laps 112-119) **with NO dependence on `red`/`redSound`** (whose
+critical reduct is the FALSE-as-stated instance-`0` shadow `ZDerivation_red_zK_crit`, `Crux2Blueprint:1108`) and
+**NO selection-correctness campaign**. This demonstrates the operator-mandated reframe (existence form reusing
+banked per-reduct soundness) end-to-end in kernel for the ∀-case — the dominant critical sub-case.
+
+### What unblocked it — the lap-130 "exact-shape obstruction" was STALE
+The lap-130 docstrings (`InternalZ:1553`, `Crux2Blueprint`) claimed `seqSucc sⱼ = cutFormula` (the `hAll` input to
+`ZDerivation_iRKcCrit_*`) was "not yet derivable from `zKValid`" because the `zAxAll` ZPhi disjunct carried only
+`∀p ∈ Γ`. **That strengthening already landed:** the `zAxAll` disjunct (`InternalZ:5372`) NOW carries
+`zAxAllSuccWff s p k` (= `seqSucc s = F(k)`). So the obstruction is GONE. Supporting changes this lap:
+- **`redZKReady_of_zKValid` extended** — its ∀-branch now also yields `seqSucc sⱼ = cutFormula` (read off via
+  `zDerivation_zAxAll_inv`'s `zAxAllSuccWff`, whose instance index `k' = π₁(π₂(tp dⱼ))` matches `cutFormula`'s
+  readout exactly). `zDerivation_zAxAll_inv` HOISTED above `redZKReady`. 2 destructure sites updated (`_hsj`).
+- **`chainInf_redexI_data`** (new, refactored out of `irk_chainAsucc_redexI_le`) — exposes the `isChainInf` tip
+  `j0` with `redexI < j0` + threading/rank up to `j0`. The ∀-case needs threading only up to `redexI`
+  (`ZDerivation_iRcritG_corrected`'s `haux1` L-half takes NONE), so `redexI < j0` suffices.
+
+### THE remaining critical residual — the ¬-case needs `redexJ ≤ j0` (NOT free from `zKValid`)
+The ¬-case (`I¬` R-redex + `axNeg` L-redex) routes through `ZDerivation_iRKcCrit_neg`, whose succedent half
+`ZDerivation_corrected_haux0_neg` REPLACES premise `redexJ` and so needs threading **up to `redexJ`**. From
+`zKValid`'s `isChainInf` we only get threading up to the existential tip `j0`, and `redexJ ≤ j0` is **genuinely
+not provable** in general: the minimal redex `⟪redexI, redexJ⟫` (= `redexCode`) could have `redexJ > j0` (e.g. a
+redex `⟪0, big⟫` with `big > j0` has smaller pair-code than a `j0`-region redex, so it could be the minimum). The
+∀-case dodges this because its threading-heavy half is at `redexI < j0` (provable, `chainInf_redexI_data`).
+
+**NEXT ATTACK (hardest-first, to fully re-route `descent_step_K_critical` off `red` and drop its dependence on
+the false 1108):**
+1. **Prove `redexJ ≤ j0` (or `j0 = lh ds − 1`) for ⊥-orbit chains.** The genuine reducts build chains with the
+   LAST premise as tip (`isChainInf_of_last`, `isChainInf_iCritReductSeq`: source FIRST, cut-user LAST), so
+   `j0 = lh ds − 1` and `redexJ < lh ds = j0+1`. But `zKValid` stores only the existential `j0`. Either (a)
+   strengthen the ⊥-orbit chain invariant to pin `j0 = lh ds − 1` (carried hereditarily by the embedding + reducts),
+   or (b) weaken `ZDerivation_corrected_haux0_neg` to need only threading up to `min(redexJ, j0)` (when `redexJ > j0`
+   the replaced premise is outside the threaded region, so the rebuilt chain keeps `j0` as tip).
+2. Then `ZDerivation_iRKcCrit_botOrbit` discharges BOTH cases; `descent_step_K_critical` re-routes to witness
+   `iRKcCrit` (needs also `ZSeqAnt_iRKcCrit` — derive alongside the banked `ZRegular_iRKcCrit_of_zK`/`ZFresh_iRKcCrit`/
+   `fstIdx_iRKcCrit` + the banked descent `iord_descent_iRKcCrit_corr/_neg`), dropping its dependence on `red`.
+3. The Ind ROOT of `ZDerivesEmptyR_descent_step` ALSO routes through `red`/`redSound`→ the false
+   `zKValidF_iIndReduct_of_zInd` (`Crux2Blueprint:80`, lap-136 obstruction): genuine fix = the recursive predecessor
+   cut. Once BOTH critical-K (via iRKcCrit) and Ind (via the corrected reduct) are off `red`, `redSound` (with its
+   false 1108/82 + the selection-campaign sorries) LEAVES the existence-form termination path entirely.
+
+## lap 141 — SPIKE DECIDED: existence/critical-pair reframe OBVIATES the tag-5/6 wall; K-step restructured
 **Build 🟢 1326. Headline footprint UNCHANGED** (`[propext, sorryAx, Classical.choice, Quot.sound]`). Commits `3ca3221`
 (spike+restructure) → `0ee70e4` (correction: critical case via SOUND `red`, drop false-risk `iR2` sorry).
 

@@ -1,12 +1,22 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 141 · 2026-06-26 · `0ee70e4`
-· Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**,
-re-verified in-kernel lap-141 `lake env lean`); `goodsteinSentence_faithful` axiom-clean. The lone `sorryAx`
-traces to crux-2 (the internalized cut-elimination).
+· **Build**: 🟢 green · **Updated**: lap 142 · 2026-06-26
+· Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**);
+`goodsteinSentence_faithful` axiom-clean. The lone `sorryAx` traces to crux-2 (the internalized cut-elimination).
 
-> **⭐⭐⭐ Lap-141 — SPIKE DECIDED: existence/critical-pair reframe OBVIATES the tag-5/6 wall (read FIRST — current).**
+> **⭐⭐⭐ Lap-142 — CRITICAL ∀-case soundness PROVEN via the genuine `iRKcCrit`, orbit-only (read FIRST — current).**
+> `ZDerivation_iRKcCrit_critical_all` (sorry-FREE, `#print axioms`-clean) proves the critical ∀-case reduct
+> `iRKcCrit` is a `ZDerivation` derived PURELY from `ZDerivesEmptyR + criticality` — reusing the banked per-reduct
+> soundness `ZDerivation_iRKcCrit_all` (laps 112-119) with **NO `red`/`redSound` dependence** (so no false `:1108`
+> instance-0 shadow) and **NO selection campaign**. This realizes the operator's existence-form spike end-to-end
+> in kernel for the dominant critical sub-case. Unblocked by: the `zAxAll` ZPhi disjunct already carries
+> `zAxAllSuccWff` (lap-130 "exact-shape obstruction" was STALE) → `redZKReady_of_zKValid` extended to yield
+> `seqSucc sⱼ = cutFormula`; new `chainInf_redexI_data` gives `redexI < j0` + threading. **Remaining critical
+> residual = the ¬-case's `redexJ ≤ j0`** (NOT free from `zKValid`; fix = pin `j0 = lh ds−1` on ⊥-orbit chains, or
+> weaken `haux0_neg` threading). See `PENDING_WORK.md` lap-142. ↓ lap-141 below is superseded for the critical case.
+
+> **⭐⭐ Lap-141 — SPIKE DECIDED: existence/critical-pair reframe OBVIATES the tag-5/6 wall.**
 > The operator-mandated existence-form reframe spike was RUN and DECIDED in-kernel: `descent_step_K_critical`
 > (sorry-FREE, compiles green) proves the reframe **does** obviate the tag-5/6 "cutPartner-is-principal-R-intro"
 > residual — overturning lap-139 for that sub-case. Buchholz §3.2 splits the K-reduction CRITICAL/NON-CRITICAL

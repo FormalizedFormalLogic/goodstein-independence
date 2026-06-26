@@ -1015,7 +1015,7 @@ theorem ZDerivation_iRKcCrit_of_zKValid {s r ds : V}
   -- premise by `zDerivation_zIneg_inv` (the lap-134 `zInegAntWff` strengthening) — so `hNeg` is GONE.
   have hds : Seq ds := (zDerivation_zK_inv hZ).1
   have hmem : ∀ i < lh ds, ZDerivation (znth ds i) := (zDerivation_zK_inv hZ).2
-  rcases hcase with ⟨sᵢ, sⱼ, a, p, pj, k', d0, hdi, hdj, _hirk⟩ |
+  rcases hcase with ⟨sᵢ, sⱼ, a, p, pj, k', d0, hdi, hdj, _hirk, _hsj⟩ |
     ⟨sᵢ, sⱼ, p, d0, hdi, hdj, hcut, _hpUf⟩
   · obtain ⟨heig, hpwff, hsj⟩ := hAll sᵢ sⱼ a p pj k' d0 hdi hdj
     have hSeqsj : Seq (seqAnt sⱼ) := by
@@ -1828,6 +1828,56 @@ on the `permIdx` criticality sentinel:
 This overturns lap-139's "the existence reframe does not obviate the deep content" *for the tag-5/6 sub-case*:
 the producer-principal obstruction is gone; what remains is the standard red-R2 (1108, pre-existing) + the
 non-critical 5.2 recursion. -/
+
+/-- **CRITICAL-case soundness via the GENUINE re-keyed reduct `iRKcCrit` — ∀-redex case, PROVEN from the
+orbit alone (lap 142).** For a regular `∅→⊥` chain that is critical (`¬ permIdx < lh ds`) whose R-redex is
+an `I∀` (`hAcase`), `iRKcCrit (zK s r ds)` is a genuine `ZDerivation`. **This realizes the operator-mandated
+existence-form spike for the dominant critical sub-case:** it reuses the BANKED per-reduct soundness
+`ZDerivation_iRKcCrit_all` (laps 112-119) DIRECTLY from the chain's own `zKValid`/`ZFresh`/`ZSeqAnt`, with
+NO dependence on `red`/`redSound` (whose critical reduct is the FALSE-as-stated instance-`0` shadow
+`ZDerivation_red_zK_crit`) and NO selection-correctness campaign.
+
+Every input is now derivable: redex data (`redZKReady_of_zKValid`, ∀-branch — now also yielding
+`seqSucc sⱼ = cutFormula` via the `zAxAll` disjunct's `zAxAllSuccWff`); eigen-freshness `maxEigen d0 < a`
+(premise `ZRegular`); matrix wff (the I∀ premise's `zIallWff`); cut wff (`cutFormula_wff_of_zKValid`); the
+axAll premise's `Seq` antecedent (`seq_seqAnt_zK_premise`); and the threading/rank **up to `redexI`**
+(`chainInf_redexI_data` gives `redexI < j0`, restricting the `isChainInf` data). Only the ∀-half R-redex
+needs threading — `ZDerivation_iRcritG_corrected`'s `haux1` L-half takes none — so `redexI < j0` suffices,
+and the `redexJ ≤ j0` obligation that blocks the ¬-case (`PENDING_WORK` lap-142) never arises here. -/
+theorem ZDerivation_iRKcCrit_critical_all {s r ds : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hcrit : ¬ permIdx (zK s r ds) < lh ds)
+    (hAcase : ∃ sᵢ a p d0, znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0) :
+    ZDerivation (iRKcCrit (zK s r ds)) := by
+  have hZ : ZDerivation (zK s r ds) := hd.1.1
+  have hvalid : zKValid s r ds := zKValid_iff_zKValidF_and_zKCritical.mpr
+    ⟨zKValidF_of_ZDerivation_zK hZ, zKCritical_of_not_permIdx_lt hcrit⟩
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  obtain ⟨hIJ, hJlt, hcase⟩ := redZKReady_of_zKValid hZ hvalid
+  have hIlt : redexI (zK s r ds) < lh ds := lt_trans hIJ hJlt
+  rcases hcase with ⟨sᵢ, sⱼ, a, p, pj, k', d0, hdi, hdj, _hirk, hsj⟩ |
+    ⟨sᵢ, sⱼ, p, d0, hdi, hdj, _hcut, _hpUf⟩
+  · -- ∀-redex: assemble the orbit data and apply the banked `ZDerivation_iRKcCrit_all`.
+    have hZdi : ZDerivation (zIall sᵢ a p d0) := hdi ▸ hmem _ hIlt
+    obtain ⟨_, _, hwff⟩ := zDerivation_zIall_inv hZdi
+    have hpwff : IsUFormula ℒₒᵣ p := hwff.2.2.isUFormula
+    have hregI : ZRegular (zIall sᵢ a p d0) := hdi ▸ ZRegular_zK_premise hds hd.2.1 hIlt
+    have heig : maxEigen d0 < a := maxEigen_lt_of_regular_zIall hregI
+    have hant : seqAnt s = (∅ : V) := by have h := hd.1.2.1; rwa [fstIdx_zK] at h
+    have hSeqsj : Seq (seqAnt sⱼ) := by
+      have h := seq_seqAnt_zK_premise hds hd.2.2.2 hJlt (hmem _ hJlt) (by rw [hdj]; simp)
+      rwa [hdj, fstIdx_zAxAll] at h
+    obtain ⟨j0, _, hI_lt_j0, hthread0, hrank0⟩ := chainInf_redexI_data hvalid
+    exact ZDerivation_iRKcCrit_all hZ hIlt hJlt hIJ hdi hdj heig hd.2.2.1 hpwff
+      (cutFormula_wff_of_zKValid hZ hvalid) (by rw [hant]; exact seq_empty) hSeqsj hsj
+      (fun i' hi' => hthread0 i' (le_of_lt (lt_of_le_of_lt hi' hI_lt_j0)))
+      (fun i' hi' => hrank0 i' (lt_trans hi' hI_lt_j0))
+      (irk_chainAsucc_redexI_le hvalid)
+  · -- ¬-redex branch: the R-redex is `zIneg`, contradicting the `I∀` hypothesis `hAcase`.
+    exfalso
+    obtain ⟨sᵢ', a', p', d0', hdi'⟩ := hAcase
+    rw [hdi'] at hdi
+    exact absurd (congrArg zTag hdi) (by rw [zTag_zIall, zTag_zIneg]; simp)
 
 /-- **CRITICAL case (Buchholz §3.2 case 5.1).** A regular `∅→⊥` chain that is critical (`¬ permIdx < lh ds`)
 has `red (zK s r ds) = iRcritG …` as a strictly-`iord`-descending reduct. DESCENT = `iord_descent_red_zK_crit`

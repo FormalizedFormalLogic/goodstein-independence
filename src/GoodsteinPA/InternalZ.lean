@@ -8328,20 +8328,43 @@ lemma zTag_redexI_of_zKValid {s r ds : V} (hvalid : zKValid s r ds) :
     zTag (znth ds (redexI (zK s r ds))) = 1 ∨ zTag (znth ds (redexI (zK s r ds))) = 2 :=
   tp_isymR_tag (redexPair_tp (isRedexPair_redexCode_of_zKValid hvalid)).1
 
+/-- **§5 ∀-axiom inversion**: a `ZDerivation` of the left-axiom `zAxAll s p k` carries the matrix's
+formula-hood and the side condition `∀p ∈ Γ` — and (the lap-130 `zAxAll` ZPhi strengthening) the genuine
+succedent shape `zAxAllSuccWff s p k` (`seqSucc s = F(k)`). Peels the L-redex premise (the `^∀ p` cut
+formula). (Hoisted above `redZKReady_of_zKValid`, which now reads off `seqSucc sⱼ = cutFormula`.) -/
+lemma zDerivation_zAxAll_inv {s p k : V} (hZ : ZDerivation (zAxAll s p k)) :
+    IsSemiformula ℒₒᵣ 1 p ∧ inAnt (^∀ p : V) (seqAnt s) ∧ zAxAllSuccWff s p k := by
+  rcases zDerivation_iff.mp hZ with ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
+    ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
+    ⟨s', p', k', h, hp, hin, hsucc⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C, h, _⟩
+  · exact absurd (congrArg zTag h) (by simp)
+  · exact absurd (congrArg zTag h) (by simp)
+  · exact absurd (congrArg zTag h) (by simp)
+  · exact absurd (congrArg zTag h) (by simp)
+  · exact absurd (congrArg zTag h) (by simp)
+  · obtain rfl : s = s' := by simpa using congrArg fstIdx h
+    obtain rfl : p = p' := by simpa using congrArg zAxAllF h
+    obtain rfl : k = k' := by simpa using congrArg zAxAllK h
+    exact ⟨hp, hin, hsucc⟩
+  · exact absurd (congrArg zTag h) (by simp)
+  · exact absurd (congrArg zTag h) (by simp)
+
 /-- **The `redZKReady` orbit bundle — the explicit redex constructor forms of a valid critical chain.**
 THE shared residual all three engine-swap fronts reduce to: from a valid critical chain `zK s r ds`,
 extract the in-range redex indices PLUS the polarity-dispatched explicit redex forms that the corrected
 reduct's soundness/descent lemmas consume. The R/L redexes share a formula `A` (`redexPair_tp`); inverting
 both (`zDerivation_isymR_form`/`_isymLk_form`) and cross-ruling the off-diagonal cases on `A` (since
 `∀p ≠ ¬p`) gives either the ∀-pair (`zIall`/`zAxAll` + the rank relation `irk(∀pj) = irk(cutFormula)+1`
-from `cutFormula_all`+`irk_substs1`+`irk_all`) or the ¬-pair (`zIneg`/`zAxNeg` + `cutFormula = p`). -/
+from `cutFormula_all`+`irk_substs1`+`irk_all`, and the succedent shape `seqSucc sⱼ = cutFormula` from the
+`zAxAll` disjunct's `zAxAllSuccWff`) or the ¬-pair (`zIneg`/`zAxNeg` + `cutFormula = p`). -/
 lemma redZKReady_of_zKValid {s r ds : V}
     (hZ : ZDerivation (zK s r ds)) (hvalid : zKValid s r ds) :
     redexI (zK s r ds) < redexJ (zK s r ds) ∧ redexJ (zK s r ds) < lh ds ∧
     ( (∃ sᵢ sⱼ a p pj k' d0,
         znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0 ∧
         znth ds (redexJ (zK s r ds)) = zAxAll sⱼ pj k' ∧
-        irk (^∀ pj : V) = irk (cutFormula (zK s r ds)) + 1)
+        irk (^∀ pj : V) = irk (cutFormula (zK s r ds)) + 1 ∧
+        seqSucc sⱼ = cutFormula (zK s r ds))
     ∨ (∃ sᵢ sⱼ p d0,
         znth ds (redexI (zK s r ds)) = zIneg sᵢ p d0 ∧
         znth ds (redexJ (zK s r ds)) = zAxNeg sⱼ p ∧
@@ -8381,10 +8404,16 @@ lemma redZKReady_of_zKValid {s r ds : V}
           (Bootstrapping.Arithmetic.numeral (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) p := by
         have h := cutFormula_all (d := zK s r ds) (by rw [zKseq_zK]; exact hChA)
         rwa [zKseq_zK] at h
-      refine ⟨sᵢ, sⱼ, a, p, pj, _, d0, hdi, hdj, ?_⟩
-      rw [hpjp, hcut, irk_substs1 hsf (by simp : IsSemiterm ℒₒᵣ 0
-        (Bootstrapping.Arithmetic.numeral (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds)))))) : V)),
-        irk_all hsf.isUFormula]
+      refine ⟨sᵢ, sⱼ, a, p, pj, _, d0, hdi, hdj, ?_, ?_⟩
+      · rw [hpjp, hcut, irk_substs1 hsf (by simp : IsSemiterm ℒₒᵣ 0
+          (Bootstrapping.Arithmetic.numeral (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds)))))) : V)),
+          irk_all hsf.isUFormula]
+      · -- `seqSucc sⱼ = cutFormula`: the `zAxAll` ZPhi disjunct now carries `zAxAllSuccWff`, and its
+        -- instance index `k' = π₁(π₂(tp dⱼ))` matches `cutFormula`'s readout exactly (`hcut`).
+        have hsucc : seqSucc sⱼ = substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral
+            (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) pj :=
+          (zDerivation_zAxAll_inv (hdj ▸ hZj)).2.2
+        rw [hsucc, hpjp, hcut]
     · -- L-redex is axNeg with `A = ¬pp`: contradicts `A = ^∀ p`
       exact absurd (hAp.symm.trans hAnn) (by simp [qqAll, inegF, qqOr])
   · -- R-redex is I¬, `A = ¬p`
@@ -8423,8 +8452,11 @@ irk (chainAsucc ds i) ≤ r` is the only one in `isChainInf`). It does NOT need 
 `pair_lt_pair` (the pairing is jointly strictly monotone), `redexI ≤ i0 ∨ redexJ ≤ j1` — and EITHER
 disjunct forces `redexI < j₀` (`redexI ≤ i0 < j1 ≤ j₀`, or `redexI < redexJ ≤ j1 ≤ j₀`). So the
 un-threaded tail `(j₀, lh ds)` can never hold the minimal redex. -/
-lemma irk_chainAsucc_redexI_le {s r ds : V} (hvalid : zKValid s r ds) :
-    irk (chainAsucc ds (redexI (zK s r ds))) ≤ r := by
+lemma chainInf_redexI_data {s r ds : V} (hvalid : zKValid s r ds) :
+    ∃ j0, j0 < lh ds ∧ redexI (zK s r ds) < j0 ∧
+      (∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i') ∧
+      (∀ i < j0, irk (chainAsucc ds i) ≤ r) := by
   obtain ⟨hci, hperm0, hnperm0, hf1, hf2, hf5, hf6, _hsucc, _hssf, _hsaf⟩ := hvalid
   obtain ⟨j0, hj0, hAj0, hchain, hrank⟩ := hci
   have hwfR : ∀ i ≤ j0, ∀ A, tp (znth ds i) = isymR A → 0 < irk A ∨ False :=
@@ -8466,11 +8498,16 @@ lemma irk_chainAsucc_redexI_le {s r ds : V} (hvalid : zKValid s r ds) :
   have hle_disj : redexI (zK s r ds) ≤ i0 ∨ redexJ (zK s r ds) ≤ j1 := by
     by_contra h; push_neg at h
     exact absurd (lt_of_lt_of_le (pair_lt_pair h.1 h.2) hpair_le) (_root_.lt_irrefl _)
-  -- Either disjunct forces `redexI < j₀`; the rank clause then applies.
+  -- Either disjunct forces `redexI < j₀`.
   have hI_lt_j0 : redexI (zK s r ds) < j0 := by
     rcases hle_disj with hle | hle
     · exact lt_of_le_of_lt hle (lt_of_lt_of_le hij hjle)
     · exact lt_of_lt_of_le (lt_of_lt_of_le hrc.1 hle) hjle
+  exact ⟨j0, hj0, hI_lt_j0, hchain, hrank⟩
+
+lemma irk_chainAsucc_redexI_le {s r ds : V} (hvalid : zKValid s r ds) :
+    irk (chainAsucc ds (redexI (zK s r ds))) ≤ r := by
+  obtain ⟨j0, _, hI_lt_j0, _, hrank⟩ := chainInf_redexI_data hvalid
   exact hrank _ hI_lt_j0
 
 /-- **Criticality from the `permIdx` sentinel**: `¬ permIdx (zK s r ds) < lh ds` (the `iRK` critical
@@ -8761,25 +8798,6 @@ lemma red_zIneg_tpReduce {s p d0 : V} (hZ : ZDerivation (zIneg s p d0)) :
   obtain ⟨hd0, hsucc, ⟨hbot, hmem, hp⟩, _⟩ := zDerivation_zIneg_inv hZ
   rw [red_zIneg, tp_zIneg, tpReduce_isymR_neg p (fstIdx (zIneg s p d0)) 0 hp]
   exact ⟨by rw [hbot, seqSucc_seqAddAnt, seqSucc_seqSetSucc], hmem⟩
-
-/-- **§5 ∀-axiom inversion**: a `ZDerivation` of the left-axiom `zAxAll s p k` carries the matrix's
-formula-hood and the side condition `∀p ∈ Γ`. Peels the L-redex premise (the `^∀ p` cut formula). -/
-lemma zDerivation_zAxAll_inv {s p k : V} (hZ : ZDerivation (zAxAll s p k)) :
-    IsSemiformula ℒₒᵣ 1 p ∧ inAnt (^∀ p : V) (seqAnt s) ∧ zAxAllSuccWff s p k := by
-  rcases zDerivation_iff.mp hZ with ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
-    ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
-    ⟨s', p', k', h, hp, hin, hsucc⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C, h, _⟩
-  · exact absurd (congrArg zTag h) (by simp)
-  · exact absurd (congrArg zTag h) (by simp)
-  · exact absurd (congrArg zTag h) (by simp)
-  · exact absurd (congrArg zTag h) (by simp)
-  · exact absurd (congrArg zTag h) (by simp)
-  · obtain rfl : s = s' := by simpa using congrArg fstIdx h
-    obtain rfl : p = p' := by simpa using congrArg zAxAllF h
-    obtain rfl : k = k' := by simpa using congrArg zAxAllK h
-    exact ⟨hp, hin, hsucc⟩
-  · exact absurd (congrArg zTag h) (by simp)
-  · exact absurd (congrArg zTag h) (by simp)
 
 /-- **§5 ¬-axiom inversion**: a `ZDerivation` of the left-axiom `zAxNeg s p` carries the matrix's
 formula-hood and the side condition `¬p ∈ Γ`. Peels the L-redex premise (the `inegF p` cut formula). -/
@@ -9346,7 +9364,8 @@ lemma cutFormula_wff_of_zKValid {s r ds : V}
   obtain ⟨hIJ, hJlt, hcase⟩ := redZKReady_of_zKValid hZ hvalid
   have hIlt : redexI (zK s r ds) < lh ds := lt_trans hIJ hJlt
   obtain ⟨_, hmem⟩ := zDerivation_zK_inv hZ
-  rcases hcase with ⟨sᵢ, sⱼ, a, p, pj, k', d0, hdi, hdj, _hrk⟩ | ⟨sᵢ, sⱼ, p, d0, hdi, hdj, hcut, hpUf⟩
+  rcases hcase with ⟨sᵢ, sⱼ, a, p, pj, k', d0, hdi, hdj, _hrk, _hsj⟩ |
+    ⟨sᵢ, sⱼ, p, d0, hdi, hdj, hcut, hpUf⟩
   · -- ∀-redex: `cutFormula = substs1 (numeral _) p`, `p` a 1-semiformula
     have hZi : ZDerivation (zIall sᵢ a p d0) := hdi ▸ hmem _ hIlt
     obtain ⟨_, hssi, hwff⟩ := zDerivation_zIall_inv hZi
