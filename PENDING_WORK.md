@@ -17,12 +17,18 @@ descent re-key. Reverted to keep `src/` green; landed the missing O1 front addit
   `ZRegular_zInegPrem` (I¬ child via `zReg_zIneg` heredity),
   `ZRegular_iRKcCrit` (whole corrected reduct regular; composes the slot facts; takes `htagI : zTag dᵢ∈{1,2}`).
 
-**NEXT:** the swap, correctly scoped into THREE fronts (do front 2 = descent in a prep lap, THEN atomic):
-(1) O1 — NOW DE-RISKED, re-prove `ZRegular_red_zK_crit` via `ZRegular_iRKcCrit` (`htagI` from `redexPair_tp`+
-`tp dᵢ=isymR`); (2) descent re-key (RedZKDescent, heavy) via banked `iord_descent_iRcritG_critReductCorr`/
-`_iRcritGNeg_critReductNeg`; (3) soundness `ZDerivation_red_zK_crit` via the two capstones + the `redZKReady`
-orbit bundle. Replay `scratchpad/lap119-engine-swap.diff` for the green InternalZ half. Full plan in HANDOFF
-lap-119.
+**Front 1 (O1) now FULLY CLOSED additively (2nd commit):** `ZRegular_iRKcCrit_of_zK` (Zsubst) proves
+`ZRegular (iRKcCrit (zK s r ds))` from `hZ`/`hreg`/`hvalid` alone — so once the swap lands,
+`ZRegular_red_zK_crit` is `rw [red_zK_crit hcrit]; exact ZRegular_iRKcCrit_of_zK …`. Supplied by new
+InternalZ orbit lemmas `isRedexPair_redexCode_of_zKValid` (full redex-pair certificate) +
+`zTag_redexI_of_zKValid` (R-redex is an I-rule). All axiom-clean.
+
+**NEXT:** the swap's remaining TWO fronts (do front 2 = descent in a prep lap, THEN atomic):
+(2) descent re-key (RedZKDescent `iord_descent_red_zK_crit`+`iCrit_halves_descend`, heavy) via banked
+`iord_descent_iRcritG_critReductCorr`/`_iRcritGNeg_critReductNeg`; (3) soundness `ZDerivation_red_zK_crit`
+via the two capstones + the `redZKReady` orbit bundle. Replay `scratchpad/lap119-engine-swap.diff` for the
+green InternalZ half (also: `ZRegular_red_zK_splice_of_chain` re-routes through `iRKcCrit_eq_corr`/`_eq_neg`).
+Full plan in HANDOFF lap-119.
 
 ## lap 118 — ¬-case inversion's `hpmem` residual DISCHARGED; capstone now unconditional
 **Build 🟢 green 1326; headline footprint intact (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms).
