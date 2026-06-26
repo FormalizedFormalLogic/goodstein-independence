@@ -32,11 +32,37 @@ Remaining inputs:
 4. Ind (tag 3) top node: `red d = iRInd d` already descends (`iord_descent_red_zInd`, banked) and stays a
    ⊥-derivation (`ZDerivesEmptyR_red` for tag 3 — no stall).
 
+**⭐ lap 125 — the LEFT-branch SOUNDNESS residual pinned to a single, precise encoding gap.**
+The sound LEFT successor is NOT `iRcritG (zK s r ds) (zAxReduct∘red)` — lap-114 proved that FALSE (`red`'s
+I∀ reduct is instance-0, not the cut instance `k`). The SOUND object is `iRcritG (zK s r ds)
+(critReductCorr (zK s r ds))` (the re-principalized reduct), and BOTH its soundness and its descent are
+ALREADY banked:
+- **soundness**: `ZDerivation_iRcritG_critReductCorr` (Crux2Blueprint:470) — `ZDerivation (iRcritG d
+  (critReductCorr d))` for the ∀-redex case, modulo orbit data;
+- **descent**: `iord_descent_iRcritG_critReductCorr` (RedZKDescent:457) — but it needs FULL `zKValid`
+  (criticality), so it does NOT cover the stall; my `iord_descent_iRcrit_botChain_leaves` (lap 124) is the
+  stall-tolerant descent, and `iord` is instance-invariant so the two `iord` values agree.
+
+**THE ONE GENUINE OPEN INPUT — O3 freshness = the eigenvariable condition, MISSING from `ZPhi`.**
+`ZDerivation_iRcritG_critReductCorr`'s residual orbit data is `hfresh_eig` (✅ suppliable —
+`maxEigen_lt_of_regular_zIall`, Zsubst:1206, from `ZRegular`), threading/rank (✅ from `isChainInf`/`zKValidF`,
+since `redexI ≤ j0`), and **`hpfresh : fvSubst a (numeral k) p = p` + `hΓfresh : fvSubstSeq a (numeral k)
+(seqAnt sᵢ) = seqAnt sᵢ`** — i.e. the eigenvariable `a` does NOT occur free in the matrix `p` or the
+antecedent `seqAnt sᵢ`. This is exactly the I∀ EIGENVARIABLE CONDITION (`a ∉ FV(Γ → ∀xF)`). **The current
+`ZPhi` I∀ disjunct does NOT track it** (`⟨s,a,p,d0,rfl,hd0,hsucc,hwff⟩` — premise + succ + wff only, NO
+freshness; and `zReg`/`ZRegular` only tracks `maxEigen d0 < a`, not `a ∉ FV(p)`). So `hpfresh`/`hΓfresh` are
+genuinely un-suppliable from the present encoding.
+
 **NEXT-LAP TARGETS (in order):**
-1. **[lap 125] Reduct soundness of the LEFT successor** — `iRcritG (zK s r ds) (zAxReduct∘red)` is a
-   `ZDerivesEmptyR`. Pull together `ZDerivation_red_zK_crit` (haux0/haux1) + `fstIdx_red`/`ZRegular_red`
-   restricted to the genuine reduct. This makes the LEFT branch a self-contained recursive descent step.
-2. Restructure `false_of_ZDerivesEmpty` off the `red`-orbit onto the dichotomy successor + WF(`iord`).
+1. **[lap 125+] Strengthen the `ZPhi` I∀ disjunct with the eigenvariable freshness** (`fvSubst a · p = p`
+   ∧ `fvSubstSeq a · (seqAnt s) = seqAnt s`), then ripple through `ZPhi`/`zphi_monotone`/`_strong_finite`/
+   `zphi_iff`/`zblueprint` σ+π/`zPhi_definable` + the `zDerivation_zIall_inv` accessor — the SAME pattern as
+   the lap-115 `zAx1` 8th-disjunct and lap-118 `zAxNeg` strengthenings. This supplies `hpfresh`/`hΓfresh` to
+   `ZDerivation_iRcritG_critReductCorr`, closing LEFT-branch soundness for the ∀-case. (¬-case via
+   `_haux1_neg`, already half-built.)
+2. Assemble the LEFT successor as a `ZDerivesEmptyR` (soundness + `fstIdx`/`ZRegular` preservation) ⟹ a
+   self-contained recursive descent step; restructure `false_of_ZDerivesEmpty` off the `red`-orbit onto the
+   dichotomy successor + WF(`iord`).
 3. RIGHT splice branch validity (case 5.2). Then `foundation_bot_to_Z_empty` (M2) + `gentzenDescentφ`.
 
 ## lap 122 — the generalized redex finder is ASSEMBLED; the "L-axiom caveat" is REFUTED
