@@ -1,11 +1,27 @@
 # Pending work — open obligations & attack paths
 
-## lap 146 (latest) — REVIEW + `zIndWff` ripple LANDED; remaining `descent_step_Ind` work = the ASSEMBLY only
+## lap 146 (latest) — REVIEW + `zIndWff` strengthening + **`descent_step_Ind` DROPPED** (axiom-clean, off red)
 **Build 🟢 1326. Headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms) — no drift.**
-Two commits: review (direction KEPT+SHARPENED, validated below) + **the `zIndWff` strengthening LANDED**
-(`a2b2a3a`). The step-premise clause is now SHAPE not membership (+ bundled `Seq`), closing the latent
-soundness gap. `descent_step_Ind` (:2262) is STILL sorry'd, but its sole prerequisite (the antecedent shape)
-is now AVAILABLE from `zDerivation_zInd_inv` — the remaining work is purely the **soundness assembly**.
+FOUR commits: review (`5d77bd5`) + `zIndWff` strengthening (`a2b2a3a`) + assembly plan (`aca7536`) +
+**`descent_step_Ind` DROPPED** (`59b339b`, `#print axioms = [propext, Classical.choice, Quot.sound]`).
+
+### ✅✅ DONE this lap — `descent_step_Ind` PROVEN (the Ind-root soundness/descent)
+The Ind-root branch of `ZDerivesEmptyR_descent_step` is now fully proven AND off `red`. Assembly (mirroring
+`descent_step_K_critical_all`): witness `zK s (irk ⊥) (iIndReductSeqG d0 d1 (π₁ at') 1)`; `p=⊥` collapses the
+telescope; the strengthened `zIndWff` supplies the exact antecedent shape; `zKValidF` via
+`isChainInf_telescope` + `iperm_tp_fstIdx_of_ZDerivation` + NEW `zKValidF_leafconds_of_ZDerivation` (InternalZ,
+banked axiom-clean — extracts the tag-{1,2,5,6} `IsUFormula` obligations from a premise's `ZPhi` data);
+invariants via the `_zK_of` folds + `*_zsubst` preservation; descent = banked `iord_descent_iIndReductSeqG_one`.
+
+### 🎯 LIVE-PATH SORRIES NOW (2 left on `false_of_ZDerivesEmpty`)
+1. **`descent_step_K_noncritical`** (`Crux2Blueprint:2139`) — Buchholz §3.2 case 5.2 atomic reduction (the
+   deepest remaining cut-elimination content; resolves the lap-129 `red`-fixpoint stall via Lemma 5.2). Its
+   Ind-premise sub-case may now reuse the `iIndReductSeqG` + `zKValidF_leafconds_of_ZDerivation` machinery.
+2. **(A) `exists_sigma1_descending_step`** (`Crux2Blueprint:2457`) — `gDef` Σ₁-Semisentence packaging
+   (Foundation-definability; μ-route refuted lap-139; needs primrec witness bound OR deterministic reduct).
+
+---
+### (historical, this lap) the `zIndWff` membership→shape ripple — the enabler of the drop
 
 ### ✅ DONE this lap — `zIndWff` membership→shape ripple (commit `a2b2a3a`)
 New `zIndWff` step clause (`InternalZ:1684`): `Seq (seqAnt (fstIdx d)) ∧ seqAnt (fstIdx prem1) =

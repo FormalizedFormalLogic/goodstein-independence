@@ -1,11 +1,21 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 146 (review) · 2026-06-26
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 146 (review+grind: `descent_step_Ind` DROPPED) · 2026-06-26
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**);
 `goodsteinSentence_faithful` + `peano_not_proves_consistency` axiom-clean. The lone `sorryAx` traces to crux-2.
 
-> **🧭 Lap-146 FRESH-MIND REVIEW — direction KEPT + SHARPENED; the live termination path is FULLY off `red`, down to THREE co-equal genuine sorries (read FIRST — current).**
+> **🎉🧭 Lap-146 REVIEW + GRIND — `descent_step_Ind` DROPPED (axiom-clean, off `red`); live termination path down to TWO genuine sorries (read FIRST — current).**
+> After the fresh-mind review (below) validated lap-145's direction, this lap EXECUTED it end-to-end: landed the
+> `zIndWff` membership→shape strengthening (`a2b2a3a`, closing a latent soundness gap), then ASSEMBLED and
+> **DROPPED `descent_step_Ind`** (`59b339b`, `#print axioms = [propext, Classical.choice, Quot.sound]`) — the
+> Ind-root soundness/descent, mirroring `descent_step_K_critical_all`, enabled by the strengthening + a NEW
+> axiom-clean `zKValidF_leafconds_of_ZDerivation` (InternalZ). The live `false_of_ZDerivesEmpty` path now has
+> just TWO sorries: `descent_step_K_noncritical` (:2139, Buchholz §5.2 atomic reduction) + (A) `gDef` (:2457).
+> Headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms) — no drift. See
+> `HANDOFF-2026-06-26-lap146.md`, `PENDING_WORK.md` lap-146.
+
+> **🧭 Lap-146 FRESH-MIND REVIEW — direction KEPT + SHARPENED; the live termination path is FULLY off `red`, down to THREE co-equal genuine sorries.**
 > Re-verified 🟢 green (1326); headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms) — no
 > drift. **The call:** lap-143's mandate is DONE (lap-144 wired the live path off `red`; `ZDerivesEmptyR_descent_step`
 > :2270 is sorry-free, dispatching Ind→`descent_step_Ind` / K→`descent_step_K_majorIdx`, NO kernel-FALSE soundness).
