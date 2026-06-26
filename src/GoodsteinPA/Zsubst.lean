@@ -2798,6 +2798,24 @@ lemma ZFresh_iRKcCrit {d : V}
       (ZFresh_zK_of_seqUpdate hprem (hax _ _))
       (ZFresh_zK_of_seqUpdate hprem (ZFresh_zInegPrem hdI hfreshI h2))
 
+/-- **The ∀-critical reduct soundness freshness package, from the orbit `ZFresh`.** Combines the premise
+extraction `zfresh_zK_premise` with the two target-3 suppliers: from the orbit invariant `ZFresh (zK s r
+ds)` and the R-redex form `znth ds (redexI) = zIall sᵢ a p d0` (plus the matrix wff), BOTH freshness
+hypotheses of `ZDerivation_iRcritG_critReductCorr` hold at the L-redex cut instance `k = π₁(π₂(tp dⱼ))`.
+This is the exact `⟨hpfresh, hΓfresh⟩` pair the corrected-reduct soundness assembly consumes — the freshness
+front of the engine swap, packaged for the `ZDerivation_red_zK_crit` re-proof. -/
+lemma zfresh_critReductCorr_freshness {s r ds sᵢ a p d0 : V} (hds : Seq ds)
+    (hfresh : ZFresh (zK s r ds)) (hi : redexI (zK s r ds) < lh ds)
+    (hdi : znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0)
+    (hp : IsUFormula ℒₒᵣ p) :
+    fvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral
+        (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) p = p ∧
+    fvSubstSeq a (Bootstrapping.Arithmetic.numeral
+        (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) (seqAnt sᵢ) = seqAnt sᵢ := by
+  have hfi : ZFresh (zIall sᵢ a p d0) := hdi ▸ zfresh_zK_premise hds hfresh hi
+  exact ⟨fvSubst_numeral_eq_self_of_zfresh_zIall_at _ hfi hp,
+    fvSubstSeq_numeral_eq_self_of_zfresh_zIall_at _ hfi⟩
+
 /-! ### ✅ The `hseltag` leaf — RESOLVED (lap 95) by the gated `iRK` dispatch
 
 **Historical (lap 94 obstruction, now fixed).** The former `ZRegular_red_zK` leaf `hseltag` claimed the
