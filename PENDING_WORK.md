@@ -50,7 +50,48 @@ is harmless, STALL DISSOLVED with no engine surgery. If genuinely absent → the
 (lexicographic `(iord, length)` measure) is forced. THREE paths: (i) redex-exhibition [above, cheapest];
 (ii) atom-removal reduction + length measure; (iii) re-tag atoms off `isymRep` (deep, wide ripple).
 
+**⭐ COMBINATORIAL CHARACTERIZATION (lap 121, 4th finding — the decisive sub-decomposition).** Read the
+redex finder `inference_critical_pair` (InternalZ:507) line by line. Its `hnperm` (criticality up to j0)
+has THREE clauses: `¬(isymR(Cmain) ∨ isymLk-at-Γmain ∨ isymRep)`. The proof uses them as:
+- **isymR(Cmain) clause** — kills an I-rule at the exit j0 (Step A). For a ⊥-chain this is GENUINE and
+  always holds: `isymR(Cmain)=isymR(⊥)` needs succedent `⊥`, but I-rules have compound succ `∀p`/`¬A`. ✓
+- **isymLk-at-Γmain clause** — gives `B ∉ Γmain` for the least left-symbol. For a ⊥-chain `Γmain=∅`, so
+  this is FREE (nothing is in ∅). ✓
+- **isymRep clause** — used at TWO spots: the exit j0 (Step A) and the least-left-symbol's chain-source i
+  (line 562). **This is the ONLY clause a threaded atom breaks.**
+So the redex finder fails for a threaded-atom ⊥-chain ⟺ an `isymRep` leaf is the exit j0 OR is the
+chain-source of the least left-symbol. Everything else goes through unchanged.
+
+**THE FIX (named, buildable next lap): generalize `inference_critical_pair` by REPLACING its `isymRep`
+clause with re-routing.** Replace `hnperm`'s isymRep clause with: *every `isymRep` leaf `i ≤ j0` has an
+earlier duplicate succedent* `∃ i' < i, Asucc i' = Asucc i` — which is EXACTLY
+`chainAsucc_threaded_of_leaf`'s conclusion (already banked). Then:
+- **Sub-lemma A (least non-isymRep exit):** the LEAST index `j* ≤ j0` with `Asucc j* ∈ {Cmain, ⊥}` is NOT
+  `isymRep`. Proof: if it were, re-routing gives an earlier `i' < j*` with `Asucc i' = Asucc j*`, a
+  smaller exit — contradicting leastness. Run Step A from `j*` (its isymR/isymLk killers are the genuine
+  ⊥-clauses above). **⚠️ lap-121 attempted, math is correct (least_number on `fun x => chainAsucc ds x =
+  c ∧ x ≤ j0`, witness `hc.symm`, re-route contradicts minimality) but BLOCKED on Σ₁-definability of the
+  predicate:** `definability`/aesop LOOPS on `chainAsucc` (depth-3 `seqSucc∘fstIdx∘znth`), hitting the
+  rule-application-depth cap (it unfolds chainAsucc instead of using `chainAsucc_definable : 𝚺₁-Function₂`).
+  `clear_value c` (opaque RHS) + depth 100 + 4M heartbeats did NOT fix it (still loops). The fix is to
+  supply the composed instance `𝚺₁-Function₁ (fun x => chainAsucc ds x)` EXPLICITLY (not via aesop) — but
+  `apply DefinableFunction₂.comp (F := chainAsucc)` failed instance synth (Arithmetic-hierarchy
+  `BoldfaceFunction₂` vs model-theory `DefinableFunction₂` namespace mismatch). NEXT-LAP: either (a) find
+  the Arithmetic-hierarchy comp incantation (grep `Zsubst.lean:43` `DefinableFunction₃.comp (F := zsubst)`
+  pattern — it works there, replicate the EXACT instance path), or (b) hand-build a `Def` semisentence for
+  the predicate mirroring `isChainInfDef` (InternalZ:1246). The math is done; this is pure plumbing.
+- **Sub-lemma B (non-isymRep chain-source):** when the least-left-symbol's source `i` would be `isymRep`,
+  re-route via the duplicate to a `< i` index; iterate (least-number) to a non-isymRep source. ⚠️ Caveat:
+  that source may be `isymLk` (an L-axiom with succ B), not `isymR(B)` — so the re-routed redex needs an
+  `isymR(B)` producer; if the threading bottoms out at an L-axiom, this sub-case still needs care (the
+  genuine residual). Premise 0 is an I-rule/chain/Ind (empty antecedent, banked reasoning), which bounds
+  the recursion.
+- Then feed the exhibited redex to `iord_descent_iRcrit_of_redex` (banked this lap) ⟹ descent, STALL
+  DISSOLVED for the threaded-atom case, no engine surgery. This is the concrete program for lap 122.
+
 **NEXT-LAP TARGETS (in order):**
+0. **[lap 122] Execute the generalized redex finder** (`inference_critical_pair_of_botChain_reroute`):
+   Sub-lemma A first (cleanest, fully provable), then Sub-lemma B. Feeds `iord_descent_iRcrit_of_redex`.
 1. **Decide reachability of the threaded-atom-≤-j0 core.** Either (a) prove a valid ⊥-chain's
    first-`isymRep` premise within `0..j0` is reducible (zTag ∈ {3,4}, never atom/`zAx1`) — would DISSOLVE
    the stall and let the endgame run on `iord_descent_iR2_zK_of_validF_critUpTo` + a "critical-up-to-j0
