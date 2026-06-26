@@ -7353,6 +7353,20 @@ noncomputable def critReductCorr (d n : V) : V :=
       (Bootstrapping.Arithmetic.numeral (π₁ (π₂ (tp (znth (zKseq d) (redexJ d))))))
   else zAxReduct (red (znth (zKseq d) n))
 
+/-- `critReductCorr` at the L-redex `redexJ`: the §5 axAll reduct `Ax^1_{F(k),Γⱼ→F(k)}` (antecedent grown). -/
+lemma critReductCorr_redexJ (d : V) :
+    critReductCorr d (redexJ d) =
+      zAx1 (seqAddAnt (cutFormula d) (fstIdx (znth (zKseq d) (redexJ d)))) (cutFormula d) := by
+  rw [critReductCorr, if_pos rfl]
+
+/-- `critReductCorr` at the R-redex `redexI` (when `redexI ≠ redexJ`): the re-principalized I∀ premise
+`zsubst dᵢ aᵢ (numeral k)`, `k = π₁(π₂(tp dⱼ))`. -/
+lemma critReductCorr_redexI {d : V} (h : redexI d ≠ redexJ d) :
+    critReductCorr d (redexI d) =
+      zsubst (zIallPrem (znth (zKseq d) (redexI d))) (zIallEig (znth (zKseq d) (redexI d)))
+        (Bootstrapping.Arithmetic.numeral (π₁ (π₂ (tp (znth (zKseq d) (redexJ d)))))) := by
+  rw [critReductCorr, if_neg h, if_pos rfl]
+
 /-- **The genuine critical reduct supplier for the ¬-case** (the `critReductCorr` twin for `Aᵢ = ¬A`). This
 is the concrete `ρ` the re-keyed tag-4 critical branch emits when the R-redex is an `I¬` rule (`zTag dᵢ = 2`).
 Buchholz Def 3.2 case 5.1, ¬-subcase, plus §5 Lemma 5.1 case 2.2:
