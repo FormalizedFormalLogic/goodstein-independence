@@ -635,6 +635,38 @@ theorem ZDerivation_iRKcCrit_of_isChainInf {s r ds j0 : V}
     (fun i' hi' => hrank0 i' (lt_of_lt_of_le hi' hJj0))
     hAll hNeg
 
+/-- **⊥-orbit specialization of the re-keyed critical reduct's soundness** (lap 130). On a `∅→⊥` chain the
+two "ambient" plumbing inputs to `ZDerivation_iRKcCrit_of_zKValid` are now FREE: `hCwff` is
+`cutFormula_wff_of_zKValid` (`InternalZ.lean`, the cut formula is always well-formed), and `hSeqs` is
+`seq_empty` (the conclusion antecedent `seqAnt s = ∅` is trivially a `Seq`). So the residual surface of the
+LEFT-soundness front is reduced to exactly the **per-node bundle** `hAll`/`hNeg` and the **threading/rank**
+`hthread`/`hrank`. ⚠️ The per-node facts `hAll`'s `seqSucc sⱼ = cutFormula` (the ∀-axiom succedent IS the
+cut instance `F(k)`) and `hNeg`'s `seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p` (the I¬ premise antecedent
+is exactly `Γ,p`) are EXACT-SHAPE equalities that the current loose `zAxAll`/`zIneg` `ZPhi` disjuncts (which
+carry only `inAnt`/membership) do NOT supply — the precise remaining obstruction (fix: strengthen those
+disjuncts to the genuine axiom/rule shapes, mirroring the lap-118 `zAxNeg` `A∈Γ` strengthening). -/
+theorem ZDerivation_iRKcCrit_botOrbit {s r ds : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hvalid : zKValid s r ds)
+    (hfresh : ZFresh (zK s r ds))
+    (hant : seqAnt s = (∅ : V))
+    (hthread : ∀ i' ≤ redexJ (zK s r ds), ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank : ∀ i' < redexJ (zK s r ds), irk (chainAsucc ds i') ≤ r)
+    (hAll : ∀ sᵢ sⱼ a p pj k' d0,
+        znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0 →
+        znth ds (redexJ (zK s r ds)) = zAxAll sⱼ pj k' →
+        maxEigen d0 < a ∧ IsUFormula ℒₒᵣ p ∧ seqSucc sⱼ = cutFormula (zK s r ds) ∧ Seq (seqAnt sⱼ))
+    (hNeg : ∀ sᵢ sⱼ p d0,
+        znth ds (redexI (zK s r ds)) = zIneg sᵢ p d0 →
+        znth ds (redexJ (zK s r ds)) = zAxNeg sⱼ p →
+        seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p ∧ Seq (seqAnt sᵢ)) :
+    ZDerivation (iRKcCrit (zK s r ds)) :=
+  ZDerivation_iRKcCrit_of_zKValid hZ hvalid hfresh
+    (cutFormula_wff_of_zKValid hZ hvalid)
+    (by rw [hant]; exact seq_empty)
+    hthread hrank hAll hNeg
+
 /-- **5.1 critical sub-residual — THE cut-elimination prize.** When the chain is critical, `red = iRcritG
 d ρ` with `ρ` the recursive premise reducts; delegates to `ZDerivation_iRcritG_of`, which reduces it to the
 two stripped half-derivations `haux0` (`Γ → cutFormula d`) / `haux1` (Buchholz Thm 3.4(a) inversion).

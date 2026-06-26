@@ -68,10 +68,19 @@ This is the clean tag-explicit entry the restructured `false_of_ZDerivesEmpty` c
   - ✅ `hCwff` DONE — **`cutFormula_wff_of_zKValid`** (`InternalZ.lean`, axiom-clean): `IsUFormula
     (cutFormula (zK s r ds))` from `ZDerivation`+`zKValid` (∀-redex `substs1` of the I∀ premise's
     1-semiformula; ¬-redex matrix directly).
-  - NEXT plumbing: `hSeqs` (`Seq (seqAnt s)` — likely from `ZDerivation` of the conclusion / orbit `∅`);
-    `hAll`/`hNeg` per-node facts; the key open structural fact `seqSucc sⱼ = cutFormula` (the L-redex
-    succedent matches the cut instance — routes through threading at `redexJ`, NOT the axAll node alone) +
-    `redexJ ≤ j0` (free if `j0 = lh ds − 1`, `isChainInf_of_last`).
+  - ✅ `hSeqs` DONE (⊥-orbit) — `seqAnt s = ∅` ⟹ `seq_empty`. Packaged with `hCwff` into the entry
+    **`ZDerivation_iRKcCrit_botOrbit`** (`Crux2Blueprint.lean`, axiom-clean): the re-keyed critical reduct's
+    soundness on a ⊥-orbit, residual surface reduced to just `hAll`/`hNeg`/`hthread`/`hrank`.
+  - ⚠️ **THE PRECISE REMAINING OBSTRUCTION (verified this lap):** the per-node facts `hAll`'s `seqSucc sⱼ =
+    cutFormula` (∀-axiom succedent = cut instance `F(k)`) and `hNeg`'s `seqAnt (fstIdx d0) = seqCons
+    (seqAnt sᵢ) p` (I¬ premise antecedent = exactly `Γ,p`) are EXACT-SHAPE equalities. The current loose
+    `zAxAll`/`zIneg` `ZPhi` disjuncts carry only `inAnt`/membership (`zDerivation_zAxAll_inv` gives `∀p∈Γ`
+    NOT `seqSucc=F(k)`; `zInegWff` gives `inAnt p` NOT the seqCons antecedent), so these are NOT derivable
+    from `zKValid`. **FIX (next): strengthen the `zAxAll` ZPhi disjunct to carry `seqSucc s = substs1
+    (numeral k) p` and the `zIneg`/`zInegWff` to carry `seqAnt (fstIdx d0) = seqCons (seqAnt s) p`** — the
+    genuine axiom/rule shapes, mirroring the lap-118 `zAxNeg` `A∈Γ` strengthening (one ZPhi disjunct +
+    inversion + arithmetization + the intro/`of` call sites). This is a contained ZPhi-ripple, NOT new deep
+    machinery. `hthread`/`hrank` + `redexJ ≤ j0` (free if `j0 = lh ds − 1`, `isChainInf_of_last`) remain.
 - **RIGHT tag-4:** recurse into the sub-`zK`-chain — the chain-REPLACE strong induction (`iord_descent_red`
   sorry `Crux2Blueprint:1167`). Well-founded on premise `iord` < parent.
 
