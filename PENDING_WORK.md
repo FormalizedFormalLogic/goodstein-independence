@@ -13,11 +13,20 @@ memberships; `ZDerivation_corrected_haux0_neg` recovers `hpmem` in-proof; **`ZDe
 drops the `hpmem` hypothesis** (axiom-clean `[propext, choice, Quot.sound]`). The ¬-side twin of lap-115's
 `zAx1` 8th-disjunct discharge.
 
-**NEXT (hardest-first):** the engine re-key — re-key `iRKc` (`InternalZ:6656`) to DISPATCH on redex polarity
-(`zTag dᵢ=1` → `iRcritG`+`critReductCorr`; I¬ → `iRcritGNeg`+ρ_neg). Both soundness capstones are now
-hypothesis-light, so `ZDerivation_red_zK_crit` closes via `red_zK_crit` + the two capstones; the ¬-branch's
-call site needs one fewer orbit datum (`hpmem` is free now). Descent re-points via `iord_iRcritG_eq_iRcrit` +
-an `iord_iRcritGNeg_eq_iRcrit` twin. Full step list in HANDOFF lap-118.
+**ALSO banked this lap (3 more commits, all axiom-clean):** (a) **`iord_iRcritGNeg_eq_iRcrit`** descent twin
+(`InternalZ`) — the ¬-branch re-point, via `inadd_comm`/`max_comm` on the swapped `seqUpdate` halves; (b)
+**`critReductNeg`** (`InternalZ`) — the concrete ¬-case `ρ` (redexJ ↦ `zAx1 (seqSetSucc sⱼ A) A`, redexI ↦
+`red dᵢ`); (c) **`ZDerivation_iRcritGNeg_critReductNeg`** (`Crux2Blueprint`) — concrete-`ρ` ¬-soundness, the
+`critReductCorr` twin. **Both polarity reduct suppliers now soundness-certified against their concrete engine
+`ρ`, and both descent re-points banked.**
+
+**NEXT (hardest-first):** the ONLY remaining piece is the engine-internal re-key + its 𝚺₁ arithmetization —
+re-key `iRKc` (`InternalZ:~6679`) to DISPATCH on redex polarity (`zTag dᵢ=1` → `iRcritG`+`critReductCorr`;
+I¬ → `iRcritGNeg`+`critReductNeg`) and re-arithmetize `iRKcDef` to match (new graphs for `critReductCorr`/
+`critReductNeg`/`iRcritGNeg`; all accessors already 𝚺₁). Then `red_zK_crit` gives the dispatched form and
+`ZDerivation_red_zK_crit` closes via the two concrete-`ρ` soundness lemmas; descent re-points via the two
+banked `iord_…_eq_iRcrit` lemmas. This step breaks the build mid-way — do as one unit, don't commit until
+green. Full 6-step list in HANDOFF lap-118.
 
 ## lap 117 — ¬-case critical-cut inversion SOUNDNESS proven; BOTH critical sub-cases complete
 **Build 🟢 green 1326; headline footprint intact (`[propext, sorryAx, choice, Quot.sound]`, 0 math axioms).
