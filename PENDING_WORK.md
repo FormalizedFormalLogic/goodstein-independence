@@ -1,5 +1,44 @@
 # Pending work — open obligations & attack paths
 
+## lap 130 — the `majorIdx` re-key plan is INCOMPLETE: tag-5/6 major premises stall too; cut-partner PINNED
+**Build 🟢 1326.** Landed (axiom-clean `[propext, choice, Quot.sound]`, additive, `InternalZ.lean` after
+`majorIdx_botOrbit_reducible`): **`majorPrem_zAxAll_cutPartner`** + **`majorPrem_zAxNeg_cutPartner`**.
+
+**⭐ FINDING (refines/corrects the lap-129 re-key plan):** the lap-129 plan "re-key `iRK`'s replace branch
+`permIdx ↦ majorIdx`, atom/`Ax¹` stall now unreachable" is **INCOMPLETE**. `majorIdx_botOrbit_reducible`
+excludes only tag-0/7 (atom/`Ax¹`) from the major-premise slot — but **tags 5/6 (`zAxAll`/`zAxNeg`,
+L-axioms) are ALSO `red`-FIXPOINTS** (`red_zAxAll = id`, `red_zAxNeg = id`, `InternalZ:7374,7377`). They are
+NOT excluded because `chainAsucc_threaded_of_leaf` keys on *succedent*-in-own-antecedent, but the L-axiom
+inversions (`zDerivation_zAxAll_inv`/`_zAxNeg_inv`) put the *active* L-formula (`^∀ p` / `inegF p`), not the
+succedent, in the antecedent. So a naive `replace`-recursion into a tag-5/6 major premise `dⱼ` STALLS exactly
+like the atom case (`red dⱼ = dⱼ`, no descent).
+
+**The fix (faithful Buchholz §14.253):** a tag-5/6 major premise is the L-redex of the principal CUT, not a
+`replace` target. Its active L-formula threads back (via `isChainInf`) to a STRICTLY EARLIER R-introduction
+premise. The two new lemmas PIN that R-partner:
+- `majorPrem_zAxAll_cutPartner`: `dⱼ = zAxAll _ p k` ⟹ `∃ i' < majorIdx, chainAsucc ds i' = ^∀ p` (the
+  R-intro `zIall` of `∀p`).
+- `majorPrem_zAxNeg_cutPartner`: `dⱼ = zAxNeg _ p` ⟹ `∃ i' < majorIdx, chainAsucc ds i' = inegF p` (the
+  R-intro `zIneg` of `¬p`).
+So the re-keyed `iRK` dispatch on `majorIdx` must route tag-5/6 ⟹ CRITICAL/splice (cut against the upstream
+R-partner `i'`), tag-3/4 ⟹ replace/recurse (`red_zInd` descends; `zK` recurses). Tags 0,1,2,7 are excluded
+(0,7 = `majorIdx_botOrbit_reducible`; 1,2 = succedent is an R-principal formula ≠ ⊥).
+
+**⭐ SECONDARY FINDING (eases the eventual swap):** the descent lemmas `iRedDescent_red_zK_replace_eq` /
+`iord_descent_red_zK_replace_eq` / `_splice_eq` (`RedZKDescent.lean:334,363,380,401`) are **index-generic** —
+they take `(hred : red (zK s r ds) = zK s' r (seqUpdate ds i (red (znth ds i))))` for an ARBITRARY `i`, NOT
+hardwired to `permIdx`. So the re-key's per-case descent WORK transfers verbatim from `permIdx` to `majorIdx`;
+the atomic change is confined to (a) `iRK` def + `iRKDef` arith, (b) the reduct-computation lemmas
+`red_zK_rep`/`red_zK_rep_nonchain`/`red_zK_splice` (`InternalZ:7387+`), (c) the `iord_descent_red` case split
+(now on `majorIdx`-selected tags, with the tag-5/6 critical dispatch above). The 365 `permIdx` mentions are
+mostly selection-property lemmas mirrored by the already-banked `majorIdxAux_*` family.
+
+**NEXT:** (1) prove `majorIdx`-selected tag ∈ {3,4,5,6} on the ⊥-orbit (exclude 1,2 via succedent≠⊥ —
+`seqSucc (zIall) = ^∀…`, `seqSucc (zIneg) = inegF…`, both ≠ `^⊥`); (2) build the tag-5/6 critical reduct that
+cuts `dⱼ` against the `i'` R-partner (reuse `iRcritG`/`iRKc` machinery, now indexed at `(i', majorIdx)`);
+(3) the atomic `iRK` swap. Then `iord_descent_red` has NO fixpoint branch ⟹ `iord_red_iterate_descends` is a
+strict descent ⟹ feed PRWO(ε₀) in `false_of_ZDerivesEmpty`.
+
 ## lap 129 — FRESH-MIND REVIEW: the `red`-STALL is the crux; no-stall linchpin landed
 **Build 🟢 1326.** Landed (axiom-clean, additive): **`firstBotPrem_reducible`** (`InternalZ.lean`) — the
 faithful major premise of a `∅→⊥` chain (first `⊥`-exit) has `zTag ∉ {0,7}`, i.e. `red`-reducible.

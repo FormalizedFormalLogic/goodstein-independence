@@ -9123,6 +9123,78 @@ lemma majorIdx_botOrbit_reducible {s r ds : V} (hZ : ZDerivation (zK s r ds))
     exact absurd (majorIdxAux_le_of_isMajorPrem ds s (lh ds) i' (lt_trans hi' hmlt) hi'maj)
       (not_le.mpr hi')
 
+/-! ### The tag-5/6 major premise needs a CRITICAL dispatch, not a `replace` (lap 130 finding)
+
+`majorIdx_botOrbit_reducible` excludes only the tag-0/7 leaves (atom/`Ax¹`) from the major-premise slot.
+But the L-axioms `zAxAll` (tag 5) and `zAxNeg` (tag 6) are ALSO `red`-FIXPOINTS — `red_zAxAll = id`,
+`red_zAxNeg = id` — and they are NOT excluded: their inversions (`zDerivation_zAxAll_inv`/`_zAxNeg_inv`)
+put the *active* L-formula (`^∀ p` / `inegF p`), NOT the succedent, in the antecedent, so the
+`chainAsucc_threaded_of_leaf` re-routing (which keys on succedent-in-own-antecedent) does not apply.
+
+So the lap-129 plan "re-key `iRK`'s replace branch `permIdx ↦ majorIdx`" is INCOMPLETE: a naive `replace`
+into a tag-5/6 major premise `dⱼ` stalls (`red dⱼ = dⱼ`). The faithful Buchholz §14.253 reduction of such
+a `dⱼ` is the principal `(R,L)` CUT — its active L-formula threads back (via `isChainInf`) to a STRICTLY
+earlier R-introduction premise. The two lemmas below PIN that R-partner, supplying the exact object the
+re-keyed critical/splice dispatch consumes for a tag-5/6 major premise. -/
+
+/-- **Tag-5 (∀-axiom) major premise ⟹ its critical-cut R-partner `∀p` is upstream.** On a `∅→⊥` chain, if
+the faithful major premise `dⱼ = znth ds (majorIdx)` is an L-axiom `Ax^k_{∀p}` (a `red`-FIXPOINT,
+`red_zAxAll = id`), its active formula `^∀ p` is the succedent of a STRICTLY EARLIER premise `i' < j`. That
+`i'` is the R-introduction of `∀p`; the pair `(i', j)` is the principal cut the faithful re-key reduces —
+NOT a `replace` recursion into `dⱼ`. The active formula sits in `dⱼ`'s antecedent
+(`zDerivation_zAxAll_inv`), and the ⊥-chain threading (`seqAnt s = ∅`) forces it to an earlier cut formula. -/
+lemma majorPrem_zAxAll_cutPartner {s r ds p k : V} (hZ : ZDerivation (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hj : znth ds (majorIdx (zK s r ds)) =
+      zAxAll (fstIdx (znth ds (majorIdx (zK s r ds)))) p k) :
+    ∃ i' < majorIdx (zK s r ds), chainAsucc ds i' = (^∀ p : V) := by
+  have hmeq : majorIdx (zK s r ds) = majorIdxAux ds s (lh ds) := by rw [majorIdx, zKseq_zK, fstIdx_zK]
+  rw [hmeq] at hj ⊢
+  set J := majorIdxAux ds s (lh ds) with hJ
+  have hchain : isChainInf s r ds := (zKValidF_of_ZDerivation_zK hZ).1
+  obtain ⟨j0, hj0lt, hAj0, hthread, _⟩ := hchain
+  have hbot0 : chainAsucc ds j0 = (^⊥ : V) := by
+    rcases hAj0 with h | h
+    · rw [h, hsucc]
+    · exact h
+  have hmaj0 : isMajorPrem ds s j0 := by rw [isMajorPrem, hbot0, hsucc]
+  obtain ⟨hmlt, _⟩ := majorIdxAux_found ds s (lh ds) ⟨j0, hj0lt, hmaj0⟩
+  have hmle : J ≤ j0 := majorIdxAux_le_of_isMajorPrem ds s (lh ds) j0 hj0lt hmaj0
+  have hmemZ : ZDerivation (znth ds J) := (zDerivation_zK_inv hZ).2 _ hmlt
+  set s' := fstIdx (znth ds J) with hs'
+  have hin : inAnt (^∀ p : V) (seqAnt s') := (zDerivation_zAxAll_inv (hj ▸ hmemZ)).2
+  rcases hthread J hmle (^∀ p) hin with h | h
+  · rw [hant] at h; simp [inAnt, lh_empty] at h
+  · obtain ⟨i', hi', heq⟩ := h; exact ⟨i', hi', heq.symm⟩
+
+/-- **Tag-6 (¬-axiom) major premise ⟹ its critical-cut R-partner `inegF p` is upstream.** Dual of
+`majorPrem_zAxAll_cutPartner`: when the major premise `dⱼ` is `Ax^0_{¬p}` (a `red`-FIXPOINT,
+`red_zAxNeg = id`), its active L-formula `inegF p` is the succedent of a strictly earlier premise — the
+R-introduction (`zIneg`) of `¬p`. The pair drives the principal cut the re-key reduces. -/
+lemma majorPrem_zAxNeg_cutPartner {s r ds p : V} (hZ : ZDerivation (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hj : znth ds (majorIdx (zK s r ds)) =
+      zAxNeg (fstIdx (znth ds (majorIdx (zK s r ds)))) p) :
+    ∃ i' < majorIdx (zK s r ds), chainAsucc ds i' = (inegF p : V) := by
+  have hmeq : majorIdx (zK s r ds) = majorIdxAux ds s (lh ds) := by rw [majorIdx, zKseq_zK, fstIdx_zK]
+  rw [hmeq] at hj ⊢
+  set J := majorIdxAux ds s (lh ds) with hJ
+  have hchain : isChainInf s r ds := (zKValidF_of_ZDerivation_zK hZ).1
+  obtain ⟨j0, hj0lt, hAj0, hthread, _⟩ := hchain
+  have hbot0 : chainAsucc ds j0 = (^⊥ : V) := by
+    rcases hAj0 with h | h
+    · rw [h, hsucc]
+    · exact h
+  have hmaj0 : isMajorPrem ds s j0 := by rw [isMajorPrem, hbot0, hsucc]
+  obtain ⟨hmlt, _⟩ := majorIdxAux_found ds s (lh ds) ⟨j0, hj0lt, hmaj0⟩
+  have hmle : J ≤ j0 := majorIdxAux_le_of_isMajorPrem ds s (lh ds) j0 hj0lt hmaj0
+  have hmemZ : ZDerivation (znth ds J) := (zDerivation_zK_inv hZ).2 _ hmlt
+  set s' := fstIdx (znth ds J) with hs'
+  have hin : inAnt (inegF p : V) (seqAnt s') := (zDerivation_zAxNeg_inv (hj ▸ hmemZ)).2.1
+  rcases hthread J hmle (inegF p) hin with h | h
+  · rw [hant] at h; simp [inAnt, lh_empty] at h
+  · obtain ⟨i', hi', heq⟩ := h; exact ⟨i', hi', heq.symm⟩
+
 set_option maxHeartbeats 1000000 in
 /-- **The generalized redex finder for a re-routing chain** (lap 122 — the genuine fix for the threaded-atom
 stall, Sub-lemmas A+B assembled). `inference_critical_pair_of_chain` needs FULL criticality `hnperm`
@@ -9586,5 +9658,3 @@ lemma iord_iR2_iterate_descends (hRS : RedSound (V := V)) {z : V} (hz : ZDerives
   exact iord_descent_iR2_of_ZDerivesEmpty (ZDerivesEmpty_iterate hRS hz n) (hcrit n)
 
 end GoodsteinPA.InternalZ
-
-
