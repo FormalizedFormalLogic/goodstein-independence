@@ -1,7 +1,7 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 141 · 2026-06-26 · `3ca3221`
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 141 · 2026-06-26 · `0ee70e4`
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**,
 re-verified in-kernel lap-141 `lake env lean`); `goodsteinSentence_faithful` axiom-clean. The lone `sorryAx`
 traces to crux-2 (the internalized cut-elimination).
@@ -12,10 +12,13 @@ traces to crux-2 (the internalized cut-elimination).
 > residual — overturning lap-139 for that sub-case. Buchholz §3.2 splits the K-reduction CRITICAL/NON-CRITICAL
 > (Def 3.2 5.1/5.2), NOT by major-premise tag; in the critical case **Lemma 3.1 hands back a PRINCIPAL pair for
 > free** (no producer-principal proof), and the critical DESCENT is already banked
-> (`iord_descent_iR2_zK_of_validF_critUpTo`). Restructured `descent_step_K_majorIdx` onto the split: the four
-> `descent_step_K_tag{3,4,5,6}` sorries → two (`descent_step_K_critical_soundness` + `descent_step_K_noncritical`),
-> producer-principal wall GONE. **The remaining crux-2 termination wall is now ONE obligation: `RedSound`
-> (Buchholz Thm 3.4 simultaneous induction).** See `HANDOFF-2026-06-26-lap141.md`, `PENDING_WORK.md` lap-141.
+> (`iord_descent_red_zK_crit`). Restructured `descent_step_K_majorIdx` onto the split (case-split on the `permIdx`
+> sentinel): the four `descent_step_K_tag{3,4,5,6}` sorries → ONE (`descent_step_K_noncritical`, Buchholz 5.2),
+> producer-principal wall GONE. ⚠️ In-kernel CORRECTION (`#print axioms`, commit `0ee70e4`): the critical reduct
+> is the SOUND `red` (= `iRcritG`), NOT the ordinal-shadow `iR2` — `descent_step_K_critical` routes soundness
+> through the pre-existing red-R2 `ZDerivation_red_zK_crit` (1108), and the false-risk `iR2` sorry was DELETED.
+> **Remaining wall: red-R2 (1108) + non-critical 5.2 (1865), both = Buchholz Thm 3.4.** See
+> `HANDOFF-2026-06-26-lap141.md`, `PENDING_WORK.md` lap-141.
 
 > **⭐⭐⭐ Lap-140 ALTITUDE REVIEW — crux-2 termination collapses to ONE lemma; lap-137 directive RETIRED [SUPERSEDED by lap-141].**
 > Build re-verified 🟢 green (1326); headline re-verified `[propext, sorryAx, Classical.choice, Quot.sound]` (0
