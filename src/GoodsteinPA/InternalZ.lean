@@ -8976,6 +8976,57 @@ theorem inference_critical_pair_of_chain_reroute {s r ds j0 : V} {Tr Fa : V → 
     by rw [hAi']; exact hIj, hrk,
     hrank i' (lt_of_le_of_lt hi'le_i (lt_of_lt_of_le hij hjle))⟩
 
+/-- **The stall-free K-cut descent for a re-routing ⊥-chain** (lap 122, target #2). The reroute twin of
+`iord_descent_iRcrit_of_chain'`: it manufactures the redex via `inference_critical_pair_of_chain_reroute`
+(the generalized finder, whose `hnperm` isymRep clause is replaced by `hreroute`) instead of
+`inference_critical_pair_of_chain`, then feeds it to `iord_descent_iRcrit_of_redex`. So a valid ⊥-chain
+whose criticality-failures are all RE-ROUTABLE permissible premises STILL descends — the threaded-atom
+stall dissolved, **modulo discharging `hreroute`** (banked for leaf isymRep by `chainAsucc_threaded_of_leaf`;
+the chain/Ind isymRep residual is path α in `PENDING_WORK.md` lap-122). The six `ρ`-facts are the same
+redex-premise reduct obligations as the non-reroute wrapper. -/
+theorem iord_descent_iRcrit_of_chain_reroute {s r ds j0 : V} {Tr Fa : V → Prop} {ρ : V → V}
+    (hds : Seq ds) (hnf : isNF (iotil (zK s r ds)))
+    (hj0 : j0 < lh ds)
+    (hAj0 : chainAsucc ds j0 = seqSucc s ∨ chainAsucc ds j0 = (^⊥ : V))
+    (hchain : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+      inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hwfR : ∀ i ≤ j0, ∀ A, tp (znth ds i) = isymR A → 0 < irk A ∨ Tr A)
+    (hwfL : ∀ i ≤ j0, ∀ k A, tp (znth ds i) = isymLk k A → 0 < irk A ∨ Fa A)
+    (hperm : ∀ i ≤ j0, iperm (tp (znth ds i)) (fstIdx (znth ds i)))
+    (hnperm2 : ∀ i ≤ j0, ¬ (tp (znth ds i) = isymR (seqSucc s) ∨
+      (∃ k A, tp (znth ds i) = isymLk k A ∧ inAnt A (seqAnt s))))
+    (hreroute : ∀ i ≤ j0, tp (znth ds i) = isymRep →
+      ∃ i' < i, chainAsucc ds i' = chainAsucc ds i)
+    (hdisj : ∀ A, ¬ (Tr A ∧ Fa A)) (hFa_rk : ∀ A, Fa A → irk A = 0)
+    (hFa_bot : Fa (^⊥ : V))
+    (hNF : ∀ n, isNF (iotil (znth ds n)))
+    (hρlt_i : icmp (iotil (ρ (redexI (zK s r ds)))) (iotil (znth ds (redexI (zK s r ds)))) = 0)
+    (hρlt_j : icmp (iotil (ρ (redexJ (zK s r ds)))) (iotil (znth ds (redexJ (zK s r ds)))) = 0)
+    (hρg_i : idg (ρ (redexI (zK s r ds))) ≤ idg (znth ds (redexI (zK s r ds))))
+    (hρg_j : idg (ρ (redexJ (zK s r ds))) ≤ idg (znth ds (redexJ (zK s r ds))))
+    (hρNF_i : isNF (iotil (ρ (redexI (zK s r ds)))))
+    (hρNF_j : isNF (iotil (ρ (redexJ (zK s r ds))))) :
+    icmp (iord (iRcrit (zK s r ds) ρ)) (iord (zK s r ds)) = 0 := by
+  obtain ⟨i, j, k, hij, hjle, hRi, hLj, hrkpos, hrkr⟩ :=
+    inference_critical_pair_of_chain_reroute hj0 hAj0 hchain hrank hwfR hwfL hperm hnperm2 hreroute
+      hdisj hFa_rk hFa_bot
+  have hr : 1 ≤ r := pos_iff_one_le.mp (lt_of_lt_of_le hrkpos hrkr)
+  have hjlt : j < lh ds := lt_of_le_of_lt hjle hj0
+  have hilt : i < lh ds := lt_trans hij hjlt
+  have hredex : isRedexPair ds (⟪i, j⟫ : V) := by
+    simp only [isRedexPair, pi₁_pair, pi₂_pair]
+    refine ⟨hij, hjlt, ?_, ?_, ?_⟩
+    · rw [hRi]; simp [isymR]
+    · rw [hLj]; simp [isymLk]
+    · rw [hRi, hLj]; simp [isymR, isymLk]
+  have hex : ∃ c < (⟪lh (zKseq (zK s r ds)), lh (zKseq (zK s r ds))⟫ : V),
+      isRedexPair (zKseq (zK s r ds)) c := by
+    simp only [zKseq_zK]
+    exact ⟨⟪i, j⟫, pair_lt_pair hilt hjlt, hredex⟩
+  exact iord_descent_iRcrit_of_redex hds hnf hr hex hNF
+    hρlt_i hρlt_j hρg_i hρg_j hρNF_i hρNF_j
+
 /-! ### The Option-B obstruction, formalized — why the ordinal-faithful `iR2` cannot preserve validity
 
 `RedSound` (`iR2 d` is a genuine `ZDerivation` for `ZDerivesEmpty d`) is **FALSE** for the current
