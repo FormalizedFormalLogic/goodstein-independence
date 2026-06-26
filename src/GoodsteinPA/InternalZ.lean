@@ -8081,6 +8081,71 @@ lemma iord_descent_iR2_zK_of_valid {s r ds : V} (hds : Seq ds)
     (fun A h => by rw [h]; exact irk_falsum) rfl hNF
     hbI.otil_lt hbJ.otil_lt hbI.dg_le hbJ.dg_le hbI.nf hbJ.nf
 
+/-- **Descent under iR2 needs criticality only UP TO the chain exit `j0`, not globally** (lap 121).
+A strict strengthening of `iord_descent_iR2_zK_of_valid`: that lemma destructures the *global*
+criticality conjunct `hnperm0 : ∀ i < lh ds, ¬ iperm (tp dᵢ) s` of `zKValid`, but its proof only ever
+applies it at indices `i ≤ j0` (the `isChainInf` exit). So the ordinal descent goes through under the
+strictly weaker `hcrit : ∀ i ≤ j0, ¬ iperm (tp dᵢ) s` (criticality only on the chain's *constrained*
+region `0..j0`), with `zKValidF` supplying the rest. **Significance (the lap-121 stall sharpening):**
+`isChainInf` constrains only premises `0..j0`; a `red`-stall caused by a *junk* permissible premise
+(`tp = isymRep`, e.g. a spurious identity atom) at an index `> j0` is therefore harmless to the genuine
+`iR2`/redex descent — the redex lives in `0..j0` and this lemma reduces it regardless of junk beyond it.
+The remaining genuinely-open stall case is a *threaded* atom/`zAx1` premise AT an index `≤ j0` (whose
+antecedent is a real cut formula), which breaks `hcrit` and needs axiom-cut elimination. -/
+lemma iord_descent_iR2_zK_of_validF_critUpTo {s r ds j0 : V} (hds : Seq ds)
+    (hmem : ∀ i < lh ds, ZDerivation (znth ds i)) (hvalidF : zKValidF s r ds)
+    (hj0 : j0 < lh ds)
+    (hAj0 : chainAsucc ds j0 = seqSucc s ∨ chainAsucc ds j0 = (^⊥ : V))
+    (hchain : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+      inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hcrit : ∀ i ≤ j0, ¬ iperm (tp (znth ds i)) s) :
+    icmp (iord (iR2 (zK s r ds))) (iord (zK s r ds)) = 0 := by
+  obtain ⟨_hci, hperm0, hf1, hf2, hf5, hf6, _hca, _hsucc, _hsaf⟩ := hvalidF
+  have hwfR : ∀ i ≤ j0, ∀ A, tp (znth ds i) = isymR A → 0 < irk A ∨ False :=
+    fun i hi A h => Or.inl (tp_isymR_pos h (hf1 i (lt_of_le_of_lt hi hj0))
+      (hf2 i (lt_of_le_of_lt hi hj0)))
+  have hwfL : ∀ i ≤ j0, ∀ k A, tp (znth ds i) = isymLk k A → 0 < irk A ∨ (A = (^⊥ : V)) :=
+    fun i hi k A h => Or.inl (tp_isymLk_pos h (hf5 i (lt_of_le_of_lt hi hj0))
+      (hf6 i (lt_of_le_of_lt hi hj0)))
+  have hperm : ∀ i ≤ j0, iperm (tp (znth ds i)) (fstIdx (znth ds i)) :=
+    fun i hi => hperm0 i (lt_of_le_of_lt hi hj0)
+  have hnperm : ∀ i ≤ j0, ¬ iperm (tp (znth ds i)) s := hcrit
+  have hnf : isNF (iotil (zK s r ds)) :=
+    isNF_iotil_zK hds (fun i hi => isNF_iotil_of_ZDerivation _ (hmem i hi))
+  have hNF : ∀ n, isNF (iotil (znth ds n)) := by
+    intro n
+    rcases lt_or_ge n (lh ds) with hn | hn
+    · exact isNF_iotil_of_ZDerivation _ (hmem n hn)
+    · rw [znth_prop_not (Or.inr hn)]; exact isNF_iotil_zero
+  obtain ⟨i0, j1, k0, hij, hjle, hRi, hLj, hrkpos, hrkr⟩ :=
+    inference_critical_pair_of_chain (Tr := fun _ => False) (Fa := fun A => A = (^⊥ : V))
+      hj0 hAj0 hchain hrank hwfR hwfL hperm hnperm (fun _ h => h.1)
+      (fun A h => by rw [h]; exact irk_falsum) rfl
+  have hjlt : j1 < lh ds := lt_of_le_of_lt hjle hj0
+  have hilt : i0 < lh ds := lt_trans hij hjlt
+  have hredex : isRedexPair ds (⟪i0, j1⟫ : V) := by
+    simp only [isRedexPair, pi₁_pair, pi₂_pair]
+    refine ⟨hij, hjlt, ?_, ?_, ?_⟩
+    · rw [hRi]; simp [isymR]
+    · rw [hLj]; simp [isymLk]
+    · rw [hRi, hLj]; simp [isymR, isymLk]
+  have hex : ∃ c < (⟪lh (zKseq (zK s r ds)), lh (zKseq (zK s r ds))⟫ : V),
+      isRedexPair (zKseq (zK s r ds)) c := by
+    simp only [zKseq_zK]; exact ⟨⟪i0, j1⟫, pair_lt_pair hilt hjlt, hredex⟩
+  have hrc : isRedexPair (zKseq (zK s r ds)) (redexCode (zK s r ds)) := redexCode_isRedexPair hex
+  simp only [zKseq_zK] at hrc
+  have hIlt : redexI (zK s r ds) < lh ds := lt_trans hrc.1 hrc.2.1
+  have hJlt : redexJ (zK s r ds) < lh ds := hrc.2.1
+  obtain ⟨hRedI, hRedJ⟩ := redexPair_tp hrc
+  have hbI := iRedDescent_zAxReduct_iR2_of_tp_isymR hRedI (hmem _ hIlt)
+  have hbJ := iRedDescent_zAxReduct_iR2_of_tp_isymLk hRedJ (hmem _ hJlt)
+  rw [iR2_zK_eq_iRcrit]
+  exact iord_descent_iRcrit_of_chain' (Tr := fun _ => False) (Fa := fun A => A = (^⊥ : V))
+    hds hnf hj0 hAj0 hchain hrank hwfR hwfL hperm hnperm (fun _ h => h.1)
+    (fun A h => by rw [h]; exact irk_falsum) rfl hNF
+    hbI.otil_lt hbJ.otil_lt hbI.dg_le hbJ.dg_le hbI.nf hbJ.nf
+
 /-- **Redex indices of a valid critical `K`-chain are in range** (`redexI/redexJ < lh ds`). The
 chain-structure half of the `iord_descent_iR2_zK_of_valid` recipe, extracted: from chain validity
 `zKValid` (the criticality conjunct supplies `hnperm`, the formula-hood the `hwfR`/`hwfL` rank facts),
