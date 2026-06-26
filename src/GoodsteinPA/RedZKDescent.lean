@@ -502,6 +502,42 @@ theorem iord_descent_iRcritGNeg_critReductNeg {s r ds sᵢ sⱼ p d0 : V}
     (fun A h => by rw [h]; exact irk_falsum) rfl hNF
     hbI.otil_lt hbJ.otil_lt hbI.dg_le hbJ.dg_le hbI.nf hbJ.nf
 
+/-- **The re-keyed critical reduct `iRKcCrit` DESCENDS — ∀-case.** Thin wrapper bringing the engine-swap
+descent target to "needs only the redex forms" parity with the soundness side: `iRKcCrit_eq_corr` rewrites
+`iRKcCrit (zK s r ds) = iRcritG (zK s r ds) (critReductCorr …)` (the `zTag dᵢ = 1` branch), then the banked
+`iord_descent_iRcritG_critReductCorr` closes. Once the engine swaps `red ↦ iRKcCrit`, the descent's critical
+branch is `rw [red_zK_crit hcrit]; exact this`. -/
+theorem iord_descent_iRKcCrit_corr {s r ds sᵢ sⱼ a p pj k' d0 : V}
+    (hds : Seq ds) (hmem : ∀ i < lh ds, ZDerivation (znth ds i))
+    (hvalid : zKValid s r ds)
+    (hIlt : redexI (zK s r ds) < lh ds) (hJlt : redexJ (zK s r ds) < lh ds)
+    (hIJ : redexI (zK s r ds) < redexJ (zK s r ds))
+    (hdi : znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0)
+    (hdj : znth ds (redexJ (zK s r ds)) = zAxAll sⱼ pj k')
+    (hirk : irk (^∀ pj : V) = irk (cutFormula (zK s r ds)) + 1) :
+    icmp (iord (iRKcCrit (zK s r ds))) (iord (zK s r ds)) = 0 := by
+  have h1 : zTag (znth (zKseq (zK s r ds)) (redexI (zK s r ds))) = 1 := by
+    rw [zKseq_zK, hdi]; exact zTag_zIall _ _ _ _
+  rw [iRKcCrit_eq_corr h1 (ne_of_lt hIJ)]
+  exact iord_descent_iRcritG_critReductCorr hds hmem hvalid hIlt hJlt hIJ hdi hdj hirk
+
+/-- **The re-keyed critical reduct `iRKcCrit` DESCENDS — ¬-case.** The `iRKcCrit_eq_neg` twin of
+`iord_descent_iRKcCrit_corr`: rewrites to `iRcritGNeg (zK s r ds) (critReductNeg …)` (the `zTag dᵢ ≠ 1`
+branch, here `= 2` from the I¬ redex), then the banked `iord_descent_iRcritGNeg_critReductNeg` closes. -/
+theorem iord_descent_iRKcCrit_neg {s r ds sᵢ sⱼ p d0 : V}
+    (hds : Seq ds) (hmem : ∀ i < lh ds, ZDerivation (znth ds i))
+    (hvalid : zKValid s r ds)
+    (hIlt : redexI (zK s r ds) < lh ds) (hJlt : redexJ (zK s r ds) < lh ds)
+    (hIJ : redexI (zK s r ds) < redexJ (zK s r ds))
+    (hdi : znth ds (redexI (zK s r ds)) = zIneg sᵢ p d0)
+    (hdj : znth ds (redexJ (zK s r ds)) = zAxNeg sⱼ p)
+    (hcut : cutFormula (zK s r ds) = p) (hp : IsUFormula ℒₒᵣ p) :
+    icmp (iord (iRKcCrit (zK s r ds))) (iord (zK s r ds)) = 0 := by
+  have h1 : zTag (znth (zKseq (zK s r ds)) (redexI (zK s r ds))) ≠ 1 := by
+    rw [zKseq_zK, hdi, zTag_zIneg]; simp
+  rw [iRKcCrit_eq_neg h1 (ne_of_lt hIJ)]
+  exact iord_descent_iRcritGNeg_critReductNeg hds hmem hvalid hIlt hJlt hIJ hdi hdj hcut hp
+
 /-- **Chain sub-case, REPLACE dispatch (`dᵢ` a non-critical chain), reduced to the premise IH.** When the
 selected premise `dᵢ = znth ds (permIdx)` is a chain (`zTag = 4`) that is itself non-critical
 (`permIdx dᵢ < lh (zKseq dᵢ)`), `red (zK s r ds) = K^r(i/red dᵢ)` (`red_zK_rep`), so the descent is exactly
