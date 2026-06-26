@@ -41,9 +41,16 @@ sites are unaffected), `zDerivation_zIneg_inv`/`zDerivation_zAxAll_inv` returnin
 new obligations (the Seq/IsSemiformula gaps above) — that is the whole residual.
 
 **NEXT (decomposed, by risk):**
-1. **zAxAll FIRST (completable, lower risk):** re-apply ONLY the zAxAll half of the WIP diff + the
-   `IsUFormula → IsSemiformula 1` strengthening; discharge `ZDerivation_zsubst`'s zAxAll obligation with
-   `seqSucc_fvSubstSeqt ▸ hsucc ▸ fvSubst_substs1 ht (numeral_semiterm) hp ▸ termFvSubst_numeral`. Green-commit.
+1. ✅ **zAxAll DONE (this lap, build 🟢 1326, headline footprint unchanged):** the `zAxAll` `ZPhi` disjunct
+   now carries `IsSemiformula ℒₒᵣ 1 p ∧ inAnt (^∀p)(seqAnt s) ∧ zAxAllSuccWff s p k` (formula-hood
+   `IsUFormula → IsSemiformula 1`, arith `!(isSemiformula ℒₒᵣ).sigma/pi 1 p` + `!(zAxAllSuccWffDef.sigma/pi)`).
+   `zDerivation_zAxAll_inv` now returns all three (recovers `k` via `zAxAllK`). `ZDerivation_zsubst`'s zAxAll
+   obligation discharged: `seqSucc_fvSubstSeqt ▸ hsucc ▸ fvSubst_substs1 ht (by simp) hp ▸ termFvSubst_numeral`
+   (`hp` IS the `IsSemiformula 1` it needs — self-supplied, as predicted). The ~7 downstream `IsUFormula`
+   consumers healed with `.isUFormula`; Crux2 construction sites SELF-HEALED via the strengthened inversion.
+   `zPhi_definable`'s simp closed with just `+ zAxAllSuccWff_defined.iff` (the raw `isSemiformula` resolved
+   automatically, same as `isUFormula` did). So `hAll`'s `seqSucc sⱼ = cutFormula` (∀-side) is now derivable
+   from `zKValid` + `zDerivation_zAxAll_inv`. **zIneg (hNeg, ¬-side) is the only remaining gate.**
 2. **zIneg SECOND (needs the Seq invariant):** add a `Seq (seqAnt …)` fold (mirror `seqWffFlag`, lap 127) OR
    carry `Seq (seqAnt s)` in the `zIneg` disjunct; then discharge `ZDerivation_zsubst`'s zIneg obligation
    with `fstIdx_zsubst ▸ seqAnt_fvSubstSeqt ▸ hant ▸ fvSubstSeq_seqCons (the threaded Seq)`.

@@ -5365,7 +5365,8 @@ def ZPhi (C : Set V) (d : V) : Prop :=
   (∃ s p d0, d = zIneg s p d0 ∧ d0 ∈ C ∧ seqSucc s = (inegF p : V) ∧ zInegWff p d0) ∨
   (∃ s at' p d0 d1, d = zInd s at' p d0 d1 ∧ d0 ∈ C ∧ d1 ∈ C ∧ zIndWff d) ∨
   (∃ s r ds, d = zK s r ds ∧ Seq ds ∧ (∀ i < lh ds, znth ds i ∈ C) ∧ zKValidF s r ds) ∨
-  (∃ s p k, d = zAxAll s p k ∧ IsUFormula ℒₒᵣ p ∧ inAnt (^∀ p : V) (seqAnt s)) ∨
+  (∃ s p k, d = zAxAll s p k ∧ IsSemiformula ℒₒᵣ 1 p ∧ inAnt (^∀ p : V) (seqAnt s) ∧
+    zAxAllSuccWff s p k) ∨
   (∃ s p, d = zAxNeg s p ∧ IsUFormula ℒₒᵣ p ∧ inAnt (inegF p : V) (seqAnt s) ∧
     inAnt p (seqAnt s)) ∨
   (∃ s C, d = zAx1 s C ∧ inAnt (seqSucc s) (seqAnt s))
@@ -5374,13 +5375,13 @@ def ZPhi (C : Set V) (d : V) : Prop :=
 lemma zphi_monotone {C C' : Set V} (h : C ⊆ C') {d : V} : ZPhi C d → ZPhi C' d := by
   rintro (hd | ⟨s, a, p, d0, rfl, hd, hsc, hwff⟩ | ⟨s, p, d0, rfl, hd, hsc, hwff⟩ |
     ⟨s, at', p, d0, d1, rfl, h0, h1, hwff⟩ | ⟨s, r, ds, rfl, hseq, hall, hvalid⟩ |
-    ⟨s, p, k, rfl, hp, hin⟩ | ⟨s, p, rfl, hp, hin, hin2⟩ | ⟨s, C, rfl, hin⟩)
+    ⟨s, p, k, rfl, hp, hin, hsucc⟩ | ⟨s, p, rfl, hp, hin, hin2⟩ | ⟨s, C, rfl, hin⟩)
   · exact Or.inl hd
   · exact Or.inr (Or.inl ⟨s, a, p, d0, rfl, h hd, hsc, hwff⟩)
   · exact Or.inr (Or.inr (Or.inl ⟨s, p, d0, rfl, h hd, hsc, hwff⟩))
   · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨s, at', p, d0, d1, rfl, h h0, h h1, hwff⟩)))
   · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, r, ds, rfl, hseq, fun i hi => h (hall i hi), hvalid⟩))))
-  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, k, rfl, hp, hin⟩)))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, k, rfl, hp, hin, hsucc⟩)))))
   · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, rfl, hp, hin, hin2⟩))))))
   · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨s, C, rfl, hin⟩))))))
 
@@ -5391,7 +5392,7 @@ lemma zphi_strong_finite {C : Set V} {d : V} :
     ZPhi C d → ZPhi {y | y ∈ C ∧ y < d} d := by
   rintro (hd | ⟨s, a, p, d0, rfl, hd, hsc, hwff⟩ | ⟨s, p, d0, rfl, hd, hsc, hwff⟩ |
     ⟨s, at', p, d0, d1, rfl, h0, h1, hwff⟩ | ⟨s, r, ds, rfl, hseq, hall, hvalid⟩ |
-    ⟨s, p, k, rfl, hp, hin⟩ | ⟨s, p, rfl, hp, hin, hin2⟩ | ⟨s, C, rfl, hin⟩)
+    ⟨s, p, k, rfl, hp, hin, hsucc⟩ | ⟨s, p, rfl, hp, hin, hin2⟩ | ⟨s, C, rfl, hin⟩)
   · exact Or.inl hd
   · exact Or.inr (Or.inl ⟨s, a, p, d0, rfl, ⟨hd, by simp⟩, hsc, hwff⟩)
   · exact Or.inr (Or.inr (Or.inl ⟨s, p, d0, rfl, ⟨hd, by simp⟩, hsc, hwff⟩))
@@ -5399,7 +5400,7 @@ lemma zphi_strong_finite {C : Set V} {d : V} :
   · refine Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
       ⟨s, r, ds, rfl, hseq, fun i hi => ⟨hall i hi, ?_⟩, hvalid⟩))))
     exact lt_trans (lt_of_mem_rng (hseq.znth hi)) (ds_lt_zK s r ds)
-  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, k, rfl, hp, hin⟩)))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, k, rfl, hp, hin, hsucc⟩)))))
   · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, rfl, hp, hin, hin2⟩))))))
   · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨s, C, rfl, hin⟩))))))
 
@@ -5416,14 +5417,15 @@ private lemma zphi_iff (C d : V) :
         d = zInd s at' p d0 d1 ∧ d0 ∈ C ∧ d1 ∈ C ∧ zIndWff d) ∨
       (∃ s < d, ∃ r < d, ∃ ds < d,
         d = zK s r ds ∧ Seq ds ∧ (∀ i < lh ds, znth ds i ∈ C) ∧ zKValidF s r ds) ∨
-      (∃ s < d, ∃ p < d, ∃ k < d, d = zAxAll s p k ∧ IsUFormula ℒₒᵣ p ∧ inAnt (^∀ p : V) (seqAnt s)) ∨
+      (∃ s < d, ∃ p < d, ∃ k < d, d = zAxAll s p k ∧ IsSemiformula ℒₒᵣ 1 p ∧
+        inAnt (^∀ p : V) (seqAnt s) ∧ zAxAllSuccWff s p k) ∨
       (∃ s < d, ∃ p < d, d = zAxNeg s p ∧ IsUFormula ℒₒᵣ p ∧ inAnt (inegF p : V) (seqAnt s) ∧
         inAnt p (seqAnt s)) ∨
       (∃ s < d, ∃ C < d, d = zAx1 s C ∧ inAnt (seqSucc s) (seqAnt s)) ) := by
   constructor
   · rintro (⟨s, rfl, hin⟩ | ⟨s, a, p, d0, rfl, h, hsc, hwff⟩ | ⟨s, p, d0, rfl, h, hsc, hwff⟩ |
       ⟨s, at', p, d0, d1, rfl, h0, h1, hwff⟩ | ⟨s, r, ds, rfl, hseq, hall, hvalid⟩ |
-      ⟨s, p, k, rfl, hp, hin⟩ | ⟨s, p, rfl, hp, hin, hin2⟩ | ⟨s, C, rfl, hin⟩)
+      ⟨s, p, k, rfl, hp, hin, hsucc⟩ | ⟨s, p, rfl, hp, hin, hin2⟩ | ⟨s, C, rfl, hin⟩)
     · exact Or.inl ⟨s, by simp, rfl, hin⟩
     · exact Or.inr (Or.inl ⟨s, by simp, a, by simp, p, by simp, d0, by simp, rfl, h, hsc, hwff⟩)
     · exact Or.inr (Or.inr (Or.inl ⟨s, by simp, p, by simp, d0, by simp, rfl, h, hsc, hwff⟩))
@@ -5432,7 +5434,7 @@ private lemma zphi_iff (C d : V) :
     · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
         ⟨s, by simp, r, by simp, ds, by simp, rfl, hseq, hall, hvalid⟩))))
     · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
-        ⟨s, by simp, p, by simp, k, by simp, rfl, hp, hin⟩)))))
+        ⟨s, by simp, p, by simp, k, by simp, rfl, hp, hin, hsucc⟩)))))
     · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
         ⟨s, by simp, p, by simp, rfl, hp, hin, hin2⟩))))))
     · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
@@ -5441,13 +5443,14 @@ private lemma zphi_iff (C d : V) :
       ⟨s, _, p, _, d0, _, rfl, h, hsc, hwff⟩ |
       ⟨s, _, at', _, p, _, d0, _, d1, _, rfl, h0, h1, hwff⟩ |
       ⟨s, _, r, _, ds, _, rfl, hseq, hall, hvalid⟩ |
-      ⟨s, _, p, _, k, _, rfl, hp, hin⟩ | ⟨s, _, p, _, rfl, hp, hin, hin2⟩ | ⟨s, _, C, _, rfl, hin⟩)
+      ⟨s, _, p, _, k, _, rfl, hp, hin, hsucc⟩ | ⟨s, _, p, _, rfl, hp, hin, hin2⟩ |
+      ⟨s, _, C, _, rfl, hin⟩)
     · exact Or.inl ⟨s, rfl, hin⟩
     · exact Or.inr (Or.inl ⟨s, a, p, d0, rfl, h, hsc, hwff⟩)
     · exact Or.inr (Or.inr (Or.inl ⟨s, p, d0, rfl, h, hsc, hwff⟩))
     · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨s, at', p, d0, d1, rfl, h0, h1, hwff⟩)))
     · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, r, ds, rfl, hseq, hall, hvalid⟩))))
-    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, k, rfl, hp, hin⟩)))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, k, rfl, hp, hin, hsucc⟩)))))
     · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨s, p, rfl, hp, hin, hin2⟩))))))
     · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨s, C, rfl, hin⟩))))))
 
@@ -5470,8 +5473,9 @@ noncomputable def zblueprint : Fixpoint.Blueprint 0 := ⟨.mkDelta
         !zKGraph d s r ds ∧ !seqDef ds ∧
           (∃ l, !lhDef l ds ∧ ∀ i < l, ∃ z, !znthDef z ds i ∧ z ∈ C) ∧
           !(zKValidFDef.sigma) s r ds) ∨
-      (∃ s < d, ∃ p < d, ∃ k < d, !zAxAllGraph d s p k ∧ !(isUFormula ℒₒᵣ).sigma p ∧
-        ∃ ap, !qqAllDef ap p ∧ ∃ sa, !seqAntDef sa s ∧ !inAntDef ap sa) ∨
+      (∃ s < d, ∃ p < d, ∃ k < d, !zAxAllGraph d s p k ∧ !(isSemiformula ℒₒᵣ).sigma 1 p ∧
+        (∃ ap, !qqAllDef ap p ∧ ∃ sa, !seqAntDef sa s ∧ !inAntDef ap sa) ∧
+        !(zAxAllSuccWffDef.sigma) s p k) ∨
       (∃ s < d, ∃ p < d, !zAxNegGraph d s p ∧ !(isUFormula ℒₒᵣ).sigma p ∧
         ∃ nb, !inegFDef nb p ∧ ∃ sa, !seqAntDef sa s ∧ !inAntDef nb sa ∧ !inAntDef p sa) ∨
       (∃ s < d, ∃ cc < d, !zAx1Graph d s cc ∧
@@ -5490,8 +5494,9 @@ noncomputable def zblueprint : Fixpoint.Blueprint 0 := ⟨.mkDelta
         !zKGraph d s r ds ∧ !seqDef ds ∧
           (∀ l, !lhDef l ds → ∀ i < l, ∀ z, !znthDef z ds i → z ∈ C) ∧
           !(zKValidFDef.pi) s r ds) ∨
-      (∃ s < d, ∃ p < d, ∃ k < d, !zAxAllGraph d s p k ∧ !(isUFormula ℒₒᵣ).pi p ∧
-        ∀ ap, !qqAllDef ap p → ∀ sa, !seqAntDef sa s → !inAntDef ap sa) ∨
+      (∃ s < d, ∃ p < d, ∃ k < d, !zAxAllGraph d s p k ∧ !(isSemiformula ℒₒᵣ).pi 1 p ∧
+        (∀ ap, !qqAllDef ap p → ∀ sa, !seqAntDef sa s → !inAntDef ap sa) ∧
+        !(zAxAllSuccWffDef.pi) s p k) ∨
       (∃ s < d, ∃ p < d, !zAxNegGraph d s p ∧ !(isUFormula ℒₒᵣ).pi p ∧
         ∀ nb, !inegFDef nb p → ∀ sa, !seqAntDef sa s → (!inAntDef nb sa ∧ !inAntDef p sa)) ∨
       (∃ s < d, ∃ cc < d, !zAx1Graph d s cc ∧
@@ -5506,7 +5511,7 @@ lemma zPhi_definable :
       seq_defined.iff, lh_defined.iff, znth_defined.iff,
       seqSucc_defined.iff, seqAnt_defined.iff, inAnt_defined.iff,
       qqForall_defined.iff, inegF_defined.iff, zInegWff_defined.iff, zIallWff_defined.iff,
-      zIndWff_defined.iff]
+      zIndWff_defined.iff, zAxAllSuccWff_defined.iff]
 
 /-- The Z-derivation `Fixpoint.Construction` (`Φ = ZPhi`, with the proved monotonicity). -/
 noncomputable def zconstruction : Fixpoint.Construction V zblueprint where
@@ -5565,7 +5570,7 @@ theorem isNF_iotil_of_ZDerivation : ∀ d : V, ZDerivation d → isNF (iotil d) 
     · exact isNF_iotil_zIneg (hC d0 hd0).2
     · exact isNF_iotil_zInd (hC d0 hd0).2 (hC d1 hd1).2
     · exact isNF_iotil_zK hds (fun i hi => (hC (znth ds i) (hmem i hi)).2)
-    · exact isNF_iotil_zAxAll hp
+    · exact isNF_iotil_zAxAll hp.isUFormula
     · exact isNF_iotil_zAxNeg hp
     · exact isNF_iotil_zAx1 s C
 
@@ -5695,7 +5700,7 @@ lemma tag_uformula_of_ZDerivation {v : V} (hZ : ZDerivation v) :
   · exact ⟨fun h => by simp at h, fun h => by simp at h, fun h => by simp at h, fun h => by simp at h⟩
   · exact ⟨fun h => by simp at h, fun h => by simp at h, fun h => by simp at h, fun h => by simp at h⟩
   · exact ⟨fun h => by simp at h, fun h => by simp at h,
-      fun _ => by rw [zAxAllF_zAxAll]; exact hp, fun h => by simp at h⟩
+      fun _ => by rw [zAxAllF_zAxAll]; exact hp.isUFormula, fun h => by simp at h⟩
   · exact ⟨fun h => by simp at h, fun h => by simp at h, fun h => by simp at h,
       fun _ => by rw [zAxNegF_zAxNeg]; exact hp⟩
   · exact ⟨fun h => by simp at h, fun h => by simp at h, fun h => by simp at h, fun h => by simp at h⟩
@@ -5740,7 +5745,7 @@ lemma iperm_tp_fstIdx_of_ZDerivation {d : V} (hZ : ZDerivation d) :
     iperm (tp d) (fstIdx d) := by
   rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, hsc, _⟩ |
     ⟨s, p, d0, rfl, _, hsc, _⟩ | ⟨s, at', p, d0, d1, rfl, _, _, _⟩ | ⟨s, r, ds, rfl, _, _, _⟩ |
-    ⟨s, p, k, rfl, _, hin⟩ | ⟨s, p, rfl, _, hin, _⟩ | ⟨s, C, rfl, _⟩
+    ⟨s, p, k, rfl, _, hin, _⟩ | ⟨s, p, rfl, _, hin, _⟩ | ⟨s, C, rfl, _⟩
   · rw [tp_zAtom]; exact iperm_isymRep _
   · rw [fstIdx_zIall]; exact iperm_tp_zIall hsc
   · rw [fstIdx_zIneg]; exact iperm_tp_zIneg hsc
@@ -8049,7 +8054,7 @@ lemma iRedDescent_zAxReduct_of_iRedDescent {e d : V} (he : ZDerivation e)
     exact icmp_trans (max (iotil (zAx1 s p)) (max (iotil (zAxAll s p k)) (iotil d)))
       _ (le_max_left _ _) _ (le_trans (le_max_left _ _) (le_max_right _ _))
       _ (le_trans (le_max_right _ _) (le_max_right _ _))
-      (icmp_iotil_zAx1_zAxAll hp) h.otil_lt
+      (icmp_iotil_zAx1_zAxAll hp.isUFormula) h.otil_lt
   · rw [zAxReduct_zAxNeg]
     refine ⟨by rw [idg_zAx1, ← idg_zAxNeg s p]; exact h.dg_le, ?_, isNF_iotil_zAx1 s p⟩
     exact icmp_trans (max (iotil (zAx1 s p)) (max (iotil (zAxNeg s p)) (iotil d)))
@@ -8093,7 +8098,7 @@ lemma iRedDescent_zAxReduct_iR2_of_tp_isymLk {d k A : V} (htp : tp d = isymLk k 
   · rw [tp_zIneg] at htp; exact absurd htp (by simp)
   · rw [tp_zInd] at htp; exact absurd htp (by simp)
   · rw [tp_zK] at htp; exact absurd htp (by simp)
-  · rw [iR2_zAxAll]; exact iRedDescent_zAxReduct_zAxAll hp
+  · rw [iR2_zAxAll]; exact iRedDescent_zAxReduct_zAxAll hp.isUFormula
   · rw [iR2_zAxNeg]; exact iRedDescent_zAxReduct_zAxNeg hp
   · rw [tp_zAx1] at htp; exact absurd htp (by simp)
 
@@ -8753,10 +8758,10 @@ lemma red_zIneg_tpReduce {s p d0 : V} (hZ : ZDerivation (zIneg s p d0)) :
 /-- **§5 ∀-axiom inversion**: a `ZDerivation` of the left-axiom `zAxAll s p k` carries the matrix's
 formula-hood and the side condition `∀p ∈ Γ`. Peels the L-redex premise (the `^∀ p` cut formula). -/
 lemma zDerivation_zAxAll_inv {s p k : V} (hZ : ZDerivation (zAxAll s p k)) :
-    IsUFormula ℒₒᵣ p ∧ inAnt (^∀ p : V) (seqAnt s) := by
+    IsSemiformula ℒₒᵣ 1 p ∧ inAnt (^∀ p : V) (seqAnt s) ∧ zAxAllSuccWff s p k := by
   rcases zDerivation_iff.mp hZ with ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
     ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
-    ⟨s', p', k', h, hp, hin⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C, h, _⟩
+    ⟨s', p', k', h, hp, hin, hsucc⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C, h, _⟩
   · exact absurd (congrArg zTag h) (by simp)
   · exact absurd (congrArg zTag h) (by simp)
   · exact absurd (congrArg zTag h) (by simp)
@@ -8764,7 +8769,8 @@ lemma zDerivation_zAxAll_inv {s p k : V} (hZ : ZDerivation (zAxAll s p k)) :
   · exact absurd (congrArg zTag h) (by simp)
   · obtain rfl : s = s' := by simpa using congrArg fstIdx h
     obtain rfl : p = p' := by simpa using congrArg zAxAllF h
-    exact ⟨hp, hin⟩
+    obtain rfl : k = k' := by simpa using congrArg zAxAllK h
+    exact ⟨hp, hin, hsucc⟩
   · exact absurd (congrArg zTag h) (by simp)
   · exact absurd (congrArg zTag h) (by simp)
 
@@ -9220,7 +9226,7 @@ lemma majorPrem_zAxAll_cutPartner {s r ds p k : V} (hZ : ZDerivation (zK s r ds)
   have hmle : J ≤ j0 := majorIdxAux_le_of_isMajorPrem ds s (lh ds) j0 hj0lt hmaj0
   have hmemZ : ZDerivation (znth ds J) := (zDerivation_zK_inv hZ).2 _ hmlt
   set s' := fstIdx (znth ds J) with hs'
-  have hin : inAnt (^∀ p : V) (seqAnt s') := (zDerivation_zAxAll_inv (hj ▸ hmemZ)).2
+  have hin : inAnt (^∀ p : V) (seqAnt s') := (zDerivation_zAxAll_inv (hj ▸ hmemZ)).2.1
   rcases hthread J hmle (^∀ p) hin with h | h
   · rw [hant] at h; simp [inAnt, lh_empty] at h
   · obtain ⟨i', hi', heq⟩ := h; exact ⟨i', hi', heq.symm⟩

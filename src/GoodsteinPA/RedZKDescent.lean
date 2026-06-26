@@ -41,7 +41,7 @@ lemma iRedDescent_zAxReduct_red_of_tp_isymLk {d k A : V} (htp : tp d = isymLk k 
   · rw [tp_zIneg] at htp; exact absurd htp (by simp)
   · rw [tp_zInd] at htp; exact absurd htp (by simp)
   · rw [tp_zK] at htp; exact absurd htp (by simp)
-  · rw [red_zAxAll]; exact iRedDescent_zAxReduct_zAxAll hp
+  · rw [red_zAxAll]; exact iRedDescent_zAxReduct_zAxAll hp.isUFormula
   · rw [red_zAxNeg]; exact iRedDescent_zAxReduct_zAxNeg hp
   · rw [tp_zAx1] at htp; exact absurd htp (by simp)
 

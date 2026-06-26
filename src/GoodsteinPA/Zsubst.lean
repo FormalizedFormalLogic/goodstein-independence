@@ -564,7 +564,7 @@ lemma iperm_tp_zsubst {a t : V} (ht : IsSemiterm ℒₒᵣ 0 t) {d q : V} (hd : 
   · rw [zsubst_zK, tp_zK]; exact iperm_isymRep _
   · rw [zsubst_zAxAll, tp_zAxAll]; rw [tp_zAxAll] at h
     refine iperm_isymLk_iff.mpr ?_
-    rw [seqAnt_fvSubstSeqt, ← fvSubst_all hp]
+    rw [seqAnt_fvSubstSeqt, ← fvSubst_all hp.isUFormula]
     exact inAnt_fvSubstSeq (iperm_isymLk_iff.mp h)
   · rw [zsubst_zAxNeg, tp_zAxNeg]; rw [tp_zAxNeg] at h
     refine iperm_isymLk_iff.mpr ?_
@@ -647,7 +647,7 @@ lemma tp_zsubst_eq {a t : V} (ht : IsSemiterm ℒₒᵣ 0 t) {d : V} (hd : ZDeri
     simp only [zsubst_zInd, tp_zInd]
   · simp only [zsubst_zK, tp_zK]
   · rw [zsubst_zAxAll, tp_zAxAll, tp_zAxAll,
-      fvSubst_eq_self_of_le hp (le_of_lt (lt_of_lt_of_le (p_lt_zAxAll s p k) hda))]
+      fvSubst_eq_self_of_le hp.isUFormula (le_of_lt (lt_of_lt_of_le (p_lt_zAxAll s p k) hda))]
   · rw [zsubst_zAxNeg, tp_zAxNeg, tp_zAxNeg,
       fvSubst_eq_self_of_le hp (le_of_lt (lt_of_lt_of_le (p_lt_zAxNeg s p) hda))]
   · simp only [zsubst_zAx1, tp_zAx1]
@@ -1176,7 +1176,8 @@ theorem iotil_zsubst {t : V} (ht : IsUTerm ℒₒᵣ t) (a : V) :
       rw [iseqNaddIdgAux_congr_val hpt _ (le_refl _), hlh]
     · -- zAxAll: õ = oAtomLk(^∀ F), invariant since irk(^∀ (fvSubst F)) = irk(^∀ F)
       have hirk : irk (^∀ (fvSubst ℒₒᵣ a t p) : V) = irk (^∀ p : V) := by
-        rw [irk_all (IsUFormula.fvSubst ht hp), irk_all hp, irk_fvSubst ht hp]
+        rw [irk_all (IsUFormula.fvSubst ht hp.isUFormula), irk_all hp.isUFormula,
+          irk_fvSubst ht hp.isUFormula]
       rw [zsubst_zAxAll, iotil_zAxAll, iotil_zAxAll, oAtomLk, oAtomLk, hirk]
     · -- zAxNeg: õ = oAtomLk(¬F), invariant since irk(¬ (fvSubst F)) = irk(¬ F)
       have hirk : irk (inegF (fvSubst ℒₒᵣ a t p) : V) = irk (inegF p : V) := by
@@ -2897,8 +2898,8 @@ theorem ZDerivation_zsubst {a t : V} (ht : IsSemiterm ℒₒᵣ 0 t) :
   · intro C hC d hphi
     rcases hphi with ⟨s, rfl, hatom⟩ | ⟨s, e, p, d0, rfl, hd0, hsc, hwff⟩ |
       ⟨s, p, d0, rfl, hd0, hsc, hwff⟩ | ⟨s, at', p, d0, d1, rfl, hd0, hd1, hwff⟩ |
-      ⟨s, r, ds, rfl, hseq, hmem, hvalid⟩ | ⟨s, p, k, rfl, hp, hin⟩ | ⟨s, p, rfl, hp, hin, hin2⟩ |
-      ⟨s, C, rfl, hin⟩
+      ⟨s, r, ds, rfl, hseq, hmem, hvalid⟩ | ⟨s, p, k, rfl, hp, hin, hsucc⟩ |
+      ⟨s, p, rfl, hp, hin, hin2⟩ | ⟨s, C, rfl, hin⟩
     -- atom
     · intro _
       rw [zsubst_zAtom]
@@ -3033,10 +3034,15 @@ theorem ZDerivation_zsubst {a t : V} (ht : IsSemiterm ℒₒᵣ 0 t) :
     · intro _
       rw [zsubst_zAxAll]
       refine zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
-        ⟨fvSubstSeqt a t s, fvSubst ℒₒᵣ a t p, k, rfl, ?_, ?_⟩))))))
-      · exact IsUFormula.fvSubst ht.isUTerm hp
-      · rw [seqAnt_fvSubstSeqt, ← fvSubst_all hp]
+        ⟨fvSubstSeqt a t s, fvSubst ℒₒᵣ a t p, k, rfl, ?_, ?_, ?_⟩))))))
+      · exact fvSubst_isSemiformula ht hp
+      · rw [seqAnt_fvSubstSeqt, ← fvSubst_all hp.isUFormula]
         exact inAnt_fvSubstSeq hin
+      · -- zAxAllSuccWff transfer: seqSucc (fvSubstSeqt s) = substs1 (numeral k) (fvSubst p)
+        show seqSucc (fvSubstSeqt a t s) = substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral k)
+          (fvSubst ℒₒᵣ a t p)
+        rw [seqSucc_fvSubstSeqt, hsucc,
+          fvSubst_substs1 ht (by simp) hp, termFvSubst_numeral]
     -- zAxNeg
     · intro _
       rw [zsubst_zAxNeg]
