@@ -8929,6 +8929,200 @@ lemma firstBotPrem_reducible {s r ds : V} (hZ : ZDerivation (zK s r ds))
       chainAsucc_threaded_of_leaf hmemZ (Or.inr ⟨s', C', h⟩) hant hthread hjle
     exact (hmin i' hi') (heq.trans hjstar)
 
+/-! ### The faithful `majorIdx` selector (Buchholz §14.25) — the no-stall replacement for `permIdx`
+
+`permIdx`/`iperm` select the first `iperm`-permissible (`isymRep`) premise, which can be a `red`-normal
+atom/`Ax¹` LEAF → the stall. Buchholz §14.25 selects the **major premise** = the first premise whose
+*succedent IS the endsequent succedent*. `majorIdxAux` mirrors `permIdxAux` on that predicate
+(`isMajorPrem`); `majorIdx_botOrbit_reducible` proves it never stalls on the ⊥-orbit. The `iRK` re-key
+(`permIdx ↦ majorIdx` in the replace branch) is the remaining engine step (PENDING_WORK lap-129). -/
+
+/-- **Faithful (Buchholz §14.25) major-premise selection predicate:** premise `n`'s succedent IS the
+endsequent succedent. -/
+def isMajorPrem (ds s n : V) : Prop := chainAsucc ds n = seqSucc s
+
+noncomputable def majorIdxAux.blueprint : PR.Blueprint 2 where
+  zero := .mkSigma “y ds s. y = 0”
+  succ := .mkSigma “y ih n ds s.
+    (ih < n ∧ y = ih) ∨
+    (n ≤ ih ∧ ∃ c, !chainAsuccDef c ds n ∧ ∃ ss, !seqSuccDef ss s ∧
+      ( (c = ss ∧ y = n) ∨ (¬(c = ss) ∧ y = n + 1) ) )”
+
+noncomputable def majorIdxAux.construction : PR.Construction V majorIdxAux.blueprint where
+  zero := fun _ ↦ 0
+  succ := fun x n ih ↦ if ih < n then ih else if isMajorPrem (x 0) (x 1) n then n else n + 1
+  zero_defined := .mk fun v ↦ by simp [majorIdxAux.blueprint]
+  succ_defined := .mk fun v ↦ by
+    by_cases h1 : v 1 < v 2
+    · simp [majorIdxAux.blueprint, h1]
+    · have hle : v 2 ≤ v 1 := not_lt.mp h1
+      by_cases h2 : isMajorPrem (v 3) (v 4) (v 2)
+      · simp only [majorIdxAux.blueprint, isMajorPrem] at h2 ⊢
+        simp [h1, h2, hle, chainAsucc_defined.iff, seqSucc_defined.iff]
+      · simp only [majorIdxAux.blueprint, isMajorPrem] at h2 ⊢
+        simp [h1, h2, hle, chainAsucc_defined.iff, seqSucc_defined.iff]
+
+/-- `majorIdxAux ds s n` = the least `i < n` with `isMajorPrem ds s i`, or `n` if none. -/
+noncomputable def majorIdxAux (ds s n : V) : V := majorIdxAux.construction.result ![ds, s] n
+
+@[simp] lemma majorIdxAux_zero (ds s : V) : majorIdxAux ds s 0 = 0 := by
+  simp [majorIdxAux, majorIdxAux.construction]
+
+@[simp] lemma majorIdxAux_succ (ds s n : V) :
+    majorIdxAux ds s (n + 1) =
+      (if majorIdxAux ds s n < n then majorIdxAux ds s n
+       else if isMajorPrem ds s n then n else n + 1) := by
+  simp [majorIdxAux, majorIdxAux.construction]
+
+noncomputable def _root_.LO.FirstOrder.Arithmetic.majorIdxAuxDef : 𝚺₁.Semisentence 4 :=
+  majorIdxAux.blueprint.resultDef.rew (Rew.subst ![#0, #3, #1, #2])
+
+instance majorIdxAux_defined : 𝚺₁-Function₃ (majorIdxAux : V → V → V → V) via majorIdxAuxDef :=
+  .mk fun v ↦ by simp [majorIdxAux.construction.result_defined_iff, majorIdxAuxDef]; rfl
+
+instance majorIdxAux_definable : 𝚺₁-Function₃ (majorIdxAux : V → V → V → V) :=
+  majorIdxAux_defined.to_definable
+instance majorIdxAux_definable' (Γ) : Γ-[m + 1]-Function₃ (majorIdxAux : V → V → V → V) :=
+  majorIdxAux_definable.of_sigmaOne
+
+/-- **First-hit ≤ sentinel**. -/
+lemma majorIdxAux_le (ds s : V) : ∀ N, majorIdxAux ds s N ≤ N := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ n ih =>
+    rw [majorIdxAux_succ]
+    by_cases h1 : majorIdxAux ds s n < n
+    · rw [if_pos h1]; exact le_of_lt (lt_trans h1 (le_iff_lt_succ.mp (le_refl n)))
+    · rw [if_neg h1]
+      by_cases h2 : isMajorPrem ds s n
+      · rw [if_pos h2]; exact le_of_lt (le_iff_lt_succ.mp (le_refl n))
+      · simp [h2]
+
+/-- **First-hit is valid** — a returned index `< N` is a major premise. -/
+lemma majorIdxAux_isMajorPrem_of_lt (ds s : V) :
+    ∀ N, majorIdxAux ds s N < N → isMajorPrem ds s (majorIdxAux ds s N) := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · simp only [isMajorPrem]; definability
+  case zero => intro h; exact absurd h (by simp)
+  case succ n ih =>
+    intro hlt
+    rw [majorIdxAux_succ] at hlt ⊢
+    by_cases h1 : majorIdxAux ds s n < n
+    · rw [if_pos h1] at hlt ⊢; exact ih h1
+    · rw [if_neg h1] at hlt ⊢
+      by_cases h2 : isMajorPrem ds s n
+      · rw [if_pos h2] at hlt ⊢; exact h2
+      · rw [if_neg h2] at hlt; exact absurd hlt (by simp)
+
+/-- **No-hit sentinel** — if the search returns `N`, no `i < N` is a major premise. -/
+lemma majorIdxAux_eq_self_of_none (ds s : V) :
+    ∀ N, majorIdxAux ds s N = N → ∀ i < N, ¬ isMajorPrem ds s i := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · simp only [isMajorPrem]; definability
+  case zero => intro _ i hi; exact absurd hi (by simp)
+  case succ n ih =>
+    intro heq i hi
+    rw [majorIdxAux_succ] at heq
+    by_cases h1 : majorIdxAux ds s n < n
+    · rw [if_pos h1] at heq
+      exact absurd (le_iff_lt_succ.mp (le_refl n)) (lt_asymm (heq ▸ h1))
+    · rw [if_neg h1] at heq
+      by_cases h2 : isMajorPrem ds s n
+      · rw [if_pos h2] at heq; exact absurd heq (le_iff_lt_succ.mp (le_refl n)).ne
+      · rw [if_neg h2] at heq
+        have hn : majorIdxAux ds s n = n := le_antisymm (majorIdxAux_le ds s n) (not_lt.mp h1)
+        rcases lt_or_eq_of_le (lt_succ_iff_le.mp hi) with hin | hin
+        · exact ih hn i hin
+        · rw [hin]; exact h2
+
+/-- **First-hit found** — when a major premise exists below `N`, the search returns one. -/
+lemma majorIdxAux_found (ds s N : V) (h : ∃ i < N, isMajorPrem ds s i) :
+    majorIdxAux ds s N < N ∧ isMajorPrem ds s (majorIdxAux ds s N) := by
+  have hlt : majorIdxAux ds s N < N := by
+    rcases lt_or_eq_of_le (majorIdxAux_le ds s N) with h' | h'
+    · exact h'
+    · obtain ⟨i, hiN, hi⟩ := h
+      exact absurd hi (majorIdxAux_eq_self_of_none ds s N h' i hiN)
+  exact ⟨hlt, majorIdxAux_isMajorPrem_of_lt ds s N hlt⟩
+
+/-- **First-hit is LEAST** — the returned index is `≤` any major premise `m < N`. -/
+lemma majorIdxAux_le_of_isMajorPrem (ds s : V) :
+    ∀ N, ∀ m < N, isMajorPrem ds s m → majorIdxAux ds s N ≤ m := by
+  intro N
+  induction N using ISigma1.sigma1_succ_induction
+  · simp only [isMajorPrem]; definability
+  case zero => intro m hm; exact absurd hm (by simp)
+  case succ n ih =>
+    intro m hm hmaj
+    rw [majorIdxAux_succ]
+    by_cases h1 : majorIdxAux ds s n < n
+    · rw [if_pos h1]
+      rcases lt_or_eq_of_le (lt_succ_iff_le.mp hm) with hmn | hmn
+      · exact ih m hmn hmaj
+      · subst hmn; exact le_of_lt h1
+    · rw [if_neg h1]
+      have hn : majorIdxAux ds s n = n := le_antisymm (majorIdxAux_le ds s n) (not_lt.mp h1)
+      have hnone := majorIdxAux_eq_self_of_none ds s n hn
+      rcases lt_or_eq_of_le (lt_succ_iff_le.mp hm) with hmn | hmn
+      · exact absurd hmaj (hnone m hmn)
+      · subst hmn; rw [if_pos hmaj]
+
+/-- **The faithful major-premise index of a chain** = least premise whose succedent is the conclusion
+succedent, sentinel `lh (zKseq d)`. Buchholz §14.25; the no-stall replacement for `permIdx`. -/
+noncomputable def majorIdx (d : V) : V := majorIdxAux (zKseq d) (fstIdx d) (lh (zKseq d))
+
+/-- **No-stall, end-to-end (the `iRK` re-key consumes this).** On a `∅→⊥` chain `zK s r ds`, the faithful
+selector `majorIdx` lands on an IN-RANGE premise whose succedent is `⊥` and whose tag is NOT a `red`-normal
+leaf (`≠ 0,7`). So re-keying `iRK`'s replace branch from `permIdx` to `majorIdx` makes the atom/`Ax¹`
+fixpoint stall UNREACHABLE on the headline ⊥-orbit. Combines `majorIdxAux_found`/`_le_of_isMajorPrem` (the
+selector finds the LEAST `⊥`-exit, guaranteed to exist by `isChainInf`) with `chainAsucc_threaded_of_leaf`
+(a leaf `⊥`-exit re-routes to a strictly earlier one — impossible for the least). -/
+lemma majorIdx_botOrbit_reducible {s r ds : V} (hZ : ZDerivation (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V)) :
+    majorIdx (zK s r ds) < lh ds ∧
+    chainAsucc ds (majorIdx (zK s r ds)) = (^⊥ : V) ∧
+    zTag (znth ds (majorIdx (zK s r ds))) ≠ 0 ∧ zTag (znth ds (majorIdx (zK s r ds))) ≠ 7 := by
+  have hchain : isChainInf s r ds := (zKValidF_of_ZDerivation_zK hZ).1
+  obtain ⟨j0, hj0lt, hAj0, hthread, _⟩ := hchain
+  have hbot0 : chainAsucc ds j0 = (^⊥ : V) := by
+    rcases hAj0 with h | h
+    · rw [h, hsucc]
+    · exact h
+  have hmaj0 : isMajorPrem ds s j0 := by rw [isMajorPrem, hbot0, hsucc]
+  have hmeq : majorIdx (zK s r ds) = majorIdxAux ds s (lh ds) := by rw [majorIdx, zKseq_zK, fstIdx_zK]
+  obtain ⟨hmlt, hmmaj⟩ := majorIdxAux_found ds s (lh ds) ⟨j0, hj0lt, hmaj0⟩
+  have hmle : majorIdxAux ds s (lh ds) ≤ j0 := majorIdxAux_le_of_isMajorPrem ds s (lh ds) j0 hj0lt hmaj0
+  have hmbot : chainAsucc ds (majorIdxAux ds s (lh ds)) = (^⊥ : V) := by rw [← hsucc]; exact hmmaj
+  rw [hmeq]
+  refine ⟨hmlt, hmbot, ?_⟩
+  have hmemZ : ZDerivation (znth ds (majorIdxAux ds s (lh ds))) := (zDerivation_zK_inv hZ).2 _ hmlt
+  rcases zDerivation_iff.mp hmemZ with
+    ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
+    ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
+    ⟨s', p', k', h, _, _⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C', h, _⟩
+  · exfalso
+    obtain ⟨i', hi', heq⟩ :=
+      chainAsucc_threaded_of_leaf hmemZ (Or.inl ⟨s', h⟩) hant hthread hmle
+    have hi'maj : isMajorPrem ds s i' := by rw [isMajorPrem, heq, hmbot, hsucc]
+    exact absurd (majorIdxAux_le_of_isMajorPrem ds s (lh ds) i' (lt_trans hi' hmlt) hi'maj)
+      (not_le.mpr hi')
+  · exact ⟨by rw [h]; simp, by rw [h]; simp⟩
+  · exact ⟨by rw [h]; simp, by rw [h]; simp⟩
+  · exact ⟨by rw [h]; simp, by rw [h]; simp⟩
+  · exact ⟨by rw [h]; simp, by rw [h]; simp⟩
+  · exact ⟨by rw [h]; simp, by rw [h]; simp⟩
+  · exact ⟨by rw [h]; simp, by rw [h]; simp⟩
+  · exfalso
+    obtain ⟨i', hi', heq⟩ :=
+      chainAsucc_threaded_of_leaf hmemZ (Or.inr ⟨s', C', h⟩) hant hthread hmle
+    have hi'maj : isMajorPrem ds s i' := by rw [isMajorPrem, heq, hmbot, hsucc]
+    exact absurd (majorIdxAux_le_of_isMajorPrem ds s (lh ds) i' (lt_trans hi' hmlt) hi'maj)
+      (not_le.mpr hi')
+
 set_option maxHeartbeats 1000000 in
 /-- **The generalized redex finder for a re-routing chain** (lap 122 — the genuine fix for the threaded-atom
 stall, Sub-lemmas A+B assembled). `inference_critical_pair_of_chain` needs FULL criticality `hnperm`
