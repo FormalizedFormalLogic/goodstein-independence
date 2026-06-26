@@ -342,6 +342,129 @@ lemma fvSubstSeq_numeral_transfer {a m k Γ : V}
   have hidem := fvSubstSeq_numeral_idem (a := a) (s := Bootstrapping.Arithmetic.numeral k) (m := m) hΓ
   rw [h] at hidem; exact hidem
 
+/-! ### Freshness is PRESERVED under closed-numeral substitution (the `zFresh_zsubst` substrate, lap 127)
+
+`zReg_zsubst` (an equality) needs no well-formedness because `maxEigen_zsubst` is purely structural.
+`zFresh` is different: substituting *away* the eigenvariable can only make a node *more* fresh, so the
+right statement is the **downward** preservation `ZFresh d → ZFresh (zsubst d a (numeral n))`, not an
+equality (which fails at an I∀ node whose eigenvariable *is* `a`). The engine of that preservation is the
+**commutation of two distinct fresh-variable numeral substitutions** below: since numerals are closed,
+`^&a ↦ numeral n` and `^&e ↦ numeral m` commute whenever `e ≠ a`. Combined with `fvSubst_numeral_idem`
+(the `e = a` collapse), it gives "non-occurrence of `^&e` survives substituting a *different* variable by
+a closed numeral" — exactly the per-I∀-node `freshFlag`-preservation step. -/
+
+/-- **Term-level commutation** of two distinct fresh-variable numeral substitutions (`e ≠ a`). -/
+lemma termFvSubst_numeral_comm {a e m n : V} (hea : e ≠ a) {u : V} (hu : IsUTerm ℒₒᵣ u) :
+    termFvSubst ℒₒᵣ e (Bootstrapping.Arithmetic.numeral m)
+        (termFvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n) u)
+      = termFvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n)
+          (termFvSubst ℒₒᵣ e (Bootstrapping.Arithmetic.numeral m) u) := by
+  apply IsUTerm.induction 𝚺 ?_ ?_ ?_ ?_ u hu
+  · definability
+  · intro z; simp
+  · intro x
+    rcases eq_or_ne x a with rfl | hxa
+    · simp only [termFvSubst_fvar_self (L := ℒₒᵣ), termFvSubst_fvar_ne (L := ℒₒᵣ) (Ne.symm hea),
+        termFvSubst_numeral]
+    · rcases eq_or_ne x e with rfl | hxe
+      · simp only [termFvSubst_fvar_ne (L := ℒₒᵣ) hxa, termFvSubst_fvar_self (L := ℒₒᵣ),
+          termFvSubst_numeral]
+      · simp only [termFvSubst_fvar_ne (L := ℒₒᵣ) hxa, termFvSubst_fvar_ne (L := ℒₒᵣ) hxe]
+  · intro k f v hkf hv ih
+    have hvn : IsUTermVec ℒₒᵣ k (termFvSubstVec ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n) k v) :=
+      IsUTermVec.termFvSubst (by simp) hv
+    have hvm : IsUTermVec ℒₒᵣ k (termFvSubstVec ℒₒᵣ e (Bootstrapping.Arithmetic.numeral m) k v) :=
+      IsUTermVec.termFvSubst (by simp) hv
+    simp only [termFvSubst_func hkf hv, termFvSubst_func hkf hvn, termFvSubst_func hkf hvm,
+      qqFunc_inj, true_and]
+    apply nth_ext' k (by rw [len_termFvSubstVec hvn]) (by rw [len_termFvSubstVec hvm])
+    intro i hi
+    simp only [nth_termFvSubstVec hvn hi, nth_termFvSubstVec hvm hi, nth_termFvSubstVec hv hi]
+    exact ih i hi
+
+/-- **Term-vector commutation** (the `rel`/`nrel` ingredient of the formula commutation). -/
+lemma termFvSubstVec_numeral_comm {a e m n k v : V} (hea : e ≠ a) (hv : IsUTermVec ℒₒᵣ k v) :
+    termFvSubstVec ℒₒᵣ e (Bootstrapping.Arithmetic.numeral m)
+        k (termFvSubstVec ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n) k v)
+      = termFvSubstVec ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n)
+          k (termFvSubstVec ℒₒᵣ e (Bootstrapping.Arithmetic.numeral m) k v) := by
+  have hvn : IsUTermVec ℒₒᵣ k (termFvSubstVec ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n) k v) :=
+    IsUTermVec.termFvSubst (by simp) hv
+  have hvm : IsUTermVec ℒₒᵣ k (termFvSubstVec ℒₒᵣ e (Bootstrapping.Arithmetic.numeral m) k v) :=
+    IsUTermVec.termFvSubst (by simp) hv
+  apply nth_ext' k (by rw [len_termFvSubstVec hvn]) (by rw [len_termFvSubstVec hvm])
+  intro i hi
+  simp only [nth_termFvSubstVec hvn hi, nth_termFvSubstVec hvm hi, nth_termFvSubstVec hv hi]
+  exact termFvSubst_numeral_comm hea (hv.2 i hi)
+
+/-- **Formula-level commutation** (`e ≠ a`): the engine of downward freshness preservation. -/
+lemma fvSubst_numeral_comm {a e m n : V} (hea : e ≠ a) {p : V} (hp : IsUFormula ℒₒᵣ p) :
+    fvSubst ℒₒᵣ e (Bootstrapping.Arithmetic.numeral m)
+        (fvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n) p)
+      = fvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n)
+          (fvSubst ℒₒᵣ e (Bootstrapping.Arithmetic.numeral m) p) := by
+  have hnumn : IsUTerm ℒₒᵣ (Bootstrapping.Arithmetic.numeral n : V) := by simp
+  have hnumm : IsUTerm ℒₒᵣ (Bootstrapping.Arithmetic.numeral m : V) := by simp
+  apply IsUFormula.ISigma1.sigma1_succ_induction ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ p hp
+  · definability
+  · intro k r v hr hv
+    simp only [fvSubst_rel hr hv, fvSubst_rel hr (IsUTermVec.termFvSubst hnumn hv),
+      fvSubst_rel hr (IsUTermVec.termFvSubst hnumm hv)]
+    rw [termFvSubstVec_numeral_comm hea hv]
+  · intro k r v hr hv
+    simp only [fvSubst_nrel hr hv, fvSubst_nrel hr (IsUTermVec.termFvSubst hnumn hv),
+      fvSubst_nrel hr (IsUTermVec.termFvSubst hnumm hv)]
+    rw [termFvSubstVec_numeral_comm hea hv]
+  · simp
+  · simp
+  · intro p q hp hq ihp ihq
+    simp only [fvSubst_and hp hq, fvSubst_and (IsUFormula.fvSubst hnumn hp) (IsUFormula.fvSubst hnumn hq),
+      fvSubst_and (IsUFormula.fvSubst hnumm hp) (IsUFormula.fvSubst hnumm hq), ihp, ihq]
+  · intro p q hp hq ihp ihq
+    simp only [fvSubst_or hp hq, fvSubst_or (IsUFormula.fvSubst hnumn hp) (IsUFormula.fvSubst hnumn hq),
+      fvSubst_or (IsUFormula.fvSubst hnumm hp) (IsUFormula.fvSubst hnumm hq), ihp, ihq]
+  · intro p hp ihp
+    simp only [fvSubst_all hp, fvSubst_all (IsUFormula.fvSubst hnumn hp),
+      fvSubst_all (IsUFormula.fvSubst hnumm hp), ihp]
+  · intro p hp ihp
+    simp only [fvSubst_ex hp, fvSubst_ex (IsUFormula.fvSubst hnumn hp),
+      fvSubst_ex (IsUFormula.fvSubst hnumm hp), ihp]
+
+/-- **Downward freshness preservation (formula).** If `^&e` does not occur free in `p`
+(`fvSubst e (numeral 0) p = p`), it still does not occur after substituting a *different/closed* numeral
+target into a (possibly different) variable `a` — i.e. `fvSubst a (numeral n)` cannot introduce `^&e`. -/
+lemma fvSubst_numeral_fresh_subst {a e n : V} {p : V} (hp : IsUFormula ℒₒᵣ p)
+    (h : fvSubst ℒₒᵣ e (Bootstrapping.Arithmetic.numeral 0) p = p) :
+    fvSubst ℒₒᵣ e (Bootstrapping.Arithmetic.numeral 0)
+        (fvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n) p)
+      = fvSubst ℒₒᵣ a (Bootstrapping.Arithmetic.numeral n) p := by
+  rcases eq_or_ne e a with rfl | hea
+  · -- `e = a`: the inner substitution already removed every `^&e`; collapse via idempotence.
+    exact fvSubst_numeral_idem hp
+  · rw [fvSubst_numeral_comm hea hp, h]
+
+/-- **Downward freshness preservation (sequence).** The `hΓfresh`/antecedent analogue: if `^&e` is free in
+no entry of `Γ` (`fvSubstSeq e (numeral 0) Γ = Γ`), it remains absent after `fvSubstSeq a (numeral n)`. -/
+lemma fvSubstSeq_numeral_fresh_subst {a e n Γ : V}
+    (hΓ : ∀ i < lh Γ, IsUFormula ℒₒᵣ (znth Γ i))
+    (h : fvSubstSeq e (Bootstrapping.Arithmetic.numeral 0) Γ = Γ) :
+    fvSubstSeq e (Bootstrapping.Arithmetic.numeral 0)
+        (fvSubstSeq a (Bootstrapping.Arithmetic.numeral n) Γ)
+      = fvSubstSeq a (Bootstrapping.Arithmetic.numeral n) Γ := by
+  have hentry : ∀ j < lh Γ, fvSubst ℒₒᵣ e (Bootstrapping.Arithmetic.numeral 0) (znth Γ j) = znth Γ j := by
+    intro j hj
+    have hz := znth_fvSubstSeq (a := e) (t := Bootstrapping.Arithmetic.numeral 0) (Γ := Γ) hj
+    rw [h] at hz; exact hz.symm
+  refine Seq.lh_ext (fvSubstSeq_seq _ _ _) (fvSubstSeq_seq _ _ _)
+    (by rw [fvSubstSeq_lh, fvSubstSeq_lh]) ?_
+  intro j x₁ x₂ h₁ h₂
+  have hj : j < lh Γ := by
+    have hjm := (fvSubstSeq_seq a (Bootstrapping.Arithmetic.numeral n) Γ).lt_lh_of_mem h₂
+    rwa [fvSubstSeq_lh] at hjm
+  rw [← (fvSubstSeq_seq _ _ _).znth_eq_of_mem h₁, ← (fvSubstSeq_seq _ _ _).znth_eq_of_mem h₂,
+    znth_fvSubstSeq (by rw [fvSubstSeq_lh]; exact hj), znth_fvSubstSeq hj]
+  exact fvSubst_numeral_fresh_subst (hΓ j hj) (hentry j hj)
+
 /-! ## Substitution-invariants for the `zK` chain-validity transfer (rung-1 step C.zK groundwork)
 
 `zKValid` subst-invariance reads the chain through `irk`/`tp`/`iperm`/`isChainInf`; the foundational
