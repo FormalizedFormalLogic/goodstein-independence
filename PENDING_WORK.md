@@ -1,6 +1,55 @@
 # Pending work — open obligations & attack paths
 
-## lap 146 (latest) — REVIEW + `zIndWff` strengthening + **`descent_step_Ind` DROPPED** (axiom-clean, off red)
+## lap 147 (latest) — §5.2 WIRED to Buchholz §14.25: `descent_step_K_noncritical` decomposed on MAJOR-premise tag
+**Build 🟢 1326. Headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms) — no drift.**
+ONE commit (major-premise dispatch wiring). Operator SOLE-OBJECTIVE = M1b-term (terminate crux-2). The
+live `false_of_ZDerivesEmpty` path's first remaining sorry is `descent_step_K_noncritical` (the §5.2
+non-critical K-step). This lap WIRED the banked-but-unused lap-129/130 major-premise machinery into it.
+
+### What this lap DID — wire `majorIdx`, decompose along Buchholz §14.25 (no drop, a sharpening)
+`descent_step_K_noncritical` (`Crux2Blueprint:2190`) is now a **sorry-FREE dispatcher** on the FAITHFUL
+major premise (first `⊥`-exit, `majorIdx`), replacing the lap-129 stall-prone `permIdx` framing. Via
+`majorPrem_tag_mem` (major premise tag ∈ {3,4,5,6}) it routes to two named sub-sorries:
+- **`descent_step_K_noncrit_repMajor`** (`:2163`, tag 3/4, Buchholz §14.254) — `Rep` major premise
+  (`zInd`/sub-`zK`), reduced by REPLACE with its own reduct.
+- **`descent_step_K_noncrit_axMajor`** (`:2174`, tag 5/6, Buchholz §14.253 principal case) — L-axiom major
+  premise (`zAxAll`/`zAxNeg`), reduced by the principal CUT vs the upstream R-partner (cut-partner pinned by
+  `majorPrem_zAxAll_cutPartner`/`_zAxNeg_cutPartner`).
+This dissolves the lap-129 `permIdx` atom/`Ax¹` STALL in the live path (the major premise is provably never a
+leaf, `majorIdx_botOrbit_reducible`) and aligns the obligation with Buchholz's actual two-case reduction.
+
+### ⚠️ WHY no drop this lap — both sub-cases bottom out in the GENERAL reduction (multi-lap, honest block)
+Verified IN-KERNEL during the feasibility pass:
+- **repMajor**: the major premise derives `Γₘ→⊥` with `Γₘ ⊆ {A₀…A_{m−1}}` (`isChainInf` threading), **possibly
+  NONEMPTY** — so reducing it is the GENERAL Z-derivation reduction, NOT the ⊥-orbit special case that
+  `descent_step_Ind`/`_K_critical` exploited (those needed `Γ = ∅` for the telescope/antecedent collapse).
+- **axMajor**: the critical machinery does NOT extend for free. `redZKReady_of_zKValid`/`chainInf_redexI_data`
+  find the redex via `inference_critical_pair_of_chain`, which CONSUMES criticality (`hnperm`), absent here.
+  Worse, the cut-partner `i′` need only have SUCCEDENT `^∀p` (`majorPrem_*_cutPartner`), NOT be a direct
+  R-intro — it can itself be a chain, so no redex pair need exist until `i′` is reduced. Also recursive.
+- `inegF p ≠ ^⊥` always (`inegF_ne_falsum`) ⟹ on `∅→⊥` a permissible premise is EXACTLY an `isymRep` node
+  (`zInd`/`zK`/`zAtom`/`zAx1`), confirming non-critical = "has an `isymRep` premise" (lap-129 picture exact).
+
+### 🎯 CONCRETE NEXT ATTACK (the genuine drop, next lap) — generalize the descent step to `Γ→⊥`, strong-induct
+The natural closure is **Buchholz Theorem 2.1 / Corollary 2.1** as ONE generalized lemma proved by strong
+`iord`-induction (each premise has strictly smaller `iord`):
+
+  `descent_step_general` : regular `ZDerivation` of `Γ→⊥`, NOT in endform ⟹ ∃ same-sequent reduct `d'` with
+  `icmp (iord d') (iord d) = 0`.
+
+Then `repMajor`/`axMajor` (hence `descent_step_K_noncritical`) fall out: reduce the major premise by the IH
+(smaller `iord`), REPLACE it in the chain (`isChainInf_congr` keeps validity, `iord_descent_red_zK_replace_eq`
+gives descent). The per-tag reducts of `descent_step_general`: `zK`→this lemma (recursion/splice,
+`iord_descent_red_zK_chain_*` banked); `zInd`→Ind unfolding (`iIndReductSeqG`, generalize the lap-145/146
+`descent_step_Ind` soundness off `Γ=∅`); `zAxAll`/`zAxNeg`→principal cut (`iRKcCrit`, supply `redexI < j₀`
+from the cut-partner redex via the `chainInf_redexI_data` pair-monotone bound, BYPASSING criticality);
+`zAtom`/`zAx1`→endform or §5 atomic. The DESCENT halves are all banked (`RedZKDescent.lean`); the genuine
+work is the per-tag SOUNDNESS at nonempty `Γ`. SMALLER first step worth a lap: the `redexI < j₀`-from-redex
+bound (decouple `chainInf_redexI_data` from criticality) — the linchpin for both `axMajor` and the embedding.
+
+---
+
+## lap 146 — REVIEW + `zIndWff` strengthening + **`descent_step_Ind` DROPPED** (axiom-clean, off red)
 **Build 🟢 1326. Headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms) — no drift.**
 FOUR commits: review (`5d77bd5`) + `zIndWff` strengthening (`a2b2a3a`) + assembly plan (`aca7536`) +
 **`descent_step_Ind` DROPPED** (`59b339b`, `#print axioms = [propext, Classical.choice, Quot.sound]`).
