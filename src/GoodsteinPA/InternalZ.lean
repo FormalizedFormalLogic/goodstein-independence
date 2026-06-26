@@ -7438,6 +7438,44 @@ lemma iRKcCrit_eq_neg {d : V} (h1 : zTag (znth (zKseq d) (redexI d)) ≠ 1) (h :
     iRKcCrit d = iRcritGNeg d (critReductNeg d) := by
   rw [iRKcCrit, if_neg h1, iRcritGNeg, critReductNeg_redexI h, critReductNeg_redexJ]
 
+/-- **𝚺₁ graph of the re-keyed critical reduct `iRKcCrit`.** Dispatches on the R-redex tag `ti = zTag dᵢ`:
+`ti = 1` (I∀) builds `iRcritG`'s `iCritReductG` with the re-principalized `zsubst` at slot `i` and the §5
+`Ax^1` (antecedent-grown) at slot `j`; otherwise (I¬) builds `iRcritGNeg`'s SWAPPED-slot `iCritReductG`
+with the §5 `Ax^1` (succedent-set) at slot `j` and the `zInegPrem` child at slot `i`. Reuses the
+`cutFormulaDef` instance-`k = π₁(π₂(tp dⱼ))` threading + `numeralGraph`. -/
+noncomputable def _root_.LO.FirstOrder.Arithmetic.iRKcCritDef : 𝚺₁.Semisentence 2 := .mkSigma
+  “y d. ∃ f, !fstIdxDef f d ∧ ∃ ds, !zKseqDef ds d ∧ ∃ i, !redexIDef i d ∧ ∃ j, !redexJDef j d ∧
+    ∃ cc, !cutFormulaDef cc d ∧ ∃ rk, !zKrankDef rk d ∧ ∃ rk1, !subDef rk1 rk 1 ∧
+    ∃ ai, !znthDef ai ds i ∧ ∃ aj, !znthDef aj ds j ∧ ∃ ti, !zTagDef ti ai ∧
+    ∃ ss, !seqSetSuccDef ss f cc ∧ ∃ sa, !seqAddAntDef sa cc f ∧ ∃ faj, !fstIdxDef faj aj ∧
+    ( ( ti = 1 ∧
+        ∃ pri, !zIallPremDef pri ai ∧ ∃ eig, !zIallEigDef eig ai ∧
+        ∃ tj, !tpDef tj aj ∧ ∃ p2j, !pi₂Def p2j tj ∧ ∃ kk, !pi₁Def kk p2j ∧
+        ∃ nk, !(Bootstrapping.Arithmetic.numeralGraph) nk kk ∧ ∃ vi, !zsubstDef vi pri eig nk ∧
+        ∃ saj, !seqAddAntDef saj cc faj ∧ ∃ vj, !zAx1Graph vj saj cc ∧
+        ∃ u0, !seqUpdateDef u0 ds i vi ∧ ∃ dz0, !zKGraph dz0 ss rk u0 ∧
+        ∃ u1, !seqUpdateDef u1 ds j vj ∧ ∃ dz1, !zKGraph dz1 sa rk u1 ∧
+        ∃ sq, !iCritReductSeqDef sq dz0 dz1 ∧ !zKGraph y f rk1 sq )
+    ∨ ( ti ≠ 1 ∧
+        ∃ ssj, !seqSetSuccDef ssj faj cc ∧ ∃ vj, !zAx1Graph vj ssj cc ∧
+        ∃ vi, !zInegPremDef vi ai ∧
+        ∃ u0, !seqUpdateDef u0 ds j vj ∧ ∃ dz0, !zKGraph dz0 ss rk u0 ∧
+        ∃ u1, !seqUpdateDef u1 ds i vi ∧ ∃ dz1, !zKGraph dz1 sa rk u1 ∧
+        ∃ sq, !iCritReductSeqDef sq dz0 dz1 ∧ !zKGraph y f rk1 sq ) )”
+
+set_option maxHeartbeats 1600000 in
+instance iRKcCrit_defined : 𝚺₁-Function₁ (iRKcCrit : V → V) via iRKcCritDef := .mk fun v ↦ by
+  simp [iRKcCritDef, iRKcCrit, iCritReductG, fstIdx_defined.iff, zKseq_defined.iff,
+    redexI_defined.iff, redexJ_defined.iff, cutFormula_defined.iff, zKrank_defined.iff,
+    sub_defined.iff, znth_defined.iff, zTag_defined.iff, seqSetSucc_defined.iff,
+    seqAddAnt_defined.iff, zIallPrem_defined.iff, zIallEig_defined.iff, tp_defined.iff,
+    pi₁_defined.iff, pi₂_defined.iff, (Bootstrapping.Arithmetic.numeral_defined (V := V)).iff,
+    zsubst_defined.iff, zInegPrem_defined.iff, zAx1_defined.iff, seqUpdate_defined.iff,
+    iCritReductSeq_defined.iff, zK_defined.iff]
+  by_cases hti : zTag (znth (zKseq (v 1)) (redexI (v 1))) = 1 <;> simp [hti, numeral_eq_natCast]
+
+instance iRKcCrit_definable : 𝚺₁-Function₁ (iRKcCrit : V → V) := iRKcCrit_defined.to_definable
+
 /-! ### The critical-only reduct is NON-critical (lap 86) — the 5.2 dispatch is mandatory
 
 **Gating finding (Buchholz Def 3.2 case 5, validated in-kernel).** Buchholz's reduction of a chain
