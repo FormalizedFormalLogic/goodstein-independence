@@ -2496,118 +2496,6 @@ theorem descent_step_K_replace {s r ds i v : V}
     exact ZSeqAnt_zK_of_seqUpdate (fun m hm => ZSeqAnt_zK_premise hds hd.2.2.2 hm) hseqantv
   · exact iord_descent_iCritAux_of_ZDerivation hZ hi hdesc.otil_lt hdesc.dg_le hdesc.nf
 
-/-! ### No-redex residual — the §14.254 major-premise dichotomy (lap 148)
-
-With NO redex pair below the exit `j0`, Buchholz §14.25 dispatches on `tp(dₘ)` (the major premise's OWN
-reduction type) — equivalently, on its constructor tag (`majorPrem_tag_mem` ⟹ tag ∈ {3,4,5,6}):
-
-- **§14.254a `repMajor` (tags 3,4):** the major premise `dₘ = znth ds m` (`m = majorIdx`) is a `zInd` (tag 3,
-  whose Ind-unfolding reduction is `Rep`) or a sub-`zK` (tag 4, `Rep` when its own major premise is `Rep`).
-  `tp(dₘ) = Rep`, so `dₘ`'s reduct `dₘ[0]` has the SAME end-sequent `Γₘ→⊥` — feed it to `descent_step_K_replace`
-  at `i = m`. (Caveat tag-4: if the sub-chain L-reduces, `tp(dₘ) ≠ Rep` and it falls to §14.254b on the
-  cut-partner — handled there.)
-- **§14.254b `axMajor` (tags 5,6):** the major premise is an L-axiom `zAxAll`/`zAxNeg` (a `red`-FIXPOINT,
-  `tp(dₘ) = Lk_V`). Its active formula `V` (`^∀p`/`inegF p`) is NOT in `Θ = ∅`, so it agrees with the succedent
-  of a strictly-earlier premise `i′` (`majorPrem_zAxAll_cutPartner`/`_zAxNeg_cutPartner`). Since there is NO
-  redex, `i′` is NOT a direct R-introduction (else `⟪i′,m⟫` is a redex pair `≤ j0`), so `tp(d_{i′}) = Rep` and
-  `d_{i′}`'s reduct has the same end-sequent — feed it to `descent_step_K_replace` at `i = i′`.
-
-BOTH bottom out in producing the `Rep`-reduct of a structurally-smaller premise (`dₘ` or `d_{i′}`) deriving
-`Γ′→⊥` with `Γ′` possibly nonempty — the GENERAL `Γ→⊥` reduction, closure via strong induction on the
-derivation CODE (Buchholz Theorem 2.1; NOT `iord`-recursion — that is PRWO/Gödel-barred). The surrounding
-replace plumbing is now discharged by `descent_step_K_replace`; the lone genuine residual of each is the
-smaller-premise reduct. -/
-
-/-- **§14.254a — `Rep` major premise (tags 3,4): replace it with its same-end-sequent reduct (named
-sub-`sorry`).** No redex below the exit `j0`; the faithful major premise `dₘ = znth ds (majorIdx)` is a `zInd`
-(3) or sub-`zK` (4), whose reduction is `Rep` (same `Γₘ→⊥` end-sequent). Closure: produce `dₘ`'s
-strictly-`iord`-descending regular/fresh/seqAnt `ZDerivation` reduct (the GENERAL `Γ→⊥` reduction, recursion on
-the smaller premise `dₘ`) and feed `descent_step_K_replace` at `i = majorIdx`. The replace plumbing is banked
-(`descent_step_K_replace`); the residual is the major-premise reduct. -/
-theorem descent_step_K_noncrit_repMajor {s r ds j0 : V}
-    (hd : ZDerivesEmptyR (zK s r ds))
-    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
-    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
-        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
-    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
-    (hnolow : ¬ ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V))
-    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 3 ∨ zTag (znth ds (majorIdx (zK s r ds))) = 4) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
-
-/-- **§14.254b — L-axiom major premise (tags 5,6): replace its upstream `Rep` cut-partner (named
-sub-`sorry`).** No redex below the exit; the faithful major premise is `zAxAll`/`zAxNeg` (a `red`-FIXPOINT) with
-active formula `V` (`^∀p`/`inegF p`). `V` agrees with the succedent of a strictly-earlier premise `i′`
-(`majorPrem_zAxAll_cutPartner`/`_zAxNeg_cutPartner`); since there is no redex, `i′` is NOT a direct R-intro, so
-`tp(d_{i′}) = Rep` and `d_{i′}`'s reduct keeps the end-sequent. Closure: produce `d_{i′}`'s strictly-descending
-regular/fresh/seqAnt `ZDerivation` reduct (the GENERAL `Γ→⊥` reduction on the smaller premise `d_{i′}`) and feed
-`descent_step_K_replace` at `i = i′`. The replace plumbing is banked; the residual is the cut-partner reduct. -/
-theorem descent_step_K_noncrit_axMajor {s r ds j0 : V}
-    (hd : ZDerivesEmptyR (zK s r ds))
-    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
-    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
-        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
-    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
-    (hnolow : ¬ ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V))
-    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 5 ∨ zTag (znth ds (majorIdx (zK s r ds))) = 6) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
-
-/-- **§5.2 no-redex residual — sorry-FREE major-premise DISPATCHER (lap 148).** No redex pair below the
-`isChainInf` exit `j0`. By `majorPrem_tag_mem` the faithful major premise's tag ∈ {3,4,5,6}: routes tag-3/4
-(`Rep` major) → `descent_step_K_noncrit_repMajor` (§14.254a replace the major premise), tag-5/6 (L-axiom major)
-→ `descent_step_K_noncrit_axMajor` (§14.254b replace the upstream cut-partner). This restores the faithful
-Buchholz §14.254a/b split (lap-147 collapsed it into one residual with a docstring that wrongly claimed all
-cases replace the major premise — false for the tag-5/6 `red`-FIXPOINT L-axioms, lap-130 finding
-`InternalZ:9281`). Both leaves now consume the banked `descent_step_K_replace`. -/
-theorem descent_step_K_noncrit_recurse {s r ds j0 : V}
-    (hd : ZDerivesEmptyR (zK s r ds))
-    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
-    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
-        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
-    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
-    (hnolow : ¬ ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V)) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
-  have hZ : ZDerivation (zK s r ds) := hd.1.1
-  rcases majorPrem_tag_mem hZ hant hsucc with h | h | h | h
-  · exact descent_step_K_noncrit_repMajor hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow (Or.inl h)
-  · exact descent_step_K_noncrit_repMajor hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow (Or.inr h)
-  · exact descent_step_K_noncrit_axMajor hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow (Or.inl h)
-  · exact descent_step_K_noncrit_axMajor hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow (Or.inr h)
-
-/-- **Non-critical case (Buchholz §3.2 case 5.2) — sorry-FREE has-redex/no-redex DISPATCHER (lap 147).**
-Extracts the `isChainInf` exit `j0` (with threading/rank/⊥-exit) from `zKValidF`, then case-splits on whether
-a redex pair exists below `j0`: YES → `descent_step_K_hasRedex` (PROVEN, the criticality-free `iRKcCrit` cut);
-NO → `descent_step_K_noncrit_recurse` (the general-reduction residual). The has-redex half — Buchholz's §14.253
-principal cut — is now DISCHARGED for non-critical chains, leaving only the §14.254 major-premise recursion.
-`hncrit` is unused (the split is faithful for any ⊥-orbit chain) but kept to match `descent_step_K_majorIdx`. -/
-theorem descent_step_K_noncritical {s r ds : V}
-    (hd : ZDerivesEmptyR (zK s r ds))
-    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
-    (hncrit : permIdx (zK s r ds) < lh ds) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
-  have hZ : ZDerivation (zK s r ds) := hd.1.1
-  obtain ⟨j0, hj0, hAj0, hthread0, hrank0⟩ := (zKValidF_of_ZDerivation_zK hZ).1
-  have hbot0 : chainAsucc ds j0 = (^⊥ : V) := hAj0.elim (fun h => h.trans hsucc) id
-  by_cases hlow : ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V)
-  · obtain ⟨i0, j1, hij, hj1, hpair⟩ := hlow
-    exact descent_step_K_hasRedex hd hant hsucc hj0 hbot0 hthread0 hrank0 hij hj1 hpair
-  · exact descent_step_K_noncrit_recurse hd hant hsucc hj0 hbot0 hthread0 hrank0 hlow
-
-/-- **NAMED sub-`sorry` #1 — the per-step K-case math, a sorry-FREE critical/non-critical DISPATCHER
-(lap 141).** A regular `∅→⊥` K-node has a SOUND, strictly-`iord`-descending reduct. Case-splits on the
-`permIdx` criticality sentinel (Buchholz Def 3.2 case 5): critical (`¬ permIdx < lh ds`) →
-`descent_step_K_critical` (CLOSED RED-FREE via `iRKcCrit`, lap 143/144); non-critical →
-`descent_step_K_noncritical` (case 5.2). Pure plumbing — the deep content is now the single non-critical
-leaf, and the tag-5/6 producer-principal wall is gone (the critical case is fully discharged, off `red`). -/
-theorem descent_step_K_majorIdx {s r ds : V}
-    (hd : ZDerivesEmptyR (zK s r ds))
-    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V)) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
-  by_cases hcrit : permIdx (zK s r ds) < lh ds
-  · exact descent_step_K_noncritical hd hant hsucc hcrit
-  · exact descent_step_K_critical hd hcrit
 
 /-- **⊥-orbit collapse of the Ind formula (lap 145).** If `substs1 t p = ^⊥` for a 1-ary semiformula
 `p`, then `p = ^⊥`. Substitution preserves the top connective (`substs_*`), and `^⊥` is the only
@@ -2675,6 +2563,30 @@ lemma iord_descent_iIndReductSeqG_one {s s' at' p d0 d1 a : V}
   have hd1nf := isNF_iotil_of_ZDerivation d1 hd1
   rw [iord, idg_zK_iIndReductSeqG_one_eq hd1, iotil_zK_iIndReductSeqG_one_eq hd0 hd1, ← iord]
   exact iord_descent_iIndReduct hd0nf hd1nf one_pos
+
+/-- **`iRedDescent` BUNDLE form of the `k=1` Ind reduct descent (lap 148).** Same content as
+`iord_descent_iIndReductSeqG_one` but as the premise-level descent BUNDLE (`idg ≤`, `õ ≺`, NF) that
+`descent_step_K_replace` consumes for a `zInd` major premise: the genuine reduct `zK s' (irk p) ⟨d0, d1[a:=0]⟩`
+has the SAME degree as `Ind^{a,t}_F d0 d1` (`idg_zK_iIndReduct` via the `_one_eq` transfer) and strictly lower
+`õ` (`icmp_iotil_iIndReduct`), with NF premises. This is the interface that lets the §14.254a `Rep` major-premise
+replace (`descent_step_K_replace` at `i = majorIdx`) consume the Ind reduct. -/
+lemma iRedDescent_iIndReductSeqG_one {s s' at' p d0 d1 a : V}
+    (hd0 : ZDerivation d0) (hd1 : ZDerivation d1) :
+    iRedDescent (zK s' (irk p) (iIndReductSeqG d0 d1 a 1)) (zInd s at' p d0 d1) where
+  dg_le := by rw [idg_zK_iIndReductSeqG_one_eq hd1]; exact le_of_eq (idg_zK_iIndReduct one_pos)
+  otil_lt := by
+    rw [iotil_zK_iIndReductSeqG_one_eq hd0 hd1, iotil_zK _ _ _ (iIndReductSeq_seq d0 d1 1)]
+    exact icmp_iotil_iIndReduct (isNF_iotil_of_ZDerivation d0 hd0)
+      (isNF_iotil_of_ZDerivation d1 hd1) one_pos
+  nf := by
+    refine isNF_iotil_zK (iIndReductSeqG_seq d0 d1 a 1) (fun i hi => ?_)
+    rw [iIndReductSeqG_lh, one_add_one_eq_two] at hi
+    rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hi) with rfl | rfl
+    · rw [znth_iIndReductSeqG_zero]; exact isNF_iotil_of_ZDerivation d0 hd0
+    · have h := znth_iIndReductSeqG_step d0 d1 a 1 0 one_pos
+      rw [zero_add] at h
+      rw [h, iotil_zsubst (Bootstrapping.Arithmetic.numeral_uterm 0) a d1 hd1]
+      exact isNF_iotil_of_ZDerivation d1 hd1
 
 /-- **Ind root (Buchholz §3.2 case 4 / Def 3.2 clause `Ind`) — the RED-FREE existence-form reduct (lap 144,
 named sub-`sorry`).** A `∅→⊥` Ind node `zInd s at' p d0 d1` has a sound, strictly-`iord`-descending
@@ -2844,6 +2756,306 @@ theorem descent_step_Ind {s at' p d0 d1 : V} (hd : ZDerivesEmptyR (zInd s at' p 
     · rw [hz0]; exact hsa0
     · rw [hz1]; exact zSeqAnt_zsubst (π₁ at') _ d1 hd1Z
   · rw [hds_def]; exact iord_descent_iIndReductSeqG_one hd0Z hd1Z
+
+/-- **§14.254a Ind reduct, GENERALIZED off `Γ=∅` (lap 148) — the `ZDerivation`-valued `Γₘ→⊥` Ind reduct.**
+The major-premise (`zInd`) generalization of `descent_step_Ind`: a `zInd s at' p d0 d1` deriving `Γₘ→⊥`
+(`seqSucc s = ⊥`, `Γₘ = seqAnt s` possibly NONEMPTY), regular/fresh/seqAnt, with the eigenvariable `π₁ at'`
+FRESH in the conclusion antecedent (`freshFlag (π₁ at') p Γₘ = 0` — the I∀-style eigenvariable condition the
+Ind rule requires; `zFresh_zInd` does not yet carry it, see PENDING_WORK), has its genuine `k=1` reduct
+`v = zK s (irk p) ⟨d0, d1[a:=0]⟩` as a SAME-end-sequent (`fstIdx v = s`) strictly-`iord`-descending
+(`iRedDescent`) regular/fresh/seqAnt `ZDerivation`. The freshness collapses the reduct's step-premise antecedent
+`fvSubstSeq a 0 (seqCons Γₘ ⊥)` to `seqCons Γₘ ⊥` (the telescope threads `Γₘ` faithfully) and supplies the
+conclusion-antecedent well-formedness (`freshFlag_wff`). Feeds `descent_step_K_replace` at `i = majorIdx` to
+discharge the tag-3 half of `descent_step_K_noncrit_repMajor`. -/
+lemma ind_reduct_botSucc_of_fresh {s at' p d0 d1 : V}
+    (hZ : ZDerivation (zInd s at' p d0 d1))
+    (hreg : ZRegular (zInd s at' p d0 d1)) (hfresh : ZFresh (zInd s at' p d0 d1))
+    (hseqant : ZSeqAnt (zInd s at' p d0 d1))
+    (hsucc : seqSucc s = (^⊥ : V))
+    (hfreshΓ : freshFlag (π₁ at') p (seqAnt s) = 0) :
+    ∃ v, ZDerivation v ∧ ZRegular v ∧ ZFresh v ∧ ZSeqAnt v ∧ fstIdx v = s ∧
+      iRedDescent v (zInd s at' p d0 d1) := by
+  obtain ⟨hd0Z, hd1Z, hwff⟩ := zDerivation_zInd_inv hZ
+  simp only [zIndWff, zIndEig_zInd, zIndTerm_zInd, zIndP_zInd, zIndPrem0_zInd, zIndPrem1_zInd,
+    fstIdx_zInd] at hwff
+  obtain ⟨⟨h1a, h1b⟩, ⟨_h2seq, h2a, h2b⟩, h3, h4, _h5⟩ := hwff
+  have hp_bot : p = (^⊥ : V) := eq_falsum_of_substs1_falsum h4 (h3 ▸ hsucc)
+  subst hp_bot
+  have hsubbot : ∀ t : V, substs1 ℒₒᵣ t (^⊥ : V) = (^⊥ : V) := fun t => by
+    rw [substs1]; exact substs_falsum _
+  have hfreshΓeq : fvSubstSeq (π₁ at') (Bootstrapping.Arithmetic.numeral 0) (seqAnt s) = seqAnt s :=
+    freshFlag_snd hfreshΓ
+  have hmaxlt : maxEigen d1 < π₁ at' := by
+    have h : zReg (zInd s at' (^⊥) d0 d1) = 0 := hreg
+    rw [zReg_zInd] at h; exact ltFlag_eq_zero_iff.mp (nonpos_iff_eq_zero.mp (h ▸ le_max_left _ _))
+  have hreg1 : ZRegular d1 := by
+    have h : zReg (zInd s at' (^⊥) d0 d1) = 0 := hreg
+    rw [zReg_zInd] at h
+    exact nonpos_iff_eq_zero.mp (h ▸ le_trans (le_max_right _ _) (le_max_right _ _))
+  have hreg0 : ZRegular d0 := by
+    have h : zReg (zInd s at' (^⊥) d0 d1) = 0 := hreg
+    rw [zReg_zInd] at h
+    exact nonpos_iff_eq_zero.mp (h ▸ le_trans (le_max_left _ _) (le_max_right _ _))
+  have hfr1 : ZFresh d1 := by
+    have h : zFresh (zInd s at' (^⊥) d0 d1) = 0 := hfresh
+    rw [zFresh_zInd] at h; exact nonpos_iff_eq_zero.mp (h ▸ le_max_right _ _)
+  have hfr0 : ZFresh d0 := by
+    have h : zFresh (zInd s at' (^⊥) d0 d1) = 0 := hfresh
+    rw [zFresh_zInd] at h; exact nonpos_iff_eq_zero.mp (h ▸ le_max_left _ _)
+  have hsa1 : ZSeqAnt d1 := by
+    have h : zSeqAnt (zInd s at' (^⊥) d0 d1) = 0 := hseqant
+    rw [zSeqAnt_zInd] at h
+    exact nonpos_iff_eq_zero.mp (h ▸ le_trans (le_max_right _ _) (le_max_right _ _))
+  have hsa0 : ZSeqAnt d0 := by
+    have h : zSeqAnt (zInd s at' (^⊥) d0 d1) = 0 := hseqant
+    rw [zSeqAnt_zInd] at h
+    exact nonpos_iff_eq_zero.mp (h ▸ le_trans (le_max_left _ _) (le_max_right _ _))
+  set ds := iIndReductSeqG d0 d1 (π₁ at') 1 with hds_def
+  have hds_seq : Seq ds := iIndReductSeqG_seq d0 d1 (π₁ at') 1
+  have hds_lh1 : lh ds = 1 + 1 := by rw [hds_def, iIndReductSeqG_lh]
+  have hds_lh : lh ds = 2 := by rw [hds_lh1, one_add_one_eq_two]
+  have hz0 : znth ds 0 = d0 := znth_iIndReductSeqG_zero d0 d1 (π₁ at') 1
+  have hz1 : znth ds 1 = zsubst d1 (π₁ at') (Bootstrapping.Arithmetic.numeral 0) := by
+    have h := znth_iIndReductSeqG_step d0 d1 (π₁ at') 1 0 one_pos
+    rw [zero_add] at h; rw [hds_def]; exact h
+  have ht0 : IsSemiterm ℒₒᵣ 0 (Bootstrapping.Arithmetic.numeral 0 : V) := by simp
+  have hZ1sub : ZDerivation (zsubst d1 (π₁ at') (Bootstrapping.Arithmetic.numeral 0)) :=
+    ZDerivation_zsubst ht0 d1 hd1Z hmaxlt
+  have hmem : ∀ i < lh ds, ZDerivation (znth ds i) := by
+    intro i hi
+    rw [hds_lh] at hi
+    rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hi) with rfl | rfl
+    · rw [hz0]; exact hd0Z
+    · rw [hz1]; exact hZ1sub
+  have hF0 : chainAsucc ds 0 = (^⊥ : V) := by
+    simp only [chainAsucc]; rw [hz0, h1b, hsubbot]
+  have hExit : chainAsucc ds 1 = (^⊥ : V) := by
+    simp only [chainAsucc]
+    rw [hz1, fstIdx_zsubst (π₁ at') (Bootstrapping.Arithmetic.numeral 0) hd1Z,
+      seqSucc_fvSubstSeqt, h2b, hsubbot, fvSubst_falsum (L := ℒₒᵣ)]
+  have hAnt1 : ∀ B, inAnt B (chainAnt ds 1) → inAnt B (seqAnt s) ∨ B = (^⊥ : V) := by
+    intro B hB
+    simp only [chainAnt] at hB
+    rw [hz1, fstIdx_zsubst (π₁ at') (Bootstrapping.Arithmetic.numeral 0) hd1Z,
+      seqAnt_fvSubstSeqt, h2a, hsubbot, fvSubstSeq_seqCons _h2seq, fvSubst_falsum (L := ℒₒᵣ),
+      hfreshΓeq] at hB
+    exact ((inAnt_seqCons _h2seq).mp hB).symm
+  have hUbot : IsUFormula ℒₒᵣ (^⊥ : V) := by simp
+  have hvalidF : zKValidF s (irk (^⊥ : V)) ds := by
+    refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    · refine isChainInf_telescope (k := 1) hds_lh1 ?_ ?_ ?_ ?_
+      · intro B hB; simp only [chainAnt] at hB; rw [hz0, h1a] at hB; exact hB
+      · intro i hi B hB
+        obtain rfl : i = 0 := by
+          rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp (hi.trans one_lt_two)) with h | h
+          · exact h
+          · exact absurd hi (by rw [h]; simp)
+        rw [zero_add] at hB
+        rcases hAnt1 B hB with h | h
+        · exact Or.inl h
+        · exact Or.inr (h.trans hF0.symm)
+      · exact Or.inr hExit
+      · intro i hi
+        obtain rfl : i = 0 := by
+          rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp (hi.trans one_lt_two)) with h | h
+          · exact h
+          · exact absurd hi (by rw [h]; simp)
+        rw [hF0]
+    · exact fun i hi => iperm_tp_fstIdx_of_ZDerivation (hmem i hi)
+    · exact fun i hi => (zKValidF_leafconds_of_ZDerivation (hmem i hi)).1
+    · exact fun i hi => (zKValidF_leafconds_of_ZDerivation (hmem i hi)).2.1
+    · exact fun i hi => (zKValidF_leafconds_of_ZDerivation (hmem i hi)).2.2.1
+    · exact fun i hi => (zKValidF_leafconds_of_ZDerivation (hmem i hi)).2.2.2
+    · intro i hi
+      rw [hds_lh] at hi
+      rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hi) with rfl | rfl
+      · rw [hF0]; exact hUbot
+      · rw [hExit]; exact hUbot
+    · rw [hsucc]; exact hUbot
+    · exact freshFlag_wff hfreshΓ
+  refine ⟨zK s (irk (^⊥ : V)) ds, zDerivation_zK_intro hds_seq hmem hvalidF, ?_, ?_, ?_, ?_, ?_⟩
+  · show ZRegular (zK _ _ _)
+    refine ZRegular_zK_of_premises hds_seq (fun i hi => ?_)
+    rw [hds_lh] at hi
+    rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hi) with rfl | rfl
+    · rw [hz0]; exact hreg0
+    · rw [hz1]; show zReg _ = 0; rw [zReg_zsubst _ _ d1 hd1Z]; exact hreg1
+  · show zFresh (zK _ _ _) = 0
+    refine zfresh_zK_of hds_seq (fun i hi => ?_)
+    rw [hds_lh] at hi
+    rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hi) with rfl | rfl
+    · rw [hz0]; exact hfr0
+    · rw [hz1]; exact zFresh_zsubst (π₁ at') 0 d1 hd1Z hfr1
+  · show zSeqAnt (zK _ _ _) = 0
+    refine zSeqAnt_zK_of hds_seq (fun i hi => ?_)
+    rw [hds_lh] at hi
+    rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hi) with rfl | rfl
+    · rw [hz0]; exact hsa0
+    · rw [hz1]; exact zSeqAnt_zsubst (π₁ at') _ d1 hd1Z
+  · rw [fstIdx_zK]
+  · rw [hds_def]; exact iRedDescent_iIndReductSeqG_one hd0Z hd1Z
+
+/-! ### No-redex residual — the §14.254 major-premise dichotomy (lap 148)
+
+With NO redex pair below the exit `j0`, Buchholz §14.25 dispatches on `tp(dₘ)` (the major premise's OWN
+reduction type) — equivalently, on its constructor tag (`majorPrem_tag_mem` ⟹ tag ∈ {3,4,5,6}):
+
+- **§14.254a `repMajor` (tags 3,4):** the major premise `dₘ = znth ds m` (`m = majorIdx`) is a `zInd` (tag 3,
+  whose Ind-unfolding reduction is `Rep`) or a sub-`zK` (tag 4, `Rep` when its own major premise is `Rep`).
+  `tp(dₘ) = Rep`, so `dₘ`'s reduct `dₘ[0]` has the SAME end-sequent `Γₘ→⊥` — feed it to `descent_step_K_replace`
+  at `i = m`. (Caveat tag-4: if the sub-chain L-reduces, `tp(dₘ) ≠ Rep` and it falls to §14.254b on the
+  cut-partner — handled there.)
+- **§14.254b `axMajor` (tags 5,6):** the major premise is an L-axiom `zAxAll`/`zAxNeg` (a `red`-FIXPOINT,
+  `tp(dₘ) = Lk_V`). Its active formula `V` (`^∀p`/`inegF p`) is NOT in `Θ = ∅`, so it agrees with the succedent
+  of a strictly-earlier premise `i′` (`majorPrem_zAxAll_cutPartner`/`_zAxNeg_cutPartner`). Since there is NO
+  redex, `i′` is NOT a direct R-introduction (else `⟪i′,m⟫` is a redex pair `≤ j0`), so `tp(d_{i′}) = Rep` and
+  `d_{i′}`'s reduct has the same end-sequent — feed it to `descent_step_K_replace` at `i = i′`.
+
+BOTH bottom out in producing the `Rep`-reduct of a structurally-smaller premise (`dₘ` or `d_{i′}`) deriving
+`Γ′→⊥` with `Γ′` possibly nonempty — the GENERAL `Γ→⊥` reduction, closure via strong induction on the
+derivation CODE (Buchholz Theorem 2.1; NOT `iord`-recursion — that is PRWO/Gödel-barred). The surrounding
+replace plumbing is now discharged by `descent_step_K_replace`; the lone genuine residual of each is the
+smaller-premise reduct. -/
+
+/-- **§14.254a, tag-4 (sub-`zK` major premise) — the recursion (named sub-`sorry`).** No redex below the exit
+and the faithful major premise `dₘ = znth ds (majorIdx)` is a sub-`zK` chain. Its `Rep`-reduct (same `Γₘ→⊥`
+end-sequent) is the GENERAL `Γ→⊥` chain reduction on the structurally-smaller `dₘ` (recursion on code) — feed to
+`descent_step_K_replace` at `i = majorIdx`, OR splice if `dₘ`'s reduction is a §14.253 cut. The genuinely
+recursive leaf. -/
+theorem descent_step_K_noncrit_repMajor_K {s r ds j0 : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
+    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hnolow : ¬ ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 4) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+
+/-- **§14.254a — `Rep` major premise (tags 3,4): replace it with its same-end-sequent reduct.** No redex below
+the exit `j0`; the faithful major premise `dₘ = znth ds (majorIdx)` is a `zInd` (3) or sub-`zK` (4), reduction
+`Rep` (same `Γₘ→⊥` end-sequent). **tag-3 (`zInd`) is PROVEN here** via `ind_reduct_botSucc_of_fresh` (the
+`Γₘ→⊥` Ind reduct) + `descent_step_K_replace` at `i = majorIdx`, modulo the single eigenvariable-freshness
+residual `freshFlag (π₁ at') p Γₘ = 0` (the I∀-style condition `zFresh_zInd` does not yet carry — see
+PENDING_WORK; the principled fix strengthens `zFreshNext`'s tag-3 branch). tag-4 (`zK`) → the recursion
+(`descent_step_K_noncrit_repMajor_K`). -/
+theorem descent_step_K_noncrit_repMajor {s r ds j0 : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
+    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hnolow : ¬ ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 3 ∨ zTag (znth ds (majorIdx (zK s r ds))) = 4) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
+  rcases htag with htag3 | htag4
+  · -- tag-3: zInd major premise — reduce by the GENERAL Ind reduct + replace
+    have hZ : ZDerivation (zK s r ds) := hd.1.1
+    obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+    obtain ⟨hmlt, hmbot, _, _⟩ := majorIdx_botOrbit_reducible hZ hant hsucc
+    have hmemZ : ZDerivation (znth ds (majorIdx (zK s r ds))) := hmem _ hmlt
+    rcases zDerivation_iff.mp hmemZ with
+      ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
+      ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
+      ⟨s', p', k', h, _, _⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C', h, _⟩
+    · rw [h] at htag3; simp at htag3
+    · rw [h] at htag3; simp at htag3
+    · rw [h] at htag3; simp at htag3
+    · -- the zInd case
+      have hregm : ZRegular (znth ds (majorIdx (zK s r ds))) := ZRegular_zK_premise hds hd.2.1 hmlt
+      have hfreshm : ZFresh (znth ds (majorIdx (zK s r ds))) := ZFresh_zK_premise hds hd.2.2.1 hmlt
+      have hseqantm : ZSeqAnt (znth ds (majorIdx (zK s r ds))) := ZSeqAnt_zK_premise hds hd.2.2.2 hmlt
+      have hsucm : seqSucc (fstIdx (znth ds (majorIdx (zK s r ds)))) = (^⊥ : V) := hmbot
+      rw [h] at hregm hfreshm hseqantm hsucm hmemZ
+      rw [fstIdx_zInd] at hsucm
+      -- the lone residual: the eigenvariable is fresh in the conclusion antecedent Γₘ = seqAnt s'
+      have hfreshΓ : freshFlag (π₁ at'') p' (seqAnt s') = 0 := sorry
+      obtain ⟨v, hZv, hregv, hfreshv, hseqantv, hvfst, hdesc⟩ :=
+        ind_reduct_botSucc_of_fresh hmemZ hregm hfreshm hseqantm hsucm hfreshΓ
+      rw [← h] at hdesc
+      exact descent_step_K_replace hd hmlt hZv hregv hfreshv hseqantv
+        (by rw [hvfst, h, fstIdx_zInd]) hdesc
+    · rw [h] at htag3; simp at htag3
+    · rw [h] at htag3; simp at htag3
+    · rw [h] at htag3; simp at htag3
+    · rw [h] at htag3; simp at htag3
+  · exact descent_step_K_noncrit_repMajor_K hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow htag4
+
+/-- **§14.254b — L-axiom major premise (tags 5,6): replace its upstream `Rep` cut-partner (named
+sub-`sorry`).** No redex below the exit; the faithful major premise is `zAxAll`/`zAxNeg` (a `red`-FIXPOINT) with
+active formula `V` (`^∀p`/`inegF p`). `V` agrees with the succedent of a strictly-earlier premise `i′`
+(`majorPrem_zAxAll_cutPartner`/`_zAxNeg_cutPartner`); since there is no redex, `i′` is NOT a direct R-intro, so
+`tp(d_{i′}) = Rep` and `d_{i′}`'s reduct keeps the end-sequent. Closure: produce `d_{i′}`'s strictly-descending
+regular/fresh/seqAnt `ZDerivation` reduct (the GENERAL `Γ→⊥` reduction on the smaller premise `d_{i′}`) and feed
+`descent_step_K_replace` at `i = i′`. The replace plumbing is banked; the residual is the cut-partner reduct. -/
+theorem descent_step_K_noncrit_axMajor {s r ds j0 : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
+    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hnolow : ¬ ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 5 ∨ zTag (znth ds (majorIdx (zK s r ds))) = 6) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+
+/-- **§5.2 no-redex residual — sorry-FREE major-premise DISPATCHER (lap 148).** No redex pair below the
+`isChainInf` exit `j0`. By `majorPrem_tag_mem` the faithful major premise's tag ∈ {3,4,5,6}: routes tag-3/4
+(`Rep` major) → `descent_step_K_noncrit_repMajor` (§14.254a replace the major premise), tag-5/6 (L-axiom major)
+→ `descent_step_K_noncrit_axMajor` (§14.254b replace the upstream cut-partner). This restores the faithful
+Buchholz §14.254a/b split (lap-147 collapsed it into one residual with a docstring that wrongly claimed all
+cases replace the major premise — false for the tag-5/6 `red`-FIXPOINT L-axioms, lap-130 finding
+`InternalZ:9281`). Both leaves now consume the banked `descent_step_K_replace`. -/
+theorem descent_step_K_noncrit_recurse {s r ds j0 : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
+    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hnolow : ¬ ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V)) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
+  have hZ : ZDerivation (zK s r ds) := hd.1.1
+  rcases majorPrem_tag_mem hZ hant hsucc with h | h | h | h
+  · exact descent_step_K_noncrit_repMajor hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow (Or.inl h)
+  · exact descent_step_K_noncrit_repMajor hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow (Or.inr h)
+  · exact descent_step_K_noncrit_axMajor hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow (Or.inl h)
+  · exact descent_step_K_noncrit_axMajor hd hant hsucc hj0 hbot0 hthread0 hrank0 hnolow (Or.inr h)
+
+/-- **Non-critical case (Buchholz §3.2 case 5.2) — sorry-FREE has-redex/no-redex DISPATCHER (lap 147).**
+Extracts the `isChainInf` exit `j0` (with threading/rank/⊥-exit) from `zKValidF`, then case-splits on whether
+a redex pair exists below `j0`: YES → `descent_step_K_hasRedex` (PROVEN, the criticality-free `iRKcCrit` cut);
+NO → `descent_step_K_noncrit_recurse` (the general-reduction residual). The has-redex half — Buchholz's §14.253
+principal cut — is now DISCHARGED for non-critical chains, leaving only the §14.254 major-premise recursion.
+`hncrit` is unused (the split is faithful for any ⊥-orbit chain) but kept to match `descent_step_K_majorIdx`. -/
+theorem descent_step_K_noncritical {s r ds : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (hncrit : permIdx (zK s r ds) < lh ds) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
+  have hZ : ZDerivation (zK s r ds) := hd.1.1
+  obtain ⟨j0, hj0, hAj0, hthread0, hrank0⟩ := (zKValidF_of_ZDerivation_zK hZ).1
+  have hbot0 : chainAsucc ds j0 = (^⊥ : V) := hAj0.elim (fun h => h.trans hsucc) id
+  by_cases hlow : ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V)
+  · obtain ⟨i0, j1, hij, hj1, hpair⟩ := hlow
+    exact descent_step_K_hasRedex hd hant hsucc hj0 hbot0 hthread0 hrank0 hij hj1 hpair
+  · exact descent_step_K_noncrit_recurse hd hant hsucc hj0 hbot0 hthread0 hrank0 hlow
+
+/-- **NAMED sub-`sorry` #1 — the per-step K-case math, a sorry-FREE critical/non-critical DISPATCHER
+(lap 141).** A regular `∅→⊥` K-node has a SOUND, strictly-`iord`-descending reduct. Case-splits on the
+`permIdx` criticality sentinel (Buchholz Def 3.2 case 5): critical (`¬ permIdx < lh ds`) →
+`descent_step_K_critical` (CLOSED RED-FREE via `iRKcCrit`, lap 143/144); non-critical →
+`descent_step_K_noncritical` (case 5.2). Pure plumbing — the deep content is now the single non-critical
+leaf, and the tag-5/6 producer-principal wall is gone (the critical case is fully discharged, off `red`). -/
+theorem descent_step_K_majorIdx {s r ds : V}
+    (hd : ZDerivesEmptyR (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V)) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
+  by_cases hcrit : permIdx (zK s r ds) < lh ds
+  · exact descent_step_K_noncritical hd hant hsucc hcrit
+  · exact descent_step_K_critical hd hcrit
 
 /-- **(E') the existence-form one-step descent.** Every regular ⊥-orbit code has a sound, strictly-
 descending reduct — Ind root via `descent_step_Ind` (RED-FREE, lap 144), K root via `descent_step_K_majorIdx`

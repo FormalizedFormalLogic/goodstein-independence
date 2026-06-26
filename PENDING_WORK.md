@@ -41,14 +41,34 @@ repMajor, `d_{i′}` for axMajor) deriving `Γ′→⊥` with `Γ′` possibly N
 closure via strong induction on the derivation CODE (Buchholz Thm 2.1; NOT `iord`-recursion — PRWO/Gödel-barred).
 All the SURROUNDING plumbing (replace → ZDerivesEmptyR + descent) is now discharged by `descent_step_K_replace`.
 
-### CONCRETE NEXT ATTACK (hardest-first)
-Build the GENERAL reduction as a `ZDerivation`-valued lemma producing the smaller premise's reduct, by strong
-induction on code. Tractable first leaf = **tag-3 repMajor** (the `zInd` major premise): generalize lap-146
-`descent_step_Ind` off `Γ=∅` to a `ZDerivation`-valued `Γₘ→⊥` Ind reduct (`iIndReductSeqG`, same end-sequent,
-descending/regular/fresh/seqAnt), then `descent_step_K_replace` at `i=majorIdx` DROPS the tag-3 part. The
-`Γ=∅`-dependence is localized to `descent_step_Ind`'s `hAnt1` (antecedent collapse, `Crux2Blueprint:2782`) — the
-telescope must carry `Γₘ` through each Ind-reduct premise. (tag-4 `zK` major premise needs the recursion proper;
-axMajor needs the cut-partner-Rep dichotomy via `majorPrem_*_cutPartner` + the recursion.)
+### CONTINUATION (same lap, governor-resumed) — tag-3 repMajor PROVEN modulo eigenvariable freshness
+Built the §14.254a Ind-reduct machinery (both axiom-clean `[propext, choice, Quot.sound]`) and WIRED tag-3:
+- **`iRedDescent_iIndReductSeqG_one`** (`Crux2Blueprint`) — the `iRedDescent` BUNDLE (`idg≤`, `õ≺`, NF) form of
+  the k=1 Ind reduct descent (the interface `descent_step_K_replace` consumes), from the banked
+  `idg_zK_iIndReduct` (samedeg) + `icmp_iotil_iIndReduct` + the `_one_eq` transfers.
+- **`ind_reduct_botSucc_of_fresh`** (`Crux2Blueprint`) — the `ZDerivation`-valued `Γₘ→⊥` Ind reduct: a
+  `zInd s at' p d0 d1` deriving `Γₘ→⊥` (`Γₘ`=`seqAnt s` possibly nonempty), regular/fresh/seqAnt, with
+  eigenvariable freshness `freshFlag (π₁ at') p Γₘ = 0`, has its k=1 reduct `zK s (irk p) ⟨d0,d1[a:=0]⟩` as a
+  SAME-end-sequent (`fstIdx=s`) strictly-descending regular/fresh/seqAnt `ZDerivation`. The generalization of
+  lap-146 `descent_step_Ind` off `Γ=∅`: the freshness collapses the reduct step-premise antecedent
+  `fvSubstSeq a 0 (seqCons Γₘ ⊥) = seqCons Γₘ ⊥` (telescope threads `Γₘ`) + gives `Γₘ` wff (`freshFlag_wff`).
+- **`descent_step_K_noncrit_repMajor`** now SPLIT: tag-3 (`zInd`) **PROVEN** inline via
+  `ind_reduct_botSucc_of_fresh` + `descent_step_K_replace` at `i=majorIdx`, modulo the LONE residual sorry
+  `freshFlag (π₁ at'') p' (seqAnt s') = 0`; tag-4 → `descent_step_K_noncrit_repMajor_K` (the `zK` recursion).
+  (Required a block-move of the no-redex residual chain `[repMajor … majorIdx]` to AFTER the Ind machinery.)
+
+### THE next DROP (hardest-first) — strengthen `zFreshNext` tag-3 to carry the eigenvariable freshFlag
+The tag-3 residual `freshFlag (π₁ at') p Γₘ = 0` is the I∀-style eigenvariable condition. `zFresh_zInd`
+(`Zsubst:1812`) = `max (zFresh d0) (zFresh d1)` does NOT carry it (unlike `zFresh_zIall` =
+`max (freshFlag a p (seqAnt s)) (zFresh d0)`). Principled fix = add `freshFlag (zIndEig d) (zIndP d)
+(seqAnt (fstIdx d))` to `zFreshNext`'s tag-3 branch (`Zsubst:1673`), mirroring tag-1. Ripple (focused, NOT a
+ZPhi cascade — `zFresh` is C-free; additive since nothing yet BUILDS a `zInd`'s `ZFresh` except the reduct
+which WANTS it): (a) `zFreshNext` def :1673; (b) `zFreshNextDef` σ tag-3 conjunct :1683 (mirror tag-1 :1679);
+(c) `zFreshNext_defined` tag-3 simp case :1700; (d) `zFresh_zInd` simp :1812; (e) `zFresh_zsubst` Ind case
+(via `freshFlag_zsubst_eq_zero`, banked); (f) update `descent_step_Ind`/`ind_reduct_botSucc_of_fresh`
+extractions (`hfr0`/`hfr1` shift one `le_max`), then DERIVE `hfreshΓ` from `ZFresh (zInd …)` in repMajor → tag-3
+DROPS. Risk = the σ-formula/`_defined` simp (definability), `maxHeartbeats` already 1000000. (tag-4 `zK` major
+needs the recursion proper / splice; axMajor needs the cut-partner-Rep dichotomy via `majorPrem_*_cutPartner`.)
 
 ## lap 147 — §5.2 WIRED to Buchholz §14.25: `descent_step_K_noncritical` decomposed on MAJOR-premise tag
 **Build 🟢 1326. Headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms) — no drift.**
