@@ -5,20 +5,22 @@
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**);
 `goodsteinSentence_faithful` + `peano_not_proves_consistency` axiom-clean. The lone `sorryAx` traces to crux-2.
 
-> **🧭 Lap-147 — §5.2 WIRED to Buchholz §14.25: `descent_step_K_noncritical` decomposed on the MAJOR-premise tag (read FIRST — current).**
+> **🎉🧭 Lap-147 — §5.2 has-redex half PROVEN (criticality DECOUPLED); residual = the general `Γ→⊥` recursion (read FIRST — current).**
 > Build re-verified 🟢 green (1326); headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math
-> axioms) — no drift. Operator SOLE-OBJECTIVE = M1b-term (terminate crux-2). Attacked the first live-path
-> sorry `descent_step_K_noncritical` (Buchholz §5.2 non-critical K-step). **Finally WIRED the banked-but-unused
-> lap-129/130 major-premise machinery** into it: the lemma is now a sorry-FREE dispatcher on the FAITHFUL
-> major premise (first `⊥`-exit, `majorIdx` — never a leaf, dissolving the lap-129 `permIdx` STALL), routing via
-> `majorPrem_tag_mem` (tag ∈ {3,4,5,6}) to two named sub-sorries: `descent_step_K_noncrit_repMajor` (tag 3/4,
-> §14.254 `Rep`-major REPLACE) + `descent_step_K_noncrit_axMajor` (tag 5/6, §14.253 principal CUT vs upstream
-> cut-partner). **No DROP** (1→2 sorries, a sharpening): verified in-kernel that BOTH sub-cases bottom out in
-> the GENERAL `Γ→⊥` reduction (major-premise antecedent possibly nonempty; cut-partner can itself be a chain;
-> criticality genuinely consumed by `inference_critical_pair_of_chain`) — the multi-lap content. CONCRETE next
-> attack = generalize the descent step to `Γ→⊥` and strong-induct on `iord` (Buchholz Thm 2.1 / Cor 2.1);
-> smaller first step = the `redexI < j₀`-from-cut-partner-redex bound (decouple `chainInf_redexI_data` from
-> criticality). See `HANDOFF-2026-06-26-lap147.md`, `PENDING_WORK.md` lap-147.
+> axioms) — no drift. Operator SOLE-OBJECTIVE = M1b-term (terminate crux-2). Attacked the hardest-first live
+> sorry `descent_step_K_noncritical` (Buchholz §5.2) and got it off `red` AND off CRITICALITY. **Key in-kernel
+> finding:** the `iRKcCrit` critical-cut reduct's soundness/descent/invariants are ALL criticality-free GIVEN
+> the redex — criticality entered ONLY at `isRedexPair_redexCode_of_zKValid` (to prove a redex exists). Landed
+> the decoupling lemmas (`isRedexPair_redexCode_of_exists`, `redexI_lt_of_redexPair`,
+> `redZKReady_of_zKValidF_exists`, `iord_descent_iRKcCrit_corr_of_redex`/`_neg_of_redex`) and assembled
+> **`descent_step_K_hasRedex`** (`Crux2Blueprint:2346`): a regular `∅→⊥` chain with the `isChainInf` exit data +
+> ANY in-region redex pair has the genuine `iRKcCrit` reduct as a strictly-`iord`-descending `ZDerivesEmptyR`,
+> NO `red`/criticality. `descent_step_K_noncritical` is now a sorry-FREE has-redex/no-redex dispatcher: redex
+> below the exit → `hasRedex` (**PROVEN** — Buchholz §14.253 principal cut, now covering NON-critical chains
+> too); no such redex → `descent_step_K_noncrit_recurse` (the LONE §5.2 residual). **The has-redex half DROPS.**
+> The residual = REDUCE the (Rep/chain-partnered) major premise = the GENERAL `Γ→⊥` Z-derivation reduction
+> (Buchholz Thm 2.1 / Cor 2.1), closure via `descent_step_general` by STRUCTURAL induction (NOT `iord` — that
+> is PRWO/Gödel-barred). See `HANDOFF-2026-06-26-lap147.md`, `PENDING_WORK.md` lap-147.
 
 > **🎉🧭 Lap-146 REVIEW + GRIND — `descent_step_Ind` DROPPED (axiom-clean, off `red`); live termination path down to TWO genuine sorries (read FIRST — current).**
 > After the fresh-mind review (below) validated lap-145's direction, this lap EXECUTED it end-to-end: landed the

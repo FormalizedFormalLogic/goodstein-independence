@@ -39,24 +39,29 @@ criticality-free GIVEN the redex data — criticality enters ONLY at `isRedexPai
 `redexI_lt_of_redexPair` (pair-monotone bound `redexI<j0` from any in-region redex pair),
 `redZKReady_of_zKValidF_exists` (the redZKReady ∀/¬ disjunction from `zKValidF`+redex-existence, no crit).
 
-### 🎯 NEXT (wire the decoupling) — assemble `descent_step_K_hasRedex`, then split `axMajor`
-Build the criticality-free critical reduct lemma (mirrors `descent_step_K_critical_all`/`_neg` but redex
-supplied, not from crit):
-  `descent_step_K_hasRedex (hd : ZDerivesEmptyR (zK s r ds)) (hant) (hsucc) (hj0 : j0 < lh ds)
-     (threading/rank/⊥-exit up to j0 from isChainInf) (hredexlt : redexI < j0)
-     (hex : ∃ c < ⟪lh ds,lh ds⟫, isRedexPair ds c) : ∃ d', ZDerivesEmptyR d' ∧ icmp ... = 0`
-Pieces: redex data via `redZKReady_of_zKValidF_exists` (✓ landed); SOUNDNESS via `ZDerivation_iRKcCrit_all`
-(∀, threading up to redexI from isChainInf) / `ZDerivation_iRKcCrit_neg_botOrbit` (¬, tip-j0 form,
-`redexJ≤j0`-free); DESCENT — build `iord_descent_iRcritG_critReductCorr_of_redex` / `…Neg…_of_redex`
-mirroring `RedZKDescent:457`/`:515` but calling `iord_descent_iRcrit_of_redex` (not `_of_chain'`) with `hex`
-+ `hr:1≤r` (from `irk(∀p)≥1`, `irk(chainAsucc redexI)≤r`) + the criticality-free `hbI`/`hbJ` bundles;
-INVARIANTS via `ZRegular/ZFresh/ZSeqAnt_iRKcCrit` (the no-`_of_zK` forms, redex data from `hex`).
-Then `descent_step_K_noncrit_axMajor`: from `majorPrem_*_cutPartner` get `i'<majorIdx`, `chainAsucc i'=∀p`;
-CASE on whether `znth ds i'` is a direct `zIall`/`zIneg` (R-intro): if yes, `(i',majorIdx)` is a redex pair
-(`majorIdx ≤ j0` since first ⊥-exit) ⟹ `descent_step_K_hasRedex`; if no (`i'` a chain/leaf) ⟹ the recursion
-residual (the general `Γ→⊥` reduction below). `repMajor` (tag 3/4) is purely the general reduction.
+### ✅✅ DONE this lap — `descent_step_K_hasRedex` ASSEMBLED + the has-redex half of §5.2 PROVEN
+`descent_step_K_hasRedex` (`Crux2Blueprint:2346`) is sorry-free: regular `∅→⊥` chain + `isChainInf` exit data +
+ANY in-region redex pair `⟪i0,j1⟫` (`i0<j1≤j0`) ⟹ genuine `iRKcCrit` reduct strictly-`iord`-descends, NO
+`red`/criticality. Wired all decoupling pieces (finders + `ZDerivation_iRKcCrit_all`/`_neg_botOrbit` +
+`iord_descent_iRKcCrit_corr_of_redex`/`_neg_of_redex` + no-`_of_zK` invariants). `descent_step_K_noncritical`
+is now a has-redex/no-redex dispatcher (`:2487`): extract exit `j0` from `zKValidF`, `by_cases` redex-below-`j0`
+→ `hasRedex` (PROVEN) / `descent_step_K_noncrit_recurse` (residual). The §14.253 principal cut is DISCHARGED
+for non-critical chains; only the §14.254 general reduction remains.
 
-### 🎯 DEEPER (the full drop) — generalize the descent step to `Γ→⊥`, strong-induct
+### 🎯 THE ONE remaining §5.2 sorry — `descent_step_K_noncrit_recurse` (`Crux2Blueprint:2470`)
+No redex below the exit ⟹ (`majorPrem_tag_mem`) the major premise is a `Rep` node (`zInd`/sub-`zK`, §14.254) or
+a tag-5/6 L-axiom with a chain cut-partner — all REDUCE THE MAJOR PREMISE (a `Γₘ→⊥` derivation, `Γₘ` possibly
+nonempty) = the GENERAL `Γ→⊥` reduction. **Closure = `descent_step_general` by STRUCTURAL induction** (NOT
+`iord`-recursion — that is PRWO, Gödel-barred in 𝗜𝚺₁; structural/Σ₁ induction on the derivation code is fine),
+i.e. Buchholz Theorem 2.1 / Corollary 2.1:
+  `descent_step_general : regular ZDerivation of Γ→⊥, not in endform ⟹ ∃ same-sequent reduct, iord-descending`.
+Then `recurse` reduces the major premise by the IH (smaller derivation), REPLACES it (`isChainInf_congr` keeps
+validity, `iord_descent_red_zK_replace_eq` :363 banked descent). Per-tag reducts: `zInd`→Ind unfolding
+(generalize `descent_step_Ind` off `Γ=∅`); `zK`→recursion/splice (`iord_descent_red_zK_chain_*` banked);
+`zAxAll`/`zAxNeg` with redex→`hasRedex`; atoms/`Ax1`→endform/§5. Effectively rebuilds the reduction engine
+correctly (the broken `red`'s replacement).
+
+### 🎯 DEEPER (the full drop) — generalize the descent step to `Γ→⊥`, structural-induct
 The natural closure is **Buchholz Theorem 2.1 / Corollary 2.1** as ONE generalized lemma proved by strong
 `iord`-induction (each premise has strictly smaller `iord`):
 
