@@ -50,6 +50,16 @@ NOT on `at'` (term/eigenvar) or `p`. Consequences:
    `zKValidF` for it (now PROVABLE — the threading is the `isChainInf_iCritReductSeq` pattern, generalized to
    `k` steps) + re-prove the iotil fold descent. Then re-key `iRInd`/`red_zInd` and ripple-fix the descent infra.
    This is the genuine fix and the right hardest-first target.
+   - **PROGRESS (lap 136, green):** the VALIDITY CORE is now landed — `isChainInf_telescope`
+     (Crux2Blueprint, after the obstruction theorems): any length-`k+1` sequence whose antecedents telescope
+     (premise 0 ⊆ Γ; premise `i+1` ⊆ Γ∪{succ of premise `i`}; last premise carries `seqSucc s`/`⊥`; ranks
+     bounded) is `isChainInf`-valid. Sorry-free. The concrete `iIndReductSeqG` PR-construction (def +
+     `Seq`/`lh`/`znth` + the per-premise end-sequent read-outs `chainAnt`/`chainAsucc`) is all that remains to
+     plug into it — those read-outs come from `zIndWff` (base/step succedents) + `zsubst` end-sequent lemmas
+     (`fstIdx_zsubst`, `seqAnt_fvSubstSeqt`, `seqSucc_fvSubstSeqt`) + `ZDerivation_zsubst`. NEXT: build the
+     PR-construction (blueprint args `d0 d1 a`, `succ i = seqCons ih (zsubst d1 a (numeral i))`; `zsubst` is
+     `𝚺₁-Function₃`, `numeralGraph` exists), then its znth equations, then `zKValidF_iIndReductSeqG` via
+     `isChainInf_telescope`.
 2. **Alternative (cheaper, if the orbit is Ind-free):** investigate whether the regular ⊥-orbit
    (`ZDerivesEmptyR`) is or can be made **Ind-free** (tag-3 absent from the tree), discharging tag-3 by VACUITY
    in both `redSoundGen` and `descent_step_K_majorIdx`. Pushes the induction realization upstream to M2's

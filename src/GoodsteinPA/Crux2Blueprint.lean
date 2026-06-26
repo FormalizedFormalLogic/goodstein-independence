@@ -150,6 +150,40 @@ theorem zKValidF_iIndReduct_forces_degenerate {s at' p d0 d1 : V}
   · exact Or.inr (Or.inl (by rw [← h]; exact h0succ))
   · exact Or.inr (Or.inr (Or.inr h))
 
+/-! ### Toward the CORRECTED Ind reduct (lap 136) — telescoping chain-validity
+
+The genuine Ind reduct (the fix for the obstruction above) is the **substituted multi-step chain**
+`⟨d0, d1[a:=0], …, d1[a:=k-1]⟩` (`k =` value of the Ind term `t`): premise 0 = base `d0 : Γ→F(0)`, premise
+`i+1 = d1[a:=i] : Γ,F(i)→F(i+1)`, exit `j0 = k` carrying `F(k)=F(t)`. The validity of THAT chain is
+`isChainInf`, whose content is purely that the antecedents TELESCOPE. `isChainInf_telescope` below proves
+exactly that — the k-step generalization of `isChainInf_iCritReductSeq` (the proven k=1 case) — abstractly
+over any sequence with the telescoping shape, so the concrete (PR-built) substituted reduct only has to
+supply the per-premise end-sequent read-outs. This is the reusable validity core. -/
+
+/-- **Telescoping chain-validity** (general Buchholz cut-chain, k steps). A length-`k+1` premise sequence
+whose antecedents telescope — premise `0`'s antecedent threads into `Γ = seqAnt s`, and each premise `i+1`'s
+antecedent threads into `Γ ∪ {chainAsucc ds i}` (the prior premise's succedent) — with the LAST premise
+(index `k`) carrying the conclusion succedent `seqSucc s` (or `⊥`), and the non-exit succedents rank-bounded,
+is `isChainInf`-valid (exit `j0 = k`). The k-step generalization of `isChainInf_iCritReductSeq`. -/
+theorem isChainInf_telescope {s r ds k : V} (hk : lh ds = k + 1)
+    (hbase : ∀ B, inAnt B (chainAnt ds 0) → inAnt B (seqAnt s))
+    (hstep : ∀ i < k, ∀ B, inAnt B (chainAnt ds (i + 1)) →
+        inAnt B (seqAnt s) ∨ B = chainAsucc ds i)
+    (hexit : chainAsucc ds k = seqSucc s ∨ chainAsucc ds k = (^⊥ : V))
+    (hrank : ∀ i < k, irk (chainAsucc ds i) ≤ r) :
+    isChainInf s r ds := by
+  refine ⟨k, by rw [hk]; exact lt_add_one k, hexit, ?_, hrank⟩
+  intro i hi B hB
+  rcases eq_or_ne i 0 with rfl | hne
+  · exact Or.inl (hbase B hB)
+  · have h1i : 1 ≤ i := pos_iff_one_le.mp (pos_iff_ne_zero.mpr hne)
+    have hi1 : i - 1 + 1 = i := tsub_add_cancel_of_le h1i
+    have hjk : i - 1 < k := lt_iff_succ_le.mpr (by rw [hi1]; exact hi)
+    rw [← hi1] at hB
+    rcases hstep (i - 1) hjk B hB with h | h
+    · exact Or.inl h
+    · exact Or.inr ⟨i - 1, tsub_lt_self (pos_iff_ne_zero.mpr hne) one_pos, h⟩
+
 /-! ### Branch recursion equations for the tag-4 dispatch (table lookups resolved to `red dᵢ`)
 
 `red (zK s r ds) = iRK (zK s r ds) (redTable …)` dispatches on two `permIdx` sentinels. These three
