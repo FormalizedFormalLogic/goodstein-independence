@@ -481,6 +481,43 @@ theorem ZDerivation_corrected_haux0 {s r ds sᵢ a p d0 : V}
   -- the `(redexI, redexJ)` instance of the explicit-pair `_at` lemma (`cutFormulaAt_redex`, a `rfl`-bridge)
   ZDerivation_corrected_haux0_at hZ hi hdi hfresh_eig hpfresh hΓfresh hsucc_wff hthread hrank
 
+/-- **`haux1_at` — the EXPLICIT-PAIR L-side half (Buchholz Thm 3.4(a), ∀-case).** `ZDerivation_corrected_haux1`
+with the L-redex index abstracted to an arbitrary `j` and the cut formula abstracted to an arbitrary `Cc`
+(`haux1` reads the cut formula only as a value, via `hsj`/`hCwff` — it never computes it). The §5 logical
+axiom `Ax^1` and the `isChainInf_growAnt` threading are index/value-parametric. `ZDerivation_corrected_haux1`
+is the `(j := redexJ, Cc := cutFormula)` instance. In the existence-form assembly `Cc := cutFormulaAt i j d`
+matches `haux0_at`'s R-half cut formula. -/
+theorem ZDerivation_corrected_haux1_at {s r ds j sⱼ p k' C Cc : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hj : j < lh ds)
+    (hdj : znth ds j = zAxAll sⱼ p k')
+    (hSeqs : Seq (seqAnt s))
+    (hCwff : IsUFormula ℒₒᵣ Cc)
+    (hSeqsj : Seq (seqAnt sⱼ))
+    (hsj : seqSucc sⱼ = Cc) :
+    ZDerivation (zK (seqAddAnt Cc s) r
+      (seqUpdate ds j (zAx1 (seqAddAnt Cc sⱼ) C))) := by
+  obtain ⟨hciParent, _, _, _, _, _, hcf, hss, hsa⟩ := zKValidF_of_ZDerivation_zK hZ
+  have hsuccj : IsUFormula ℒₒᵣ (seqSucc sⱼ) := by
+    have := hcf j hj
+    rwa [chainAsucc, hdj, fstIdx_zAxAll] at this
+  have hZredL : ZDerivation (zAx1 (seqAddAnt Cc sⱼ) C) :=
+    zDerivation_zAx1_intro (by
+      rw [seqSucc_seqAddAnt]; exact (inAnt_seqAddAnt hSeqsj).mpr (Or.inl hsj))
+  have hci : isChainInf (seqAddAnt Cc s) r
+      (seqUpdate ds j (zAx1 (seqAddAnt Cc sⱼ) C)) := by
+    refine isChainInf_growAnt hj hSeqs ?_ ?_ ?_ hciParent
+    · rw [chainAnt, hdj, fstIdx_zAxAll]; exact hSeqsj
+    · rw [fstIdx_zAx1, seqSucc_seqAddAnt, chainAsucc, hdj, fstIdx_zAxAll]
+    · rw [fstIdx_zAx1, seqAnt_seqAddAnt, chainAnt, hdj, fstIdx_zAxAll]
+  refine ZDerivation_iCritReplaceReduce_general hj hZ hZredL hci
+    (by rw [seqSucc_seqAddAnt]; exact hss)
+    (by rw [seqAnt_seqAddAnt]; exact forall_IsUFormula_seqCons hSeqs hsa hCwff)
+    (by rw [fstIdx_zAx1, seqSucc_seqAddAnt]; exact hsuccj)
+    (by rw [tp_zAx1, fstIdx_zAx1]; exact iperm_isymRep _)
+    (fun h => by simp at h) (fun h => by simp at h)
+    (fun h => by simp at h) (fun h => by simp at h)
+
 /-- **`haux1` — the corrected inversion's L-side half (Buchholz Thm 3.4(a), ∀-case), ASSEMBLED modulo the
 two genuine §5 obligations.** The L-redex `dⱼ = znth ds (redexJ d)` is an `axAll` left-axiom `Ax^{∀p,k}`
 (`hdj`). Buchholz §5 case 2.1: its critical reduct is `dⱼ[0] = Ax^1_{F(k),Γⱼ→F(k)}` — the §5 **logical
@@ -508,34 +545,9 @@ theorem ZDerivation_corrected_haux1 {s r ds sⱼ p k' C : V}
     (hsj : seqSucc sⱼ = cutFormula (zK s r ds)) :
     ZDerivation (zK (seqAddAnt (cutFormula (zK s r ds)) s) r
       (seqUpdate ds (redexJ (zK s r ds))
-        (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C))) := by
-  obtain ⟨hciParent, _, _, _, _, _, hcf, hss, hsa⟩ := zKValidF_of_ZDerivation_zK hZ
-  -- the L-redex's succedent `seqSucc sⱼ = chainAsucc ds (redexJ d)` is a `UFormula` (chain field 7)
-  have hsuccj : IsUFormula ℒₒᵣ (seqSucc sⱼ) := by
-    have := hcf (redexJ (zK s r ds)) hj
-    rwa [chainAsucc, hdj, fstIdx_zAxAll] at this
-  -- **(O-L1) DISCHARGED.** The §5 logical axiom `Ax^1` is a `ZDerivation` (`zDerivation_zAx1_intro`):
-  -- its succedent `seqSucc sⱼ = cutFormula d` is the head of the grown antecedent `cutFormula d, seqAnt sⱼ`.
-  have hZredL : ZDerivation (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C) :=
-    zDerivation_zAx1_intro (by
-      rw [seqSucc_seqAddAnt]; exact (inAnt_seqAddAnt hSeqsj).mpr (Or.inl hsj))
-  -- **(O-L2) DISCHARGED.** The threading reconstruction `isChainInf` follows from the parent chain validity
-  -- `hciParent` via `isChainInf_growAnt`: the §5 reduct `zAx1 …` keeps the axAll premise's succedent
-  -- (`seqSucc sⱼ`, so `chainAsucc` is preserved and the tip `j0` survives) and grows its antecedent by the
-  -- cut instance `cutFormula d` — exactly the conclusion's own antecedent growth.
-  have hci : isChainInf (seqAddAnt (cutFormula (zK s r ds)) s) r
-      (seqUpdate ds (redexJ (zK s r ds)) (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C)) := by
-    refine isChainInf_growAnt hj hSeqs ?_ ?_ ?_ hciParent
-    · rw [chainAnt, hdj, fstIdx_zAxAll]; exact hSeqsj
-    · rw [fstIdx_zAx1, seqSucc_seqAddAnt, chainAsucc, hdj, fstIdx_zAxAll]
-    · rw [fstIdx_zAx1, seqAnt_seqAddAnt, chainAnt, hdj, fstIdx_zAxAll]
-  refine ZDerivation_iCritReplaceReduce_general hj hZ hZredL hci
-    (by rw [seqSucc_seqAddAnt]; exact hss)
-    (by rw [seqAnt_seqAddAnt]; exact forall_IsUFormula_seqCons hSeqs hsa hCwff)
-    (by rw [fstIdx_zAx1, seqSucc_seqAddAnt]; exact hsuccj)
-    (by rw [tp_zAx1, fstIdx_zAx1]; exact iperm_isymRep _)
-    (fun h => by simp at h) (fun h => by simp at h)
-    (fun h => by simp at h) (fun h => by simp at h)
+        (zAx1 (seqAddAnt (cutFormula (zK s r ds)) sⱼ) C))) :=
+  -- the `(j := redexJ, Cc := cutFormula)` instance of the explicit-pair `_at` lemma
+  ZDerivation_corrected_haux1_at hZ hj hdj hSeqs hCwff hSeqsj hsj
 
 /-- **`haux1_neg` — the ¬-case inversion's ANTECEDENT half (Buchholz Thm 3.4(a), ¬-subcase `d{1}`).**
 For a critical cut on `¬A` (so `cutFormula d = A`, via `cutFormula_neg`), the antecedent half `d{1} =
