@@ -1,6 +1,57 @@
 # Pending work — open obligations & attack paths
 
-## lap 142 (latest) — CRITICAL ∀-case soundness PROVEN via the genuine `iRKcCrit`, orbit-only (no `red`/`redSound`)
+## lap 143 (latest) — DEEP REFLECTION: FINISH the existence-form pivot (witness with genuine reducts, NEVER `red`)
+**Build 🟢 green (1326). Headline `[propext, sorryAx, Classical.choice, Quot.sound]` (0 math axioms), faithfulness clean,
+statement re-audited — no drift.** This is an altitude lap; deliverable = `REFLECTION-2026-06-26-lap143.md` + the binding
+`DIRECTION.md` CURRENT DIRECTIVE (lap-143). Summary below.
+
+### THE finding — the lap-132 pivot was half-abandoned (laps 141-142 regressed it)
+The existence-form pivot's whole point: `ZDerivesEmptyR_descent_step` (`Crux2Blueprint:1943`) returns a bare `∃ d'`, so it
+can witness with ANY sound descending reduct — you NEVER prove `red`'s fixed selection faithful. But TODAY both load-bearing
+branches witness with `red`:
+- **Ind branch** (`:1946`): `⟨red d, ZDerivesEmptyR_red hd, iord_descent_red_zInd …⟩`.
+- **critical-K** `descent_step_K_critical` (`:1891`): `⟨red (zK s r ds), ZDerivesEmptyR_red hd, iord_descent_red_zK_crit …⟩`.
+
+Both route soundness through `ZDerivesEmptyR_red` → **`redSoundGen` (:1471), which is FALSE/incomplete**: its zInd case
+(line 1498) invokes the kernel-FALSE `zKValidF_iIndReduct_of_zInd` (:80, refuted lap-136); its zK case is an open sorry
+(:1508); and `ZDerivation_red_zK` (:1426) routes critical soundness through the kernel-FALSE `ZDerivation_red_zK_crit`
+(:1108, refuted lap-114). So the live `false_of_ZDerivesEmpty` path transitively depends on TWO kernel-verified-FALSE
+sorries — un-dischargeable as stated. The genuine red-free replacement `ZDerivation_iRKcCrit_critical_all` (:1847, lap-142,
+sorry-free, axiom-clean) is BANKED BUT UNWIRED → zero false-dependence dropped.
+
+### On-path sorry inventory + dispositions (the live `false_of_ZDerivesEmpty` chain)
+| sorry | live via | disposition |
+|---|---|---|
+| `redSoundGen` :1471 (zK :1508 + zInd→FALSE :80) | Ind & critical-K (`ZDerivesEmptyR_red`) | DEAD — drop by switching witnesses |
+| `ZDerivation_red_zK_crit` :1108 (kernel-FALSE) | critical-K via `red` | DEAD — drop via `iRKcCrit` |
+| `zKValidF_iIndReduct_of_zInd` :80 (kernel-FALSE) | Ind via `redSoundGen` | DEAD — drop via `iIndReductSeqG` |
+| `ZDerivation_red_zK_splice` :1211, `_nonRep` :1384 | only the dead `red` chain | DEAD — off-path after switch |
+| `descent_step_K_noncritical` :1924 | live (non-critical K) | GENUINE — Buchholz 5.2 atomic reduct |
+| `exists_sigma1_descending_step` :1992 (A) | live (gDef packaging) | GENUINE — concrete `redStep`/witness-bound |
+| ¬-case `redexJ ≤ j0` (after the split) | live (critical ¬) | GENUINE — pin `j0 = lh ds−1` on ⊥-orbit |
+
+### MANDATED next move (assemble, don't bank — `DIRECTION.md` lap-143)
+1. **Derive `ZSeqAnt_iRKcCrit`** — the ONE missing support lemma. (`ZRegular_iRKcCrit_of_zK` `Zsubst:2516`,
+   `ZFresh_iRKcCrit` `Zsubst:3344`, `fstIdx_iRKcCrit` `InternalZ:7564`, `iord_descent_iRKcCrit_corr`/`_neg`
+   `RedZKDescent:580/597` all EXIST.) Mirror `ZFresh_iRKcCrit`.
+2. **Split `descent_step_K_critical` (:1891) into ∀ + ¬** on `hAcase` (the R-redex shape). Wire the ∀-case to
+   `iRKcCrit` (`ZDerivation_iRKcCrit_critical_all` + the support lemmas + `iord_descent_iRKcCrit_corr`). Leave the ¬-case
+   as a NEW named sorry `descent_step_K_critical_neg` (honest residual = `redexJ ≤ j0`). RAISES src count = PROGRESS; the
+   dominant ∀-sub-case goes genuinely red-free (drops :80/:1108 dependence).
+3. **Re-witness the Ind branch** of `ZDerivesEmptyR_descent_step` (:1946) with the corrected-Ind reduct `iIndReductSeqG`
+   (lap-136), not `red d`, dropping its `redSoundGen`/:80 dependence.
+4. AFTER the live path no longer references them, relocate the DEAD `red`-soundness sorries {:80,:1108,:1211,:1384,:1471}
+   to `wip/` (abandoned route — NOT before, that games the count).
+
+### FORBIDDEN
+Witnessing any `ZDerivesEmptyR_descent_step` branch with `red` (the lap-141 regression); banking more iRKcCrit/Ind
+soundness without WIRING into `descent_step_*`; attacking :80/:1108/:1211/:1384/:1471 as stated (all FALSE/dead); the
+`redLeast`/μ-min (A) route (refuted lap-139); the major-premise-tag {3,4,5,6} split (abandoned lap-141); `zReg`/`zFresh`/
+`zSeqAnt` folds as a goal; off-critical-path easy sorries; M2 / M4 wiring.
+
+---
+
+## lap 142 — CRITICAL ∀-case soundness PROVEN via the genuine `iRKcCrit`, orbit-only (no `red`/`redSound`) [banked but UNWIRED — see lap-143]
 **Build 🟢 green. Headline footprint UNCHANGED** (`[propext, sorryAx, Classical.choice, Quot.sound]`). New lemmas
 `#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`, **no `sorryAx`**).
 
