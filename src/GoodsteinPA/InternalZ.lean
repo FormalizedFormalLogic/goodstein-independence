@@ -6616,6 +6616,46 @@ lemma tp_isymR_form_wff {d A : V} (hZ : ZDerivation d) (h : tp d = isymR A) :
   · rw [tp_zAxNeg] at h; exact absurd h (by simp)
   · rw [tp_zAx1] at h; exact absurd h (by simp)
 
+/-- **R-redex constructor form.** A `ZDerivation` whose `tp` is a right symbol `R_A` is exactly an `I∀`
+(`zIall`, `A = ∀p`) or `I¬` (`zIneg`, `A = ¬p`) rule — the explicit constructor the corrected reduct
+`critReductCorr`/`critReductNeg` needs (`tp_isymR_form_wff` gives only the formula, not the node). -/
+lemma zDerivation_isymR_form {d A : V} (hZ : ZDerivation d) (h : tp d = isymR A) :
+    (∃ s a p d0, d = zIall s a p d0 ∧ A = (^∀ p : V)) ∨
+    (∃ s p d0, d = zIneg s p d0 ∧ A = inegF p) := by
+  rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, _, _⟩ |
+    ⟨s, p, d0, rfl, _, _, _⟩ | ⟨s, at', p, d0, d1, rfl, _, _, _⟩ | ⟨s, r, ds, rfl, _, _, _⟩ |
+    ⟨s, p, k, rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩ | ⟨s, C, rfl, _⟩
+  · rw [tp_zAtom] at h; exact absurd h (by simp [isymR, isymRep])
+  · rw [tp_zIall] at h; exact Or.inl ⟨s, a, p, d0, rfl, ((isymR_inj _ _).mp h).symm⟩
+  · rw [tp_zIneg] at h; exact Or.inr ⟨s, p, d0, rfl, ((isymR_inj _ _).mp h).symm⟩
+  · rw [tp_zInd] at h; exact absurd h (by simp [isymR, isymRep])
+  · rw [tp_zK] at h; exact absurd h (by simp [isymR, isymRep])
+  · rw [tp_zAxAll] at h; exact absurd h (by simp [isymR, isymLk])
+  · rw [tp_zAxNeg] at h; exact absurd h (by simp [isymR, isymLk])
+  · rw [tp_zAx1] at h; exact absurd h (by simp [isymR, isymRep])
+
+/-- **L-redex constructor form.** A `ZDerivation` whose `tp` is a left symbol `L^k_A` is exactly an `axAll`
+(`zAxAll s p k`, `A = ∀p`) or `axNeg` (`zAxNeg s p`, `k = 0`, `A = ¬p`) axiom. The explicit constructor the
+corrected L-reduct `Ax^1` needs. -/
+lemma zDerivation_isymLk_form {d k A : V} (hZ : ZDerivation d) (h : tp d = isymLk k A) :
+    (∃ s p, d = zAxAll s p k ∧ A = (^∀ p : V)) ∨
+    (∃ s p, d = zAxNeg s p ∧ k = 0 ∧ A = inegF p) := by
+  rcases zDerivation_iff.mp hZ with ⟨s, rfl, _⟩ | ⟨s, a, p, d0, rfl, _, _, _⟩ |
+    ⟨s, p, d0, rfl, _, _, _⟩ | ⟨s, at', p, d0, d1, rfl, _, _, _⟩ | ⟨s, r, ds, rfl, _, _, _⟩ |
+    ⟨s, p, k', rfl, _, _⟩ | ⟨s, p, rfl, _, _⟩ | ⟨s, C, rfl, _⟩
+  · rw [tp_zAtom] at h; exact absurd h (by simp [isymLk, isymRep])
+  · rw [tp_zIall] at h; exact absurd h (by simp [isymR, isymLk])
+  · rw [tp_zIneg] at h; exact absurd h (by simp [isymR, isymLk])
+  · rw [tp_zInd] at h; exact absurd h (by simp [isymLk, isymRep])
+  · rw [tp_zK] at h; exact absurd h (by simp [isymLk, isymRep])
+  · rw [tp_zAxAll] at h
+    obtain ⟨hk, hA⟩ := (isymLk_inj _ _ _ _).mp h.symm
+    exact Or.inl ⟨s, p, by rw [hk], hA⟩
+  · rw [tp_zAxNeg] at h
+    obtain ⟨hk, hA⟩ := (isymLk_inj _ _ _ _).mp h.symm
+    exact Or.inr ⟨s, p, rfl, hk, hA⟩
+  · rw [tp_zAx1] at h; exact absurd h (by simp [isymLk, isymRep])
+
 /-- **T3.4(a) strict rank bound for the stripped cut formula — fully self-contained.** From the R-redex
 premise `dᵢ` being a `ZDerivation` (`hZi`) with `tp dᵢ = R_{A_i}` (`hRi`, `A_i = chainAsucc …`) of rank
 `≤ r` (`hrank`), the stripped cut formula has rank **strictly** below `r`: `rk(F(k)) < rk(∀xF) ≤ r` /
