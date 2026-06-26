@@ -184,6 +184,95 @@ theorem isChainInf_telescope {s r ds k : V} (hk : lh ds = k + 1)
     · exact Or.inl h
     · exact Or.inr ⟨i - 1, tsub_lt_self (pos_iff_ne_zero.mpr hne) one_pos, h⟩
 
+/-! ### The CORRECTED Ind reduct sequence `iIndReductSeqG = ⟨d0, d1[a:=0], …, d1[a:=k-1]⟩`
+
+The genuine (validity-bearing) Ind reduct, built by primitive recursion on `k` (the value of the Ind term):
+`zero ↦ ⟨d0⟩`, `succ i ↦ seqCons ih (zsubst d1 a (numeral i))` (append the `i`-substituted step). Unlike the
+ordinal-shadow `iIndReductSeq d0 d1 1 = ⟨d1,d0⟩` (lap-136 obstruction: not valid), this telescopes — premise
+`i+1 = d1[a:=numeral i]` concludes `Γ,F(i)→F(i+1)`, threading its `F(i)` against premise `i`'s succedent —
+so `isChainInf_telescope` gives its `zKValidF`. -/
+
+noncomputable def iIndReductSeqG.blueprint : PR.Blueprint 3 where
+  zero := .mkSigma “y d0 d1 a. !seqConsDef y 0 d0”
+  succ := .mkSigma “y ih i d0 d1 a.
+    ∃ ni, !(Bootstrapping.Arithmetic.numeralGraph) ni i ∧
+      ∃ z, !zsubstDef z d1 a ni ∧ !seqConsDef y ih z”
+
+noncomputable def iIndReductSeqG.construction : PR.Construction V iIndReductSeqG.blueprint where
+  zero := fun x ↦ seqCons ∅ (x 0)
+  succ := fun x i ih ↦ seqCons ih (zsubst (x 1) (x 2) (Bootstrapping.Arithmetic.numeral i))
+  zero_defined := .mk fun v ↦ by simp [iIndReductSeqG.blueprint, seqCons_defined.iff, emptyset_def]
+  succ_defined := .mk fun v ↦ by
+    simp [iIndReductSeqG.blueprint, seqCons_defined.iff,
+      (Bootstrapping.Arithmetic.numeral_defined (V := V)).iff, zsubst_defined.iff]
+
+/-- `iIndReductSeqG d0 d1 a k = ⟨d0, d1[a:=0], …, d1[a:=k-1]⟩` (length `k+1`). -/
+noncomputable def iIndReductSeqG (d0 d1 a k : V) : V := iIndReductSeqG.construction.result ![d0, d1, a] k
+
+@[simp] lemma iIndReductSeqG_zero (d0 d1 a : V) : iIndReductSeqG d0 d1 a 0 = seqCons ∅ d0 := by
+  simp [iIndReductSeqG, iIndReductSeqG.construction]
+
+@[simp] lemma iIndReductSeqG_succ (d0 d1 a k : V) :
+    iIndReductSeqG d0 d1 a (k + 1) =
+      seqCons (iIndReductSeqG d0 d1 a k) (zsubst d1 a (Bootstrapping.Arithmetic.numeral k)) := by
+  simp [iIndReductSeqG, iIndReductSeqG.construction]
+
+noncomputable def _root_.LO.FirstOrder.Arithmetic.iIndReductSeqGDef : 𝚺₁.Semisentence 5 :=
+  iIndReductSeqG.blueprint.resultDef.rew (Rew.subst ![#0, #4, #1, #2, #3])
+
+instance iIndReductSeqG_defined : 𝚺₁-Function₄ (iIndReductSeqG : V → V → V → V → V) via iIndReductSeqGDef :=
+  .mk fun v ↦ by simp [iIndReductSeqG.construction.result_defined_iff, iIndReductSeqGDef]; rfl
+
+instance iIndReductSeqG_definable : 𝚺₁-Function₄ (iIndReductSeqG : V → V → V → V → V) :=
+  iIndReductSeqG_defined.to_definable
+instance iIndReductSeqG_definable' (Γ) : Γ-[m + 1]-Function₄ (iIndReductSeqG : V → V → V → V → V) :=
+  iIndReductSeqG_definable.of_sigmaOne
+
+@[simp] lemma iIndReductSeqG_seq (d0 d1 a k : V) : Seq (iIndReductSeqG d0 d1 a k) := by
+  induction k using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => rw [iIndReductSeqG_zero]; exact seq_empty.seqCons d0
+  case succ k ih => rw [iIndReductSeqG_succ]; exact ih.seqCons _
+
+@[simp] lemma iIndReductSeqG_lh (d0 d1 a k : V) : lh (iIndReductSeqG d0 d1 a k) = k + 1 := by
+  induction k using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => rw [iIndReductSeqG_zero, Seq.lh_seqCons d0 seq_empty, lh_empty]
+  case succ k ih => rw [iIndReductSeqG_succ, Seq.lh_seqCons _ (iIndReductSeqG_seq d0 d1 a k), ih]
+
+/-- Premise `0` of the corrected reduct is the base `d0` (any `k`). -/
+lemma znth_iIndReductSeqG_zero (d0 d1 a : V) : ∀ k, znth (iIndReductSeqG d0 d1 a k) 0 = d0 := by
+  intro k
+  induction k using ISigma1.sigma1_succ_induction
+  · definability
+  case zero =>
+    rw [iIndReductSeqG_zero]
+    have h := znth_seqCons_self seq_empty d0
+    rwa [lh_empty] at h
+  case succ k ih =>
+    rw [iIndReductSeqG_succ,
+      znth_seqCons_of_lt (iIndReductSeqG_seq d0 d1 a k) _ (by rw [iIndReductSeqG_lh]; simp)]
+    exact ih
+
+/-- Premise `i+1` of the corrected reduct is the `i`-substituted step `d1[a:=numeral i]` (`i < k`). -/
+lemma znth_iIndReductSeqG_step (d0 d1 a : V) : ∀ k, ∀ i < k,
+    znth (iIndReductSeqG d0 d1 a k) (i + 1) = zsubst d1 a (Bootstrapping.Arithmetic.numeral i) := by
+  intro k
+  induction k using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => intro i hi; exact absurd hi (by simp)
+  case succ k ih =>
+    intro i hi
+    rw [iIndReductSeqG_succ]
+    rcases lt_or_eq_of_le (le_iff_lt_succ.mpr hi) with hik | hik
+    · rw [znth_seqCons_of_lt (iIndReductSeqG_seq d0 d1 a k) _
+        (by rw [iIndReductSeqG_lh]; simpa using hik)]
+      exact ih i hik
+    · rw [hik]
+      have h := znth_seqCons_self (iIndReductSeqG_seq d0 d1 a k)
+        (zsubst d1 a (Bootstrapping.Arithmetic.numeral k))
+      rwa [iIndReductSeqG_lh] at h
+
 /-! ### Branch recursion equations for the tag-4 dispatch (table lookups resolved to `red dᵢ`)
 
 `red (zK s r ds) = iRK (zK s r ds) (redTable …)` dispatches on two `permIdx` sentinels. These three
