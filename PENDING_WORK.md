@@ -38,7 +38,30 @@ premise tag ∈ {3,4,5,6}. Excludes 0,7 (`majorIdx_botOrbit_reducible`) and now 
 succedent is `^∀p`/`inegF p ≠ ^⊥`, but the major premise's succedent IS `^⊥`). Helpers `qqAll_ne_falsum` /
 `inegF_ne_falsum` banked. This is the exact tag dichotomy the re-keyed `iRK` dispatch case-splits on.
 
-**NEXT:** (2) build the tag-5/6 critical reduct that cuts `dⱼ` against the `i'` R-partner (reuse
+**⭐ KEY RECONCILIATION (this lap) — the lap-124 dichotomy is the path; its RIGHT disjunct = the major
+premise.** Re-reading `RedZKDescent.lean`: lap 124 ALREADY banked `iRcrit_descends_or_nonleaf_isymRep`
+(`:194`) — for ANY regular `∅→⊥` chain: **either** `iRcrit (zK s r ds) (zAxReduct∘red)` strictly
+`iord`-descends (LEFT, stall-tolerant, NO `permIdx`/`red`-fixpoint dependence — via
+`iord_descent_iRcrit_botChain_leaves` + `inference_critical_pair_of_botChain`), **or** there is a NON-LEAF
+`isymRep` premise (RIGHT). The lap-129 "DEAD END" verdict was about dissolving the RIGHT via *reroute* — but
+the RIGHT is not dissolved, it is RECURSED. New lemma **`isymRep_nonleaf_zInd_or_zK`** (this lap, axiom-clean):
+the four `isymRep`-carrying constructors are `zAtom`/`zInd`/`zK`/`zAx1` (`tp_z*`), so a non-leaf `isymRep`
+premise is precisely a **`zInd` (tag 3)** or **`zK` (tag 4)** — i.e. EXACTLY `majorPrem_tag_mem`'s tag-3/4
+cases (a ⊥-exit `zInd`/`zK` IS a non-leaf `isymRep`). So the endgame dispatch is now fully tag-explicit:
+- LEFT (all `isymRep` premises are leaves) → `iRcrit` descends (banked).
+- RIGHT, tag 3 (`zInd`) → `red_zInd` / `iord_descent_red_zInd` strict descent (banked).
+- RIGHT, tag 4 (`zK`) → the genuine residual: recurse into the sub-⊥-chain premise.
+Tags 5/6 (L-axioms, `isymLk`) are NOT `isymRep` — they live in the LEFT redex (cut), partner pinned by
+`majorPrem_zAxAll/zAxNeg_cutPartner`.
+
+**NEXT (restructure `false_of_ZDerivesEmpty` around the lap-124 dichotomy, NOT the `red`-orbit):** define the
+⊥-orbit successor to apply `iRcrit` on the LEFT and, on the RIGHT, dispatch by `isymRep_nonleaf_zInd_or_zK`
+(tag 3 → `red_zInd`; tag 4 → recurse into the major premise). The infinite `iord`-descent then has NO
+fixpoint branch ⟹ feed PRWO(ε₀). Soundness side: `iRcrit` must preserve `ZDerivesEmptyR` (check
+`ZDerivation_iRcrit*`/the `iRKc` soundness already banked). Residual = the tag-4 recursion's well-founded
+measure (premise `iord` strictly below parent — the `iotil`/`idg` chain structure).
+
+**(SUPERSEDED sub-plan) build the tag-5/6 critical reduct that cuts `dⱼ` against the `i'` R-partner (reuse
 `iRcritG`/`iRKc` machinery, now indexed at `(i', majorIdx)` — the redex pair is `(i', majorIdx)` with
 `tp (znth ds i') = isymR (^∀p / inegF p)` and `dⱼ` the L-axiom; check `iRKc`/`iRcritG` already take the
 redex indices via `redexI`/`redexJ` and whether `majorIdx` ⟹ those match); (3) the atomic `iRK` swap

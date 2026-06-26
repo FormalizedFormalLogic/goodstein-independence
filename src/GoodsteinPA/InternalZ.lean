@@ -9240,6 +9240,29 @@ lemma majorPrem_tag_mem {s r ds : V} (hZ : ZDerivation (zK s r ds))
   · exact Or.inr (Or.inr (Or.inr (by rw [h]; simp)))
   · exact absurd (by rw [h]; simp : zTag (znth ds (majorIdx (zK s r ds))) = 7) hne7
 
+/-- **A non-leaf `isymRep` premise is a `zInd` (3) or `zK` (4) node.** The `tp = isymRep` symbol is carried
+by exactly four constructors — `zAtom` (0), `zInd` (3), `zK` (4), `zAx1` (7) — of which `zAtom`/`zAx1` are
+the leaves. So a `ZDerivation` premise with `tp = isymRep` that is NOT an atom/`Ax¹` leaf is precisely an
+Ind node (reduced by `red_zInd`, a banked strict descent) or a sub-K-chain (recursed). This is the tag
+dispatch the **RIGHT disjunct** of `RedZKDescent.iRcrit_descends_or_nonleaf_isymRep` (the stall-tolerant
+⊥-orbit descent dichotomy) case-splits on — and it lines up with `majorPrem_tag_mem`'s tag-3/4 cases
+(a ⊥-exit `zInd`/`zK` premise IS a non-leaf `isymRep`, `tp_zInd`/`tp_zK = isymRep`). -/
+lemma isymRep_nonleaf_zInd_or_zK {d : V} (hZ : ZDerivation d) (hrep : tp d = isymRep)
+    (hnleaf : ¬ ((∃ sk, d = zAtom sk) ∨ (∃ sk Ck, d = zAx1 sk Ck))) :
+    (∃ s at' p d0 d1, d = zInd s at' p d0 d1) ∨ (∃ s r ds, d = zK s r ds) := by
+  rcases zDerivation_iff.mp hZ with
+    ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
+    ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
+    ⟨s', p', k', h, _, _⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C', h, _⟩
+  · exact absurd (Or.inl ⟨s', h⟩) hnleaf
+  · rw [h, tp_zIall] at hrep; exact absurd hrep (isymR_ne_isymRep _)
+  · rw [h, tp_zIneg] at hrep; exact absurd hrep (isymR_ne_isymRep _)
+  · exact Or.inl ⟨s', at'', p', d0', d1', h⟩
+  · exact Or.inr ⟨s', r', ds', h⟩
+  · rw [h, tp_zAxAll] at hrep; exact absurd hrep (isymLk_ne_isymRep _ _)
+  · rw [h, tp_zAxNeg] at hrep; exact absurd hrep (isymLk_ne_isymRep _ _)
+  · exact absurd (Or.inr ⟨s', C', h⟩) hnleaf
+
 set_option maxHeartbeats 1000000 in
 /-- **The generalized redex finder for a re-routing chain** (lap 122 — the genuine fix for the threaded-atom
 stall, Sub-lemmas A+B assembled). `inference_critical_pair_of_chain` needs FULL criticality `hnperm`
