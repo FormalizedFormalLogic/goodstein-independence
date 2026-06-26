@@ -24,14 +24,27 @@ sorry (the stall branches close `Or.inl`). Same defect as laps 104/107, still op
 
 **HIGHEST-VALUE NEXT TARGET — (A) `red w = w ∧ ZDerivesEmptyR w ⟹ False`** (fixpoint-absurdity). Decompose
 the endgame into named leaves (mirrors how `redSound` was decomposed):
-- **(A) fixpoint-absurdity:** `no_red_fixpoint_of_ZDerivesEmptyR : ZDerivesEmptyR w → red w ≠ w`. **Attack
-  the VACUITY resolution first:** an atom-/`zAx1`-selected K-node concluding `∅→⊥` is impossible by sequent
-  shape (the Rep node promotes the selected premise's sequent to `∅→⊥`; an atom axiom's sequent / `zAx1`'s
-  sequent cannot be `∅→⊥`). Use `red_zK_fixpoint_of_atom_selected`/`_zAx1_selected` + Cor 2.1
-  (`tp_selected_isymRep_of_emptyAnt_botSucc`, on ⊥-orbit selected premise has `tp=isymRep`). PROBE whether
-  `ZRegular w` already excludes the stall (lap-119 O1 may be the lever). If vacuity fails → fall back to the
-  repo's two named fixes (engine `permIdx`/`isPermPrem` refinement to skip atoms = the faithful Buchholz
-  "lowest cut"; OR an atom-free-orbit invariant supplied by M2's embedding & preserved by `red`).
+- **(A) fixpoint-absurdity:** `no_red_fixpoint_of_ZDerivesEmptyR : ZDerivesEmptyR w → red w ≠ w`.
+  **⚠️ KERNEL-GROUNDED REFINEMENT (lap-120 scouting): the VACUITY route FAILS — do NOT pursue it.** The
+  repo's leaf-soundness (`zTag_reducible_of_emptyAnt`, `zTag_Ind_or_K_of_ZDerivesEmpty`, InternalZ:8377/8480)
+  only kills axiom leaves whose WHOLE antecedent is empty. But the *selected premise* of a ∅→⊥ K-node has its
+  own sequent `sᵢ`, and `isChainInf` (InternalZ:1177, the chain-validity threading) lets premise antecedents
+  contain CUT FORMULAS: `∀ B, inAnt B (chainAnt ds i) → inAnt B (seqAnt s) ∨ ∃ i'<i, B = chainAsucc ds i'`.
+  With `seqAnt s = ∅`, premise-antecedent formulas are exactly the `chainAsucc` (cut) formulas. So a selected
+  atom `zAtom sᵢ` can be a **valid axiom `B→B`** (`seqAnt sᵢ = {B}`, `seqSucc sᵢ = B = chainAsucc ds i'`,
+  satisfying atom-validity `inAnt (seqSucc sᵢ) (seqAnt sᵢ)`). The atom's antecedent need NOT be empty — the
+  empty-antecedent contradiction does not fire. **The stall is genuinely reachable in the engine's type
+  system; `false_of_ZDerivesEmpty` is unprovable as the engine stands.**
+- **THE RESOLUTION (faithful Gentzen; = the deferred lap-104/107 prescription):** a selected axiom premise
+  `B→B` means the K-node's cut on `B` is **against an axiom**, which Gentzen ELIMINATES (the cut vanishes,
+  leaving the matching `B`-succedent premise). The engine's current Rep-reduce is the IDENTITY here
+  (`tpReduce_isymRep`), so it STALLS instead of eliminating the axiom-cut. **Fix = extend `red` to reduce the
+  axiom-cut** (when `permIdx` selects a genuine axiom `B→B`, splice in the matching `B`-succedent premise and
+  drop the cut), guaranteeing progress. This is the "find+reduce the lowest cut" redesign from laps 104/107,
+  now pinned to the precise mechanism (axiom-cut not eliminated). Selection-refinement alone (skip atoms) is
+  INSUFFICIENT — the B-cut must still be reduced. An M2 orbit-invariant (axiom-free spine) is fragile (a B→B
+  axiom is a normal sub-derivation, hard to exclude globally). PROBE whether `ZRegular w` constrains it, but
+  expect the axiom-cut reduction to be the real fix.
 - **(B) no cut-free `∅→⊥`:** standard; only needed if (A) routes through "cut-free" rather than direct
   sequent-shape absurdity.
 - **(C) descent-internalization:** `gentzenDescentφ` as the real Σ₁ graph of `n ↦ iord(red^[n] z)`. Probably

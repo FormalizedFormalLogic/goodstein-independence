@@ -155,6 +155,31 @@ has been deferred since lap 104. It is time to answer it.
 
 ---
 
+## 4b. Post-synthesis scouting on (A) — kernel-grounded: the VACUITY route fails, the fix is axiom-cut elimination.
+
+After committing the synthesis I scouted (A) in the engine. The hoped-for "vacuity" resolution (§3.1) is
+**refuted by the definitions**:
+- Cor 2.1 (`tp_selected_isymRep_of_emptyAnt_botSucc`, `InternalZ:7593`) forces the selected premise to be
+  `tp = isymRep`; atom & `zAx1` qualify (axAll/axNeg are already vacuous since `tp = isymLk ≠ isymRep`).
+- Leaf-soundness (`zTag_reducible_of_emptyAnt` / `zTag_Ind_or_K_of_ZDerivesEmpty`, `InternalZ:8377/8480`)
+  excludes axiom leaves with **empty** antecedent. But the selected premise has its own sequent `sᵢ`, and
+  `isChainInf` (`InternalZ:1177`) permits premise antecedents to contain CUT formulas:
+  `∀ B, inAnt B (chainAnt ds i) → inAnt B (seqAnt s) ∨ ∃ i'<i, B = chainAsucc ds i'`. With `seqAnt s = ∅`,
+  premise antecedents are exactly the `chainAsucc` (cut) formulas.
+- Hence a selected atom `zAtom sᵢ` can be a **valid axiom `B→B`** (`seqAnt sᵢ = {B}`, `seqSucc sᵢ = B =
+  chainAsucc`), satisfying atom-validity `inAnt (seqSucc sᵢ) (seqAnt sᵢ)`. Its antecedent is NOT forced
+  empty. **The stall is genuinely reachable in the engine's type system; `false_of_ZDerivesEmpty` is
+  unprovable as the engine stands.**
+
+**This sharpens the finding from "possibly false" to "kernel-confirmed reachable," and identifies the
+faithful fix:** a selected axiom premise `B→B` is a cut **against an axiom**, which Gentzen ELIMINATES
+(the cut vanishes, leaving the matching `B`-succedent premise). The engine's Rep-reduce is the IDENTITY
+there (`tpReduce_isymRep`), so it stalls. The fix is to **extend `red` to reduce axiom-cuts** — exactly the
+laps-104/107 "find+reduce the lowest cut" redesign, now pinned to the precise mechanism (axiom-cut not
+eliminated). Selection-refinement alone is insufficient (the B-cut must still be reduced); an M2 atom-free
+orbit invariant is fragile. So the next lap is not a quick lemma but a contained engine addition (the
+axiom-cut reduction), and it is the genuine remaining content of crux-2's termination.
+
 ## 5. Pacing / meta.
 
 Laps 104/107 diagnosed the stall; laps 108–119 built around it (real inversion progress) without
