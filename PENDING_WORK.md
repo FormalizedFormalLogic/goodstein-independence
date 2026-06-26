@@ -1,6 +1,35 @@
 # Pending work — open obligations & attack paths
 
-## lap 139 (latest) — critical-cut half-derivation layer made PAIR-PARAMETRIC (dissolves the tag-5/6 engine re-key)
+## lap 140 (latest) — ALTITUDE REVIEW: directive corrected + `descent_step_K_majorIdx` DECOMPOSED by tag
+**Build 🟢 1326. Headline footprint UNCHANGED** (`[propext, sorryAx, Classical.choice, Quot.sound]`, 0 math axioms;
+`goodsteinSentence_faithful` clean). Commit covers the review (DIRECTION/STATUS) + the decomposition.
+
+### Review outcome — lap-137 directive was materially STALE; corrected in `DIRECTION.md` (lap-140)
+- Orbit (B)/(B0) it called "the load-bearing neglected piece" = **DONE** (lap 138, `exists_sigma1_iterate`/`IIter`).
+- The `redLeast` μ-min route it mandated for (A) = **REFUTED** (lap 139, wrong-polarity witness bound).
+- ⟹ the WHOLE crux-2 termination collapses to ONE lemma `descent_step_K_majorIdx`: M3 `false_of_ZDerivesEmpty`
+  sorry-free given `InternalPRWO V` + bare-∃ step; orbit proven; (A) folds in via the concrete `redStep`.
+- Repetition/crux-neglect check: laps 135→139 are CONVERGING (135 spike, 136 `iIndReductSeqG`, 137 type-fix+
+  decompose, 138 orbit, 139 pair-parametric layer), not fixating. Yellow flag = lap-139 dropped no src sorry.
+
+### THE advance this lap — `descent_step_K_majorIdx` decomposed into 4 per-tag named src sub-`sorry`s
+`majorPrem_tag_mem` (tag ∈ {3,4,5,6}) drives a sorry-FREE dispatcher onto:
+- **`descent_step_K_tag3`** (Ind) — reduct = corrected `iIndReductSeqG`; residual = `isChainInf_iIndReductSeqG`
+  (assemble via `isChainInf_of_last`, readouts banked; pin `t=t'+1`-vs-`numeral k` exit subtlety FIRST).
+- **`descent_step_K_tag4`** (chain) — relocated structural `<`-recursion into the sub-K-chain. Deep core.
+- **`descent_step_K_tag5`** (∀-axiom) — principal `(i',majorIdx)` cut, `i'` = `majorPrem_zAxAll_cutPartner`;
+  build on `_at` halves (`haux0_at`/`haux1_at`). Residual = cutPartner is a PRINCIPAL R-intro (`znth ds i'=zIall…`).
+- **`descent_step_K_tag6`** (¬-axiom) — dual; `majorPrem_zAxNeg_cutPartner` + `_neg_at` halves.
+
+### NEXT (hardest-first, per DIRECTION.md lap-140) — ASSEMBLE a banked sub-piece to a DROP, don't bank more
+1. **tag-5**: assemble explicit-pair `iCritReductG` soundness from the `_at` halves via `ZDerivation_iCritReductG_of`
+   directly (NOT `iRcritG`, which bakes `redexI/redexJ`); thread the cut-rank drop. Then attack the genuine residual
+   `cutPartner i' is a principal R-intro` (Buchholz criticality — the R-side of the principal cut IS the I-rule
+   introducing the cut formula; thread via `isChainInf` from the cutPartner's succedent `^∀p` back to its zIall intro).
+2. **tag-3**: assemble `isChainInf_iIndReductSeqG` (lap-138 NEXT, readouts banked; exit subtlety pinned first).
+⚠️ Forbidden: `redLeast`/μ for (A); engine re-key of `red`/`redexI`/`redexJ`; `red dⱼ` single-replace for tag-3.
+
+## lap 139 — critical-cut half-derivation layer made PAIR-PARAMETRIC (dissolves the tag-5/6 engine re-key)
 **Build 🟢 1326. Headline footprint UNCHANGED.** 3 green commits (`bde9e72`→`a4076c6`→`d5e9e44`). **No src sorry
 dropped — none was feasible.** Advance = a structural unlock + the decisive primary/secondary reconciliation.
 

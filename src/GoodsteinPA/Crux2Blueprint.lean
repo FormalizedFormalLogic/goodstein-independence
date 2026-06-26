@@ -1752,20 +1752,74 @@ theorem descent_K_majorIdx_Ind_descends {s r ds : V}
     · rw [heq] at hind; simp at hind
   exact iord_descent_zK_replace_explicit hds hmem hmlt hIH
 
-/-- **NAMED sub-`sorry` #1 — the per-step K-case math.** A regular `∅→⊥` K-node has a SOUND, strictly-
-`iord`-descending reduct. Dispatch on the faithful major premise `dⱼ = znth ds (majorIdx (zK s r ds))`
-(BANKED `majorIdx_botOrbit_reducible`: in range, succedent `⊥`, `zTag ∉ {0,7}`, so `∈{3,4,5,6}`):
-* **tag 3 (Ind)** — replace `dⱼ ↦ red dⱼ`; DESCENT is `descent_K_majorIdx_Ind_descends` (proven above);
-  residual = the soundness witness (`zKValidF_iIndReduct_of_zInd` + replace-preservation).
-* **tag 5/6 (∀/¬-axiom)** — the PRINCIPAL CUT at `(i', majorIdx)` with `i'` the upstream R-intro PINNED by
-  `majorPrem_zAx{All,Neg}_cutPartner` (BANKED); `iRKcCrit`-style, soundness = the shared `hAll` bridge.
-* **tag 4 (chain)** — the relocated structural `<`-recursion (generalized over premises w/ non-empty
-  antecedent). The deep core. -/
+/-! ### `descent_step_K_majorIdx` — DECOMPOSED by major-premise tag (lap 140)
+
+`majorPrem_tag_mem` (`InternalZ`) proves the faithful major premise `dⱼ = znth ds (majorIdx (zK s r ds))` of a
+regular `∅→⊥` K-node has `zTag ∈ {3,4,5,6}` (the `{0,7}` atom/`Ax¹` leaves never stall it; `{1,2}` R-intro
+succedents are `≠ ^⊥`). Each tag is a structurally-distinct reduct + soundness, so the single fat per-step
+`sorry` splits into four independently-attackable per-tag obligations (RAISES src count = progress). The
+dispatcher `descent_step_K_majorIdx` below is sorry-FREE — it is pure `rcases` plumbing on the four. -/
+
+/-- **tag-3 (Ind major premise).** `dⱼ = zInd …`. The genuine reduct is the lap-136 *corrected substituted
+chain* `iIndReductSeqG d0 d1 a k` (NOT the `red dⱼ` single-replace witness — that is the ordinal-shadow FALSE
+sorry, lap-138: `zKValidF_iIndReduct_of_zInd` is false-at-degenerate). DESCENT of the `seqUpdate`-replace is
+`descent_K_majorIdx_Ind_descends` (proven). RESIDUAL = the chain VALIDITY `isChainInf_iIndReductSeqG` (assemble
+via `isChainInf_of_last`, readouts banked; ⚠️ pin the `t=t'+1`-vs-`numeral k` exit subtlety first, lap-138). -/
+theorem descent_step_K_tag3 {s r ds : V}
+    (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
+    (hsa : ZSeqAnt (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 3) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+
+/-- **tag-4 (chain major premise).** `dⱼ = zK …` — a sub-K-chain whose succedent is `^⊥`. The relocated
+structural `<`-recursion (Buchholz: recurse into the sub-chain, generalized over premises with non-empty
+antecedent). The deep structural core; the recursion's well-foundedness is `iord`-descent on the sub-chain. -/
+theorem descent_step_K_tag4 {s r ds : V}
+    (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
+    (hsa : ZSeqAnt (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 4) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+
+/-- **tag-5 (∀-axiom major premise).** `dⱼ = zAxAll …` (`Ax^k_{∀p}`, a `red`-FIXPOINT). The faithful reduct is
+the PRINCIPAL `(R,L)` CUT at `(i', majorIdx)` where `i' < majorIdx` is the upstream R-introduction of `∀p`,
+PINNED by `majorPrem_zAxAll_cutPartner` (banked, `InternalZ:9217`). Built `iCritReductG`-style on the
+pair-parametric `_at` half-layer (lap-139: `haux0_at`/`haux1_at` + `cutFormulaAt`). RESIDUAL = the cutPartner
+`i'` is a PRINCIPAL R-intro of `∀p` (`znth ds i' = zIall …`), not merely a premise with succedent `^∀p`
+(Buchholz criticality — the deep tag-5/6 gap). -/
+theorem descent_step_K_tag5 {s r ds : V}
+    (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
+    (hsa : ZSeqAnt (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 5) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+
+/-- **tag-6 (¬-axiom major premise).** `dⱼ = zAxNeg …` (`Ax^k_{¬p}`, a `red`-FIXPOINT). Dual to tag-5: the
+PRINCIPAL `(R,L)` CUT at `(i', majorIdx)` with `i'` the upstream R-introduction of `inegF p`, PINNED by
+`majorPrem_zAxNeg_cutPartner` (banked, `InternalZ:9245`); built on the `_neg` `_at` halves (`haux0_neg_at`/
+`haux1_neg_at`). RESIDUAL = the cutPartner is a PRINCIPAL R-intro of `¬p` (`znth ds i' = zIneg …`). -/
+theorem descent_step_K_tag6 {s r ds : V}
+    (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
+    (hsa : ZSeqAnt (zK s r ds))
+    (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V))
+    (htag : zTag (znth ds (majorIdx (zK s r ds))) = 6) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+
+/-- **NAMED sub-`sorry` #1 — the per-step K-case math, now a sorry-FREE tag-DISPATCHER (lap 140).** A regular
+`∅→⊥` K-node has a SOUND, strictly-`iord`-descending reduct. Dispatches on the faithful major premise tag
+`∈ {3,4,5,6}` (`majorPrem_tag_mem`) to the four per-tag obligations above. The deep content now lives in the
+four `descent_step_K_tag{3,4,5,6}` leaves; this theorem is pure plumbing. -/
 theorem descent_step_K_majorIdx {s r ds : V}
     (hZ : ZDerivation (zK s r ds)) (hreg : ZRegular (zK s r ds)) (hfr : ZFresh (zK s r ds))
     (hsa : ZSeqAnt (zK s r ds))
     (hant : seqAnt s = (∅ : V)) (hsucc : seqSucc s = (^⊥ : V)) :
-    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := sorry
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 := by
+  rcases majorPrem_tag_mem hZ hant hsucc with h3 | h4 | h5 | h6
+  · exact descent_step_K_tag3 hZ hreg hfr hsa hant hsucc h3
+  · exact descent_step_K_tag4 hZ hreg hfr hsa hant hsucc h4
+  · exact descent_step_K_tag5 hZ hreg hfr hsa hant hsucc h5
+  · exact descent_step_K_tag6 hZ hreg hfr hsa hant hsucc h6
 
 /-- **(E') the existence-form one-step descent.** Every regular ⊥-orbit code has a sound, strictly-
 descending reduct — Ind root PROVEN (`iord_descent_red_zInd`), K root reduces to `descent_step_K_majorIdx`.
