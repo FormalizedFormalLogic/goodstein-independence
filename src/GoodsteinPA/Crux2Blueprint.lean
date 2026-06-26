@@ -2117,6 +2117,127 @@ theorem descent_step_K_critical {s r ds : V}
   · exact descent_step_K_critical_all hd hcrit ⟨sᵢ, a, p, d0, hdi⟩
   · exact descent_step_K_critical_neg hd hcrit ⟨sᵢ, p, d0, hdi⟩
 
+/-! ### Decoupling the redex machinery from CRITICALITY (lap 147)
+
+The `iRKcCrit` soundness/descent/invariants are ALL criticality-free given the redex data (verified:
+`ZDerivation_iRKcCrit_all`/`_neg_botOrbit` take only redex+threading+`ZFresh`; `iord_descent_iRcrit_of_redex`
+takes redex existence; `ZRegular/ZFresh/ZSeqAnt_iRKcCrit` take the redex data). Criticality is consumed in
+EXACTLY one place — `isRedexPair_redexCode_of_zKValid` → `inference_critical_pair_of_chain` — to PROVE a redex
+exists. These lemmas supply that existence from a concrete redex pair instead, so the whole critical-reduct
+engine becomes available to ANY chain with a redex (in particular the non-critical `axMajor` sub-case, whose
+cut-partner `(i′, majorIdx)` IS a redex pair when `i′` directly R-introduces the cut formula). -/
+
+/-- **Decoupled redex finder** — `redexCode` lands on a redex whenever ONE exists in range, no criticality. -/
+lemma isRedexPair_redexCode_of_exists {s r ds : V}
+    (hex : ∃ c < (⟪lh ds, lh ds⟫ : V), isRedexPair ds c) :
+    isRedexPair ds (redexCode (zK s r ds)) := by
+  obtain ⟨c, hclt, hc⟩ := hex
+  have hex' : ∃ c < (⟪lh (zKseq (zK s r ds)), lh (zKseq (zK s r ds))⟫ : V),
+      isRedexPair (zKseq (zK s r ds)) c := by rw [zKseq_zK]; exact ⟨c, hclt, hc⟩
+  simpa only [zKseq_zK] using redexCode_isRedexPair hex'
+
+/-- **The pair-monotone redex bound, criticality-free.** Given the `isChainInf` exit `j0` and ANY in-region
+redex pair `⟪i0, j1⟫` (`i0 < j1 ≤ j0`), the canonical least redex satisfies `redexI < j0` — so the
+`isChainInf` threading/rank up to `j0` restricts to `redexI`. Extracted from `chainInf_redexI_data`'s tail
+(its pair-monotone argument) with the redex SUPPLIED rather than manufactured from criticality. -/
+lemma redexI_lt_of_redexPair {s r ds i0 j1 j0 : V}
+    (hij : i0 < j1) (hj1 : j1 ≤ j0) (hj0 : j0 < lh ds) (hpair : isRedexPair ds (⟪i0, j1⟫ : V)) :
+    redexI (zK s r ds) < j0 := by
+  have hjlt : j1 < lh ds := lt_of_le_of_lt hj1 hj0
+  have hilt : i0 < lh ds := lt_trans hij hjlt
+  have hrc : isRedexPair ds (redexCode (zK s r ds)) :=
+    isRedexPair_redexCode_of_exists ⟨⟪i0, j1⟫, pair_lt_pair hilt hjlt, hpair⟩
+  have hcode_le : redexCode (zK s r ds) ≤ (⟪i0, j1⟫ : V) := by
+    have hm := redexAux_min ds ⟪lh ds, lh ds⟫ ⟪i0, j1⟫ (pair_lt_pair hilt hjlt) hpair
+    simpa [redexCode, zKseq_zK] using hm
+  have hpair_eq : (⟪redexI (zK s r ds), redexJ (zK s r ds)⟫ : V) = redexCode (zK s r ds) :=
+    pair_unpair (redexCode (zK s r ds))
+  have hpair_le : (⟪redexI (zK s r ds), redexJ (zK s r ds)⟫ : V) ≤ ⟪i0, j1⟫ := by
+    rw [hpair_eq]; exact hcode_le
+  have hle_disj : redexI (zK s r ds) ≤ i0 ∨ redexJ (zK s r ds) ≤ j1 := by
+    by_contra h; push_neg at h
+    exact absurd (lt_of_lt_of_le (pair_lt_pair h.1 h.2) hpair_le) (_root_.lt_irrefl _)
+  rcases hle_disj with hle | hle
+  · exact lt_of_le_of_lt hle (lt_of_lt_of_le hij hj1)
+  · exact lt_of_lt_of_le (lt_of_lt_of_le hrc.1 hle) hj1
+
+/-- **Decoupled redex reader** — the `redZKReady_of_zKValid` ∀/¬ disjunction, with the redex EXISTENCE
+supplied as a hypothesis (`hex`) and only the faithful validity `zKValidF` (NO criticality) for the
+formula-hood side-conditions. Identical body to `redZKReady_of_zKValid` modulo the redex source. -/
+lemma redZKReady_of_zKValidF_exists {s r ds : V}
+    (hZ : ZDerivation (zK s r ds)) (hvalidF : zKValidF s r ds)
+    (hex : ∃ c < (⟪lh ds, lh ds⟫ : V), isRedexPair ds c) :
+    redexI (zK s r ds) < redexJ (zK s r ds) ∧ redexJ (zK s r ds) < lh ds ∧
+    ( (∃ sᵢ sⱼ a p pj k' d0,
+        znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0 ∧
+        znth ds (redexJ (zK s r ds)) = zAxAll sⱼ pj k' ∧
+        irk (^∀ pj : V) = irk (cutFormula (zK s r ds)) + 1 ∧
+        seqSucc sⱼ = cutFormula (zK s r ds))
+    ∨ (∃ sᵢ sⱼ p d0,
+        znth ds (redexI (zK s r ds)) = zIneg sᵢ p d0 ∧
+        znth ds (redexJ (zK s r ds)) = zAxNeg sⱼ p ∧
+        cutFormula (zK s r ds) = p ∧ IsUFormula ℒₒᵣ p) ) := by
+  have hrc : isRedexPair ds (redexCode (zK s r ds)) := isRedexPair_redexCode_of_exists hex
+  obtain ⟨hRi, hLj⟩ := redexPair_tp hrc
+  rw [show π₁ (redexCode (zK s r ds)) = redexI (zK s r ds) from rfl] at hRi hLj
+  rw [show π₂ (redexCode (zK s r ds)) = redexJ (zK s r ds) from rfl] at hLj
+  have hIJ : redexI (zK s r ds) < redexJ (zK s r ds) := hrc.1
+  have hJlt : redexJ (zK s r ds) < lh ds := hrc.2.1
+  have hIlt : redexI (zK s r ds) < lh ds := lt_trans hIJ hJlt
+  obtain ⟨_, hmem⟩ := zDerivation_zK_inv hZ
+  have hZi := hmem _ hIlt
+  have hZj := hmem _ hJlt
+  obtain ⟨_, hperm0, _, hf2, _, hf6, _⟩ := hvalidF
+  refine ⟨hIJ, hJlt, ?_⟩
+  rcases zDerivation_isymR_form hZi hRi with ⟨sᵢ, a, p, d0, hdi, hAp⟩ | ⟨sᵢ, p, d0, hdi, hAn⟩
+  · rcases zDerivation_isymLk_form hZj hLj with ⟨sⱼ, pj, hdj, hApj⟩ | ⟨sⱼ, pp, hdj, _, hAnn⟩
+    · left
+      have hpjp : pj = p := by
+        have h : (^∀ p : V) = (^∀ pj : V) := hAp.symm.trans hApj
+        simpa using h.symm
+      have hsf : IsSemiformula ℒₒᵣ 1 p := by
+        rcases tp_isymR_form_wff hZi hRi with ⟨p', hp'eq, hsf'⟩ | ⟨p', hp'eq, _⟩
+        · have h : (^∀ p : V) = (^∀ p' : V) := hAp.symm.trans hp'eq
+          rwa [show p' = p from by simpa using h.symm] at hsf'
+        · exact absurd (hAp.symm.trans hp'eq) (by simp [qqAll, inegF, qqOr])
+      have hChA : chainAsucc ds (redexI (zK s r ds)) = (^∀ p : V) := by
+        have hp := hperm0 _ hIlt
+        rw [hRi, iperm_isymR_iff] at hp
+        exact hp.symm.trans hAp
+      have hcut : cutFormula (zK s r ds) = substs1 ℒₒᵣ
+          (Bootstrapping.Arithmetic.numeral (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) p := by
+        have h := cutFormula_all (d := zK s r ds) (by rw [zKseq_zK]; exact hChA)
+        rwa [zKseq_zK] at h
+      refine ⟨sᵢ, sⱼ, a, p, pj, _, d0, hdi, hdj, ?_, ?_⟩
+      · rw [hpjp, hcut, irk_substs1 hsf (by simp : IsSemiterm ℒₒᵣ 0
+          (Bootstrapping.Arithmetic.numeral (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds)))))) : V)),
+          irk_all hsf.isUFormula]
+      · have hsucc : seqSucc sⱼ = substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral
+            (π₁ (π₂ (tp (znth ds (redexJ (zK s r ds))))))) pj :=
+          (zDerivation_zAxAll_inv (hdj ▸ hZj)).2.2
+        rw [hsucc, hpjp, hcut]
+    · exact absurd (hAp.symm.trans hAnn) (by simp [qqAll, inegF, qqOr])
+  · rcases zDerivation_isymLk_form hZj hLj with ⟨sⱼ, pj, hdj, hApj⟩ | ⟨sⱼ, pp, hdj, _, hAnn⟩
+    · exact absurd (hApj.symm.trans hAn) (by simp [qqAll, inegF, qqOr])
+    · right
+      have hpUf : IsUFormula ℒₒᵣ p := by
+        have h := hf2 _ hIlt (by rw [hdi]; exact zTag_zIneg _ _ _)
+        rwa [hdi, zInegF_zIneg] at h
+      have hppUf : IsUFormula ℒₒᵣ pp := by
+        have h := hf6 _ hJlt (by rw [hdj]; exact zTag_zAxNeg _ _)
+        rwa [hdj, zAxNegF_zAxNeg] at h
+      have hppp : pp = p := by
+        have h : (inegF p : V) = inegF pp := hAn.symm.trans hAnn
+        simp only [inegF, qqOr_inj] at h
+        exact ((neg_inj_iff hpUf hppUf).mp h.1).symm
+      have hChA : chainAsucc ds (redexI (zK s r ds)) = inegF p := by
+        have hpm := hperm0 _ hIlt
+        rw [hRi, iperm_isymR_iff] at hpm
+        exact hpm.symm.trans hAn
+      have hcut : cutFormula (zK s r ds) = p :=
+        cutFormula_neg (d := zK s r ds) hpUf (by rw [zKseq_zK]; exact hChA)
+      exact ⟨sᵢ, sⱼ, p, d0, hdi, hppp ▸ hdj, hcut, hpUf⟩
+
 /-! ### `descent_step_K_majorIdx` — DECOMPOSED critical / non-critical (lap 141, Buchholz §3.2 case 5)
 
 **Reframed from the lap-140 major-premise-tag split** (which walled on tag-5/6 "the major premise's cut
