@@ -2921,16 +2921,61 @@ derivation CODE (Buchholz Theorem 2.1; NOT `iord`-recursion — that is PRWO/Gö
 replace plumbing is now discharged by `descent_step_K_replace`; the lone genuine residual of each is the
 smaller-premise reduct. -/
 
-/-- **The §14.254 chain reduction step (tag-4 `zK`) — NAMED crux sub-`sorry`, with the per-premise IH in
-hand.** A `zK s r ds` chain deriving `Γ→⊥` (`seqSucc s = ⊥`, `Γ = seqAnt s` possibly NONEMPTY),
-regular/fresh/seqAnt, whose EVERY premise `znth ds i` already enjoys the `genReduct_botSucc` conclusion
-when it is itself a `Rep` node (`IH`, the structural-induction hypothesis), has a SAME-end-sequent
-(`fstIdx v = s`) strictly-`iord`-descending regular/fresh/seqAnt `ZDerivation` reduct `v`. This is the
-genuine deep content of Buchholz §14.253-254: dispatch on whether the chain has a redex pair below its
-`isChainInf` ⊥-exit `j0` — has-redex → the criticality-free principal cut (`iRKcCrit`, the `Γ→⊥`
-`ZDerivation`-valued analog of `descent_step_K_hasRedex`); no-redex → reduce the major premise (tags 3/4,
-directly by `IH`) or its upstream `Rep` cut-partner (tags 5/6, via `IH`) and REPLACE it. NOT
-`iord`-recursion (PRWO/Gödel-barred) — the IH descends on the derivation CODE only. -/
+/-- **has-redex leaf of the §14.254 chain reduction (`Γ→⊥`, `iRedDescent`-valued principal cut) — NAMED
+sub-`sorry`.** A `zK s r ds` chain deriving `Γ→⊥` with a redex pair `⟪i0,j1⟫` below its `isChainInf`
+⊥-exit `j0` has the criticality-free principal-cut reduct `iRKcCrit (zK s r ds)` as a SAME-end-sequent
+strictly-descending (`iRedDescent`) regular/fresh/seqAnt `ZDerivation`. The `Γ→⊥` `ZDerivation`/
+`iRedDescent`-valued analog of `descent_step_K_hasRedex` (`:2346`, which is `∅→⊥`/`ZDerivesEmptyR`-valued):
+`ZDerivation_iRKcCrit_all`/`_neg_botOrbit` + `ZRegular/ZFresh/ZSeqAnt_iRKcCrit` are `Γ`-agnostic (the
+`∅`-use there only supplies `Seq (seqAnt s)`, available here from chain validity); the genuinely-new piece
+is the `iRedDescent` BUNDLE form of `iord_descent_iRKcCrit_corr_of_redex`/`_neg_of_redex`. -/
+lemma genReduct_chain_hasRedex {s r ds i0 j1 j0 : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hreg : ZRegular (zK s r ds)) (hfresh : ZFresh (zK s r ds)) (hseqant : ZSeqAnt (zK s r ds))
+    (hsucc : seqSucc s = (^⊥ : V))
+    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
+    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hij : i0 < j1) (hj1 : j1 ≤ j0) (hpair : isRedexPair ds (⟪i0, j1⟫ : V)) :
+    ∃ v, ZDerivation v ∧ ZRegular v ∧ ZFresh v ∧ ZSeqAnt v ∧ fstIdx v = s ∧
+      iRedDescent v (zK s r ds) := by
+  sorry
+
+/-- **no-redex leaf of the §14.254 chain reduction (`Γ→⊥`, recurse via the IH) — NAMED sub-`sorry`.** No
+redex pair below the ⊥-exit `j0`; by `majorPrem_tag_mem` the major premise's tag ∈ {3,4,5,6}. tags 3/4
+(`Rep` major) → reduce the major premise `znth ds (majorIdx …)` directly by the **IH**; tags 5/6 (L-axiom
+major) → identify the upstream `Rep` cut-partner (a tag-3/4 premise) and reduce IT by the IH. Either way,
+REPLACE the reduced premise (the `Γ→⊥` `ZDerivation`/`iRedDescent`-valued analog of `descent_step_K_replace`
+`:2475`, whose `iCritAux`-replace core is `Γ`-agnostic). This is §14.254a/b unified; the IH is exactly the
+structural-induction hypothesis `genReduct_botSucc` supplies for each smaller premise. -/
+lemma genReduct_chain_noRedex {s r ds j0 : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hreg : ZRegular (zK s r ds)) (hfresh : ZFresh (zK s r ds)) (hseqant : ZSeqAnt (zK s r ds))
+    (hsucc : seqSucc s = (^⊥ : V))
+    (hj0 : j0 < lh ds) (hbot0 : chainAsucc ds j0 = (^⊥ : V))
+    (hthread0 : ∀ i ≤ j0, ∀ B, inAnt B (chainAnt ds i) →
+        inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i')
+    (hrank0 : ∀ i < j0, irk (chainAsucc ds i) ≤ r)
+    (hnolow : ¬ ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V))
+    (IH : ∀ i < lh ds, ZRegular (znth ds i) → ZFresh (znth ds i) → ZSeqAnt (znth ds i) →
+        seqSucc (fstIdx (znth ds i)) = (^⊥ : V) →
+        (zTag (znth ds i) = 3 ∨ zTag (znth ds i) = 4) →
+        ∃ v, ZDerivation v ∧ ZRegular v ∧ ZFresh v ∧ ZSeqAnt v ∧
+          fstIdx v = fstIdx (znth ds i) ∧ iRedDescent v (znth ds i)) :
+    ∃ v, ZDerivation v ∧ ZRegular v ∧ ZFresh v ∧ ZSeqAnt v ∧ fstIdx v = s ∧
+      iRedDescent v (zK s r ds) := by
+  sorry
+
+/-- **The §14.254 chain reduction step (tag-4 `zK`) — sorry-FREE DISPATCHER (lap 150), with the per-premise
+IH in hand.** A `zK s r ds` chain deriving `Γ→⊥` (`seqSucc s = ⊥`, `Γ = seqAnt s` possibly NONEMPTY),
+regular/fresh/seqAnt, whose EVERY premise `znth ds i` already enjoys the `genReduct_botSucc` conclusion when
+it is itself a `Rep` node (`IH`, the structural-induction hypothesis), has a SAME-end-sequent (`fstIdx v = s`)
+strictly-`iord`-descending regular/fresh/seqAnt `ZDerivation` reduct `v`. Extracts the `isChainInf` ⊥-exit
+`j0` from chain validity (`Γ`-agnostic), then `by_cases` on a redex pair below `j0`: YES →
+`genReduct_chain_hasRedex` (criticality-free principal cut); NO → `genReduct_chain_noRedex` (recurse the
+major premise / cut-partner via `IH`). The Buchholz §14.253/§14.254 dichotomy, `Γ→⊥` and `iRedDescent`-valued
+— NOT `iord`-recursion (PRWO/Gödel-barred); the IH descends on the derivation CODE only. -/
 lemma genReduct_botSucc_chain {s r ds : V}
     (hZ : ZDerivation (zK s r ds))
     (hreg : ZRegular (zK s r ds)) (hfresh : ZFresh (zK s r ds)) (hseqant : ZSeqAnt (zK s r ds))
@@ -2942,7 +2987,12 @@ lemma genReduct_botSucc_chain {s r ds : V}
           fstIdx v = fstIdx (znth ds i) ∧ iRedDescent v (znth ds i)) :
     ∃ v, ZDerivation v ∧ ZRegular v ∧ ZFresh v ∧ ZSeqAnt v ∧ fstIdx v = s ∧
       iRedDescent v (zK s r ds) := by
-  sorry
+  obtain ⟨j0, hj0, hAj0, hthread0, hrank0⟩ := (zKValidF_of_ZDerivation_zK hZ).1
+  have hbot0 : chainAsucc ds j0 = (^⊥ : V) := hAj0.elim (fun h => h.trans hsucc) id
+  by_cases hlow : ∃ i0 j1, i0 < j1 ∧ j1 ≤ j0 ∧ isRedexPair ds (⟪i0, j1⟫ : V)
+  · obtain ⟨i0, j1, hij, hj1, hpair⟩ := hlow
+    exact genReduct_chain_hasRedex hZ hreg hfresh hseqant hsucc hj0 hbot0 hthread0 hrank0 hij hj1 hpair
+  · exact genReduct_chain_noRedex hZ hreg hfresh hseqant hsucc hj0 hbot0 hthread0 hrank0 hlow IH
 
 /-- **General `Γ→⊥` one-step descending reduct — the §14.254 crux interface, by CODE-RECURSION (lap 150).**
 Any `Rep`-node `ZDerivation d` (tag ∈ {3,4}: a `zInd` or a sub-`zK` chain) deriving `Γ→⊥` with the
