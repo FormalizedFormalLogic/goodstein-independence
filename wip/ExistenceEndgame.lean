@@ -48,6 +48,30 @@ open GoodsteinPA.InternalONote
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
+/-- **K-critical sub-case of (E'), as a PLUMBING assembly of the banked reduct facts.** For a critical
+(`zKCritical`) ⊥-orbit K-node `zK s r ds`, the witness is the genuine cut reduct `iRKcCrit (zK s r ds)`;
+the existence step is `⟨iRKcCrit …, ⟨⟨sound, ∅-ant, ⊥-succ⟩, regular, fresh⟩, descent⟩`. This lemma makes
+that interface EXPLICIT and PROVEN — it shows the K-critical case has NO hidden structural difficulty
+beyond the six already-banked-or-pending suppliers:
+* `hsound : ZDerivation (iRKcCrit …)` — `ZDerivation_iRKcCrit_botOrbit` (`Crux2Blueprint:648`; `hCwff`/
+  `hSeqs` already free at the ⊥-root), modulo `hthread`/`hrank` (from `isChainInf`) + `hAll`/`hNeg`
+  (per-node bundle: `seqSucc sⱼ = cutFormula` now derivable, lap 131; the `Seq(seqAnt)` parts = the
+  `seqAntSeq` fold residual);
+* `hant`/`hsucc` — the reduct keeps the `∅→⊥` conclusion (`fstIdx_red_of_emptyAnt_botSucc`-style);
+* `hreg`/`hfr` — `ZRegular_iRKcCrit` (lap 119) / `ZFresh_iRKcCrit` (lap 128);
+* `hdesc` — `iord_descent_iRKcCrit_corr`/`_neg` (`RedZKDescent:580/597`).
+The lone genuinely-open piece across these is the `seqAntSeq` fold (the lap-131 `Seq(seqAnt sⱼ)`/`(sᵢ)`
+residual), which is a KEEP-list item shared with the engine-swap route. -/
+theorem descent_step_Kcrit_of_bundle {s r ds : V}
+    (hsound : ZDerivation (iRKcCrit (zK s r ds)))
+    (hant : seqAnt (fstIdx (iRKcCrit (zK s r ds))) = (∅ : V))
+    (hsucc : seqSucc (fstIdx (iRKcCrit (zK s r ds))) = (^⊥ : V))
+    (hreg : ZRegular (iRKcCrit (zK s r ds)))
+    (hfr : ZFresh (iRKcCrit (zK s r ds)))
+    (hdesc : icmp (iord (iRKcCrit (zK s r ds))) (iord (zK s r ds)) = 0) :
+    ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord (zK s r ds)) = 0 :=
+  ⟨iRKcCrit (zK s r ds), ⟨⟨hsound, hant, hsucc⟩, hreg, hfr⟩, hdesc⟩
+
 /-- **(E') THE existence-form crux — the UNCONDITIONAL one-step descent.** Every regular ⊥-orbit code
 has a SOUND, strictly-`iord`-descending reduct. There is NO cut-free/fixpoint case to dispatch on:
 
