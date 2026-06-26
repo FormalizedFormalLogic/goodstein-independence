@@ -30,6 +30,26 @@ exit-to-⊥ constraint fights it (you must thread the cut formulas all the way t
 and an atom B→B passes B through without progress). lap-120 asserted "reachable" from a LOCAL type-system
 argument but never exhibited a full valid witness; this is the decisive sub-question.
 
+**LEVER banked (lap 121, 3rd commit): `iord_descent_iRcrit_of_redex`.** The K-cut descent computation
+uses the criticality data (`hwfR/hwfL/hperm/hnperm`) ONLY to run `inference_critical_pair_of_chain` and
+manufacture a redex; the actual ordinal descent (`redexCode → iord_descent_iCritReduct_object`) needs
+just (a) an EXHIBITED redex pair below the finder sentinel, (b) `1 ≤ r`, (c) the six `ρ`-facts. Extracted
+that as `iord_descent_iRcrit_of_redex`; `iord_descent_iRcrit_of_chain'` is now a thin wrapper.
+**Significance:** in the threaded-atom stall, `hnperm` is broken (the atom is permissible ≤ j0), so the
+finder route is blocked — but if the principal-cut redex can be exhibited ANOTHER way, descent still
+fires, IGNORING the atom. So the open core reduces to: *exhibit a `(isymR, isymLk)` redex pair in a
+valid ⊥-chain that has a threaded atom*. Probe `ZRegular`: NEGATIVE — `zReg` is eigenvar-freshness
+(`zRegNext` atom-branch = 0), orthogonal to the atom-stall; regularity does NOT exclude it.
+
+**CONCRETE NEXT-LAP TARGET (sharpened by the lever):** prove a valid ⊥-chain with a threaded
+atom/`zAx1` at index `k ≤ j0` (cut formula `B = chainAsucc i'`, `i' < k`, from `chainAsucc_threaded_of_leaf`)
+contains a genuine `(isymR, isymLk)` redex pair within `0..j0`. If the upstream producer `i'` of `B` is
+an I-rule (`tp = isymR(B)`, B = `∀p`/`¬A` compound), look for the matching `isymLk` consumer of `B`; the
+exit-to-⊥ threading should force one. If found → feed `iord_descent_iRcrit_of_redex` → descent, the atom
+is harmless, STALL DISSOLVED with no engine surgery. If genuinely absent → the atom-removal reduction
+(lexicographic `(iord, length)` measure) is forced. THREE paths: (i) redex-exhibition [above, cheapest];
+(ii) atom-removal reduction + length measure; (iii) re-tag atoms off `isymRep` (deep, wide ripple).
+
 **NEXT-LAP TARGETS (in order):**
 1. **Decide reachability of the threaded-atom-≤-j0 core.** Either (a) prove a valid ⊥-chain's
    first-`isymRep` premise within `0..j0` is reducible (zTag ∈ {3,4}, never atom/`zAx1`) — would DISSOLVE
