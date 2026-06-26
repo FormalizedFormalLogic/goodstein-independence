@@ -603,6 +603,38 @@ theorem ZDerivation_iRKcCrit_of_zKValid {s r ds : V}
     exact ZDerivation_iRKcCrit_neg hZ hIlt hJlt hIJ hdi hdj hcut hd0ant hCwff hSeqs hSeqsi
       hthread hrank (hrank _ hIJ)
 
+/-- **Soundness of the re-keyed reduct from the `isChainInf` TIP data** — the natural interface the chain
+construction supplies. `isChainInf` carries its threading/rank bounded by the distinguished tip `j0` (the
+premise holding the conclusion succedent); this restricts that tip-bounded data down to the `redexJ` bound
+`ZDerivation_iRKcCrit_of_zKValid` consumes, GIVEN the single structural bound `redexJ ≤ j0` (the redex pair
+lies at/below the tip). That bound is the lone remaining structural obligation of the soundness front (it is
+free when the chain carries the last-premise tip `j0 = lh ds − 1`, `isChainInf_of_last`). The per-node
+bundle `hAll`/`hNeg` is unchanged (those facts route through the same tip-threading — see `PENDING_WORK`
+lap-128 late). -/
+theorem ZDerivation_iRKcCrit_of_isChainInf {s r ds j0 : V}
+    (hZ : ZDerivation (zK s r ds))
+    (hvalid : zKValid s r ds)
+    (hfresh : ZFresh (zK s r ds))
+    (hJj0 : redexJ (zK s r ds) ≤ j0)
+    (hthread0 : ∀ i' ≤ j0, ∀ B, inAnt B (chainAnt ds i') →
+        inAnt B (seqAnt s) ∨ ∃ i'' < i', B = chainAsucc ds i'')
+    (hrank0 : ∀ i' < j0, irk (chainAsucc ds i') ≤ r)
+    (hCwff : IsUFormula ℒₒᵣ (cutFormula (zK s r ds)))
+    (hSeqs : Seq (seqAnt s))
+    (hAll : ∀ sᵢ sⱼ a p pj k' d0,
+        znth ds (redexI (zK s r ds)) = zIall sᵢ a p d0 →
+        znth ds (redexJ (zK s r ds)) = zAxAll sⱼ pj k' →
+        maxEigen d0 < a ∧ IsUFormula ℒₒᵣ p ∧ seqSucc sⱼ = cutFormula (zK s r ds) ∧ Seq (seqAnt sⱼ))
+    (hNeg : ∀ sᵢ sⱼ p d0,
+        znth ds (redexI (zK s r ds)) = zIneg sᵢ p d0 →
+        znth ds (redexJ (zK s r ds)) = zAxNeg sⱼ p →
+        seqAnt (fstIdx d0) = seqCons (seqAnt sᵢ) p ∧ Seq (seqAnt sᵢ)) :
+    ZDerivation (iRKcCrit (zK s r ds)) :=
+  ZDerivation_iRKcCrit_of_zKValid hZ hvalid hfresh hCwff hSeqs
+    (fun i' hi' => hthread0 i' (le_trans hi' hJj0))
+    (fun i' hi' => hrank0 i' (lt_of_lt_of_le hi' hJj0))
+    hAll hNeg
+
 /-- **5.1 critical sub-residual — THE cut-elimination prize.** When the chain is critical, `red = iRcritG
 d ρ` with `ρ` the recursive premise reducts; delegates to `ZDerivation_iRcritG_of`, which reduces it to the
 two stripped half-derivations `haux0` (`Γ → cutFormula d`) / `haux1` (Buchholz Thm 3.4(a) inversion).
