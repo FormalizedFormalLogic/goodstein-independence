@@ -1666,18 +1666,45 @@ theorem exists_sigma1_descending_step
     ∃ g : V → V, (𝚺₁-Function₁ g) ∧
       (∀ w : V, ZDerivesEmptyR w → ZDerivesEmptyR (g w) ∧ icmp (iord (g w)) (iord w) = 0) := sorry
 
-/-- **(B) NAMED sub-`sorry` (lap 137) — the internal `𝚺₁` ORBIT of a descending step.** Given a total
-`𝚺₁` step `g` that descends on `ZDerivesEmptyR`, build the `𝚺₁` `ε₀`-descent. Construction (mirror
-`zRegTable`, `Zsubst:1264`): `redOrbit z : V → V`, `redOrbit z n := g^[n] z`, via a `PR.Construction`
-(`zero := z`, `succ := g`) — a course-of-values recursion over internal `n : V`; then `f n := iord (redOrbit z n)`.
-`f` is `𝚺₁` (`iord ∘ 𝚺₁`); NF via `isNF_iotower`+`isNF_iotil_of_ZDerivation` (each orbit point is
-`ZDerivesEmptyR` ⟹ `ZDerivation`, by `𝚺₁`-induction with `hg_step`); descends by `hg_step` at each point.
-This internalizes the EXTERNAL-ℕ `iord_iR2_iterate_descends` (`InternalZ:9816`) over internal `n : V`. -/
+/-- **(B0) NAMED sub-`sorry` (lap 137) — the reusable internal-iteration linchpin.** Any `𝚺₁`-definable
+`g : V → V` has a `𝚺₁`-definable internal iteration `orbit : V → V` with `orbit 0 = z`, `orbit (n+1) = g (orbit n)`
+over INTERNAL `n : V`. (META `Function.iterate` only takes `n : ℕ`; the internal `n : V` orbit is a
+`PR.Construction` — `iotower`/`zRegTable` template, `Blueprint 1` param `z`, `succ := g`, the `succ`
+Semisentence obtained from `hg`.) This is the genuine Foundation-level gap of the termination internalization;
+once banked it serves any descending step from (A). -/
+theorem exists_sigma1_iterate (g : V → V) (hg : 𝚺₁-Function₁ g) (z : V) :
+    ∃ orbit : V → V, (𝚺₁-Function₁ orbit) ∧ orbit 0 = z ∧ (∀ n : V, orbit (n + 1) = g (orbit n)) := sorry
+
+/-- **(B) the internal `𝚺₁` ORBIT of a descending step → the `𝚺₁` `ε₀`-descent** — now a composition of the
+iteration linchpin (B0) with `𝚺₁`-induction. Given a total `𝚺₁` step `g` descending on `ZDerivesEmptyR`,
+`f n := iord (orbit n)` is `𝚺₁`, NF (`isNF_iotower`+`isNF_iotil_of_ZDerivation`, each orbit point a
+`ZDerivation`), and `icmp`-descends (`hg_step` at each point). Membership `∀ n, ZDerivesEmptyR (orbit n)` is
+internal `𝚺₁`-induction. This internalizes the EXTERNAL-ℕ `iord_iR2_iterate_descends` (`InternalZ:9816`). -/
 theorem exists_sigma1_descent_of_sigma1_step
     {z : V} (hz : ZDerivesEmptyR z) (g : V → V) (hg : 𝚺₁-Function₁ g)
     (hg_step : ∀ w : V, ZDerivesEmptyR w → ZDerivesEmptyR (g w) ∧ icmp (iord (g w)) (iord w) = 0) :
     ∃ f : V → V, (𝚺₁-Function₁ f) ∧ (∀ n : V, isNF (f n)) ∧
-      (∀ n : V, icmp (f (n + 1)) (f n) = 0) := sorry
+      (∀ n : V, icmp (f (n + 1)) (f n) = 0) := by
+  obtain ⟨orbit, horbit, horbit0, horbit_succ⟩ := exists_sigma1_iterate g hg z
+  -- every orbit point is a regular ⊥-derivation (internal 𝚺₁-induction with the descending step)
+  have hmem : ∀ n : V, ZDerivesEmptyR (orbit n) := by
+    have hP : 𝚺₁-Predicate (fun n => ZDerivesEmptyR (orbit n)) := by
+      sorry  -- definability: ZDerivesEmptyR is 𝚫₁, orbit is 𝚺₁ (horbit); composition
+    intro n
+    induction n using ISigma1.sigma1_succ_induction
+    · exact hP
+    case zero => rw [horbit0]; exact hz
+    case succ n ih => rw [horbit_succ]; exact (hg_step (orbit n) ih).1
+  refine ⟨fun n => iord (orbit n), ?_, fun n => ?_, fun n => ?_⟩
+  · -- 𝚺₁-Function₁ (iord ∘ orbit)
+    have : 𝚺₁-Function₁ orbit := horbit
+    sorry  -- definability: composition of iord (𝚺₁) and orbit (𝚺₁)
+  · -- NF: isNF (iord (orbit n)) = isNF (iotower (iotil (orbit n)) (idg (orbit n)))
+    exact isNF_iotower (isNF_iotil_of_ZDerivation _ (hmem n).1.1) _
+  · -- descent: icmp (iord (orbit (n+1))) (iord (orbit n)) = 0
+    show icmp (iord (orbit (n + 1))) (iord (orbit n)) = 0
+    rw [horbit_succ]
+    exact (hg_step (orbit n) (hmem n)).2
 
 /-- **NAMED sub-`sorry` #2′ (lap 137) — the genuine remaining termination content**, now a sorry-FREE
 composition of the descending `𝚺₁` step (A) with the internal `𝚺₁` orbit (B). From the existence step (E'),
