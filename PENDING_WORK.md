@@ -1,5 +1,31 @@
 # Pending work — open obligations & attack paths
 
+## lap 128 (late) — SOUNDNESS FRONT CONSOLIDATED + the plumbing's true shape FOUND
+**Build 🟢 1326.** Landed (all sorry-free, axiom-clean): `ZDerivation_iRKcCrit_all` (∀, freshness from
+orbit) · `ZDerivation_iRKcCrit_neg` (¬) · **`ZDerivation_iRKcCrit_of_zKValid`** (both polarities from chain
+validity — = `ZDerivation_red_zK_crit` minus the engine swap). Its residual = the plumbing bundle
+`hCwff`/`hSeqs`/`hthread`/`hrank`/`hAll`/`hNeg`.
+
+**⭐ FINDING (source-read this lap, sharpens the next attack):** the per-node bundle facts are NOT cheap
+inversions — they are `isChainInf`-consistency facts, the SAME source as threading/rank. Concretely:
+- The axAll node's ZPhi disjunct is `∃ s p k, d = zAxAll s p k ∧ IsUFormula p ∧ inAnt (^∀p) (seqAnt s)` —
+  it does **NOT** pin `seqSucc s = F(k)`. So `hsj : seqSucc sⱼ = cutFormula` (∀ bundle) is a genuine
+  chain-consistency fact: the L-redex's stored succedent matches the cut instance `cutFormula =
+  substs1 (numeral (π₁π₂(tp dⱼ))) p` (`cutFormula` def `InternalZ:6578`, read off `chainAsucc (redexI)` +
+  `tp (redexJ)`). It must come from `isChainInf`'s threading at `redexJ` (the L-redex succedent threads as
+  a chain-Asucc), NOT from the axAll node alone.
+- Likewise `hd0ant` (¬), `Seq (seqAnt sⱼ/sᵢ)`, `hCwff` route through chain validity / premise inversion.
+
+**⟹ next-lap unit (extract EVERYTHING from `isChainInf` at once):** obtain `⟨j0, hj0, hAj0, hchain, hrank⟩`
+from `zKValid`'s `isChainInf`, establish the SINGLE structural bound **`redexJ ≤ j0`** (THE open question;
+likely free if these chains carry the last-premise tip `j0 = lh ds − 1`, cf. `isChainInf_of_last`
+`InternalZ:1208` — check the M2 embedding + reduct constructions for how `isChainInf` is built), then
+`thread_rank_restrict_of_le` (`InternalZ:5112`) gives `hthread`/`hrank` ≤/< `redexJ` directly, and the
+per-node `hsj`/`hd0ant` consistency facts fall out of the same `hchain`/`hAj0` threading data. `hAll`'s
+`maxEigen d0 < a` = `maxEigen_lt_of_regular_zIall` (`Zsubst:1434`) from the orbit `ZRegular`; `IsUFormula p`
+from `zKValid`'s tag-1 wff (`hf1`). Feed all into `ZDerivation_iRKcCrit_of_zKValid` ⟹ `ZDerivation_red_zK_crit`
+(post-swap).
+
 ## lap 128 — `ZFresh_red` PROVEN COMPLETE (red-stability of the freshness invariant)
 **Build 🟢 1326; `ZFresh_red` + the full `zK`-dispatch family axiom-clean `[propext, choice, Quot.sound]` (Zsubst).**
 
