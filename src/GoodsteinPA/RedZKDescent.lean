@@ -432,6 +432,75 @@ theorem iord_descent_iRcritG_critReductCorr {s r ds sᵢ sⱼ a p pj k' d0 : V}
     (fun A h => by rw [h]; exact irk_falsum) rfl hNF
     hbI.otil_lt hbJ.otil_lt hbI.dg_le hbJ.dg_le hbI.nf hbJ.nf
 
+/-- **The ¬-case corrected critical reduct DESCENDS — the `iord_descent_iRcritG_critReductCorr` twin.** For a
+critical cut on `¬A` (R-redex `I¬`, L-redex `axNeg`), the reduct `iRcritGNeg d (critReductNeg d)` strictly
+`≺`-descends below the chain. `iord_descent_iRcrit_of_chain'` reads the supplier through the six per-redex
+bundle facts, here supplied by the ¬ bundles `iRedDescent_zIneg` (R-redex: the `I¬` child `d₀`, õ/dg below
+the rule) and `iRedDescent_zAx1_zAxNeg_gen` (L-redex: the §5 `Ax^1`, `oAtom1 A` below the `axNeg` principal
+`oAtomLk (¬A)`). The ordinal re-point is `iord_iRcritGNeg_eq_iRcrit` — which (unlike the ∀ `iRcritG` twin)
+needs the two reduct folds NF; supplied from the per-entry NF (`hNF` for the unchanged premises, `hbI/hbJ.nf`
+for the two replaced redexes) via `isNF_iseqNaddIdg`. Together with
+`ZDerivation_iRcritGNeg_critReductNeg` (soundness), this is "red preserves valid + descends" for the ¬-case
+corrected reduct — the ¬ twin of the ∀ pair, completing both polarities for the engine re-key's descent. -/
+theorem iord_descent_iRcritGNeg_critReductNeg {s r ds sᵢ sⱼ p d0 : V}
+    (hds : Seq ds) (hmem : ∀ i < lh ds, ZDerivation (znth ds i))
+    (hvalid : zKValid s r ds)
+    (hIlt : redexI (zK s r ds) < lh ds) (hJlt : redexJ (zK s r ds) < lh ds)
+    (hIJ : redexI (zK s r ds) < redexJ (zK s r ds))
+    (hdi : znth ds (redexI (zK s r ds)) = zIneg sᵢ p d0)
+    (hdj : znth ds (redexJ (zK s r ds)) = zAxNeg sⱼ p)
+    (hcut : cutFormula (zK s r ds) = p) (hp : IsUFormula ℒₒᵣ p) :
+    icmp (iord (iRcritGNeg (zK s r ds) (critReductNeg (zK s r ds)))) (iord (zK s r ds)) = 0 := by
+  obtain ⟨hci, hperm0, hnperm0, hf1, hf2, hf5, hf6, _hsucc, _hssf, _hsaf⟩ := hvalid
+  obtain ⟨j0, hj0, hAj0, hchain, hrank⟩ := hci
+  have hwfR : ∀ i ≤ j0, ∀ A, tp (znth ds i) = isymR A → 0 < irk A ∨ False :=
+    fun i hi A h => Or.inl (tp_isymR_pos h (hf1 i (lt_of_le_of_lt hi hj0))
+      (hf2 i (lt_of_le_of_lt hi hj0)))
+  have hwfL : ∀ i ≤ j0, ∀ k A, tp (znth ds i) = isymLk k A → 0 < irk A ∨ (A = (^⊥ : V)) :=
+    fun i hi k A h => Or.inl (tp_isymLk_pos h (hf5 i (lt_of_le_of_lt hi hj0))
+      (hf6 i (lt_of_le_of_lt hi hj0)))
+  have hperm : ∀ i ≤ j0, iperm (tp (znth ds i)) (fstIdx (znth ds i)) :=
+    fun i hi => hperm0 i (lt_of_le_of_lt hi hj0)
+  have hnperm : ∀ i ≤ j0, ¬ iperm (tp (znth ds i)) s :=
+    fun i hi => hnperm0 i (lt_of_le_of_lt hi hj0)
+  have hnf : isNF (iotil (zK s r ds)) :=
+    isNF_iotil_zK hds (fun i hi => isNF_iotil_of_ZDerivation _ (hmem i hi))
+  have hNF : ∀ n, isNF (iotil (znth ds n)) := by
+    intro n
+    rcases lt_or_ge n (lh ds) with hn | hn
+    · exact isNF_iotil_of_ZDerivation _ (hmem n hn)
+    · rw [znth_prop_not (Or.inr hn)]; exact isNF_iotil_zero
+  -- ¬ R-bundle (I¬ child `d0`)
+  have hbI : iRedDescent (critReductNeg (zK s r ds) (redexI (zK s r ds)))
+      (znth ds (redexI (zK s r ds))) := by
+    rw [critReductNeg_redexI (ne_of_lt hIJ), zKseq_zK, hdi, zInegPrem_zIneg]
+    exact iRedDescent_zIneg
+      (isNF_iotil_of_ZDerivation d0 (zDerivation_zIneg_inv (hdi ▸ hmem _ hIlt)).1)
+  -- ¬ L-bundle (§5 axNeg reduct `Ax^1`)
+  have hbJ : iRedDescent (critReductNeg (zK s r ds) (redexJ (zK s r ds)))
+      (znth ds (redexJ (zK s r ds))) := by
+    rw [critReductNeg_redexJ, zKseq_zK, hdj, fstIdx_zAxNeg, hcut]
+    exact iRedDescent_zAx1_zAxNeg_gen hp
+  -- NF of the two reduct folds (the extra obligation of `iord_iRcritGNeg_eq_iRcrit`)
+  have hNFI : isNF (iseqNaddIdg (seqUpdate (zKseq (zK s r ds)) (redexI (zK s r ds))
+      (critReductNeg (zK s r ds) (redexI (zK s r ds))))) := by
+    rw [zKseq_zK]
+    exact isNF_iseqNaddIdg (fun n _ => by
+      rcases eq_or_ne n (redexI (zK s r ds)) with rfl | hne
+      · rw [znth_seqUpdate_self hIlt]; exact hbI.nf
+      · rw [znth_seqUpdate_of_ne hne]; exact hNF n)
+  have hNFJ : isNF (iseqNaddIdg (seqUpdate (zKseq (zK s r ds)) (redexJ (zK s r ds))
+      (critReductNeg (zK s r ds) (redexJ (zK s r ds))))) := by
+    rw [zKseq_zK]
+    exact isNF_iseqNaddIdg (fun n _ => by
+      rcases eq_or_ne n (redexJ (zK s r ds)) with rfl | hne
+      · rw [znth_seqUpdate_self hJlt]; exact hbJ.nf
+      · rw [znth_seqUpdate_of_ne hne]; exact hNF n)
+  rw [iord_iRcritGNeg_eq_iRcrit (zK s r ds) (critReductNeg (zK s r ds)) hNFI hNFJ]
+  exact iord_descent_iRcrit_of_chain' (Tr := fun _ => False) (Fa := fun A => A = (^⊥ : V))
+    hds hnf hj0 hAj0 hchain hrank hwfR hwfL hperm hnperm (fun _ h => h.1)
+    (fun A h => by rw [h]; exact irk_falsum) rfl hNF
+    hbI.otil_lt hbJ.otil_lt hbI.dg_le hbJ.dg_le hbI.nf hbJ.nf
 
 /-- **Chain sub-case, REPLACE dispatch (`dᵢ` a non-critical chain), reduced to the premise IH.** When the
 selected premise `dᵢ = znth ds (permIdx)` is a chain (`zTag = 4`) that is itself non-critical

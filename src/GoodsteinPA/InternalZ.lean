@@ -7850,6 +7850,20 @@ lemma iRedDescent_zAx1_zAxNeg {s p : V} (hp : IsUFormula ℒₒᵣ p) :
     iRedDescent (zAx1 s p) (zAxNeg s p) :=
   ⟨by simp, icmp_iotil_zAx1_zAxNeg hp, isNF_iotil_zAx1 s p⟩
 
+/-- **The CORRECTED critical ¬-L-reduct's descent bundle (sequent-general).** The §5 critical reduct of an
+`axNeg` redex is `zAx1 S C` (succedent-set sequent `S = seqSetSucc sⱼ C`, payload `C = cutFormula d`). Since
+`iRedDescent` reads the reduct/redex only through `iotil (zAx1 S C) = oAtom1 C` and
+`iotil (zAxNeg s C) = oAtomLk (inegF C)` — BOTH independent of the sequents `S`/`s` — the descent bundle
+holds for arbitrary `S`, `s` (the ¬-side twin of `iRedDescent_zAx1_zAxAll_of_irk`, here with payload `= C`
+matching `zAxNeg`'s, so no rank side-condition). This is what the re-keyed `red` (`critReductNeg`) needs on
+the L-side. -/
+lemma iRedDescent_zAx1_zAxNeg_gen {S s p : V} (hp : IsUFormula ℒₒᵣ p) :
+    iRedDescent (zAx1 S p) (zAxNeg s p) := by
+  refine ⟨by simp, ?_, isNF_iotil_zAx1 S p⟩
+  rw [iotil_zAx1, iotil_zAxNeg]
+  have := icmp_iotil_zAx1_zAxNeg (s := S) hp
+  rwa [iotil_zAx1, iotil_zAxNeg] at this
+
 /-- **The CORRECTED critical L-reduct's descent bundle (sequent- and payload-general).** The §5 critical
 reduct of an `axAll` redex is `zAx1 S C` for an arbitrary sequent `S` (the cut-instance-grown antecedent)
 and payload `C` (the cut formula `F(k)`, NOT the open matrix `p`). Since `iRedDescent` reads the reduct only
