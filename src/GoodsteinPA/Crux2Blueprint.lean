@@ -1637,19 +1637,51 @@ theorem ZDerivesEmptyR_descent_step {d : V} (hd : ZDerivesEmptyR d) :
     · simp at htag
     · simp at htag
 
-/-- **NAMED sub-`sorry` #2 — the M3 PRWO plumbing.** Given the existence step, the `𝚺₁` least-witness
-`redLeast d := μ d'. [ZDerivesEmptyR d' ∧ icmp (iord d') (iord d) = 0]` yields an infinite `𝚺₁`-definable
-`iord`-descent (`gentzenDescentφ`), forbidden by `PRWO(ε₀)` (crux 1). The `𝚺₁`-ness is load-bearing
-(`iord` is not internally well-founded in nonstandard `V` — only `𝚺₁` descents are forbidden). This is the
-existing M3 endgame with the iterator `red ↦ redLeast` (reused `wip/GentzenCon` `gentzenDescentφ`/`prwoInstance`). -/
-theorem prwo_forbids_existence_descent
-    (hstep : ∀ d : V, ZDerivesEmptyR d → ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord d) = 0)
-    {z : V} (hz : ZDerivesEmptyR z) : False := sorry
+variable (V) in
+/-- **Internal `PRWO(ε₀)` — the crux-1 deliverable, as an explicit hypothesis (lap 137).** No
+`𝚺₁`-definable internal sequence `f : V → V` of NF (`ε₀`) codes is everywhere strictly `icmp`-descending
+— i.e. there is no infinite `𝚺₁`-definable `ε₀`-descent.
 
-/-- **M3 — the Gentzen `False`, now a sorry-FREE composition** of the existence step (E') with the PRWO
-obligation. (Was a bare `sorry`; the lap-135 PIVOT decomposes it into `descent_step_K_majorIdx` +
-`prwo_forbids_existence_descent`, both named above.) -/
-theorem false_of_ZDerivesEmpty {z : V} (hz : ZDerivesEmptyR z) : False :=
-  prwo_forbids_existence_descent (fun _ hd => ZDerivesEmptyR_descent_step hd) hz
+⚠️ This is **NOT** an `𝗜𝚺₁`/`𝗣𝗔` theorem: it is exactly the PA-unprovable principle `PRWO(ε₀)`. Crux 1
+(`Reduction`/`StdCor34`, Rathjen §3) derives it *from* `V ⊧ γ` (the Goodstein sentence): an everywhere-
+`icmp`-descending `𝚺₁` sequence feeds `bbeta`/`nonterminating_internal` to build a non-terminating
+internal Goodstein run, contradicting `V ⊧ γ`. Threading it as a HYPOTHESIS (not a goal) is what makes
+the termination half provable — see the `⚠️ TYPE-CORRECTED` note on `prwo_forbids_existence_descent`. -/
+def InternalPRWO : Prop :=
+  ∀ f : V → V, (𝚺₁-Function₁ f) → (∀ n : V, isNF (f n)) → ¬ (∀ n : V, icmp (f (n + 1)) (f n) = 0)
+
+/-- **NAMED sub-`sorry` #2′ (lap 137) — the genuine remaining termination content.** From the existence
+step (E'), build a `𝚺₁`-definable infinite `ε₀`-descent. The construction: the `𝚺₁` least-witness
+`redLeast d := μ d'. [ZDerivesEmptyR d' ∧ icmp (iord d') (iord d) = 0]` (well-defined because
+`ZDerivesEmptyR` is `𝚫₁` — `ZDerivation` `𝚫₁`, `ZRegular`/`ZFresh`/`ZSeqAnt` are `zReg`/`zFresh`/`zSeqAnt`
+`= 0` of `𝚺₁`-functions — and `iord` is `𝚺₁`); its internal `𝚺₁` orbit `n ↦ redLeast^[n] z` (course-of-
+values recursion); and `f n := iord (orbit n)`, which is `𝚺₁`, NF (`isNF_iotower`+`isNF_iotil_of_ZDerivation`),
+and `icmp`-descends (`hstep` at each orbit point, kept in `ZDerivesEmptyR` by `ZDerivesEmptyR`-closure).
+This is the V-internal analog of `iord_iR2_iterate_descends` (`InternalZ:9816`) with the EXTERNAL-ℕ
+iteration internalized as a `𝚺₁` graph — exactly the "remaining internalization" that note flags. -/
+theorem exists_sigma1_descent_of_step
+    (hstep : ∀ d : V, ZDerivesEmptyR d → ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord d) = 0)
+    {z : V} (hz : ZDerivesEmptyR z) :
+    ∃ f : V → V, (𝚺₁-Function₁ f) ∧ (∀ n : V, isNF (f n)) ∧
+      (∀ n : V, icmp (f (n + 1)) (f n) = 0) := sorry
+
+/-- **⚠️ TYPE-CORRECTED (lap 137) — the M3 PRWO contradiction, now with the PRWO hypothesis it needs.**
+The lap-135 statement concluded `False` in bare `[V ⊧ₘ* 𝗜𝚺₁]` with NO `PRWO`/`γ` hypothesis — and is
+**UNPROVABLE as so typed**: if it AND `hstep` (= `ZDerivesEmptyR_descent_step`, the per-step cut-reduction
+descent, a genuine `𝗜𝚺₁` fact) were both `𝗜𝚺₁`-provable, then `𝗜𝚺₁ ⊢ ¬∃z, ZDerivesEmptyR z`, i.e.
+`Con(𝗣𝗔)` (via M2 `Z ⊇ 𝗣𝗔`) — Gödel-barred. Since the per-step descent IS `𝗜𝚺₁`, the termination half is
+the one carrying the PA-unprovable strength, which must enter as a hypothesis. Now a sorry-FREE composition
+of `exists_sigma1_descent_of_step` (the `𝚺₁` descent) with `InternalPRWO` (= crux 1's deliverable). -/
+theorem prwo_forbids_existence_descent (hprwo : InternalPRWO V)
+    (hstep : ∀ d : V, ZDerivesEmptyR d → ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord d) = 0)
+    {z : V} (hz : ZDerivesEmptyR z) : False := by
+  obtain ⟨f, hf, hnf, hdesc⟩ := exists_sigma1_descent_of_step hstep hz
+  exact hprwo f hf hnf hdesc
+
+/-- **M3 — the Gentzen `False`, a sorry-FREE composition** of the existence step (E') with the PRWO
+obligation, under the `InternalPRWO` (crux-1/`γ`) hypothesis. (Was a bare `sorry`; lap-135 decomposed it,
+lap-137 type-corrected the PRWO seam — it concluded `False` in bare `𝗜𝚺₁`, which is Gödel-barred.) -/
+theorem false_of_ZDerivesEmpty (hprwo : InternalPRWO V) {z : V} (hz : ZDerivesEmptyR z) : False :=
+  prwo_forbids_existence_descent hprwo (fun _ hd => ZDerivesEmptyR_descent_step hd) hz
 
 end GoodsteinPA.InternalZ
