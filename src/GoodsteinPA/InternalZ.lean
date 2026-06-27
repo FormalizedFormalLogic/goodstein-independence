@@ -3330,6 +3330,66 @@ lemma isNF_iseqNaddIdgAux' {ds : V} (hNF : ∀ n, isNF (iotil (znth ds n))) :
   case zero => rw [iseqNaddIdgAux_zero]; exact isNF_zero
   case succ j ih => rw [iseqNaddIdgAux_succ]; exact isNF_inadd (isNF_omega_pow (hNF j)) _ ih
 
+/-- **Unbounded `≺`-transitivity wrapper** over the bounded `icmp_trans` (bound = `max a (max b c)`). -/
+lemma icmp_lt_trans {a b c : V} (hab : icmp a b = 0) (hbc : icmp b c = 0) : icmp a c = 0 :=
+  icmp_trans (max a (max b c)) a (le_max_left _ _) b (le_trans (le_max_left _ _) (le_max_right _ _))
+    c (le_trans (le_max_right _ _) (le_max_right _ _)) hab hbc
+
+/-- **A finite-head value is `≺` its own ω-power**: `ocExp X = 0` and `X ≠ 0` ⟹ `X ≺ ω^X`. The head
+exponent comparison `icmp 0 X = 0` (`X ≠ 0`) decides the lexicographic `icmp_ocOadd` outright. Used for
+the `oAtomLk C` reduct value (`oAtomLk C = ω^0·m`, finite head). -/
+lemma finHead_lt_omega_pow {X : V} (hX0 : ocExp X = 0) (hXne : X ≠ 0) :
+    icmp X (ocOadd X 1 0) = 0 := by
+  obtain ⟨c, t, rfl⟩ : ∃ c t, X = ocOadd 0 c t :=
+    ⟨ocCoeff X, ocTail X, by rw [← hX0]; exact (ocOadd_destruct hXne).symm⟩
+  rw [icmp_ocOadd, icmp_zero_ocOadd]
+  simp [thenV]
+
+/-- **A finite-head fold-summand value is `≺` the whole `#`-fold.** If a fold entry `znth ds j`
+(`j < lh ds`) has finite-head `õ` value `X = iotil (znth ds j)` (`ocExp X = 0`, `X ≠ 0` — e.g.
+`X = oAtomLk C`), then `X ≺ #_n ω^{õ(znth ds n)}`. The summand `ω^X` rides inside the fold (fold-monotone
+under `inadd`), and `X ≺ ω^X` (`finHead_lt_omega_pow`); `icmp_lt_trans` chains them at each fold step (the
+new summand `ω^{…} ≠ 0` keeps every step strict; only the empty-prefix base is settled by `finHead`). -/
+lemma finHead_iotil_lt_iseqNaddIdg {ds j X : V} (hj : j < lh ds)
+    (hX0 : ocExp X = 0) (hXne : X ≠ 0) (hXval : iotil (znth ds j) = X)
+    (hNF : ∀ n, isNF (iotil (znth ds n))) :
+    icmp X (iseqNaddIdg ds) = 0 := by
+  have hXNF : isNF X := hXval ▸ hNF j
+  have key : ∀ J, j < J → icmp X (iseqNaddIdgAux ds J) = 0 := by
+    intro J
+    induction J using ISigma1.sigma1_succ_induction
+    · definability
+    case zero => intro h; exact absurd h (by simp)
+    case succ J ih =>
+      intro hjJ
+      rw [iseqNaddIdgAux_succ]
+      rcases lt_or_eq_of_le (le_iff_lt_succ.mpr hjJ) with hlt | heq
+      · -- j < J: IH gives `X ≺ Q`; the new summand `R = ω^{õ(znth ds J)}` rides on top, `Q ≼ Q # R`.
+        set Q := iseqNaddIdgAux ds J with hQ
+        set R := ocOadd (iotil (znth ds J)) 1 0 with hR
+        have hQNF : isNF Q := isNF_iseqNaddIdgAux' hNF J
+        have hRNF : isNF R := isNF_omega_pow (hNF J)
+        have hRne : R ≠ 0 := (ocOadd_pos _ _ _).ne'
+        have hQlt : icmp Q (inadd Q R) = 0 := by
+          have h := inadd_left_mono isNF_zero hRNF (icmp_zero_pos hRne) Q hQNF
+          rwa [inadd_zero_right Q hQNF] at h
+        exact icmp_lt_trans (ih hlt) hQlt
+      · -- j = J: the new summand IS `ω^X`; `X ≺ ω^X` and `ω^X ≼ P # ω^X`.
+        subst heq
+        rw [hXval]
+        set P := iseqNaddIdgAux ds j with hP
+        have hPNF : isNF P := isNF_iseqNaddIdgAux' hNF j
+        have hωNF : isNF (ocOadd X 1 0) := isNF_omega_pow hXNF
+        have hXω : icmp X (ocOadd X 1 0) = 0 := finHead_lt_omega_pow hX0 hXne
+        rcases eq_or_ne P 0 with hP0 | hP0
+        · rw [hP0, inadd_zero_left]; exact hXω
+        · have hωle : icmp (ocOadd X 1 0) (inadd P (ocOadd X 1 0)) = 0 := by
+            rw [inadd_comm (ocOadd X 1 0) hωNF P hPNF]
+            have h := inadd_left_mono isNF_zero hPNF (icmp_zero_pos hP0) (ocOadd X 1 0) hωNF
+            rwa [inadd_zero_right (ocOadd X 1 0) hωNF] at h
+          exact icmp_lt_trans hXω hωle
+  exact key (lh ds) hj
+
 /-- **N2, `õ`-side (strict)** — the `#`-fold strictly drops when ONE entry's `õ` strictly drops and the
 rest are unchanged (F1 left-cancel). Generic over `ds`,`ds'`; the strict-drop entry is `i`. -/
 lemma iseqNaddIdgAux_lt_replace {ds ds' i : V}
