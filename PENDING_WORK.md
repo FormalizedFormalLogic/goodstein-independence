@@ -1,5 +1,47 @@
 # Pending work — open obligations & attack paths
 
+## Lap 156 (GRIND) — tag-6 sub-case (a) PROVEN + succedent-threading COLLAPSE wired (leaf chains)
+
+**Executed the lap-155 directive's succedent-threading collapse for BOTH tags. Build 🟢 green (1326);
+headline + `false_of_ZDerivesEmpty` `[propext, sorryAx, choice, Quot.sound]` (0 math axioms) — no drift.**
+
+✅ **tag-6 SUB-CASE (a) PROVEN (`Crux2Blueprint`, commit `51312d2`):** the dual of the lap-155 tag-5(a).
+`zDerivation_zAxNeg_inv` gives BOTH `inegF p' ∈ Γ'` and `p' ∈ Γ'`; thread both via `hthread0`; both in Γ →
+the fresh §5 ¬-axiom `zAxNeg s p'` derives `Γ→⊥` directly (`¬p',p' ∈ Γ ⟹ Γ→anything`), õ-dropping via
+`finHead_iotil_lt_iseqNaddIdg` (`iotil_zAxNeg = oAtomLk(inegF p')`, finite head).
+
+✅ **SUCCEDENT-THREADING COLLAPSE — new reusable lemma + wired (commit `d4ecee7`):**
+`leastSucc_in_ant_or_nonleaf` (`InternalZ:~9065`) — general-Γ analogue of `chainAsucc_threaded_of_leaf`
+that RETURNS the `F ∈ Γ` disjunct (instead of killing it via `seqAnt s = ∅`). The LEAST-indexed premise
+`m ≤ n` concluding cut formula `F` is either a LEAF (succedent in its own antecedent → threads to Γ;
+leastness kills the earlier-premise disjunct) or a NON-LEAF (`zTag ∉ {0,7}`). Wired via the shared
+`collapse` helper inside `genReduct_chain_noRedex`: tag-5 (`F=^∀⊥`) and tag-6 (`F=inegF p'` AND `F=p'`)
+sub-case (b) now COLLAPSE leaf cut-partner chains to Γ → the proven sub-case (a) reduct.
+
+🔻 **`axMajorResidual` (`Crux2Blueprint:~3417`) NARROWED to NON-LEAF PRODUCERS ONLY.** The residual is now:
+a premise `m < jstar` concluding the cut formula `F` with `zTag (znth ds m) ∈ {1,2,3,4,5,6}`. Net sorry
+count still 1→1, open core strictly smaller (leaf chains gone).
+
+**NEXT ATTACK (next lap) — narrow {1,2,3,4,5,6} → {3,4,5,6}, then attack the genuine residual:**
+1. **tag-1 (zIall) producer → `hnolow` redex (the directive's "R-intro→hnolow" step).** A `zIall` at
+   `m < jstar` concluding `F` (so `seqSucc = ^∀p''=F`; for tag-5 `F=^∀⊥` → `p''=⊥`) forms `isRedexPair ds
+   ⟪m,jstar⟫` (`InternalZ:4820`: `π₁(tp(zIall))=0` right-symbol, `π₁(tp(zAxAll/zAxNeg))=1` left-symbol, cut
+   formulas match) → contradicts `hnolow`. Need `tp_zIall`/`tp_zAxAll`/`tp_zAxNeg` + `isymR`/`isymLk` π
+   projections (check existing `redexPair_tp:4891` for the shape). Dispatch on `zDerivation_iff.mp (hmem m)`
+   in the `collapse` non-leaf branch.
+2. **tag-2 (zIneg) producer → succedent mismatch.** `zIneg` succedent is `inegF p'' ≠ ^∀⊥` (tag-5);
+   for tag-6 `F=inegF p'` a `zIneg` concluding it gives `p''=p'` — NOT immediately killed, needs the redex
+   argument too (it's the R¬-intro of `inegF p'`, dual of tag-1).
+3. **the GENUINE residual = tags {3,4,5,6} producers** (zInd/zK/zAxAll/zAxNeg concluding `F`). These
+   genuinely produce `F` (e.g. zAxAll with matrix `^∀⊥` concludes `^∀⊥`; zAxNeg concludes anything) and are
+   NOT killed by `hnolow` (not R-intros). Reducing them = the general-succedent reduction (narrowed
+   `Γ→^∀⊥` / `Γ→inegF p'` targets, the lap-136 wall). **This is the genuine remaining content; closing it
+   DROPS `axMajorResidual`.** A zAxAll producer's active formula `^∀(^∀⊥)` threads via `hthread0 m`, but to
+   a DEEPER formula (rank+1) — the recursion climbs rank toward `r` (bounded), suggesting a well-founded
+   induction on `r − rank`, OR the constructive 2-step `zK` composition reduct (`^∀(^∀⊥)∈Γ ⟹ ^∀⊥ ⟹ ⊥`).
+
+---
+
 ## Lap 155 (GRIND) — DONE: ordinal lemmas + tag-5 sub-case (a) PROVEN; residual = tag-5(b) + tag-6
 
 **Executed the lap-155 course-correction (below) end-to-end for the dominant case. Build 🟢 green (1326);
