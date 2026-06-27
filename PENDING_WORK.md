@@ -16,12 +16,30 @@ premise-inversion (`zDerivation_zK_inv`/`*_zK_premise` at idx 0,1) rather than r
 them from the N1 `iRedDescent` records (`critReductCorr`/`critReductNeg` at redexI/redexJ). `irk C+1 ≤ idg d`
 = `irk_cutFormula_lt` + `r_le_idg_zK`. `Seq (seqAnt s)` = `seq_seqAnt_zK` (lap-152 fold).
 
-**NEXT ATTACK — MASTER KEY #2 `genReduct_chain_noRedex` (`Crux2Blueprint:3294`):** the §14.254 recursion.
-No redex below `j0` ⟹ `majorPrem_tag_mem` ⟹ major tag ∈{3,4,5,6}. Reduce major (3/4) or the upstream Rep
-cut-partner (5/6) by the per-premise IH (which now hands back a `GenReductCert`), re-base as parent cert. The
-cert consumer is banked + validated (`descent_step_K_noncrit_repMajor` →
-`descent_step_K_replace`/`descent_step_K_spliceHalves`). **STEP 0 (do first): verify
-`majorPrem_zAxAll_cutPartner`/`_zAxNeg_cutPartner` exist & are sorry-free** before committing to tag-5/6.
+**SPLICE CORE LANDED (lap 153b):** `certReplace_of_premise_cert` (`Crux2Blueprint:~3290`, axiom-clean) — a
+reduced premise's `GenReductCert` (REPLACE or FLATTEN) → parent `certReplace`, by splicing at `m`
+(`seqUpdate` / `seqInsert` rank `max r (irk C)`). Both keep `fstIdx=s`, lower `õ`, don't raise `idg`. **Γ
+-AGNOSTIC** (`ZDerivation_iCritAux_of`/`isChainInf_seqInsert` never need `seqAnt s=∅`). This is the "doing"
+half of the §14.254 recursion, now banked at the general `Γ→⊥` level. The orbit consumer
+`descent_step_K_noncrit_repMajor` → `descent_step_K_replace`/`_spliceHalves` already validated the cert
+shapes.
+
+**REMAINING WALL — `genReduct_chain_noRedex` (`Crux2Blueprint:~3380`) = the Γ≠∅ major-premise SELECTION.**
+The splice is solved; the open piece is *which* premise to reduce. No redex below `j0` ⟹ major tag ∈{3,4,5,6}
+(`majorPrem_tag_mem`). tags 3/4 (`Rep`): reduce `znth ds (majorIdx)` via IH → `certReplace_of_premise_cert`
+at `m = majorIdx`. tags 5/6 (L-axiom): identify the upstream `Rep` cut-partner i′ via
+`majorPrem_zAxAll_cutPartner`/`_zAxNeg_cutPartner`, reduce IT. **THE BLOCKER:** `majorPrem_tag_mem`,
+`majorIdx_botOrbit_reducible`, and both `*_cutPartner` (all `InternalZ:~9259-9400`) require
+`hant : seqAnt s = ∅`. At `Γ≠∅` a tag-5/6 active formula `V` (`^∀p`/`inegF p`) could be `inAnt V Γ` (a side
+formula threaded from the antecedent) rather than the succedent of an earlier R-intro — so the cut-partner
+disjunct no longer falls out of the threading (cf. `majorPrem_zAxAll_cutPartner` line 9350, which closes the
+`inAnt V ∅` branch by `simp [lh_empty]`).
+**NEXT ATTACK:** generalize the threading conclusion to `inAnt V (seqAnt s) ∨ ∃ i′<j, cut-partner`. In the
+`V ∈ Γ` case the major premise is a NON-principal side-formula axiom — its §14.254 reduct keeps `V` in the
+antecedent (no cut needed); this should reduce to a tag-3/4-style `certReplace` directly (the axiom node's
+own reduct), OR show the `V ∈ Γ` ⊥-orbit case is vacuous/handled by the existing repMajor. Decompose
+`genReduct_chain_noRedex` into the 3/4 branch (DONE-able now via the splice core) + the 5/6 branch (needs the
+generalized cut-partner) as named src sub-`sorry`s next lap.
 
 ## Reflection — 2026-06-27 (lap 152, DEEP REFLECTION; prev altitude lap-143)
 
