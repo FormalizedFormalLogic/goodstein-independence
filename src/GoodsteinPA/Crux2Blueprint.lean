@@ -3376,7 +3376,106 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
         (zTag (znth ds i) = 3 ∨ zTag (znth ds i) = 4) →
         GenReductCert (znth ds i)) :
     GenReductCert (zK s r ds) := by
-  sorry
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  -- Buchholz §14.25 major-premise selection: the LEAST ⊥-exit `jstar ≤ j0`.
+  have hP : 𝚺₁-Predicate (fun j => chainAsucc ds j = (^⊥ : V)) := by definability
+  obtain ⟨jstar, hjstar, hmin⟩ := InductionOnHierarchy.least_number 𝚺 1 hP hbot0
+  have hjle : jstar ≤ j0 := by
+    by_contra h; exact (hmin j0 (not_le.mp h)) hbot0
+  have hjlt : jstar < lh ds := lt_of_le_of_lt hjle hj0
+  have hmemZ : ZDerivation (znth ds jstar) := hmem jstar hjlt
+  have hregm : ZRegular (znth ds jstar) := ZRegular_zK_premise hds hreg hjlt
+  have hfreshm : ZFresh (znth ds jstar) := ZFresh_zK_premise hds hfresh hjlt
+  have hseqantm : ZSeqAnt (znth ds jstar) := ZSeqAnt_zK_premise hds hseqant hjlt
+  have hsucc' : seqSucc (fstIdx (znth ds jstar)) = (^⊥ : V) := hjstar
+  -- The chain is NONEMPTY, so its `õ`-fold is positive — the trivial axiom `zAtom s` (`õ = 0`) strictly
+  -- beats it. This is the engine of the leaf escape: if `⊥ ∈ Γ`, `zAtom s` derives `Γ→⊥` directly.
+  have hNF : ∀ n, isNF (iotil (znth ds n)) := isNF_iotil_znth_of_ZDerivation_zK hZ
+  have hpos : (0 : V) < lh ds := lt_of_le_of_lt zero_le hj0
+  have hposlast : iseqNaddIdg ds ≠ 0 := by
+    show iseqNaddIdgAux ds (lh ds) ≠ 0
+    obtain ⟨M, hM⟩ : ∃ M, lh ds = M + 1 :=
+      ⟨lh ds - 1, (sub_add_self_of_le (pos_iff_one_le.mp hpos)).symm⟩
+    rw [hM, iseqNaddIdgAux_succ]
+    have hg : isNF (iseqNaddIdgAux ds M) := isNF_iseqNaddIdgAux' hNF M
+    have hY : isNF (ocOadd (iotil (znth ds M)) 1 0) := isNF_omega_pow (hNF M)
+    have hkey : icmp (iseqNaddIdgAux ds M)
+        (inadd (iseqNaddIdgAux ds M) (ocOadd (iotil (znth ds M)) 1 0)) = 0 := by
+      have h := inadd_left_mono isNF_zero hY (icmp_zero_ocOadd _ _ _) (iseqNaddIdgAux ds M) hg
+      rwa [inadd_zero_right _ hg] at h
+    intro hzero
+    rw [hzero] at hkey
+    rcases eq_or_ne (iseqNaddIdgAux ds M) 0 with h0 | h0
+    · rw [h0, icmp_zero_zero] at hkey; exact _root_.one_ne_zero hkey
+    · rw [icmp_pos_zero h0] at hkey; exact _root_.two_ne_zero hkey
+  -- §14.254b residual (the ONE open leaf): the L-axiom major premise (tag 5/6, a `red`-FIXPOINT) has its
+  -- active formula `^∀p`/`inegF p` threading to an upstream `Rep` cut-partner `i' < jstar` deriving
+  -- `Γᵢ'→^∀p` (resp. `Γᵢ'→inegF p`) — a `Rep` node because `hnolow` forbids a redex below `j0` (so `i'`
+  -- is NOT a direct R-intro). Reducing it requires the GENERAL-succedent reduction (`genReduct_botSucc`
+  -- generalized off `⊥`): the current IH only reduces `Γ→⊥` nodes, never a `Γ→^∀p` one. Consolidates the
+  -- dual ∀/¬ cases into one disclosed `sorry`; the real fix is the upstream succedent-generalization.
+  have axMajorClose : (zTag (znth ds jstar) = 5 ∨ zTag (znth ds jstar) = 6) →
+      GenReductCert (zK s r ds) := fun _ => sorry
+  -- §14.254 leaf escape: `⊥ ∈ Γ` ⟹ the trivial `Γ→⊥` axiom `zAtom s` is a sound `õ`-dropping reduct.
+  have leafClose : inAnt (^⊥ : V) (seqAnt s) → GenReductCert (zK s r ds) := fun hbotIn =>
+    Or.inl ⟨zAtom s,
+      zDerivation_iff.mpr (Or.inl ⟨s, rfl, by rw [hsucc]; exact hbotIn⟩),
+      zReg_zAtom s, zFresh_zAtom s,
+      (zSeqAnt_zAtom s).trans (seqAntSeqFlag_zK_of_ZSeqAnt hseqant),
+      by rw [fstIdx_zAtom, fstIdx_zK],
+      ⟨by rw [idg_zAtom]; exact zero_le,
+       by rw [iotil_zAtom, iotil_zK s r ds hds]; exact icmp_zero_pos hposlast,
+       by rw [iotil_zAtom]; exact isNF_zero⟩⟩
+  rcases zDerivation_iff.mp hmemZ with
+    ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
+    ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
+    ⟨s', p', k', h, _, _⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C', h, _⟩
+  · -- tag 0 (zAtom): a leaf. Its `⊥`-succedent sits in its own antecedent, and (no earlier ⊥-exit, by
+    -- leastness of `jstar`) threads to `inAnt ⊥ (seqAnt s)` — i.e. `⊥ ∈ Γ`. Then the trivial axiom
+    -- `zAtom s` collapses the chain (`leafClose`). PROVEN at general Γ (Buchholz §14.254 degenerate case).
+    refine leafClose ?_
+    have hin : inAnt (^⊥ : V) (chainAnt ds jstar) := by
+      have hatom := zDerivation_zAtom_inv (h ▸ hmemZ)
+      have hss : seqSucc s' = (^⊥ : V) := by have hc := hsucc'; rwa [h, fstIdx_zAtom] at hc
+      rw [hss] at hatom
+      simpa only [chainAnt, h, fstIdx_zAtom] using hatom
+    rcases hthread0 jstar hjle (^⊥) hin with hh | ⟨i', hi', heq⟩
+    · exact hh
+    · exact absurd heq.symm (hmin i' hi')
+  · -- tag 1 (zIall): succedent `^∀ p'` ≠ `^⊥`, impossible at a ⊥-exit.
+    exfalso
+    have heq : seqSucc s' = (^∀ p' : V) := (zDerivation_zIall_inv (h ▸ hmemZ)).2.1
+    rw [h, fstIdx_zIall, heq] at hsucc'
+    exact qqAll_ne_falsum p' hsucc'
+  · -- tag 2 (zIneg): succedent `inegF p'` ≠ `^⊥`, impossible.
+    exfalso
+    have heq : seqSucc s' = (inegF p' : V) := (zDerivation_zIneg_inv (h ▸ hmemZ)).2.1
+    rw [h, fstIdx_zIneg, heq] at hsucc'
+    exact inegF_ne_falsum p' hsucc'
+  · -- tag 3 (zInd): the major premise is a `Rep` node deriving `Γⱼ→⊥`. §14.254a — REDUCE it by the IH
+    -- and SPLICE into the parent (`certReplace_of_premise_cert`, Γ-general). PROVEN.
+    have htag : zTag (znth ds jstar) = 3 := by rw [h]; simp
+    exact Or.inl (certReplace_of_premise_cert hZ hreg hfresh hseqant hj0 hthread0 hrank0 hbot0
+      hjlt hjle (IH jstar hjlt hregm hfreshm hseqantm hsucc' (Or.inl htag)))
+  · -- tag 4 (zK): the major premise is a sub-chain `Rep` node deriving `Γⱼ→⊥`. §14.254a — REDUCE by the
+    -- IH and SPLICE. PROVEN.
+    have htag : zTag (znth ds jstar) = 4 := by rw [h]; simp
+    exact Or.inl (certReplace_of_premise_cert hZ hreg hfresh hseqant hj0 hthread0 hrank0 hbot0
+      hjlt hjle (IH jstar hjlt hregm hfreshm hseqantm hsucc' (Or.inr htag)))
+  · -- tag 5 (zAxAll): L-axiom `Ax^k_{∀p}` major (`red`-FIXPOINT) → §14.254b cut-partner (`axMajorClose`).
+    exact axMajorClose (Or.inl (by rw [h]; simp))
+  · -- tag 6 (zAxNeg): dual L-axiom `Ax^0_{¬p}` major → §14.254b cut-partner (`axMajorClose`).
+    exact axMajorClose (Or.inr (by rw [h]; simp))
+  · -- tag 7 (zAx1): a leaf (§5 logical axiom, like zAtom); `⊥ ∈ Γ`. Same trivial-axiom collapse. PROVEN.
+    refine leafClose ?_
+    have hin : inAnt (^⊥ : V) (chainAnt ds jstar) := by
+      have hax := zDerivation_zAx1_inv (h ▸ hmemZ)
+      have hss : seqSucc s' = (^⊥ : V) := by have hc := hsucc'; rwa [h, fstIdx_zAx1] at hc
+      rw [hss] at hax
+      simpa only [chainAnt, h, fstIdx_zAx1] using hax
+    rcases hthread0 jstar hjle (^⊥) hin with hh | ⟨i', hi', heq⟩
+    · exact hh
+    · exact absurd heq.symm (hmin i' hi')
 
 /-- **The §14.254 chain reduction step (tag-4 `zK`) — sorry-FREE DISPATCHER (lap 150), with the per-premise
 IH in hand.** A `zK s r ds` chain deriving `Γ→⊥` (`seqSucc s = ⊥`, `Γ = seqAnt s` possibly NONEMPTY),
