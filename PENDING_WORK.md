@@ -1,5 +1,33 @@
 # Pending work — open obligations & attack paths
 
+## Lap 163 (M1b-term) — ⭐⭐⭐ `zDerivation_zAxBot` DROPPED; ZPhi disjunct #9 (zAxBot, tag-8) FULLY WIRED, axiom-clean
+
+**Build 🟢 1326. HEAD `09cd161`.** ONE src sorry dropped on the M1b-term path (Crux2Blueprint 47→46, zero
+added). `zDerivation_zAxBot` = `[propext, Classical.choice, Quot.sound]` (no sorryAx). `false_of_ZDerivesEmpty`
+axioms UNCHANGED `[propext, sorryAx, choice, Quot.sound]` (no drift).
+
+### What landed
+Executed the full ROUTE 2 ripple (the lap-116 `zAx1` precedent, ~150 sites — LARGER than the lap-162
+"~125" estimate, which missed the `rcases hphi` ZPhi-induction sites + the substitution machinery +
+`zsubstNext`/`maxEigen`/`red` recursion-table dispatchers). Added the 9th `ZPhi` disjunct
+`(∃ s, d = zAxBot s ∧ inAnt (^⊥) (seqAnt s))` + `zphi_monotone`/`_strong_finite`/`_iff` + `zblueprint`
+Σ/Π + `zPhi_definable` + `zsubstNext`(faithful tag-8 sequent-subst)+arith + `zDerivation_zAxBot_intro`/
+`_inv` + `red_zAxBot`/`zsubst_zAxBot`/`maxEigen_zAxBot`/`red_zK_fixpoint_of_zAxBot_selected` + ALL
+destructuring/build sites across InternalZ/Zsubst/Crux2Blueprint/RedZKDescent. **`exFalsoClose`
+(`:3501`) is now fully real** → the entire ⊥-exit ex-falso is sorry-free.
+Non-mechanical sites resolved faithfully: `climb_to_rep_producer` carries tag-8 as a producer tag;
+`majorPrem_tag_mem` EXCLUDES a tag-8 ⊥-orbit major via ⊥-rerouting; ex-falso **major** in the dispatch →
+`exFalsoClose`/`leafClose`; ex-falso **producer** → `residual`/`axMajorResidual`.
+
+### 🎯 NEXT — close `genReduct_chain_noRedex`'s `residual` (the other two lap-161 escapes)
+The ⊥-exit ex-falso is DONE. Remaining in `residual`/`axMajorResidual` (`genReduct_chain_noRedex` anySucc
+copy `~:3486`): (i) **C-exit R-intro replay** (tag-1/2 major producing the conclusion `C`, routed to
+`residual` at `:3607`/`:3616`); (ii) **tag-5/6 thread-escape** (the `climb` ESCAPE `^∀`-in-Γ + producer
+landings). Closing both DROPS `genReduct_chain_noRedex_anySucc` (`~:3430`), consumed by
+`axMajorResidual`/`descent_step_K_noncrit_axMajor`. Full detail in `HANDOFF-2026-06-27-lap163.md`.
+
+---
+
 ## Lap 162 (M1b-term, ex-falso ordinal spike) — ⭐ ROUTE 4 REFUTED in-kernel; the directive's ROUTE 2 (`zAxBot`) is REQUIRED
 
 **Build 🟢 (src untouched; spike `wip/ExFalsoOrdinalSpike.lean` compiles, exit 0). `false_of_ZDerivesEmpty`
