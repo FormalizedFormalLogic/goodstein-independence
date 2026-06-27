@@ -3653,7 +3653,11 @@ lemma genReduct_chain_noRedex_anySucc {s r ds j0 : V}
     rcases collapse jstar hjle (inegF p') hin_negp with hΓ_neg | ⟨mn, hmnjs, hCmn, hmn0, hmn7⟩
     · rcases collapse jstar hjle p' hin_p with hΓ_p | ⟨mp, hmpjs, hCmp, hmp0, hmp7⟩
       · exact axNegCloseGen p' jstar hjlt hXval hp6 hΓ_neg hΓ_p
-      · exact residual
+      · -- `inegF p' ∈ Γ`; `p'` threads to a NON-LEAF producer `mp`. If `mp` is a `Rep` (3,4) → reduce it
+        -- (`repProducerClose`); else (axiom/R-intro producer of `p'`) → residual. (lap-164)
+        by_cases hmp34 : zTag (znth ds mp) = 3 ∨ zTag (znth ds mp) = 4
+        · exact repProducerClose mp (le_of_lt (lt_of_lt_of_le hmpjs hjle)) (lt_trans hmpjs hjlt) hmp34
+        · exact residual
     · by_cases h0 : π₁ (tp (znth ds mn)) = 0
       · exact (rightSym_producer_redex (hmem mn (lt_trans hmnjs hjlt)) hjLneg hjlt hjle hmnjs hCmn h0
           hnolow).elim
@@ -4036,7 +4040,11 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
     rcases collapse jstar hjle (inegF p') hin_negp with hΓ_neg | ⟨mn, hmnjs, hCmn, hmn0, hmn7⟩
     · rcases collapse jstar hjle p' hin_p with hΓ_p | ⟨mp, hmpjs, hCmp, hmp0, hmp7⟩
       · exact axNegClose hΓ_neg hΓ_p
-      · exact axMajorResidual
+      · -- `inegF p' ∈ Γ`; `p'` threads to a NON-LEAF producer `mp`. If `mp` is a `Rep` (3,4) → reduce it
+        -- (`repProducerClose`); else (axiom/R-intro producer of `p'`) → residual. (lap-164)
+        by_cases hmp34 : zTag (znth ds mp) = 3 ∨ zTag (znth ds mp) = 4
+        · exact repProducerClose mp (le_of_lt (lt_of_lt_of_le hmpjs hjle)) (lt_trans hmpjs hjlt) hmp34
+        · exact axMajorResidual
     · by_cases h0 : π₁ (tp (znth ds mn)) = 0
       · exact (rightSym_producer_redex (hmem mn (lt_trans hmnjs hjlt)) hjLneg hjlt hjle hmnjs hCmn h0
           hnolow).elim
