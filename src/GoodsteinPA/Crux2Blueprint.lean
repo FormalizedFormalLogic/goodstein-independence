@@ -3428,7 +3428,7 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
   rcases zDerivation_iff.mp hmemZ with
     ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
     ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
-    ⟨s', p', k', h, hp5, hin5, hsucc5⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C', h, _⟩
+    ⟨s', p', k', h, hp5, hin5, hsucc5⟩ | ⟨s', p', h, hp6, hin6, hin6_2⟩ | ⟨s', C', h, _⟩
   · -- tag 0 (zAtom): a leaf. Its `⊥`-succedent sits in its own antecedent, and (no earlier ⊥-exit, by
     -- leastness of `jstar`) threads to `inAnt ⊥ (seqAnt s)` — i.e. `⊥ ∈ Γ`. Then the trivial axiom
     -- `zAtom s` collapses the chain (`leafClose`). PROVEN at general Γ (Buchholz §14.254 degenerate case).
@@ -3491,8 +3491,34 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
          by rw [iotil_zAxAll, ← hXval]; exact hNF jstar⟩⟩
     · -- SUB-CASE (b): the active `^∀⊥` is the succedent of an upstream cut-partner `i' < jstar`. Residual.
       exact axMajorResidual
-  · -- tag 6 (zAxNeg): dual L-axiom `Ax^0_{¬p}` major → §14.254b cut-partner / dual. Residual.
-    exact axMajorResidual
+  · -- tag 6 (zAxNeg): dual L-axiom `Ax^0_{¬p'}` major (`red`-FIXPOINT). `zDerivation_zAxNeg_inv` gives
+    -- BOTH `inegF p' ∈ Γ'` and `p' ∈ Γ'` (no `zAxAllSuccWff`, so no `p=⊥` collapse). Thread BOTH via
+    -- `hthread0`: SUB-CASE (a) `inegF p', p' ∈ Γ` → fresh `zAxNeg s p'` derives `Γ→⊥` directly (the §5
+    -- ¬-axiom: `¬p',p' ∈ Γ ⟹ Γ→anything`), õ-dropping; otherwise → `axMajorResidual` cut-partner.
+    have hXval : iotil (znth ds jstar) = oAtomLk (inegF p') := by rw [h, iotil_zAxNeg]
+    have hin_negp : inAnt (inegF p' : V) (chainAnt ds jstar) := by
+      simpa only [chainAnt, h, fstIdx_zAxNeg] using hin6
+    have hin_p : inAnt p' (chainAnt ds jstar) := by
+      simpa only [chainAnt, h, fstIdx_zAxNeg] using hin6_2
+    rcases hthread0 jstar hjle (inegF p') hin_negp with hΓ_neg | hres_neg
+    · rcases hthread0 jstar hjle p' hin_p with hΓ_p | hres_p
+      · -- SUB-CASE (a): `inegF p' ∈ Γ` AND `p' ∈ Γ`. Reduct = the §5 ¬-axiom `zAxNeg s p'` deriving `Γ→⊥`.
+        refine Or.inl ⟨zAxNeg s p',
+          zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+            ⟨s, p', rfl, hp6, hΓ_neg, hΓ_p⟩))))))),
+          zReg_zAxNeg s p', zFresh_zAxNeg s p',
+          (zSeqAnt_zAxNeg s p').trans (seqAntSeqFlag_zK_of_ZSeqAnt hseqant),
+          by rw [fstIdx_zAxNeg, fstIdx_zK],
+          ⟨by rw [idg_zAxNeg]; exact zero_le,
+           by rw [iotil_zAxNeg, iotil_zK s r ds hds]
+              exact finHead_iotil_lt_iseqNaddIdg hjlt
+                (by simp only [oAtomLk, ocExp_ocOadd]) (by simp only [oAtomLk]; exact (ocOadd_pos _ _ _).ne')
+                hXval hNF,
+           by rw [iotil_zAxNeg, ← hXval]; exact hNF jstar⟩⟩
+      · -- SUB-CASE (b): `p'` is the succedent of an upstream cut-partner `i' < jstar`. Residual.
+        exact axMajorResidual
+    · -- SUB-CASE (b): `inegF p'` is the succedent of an upstream cut-partner `i' < jstar`. Residual.
+      exact axMajorResidual
   · -- tag 7 (zAx1): a leaf (§5 logical axiom, like zAtom); `⊥ ∈ Γ`. Same trivial-axiom collapse. PROVEN.
     refine leafClose ?_
     have hin : inAnt (^⊥ : V) (chainAnt ds jstar) := by
