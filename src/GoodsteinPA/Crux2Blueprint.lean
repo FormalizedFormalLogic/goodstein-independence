@@ -3591,7 +3591,13 @@ lemma genReduct_chain_noRedex_anySucc {s r ds j0 : V}
         · exact residual
     · exact closeZAxNeg m hmj0 hmlt (by rw [h'']; simp)
     · exact absurd (show zTag (znth ds m) = 7 by rw [h'']; simp) hmne7          -- tag 7: PHANTOM (non-leaf)
-    · exact residual                                        -- tag 8 (zAxBot): ex-falso producer
+    · -- tag 8 (zAxBot): ex-falso producer. `⊥ ∈ Γ_m` threads (`collapse`) to `⊥ ∈ Γ` → `exFalsoClose`
+      -- (lap-163, AVAILABLE) or a NON-LEAF earlier ⊥-exit (the narrowed residual). (lap-164)
+      have hbot : inAnt (^⊥ : V) (chainAnt ds m) := by
+        simpa only [chainAnt, h'', fstIdx_zAxBot] using zDerivation_zAxBot_inv (h'' ▸ hmem m hmlt)
+      rcases collapse m hmj0 (^⊥) hbot with hΓ | _
+      · exact exFalsoClose hΓ
+      · exact residual
   -- dispatch on the least-exit major premise `jstar`
   rcases zDerivation_iff.mp hmemZ with
     ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
@@ -3914,7 +3920,13 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
     · -- tag 6 (zAxNeg s'' q): close via the factored helper.
       exact closeZAxNeg m hmj0 hmlt (by rw [h'']; simp)
     · exact absurd (show zTag (znth ds m) = 7 by rw [h'']; simp) hmne7          -- tag 7: PHANTOM (non-leaf)
-    · exact axMajorResidual                                  -- tag 8 (zAxBot): ex-falso producer
+    · -- tag 8 (zAxBot): ex-falso producer. `⊥ ∈ Γ_m` threads (`collapse`) to `⊥ ∈ Γ` → `leafClose` (lap-163
+      -- ex-falso, AVAILABLE) or a NON-LEAF earlier ⊥-exit (the narrowed residual). (lap-164)
+      have hbot : inAnt (^⊥ : V) (chainAnt ds m) := by
+        simpa only [chainAnt, h'', fstIdx_zAxBot] using zDerivation_zAxBot_inv (h'' ▸ hmem m hmlt)
+      rcases collapse m hmj0 (^⊥) hbot with hΓ | _
+      · exact leafClose hΓ
+      · exact axMajorResidual
   rcases zDerivation_iff.mp hmemZ with
     ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
     ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |

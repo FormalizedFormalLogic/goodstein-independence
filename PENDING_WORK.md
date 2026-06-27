@@ -36,9 +36,14 @@ After the narrowing, `axMajorResidual` (⊥) / `residual` (anySucc) are reached 
    ex-falso needed the new `zAxBot` constructor. NOT a quick win.
 
 ### Next attack (ranked)
-- **(a) tag-8 ⊥-producer (item 2)** — restructure `tryProducerClose` as a bounded recursion on the producer
-  index so the earlier-⊥-exit case recurses; the base case is `leafClose` (lap-163). Cheapest path to a real
-  narrowing/possible DROP; reuses only banked machinery.
+- **(a) tag-8 ⊥-producer (item 2)** — PARTIALLY DONE lap-164: the `⊥∈Γ` sub-case now closes directly via
+  `collapse` → `leafClose`/`exFalsoClose` (in both `tryProducerClose` copies). Remaining = the NON-LEAF
+  earlier-⊥-exit sub-case (`collapse`'s `Or.inr`: a non-leaf `m' < m` with `chainAsucc m' = ⊥`). m' has tag
+  ∈ {3,4,5,6,8} (1,2 phantom: R-intro can't produce ⊥); 3,4 → `repProducerClose m'`, 6 → `closeZAxNeg m'`,
+  5 → climb, 8 → recurse. To close it, restructure `tryProducerClose` as a bounded strong-induction-on-`m`
+  recursion (the tag-8/climb-tag-8 cases then recurse on the strictly-smaller `m'`); base = the `⊥∈Γ` close
+  just wired. Also wire the climb→tag-8 landing (`:3904` ⊥ / `:3587` anySucc) the same way (needs the
+  constructor from `h8 : zTag = 8` — use `zDerivation_iff.mp` + tag-8 case, or a `zAxBot_of_tag` helper).
 - **(b) general ∀-instantiation `axAllClose` (item 3)** — generalize `^∀⊥∈Γ→Γ→⊥` to `^∀G∈Γ→Γ→C` (the §5
   L∀-axiom `zAxAll s G-matrix …`), closing the tag-5 climb escape in both copies (shared, like `threadEscapeClose`).
 - **(c) tag-6 partial (item 1)** — the `p'`-doesn't-thread case; check whether `p'` threading to a non-leaf
