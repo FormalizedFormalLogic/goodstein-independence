@@ -1,5 +1,59 @@
 # Pending work — open obligations & attack paths
 
+## Reflection — 2026-06-27 (lap 152, DEEP REFLECTION; prev altitude lap-143)
+
+**Build re-verified 🟢 green (1326). In-kernel: headline `[propext, sorryAx, choice, Quot.sound]` (0 math
+axioms); `goodsteinSentence_faithful` + `peano_not_proves_consistency` `[propext, choice, Quot.sound]`;
+statement re-audited — no drift.** Full write-up: `REFLECTION-2026-06-27-lap152.md`. Binding directive set:
+`DIRECTION.md` CURRENT DIRECTIVE (lap-152).
+
+**Direction call: KEEP** — the existence-form pivot off `red` + the lap-150 code-recursion frame
+`genReduct_botSucc` (the `Γ→⊥` reduction by strong induction on derivation CODE) are both correct and the
+trajectory is healthy. Laps 144→151 are genuine steady crux DROPS (live path off `red` 144; `descent_step_Ind`
+146; §5.2 has-redex 147; tag-3 freshFlag 149; code-recursion frame 150; in-kernel refutation of the
+`seqUpdate` splice + FLATTEN engine `descent_step_K_spliceHalves` + false `descent_step_K_splice` DELETED 151).
+The lap-143 worries (banking-not-wiring, witnessing with `red`) are RESOLVED.
+
+**KEEP doing:** decompose-and-DROP on the crux; in-kernel refutation before grinding a suspect lemma
+(lap-151 model); judge-convergence checks; commit every green build; honest disclosed sorries that RAISE the
+src count when they decompose the crux.
+
+**STOP / watch:**
+- Do NOT attack `descent_step_K_noncrit_axMajor` (`:3226`) standalone — it is the `Γ=∅` special case of
+  `genReduct_chain_noRedex`'s cut-partner branch; attacking it separately re-derives the master-key
+  combinatorics twice.
+- Do NOT attack `gDef` (`:3349`) in parallel — it needs the *constructive* reduct the `GenReductCert`
+  supplies; sequence it AFTER the master keys (μ-min REFUTED lap-139, wrong-polarity totality guard).
+- Do NOT re-introduce the single-premise `seqUpdate`+combined-`iord` splice (refuted in-kernel lap 151).
+- Do NOT witness with `red`; do NOT use `iord`-recursion for the construction; do NOT treat the zSeqAnt fold
+  as engine-work-for-its-own-sake.
+
+**Single highest-value next target: DROP `genReduct_chain_hasRedex` (`Crux2Blueprint:2989`) via the zSeqAnt
+tag-4 `Seq (seqAnt s)` fold.** Change `zSeqAntNext`'s tag-4 branch (`Zsubst:2003`) from
+`if zTag d = 4 then 0 else seqAntSeqFlag (fstIdx d)` to **always** `seqAntSeqFlag (fstIdx d)` — the EXACT shape
+of the proven lap-149 freshFlag fold / lap-146 zIndWff fold. Ripple: (a) body `Zsubst:2003`; (b) `zSeqAntNextDef`
+σ-clause :2012 (drop the `t=4 ∧ fl=0` disjunct → always `fstIdx`+`seqAntSeqFlag`); (c) `zSeqAntNext_defined`
+simp :2021-2023; (d) `zSeqAnt_zK` :2164 + `zSeqAnt_zK_premise_zero`; (e) the ~6 `ZSeqAnt_zK_*`/`_iRKcCrit`/
+`_of_seqInsert` + orbit-build sites that consumed the old tag-4=0 clause. Then `Seq (seqAnt s)` falls out of
+`hseqant` with NO threading; the principal-cut halves' soundness (`ZDerivation_iRKcCrit_all`/`_neg_botOrbit` +
+`ZRegular/ZFresh/ZSeqAnt_iRKcCrit`) closes; `genReduct_chain_hasRedex` returns the FLATTEN cert sorry-free
+(descent is already FREE from `iord_descent_iRKcCrit_corr_of_redex`/`_neg_of_redex`). **THEN**
+`genReduct_chain_noRedex` (the §14.254 recursion via IH + cert re-package; check `majorPrem_zAxAll_cutPartner`/
+`_zAxNeg_cutPartner` exist+sorry-free first). Closing both master keys collapses the outer no-redex path
+(`axMajor` mechanical) and feeds gDef.
+
+**Why this target:** it is the LAST teed-up tractable DROP; it validates the entire `GenReductCert` FLATTEN
+cert machinery end-to-end (exactly as `descent_step_Ind` validated the pivot at lap 146) before the bigger
+`noRedex` recursion; and the two master keys are the highest-leverage move on the board (they collapse three
+of the four open leaves).
+
+**Altitude caution (newly elevated):** M2 — the Foundation→Z bridge — is ~0% built and crux-entangled. Every
+"crux-2 = 4 leaves" statement is scoped to M1b-term (internal termination). After the master keys + gDef land,
+a dedicated lap should scope M2 before declaring the endgame single-front. "Only the crux is left" ≠ "almost
+done."
+
+---
+
 ## lap 151 (latest) — §14.254 splice = FLATTEN not seqUpdate; `descent_step_K_spliceHalves` PROVEN (judge-convergent)
 **Operator SOLE-OBJECTIVE = M1b-term.** This lap settled the §14.254 splice decisively — in-kernel, BEFORE
 grinding the false lemma — and BUILT the genuine engine. The host dropped a fresh judge note
