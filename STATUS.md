@@ -1,7 +1,7 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 149 (FRESH-MIND REVIEW + tag-3 freshFlag DROPPED → crux-2 = 3 disclosed sorryAx leaves; next = the general code-recursion crux) · 2026-06-26
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 151 (§14.254 splice = FLATTEN not seqUpdate; false `descent_step_K_splice` DROPPED via `GenReductCert` replace|flatten; `descent_step_K_spliceHalves` engine PROVEN) · 2026-06-27
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**);
 `goodsteinSentence_faithful` + `peano_not_proves_consistency` axiom-clean. The lone `sorryAx` traces to crux-2.
 
