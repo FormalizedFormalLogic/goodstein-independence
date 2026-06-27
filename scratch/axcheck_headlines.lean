@@ -1,0 +1,10 @@
+import GoodsteinPA.Statement
+import GoodsteinPA.Reduction
+import GoodsteinPA.Bridge
+import GoodsteinPA.Crux2Blueprint
+
+#print axioms GoodsteinPA.Statement.peano_not_proves_goodstein
+#print axioms GoodsteinPA.peano_not_proves_consistency
+#print axioms GoodsteinPA.goodsteinSentence_faithful
+#print axioms GoodsteinPA.InternalZ.false_of_ZDerivesEmpty
+#print axioms GoodsteinPA.peano_not_proves_goodstein
