@@ -3408,14 +3408,13 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
     rcases eq_or_ne (iseqNaddIdgAux ds M) 0 with h0 | h0
     · rw [h0, icmp_zero_zero] at hkey; exact _root_.one_ne_zero hkey
     · rw [icmp_pos_zero h0] at hkey; exact _root_.two_ne_zero hkey
-  -- §14.254b residual (the ONE open leaf): the L-axiom major premise (tag 5/6, a `red`-FIXPOINT) has its
-  -- active formula `^∀p`/`inegF p` threading to an upstream `Rep` cut-partner `i' < jstar` deriving
-  -- `Γᵢ'→^∀p` (resp. `Γᵢ'→inegF p`) — a `Rep` node because `hnolow` forbids a redex below `j0` (so `i'`
-  -- is NOT a direct R-intro). Reducing it requires the GENERAL-succedent reduction (`genReduct_botSucc`
-  -- generalized off `⊥`): the current IH only reduces `Γ→⊥` nodes, never a `Γ→^∀p` one. Consolidates the
-  -- dual ∀/¬ cases into one disclosed `sorry`; the real fix is the upstream succedent-generalization.
-  have axMajorClose : (zTag (znth ds jstar) = 5 ∨ zTag (znth ds jstar) = 6) →
-      GenReductCert (zK s r ds) := fun _ => sorry
+  -- §14.254b residual (lap-155 NARROWED): the tag-5 cut-partner SUB-CASE (b) + all of tag-6. The tag-5
+  -- SUB-CASE (a) (`^∀⊥ ∈ Γ`) is now PROVEN inline (the succedent-threading collapse) via the fresh
+  -- `zAxAll s ⊥ 0` reduct; this sorry covers only: (b) the tag-5 active `^∀⊥` threading to an upstream
+  -- cut-partner `i' < jstar` (a `Rep` node by `hnolow`, NOT a direct R-intro — verified `isRedexPair`
+  -- forbids a `zIall ^∀⊥` below j0), and the tag-6 (`zAxNeg`) dual (which lacks the `zAxAllSuccWff`
+  -- `p=⊥` collapse and needs BOTH `inegF p, p ∈ Γ` threaded). See `DIRECTION.md`/`PENDING_WORK.md` lap-155.
+  have axMajorResidual : GenReductCert (zK s r ds) := sorry
   -- §14.254 leaf escape: `⊥ ∈ Γ` ⟹ the trivial `Γ→⊥` axiom `zAtom s` is a sound `õ`-dropping reduct.
   have leafClose : inAnt (^⊥ : V) (seqAnt s) → GenReductCert (zK s r ds) := fun hbotIn =>
     Or.inl ⟨zAtom s,
@@ -3429,7 +3428,7 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
   rcases zDerivation_iff.mp hmemZ with
     ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
     ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
-    ⟨s', p', k', h, _, _⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C', h, _⟩
+    ⟨s', p', k', h, hp5, hin5, hsucc5⟩ | ⟨s', p', h, _, _⟩ | ⟨s', C', h, _⟩
   · -- tag 0 (zAtom): a leaf. Its `⊥`-succedent sits in its own antecedent, and (no earlier ⊥-exit, by
     -- leastness of `jstar`) threads to `inAnt ⊥ (seqAnt s)` — i.e. `⊥ ∈ Γ`. Then the trivial axiom
     -- `zAtom s` collapses the chain (`leafClose`). PROVEN at general Γ (Buchholz §14.254 degenerate case).
@@ -3462,10 +3461,38 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
     have htag : zTag (znth ds jstar) = 4 := by rw [h]; simp
     exact Or.inl (certReplace_of_premise_cert hZ hreg hfresh hseqant hj0 hthread0 hrank0 hbot0
       hjlt hjle (IH jstar hjlt hregm hfreshm hseqantm hsucc' (Or.inr htag)))
-  · -- tag 5 (zAxAll): L-axiom `Ax^k_{∀p}` major (`red`-FIXPOINT) → §14.254b cut-partner (`axMajorClose`).
-    exact axMajorClose (Or.inl (by rw [h]; simp))
-  · -- tag 6 (zAxNeg): dual L-axiom `Ax^0_{¬p}` major → §14.254b cut-partner (`axMajorClose`).
-    exact axMajorClose (Or.inr (by rw [h]; simp))
+  · -- tag 5 (zAxAll): L-axiom `Ax^{k'}_{∀p'}` major (`red`-FIXPOINT). The ⊥-exit + `zAxAllSuccWff` force
+    -- `p' = ⊥`, so the cut formula is `^∀⊥`. Thread it (`hthread0`): SUB-CASE (a) `^∀⊥ ∈ Γ` → fresh
+    -- `zAxAll s ⊥ 0` derives `Γ→⊥`, õ-dropping (PROVEN); SUB-CASE (b) cut-partner → `axMajorResidual`.
+    have hsucc'' : seqSucc s' = (^⊥ : V) := by have hc := hsucc'; rwa [h, fstIdx_zAxAll] at hc
+    have heq5 : seqSucc s' = substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral k') p' := hsucc5
+    have hp_bot : p' = (^⊥ : V) := eq_falsum_of_substs1_falsum hp5 (heq5.symm.trans hsucc'')
+    have hin_chain : inAnt (^∀ (^⊥) : V) (chainAnt ds jstar) := by
+      rw [hp_bot] at hin5
+      simpa only [chainAnt, h, fstIdx_zAxAll] using hin5
+    rcases hthread0 jstar hjle (^∀ (^⊥)) hin_chain with hΓ | ⟨i', hi', heq⟩
+    · -- SUB-CASE (a): `^∀⊥ ∈ Γ`. Reduct = the ∀-instantiation axiom `zAxAll s ⊥ 0` deriving `Γ→⊥`.
+      have hXval : iotil (znth ds jstar) = oAtomLk (^∀ (^⊥) : V) := by rw [h, iotil_zAxAll, hp_bot]
+      refine Or.inl ⟨zAxAll s (^⊥) 0,
+        zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+          ⟨s, (^⊥ : V), 0, rfl, IsSemiformula.falsum, hΓ,
+            by have hsb : substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral 0) (^⊥ : V) = (^⊥ : V) := by
+                 rw [substs1]; exact substs_falsum _
+               show seqSucc s = substs1 ℒₒᵣ (Bootstrapping.Arithmetic.numeral 0) (^⊥ : V)
+               rw [hsucc]; exact hsb.symm⟩)))))),
+        zReg_zAxAll s (^⊥) 0, zFresh_zAxAll s (^⊥) 0,
+        (zSeqAnt_zAxAll s (^⊥) 0).trans (seqAntSeqFlag_zK_of_ZSeqAnt hseqant),
+        by rw [fstIdx_zAxAll, fstIdx_zK],
+        ⟨by rw [idg_zAxAll]; exact zero_le,
+         by rw [iotil_zAxAll, iotil_zK s r ds hds]
+            exact finHead_iotil_lt_iseqNaddIdg hjlt
+              (by simp only [oAtomLk, ocExp_ocOadd]) (by simp only [oAtomLk]; exact (ocOadd_pos _ _ _).ne')
+              hXval hNF,
+         by rw [iotil_zAxAll, ← hXval]; exact hNF jstar⟩⟩
+    · -- SUB-CASE (b): the active `^∀⊥` is the succedent of an upstream cut-partner `i' < jstar`. Residual.
+      exact axMajorResidual
+  · -- tag 6 (zAxNeg): dual L-axiom `Ax^0_{¬p}` major → §14.254b cut-partner / dual. Residual.
+    exact axMajorResidual
   · -- tag 7 (zAx1): a leaf (§5 logical axiom, like zAtom); `⊥ ∈ Γ`. Same trivial-axiom collapse. PROVEN.
     refine leafClose ?_
     have hin : inAnt (^⊥ : V) (chainAnt ds jstar) := by
