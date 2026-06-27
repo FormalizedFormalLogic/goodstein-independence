@@ -3416,7 +3416,206 @@ lemma genReduct_chain_noRedex_anySucc {s r ds j0 : V}
     (IH : ∀ i < lh ds, ZRegular (znth ds i) → ZFresh (znth ds i) → ZSeqAnt (znth ds i) →
         (zTag (znth ds i) = 3 ∨ zTag (znth ds i) = 4) →
         GenReductCert (znth ds i)) :
-    GenReductCert (zK s r ds) := sorry
+    GenReductCert (zK s r ds) := by
+  obtain ⟨hds, hmem⟩ := zDerivation_zK_inv hZ
+  -- §14.25 major-premise selection, GENERAL succedent: the LEAST exit `jstar ≤ j0`
+  -- (`chainAsucc ds jstar ∈ {seqSucc s, ⊥}`).
+  have hP : 𝚺₁-Predicate (fun j => chainAsucc ds j = seqSucc s ∨ chainAsucc ds j = (^⊥ : V)) := by
+    definability
+  obtain ⟨jstar, hjstar, hmin⟩ := InductionOnHierarchy.least_number 𝚺 1 hP hAj0
+  have hjle : jstar ≤ j0 := by by_contra h; exact (hmin j0 (not_le.mp h)) hAj0
+  have hjlt : jstar < lh ds := lt_of_le_of_lt hjle hj0
+  have hmemZ : ZDerivation (znth ds jstar) := hmem jstar hjlt
+  have hNF : ∀ n, isNF (iotil (znth ds n)) := isNF_iotil_znth_of_ZDerivation_zK hZ
+  have hpos : (0 : V) < lh ds := lt_of_le_of_lt zero_le hj0
+  have hposlast : iseqNaddIdg ds ≠ 0 := by
+    show iseqNaddIdgAux ds (lh ds) ≠ 0
+    obtain ⟨M, hM⟩ : ∃ M, lh ds = M + 1 :=
+      ⟨lh ds - 1, (sub_add_self_of_le (pos_iff_one_le.mp hpos)).symm⟩
+    rw [hM, iseqNaddIdgAux_succ]
+    have hg : isNF (iseqNaddIdgAux ds M) := isNF_iseqNaddIdgAux' hNF M
+    have hY : isNF (ocOadd (iotil (znth ds M)) 1 0) := isNF_omega_pow (hNF M)
+    have hkey : icmp (iseqNaddIdgAux ds M)
+        (inadd (iseqNaddIdgAux ds M) (ocOadd (iotil (znth ds M)) 1 0)) = 0 := by
+      have h := inadd_left_mono isNF_zero hY (icmp_zero_ocOadd _ _ _) (iseqNaddIdgAux ds M) hg
+      rwa [inadd_zero_right _ hg] at h
+    intro hzero
+    rw [hzero] at hkey
+    rcases eq_or_ne (iseqNaddIdgAux ds M) 0 with h0 | h0
+    · rw [h0, icmp_zero_zero] at hkey; exact _root_.one_ne_zero hkey
+    · rw [icmp_pos_zero h0] at hkey; exact _root_.two_ne_zero hkey
+  -- THE genuine general-succedent residual (the new deep content of the anySucc generalization):
+  -- (i) ⊥-exit ex-falso escapes (`⊥∈Γ` / `^∀⊥∈Γ` ⟹ `Γ→C`, no single Z-rule), (ii) C-exit R-intro replay
+  -- (tag-1/2 producing the conclusion succedent `C`), (iii) the tag-5 climb-escape (`^∀G∈Γ`) and the
+  -- tag-6 partial thread. Everything else is WIRED below.
+  have residual : GenReductCert (zK s r ds) := sorry
+  -- §14.254a {3,4}-PRODUCER CLOSE (general IH): a non-leaf `Rep` producer `m ≤ j0` closes by RECURSING
+  -- (the general `IH` on the producer) then SPLICING via the Γ-general, exit-general
+  -- `certReplace_of_premise_cert` (passes the general exit `hAj0`).
+  have repProducerClose : ∀ m, m ≤ j0 → m < lh ds →
+      (zTag (znth ds m) = 3 ∨ zTag (znth ds m) = 4) → GenReductCert (zK s r ds) :=
+    fun m hmj0 hmlt htagm =>
+      Or.inl (certReplace_of_premise_cert hZ hreg hfresh hseqant hj0 hthread0 hrank0 hAj0
+        hmlt hmj0 (IH m hmlt (ZRegular_zK_premise hds hreg hmlt)
+          (ZFresh_zK_premise hds hfresh hmlt) (ZSeqAnt_zK_premise hds hseqant hmlt) htagm))
+  -- C-exit leaf escape: `C = seqSucc s ∈ Γ` ⟹ the trivial `Γ→C` axiom `zAtom s`, õ-dropping.
+  have leafCloseC : inAnt (seqSucc s) (seqAnt s) → GenReductCert (zK s r ds) := fun hCin =>
+    Or.inl ⟨zAtom s,
+      zDerivation_iff.mpr (Or.inl ⟨s, rfl, hCin⟩),
+      zReg_zAtom s, zFresh_zAtom s,
+      (zSeqAnt_zAtom s).trans (seqAntSeqFlag_zK_of_ZSeqAnt hseqant),
+      by rw [fstIdx_zAtom, fstIdx_zK],
+      ⟨by rw [idg_zAtom]; exact zero_le,
+       by rw [iotil_zAtom, iotil_zK s r ds hds]; exact icmp_zero_pos hposlast,
+       by rw [iotil_zAtom]; exact isNF_zero⟩⟩
+  -- §5 ¬-axiom reduct (SUCCEDENT-AGNOSTIC): `inegF q, q ∈ Γ` ⟹ `zAxNeg s q` derives `Γ→C` for ANY `C`,
+  -- õ-dropping (`iotil_zAxNeg`, finite head). Reused by both the tag-6 major and a `zAxNeg` cut-partner.
+  have axNegCloseGen : ∀ q jw, jw < lh ds → iotil (znth ds jw) = oAtomLk (inegF q) →
+      IsUFormula ℒₒᵣ q → inAnt (inegF q : V) (seqAnt s) → inAnt q (seqAnt s) →
+      GenReductCert (zK s r ds) := fun q jw hjw hXq hq hΓ_neg hΓ_p =>
+    Or.inl ⟨zAxNeg s q,
+      zDerivation_iff.mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+        ⟨s, q, rfl, hq, hΓ_neg, hΓ_p⟩))))))),
+      zReg_zAxNeg s q, zFresh_zAxNeg s q,
+      (zSeqAnt_zAxNeg s q).trans (seqAntSeqFlag_zK_of_ZSeqAnt hseqant),
+      by rw [fstIdx_zAxNeg, fstIdx_zK],
+      ⟨by rw [idg_zAxNeg]; exact zero_le,
+       by rw [iotil_zAxNeg, iotil_zK s r ds hds]
+          exact finHead_iotil_lt_iseqNaddIdg hjw
+            (by simp only [oAtomLk, ocExp_ocOadd]) (by simp only [oAtomLk]; exact (ocOadd_pos _ _ _).ne')
+            hXq hNF,
+       by rw [iotil_zAxNeg, ← hXq]; exact hNF jw⟩⟩
+  -- succedent-threading collapse (succedent-AGNOSTIC): an active L-axiom formula `F` threads to `Γ` or
+  -- bottoms out at a NON-LEAF premise `m < i` concluding `F`.
+  have collapse : ∀ i, i ≤ j0 → ∀ F, inAnt F (chainAnt ds i) →
+      inAnt F (seqAnt s) ∨
+      ∃ m, m < i ∧ chainAsucc ds m = F ∧ zTag (znth ds m) ≠ 0 ∧ zTag (znth ds m) ≠ 7 := by
+    intro i hi F hF
+    rcases hthread0 i hi F hF with hΓ | ⟨i', hi', heq⟩
+    · exact Or.inl hΓ
+    · rcases leastSucc_in_ant_or_nonleaf hmem hthread0 hj0
+        (le_of_lt (lt_of_lt_of_le hi' hi)) heq.symm with hΓ | ⟨m, hmn, hCm, h0, h7⟩
+      · exact Or.inl hΓ
+      · exact Or.inr ⟨m, lt_of_le_of_lt hmn hi', hCm, h0, h7⟩
+  -- §14.254b zAxNeg PRODUCER close: thread BOTH `¬q`,`q` to Γ ⟹ `axNegCloseGen`, else residual.
+  have closeZAxNeg : ∀ m', m' ≤ j0 → m' < lh ds → zTag (znth ds m') = 6 → GenReductCert (zK s r ds) := by
+    intro m' hm'j0 hm'lt h6
+    rcases zDerivation_iff.mp (hmem m' hm'lt) with
+      ⟨s'', h'', _⟩ | ⟨s'', a'', p'', d0'', h'', _, _⟩ | ⟨s'', p'', d0'', h'', _, _⟩ |
+      ⟨s'', at''', p'', d0'', d1'', h'', _, _⟩ | ⟨s'', r'', ds'', h'', _, _, _⟩ |
+      ⟨s'', p'', k'', h'', _, _⟩ | ⟨s'', q, h'', hq, hqn, hqp⟩ | ⟨s'', C'', h'', _⟩
+    · rw [h''] at h6; simp at h6
+    · rw [h''] at h6; simp at h6
+    · rw [h''] at h6; simp at h6
+    · rw [h''] at h6; simp at h6
+    · rw [h''] at h6; simp at h6
+    · rw [h''] at h6; simp at h6
+    · have hXq : iotil (znth ds m') = oAtomLk (inegF q) := by rw [h'', iotil_zAxNeg]
+      have hin_neg : inAnt (inegF q : V) (chainAnt ds m') := by
+        simpa only [chainAnt, h'', fstIdx_zAxNeg] using hqn
+      have hin_q : inAnt q (chainAnt ds m') := by
+        simpa only [chainAnt, h'', fstIdx_zAxNeg] using hqp
+      rcases collapse m' hm'j0 (inegF q) hin_neg with hΓ_neg | _
+      · rcases collapse m' hm'j0 q hin_q with hΓ_q | _
+        · exact axNegCloseGen q m' hm'lt hXq hq hΓ_neg hΓ_q
+        · exact residual
+      · exact residual
+    · rw [h''] at h6; simp at h6
+  -- §14.254b producer dispatch (succedent-agnostic): {3,4} → repProducerClose; 5 → CLIMB; 6 → closeZAxNeg.
+  have tryProducerClose : ∀ m, m ≤ j0 → m < lh ds → GenReductCert (zK s r ds) := by
+    intro m hmj0 hmlt
+    rcases zDerivation_iff.mp (hmem m hmlt) with
+      ⟨s'', h'', _⟩ | ⟨s'', a'', p'', d0'', h'', _, _⟩ | ⟨s'', p'', d0'', h'', _, _⟩ |
+      ⟨s'', at''', p'', d0'', d1'', h'', _, _⟩ | ⟨s'', r'', ds'', h'', _, _, _⟩ |
+      ⟨s'', p'', k'', h'', _, _⟩ | ⟨s'', q, h'', hq, hqn, hqp⟩ | ⟨s'', C'', h'', _⟩
+    · exact residual
+    · exact residual
+    · exact residual
+    · exact repProducerClose m hmj0 hmlt (Or.inl (by rw [h'']; simp))
+    · exact repProducerClose m hmj0 hmlt (Or.inr (by rw [h'']; simp))
+    · have hjLm : tp (znth ds m) = isymLk k'' (^∀ p'' : V) := by rw [h'', tp_zAxAll]
+      have hin' : inAnt (^∀ p'' : V) (chainAnt ds m) := by
+        have hinv := zDerivation_zAxAll_inv (h'' ▸ hmem m hmlt)
+        simpa only [chainAnt, h'', fstIdx_zAxAll] using hinv.2.1
+      rcases climb_to_rep_producer hmem hthread0 hj0 hnolow hmj0 hjLm ⟨p'', rfl⟩ hin' with
+        ⟨_, _, _⟩ | ⟨m', hm'j0, hm'lt, hm'tag⟩
+      · exact residual
+      · rcases hm'tag with h3 | h4 | h6
+        · exact repProducerClose m' hm'j0 hm'lt (Or.inl h3)
+        · exact repProducerClose m' hm'j0 hm'lt (Or.inr h4)
+        · exact closeZAxNeg m' hm'j0 hm'lt h6
+    · exact closeZAxNeg m hmj0 hmlt (by rw [h'']; simp)
+    · exact residual
+  -- dispatch on the least-exit major premise `jstar`
+  rcases zDerivation_iff.mp hmemZ with
+    ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
+    ⟨s', at'', p', d0', d1', h, _, _⟩ | ⟨s', r', ds', h, _, _, _⟩ |
+    ⟨s', p', k', h, hp5, hin5, hsucc5⟩ | ⟨s', p', h, hp6, hin6, hin6_2⟩ | ⟨s', C', h, _⟩
+  · -- tag 0 (zAtom): leaf; its succedent threads to `chainAsucc ds jstar ∈ Γ` (minimality). C-exit →
+    -- leafCloseC; ⊥-exit → residual (ex-falso `⊥∈Γ ⟹ Γ→C`).
+    have hin : inAnt (chainAsucc ds jstar) (chainAnt ds jstar) := by
+      have hatom := zDerivation_zAtom_inv (h ▸ hmemZ)
+      have hss : seqSucc s' = chainAsucc ds jstar := by rw [chainAsucc, h, fstIdx_zAtom]
+      rw [hss] at hatom
+      simpa only [chainAnt, h, fstIdx_zAtom] using hatom
+    rcases hthread0 jstar hjle (chainAsucc ds jstar) hin with hDin | ⟨i', hi', heq⟩
+    · rcases hjstar with hC | hbot
+      · exact leafCloseC (hC ▸ hDin)
+      · exact residual
+    · exact absurd (heq ▸ hjstar) (hmin i' hi')
+  · -- tag 1 (zIall): succedent `^∀ p'`. ⊥-exit impossible; C-exit = R-intro of `C` → residual.
+    have heq : seqSucc s' = (^∀ p' : V) := (zDerivation_zIall_inv (h ▸ hmemZ)).2.1
+    have hcs : chainAsucc ds jstar = (^∀ p' : V) := by rw [chainAsucc, h, fstIdx_zIall]; exact heq
+    rcases hjstar with hC | hbot
+    · exact residual
+    · exact absurd (hcs ▸ hbot) (qqAll_ne_falsum p')
+  · -- tag 2 (zIneg): succedent `inegF p'`. ⊥-exit impossible; C-exit = R-intro of `C` → residual.
+    have heq : seqSucc s' = (inegF p' : V) := (zDerivation_zIneg_inv (h ▸ hmemZ)).2.1
+    have hcs : chainAsucc ds jstar = (inegF p' : V) := by rw [chainAsucc, h, fstIdx_zIneg]; exact heq
+    rcases hjstar with hC | hbot
+    · exact residual
+    · exact absurd (hcs ▸ hbot) (inegF_ne_falsum p')
+  · -- tag 3 (zInd): {3,4} PRODUCER → repProducerClose (general IH).
+    exact repProducerClose jstar hjle hjlt (Or.inl (by rw [h]; simp))
+  · -- tag 4 (zK): {3,4} PRODUCER → repProducerClose (general IH).
+    exact repProducerClose jstar hjle hjlt (Or.inr (by rw [h]; simp))
+  · -- tag 5 (zAxAll): L-axiom. Thread its active `^∀ p'`: escape → residual; non-leaf → tryProducerClose
+    -- (R-intro killed by `hnolow` via `rightSym_producer_redex`).
+    have hin_chain : inAnt (^∀ p' : V) (chainAnt ds jstar) := by
+      simpa only [chainAnt, h, fstIdx_zAxAll] using hin5
+    have hjL : tp (znth ds jstar) = isymLk k' (^∀ p' : V) := by rw [h, tp_zAxAll]
+    rcases collapse jstar hjle (^∀ p') hin_chain with hΓ | ⟨m, hmjs, hCm, hm0, hm7⟩
+    · exact residual
+    · by_cases h0 : π₁ (tp (znth ds m)) = 0
+      · exact (rightSym_producer_redex (hmem m (lt_trans hmjs hjlt)) hjL hjlt hjle hmjs hCm h0 hnolow).elim
+      · exact tryProducerClose m (le_of_lt (lt_of_lt_of_le hmjs hjle)) (lt_trans hmjs hjlt)
+  · -- tag 6 (zAxNeg): dual L-axiom. Thread BOTH `inegF p'`,`p'`: both in Γ → `axNegCloseGen` (any
+    -- succedent); else residual / tryProducerClose.
+    have hXval : iotil (znth ds jstar) = oAtomLk (inegF p') := by rw [h, iotil_zAxNeg]
+    have hin_negp : inAnt (inegF p' : V) (chainAnt ds jstar) := by
+      simpa only [chainAnt, h, fstIdx_zAxNeg] using hin6
+    have hin_p : inAnt p' (chainAnt ds jstar) := by
+      simpa only [chainAnt, h, fstIdx_zAxNeg] using hin6_2
+    have hjLneg : tp (znth ds jstar) = isymLk 0 (inegF p') := by rw [h, tp_zAxNeg]
+    rcases collapse jstar hjle (inegF p') hin_negp with hΓ_neg | ⟨mn, hmnjs, hCmn, hmn0, hmn7⟩
+    · rcases collapse jstar hjle p' hin_p with hΓ_p | ⟨mp, hmpjs, hCmp, hmp0, hmp7⟩
+      · exact axNegCloseGen p' jstar hjlt hXval hp6 hΓ_neg hΓ_p
+      · exact residual
+    · by_cases h0 : π₁ (tp (znth ds mn)) = 0
+      · exact (rightSym_producer_redex (hmem mn (lt_trans hmnjs hjlt)) hjLneg hjlt hjle hmnjs hCmn h0
+          hnolow).elim
+      · exact tryProducerClose mn (le_of_lt (lt_of_lt_of_le hmnjs hjle)) (lt_trans hmnjs hjlt)
+  · -- tag 7 (zAx1): leaf, like tag 0.
+    have hin : inAnt (chainAsucc ds jstar) (chainAnt ds jstar) := by
+      have hax := zDerivation_zAx1_inv (h ▸ hmemZ)
+      have hss : seqSucc s' = chainAsucc ds jstar := by rw [chainAsucc, h, fstIdx_zAx1]
+      rw [hss] at hax
+      simpa only [chainAnt, h, fstIdx_zAx1] using hax
+    rcases hthread0 jstar hjle (chainAsucc ds jstar) hin with hDin | ⟨i', hi', heq⟩
+    · rcases hjstar with hC | hbot
+      · exact leafCloseC (hC ▸ hDin)
+      · exact residual
+    · exact absurd (heq ▸ hjstar) (hmin i' hi')
 
 /-- **GENERALIZED chain step off `seqSucc = ⊥` — PROVEN dispatcher.** Off-`⊥` twin of
 `genReduct_botSucc_chain` (`:3655`): extract SOME `isChainInf` exit `j0` (`chainAsucc ds j0 ∈ {seqSucc s, ⊥}`,
