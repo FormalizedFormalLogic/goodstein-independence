@@ -30,11 +30,15 @@ tag-5 (`F=^∀⊥`) and tag-6's `inegF p'` half: the right-symbol (`π₁(tp)=0`
 producers (tags {3,4,5,6}, `π₁(tp)∈{1,2}`) survive. **The directive's "R-intro→`hnolow`" step is now
 machine-verified; the lap-136 general-succedent reduct is UN-FORBIDDEN for the residual.**
 
-🔻 **`axMajorResidual` now = the GENUINE §14.254b general-succedent reduction (tags {3,4,5,6} producers):**
-a `Rep`/L-axiom premise `m < jstar` concluding the cut formula `F` (= `^∀⊥` tag-5 / `inegF p'` tag-6-neg /
-ANY non-leaf producer of `p'` tag-6-p'). Reducing the chain `zK s r ds` past this cut is the narrowed
-lap-136 target (`Γ→^∀⊥` etc., NOT "arbitrary C"). Net sorry count still 1→1, open core now precisely
-the deep wall.
+✅ **zAxNeg PRODUCER base case CLOSED (commit `7905f35`).** Generalized `collapse` to any `i ≤ j0` (thread a
+PRODUCER's own antecedent); `axNegCloseGen` (general `zAxNeg s q` reduct, witness index supplies the õ);
+`tryProducerClose` dispatches a Rep producer by constructor — the `zAxNeg` producer (itself a ¬-axiom
+`Γₘ→anything` from `¬q,q∈Γₘ`) threads BOTH `¬q` and `q` to Γ → `zAxNeg s q` derives `Γ→⊥` directly. Wired
+into tag-5 + tag-6-inegF non-leaf branches.
+
+🔻 **`axMajorResidual` now = {zInd (3), zK (4), zAxAll (5)} producers + the threading-hits-deeper-producer
+recursion.** Reducing the chain past these is the narrowed lap-136 target (`Γ→^∀⊥` etc., NOT "arbitrary C").
+Net sorry count still 1→1, open core now precisely the deep general-succedent constructions.
 
 **NEXT ATTACK (next lap) — the general-succedent reduct, by producer constructor:**
 1. **zAxAll/zAxNeg producers (axioms, NO sub-derivations) — likely the WEDGE.** A `zAxAll s_m (^∀⊥) k_m`
