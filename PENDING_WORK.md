@@ -1,10 +1,49 @@
 # Pending work — open obligations & attack paths
 
-## Lap 158 (FRESH-MIND REVIEW) — collapse EXHAUSTED; residual = the IRREDUCIBLE {3,4}-producer cut-elim (degree-induction)
+## Lap 158 (FRESH-MIND REVIEW + SPIKE) — collapse EXHAUSTED; residual = {3,4}-producer cut-elim; SPIKE settled it by CODE-induction
 
 **Build 🟢 green (1326); real `#print axioms` re-verified: headline `peano_not_proves_goodstein` +
 `false_of_ZDerivesEmpty` = `[propext, sorryAx, choice, Quot.sound]` (0 math axioms); `peano_not_proves_consistency`
 + `goodsteinSentence_faithful` = `[propext, choice, Quot.sound]` (clean) — no drift.**
+
+### ⭐ SPIKE EXECUTED + DECISIVE (`wip/GenReductAnySucc.lean`, typechecks via `lake env lean`)
+The directive-mandated design spike is DONE and the fork is SETTLED in kernel. **Finding: the residual closes by
+the EXISTING CODE-induction (`zDerivation_sigma_induction`), NOT an outer degree-induction.** The refactor is
+"drop the `seqSucc=⊥` clause," not "add a degree parameter." Two non-sorried lemmas typecheck, proving it:
+1. **`genReduct_anySucc`** (= `genReduct_botSucc` with the `seqSucc(fstIdx d)=⊥` antecedent DROPPED): its
+   CODE-induction body typechecks unchanged. The `𝚺₁` motive `GenReductCert` is definable WITHOUT the `⊥`-clause
+   (`GenReductCert` never mentions `⊥`); the code-IH threads; tag-3/4 delegate to the generalized sub-reducts.
+2. **`noRedex_producer_closes`** (non-sorried body): the {3,4} PRODUCER `m` of ANY succedent closes via
+   `Or.inl (certReplace_of_premise_cert_anySucc … (IH m …))` where `IH` is the GENERAL IH (no `⊥`-clause). This
+   is EXACTLY the move the lap-157 refutation doubted — VALIDATED. **Why it sidesteps the refutation:**
+   `certReplace_of_premise_cert` (`Crux2Blueprint:3283`) is ALREADY general-succedent in `m` — its FLATTEN
+   rank-headroom comes from the PREMISE's own `irk+1 ≤ idg(premise)` (line 3328-3331), NOT the chain's degree
+   (which is what the refutation found un-derivable). The degree headroom is LOCAL to each principal-cut flatten
+   (already proven inside `genReduct_chain_hasRedex`), so no GLOBAL degree-induction is needed.
+
+### The PORT plan (next lap, src) — generalize off `seqSucc=⊥`, RAISING the src count = progress
+Replace `axMajorResidual` by the producer-splice path; the refactor is exactly THREE generalized sub-lemmas
+(plus dropping the `⊥`-clause from the IH threaded through the chain entry). Port `wip/GenReductAnySucc.lean`:
+1. **`certReplace_of_premise_cert_anySucc`** — generalize `certReplace_of_premise_cert` `hbot0 :
+   chainAsucc ds j0 = ⊥` to the C-exit disjunct `chainAsucc ds j0 = seqSucc s` (used only as `Or.inr hbot0`
+   in `isChainInf_seqInsert`; flip to the `Or.inl` C-exit disjunct). Likely the SMALLEST drop — start here.
+2. **`ind_reduct_anySucc`** — generalize `ind_reduct_botSucc_of_fresh` off `seqSucc=⊥`. On the residual the
+   succedent `C` is a closed ∀-tower `^∀^k⊥`, so `p_ind = C` (`substs1 t p_ind = p_ind`, no free var) ⟹ the
+   induction is VACUOUS and the reduct is `d0` (`õ`-drop). (General `C` = the lap-136 unfolding, but the
+   residual never needs it.) CHECK first that `zIndWff` admits a vacuous (closed-`C`) zInd.
+3. **`genReduct_anySucc_chain`** + its `genReduct_chain_hasRedex`/`genReduct_chain_noRedex` callees —
+   generalize off `seqSucc=⊥` to the C-exit (`chainAsucc ds j0 = seqSucc s` from `zKValidF`), drop the
+   `⊥`-clause from the IH, and replace `axMajorResidual` with the `noRedex_producer_closes` wiring. The hasRedex
+   half is criticality-free already (lap 147); the noRedex half is the lap-155-157 dispatch (mostly portable —
+   the leaf/escape/R-intro-kill cases are succedent-agnostic).
+Then thread the generalized entry into `genReduct_botSucc` (the `⊥` case is a special instance, so existing
+call sites — `descent_step_K_noncrit_repMajor`:3818 etc. — keep working by passing the now-derived C-exit).
+
+### Forbidden / still binding (DIRECTION.md lap-158)
+Same-degree `õ`-drop for the {3,4} producer (refuted lap 157); `red`; `iord`-recursion (CODE-induction +
+local-degree flatten ONLY — the spike confirms code-induction suffices); `redLeast`/μ-min for gDef; the refuted
+`seqUpdate` splice; attacking `descent_step_K_noncrit_axMajor`:3857 / gDef:3980 standalone; off-path dead
+red-soundness sorries; M2/M4. ALTITUDE: M2 (Foundation→Z bridge) ~0% built — "only the crux left" ≠ "almost done."
 
 ### The three live crux-2 sorries (the only on-path ones)
 1. **`axMajorResidual`** (`Crux2Blueprint:3417`, inside `genReduct_chain_noRedex`) — THE crux core. Reached ONLY
