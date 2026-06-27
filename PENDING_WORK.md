@@ -1,5 +1,78 @@
 # Pending work — open obligations & attack paths
 
+## Lap 162 (M1b-term, ex-falso ordinal spike) — ⭐ ROUTE 4 REFUTED in-kernel; the directive's ROUTE 2 (`zAxBot`) is REQUIRED
+
+**Build 🟢 (src untouched; spike `wip/ExFalsoOrdinalSpike.lean` compiles, exit 0). `false_of_ZDerivesEmpty`
+unchanged = `[propext, sorryAx, choice, Quot.sound]` (0 math axioms).** No src sorry dropped this lap — the
+deliverable is a DECISIVE design correction that prevents the next several laps from grinding a dead route.
+
+### ⭐⭐⭐ THE FINDING — the lap-161 "ROUTE 4 = pure assembly" mandate is WRONG; ex-falso needs a Z-system extension
+`exFalsoClose` (`Crux2Blueprint:3477`) must produce `GenReductCert (zK s r ds)` from `⊥ ∈ seqAnt s` for a
+GENERAL succedent `C = seqSucc s`. `GenReductCert` via `certReplace` demands `iRedDescent v (zK s r ds)`, whose
+`otil_lt` field is the STRICT drop `icmp (iotil v) (iotil (zK s r ds)) = 0`, and `iotil (zK s r ds) = iseqNaddIdg ds`
+(`iotil_zK`). **A degenerate single-leaf ⊥-exit chain (`lh ds = 1`, lone entry an `iotil=0` leaf) has
+`iseqNaddIdg ds = ω^0 = 1`** (`iseqNaddIdgAux_succ` over `iseqNaddIdgAux_zero`; spike `leaf_chain_iseqNaddIdg`).
+Such a chain IS valid + reachable: a `zK s r [zAtom s']` whose lone leaf derives `Γ'→⊥` with `⊥∈Γ'⊆Γ` exits at
+`⊥` and so derives `Γ→C` for ARBITRARY `C` (the ⊥-exit IS the semantic content of `zKValidF`'s `⊥` disjunct).
+
+**Route 4 (formula-structure R-intro tower over `C`) CANNOT drop:** every R-intro raises `iotil` by `+1`
+(`iotil_zIall`/`iotil_zIneg = iadd · (ω^0)`), so even the cheapest tower `zIneg s p (zAtom s')` already has
+`iotil = ω^0 = 1` (spike `tower_iotil`) — EQUAL to the degenerate chain's `iotil (zK)`, so `icmp = 1 ≠ 0`
+(`icmp_self`): `iRedDescent.otil_lt` FAILS. **Proven in-kernel: `wip/ExFalsoOrdinalSpike.lean : tower_no_drop`.**
+(General form of the obstruction: an `n`-leaf chain folds to `iseqNaddIdg = n`, while a `^∀^k⊥` tower has
+`iotil = k`; `k` (= ∀-depth of the cut formula) is unbounded and independent of `n` (= chain length), so a
+`k ≥ n` configuration always exists — the tower generically fails to drop.)
+
+**The descent interface canNOT be weakened to `iord`-level either.** `iord d = iotower (iotil d) (idg d)` is a
+height-`idg` tower, so a tag-8 leaf (idg 0, iotil 0) has `iord 0` and WOULD `iord`-drop. BUT the terminal
+ex-falso reduct is later SPLICED as a `{3,4}`-producer-premise cert by `certReplace_of_premise_cert`
+(`:3317-3318`), which derives the PARENT's strict `iotil` drop from the PER-PREMISE strict `iotil` drop via the
+`#`-fold `iseqNaddIdg` (`iotil_iCritAux_lt` = `iseqNaddIdgAux_lt_replace`). An `iord`-only (idg-dropping) premise
+does NOT shrink that fold. So the reduct genuinely needs `iotil = 0`, full stop.
+
+**Relaxing `zAtom`'s side condition (the cheap-looking alternative) CORRUPTS the threading invariants.** A zAtom
+node deriving `Γ→C` currently GUARANTEES `C ∈ Γ` (`zDerivation_zAtom_inv`), which `leastSucc_in_ant_or_nonleaf`
+(`InternalZ:9099`) and `chainAsucc_threaded_of_leaf` (`:9047`) rely on to thread a leaf's succedent. If a zAtom
+could fire on `⊥∈Γ` WITHOUT `C∈Γ`, an "ex-falso leaf" has `zTag = 0` yet its succedent doesn't thread → BOTH
+disjuncts of `leastSucc_in_ant_or_nonleaf`'s conclusion fail. That lemma is load-bearing in the active crux
+(`collapse`). So `zAxBot` must be a NEW tag, not a relaxed `zAtom`.
+
+### ✅ THE FIX — ROUTE 2 (the directive's own fallback): a NEW `iotil = 0` ⊥-left leaf `zAxBot` (tag 8)
+Only `iotil = 0` strict-drops below `iseqNaddIdg ds ≠ 0` (`icmp_zero_pos`, the `leafCloseC` move, unconditional
+via `hposlast`). The SOLE existing `iotil=0` constructor is `zAtom` (needs `C∈Γ`, not `⊥∈Γ`). So add
+`zAxBot s := ⟪s, 8, 0⟫ + 1` with ZPhi disjunct `(∃ s, d = zAxBot s ∧ inAnt (^⊥) (seqAnt s))` deriving `Γ→C`
+for ANY `C`. **Proven in-kernel that ANY `iotil=0` leaf closes: `wip/ExFalsoOrdinalSpike.lean : leaf_reduct_drops`.**
+
+**De-risking finding:** the ordinal dispatchers `ioNext` (`InternalZ:2261`, `else 0`) and `idgTable` already
+DEFAULT unknown tags to `0`, so a tag-8 `zAxBot` auto-gets `iotil = idg = iord = 0` with **NO dispatcher edits**.
+The cost is the ZPhi disjunct + the `zblueprint` Σ/Π pair (`:5559`) + `zphi_iff`/`zphi_monotone`/`zphi_strong_finite`
++ `zPhi_definable` (`:5605`, add a `qqFalsum`/`inAnt` defn clause) + the ~125 `zDerivation_iff.mp` destructuring
+sites (each gets a trailing 9th `| ⟨s, h, hbot⟩` branch — mostly trivial, the new leaf behaves like `zAtom`) +
+soundness. Precedent: lap-116 added `zAx1` as the 8th disjunct ("64-site ripple") in a focused effort. This is a
+2-3 lap structural extension, NOT "pure assembly".
+
+### 🎯 NEXT (route 2, in order) — each step a green checkpoint
+1. **`zAxBot` constructor + projections (additive, green).** `def zAxBot`, then `@[simp] zTag_zAxBot = 8`,
+   `fstIdx_zAxBot = s`, `iotil_zAxBot = 0` (via `iotil_eq_ioNext` → `ioNext` else-0), `idg_zAxBot = 0`,
+   `iord_zAxBot = 0`, `isNF_iotil_zAxBot`, and `zReg_zAxBot`/`zFresh_zAxBot`/`zSeqAnt_zAxBot` (mirror `zAtom`).
+   Build green. (Mirror the `zAtom`/`zAx1` projection lemmas exactly — same encoding shape.)
+2. **ZPhi disjunct #9 + the ripple.** Add to `ZPhi` (`:5458`), `zphi_iff`, `zphi_monotone`, `zphi_strong_finite`,
+   `zblueprint` (Σ+Π), `zPhi_definable`. Then thread a 9th branch through the ~125 `zDerivation_iff.mp` rcases
+   (compiler-driven: each missing-pattern error → add `| ⟨s, h, hbot⟩` and the obvious branch; the new leaf is a
+   degree-0 leaf, so most branches mirror tag-0/7). Add `zDerivation_zAxBot_inv` + a `zAxBot`-as-`ZDerivation`
+   intro. Build green at the end (atomic — the disjunct change breaks all rcases until the last is patched).
+3. **`exFalsoClose := fun h => Or.inl ⟨zAxBot s, zDerivation_iff.mpr (Or.inr⁸ ⟨s, rfl, h⟩), zReg_zAxBot s,
+   zFresh_zAxBot s, …, ⟨by rw[idg_zAxBot]; exact zero_le, by rw[iotil_zAxBot, iotil_zK …]; exact
+   icmp_zero_pos hposlast, by rw[iotil_zAxBot]; exact isNF_zero⟩⟩`** — DROPS the `exFalsoClose` sub-`sorry`. Then
+   `residual` (:3451) still needs (ii) C-exit R-intro replay + (iii) tag-5/6 thread-escape; closing those DROPS the
+   `genReduct_chain_noRedex_anySucc` leaf.
+
+**DIRECTION note (for the next altitude lap):** DIRECTION.md's CURRENT DIRECTIVE (lap-161) MANDATED the ex-falso
+"by ROUTE 4 (induction on C); pure ASSEMBLY". That is REFUTED here in-kernel. Its own §2 fallback (the `zAxBot`
+disjunct) is the correct route. Update the CURRENT DIRECTIVE to make route 2 primary (grind laps may not edit it).
+
+---
+
 ## Lap 161 (DEEP REFLECTION + ex-falso isolation) — directive RE-SYNCED; ⊥-exit ex-falso named + its design wall pinned
 
 **Build 🟢 1326 (exit 0); `false_of_ZDerivesEmpty` = `[propext, sorryAx, choice, Quot.sound]` (0 math axioms, no
