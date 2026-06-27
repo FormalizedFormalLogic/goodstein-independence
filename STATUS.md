@@ -1,7 +1,7 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 153 (**MASTER KEY #1 `genReduct_chain_hasRedex` DROPPED, axiom-clean** — §14.253 principal cut at general `Γ→⊥`, FLATTEN cert via inverting the proven `iRKcCrit` reduct; crux now = master key #2 `genReduct_chain_noRedex` + downstream axMajor/gDef) · 2026-06-27
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 154 (**MASTER KEY #2 `genReduct_chain_noRedex` — 6/8 tag-branches PROVEN at general Γ**: §14.254a Rep-major reduction (tags 3/4) + NOVEL Γ≠∅ leaf-escape (tags 0/7, the `⊥∈Γ` trivial-axiom `zAtom s` collapse) + tags 1/2; crux now = the single tag-5/6 L-axiom cut-partner = the GENERAL-succedent generalization of `genReduct_botSucc` off `⊥`. See `HANDOFF-2026-06-27-lap154.md`) · 2026-06-27
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**);
 `goodsteinSentence_faithful` + `peano_not_proves_consistency` axiom-clean. The lone `sorryAx` traces to crux-2.
 

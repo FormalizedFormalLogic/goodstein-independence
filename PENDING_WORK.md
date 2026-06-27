@@ -1,5 +1,32 @@
 # Pending work — open obligations & attack paths
 
+## Lap 154 — `genReduct_chain_noRedex` 6/8 branches PROVEN; Γ≠∅ leaf-escape DROPPED
+
+**Advance on the crux:** `genReduct_chain_noRedex` (`Crux2Blueprint:3365`) — MASTER KEY #2, the §14.254
+chain recursion — decomposed by the LEAST ⊥-exit `jstar`'s tag and **6 of 8 branches PROVEN at general
+Γ** (the selection itself is Γ-general via `least_number`, no `seqAnt s = ∅`). Build 🟢 green (1326);
+`false_of_ZDerivesEmpty` trace unchanged `[propext, sorryAx, choice, Quot.sound]` (0 math axioms). Net
+sorry count for the lemma 1→1 (the dual tag-5/6 cases consolidated into one `axMajorClose` sorry).
+
+- **tags 3/4 (§14.254a Rep-major)** — major premise is a Rep node deriving `Γⱼ→⊥`; reduce by the IH →
+  `certReplace_of_premise_cert` (Γ-general, banked lap-153b). The genuine cert-consumption content.
+- **tags 0/7 (NOVEL leaf escape)** — at Γ≠∅ a leaf ⊥-exit threads (by leastness) to `⊥ ∈ Γ`; then the
+  trivial axiom `zAtom s` (`iotil = 0`) derives `Γ→⊥` directly and is a sound `õ`-dropping reduct of the
+  nonempty chain (`iseqNaddIdg ds ≠ 0`). Reusable `leafClose` (`~:3413`). Axiom-clean.
+- **tags 1/2** — impossible (succedent `^∀p`/`inegF p ≠ ⊥`).
+
+**REMAINING = the ONE crux residual: tag-5/6 cut-partner (`axMajorClose`, `~:3411`).** L-axiom major
+(`red`-FIXPOINT) → active formula threads to an upstream Rep cut-partner `i' < jstar` deriving **`Γᵢ'→^∀p`**
+(NOT ⊥; `i'` is Rep because `hnolow` forbids a redex below `j0`).
+**THE BLOCKER:** `genReduct_botSucc` is `⊥`-ONLY — its IH never reduces a `Γ→^∀p` node.
+**NEXT ATTACK (own lap):** generalize `genReduct_botSucc` (+ `_chain` + tag-3 base
+`ind_reduct_botSucc_of_fresh` + `genReduct_chain_noRedex`'s IH) from succedent `⊥` to an arbitrary
+`IsUFormula` succedent `C` (the §14.253/§14.254 dichotomy is succedent-agnostic; only the Ind-reduct base
+and `chainAsucc · = ⊥` plumbing are ⊥-specific). Also generalize `majorPrem_zAxAll_cutPartner`/
+`_zAxNeg_cutPartner` off `seqAnt s = ∅` the SAME way the leaf escape did (the `V ∈ Γ` branch → direct
+certReplace, no cut). Then tag-5/6 reduces `i'` by the generalized IH at succedent `^∀p`/`inegF p` and
+feeds `certReplace_of_premise_cert` at `m = i'`.
+
 ## Lap 153 — MASTER KEY #1 `genReduct_chain_hasRedex` DROPPED (axiom-clean)
 
 **Advance on the crux:** `genReduct_chain_hasRedex` (`Crux2Blueprint:3048`) sorry → PROVEN,
