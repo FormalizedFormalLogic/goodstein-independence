@@ -1,5 +1,35 @@
 # Pending work — open obligations & attack paths
 
+## Lap 160 (WIRE) — genReduct_chain_noRedex_anySucc dispatch wired (load-bearing leaf)
+
+**Build 🟢 1326; `false_of_ZDerivesEmpty` = `[propext, sorryAx, choice, Quot.sound]` (0 math axioms, no drift). HEAD `d4ce7e3`.**
+
+Executed lap-159 NEXT #1. `genReduct_chain_noRedex_anySucc` (`Crux2Blueprint:3407`) went from a bare
+whole-lemma `sorry` to a WIRED §14.254 dispatch with ONE narrow internal `residual` sorry (modelled on the
+proven ⊥-version). The {3,4}-producer CORE (heart of crux-2) closes via the general IH +
+`certReplace_of_premise_cert`; C-exit leaf/`zAtom`, succedent-agnostic `zAxNeg`, tag-5/6 cut-partner CLIMB
+all close. Sorry COUNT unchanged but the leaf is narrowed from opaque → precise residual (DIRECTION.md
+"decompose into named src sub-sorries with the skeleton wired" success).
+
+### Kernel findings (lap 160)
+- `zAxNeg` is the LONE succedent-agnostic Z-rule (ex-falso); `zAtom`/`zAx1` need `seqSucc s∈Γ`; `zAxAll`
+  forces the succedent. ⟹ ⊥-exit escapes (`⊥∈Γ`/`^∀⊥∈Γ ⟹ Γ→C`) have NO single-node reduct.
+- ⊥-exit ex-falso has bad ordinals as a single-premise chain wrapper (`ω^õw` can exceed `iseqNaddIdg ds`);
+  genuine new infra needed (internal ⊥-elim/weakening or witness-bounded reduct).
+- `genReduct_chain_noRedex` (⊥) returns `Or.inl` (certReplace) in all non-sorry branches; whole-chain
+  certFlatten does NOT descend standalone ⟹ axMajor must go via the cut-partner climb, not delegation.
+
+### NEXT (priority order)
+1. Split `residual` (`:3407`) into: (i) ⊥-exit ex-falso, (ii) C-exit R-intro replay, (iii) tag-5
+   climb-escape + tag-6 partial (= shared with `axMajorResidual` `:3683`). Prove (iii) ONCE for both;
+   (i) needs new ex-falso infra; (ii) likely internal weakening.
+2. `genReduct_chain_hasRedex_anySucc` (`:3391`): ∀-redex CLEAN port (`certFlatten_of_critHalves` off-⊥);
+   ¬-redex = `keepTip` (needs ⊥-exit).
+3. `ind_reduct_anySucc` (`:3382`): lap-136 unfolding (general — caller passes no closedness).
+4. `descent_step_K_noncrit_axMajor` (`:4180`): cut-partner climb → `genReduct_anySucc` → splice (mirror
+   `repMajor` `:3930`).
+5. Retire the ⊥-stack (only after the 3 anySucc leaves are proven) ⟹ DROP `axMajorResidual` `:3683`.
+
 ## Lap 159 (PORT + WIRE) — genReduct_anySucc family in src; {3,4}-producer core of axMajorResidual WIRED
 
 **Build 🟢 1326; `false_of_ZDerivesEmpty` = `[propext, sorryAx, choice, Quot.sound]` (0 math axioms, no drift).**
