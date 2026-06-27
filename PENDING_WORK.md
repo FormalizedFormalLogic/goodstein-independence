@@ -1,5 +1,52 @@
 # Pending work — open obligations & attack paths
 
+## Lap 164 (FRESH-MIND REVIEW) — direction KEPT; `residual`/`axMajorResidual` NARROWED (tags 0/1/2/7 producers now PHANTOM)
+
+**Build 🟢 1326. HEAD after commit.** Review lap: DIRECTION.md CURRENT DIRECTIVE + STATUS.md refreshed (lap-164
+banner), direction KEPT (finish `false_of_ZDerivesEmpty`; ex-falso done lap-163; M2 deferred by design). Real
+`#print axioms` re-verified, no drift. Then a verified in-kernel **crux-narrowing** (no sorry dropped, but the
+open core SHRANK in both residual copies).
+
+### What landed (the narrowing — `tryProducerClose` strengthened)
+`tryProducerClose` (in BOTH `residual` :~3565 anySucc AND `axMajorResidual` :~3885 ⊥-version) now takes 3 extra
+hyps `zTag(znth ds m) ≠ 0`, `≠ 7`, `π₁(tp(znth ds m)) ≠ 0` — all supplied by the call sites (the producer `m`
+comes from `collapse`, which guarantees NON-LEAF `zTag ≠ 0,7`; the call is in the `else` branch of
+`by_cases π₁(tp)=0`, i.e. NON-right-symbol). So **tags 0/1/2/7 are now PHANTOM** (closed in-kernel by `absurd`):
+- tag-0 (zAtom)/tag-7 (zAx1): leaves → contradict non-leaf.
+- tag-1 (zIall)/tag-2 (zIneg): R-intros (`tp = isymR …`, `π₁ = 0` by `pi₁_isymR`) → contradict non-right-symbol
+  (they would form an `isRedexPair` with `jstar`, killed by `hnolow` — the same logic `rightSym_producer_redex`
+  already applies one level up). Verified facts: `tp_zIall/zIneg = isymR …`, `π₁(isymR)=0`, `π₁(isymRep)=2`.
+
+### 🎯 Genuine remaining residual core (post-narrowing — the precise next target)
+After the narrowing, `axMajorResidual` (⊥) / `residual` (anySucc) are reached ONLY from:
+1. **tag-6 partial thread** (`:4018` ⊥ / `:3646` anySucc): `inegF p' ∈ Γ` but `p'` threads to a non-leaf
+   producer, not Γ. Also `closeZAxNeg`'s `:3868/:3869` (⊥) / `:3560/:3561` (anySucc) — same `¬q`/`q` no-thread.
+2. **tag-8 ⊥-producer** (`tryProducerClose` tag-8, `:3908` ⊥ / `:3590` anySucc; + the tag-5 climb→tag-8 landing):
+   a `zAxBot` producer with `⊥ ∈ Γ_m`. Threads (`collapse`) to `⊥ ∈ Γ` (→ `leafClose`/`exFalsoClose`, AVAILABLE
+   since lap-163!) OR an earlier non-leaf ⊥-exit `m' < m`. The earlier-⊥-exit case needs `tryProducerClose m'`
+   RECURSIVELY → blocked because `tryProducerClose` is a non-recursive `have`. FIX = restructure it as a
+   bounded (strong-induction-on-`m`) recursion, or factor a `botThread` helper. **Likely the cheapest real DROP
+   next** — it only reuses lap-163 ex-falso + a finite descent on producer index.
+3. **tag-5 climb escape** (`:3899/:3904` ⊥ / `:3582`/`:3587` anySucc): `climb_to_rep_producer` ESCAPE disjunct =
+   a `^∀`-formula `G ∈ Γ`. Needs a GENERAL ∀-instantiation reduct `^∀G ∈ Γ ⟹ Γ→C` (generalize `axAllClose`,
+   which is currently only `^∀⊥ ∈ Γ → Γ→⊥`).
+4. **(anySucc only) C-exit R-intro replay** (`:3613`/`:3619`): the least-exit major is itself a tag-1/2 zIall/
+   zIneg producing the conclusion succedent `C`. Needs internal WEAKENING / chain-truncation (re-base the
+   R-intro to conclude the full `Γ→C`) — the genuine general-cut-elimination piece; analogous in depth to how
+   ex-falso needed the new `zAxBot` constructor. NOT a quick win.
+
+### Next attack (ranked)
+- **(a) tag-8 ⊥-producer (item 2)** — restructure `tryProducerClose` as a bounded recursion on the producer
+  index so the earlier-⊥-exit case recurses; the base case is `leafClose` (lap-163). Cheapest path to a real
+  narrowing/possible DROP; reuses only banked machinery.
+- **(b) general ∀-instantiation `axAllClose` (item 3)** — generalize `^∀⊥∈Γ→Γ→⊥` to `^∀G∈Γ→Γ→C` (the §5
+  L∀-axiom `zAxAll s G-matrix …`), closing the tag-5 climb escape in both copies (shared, like `threadEscapeClose`).
+- **(c) tag-6 partial (item 1)** — the `p'`-doesn't-thread case; check whether `p'` threading to a non-leaf
+  producer is itself reducible (the producer is a `Rep`/¬-axiom by `hnolow`).
+- **(d) C-exit R-intro replay (item 4)** — the deep one; defer until (a)-(c) shrink everything else.
+
+---
+
 ## Lap 163 (M1b-term) — ⭐⭐⭐ `zDerivation_zAxBot` DROPPED; ZPhi disjunct #9 (zAxBot, tag-8) FULLY WIRED, axiom-clean
 
 **Build 🟢 1326. HEAD `09cd161`.** ONE src sorry dropped on the M1b-term path (Crux2Blueprint 47→46, zero

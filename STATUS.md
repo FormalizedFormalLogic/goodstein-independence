@@ -1,12 +1,41 @@
 # STATUS — GoodsteinPA 📊
 
 **`𝗣𝗔 ⊬ Goodstein` (Kirby–Paris), axiom-free — single open girder = crux-2 (IΣ₁-internal Gentzen consistency).**
-· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 161 (**DEEP REFLECTION**, every-9th; HEAD `d4ce7e3`) · 2026-06-27 ·
-RE-SYNCED the stale lap-158 directive. **The {3,4}-producer cut-reduction (the deep core of crux-2 = Buchholz Thm 2.1) is now CLOSED in-kernel** (`repProducerClose` via `certReplace_of_premise_cert` + general IH, build 🟢, consumed in the live dispatch `Crux2Blueprint:3578-3581`). The lap-158 directive was internally contradictory — its review half mandated an "outer degree-induction spike FIRST" that its OWN spike (`9ac1bf3`) refuted (the producer closes by CODE-induction with LOCAL per-flatten degree headroom). The open `residual` (:3451)/`axMajorResidual` (:3735) now hold ONLY the STRUCTURAL escape set: (i) ⊥-exit ex-falso (`⊥∈Γ ⟹ Γ→C`, needs internal ⊥-elim/weakening — the one new piece), (ii) C-exit R-intro replay, (iii) tag-5/6 thread-escape (shared). NEXT = build the ex-falso/weakening lemma, close `residual`. See `REFLECTION-2026-06-27-lap161.md`, `DIRECTION.md` CURRENT DIRECTIVE (lap-161).
+· **Build**: 🟢 green (1326 jobs) · **Updated**: lap 164 (**FRESH-MIND REVIEW**; HEAD `09cd161`) · 2026-06-27 ·
+Direction KEPT (lap-161 still current). **Lap-163 DISCHARGED escape (i) ⊥-exit ex-falso in-kernel** — `zAxBot`
+(tag-8 ⊥-left leaf, the ZPhi 9th disjunct) + the `exFalsoClose` cert, axiom-clean (`zDerivation_zAxBot` =
+`[propext, choice, Quot.sound]`, no `sorryAx`). The {3,4}-producer cut-reduction core (Buchholz Thm 2.1) was
+CLOSED laps 159-160 (`repProducerClose`, consumed at `Crux2Blueprint:3578-3581`). **The `residual` (:3475) now
+holds ONLY two families: (ii) C-exit R-intro replay (tag-1/2 major producing `C`) + (iii) tag-5/6 thread-escape
+(shared with `axMajorResidual`).** NEXT = decompose `residual` into named src sub-`sorry`s (`cExitReplay`/
+`threadEscapeClose`), then close (ii) via the major premise's own R-intro reduct spliced same-end-sequent.
+Closing `residual` cascades → drops `genReduct_chain_noRedex_anySucc` → `axMajorResidual` +
+`descent_step_K_noncrit_axMajor`. See `DIRECTION.md` CURRENT DIRECTIVE (lap-164 banner), `HANDOFF-2026-06-27-lap163.md`.
 · Headline `peano_not_proves_goodstein = [propext, sorryAx, Classical.choice, Quot.sound]` (**0 math axioms**, bare-sorry
-headline); `goodsteinSentence_faithful` + `peano_not_proves_consistency` axiom-clean (real `#print axioms`, lap 161, no
-drift). **ALTITUDE:** a sorry-free `false_of_ZDerivesEmpty` is NOT the headline — `goodstein_implies_consistency`
-(`Reduction.lean:68`) is a bare sorry, NOT YET wired to it; the M2/M4 embedding bridge is ~0% built. "Only the crux left" ≠ "almost done."
+headline); `goodsteinSentence_faithful` + `peano_not_proves_consistency` axiom-clean; `false_of_ZDerivesEmpty` =
+`[propext, sorryAx, choice, Quot.sound]` (0 math axioms) (real `#print axioms`, lap 164, no drift). **ALTITUDE:** a
+sorry-free `false_of_ZDerivesEmpty` is NOT the headline — `goodstein_implies_consistency` (`Reduction.lean:68`) is a
+bare sorry, NOT YET wired to it; the M2/M4 embedding bridge is ~0% built (the dominant remaining feasibility
+unknown). "Only the crux left" ≠ "almost done." The lap that closes `false_of_ZDerivesEmpty` HANDS to altitude to re-plan M2.
+
+> **🧭 Lap-164 — FRESH-MIND REVIEW. Direction KEPT; ex-falso (i) now CLOSED. Read FIRST — current.**
+> Build re-verified 🟢 green (1326, exit 0); real `#print axioms` in-kernel: headline `peano_not_proves_goodstein` +
+> `false_of_ZDerivesEmpty` = `[propext, sorryAx, choice, Quot.sound]` (**0 math axioms**); `peano_not_proves_consistency` +
+> `goodsteinSentence_faithful` = `[propext, choice, Quot.sound]` (clean) — no drift. **THE CALL:** lap-161's mandate
+> (build the internal ex-falso/weakening lemma FIRST) is DONE — lap-163 closed escape (i) ⊥-exit ex-falso via the `zAxBot`
+> tag-8 ⊥-left leaf (the ZPhi 9th disjunct) + the `exFalsoClose` cert, axiom-clean (`zDerivation_zAxBot` has NO `sorryAx`).
+> The `residual` (`Crux2Blueprint:3475`) now holds ONLY two families: **(ii) C-exit R-intro replay** (tag-1/2 major produces
+> the conclusion succedent `C`; dispatch lands at :3613/:3619) and **(iii) tag-5/6 thread-escape** (:3631/:3646 + the
+> `tryProducerClose`/`closeZAxNeg` residual landings, shared with `axMajorResidual`). **CRUX-NEGLECT CHECK:** laps 161-163
+> all hit the directive's named piece (not side-leaves) — not fixation; but `false_of_ZDerivesEmpty` is the cut-elim ENGINE,
+> still UNWIRED to the headline's bare sorry — M2 remains the dominant feasibility unknown, deferred by design until the
+> engine closes. **MANDATE (`DIRECTION.md` lap-164 banner):** decompose `residual` into named src sub-`sorry`s
+> (`cExitReplay` / `threadEscapeClose`), then close (ii) via the major premise's OWN R-intro reduct spliced same-end-sequent
+> (it is already a `zIall`/`zIneg` deriving `Γⱼ→C`; `õ`-drops as a strict sub-derivation), (iii) via a shared
+> `threadEscapeClose` reused by `axMajorResidual`. Closing `residual` cascades to drop `genReduct_chain_noRedex_anySucc` →
+> `axMajorResidual` + `descent_step_K_noncrit_axMajor` (4 of 6 sorries); gDef (:4378) separable. FORBIDDEN/engines per
+> lap-161. **ALTITUDE CAUTION (binding):** the lap that closes `false_of_ZDerivesEmpty` HANDS to an altitude lap to re-plan
+> the M2 bridge. See `DIRECTION.md` CURRENT DIRECTIVE (lap-164), `HANDOFF-2026-06-27-lap163.md`.
 
 > **🧘 Lap-161 — DEEP REFLECTION (every-9th, prev altitude lap-158). Directive RE-SYNCED. Read FIRST — current.**
 > Build re-verified 🟢 green (1326, exit 0); real `#print axioms` in-kernel: headline `peano_not_proves_goodstein` =

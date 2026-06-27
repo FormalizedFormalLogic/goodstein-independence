@@ -3562,15 +3562,19 @@ lemma genReduct_chain_noRedex_anySucc {s r ds j0 : V}
     · rw [h''] at h6; simp at h6
     · rw [h''] at h6; simp at h6
   -- §14.254b producer dispatch (succedent-agnostic): {3,4} → repProducerClose; 5 → CLIMB; 6 → closeZAxNeg.
-  have tryProducerClose : ∀ m, m ≤ j0 → m < lh ds → GenReductCert (zK s r ds) := by
-    intro m hmj0 hmlt
+  -- The producer `m` is supplied by `collapse` (NON-LEAF: `zTag ≠ 0,7`) inside the `else` branch of a
+  -- `by_cases π₁(tp) = 0` (NON-right-symbol). tags 0/1/2/7 are PHANTOM (lap-164 narrowing): leaf (0/7)
+  -- contradicts non-leaf; R-intro (1/2, `tp = isymR …`, `π₁ = 0`) contradicts non-right-symbol.
+  have tryProducerClose : ∀ m, m ≤ j0 → m < lh ds → zTag (znth ds m) ≠ 0 → zTag (znth ds m) ≠ 7 →
+      π₁ (tp (znth ds m)) ≠ 0 → GenReductCert (zK s r ds) := by
+    intro m hmj0 hmlt hmne0 hmne7 hmneR
     rcases zDerivation_iff.mp (hmem m hmlt) with
       ⟨s'', h'', _⟩ | ⟨s'', a'', p'', d0'', h'', _, _⟩ | ⟨s'', p'', d0'', h'', _, _⟩ |
       ⟨s'', at''', p'', d0'', d1'', h'', _, _⟩ | ⟨s'', r'', ds'', h'', _, _, _⟩ |
       ⟨s'', p'', k'', h'', _, _⟩ | ⟨s'', q, h'', hq, hqn, hqp⟩ | ⟨s'', C'', h'', _⟩ | ⟨s'', h'', _⟩
-    · exact residual
-    · exact residual
-    · exact residual
+    · exact absurd (show zTag (znth ds m) = 0 by rw [h'']; simp) hmne0          -- tag 0: PHANTOM (non-leaf)
+    · exact absurd (show π₁ (tp (znth ds m)) = 0 by rw [h'', tp_zIall, pi₁_isymR]) hmneR  -- tag 1: PHANTOM (R-intro)
+    · exact absurd (show π₁ (tp (znth ds m)) = 0 by rw [h'', tp_zIneg, pi₁_isymR]) hmneR  -- tag 2: PHANTOM (R-intro)
     · exact repProducerClose m hmj0 hmlt (Or.inl (by rw [h'']; simp))
     · exact repProducerClose m hmj0 hmlt (Or.inr (by rw [h'']; simp))
     · have hjLm : tp (znth ds m) = isymLk k'' (^∀ p'' : V) := by rw [h'', tp_zAxAll]
@@ -3586,8 +3590,8 @@ lemma genReduct_chain_noRedex_anySucc {s r ds j0 : V}
         · exact closeZAxNeg m' hm'j0 hm'lt h6
         · exact residual
     · exact closeZAxNeg m hmj0 hmlt (by rw [h'']; simp)
-    · exact residual
-    · exact residual
+    · exact absurd (show zTag (znth ds m) = 7 by rw [h'']; simp) hmne7          -- tag 7: PHANTOM (non-leaf)
+    · exact residual                                        -- tag 8 (zAxBot): ex-falso producer
   -- dispatch on the least-exit major premise `jstar`
   rcases zDerivation_iff.mp hmemZ with
     ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
@@ -3631,7 +3635,7 @@ lemma genReduct_chain_noRedex_anySucc {s r ds j0 : V}
     · exact residual
     · by_cases h0 : π₁ (tp (znth ds m)) = 0
       · exact (rightSym_producer_redex (hmem m (lt_trans hmjs hjlt)) hjL hjlt hjle hmjs hCm h0 hnolow).elim
-      · exact tryProducerClose m (le_of_lt (lt_of_lt_of_le hmjs hjle)) (lt_trans hmjs hjlt)
+      · exact tryProducerClose m (le_of_lt (lt_of_lt_of_le hmjs hjle)) (lt_trans hmjs hjlt) hm0 hm7 h0
   · -- tag 6 (zAxNeg): dual L-axiom. Thread BOTH `inegF p'`,`p'`: both in Γ → `axNegCloseGen` (any
     -- succedent); else residual / tryProducerClose.
     have hXval : iotil (znth ds jstar) = oAtomLk (inegF p') := by rw [h, iotil_zAxNeg]
@@ -3647,7 +3651,7 @@ lemma genReduct_chain_noRedex_anySucc {s r ds j0 : V}
     · by_cases h0 : π₁ (tp (znth ds mn)) = 0
       · exact (rightSym_producer_redex (hmem mn (lt_trans hmnjs hjlt)) hjLneg hjlt hjle hmnjs hCmn h0
           hnolow).elim
-      · exact tryProducerClose mn (le_of_lt (lt_of_lt_of_le hmnjs hjle)) (lt_trans hmnjs hjlt)
+      · exact tryProducerClose mn (le_of_lt (lt_of_lt_of_le hmnjs hjle)) (lt_trans hmnjs hjlt) hmn0 hmn7 h0
   · -- tag 7 (zAx1): leaf, like tag 0.
     have hin : inAnt (chainAsucc ds jstar) (chainAnt ds jstar) := by
       have hax := zDerivation_zAx1_inv (h ▸ hmemZ)
@@ -3876,15 +3880,20 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
   -- or a `^∀`-formula in `Γ` (the general escape, residual). The `zAxAll` (tag 5) producer is NO LONGER an
   -- independent gap. tags 3/4 (zInd/zK) directly + the climb's {3,4} landings + the general escape remain
   -- `axMajorResidual` (the genuine general-succedent reduction residual).
-  have tryProducerClose : ∀ m, m ≤ j0 → m < lh ds → GenReductCert (zK s r ds) := by
-    intro m hmj0 hmlt
+  -- The producer `m` is supplied by `collapse` (NON-LEAF: `zTag ≠ 0,7`) inside the `else` branch of a
+  -- `by_cases π₁(tp) = 0` (NON-right-symbol). So tags 0/1/2/7 are PHANTOM: a leaf (0/7) contradicts the
+  -- non-leaf evidence; an R-intro (1/2, `tp = isymR …`, `π₁ = 0`) contradicts the non-right-symbol evidence
+  -- (it would form an `isRedexPair` with `jstar`, killed by `hnolow` upstream). (lap-164 narrowing.)
+  have tryProducerClose : ∀ m, m ≤ j0 → m < lh ds → zTag (znth ds m) ≠ 0 → zTag (znth ds m) ≠ 7 →
+      π₁ (tp (znth ds m)) ≠ 0 → GenReductCert (zK s r ds) := by
+    intro m hmj0 hmlt hmne0 hmne7 hmneR
     rcases zDerivation_iff.mp (hmem m hmlt) with
       ⟨s'', h'', _⟩ | ⟨s'', a'', p'', d0'', h'', _, _⟩ | ⟨s'', p'', d0'', h'', _, _⟩ |
       ⟨s'', at''', p'', d0'', d1'', h'', _, _⟩ | ⟨s'', r'', ds'', h'', _, _, _⟩ |
       ⟨s'', p'', k'', h'', _, _⟩ | ⟨s'', q, h'', hq, hqn, hqp⟩ | ⟨s'', C'', h'', _⟩ | ⟨s'', h'', _⟩
-    · exact axMajorResidual                                  -- tag 0 (zAtom): general-`C` leaf escape
-    · exact axMajorResidual                                  -- tag 1 (zIall): general-`C` R-intro
-    · exact axMajorResidual                                  -- tag 2 (zIneg): general-`C` R-intro
+    · exact absurd (show zTag (znth ds m) = 0 by rw [h'']; simp) hmne0          -- tag 0: PHANTOM (non-leaf)
+    · exact absurd (show π₁ (tp (znth ds m)) = 0 by rw [h'', tp_zIall, pi₁_isymR]) hmneR  -- tag 1: PHANTOM (R-intro)
+    · exact absurd (show π₁ (tp (znth ds m)) = 0 by rw [h'', tp_zIneg, pi₁_isymR]) hmneR  -- tag 2: PHANTOM (R-intro)
     · -- tag 3 (zInd): {3,4} PRODUCER — close via the general recursion (lap 159, WIRED)
       exact repProducerClose m hmj0 hmlt (Or.inl (by rw [h'']; simp))
     · -- tag 4 (zK): {3,4} PRODUCER — close via the general recursion (lap 159, WIRED)
@@ -3904,7 +3913,7 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
         · exact axMajorResidual                              -- climb → tag-8 ex-falso producer
     · -- tag 6 (zAxNeg s'' q): close via the factored helper.
       exact closeZAxNeg m hmj0 hmlt (by rw [h'']; simp)
-    · exact axMajorResidual
+    · exact absurd (show zTag (znth ds m) = 7 by rw [h'']; simp) hmne7          -- tag 7: PHANTOM (non-leaf)
     · exact axMajorResidual                                  -- tag 8 (zAxBot): ex-falso producer
   rcases zDerivation_iff.mp hmemZ with
     ⟨s', h, _⟩ | ⟨s', a', p', d0', h, _, _⟩ | ⟨s', p', d0', h, _, _⟩ |
@@ -3981,7 +3990,7 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
     · exact axAllClose hΓ
     · by_cases h0 : π₁ (tp (znth ds m)) = 0
       · exact (rightSym_producer_redex (hmem m (lt_trans hmjs hjlt)) hjL hjlt hjle hmjs hCm h0 hnolow).elim
-      · exact tryProducerClose m (le_of_lt (lt_of_lt_of_le hmjs hjle)) (lt_trans hmjs hjlt)
+      · exact tryProducerClose m (le_of_lt (lt_of_lt_of_le hmjs hjle)) (lt_trans hmjs hjlt) hm0 hm7 h0
   · -- tag 6 (zAxNeg): dual L-axiom `Ax^0_{¬p'}` major (`red`-FIXPOINT). `zDerivation_zAxNeg_inv` gives
     -- BOTH `inegF p' ∈ Γ'` and `p' ∈ Γ'` (no `zAxAllSuccWff`, so no `p=⊥` collapse). Thread BOTH via
     -- `hthread0`: SUB-CASE (a) `inegF p', p' ∈ Γ` → fresh `zAxNeg s p'` derives `Γ→⊥` directly (the §5
@@ -4019,7 +4028,7 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
     · by_cases h0 : π₁ (tp (znth ds mn)) = 0
       · exact (rightSym_producer_redex (hmem mn (lt_trans hmnjs hjlt)) hjLneg hjlt hjle hmnjs hCmn h0
           hnolow).elim
-      · exact tryProducerClose mn (le_of_lt (lt_of_lt_of_le hmnjs hjle)) (lt_trans hmnjs hjlt)
+      · exact tryProducerClose mn (le_of_lt (lt_of_lt_of_le hmnjs hjle)) (lt_trans hmnjs hjlt) hmn0 hmn7 h0
   · -- tag 7 (zAx1): a leaf (§5 logical axiom, like zAtom); `⊥ ∈ Γ`. Same trivial-axiom collapse. PROVEN.
     refine leafClose ?_
     have hin : inAnt (^⊥ : V) (chainAnt ds jstar) := by
