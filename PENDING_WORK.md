@@ -1,5 +1,41 @@
 # Pending work — open obligations & attack paths
 
+## Lap 154b — REFINED: the tag-5/6 cut-partner is the lap-136 Ind-unfolding wall (not a quick ⊥-generalization)
+
+**Crux-understanding advance (corrects the lap-154 handoff's over-optimistic "just generalize
+`genReduct_botSucc` off ⊥").** Investigated the ONE remaining open leaf of `genReduct_chain_noRedex`
+(`axMajorClose`, the tag-5/6 L-axiom case). Build still 🟢 green (1326), headline 0 math axioms.
+
+**Finding 1 — the major has `p = ⊥`.** A tag-5 ⊥-exit major `zAxAll s' p' k'` satisfies `zAxAllSuccWff`
+(`InternalZ:1559`): `seqSucc s' = substs1 (numeral k') p'`. Since the ⊥-exit forces `seqSucc s' = ⊥`,
+`eq_falsum_of_substs1_falsum` gives **`p' = ⊥`** — so the active/cut formula is `^∀⊥` (dually `inegF ⊥`
+for tag 6). Same `p=⊥` collapse as the Ind case (`ind_reduct_botSucc_of_fresh`).
+
+**Finding 2 — the general-succedent route's Ind base IS lap-136.** `ind_reduct_botSucc_of_fresh`
+(`Crux2Blueprint:2776`) is fundamentally ⊥-specific: it derives `p = ⊥` (`eq_falsum_of_substs1_falsum`)
+and uses the resulting `substs1 t ⊥ = ⊥` collapse to build the 2-step `iIndReductSeqG … 1` reduct. For a
+cut-partner deriving `Γᵢ'→^∀⊥` that is a `zInd` concluding `^∀⊥` (induction concluding a ∀-formula —
+TOTALLY normal in PA-proof embeddings), reducing it needs the FULL induction unfolding
+(`⟨d0, d1[a:=0..k-1]⟩`, `k = value of t`) — exactly the lap-136 hard target
+(`ind-reduct-false-target-lap136`). So "generalize `genReduct_botSucc` off ⊥" is NOT a mechanical refactor.
+
+**Finding 3 — tag-5/6 splits into two sub-cases (via generalizing the cut-partner identification off
+`seqAnt s = ∅`, the SAME `inAnt V Γ` generalization the leaf-escape did):**
+- **(a) side-formula `^∀⊥ ∈ Γ`** — fresh `zAxAll s ⊥ k'` directly derives `Γ→⊥` (`^∀⊥ ∈ Γ`,
+  `seqSucc s = ⊥ = (⊥)[k']`); it is a sound REPLACE reduct. BUT `iotil_zAxAll = oAtomLk(^∀⊥) ≠ 0`
+  (`InternalZ:2428`), so the descent needs **`iotil(zAxAll) < iseqNaddIdg ds`** — i.e. two NEW reusable
+  ordinal lemmas: `w < ω^w` (`icmp w (ocOadd w 1 0) = 0`, all NF `w<ε₀`) + "a summand `ω^{iotil(znth ds
+  jstar)}` is `≤` the `#`-fold `iseqNaddIdg ds`". ~30-line plumbing; closes sub-case (a) cleanly.
+- **(b) upstream cut-partner `i' < jstar` producing `^∀⊥`** — Rep node (tag 3/4, NOT a direct R-intro by
+  `hnolow`) deriving `Γᵢ'→^∀⊥`. Reducing it = the general-succedent reduction = **Finding 2 = lap-136**.
+
+**NEXT ATTACK (pick one):**
+1. **Cheap green split:** prove the 2 ordinal lemmas + the cut-partner identification generalization,
+   close sub-case (a), leave (b) as the named lap-136 residual. Shrinks the wall.
+2. **Hardest-first:** attack lap-136 directly — the general induction reduct `⟨d0, d1[a:=0..k-1]⟩`,
+   `k = value of t` (the "substituted multi-step chain", `ind-reduct-false-target-lap136`). This is the
+   genuine deepest crux; closing it unblocks BOTH the tag-5/6 cut-partner AND general-succedent genReduct.
+
 ## Lap 154 — `genReduct_chain_noRedex` 6/8 branches PROVEN; Γ≠∅ leaf-escape DROPPED
 
 **Advance on the crux:** `genReduct_chain_noRedex` (`Crux2Blueprint:3365`) — MASTER KEY #2, the §14.254
