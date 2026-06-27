@@ -2401,10 +2401,11 @@ theorem descent_step_K_hasRedex {s r ds i0 j1 j0 : V}
       · rw [zKseq_zK]; exact hmem _ hIlt
       · rw [zKseq_zK]; exact ZFresh_zK_premise hds hd.2.2.1 hIlt
       · rw [zKseq_zK, hdi]; exact Or.inl (zTag_zIall _ _ _ _)
-    · refine ZSeqAnt_iRKcCrit ?_ ?_ ?_ ?_ ?_
+    · refine ZSeqAnt_iRKcCrit ?_ ?_ ?_ ?_ ?_ ?_
       · rw [zKseq_zK]; intro m hm; exact ZSeqAnt_zK_premise hds hd.2.2.2 hm
       · rw [zKseq_zK]; exact hmem _ hIlt
       · rw [zKseq_zK]; exact ZSeqAnt_zK_premise hds hd.2.2.2 hIlt
+      · rw [fstIdx_zK]; exact seq_seqAnt_zK hd.2.2.2
       · rw [zKseq_zK, hdj, fstIdx_zAxAll]; exact hSeqsj
       · rw [zKseq_zK, hdi]; exact Or.inl (zTag_zIall _ _ _ _)
     · exact iord_descent_iRKcCrit_corr_of_redex hds hmem hr hex hIlt hJlt hIJ hdi hdj hirk
@@ -2434,10 +2435,11 @@ theorem descent_step_K_hasRedex {s r ds i0 j1 j0 : V}
       · rw [zKseq_zK]; exact hmem _ hIlt
       · rw [zKseq_zK]; exact ZFresh_zK_premise hds hd.2.2.1 hIlt
       · rw [zKseq_zK, hdi]; exact Or.inr (zTag_zIneg _ _ _)
-    · refine ZSeqAnt_iRKcCrit ?_ ?_ ?_ ?_ ?_
+    · refine ZSeqAnt_iRKcCrit ?_ ?_ ?_ ?_ ?_ ?_
       · rw [zKseq_zK]; intro m hm; exact ZSeqAnt_zK_premise hds hd.2.2.2 hm
       · rw [zKseq_zK]; exact hmem _ hIlt
       · rw [zKseq_zK]; exact ZSeqAnt_zK_premise hds hd.2.2.2 hIlt
+      · rw [fstIdx_zK]; exact seq_seqAnt_zK hd.2.2.2
       · rw [zKseq_zK]
         have h := seq_seqAnt_zK_premise hds hd.2.2.2 hJlt (hmem _ hJlt) (by rw [hdj]; simp)
         rwa [hdj] at h ⊢
@@ -2493,7 +2495,8 @@ theorem descent_step_K_replace {s r ds i v : V}
   · rw [iCritAux_zK]
     exact ZFresh_zK_of_seqUpdate (fun m hm => ZFresh_zK_premise hds hd.2.2.1 hm) hfreshv
   · rw [iCritAux_zK]
-    exact ZSeqAnt_zK_of_seqUpdate (fun m hm => ZSeqAnt_zK_premise hds hd.2.2.2 hm) hseqantv
+    exact ZSeqAnt_zK_of_seqUpdate (seqAntSeqFlag_zK_of_ZSeqAnt hd.2.2.2)
+      (fun m hm => ZSeqAnt_zK_premise hds hd.2.2.2 hm) hseqantv
   · exact iord_descent_iCritAux_of_ZDerivation hZ hi hdesc.otil_lt hdesc.dg_le hdesc.nf
 
 
@@ -2752,7 +2755,8 @@ theorem descent_step_Ind {s at' p d0 d1 : V} (hd : ZDerivesEmptyR (zInd s at' p 
     · rw [hz0]; exact hfr0
     · rw [hz1]; exact zFresh_zsubst (π₁ at') 0 d1 hd1Z hfr1
   · show zSeqAnt (zK _ _ _) = 0
-    refine zSeqAnt_zK_of hds_seq (fun i hi => ?_)
+    refine zSeqAnt_zK_of hds_seq
+      (seqAntSeqFlag_eq_zero_iff.mpr (by rw [hant]; exact seq_empty)) (fun i hi => ?_)
     rw [hds_lh] at hi
     rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hi) with rfl | rfl
     · rw [hz0]; exact hsa0
@@ -2891,7 +2895,10 @@ lemma ind_reduct_botSucc_of_fresh {s at' p d0 d1 : V}
     · rw [hz0]; exact hfr0
     · rw [hz1]; exact zFresh_zsubst (π₁ at') 0 d1 hd1Z hfr1
   · show zSeqAnt (zK _ _ _) = 0
-    refine zSeqAnt_zK_of hds_seq (fun i hi => ?_)
+    refine zSeqAnt_zK_of hds_seq
+      (by have h : zSeqAnt (zInd s at' (^⊥) d0 d1) = 0 := hseqant
+          rw [zSeqAnt_zInd] at h; exact nonpos_iff_eq_zero.mp (h ▸ le_max_left _ _))
+      (fun i hi => ?_)
     rw [hds_lh] at hi
     rcases le_one_iff_eq_zero_or_one.mp (lt_two_iff_le_one.mp hi) with rfl | rfl
     · rw [hz0]; exact hsa0
@@ -3150,8 +3157,8 @@ theorem descent_step_K_spliceHalves {s r r' ds i j0 a b : V}
   · rw [fstIdx_zK]; exact hsucc
   · exact ZRegular_zK_of_seqInsert hi (fun m hm => ZRegular_zK_premise hds hd.2.1 hm) hrega hregb
   · exact ZFresh_zK_of_seqInsert hi (fun m hm => ZFresh_zK_premise hds hd.2.2.1 hm) hfresha hfreshb
-  · exact ZSeqAnt_zK_of_seqInsert hi (fun m hm => ZSeqAnt_zK_premise hds hd.2.2.2 hm)
-      hseqanta hseqantb
+  · exact ZSeqAnt_zK_of_seqInsert (seqAntSeqFlag_zK_of_ZSeqAnt hd.2.2.2) hi
+      (fun m hm => ZSeqAnt_zK_premise hds hd.2.2.2 hm) hseqanta hseqantb
   · exact iord_descent_seqInsert' hds hi hnf hr'deg ha_otil hb_otil ha_idg hb_idg hNF
       (isNF_iotil_of_ZDerivation a hZa) (isNF_iotil_of_ZDerivation b hZb)
 
