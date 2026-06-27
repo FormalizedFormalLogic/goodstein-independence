@@ -35,9 +35,29 @@ arbitrary). I confirmed against the 8-rule `ZPhi` list (`InternalZ:5458`):
   3. **Alternative reduct** — don't derive `Γ→C` fresh; instead, at the ⊥-exit the leaf at jstar derives
      `chainAnt ds jstar → ⊥` via `⊥ ∈ chainAnt ds jstar`. Investigate whether a chain `certReplace`/`certFlatten`
      that REUSES that leaf (rather than re-deriving `C`) gives the õ-drop. Least explored.
-- **RECOMMENDED next lap:** test route 1 (vacuity) FIRST — cheapest, decisive either way. If `⊥∈seqAnt s` is
-  genuinely reachable, fall to route 2 (the `zAxBot` 9th disjunct, lap-116 playbook). Do route 2 as a wip/ design
-  spike (pin the disjunct + the `iotil`/`idg` for it) BEFORE the src ripple.
+- **RECOMMENDED next lap:** route 1 (vacuity) is REFUTED (see refinement below). Best path = a STRUCTURAL
+  INDUCTION on `C = seqSucc s` (route 4, NEW — cheaper than the route-2 datatype ripple), with the atom case
+  handled by validity, not ex-falso.
+
+### ⭐ REFINEMENT (lap 161, after checking `zInegWff` `InternalZ:1525`) — route 1 REFUTED, route 4 (induction on C) is the path
+- **Vacuity (route 1) is REFUTED:** `seqAnt s` is preserved by `certReplace` splices but CHANGES when the
+  recursion (`IH`) descends into a premise `znth ds i` (its base antecedent = parent `seqAnt s` + cut formulas
+  from earlier chain nodes). An earlier node's succedent CAN be `⊥` (a prior ⊥-exit), so `⊥` legitimately enters
+  antecedents as a cut formula ⟹ `⊥ ∈ seqAnt s` IS reachable. Do NOT pursue global vacuity.
+- **The ex-falso `⊥∈Γ ⟹ Γ→C` is derivable by induction on `C` EXCEPT at atom-rooted leaves:**
+  - `C = inegF p` (`= ¬p ∨ ⊥`): `zInegWff p d0` (`InternalZ:1525`) = the `zIneg` premise `d0` derives
+    `Γ,p → ⊥`. Since `⊥ ∈ Γ ⊆ Γ,p`, `d0` is a **leaf** (`zAtom`, succedent `⊥ ∈` antecedent). So `Γ → inegF p`
+    is a 2-node `zIneg (zAtom …)` — NO recursion. ✓
+  - `C = ^∀ p` (`zIall`): premise derives `Γ → p[eigenvar a]`; RECURSE the ex-falso into the matrix `p`.
+  - `C = atom`: NO R-rule (atoms only via the leaf `atom ∈ Γ`). **The genuine gap.** BUT likely VACUOUS: a valid
+    chain deriving `Γ → atom` must produce the atom at a leaf (`atom ∈` some node's antecedent), which threads
+    (`hthread0`) to `atom ∈ seqAnt s` or an earlier succedent → ultimately `atom ∈ seqAnt s`. If so, `seqSucc s =
+    atom ⟹ atom ∈ seqAnt s` ⟹ close by `leafCloseC`, NOT ex-falso. **CHECK** this "atom succedent ⟹ atom∈Γ"
+    validity (from `zKValidF`/the chain-exit structure) — if it holds, the atom case never needs ex-falso and the
+    whole `exFalsoClose` closes by induction on `C` (`inegF`→leaf, `∀`→recurse, `atom`→leafCloseC).
+  - **NEXT lap = build `exFalsoClose` by `IsUFormula`-induction on `C = seqSucc s`** (the `inegF`/`∀` R-intro
+    recursion + the atom-validity close), reusing `leafCloseC`. This is route 4 — avoids the route-2 `zAxBot`
+    datatype ripple entirely IF the atom-validity holds. Confirm the atom-validity FIRST (it gates the whole route).
 
 ### The rest of the residual (unchanged from lap 160)
 (ii) C-exit R-intro replay (tag-1/2 major produces `C = seqSucc s` directly) — likely needs the major premise's own
