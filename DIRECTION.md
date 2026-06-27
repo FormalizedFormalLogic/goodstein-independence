@@ -14,62 +14,69 @@ autonomous treadmill campaign. Read both.
 > over every few review laps. Keep it SHORT; detail lives in `PENDING_WORK.md` / `REFLECTION-*.md`.
 > (Live milestone map = `E-CRUX2-ROADMAP-2026-06-24.md`; the phase list below is the standing charter.)
 
-**Set: lap-158 (FRESH-MIND REVIEW). Supersedes lap-155. Direction KEPT (existence-form pivot off `red` +
-code-recursion frame `genReduct_botSucc`). lap-155's mandate is DONE — the SUCCEDENT-THREADING COLLAPSE was
-executed TO EXHAUSTION (lap 155 tag-5(a) + ordinal lemmas; lap 156 tag-6(a) + zAxNeg producer + the reusable
-`leastSucc_in_ant_or_nonleaf` collapse; lap 157 `climb_to_rep_producer` PROVEN axiom-clean → tag-5 zAxAll
-producer collapses). Every THREADABLE/closeable sub-case of `axMajorResidual` (`Crux2Blueprint:3417`) is now
-closed. The lap-155 "test the collapse to exhaustion BEFORE the general route" GATE IS MET. Re-verified
-axiom-clean (lap 158, real `#print axioms`): headline `peano_not_proves_goodstein` = `[propext, sorryAx,
-choice, Quot.sound]` (0 math axioms); `peano_not_proves_consistency` + `goodsteinSentence_faithful` clean;
-`false_of_ZDerivesEmpty` = `[propext, sorryAx, choice, Quot.sound]` — no drift. Build 🟢 1326 jobs.**
+**Set: lap-161 (DEEP REFLECTION, every-9th; prev altitude lap-158). Supersedes lap-158. Direction KEPT
+(existence-form / constructive-`GenReductCert` pivot off `red`; finish `false_of_ZDerivesEmpty` = M1b-term).
+RE-SYNCED to reality: the lap-158 directive is STALE. It mandated a "degree-induction design spike FIRST"
+that the lap-158 spike ITSELF already ran AND refuted (`9ac1bf3`: the {3,4} producer closes by the existing
+CODE-induction with LOCAL per-flatten degree headroom from the premise's own `irk+1 ≤ idg(premise)` — NO outer
+degree-induction). Laps 159-160 then WIRED and CLOSED that {3,4}-producer core in-kernel (`repProducerClose`
+via `certReplace_of_premise_cert` + the general IH; build 🟢; consumed in the live dispatch at
+`Crux2Blueprint:3578-3581`). So "the irreducible heart of crux-2" the old directive names as open is CRACKED.
+Re-verified (lap 161, real `#print axioms`, build 🟢 1326): headline `peano_not_proves_goodstein` =
+`[propext, sorryAx, choice, Quot.sound]` (0 math axioms, bare-sorry headline); `peano_not_proves_consistency`
++ `goodsteinSentence_faithful` = `[propext, choice, Quot.sound]` (clean); `false_of_ZDerivesEmpty` =
+`[propext, sorryAx, choice, Quot.sound]` (0 math axioms) — no drift.**
 
-- **THE objective (only this):** close `axMajorResidual` (`Crux2Blueprint:3417`), the LAST open content of
-  `genReduct_chain_noRedex` ⟹ `genReduct_botSucc` ⟹ the M1b-term termination crux `false_of_ZDerivesEmpty`.
-  Its outer twin `descent_step_K_noncrit_axMajor` (`:3857`, Γ=∅) bottoms out in the SAME content (subsumed).
-- **THE residual is now the IRREDUCIBLE {3,4}-producer cut-reduction — this IS Buchholz Thm 2.1 general
-  cut-elimination, the heart of crux-2, and it is NOW UN-FORBIDDEN** (the collapse-to-exhaustion gate is met).
-  `axMajorResidual` is reached ONLY for a NON-LEAF `Rep` producer `m < jstar` (a `zInd` tag-3 or sub-`zK`
-  tag-4) that genuinely PRODUCES the cut formula — it cannot be threaded to Γ (laps 155-157 closed all
-  threadable cases) and cannot be reduced by a same-degree `õ`-drop (`certReplace`/`certFlatten` need
-  `irk(cutFormula)+1 ≤ idg`, NOT derivable — REFUTED in-kernel lap 157). Two shapes: (i) **tag-5 + the
-  climb** → the cut formula is `^∀^k⊥`, a ∀-TOWER over the CLOSED matrix `⊥` (the dominant case; ALL climbing
-  produces ∀-towers); (ii) **tag-6** → arbitrary `p'` / `inegF p'`. The fix DROPS the DEGREE (eliminate the
-  `^∀^k⊥` cut → max cut rank falls), reusing the `genReduct_chain_hasRedex`/`iRKcCrit` degree-drop engine.
-- **MANDATED move — a focused DESIGN SPIKE FIRST (wip/, lap-101/132-style), THEN port to src as named
-  sub-`sorry`s.** Do NOT start the monolithic src refactor blind. The spike pins the generalized statement and
-  proves the structure closes: (1) the recursion is OUTER induction on the DEGREE `idg` (a NAT — KOSHER, unlike
-  `iord`; `idg` is the finite max-cut-rank bound), INNER induction on derivation CODE
-  (`zDerivation_sigma_induction`); eliminate HIGHEST-rank cuts first — that is where the `irk < idg` headroom
-  the lap-157 refutation found missing actually comes from. (2) Generalize `genReduct_botSucc` /
-  `genReduct_chain_noRedex` / `GenReductCert` off `seqSucc = ⊥` to a general succedent `C`, keeping the
-  same-end-sequent `certReplace` splice (reused, not rebuilt). (3) EXPLORE the cheap optimization for shape (i):
-  since `^∀^k⊥` has a CLOSED matrix, a ∀-inversion `Γ→^∀⊥ ⟹ Γ→⊥` is VACUOUS-instantiation (no eigenvariable
-  bookkeeping) — but it needs a change-of-succedent splice (NOT the banked same-end-sequent one), so confirm in
-  the spike whether it actually undercuts the degree-general route before committing. Decompose into named src
-  sub-`sorry`s (raising the count = progress); full attack-tree in `PENDING_WORK.md` (lap-158 top).
-- **Success metric:** a `src` sorry drops on this path, OR `axMajorResidual` is decomposed into named src
-  sub-`sorry`s with the degree-induction skeleton wired (the heart of crux-2 made tractable = a successful lap
-  per "what makes a lap successful"). NOT: a blind monolithic refactor with no pinned statement; banking
-  generalized lemmas without wiring them toward `axMajorResidual`; attacking gDef instead (off the crux).
-- **FORBIDDEN:** starting the full src general-succedent refactor BEFORE the design spike pins the generalized
-  statement + confirms the degree-drop closes the {3,4} producer; a same-degree `õ`-drop (`iRedDescent`) for
-  the {3,4} producer (REFUTED lap 157 — must drop the DEGREE); witnessing any descent branch with `red`; the
-  construction by `iord`-recursion (PRWO/Gödel-barred — degree-induction on the NAT `idg` + CODE induction
-  ONLY); `redLeast`/μ-min for gDef (refuted lap-139); the single-premise `seqUpdate`+combined-`iord` splice
-  (`descent_step_K_splice`, refuted in-kernel lap 151); attacking `descent_step_K_noncrit_axMajor` :3857 or
-  gDef :3980 STANDALONE (the Γ=∅ special case / definability consumer); the off-path dead `red`-soundness
-  sorries {:82,:1257,:1367,:1563,:1653,:1765,:1868} AS STATED; M2 / M4 wiring.
-- **Why:** the succedent-threading collapse (laps 155-157) was the right call and is now COMPLETE — it closed
-  every case where the cut formula could be threaded away. What remains is the genuine cut-elimination core: a
-  `Rep` node that *produces* the cut formula, irreducible by threading (laps 155-157) or by same-degree õ-drop
-  (refuted lap 157). This is Buchholz Thm 2.1, the actual content of crux-2 — not a defect, not an artifact, and
-  no longer dodgeable. A blind src refactor of the whole `genReduct` stack risks many sorry-less laps; the spike
-  de-risks it decisively (does the degree-drop close shape (i) AND (ii)?) and yields named src sub-sorries
-  either way. ALTITUDE CAUTION (still binding): M2 — the Foundation→Z bridge — is ~0% built and crux-entangled;
-  "only the crux is left" must NOT read as "almost done."
+- **THE objective (only this):** drive `false_of_ZDerivesEmpty` (`Crux2Blueprint:4394`) to **0 sorries**.
+  The {3,4}-producer cut-reduction (the genuine feasibility risk) is DONE; what is left is STRUCTURAL +
+  one definability bound. The six live sorries: `ind_reduct_anySucc` (:3382), `genReduct_chain_hasRedex_anySucc`
+  (:3391), `genReduct_chain_noRedex_anySucc`/`residual` (:3407/:3451), `genReduct_chain_noRedex`/`axMajorResidual`
+  (:3683/:3735), `descent_step_K_noncrit_axMajor` (:4180, the Γ=∅ twin), gDef (:4309).
+- **THE residual is NO LONGER the {3,4} producer — it is the STRUCTURAL escape set.** `residual` (:3451) and
+  `axMajorResidual` (:3735) are now reached ONLY for: (i) **⊥-exit ex-falso** — a tag-0/7 leaf or tag-5 escape
+  puts `⊥∈Γ` (or `^∀⊥∈Γ`), and `⊥∈Γ ⟹ Γ→C` has NO single Z-rule (the lone ex-falso `zAxNeg` needs a
+  complementary `¬q,q` pair, not bare `⊥`); (ii) **C-exit R-intro replay** — a tag-1/2 major produces the
+  conclusion succedent `C` directly; (iii) the **tag-5 climb-escape** (`^∀G∈Γ`) + **tag-6 partial thread**
+  (shared between `residual` and `axMajorResidual` — prove ONCE). (i) is the one genuinely-new piece (lap-160
+  finding #2: needs an internal **⊥-elim / weakening** lemma); (ii)/(iii) are reuse/threading.
+- **MANDATED move — build the internal EX-FALSO / WEAKENING lemma FIRST, then wire it to close `residual`.**
+  As a STANDALONE reusable Z-lemma: `⊥ ∈ seqAnt s ⟹ ∃ d', ZDerivation d' deriving (s's antecedent)→C` with a
+  finite-head ordinal that `õ`-drops vs `zK s r ds` (mirror `leafCloseC`/`axNegCloseGen` at :3462/:3473 — same
+  cert shape), plus the `^∀⊥∈Γ` variant for the tag-5 escape. Then discharge `residual` (:3451) case-by-case:
+  (i) → the new ex-falso lemma; (ii) → the major premise's own reduct, spliced same-end-sequent; (iii) → the
+  shared thread (factor a `threadEscapeClose` reused by `axMajorResidual`). Closing `residual` DROPS the
+  `genReduct_chain_noRedex_anySucc` leaf; finishing the other two anySucc leaves makes `genReduct_botSucc`
+  (and `genReduct_anySucc`) a thin wrapper that DROPS `axMajorResidual` (:3735) AND its Γ=∅ twin
+  `descent_step_K_noncrit_axMajor` (:4180, same content). One structural lemma + the port collapses FOUR of
+  the six live sorries. gDef (:4309) is the separable fifth piece (below).
+- **gDef (`exists_sigma1_descending_step` :4309)** — the Σ₁-definable step function. NOT μ-min (wrong polarity,
+  refuted lap-139). Route: a primrec WITNESS BOUND `∃ d' ≤ B(w)` on the reduct CODE (then bounded-`μ` is Δ₁,
+  see `wip/WitnessBound.lean`), OR make the now-constructive `genReduct` reduct a definable function so `g` is
+  deterministic. Attack only AFTER the cut-elimination residuals close (the constructive reduct is the input).
+- **Success metric:** a WHOLE-LEMMA `src` sorry DROPS (not just an internal residual narrowed). Laps 155-160
+  closed sub-cases but the whole-lemma count went 4→6 (3 anySucc leaves added); the next laps must DROP, led by
+  `residual` (:3451). Decomposing `residual` into named src sub-`sorry`s (one per escape case) also counts.
+- **FORBIDDEN:** re-attacking / re-spiking the {3,4}-producer core or "outer degree-induction" (DONE + the
+  degree-induction hypothesis REFUTED by its own lap-158 spike — do not rebuild it); witnessing any branch with
+  `red`; `iord`-recursion for the construction (CODE-induction + local-degree flatten ONLY); `redLeast`/μ-min
+  for gDef (refuted lap-139); the refuted single-premise `seqUpdate` splice (`descent_step_K_splice`, lap-151);
+  attacking `descent_step_K_noncrit_axMajor` :4180 or gDef :4309 STANDALONE *before* the anySucc port wires them
+  (they collapse FROM the port, not in isolation); the off-path dead `red`-soundness sorries
+  {:82,:1257,:1367,:1563,:1653,:1765,:1868} AS STATED; **M2 / M3 / M4 wiring** (the embedding bridge +
+  `goodstein_implies_consistency`) — still off-limits until `false_of_ZDerivesEmpty` is sorry-free.
+- **Why:** the {3,4}-producer cut-reduction was the one piece of crux-2 whose feasibility was in doubt, and it
+  CLOSED at laps 158-160 — major de-risking. The remainder of `false_of_ZDerivesEmpty` is admissible-rule
+  structural work (ex-falso/weakening, R-intro replay, threading) + a primrec code bound — laborious but not
+  feasibility-threatening, a handful of laps from a clean, citable milestone. Finishing it is the right thing
+  to do before pivoting to the unbuilt bridge. **ALTITUDE CAUTION (sharpened, binding):** a sorry-free
+  `false_of_ZDerivesEmpty` is NOT the headline. `goodstein_implies_consistency` (`Reduction.lean:68`) is a BARE
+  sorry; `false_of_ZDerivesEmpty` is NOT YET WIRED to it (the M2/M4 embedding — PA-proof → `ZDerivesEmptyR` — is
+  ~0% built); girder #1 (γ→PRWO, internal Cor 3.4) is only partly built. "0 math axioms / only the crux left"
+  must NOT read as "almost done." The lap that closes `false_of_ZDerivesEmpty` should hand to an altitude lap to
+  RE-PLAN toward the M2 bridge — that becomes the dominant feasibility unknown.
 
 ### Directive history (newest first; append one line per altitude lap — never delete)
+- **lap-161** (DEEP REFLECTION, every-9th): direction KEPT (existence-form / constructive-`GenReductCert` pivot; finish `false_of_ZDerivesEmpty` = M1b-term). RE-SYNCED the stale lap-158 directive. FINDING = lap-158 was internally contradictory: its review half mandated an "outer degree-induction design spike FIRST," but its OWN spike (`9ac1bf3`) refuted that hypothesis — the {3,4} producer closes by the EXISTING code-induction with LOCAL per-flatten degree headroom (premise's own `irk+1 ≤ idg(premise)`), no global degree-induction. Laps 159-160 then WIRED + CLOSED that {3,4}-producer core in-kernel (`repProducerClose` via `certReplace_of_premise_cert` + general IH; build 🟢; consumed at `Crux2Blueprint:3578-3581`). So the "irreducible heart of crux-2" is CRACKED; the open `residual` (:3451)/`axMajorResidual` (:3735) now hold ONLY the STRUCTURAL escape set — (i) ⊥-exit ex-falso (`⊥∈Γ ⟹ Γ→C`, needs internal ⊥-elim/weakening — the one new piece), (ii) C-exit R-intro replay, (iii) tag-5/6 thread-escape (shared). Re-verified axiom-clean (real `#print axioms`, build 🟢 1326): headline 0 math axioms (bare sorry), consistency/faithful clean, `false_of_ZDerivesEmpty` 0 math axioms, no drift. VERDICT = progress GENUINE (steady crux narrowing 153→160; the {3,4} core actually closed), but laps 155-160 added 3 anySucc leaves WITHOUT dropping a whole-lemma src sorry — next laps must DROP. MANDATE = build the internal EX-FALSO/WEAKENING lemma FIRST (standalone, mirror `leafCloseC`/`axNegCloseGen` cert shape), wire it + R-intro replay + shared thread to CLOSE `residual` (:3451) → drops the noRedex_anySucc leaf → (with the 2 other anySucc leaves) thin-wraps `genReduct_botSucc` → DROPS `axMajorResidual` + `descent_step_K_noncrit_axMajor`; gDef (:4309) separable (witness-bound/constructive reduct, NOT μ-min). FORBIDDEN = re-spiking the {3,4} producer / outer degree-induction (DONE + refuted); `red`; `iord`-recursion; `redLeast`; the refuted `seqUpdate` splice; axMajor/gDef standalone before the port; off-path dead red-soundness sorries; M2/M3/M4 wiring. ALTITUDE CAUTION (sharpened) = `false_of_ZDerivesEmpty` sorry-free is NOT the headline — `goodstein_implies_consistency` (`Reduction.lean:68`) is a bare sorry, NOT YET wired to `false_of_ZDerivesEmpty`; the M2/M4 embedding bridge is ~0% built; "only the crux left" ≠ "almost done." The lap that closes `false_of_ZDerivesEmpty` hands to an altitude lap to re-plan the M2 bridge.
 - **lap-158** (FRESH-MIND REVIEW): direction KEPT (existence-form pivot off `red` + `genReduct_botSucc` code-recursion). lap-155's SUCCEDENT-THREADING COLLAPSE mandate is DONE + EXHAUSTED — lap 155 tag-5(a)+ordinal lemmas, lap 156 tag-6(a)+zAxNeg producer+`leastSucc_in_ant_or_nonleaf`, lap 157 `climb_to_rep_producer` (axiom-clean) → tag-5 zAxAll producer collapses. Every threadable/closeable sub-case of `axMajorResidual` (`Crux2Blueprint:3417`) is closed; the lap-155 collapse-to-exhaustion GATE IS MET. Re-verified axiom-clean (real `#print axioms`): headline `[propext,sorryAx,choice,Quot.sound]` 0 math axioms; consistency/faithful clean; `false_of_ZDerivesEmpty` 0 math axioms; no drift; build 🟢 1326. VERDICT = progress GENUINE (steady crux narrowing 153→157, not fixation/leaf-neglect). FINDING = the residual is now the IRREDUCIBLE {3,4}-producer cut-reduction = Buchholz Thm 2.1 general cut-elimination (the heart of crux-2), NOW UN-FORBIDDEN (gate met): a NON-LEAF `Rep` producer that genuinely PRODUCES the cut formula — un-threadable (laps 155-157) AND un-reducible by same-degree õ-drop (REFUTED in-kernel lap 157; `irk(cut)+1≤idg` not derivable). Shapes: (i) tag-5+climb → `^∀^k⊥` (∀-tower over CLOSED ⊥, dominant); (ii) tag-6 → arbitrary `p'`. MANDATE = DESIGN SPIKE FIRST (wip/, lap-101/132-style) pinning the generalized statement: OUTER induction on DEGREE `idg` (a NAT — kosher) + INNER code-induction, eliminate highest-rank cuts first (= the missing headroom), reuse the `genReduct_chain_hasRedex` degree-drop engine + same-end-sequent `certReplace`; EXPLORE the cheap `^∀⊥→⊥` vacuous-instantiation inversion for shape (i) but confirm it beats the degree-general route (needs change-of-succedent splice) before committing; THEN port to src as named sub-`sorry`s. FORBIDDEN = blind src refactor before the spike pins the statement; same-degree õ-drop for the {3,4} producer (refuted lap 157); `red`; `iord`-recursion (degree-induction on NAT `idg` + CODE only); `redLeast`; the refuted `seqUpdate` splice; axMajor/gDef standalone; off-path dead red-soundness sorries; M2/M4. ALTITUDE CAUTION = M2 (Foundation→Z bridge) ~0% built — "only the crux left" ≠ "almost done."
 - **lap-155** (FRESH-MIND REVIEW): direction KEPT (existence-form pivot off `red` + `genReduct_botSucc` code-recursion). lap-152's mandate DONE — `genReduct_chain_hasRedex` DROPPED (lap 153) + `genReduct_chain_noRedex` 6/8 branches PROVEN (lap 154). Re-verified axiom-clean (headline `[propext,sorryAx,choice,Quot.sound]` 0 math axioms; faithful/consistency clean; statement no drift). The whole termination crux = the ONE open leaf `axMajorClose` (tag-5/6 L-axiom cut-partner, `Crux2Blueprint:3418`). **COURSE-CORRECTION:** the lap-154 handoff frames its sub-case (b) as the lap-136 general-succedent reduction (the repo's hardest target, kernel-refuted at face value); the review judges that PESSIMISTIC + PREMATURE. Kernel-grounded insight: cut formula is `^∀⊥` (`p=⊥`); under `hnolow` a direct R-intro `zIall` of `^∀⊥` below j0 is IMPOSSIBLE (would `isRedexPair` with jstar — VERIFIED `isRedexPair:4820` fires on `(zIall ^∀p, zAxAll ^∀p)`), so `^∀⊥` is never CREATED, only threaded from Γ. MANDATE = the SUCCEDENT-THREADING COLLAPSE (sub-case (a) `^∀⊥∈Γ` via 2 reusable ordinal lemmas `w<ω^w`+summand-≤-fold + generalize `majorPrem_*_cutPartner` off `seqAnt s=∅`; collapse sub-case (b): leaf→`chainAsucc_threaded_of_leaf`, R-intro→`hnolow`, zK→recurse, residual at most a `zInd` concluding `^∀⊥` — check it's even derivable). FORBIDDEN = building the lap-136 reduct BEFORE the collapse is tested to exhaustion; `red`; `iord`-recursion; `redLeast`; the refuted `seqUpdate` splice; axMajor/gDef standalone. ALTITUDE CAUTION = M2 (Foundation→Z bridge) ~0% built — "only the crux left" ≠ "almost done."
 - **lap-152** (DEEP REFLECTION): direction KEPT (existence-form pivot off `red` + lap-150 code-recursion frame). lap-149's mandate DONE (tag-3 freshFlag DROPPED lap 149); laps 150-151 landed `genReduct_botSucc` (Σ₁ code-recursion), REFUTED the false `seqUpdate` splice in-kernel, PROVED the FLATTEN engine `descent_step_K_spliceHalves`, DROPPED false `descent_step_K_splice` via `GenReductCert` (replace|flatten). RE-VERIFIED axiom-clean (headline/faithful/consistency all `[propext,(sorryAx,)choice,Quot.sound]`, 0 math axioms, no drift). FINDING = trajectory is HEALTHY (lap-143's banking-not-wiring/witness-with-red worries RESOLVED; steady crux DROPS 144→151, in-kernel refutation discipline alive); crux now correctly isolated to `genReduct_botSucc`. KEY ARCHITECTURAL INSIGHT = the four open leaves reduce to TWO master keys: `genReduct_chain_hasRedex` :2989 + `genReduct_chain_noRedex` :3013 SUBSUME the outer `descent_step_K_noncrit_axMajor` :3226 (Γ=∅ special case) and feed gDef :3349 (constructive reduct) — do NOT attack axMajor/gDef standalone. MANDATE = DROP `genReduct_chain_hasRedex` via the zSeqAnt tag-4 `Seq (seqAnt s)` fold (`zSeqAntNext` :2003, exact shape of the proven lap-149/146 folds), THEN `genReduct_chain_noRedex`. FORBIDDEN = `red`; `iord`-recursion for construction; `redLeast` for gDef; the refuted `seqUpdate` single-splice; axMajor/gDef standalone; the fold as a goal. ALTITUDE CAUTION = M2 (Foundation→Z bridge) ~0% built + crux-entangled — "only the crux left" ≠ "almost done."
