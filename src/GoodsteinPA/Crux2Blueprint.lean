@@ -4849,9 +4849,15 @@ lemma genReduct_chain_noRedex {s r ds j0 : V}
         (zTag (znth ds i) = 3 ∨ zTag (znth ds i) = 4) →
         GenReductCert (znth ds i)) :
     GenReductCert (zK s r ds) := by
-  -- §14.254b residual (lap-155 NARROWED): the tag-5/6 Γ-escape cases. These are vacuous
-  -- when `seqAnt s = ∅`, but remain the genuine Γ-general open leaf for this wrapper.
-  have axMajorResidual : GenReductCert (zK s r ds) := sorry
+  -- §14.254b residual (lap-166 DISCHARGED): the genuine Γ-general tag-5/6 escape is closed by the
+  -- MORE GENERAL key `genReduct_anySucc` — a `{3,4}` (`Rep`) node deriving `Γ→F` for ANY `F` has a
+  -- `GenReductCert` (here `F = ⊥`, `zTag (zK …) = 4`). This realizes the subsumption the
+  -- `genReduct_anySucc` docstring states ("the single key that closes `axMajorResidual`"): the
+  -- `⊥`-succedent wrapper is a special case of the any-succedent reduction, so it delegates rather
+  -- than carrying its own residual `sorry`. (No cycle: `genReduct_anySucc` recurses through
+  -- `genReduct_chain_noRedex_anySucc`, never back into this `genReduct_chain_noRedex`.)
+  have axMajorResidual : GenReductCert (zK s r ds) :=
+    genReduct_anySucc hZ hreg hfresh hseqant (Or.inr (zTag_zK s r ds))
   exact genReduct_chain_noRedex_core hZ hreg hfresh hseqant hsucc hj0 hbot0 hthread0 hrank0 hnolow
     (fun _ => axMajorResidual) (fun _ _ => axMajorResidual) IH
 
