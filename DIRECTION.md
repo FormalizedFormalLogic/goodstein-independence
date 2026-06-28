@@ -160,18 +160,12 @@ through the abort conditions it was told to stop at. That is the failure this gu
   false summits since lap 81: `redLeast`, the `seqUpdate` splice, same-degree `õ`-drop, the orphaned
   ⊥-cluster chased for ~30 laps).
 
-**The rule (binding on every deep-reflection / every-9th altitude lap).**
-1. The lap MUST emit an explicit **ROUTE VERDICT** — exactly one of `CONTINUE` / `ESCALATE` —
-   *evaluated against the trigger table above*. A bare "direction KEPT" with no route verdict is
-   itself a process failure; do not write one.
-2. If **any trigger is FIRED**, the verdict MUST be `ESCALATE`: halt route-committing grind, write a
-   short `ROUTE-ESCALATION-<date>.md` (which trigger fired, current honest finishability, the A-vs-B
-   re-costing), and surface it to the operator. **The box does NOT choose the pivot** — the A-vs-B
-   route decision is OPERATOR-OWNED (it is two multi-month research bets; the grinding box is inside
-   the fog and structurally cannot see the summit is false). Resume grind only on an operator/judge-
-   ratified route written into CURRENT DIRECTIVE with a *fresh* trigger set.
-3. `CONTINUE` is permitted only when NO trigger is fired (or a fired trigger has been operator-ratified
-   as "continue anyway, on these re-scoped terms").
+**The rule** is now GENERIC and lives in the lean tooling, not here — every campaign's deep reflection
+lap runs it (`~/personal/claude/hooks/lean-reflect-lap.md`, altitude question #2 "Is the ROUTE still
+right?"): emit an explicit `CONTINUE`/`ESCALATE` verdict against the registered triggers, a fired
+trigger forces `ESCALATE` (halt + `ROUTE-ESCALATION-<date>.md`, operator owns the pivot), never a bare
+"direction KEPT". **This section's job is only to REGISTER this repo's triggers (above) + the live
+status (below)** — the data the generic protocol reads.
 
 **Live status (2026-06-28, lap-167):** both triggers FIRED → escalated → operator **RATIFIED a bounded
 5-lap M2 feasibility probe** as the deciding experiment (CURRENT DIRECTIVE lap-167; record
