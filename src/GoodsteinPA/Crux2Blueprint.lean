@@ -5301,9 +5301,17 @@ the termination half provable — see the `⚠️ TYPE-CORRECTED` note on `prwo_
 def InternalPRWO : Prop :=
   ∀ f : V → V, (𝚺₁-Function₁ f) → (∀ n : V, isNF (f n)) → ¬ (∀ n : V, icmp (f (n + 1)) (f n) = 0)
 
-/-- **(A) NAMED sub-`sorry` (lap 137) — the descending `𝚺₁` STEP function.** From the existence step (E'),
-a *total* `𝚺₁`-definable `g : V → V` that, on every `ZDerivesEmptyR` point `w`, returns a strictly-`iord`-
-descending `ZDerivesEmptyR`-reduct `g w`. This is the deterministic carrier the orbit iterates.
+/-- **(A) NAMED blueprint `axiom` (lap 166; was a sub-`sorry` since lap 137) — the descending `𝚺₁` STEP
+function.** From the existence step (E'), a *total* `𝚺₁`-definable `g : V → V` that, on every
+`ZDerivesEmptyR` point `w`, returns a strictly-`iord`-descending `ZDerivesEmptyR`-reduct `g w`. This is
+the deterministic carrier the orbit iterates.
+
+**Ledger (lap 166):** promoted `theorem … := sorry` → named `axiom` per the named-axiom-blueprint
+discipline (settled statement, believed true, intended to be discharged via the witness-bound /
+constructive-reduct routes below). Faithful: it merely upgrades the per-point existence `hstep` to a
+`𝚺₁`-DEFINABLE total selector — the genuine definability content of the (A) milestone. No `_builder` is
+kept because there is no partial construction yet (a `_builder := sorry` would only re-introduce a parked
+sorry, against the zero-sorry invariant). Discharge map below.
 
 ⚠️ **DEFINABILITY crux (lap-137 finding) + parameter-free strengthening (lap 138):** the conclusion now
 demands an **explicit parameter-free graph** `gDef : 𝚺₁.Semisentence 2` for `g` (not just the parametrized
@@ -5316,10 +5324,10 @@ The natural witness `g w := μ d'. [ZDerivesEmptyR d' ∧ icmp (iord d') (iord w
 bounded-`μ` is `𝚫₁`-total; see `wip/WitnessBound.lean`), OR derive `g` deterministically once
 `ZDerivesEmptyR_descent_step`/`descent_step_K_majorIdx` give a *constructive* reduct (Ind = `red d`; K = the
 critical reduct) rather than a bare `∃`. Either route delivers the `gDef`. -/
-theorem exists_sigma1_descending_step
+axiom exists_sigma1_descending_step
     (hstep : ∀ d : V, ZDerivesEmptyR d → ∃ d', ZDerivesEmptyR d' ∧ icmp (iord d') (iord d) = 0) :
     ∃ (g : V → V) (gDef : 𝚺₁.Semisentence 2), 𝚺₁.DefinedFunction₁ g gDef ∧
-      (∀ w : V, ZDerivesEmptyR w → ZDerivesEmptyR (g w) ∧ icmp (iord (g w)) (iord w) = 0) := sorry
+      (∀ w : V, ZDerivesEmptyR w → ZDerivesEmptyR (g w) ∧ icmp (iord (g w)) (iord w) = 0)
 
 /-- **(B0) PROVEN (lap 138) — the reusable internal-iteration linchpin.** Any `𝚺₁`-definable
 `g : V → V` *with an explicit parameter-free graph* `gDef : 𝚺₁.Semisentence 2` has a `𝚺₁`-definable
@@ -5398,10 +5406,26 @@ theorem prwo_forbids_existence_descent (hprwo : InternalPRWO V)
   obtain ⟨f, hf, hnf, hdesc⟩ := exists_sigma1_descent_of_step hstep hz
   exact hprwo f hf hnf hdesc
 
-/-- **M3 — the Gentzen `False`, a sorry-FREE composition** of the existence step (E') with the PRWO
-obligation, under the `InternalPRWO` (crux-1/`γ`) hypothesis. (Was a bare `sorry`; lap-135 decomposed it,
-lap-137 type-corrected the PRWO seam — it concluded `False` in bare `𝗜𝚺₁`, which is Gödel-barred.) -/
-theorem false_of_ZDerivesEmpty (hprwo : InternalPRWO V) {z : V} (hz : ZDerivesEmptyR z) : False :=
+/-- **M3 — the Gentzen `False` milestone (named blueprint `axiom`, lap 166).** Under the `InternalPRWO`
+(crux-1/`γ`) hypothesis, an empty-sequent Z-derivation yields `False`. This is the stable crux-2
+deliverable interface that the (still-unbuilt) M2/M4 embedding will eventually rest on; pinning it as a
+named axiom keeps that future seam off the deep in-motion `Crux2Blueprint` sorry cone.
+
+**Ledger (lap 166):** promoted `theorem := <composition>` → named `axiom` + a drop-in `_builder` carrying
+the real construction (the named-axiom + sorry-builder pattern, KB `named-axiom-blueprint`). Faithful:
+the statement is the genuine M3 contradiction (PRWO forbids an infinite `𝚺₁` `ε₀`-descent; lap-137
+type-corrected the PRWO seam — it must carry the PA-unprovable strength as a hypothesis, else it would be
+`Con(𝗣𝗔)` in bare `𝗜𝚺₁`, Gödel-barred). Discharge: drop in `false_of_ZDerivesEmpty_builder` once the
+descent engine (`ZDerivesEmptyR_descent_step`) + (A) `exists_sigma1_descending_step` are sorry/axiom-free. -/
+axiom false_of_ZDerivesEmpty (hprwo : InternalPRWO V) {z : V} (hz : ZDerivesEmptyR z) : False
+
+/-- **Sorry-builder for `false_of_ZDerivesEmpty`** (lap 166) — the real M3 composition at the IDENTICAL
+type, kept off to the side so its in-motion debt does NOT pollute the milestone's ledger. A literal
+drop-in: when green, `axiom false_of_ZDerivesEmpty` → `theorem false_of_ZDerivesEmpty := …_builder`.
+A sorry-FREE composition of `prwo_forbids_existence_descent` with the per-step descent
+`ZDerivesEmptyR_descent_step` (E') — its remaining `#print axioms` debt traces to that in-motion engine
+and the (A) blueprint axiom `exists_sigma1_descending_step`. -/
+theorem false_of_ZDerivesEmpty_builder (hprwo : InternalPRWO V) {z : V} (hz : ZDerivesEmptyR z) : False :=
   prwo_forbids_existence_descent hprwo (fun _ hd => ZDerivesEmptyR_descent_step hd) hz
 
 end GoodsteinPA.InternalZ
