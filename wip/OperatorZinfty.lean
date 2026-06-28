@@ -1807,6 +1807,44 @@ theorem embedding_closedTermExI_raiseK_probe
   · exact closedTerm_witnessBound_of_budget e (by omega)
   · exact dSrc.mono_k (le_max_left K (stdClosedVal s))
 
+/-- A derivability wrapper where the witness index `K` is allowed to be chosen later.
+This matches the Path-B terminal shape, which extracts some finite witness budget. -/
+def ZekdSomeK (α e : ONote) (d c : ℕ) (Γ : Seq) : Prop :=
+  ∃ K : ℕ, Zekd α e K d c Γ
+
+/--
+Existential-budget version of closed-term `exI`.
+
+Given any bounded source derivation at some witness index, choose a larger finite index that also
+pays all local norm side conditions and the closed witness value.  This is the shape needed for a
+global finite-budget embedding pass: each rule may enlarge `K`, and the final theorem only exports
+the resulting finite budget.
+-/
+theorem embedding_closedTermExI_someK_probe
+    {βSrc αCut αOut e : ONote} {d c q : ℕ} {Γ : Seq}
+    {ψ : SyntacticSemiformula ℒₒᵣ 1} (s : SyntacticTerm ℒₒᵣ)
+    (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
+    (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)
+    (hCutLt : αCut < αOut)
+    (hSrcNF : βSrc.NF) (hCutNF : αCut.NF) (hOutNF : αOut.NF)
+    (dSrc : ZekdSomeK βSrc e d c (insert (ψ/[s]) Γ)) :
+    ZekdSomeK αOut e d c (insert (∃⁰ ψ) Γ) := by
+  rcases dSrc with ⟨K0, d0⟩
+  let K1 :=
+    max K0
+      (max (stdClosedVal s)
+        (max (norm βSrc + 1)
+          (max (norm (ONote.ofNat (2 * q)) + 1)
+            (max (norm αCut + 1) (2 * q + 1)))))
+  refine ⟨K1, embedding_closedTermExI_probe (K := K1) s hψq hψc
+    hSrcLt hCongLt hCutLt hSrcNF hCutNF hOutNF ?_ ?_ ?_ ?_ ?_ ?_⟩
+  · dsimp [K1]; omega
+  · dsimp [K1]; omega
+  · dsimp [K1]; omega
+  · dsimp [K1]; omega
+  · exact closedTerm_witnessBound_of_budget e (by dsimp [K1]; omega)
+  · exact d0.mono_k (by dsimp [K1]; omega)
+
 /--
 One bounded cut-tower step for the PA-induction leaf.
 

@@ -246,6 +246,8 @@ Follow-up probe: the EM theorem now feeds the closed-term existential adapter di
 theorem embedding_closedTermExI_probe
 theorem closedTerm_witnessBound_of_budget
 theorem embedding_closedTermExI_raiseK_probe
+def ZekdSomeK
+theorem embedding_closedTermExI_someK_probe
 ```
 
 Given a bounded derivation of `ψ[s]`, it introduces `∃⁰ ψ` by generating the congruent EM premise
@@ -257,3 +259,7 @@ raised to `max K (stdClosedVal s)`, where `stdClosedVal s ≤ hardy e (max K (st
 from `le_hardy`.  So the remaining Path-B embedding work is not more logical rule plumbing; it is the
 global finite-budget pass that propagates these `K` raises through the proof embedding and extracts one
 terminal witness budget.
+
+The `someK` version is the local interface for that pass: if the premise is derivable at some finite
+`K`, the closed-term existential conclusion is derivable at some larger finite `K`, with all local norm
+and witness side conditions paid internally.
