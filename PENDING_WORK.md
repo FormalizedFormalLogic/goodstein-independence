@@ -27,19 +27,35 @@ derive them), which is the OPPOSITE of weakening. ⇒ the C-exit reduct is a **c
 antecedent-weakening. Pure weakening only closes the `jstar = 0` sub-case (no earlier premises, `∃ i'<0`
 vacuous).
 
-### 🎯 NEXT ATTACK on the C-exit pair (concrete, corrected)
-Candidate reduct = the **prefix sub-chain** `zK s ? (take ds (jstar+1))`: it satisfies `isChainInf s ? _`
-with distinguished `j0 := jstar` (the C-exit condition `chainAsucc ds jstar = seqSucc s` holds; threading
-+ rank inherited for `i ≤ jstar`), so it is a ZDerivation of `seqAnt s → C` that DROPS every premise
-`> jstar`. OPEN feasibility question (the crux of this sub-approach): its `õ = iotil (zK s r (prefix))`
-vs `iotil (zK s r ds)` — a prefix folds a sub-multiset of premise iotils, so `õ` drops **iff** `jstar`
-is strictly before the end AND the dropped premises have positive iotil; but the rank `r` is UNCHANGED,
-so `iRedDescent` (which also constrains `idg`/rank) may fail. If the prefix keeps rank `r`, this is NOT a
-valid no-redex reduct (the reduction must lower the cut rank). Check `iRedDescent` + `iotil_zK`/`idg_zK`
-fold lemmas against the prefix `take ds (jstar+1)` FIRST; if rank-`r` blocks it, the R-intro's succedent
-`C` must instead be cut at rank `irk C < r` — i.e. the reduct is a rank-`(r-1)` cut of the prefix against
-the R-intro's own sub-derivation (cf. the `iCritReductG` splice machinery at `:3884`). Do NOT re-attempt
-"grow the antecedent."
+### 🎯 NEXT ATTACK on the C-exit pair — VALIDATED prefix sub-chain reduct (feasibility settled)
+Reduct = the **prefix sub-chain** `v := zK s r (ds ↾ under (jstar+1))`. **All feasibility questions from
+the lap-168 first pass are now RESOLVED in-kernel:**
+- `iRedDescent v (zK s r ds)` requires ONLY `idg v ≤ idg d ∧ icmp (iotil v)(iotil d) = 0 ∧ isNF (iotil v)`
+  (`InternalZ.lean:6232`) — **NO rank drop**. The lap-168 worry "the reduction must lower the cut rank"
+  was WRONG: the FORMALIZED descent is purely õ/idg. So keeping rank `r` is fine. This overturns the
+  STATUS "depth ≈ zAxBot internal weakening" framing — no weakening is needed at all.
+- **õ-drop DONE**: `iseqNaddIdgAux_lt_of_lt` (lap-168, `InternalZ.lean` after `:3448`) proves
+  `icmp (iseqNaddIdgAux ds (jstar+1)) (iseqNaddIdgAux ds (lh ds)) = 0` when `jstar+1 < lh ds`. Combine
+  with `iotil_zK` (`= iseqNaddIdg ds = iseqNaddIdgAux ds (lh ds)`) and `iseqNaddIdgAux_congr_iotil`
+  (prefix entries agree with `ds` up to `jstar+1`) to get `icmp (iotil v)(iotil (zK s r ds)) = 0`.
+- `idg v ≤ idg d`: `idg_zK = max r (iseqMaxIdg _ - 1)`; prefix's `iseqMaxIdg ≤` full's via
+  `iseqMaxIdgAux_mono` (already exists, `:3451`) — max over a sub-fold.
+- **prefix `Seq` is nearly free**: `Seq.restr` / `Seq.restr_lh` (Foundation `HFS/Seq.lean:218,221`) give
+  `Seq (ds ↾ under (jstar+1))` and `lh = jstar+1` from `jstar+1 ≤ lh ds`. `znth (ds ↾ under i) n = znth ds n`
+  for `n < i` via `Seq.znth_eq_of_mem` + `pair_mem_restr_iff` + `mem_under_iff`.
+
+**REMAINING BUILD (mechanical, ~1 lap):** (a) three prefix `znth`/`lh`/`Seq` glue lemmas; (b)
+`zKValidF s r (prefix)` — `isChainInf` with distinguished `j0 := jstar` (C-exit `hC`, threading `hthread0`
++ rank `hrank0` restricted to `i ≤ jstar`, all inherited) plus per-premise wff (inherited from full
+`hZ`); (c) `ZRegular/ZFresh/ZSeqAnt (zK s r prefix)` from the premise projections; (d) assemble
+`certReplace` (`Or.inl`). This closes `cExitReplayAll`/`cExitReplayNeg` for the dominant case
+`jstar+1 < lh ds`. Both hooks are structurally identical (zIall vs zIneg) — build one helper
+`cExitPrefixReplace` parametric over the R-intro tag.
+
+**EDGE CASE `jstar+1 = lh ds`** (exit R-intro is the LAST premise → prefix = full chain, no õ-drop):
+needs cut-permutation (pull the R-intro out below the cut: reduct = R-intro of `C` whose premise is the
+rank-`r` cut of the prefix `0..jstar-1` against the R-intro's own sub-derivation `d0`). Separate, smaller
+residual — leave as a narrowed sorry after the main case lands. Do NOT re-attempt "grow the antecedent".
 
 ---
 
