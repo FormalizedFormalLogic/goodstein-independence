@@ -1735,6 +1735,185 @@ theorem embedding_valueCongruentEM_probe :
               (fun m => by rw [embedding_norm_ofNat]; omega) fam
           rwa [Finset.insert_eq_self.mpr hn'] at hallω
 
+/-! #### Bounded true axiom leaves -/
+
+/--
+Truth with the exact witness bounds needed by the `Zekd` rules after a closed substitution.
+
+Unlike plain standard-model truth, the existential case records a witness already bounded by the
+current control budget `hardy e (K + d)`, and the universal case switches to the running index
+`max K m`.  This is the reusable target for the finite `𝗣𝗔⁻`/equality axiom-leaf discharge.
+-/
+noncomputable def ZekdBoundedTruth (e : ONote) (K d : ℕ) :
+    {n : ℕ} → (Fin n → SyntacticTerm ℒₒᵣ) → SyntacticSemiformula ℒₒᵣ n → Prop
+  | _, _, .verum => True
+  | _, _, .falsum => False
+  | _, w, .rel r v => atomTrue (Semiformula.rel r (fun i => Rew.subst w (v i)))
+  | _, w, .nrel r v => atomTrue (Semiformula.nrel r (fun i => Rew.subst w (v i)))
+  | _, w, .and a b => ZekdBoundedTruth e K d w a ∧ ZekdBoundedTruth e K d w b
+  | _, w, .or a b => ZekdBoundedTruth e K d w a ∨ ZekdBoundedTruth e K d w b
+  | _, w, .all a => ∀ m, ZekdBoundedTruth e (max K m) d (nm m :> w) a
+  | _, w, .exs a => ∃ m, m ≤ hardy e (K + d) ∧ ZekdBoundedTruth e K d (nm m :> w) a
+
+set_option maxHeartbeats 1000000 in
+/--
+Bounded truth gives an exact-index `Zekd` derivation.
+
+The proof mirrors the old `provable_true` recursion, but the universal and existential cases are
+indexed by `ZekdBoundedTruth`: universals run at `max K m`, and existential witnesses are already
+within the control-ordinal Hardy budget.
+-/
+theorem zekdOfBoundedTruth_probe :
+    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Seq} {n : ℕ}
+      (w : Fin n → SyntacticTerm ℒₒᵣ) (ψ : SyntacticSemiformula ℒₒᵣ n),
+      ψ.complexity ≤ q →
+      ZekdBoundedTruth e K d w ψ →
+      2 * q < K + d →
+      (Rew.subst w ▹ ψ) ∈ Γ →
+      Zekd (ONote.ofNat (2 * q)) e K d c Γ := by
+  intro q
+  induction q with
+  | zero =>
+      intro K d c e Γ n w ψ hψq hBT hbudget hmem
+      cases ψ using Semiformula.cases' with
+      | hverum =>
+          exact embedding_valueCongruentVerum_probe w (by simpa using hmem)
+      | hfalsum =>
+          cases hBT
+      | hrel r v =>
+          exact Zekd.trueRel r (fun i => Rew.subst w (v i)) hBT
+            (by rw [embedding_norm_ofNat]; omega) inferInstance
+            (by simpa [Semiformula.rew_rel] using hmem)
+      | hnrel r v =>
+          exact Zekd.trueNrel r (fun i => Rew.subst w (v i)) hBT
+            (by rw [embedding_norm_ofNat]; omega) inferInstance
+            (by simpa [Semiformula.rew_nrel] using hmem)
+      | hand a b =>
+          simp only [Semiformula.complexity_and] at hψq
+          omega
+      | hor a b =>
+          simp only [Semiformula.complexity_or] at hψq
+          omega
+      | hall a =>
+          simp only [Semiformula.complexity_all] at hψq
+          omega
+      | hexs a =>
+          simp only [Semiformula.complexity_exs] at hψq
+          omega
+  | succ q ih =>
+      intro K d c e Γ n w ψ hψq hBT hbudget hmem
+      cases ψ using Semiformula.cases' with
+      | hverum =>
+          exact embedding_valueCongruentVerum_probe w (by simpa using hmem)
+      | hfalsum =>
+          cases hBT
+      | hrel r v =>
+          exact Zekd.trueRel r (fun i => Rew.subst w (v i)) hBT
+            (by rw [embedding_norm_ofNat]; omega) inferInstance
+            (by simpa [Semiformula.rew_rel] using hmem)
+      | hnrel r v =>
+          exact Zekd.trueNrel r (fun i => Rew.subst w (v i)) hBT
+            (by rw [embedding_norm_ofNat]; omega) inferInstance
+            (by simpa [Semiformula.rew_nrel] using hmem)
+      | hand a b =>
+          have haq : a.complexity ≤ q := by
+            simp only [Semiformula.complexity_and] at hψq
+            omega
+          have hbq : b.complexity ≤ q := by
+            simp only [Semiformula.complexity_and] at hψq
+            omega
+          obtain ⟨hBTa, hBTb⟩ := hBT
+          have dA : Zekd (ONote.ofNat (2 * q)) e K d c (insert (Rew.subst w ▹ a) Γ) :=
+            ih (K := K) (d := d) (c := c) (e := e) (Γ := insert (Rew.subst w ▹ a) Γ)
+              w a haq hBTa (by omega) (by simp)
+          have dB : Zekd (ONote.ofNat (2 * q)) e K d c (insert (Rew.subst w ▹ b) Γ) :=
+            ih (K := K) (d := d) (c := c) (e := e) (Γ := insert (Rew.subst w ▹ b) Γ)
+              w b hbq hBTb (by omega) (by simp)
+          have hp' : ((Rew.subst w ▹ a) ⋏ (Rew.subst w ▹ b)) ∈ Γ := by
+            simpa using hmem
+          have hand : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+              (insert ((Rew.subst w ▹ a) ⋏ (Rew.subst w ▹ b)) Γ) :=
+            Zekd.andI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
+              (embedding_ofNat_lt_of_lt (by omega)) (embedding_ofNat_lt_of_lt (by omega))
+              inferInstance inferInstance inferInstance
+              (by rw [embedding_norm_ofNat]; omega) (by rw [embedding_norm_ofNat]; omega)
+              dA dB
+          rwa [Finset.insert_eq_self.mpr hp'] at hand
+      | hor a b =>
+          have haq : a.complexity ≤ q := by
+            simp only [Semiformula.complexity_or] at hψq
+            omega
+          have hbq : b.complexity ≤ q := by
+            simp only [Semiformula.complexity_or] at hψq
+            omega
+          have hp' : ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) ∈ Γ := by
+            simpa using hmem
+          rcases hBT with hBTa | hBTb
+          · have dA : Zekd (ONote.ofNat (2 * q)) e K d c
+                (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ)) :=
+              ih (K := K) (d := d) (c := c) (e := e)
+                (Γ := insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ))
+                w a haq hBTa (by omega) (by simp)
+            have hor : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+                (insert ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) Γ) :=
+              Zekd.orI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
+                (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
+                (by rw [embedding_norm_ofNat]; omega) dA
+            rwa [Finset.insert_eq_self.mpr hp'] at hor
+          · have dB0 : Zekd (ONote.ofNat (2 * q)) e K d c
+                (insert (Rew.subst w ▹ b) (insert (Rew.subst w ▹ a) Γ)) :=
+              ih (K := K) (d := d) (c := c) (e := e)
+                (Γ := insert (Rew.subst w ▹ b) (insert (Rew.subst w ▹ a) Γ))
+                w b hbq hBTb (by omega) (by simp)
+            have dB : Zekd (ONote.ofNat (2 * q)) e K d c
+                (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ)) :=
+              Zekd.wk (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto) dB0
+            have hor : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+                (insert ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) Γ) :=
+              Zekd.orI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
+                (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
+                (by rw [embedding_norm_ofNat]; omega) dB
+            rwa [Finset.insert_eq_self.mpr hp'] at hor
+      | hall a =>
+          have haq : a.complexity ≤ q := by
+            simp only [Semiformula.complexity_all] at hψq
+            omega
+          have hp' : (∀⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by
+            simpa using hmem
+          have fam : ∀ m, Zekd (ONote.ofNat (2 * q)) e (max K m) d c
+              (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ) := by
+            intro m
+            exact ih (K := max K m) (d := d) (c := c) (e := e)
+              (Γ := insert (((Rew.subst w).q ▹ a)/[nm m]) Γ)
+              (nm m :> w) a haq (hBT m) (by omega)
+              (by rw [← embedding_subst_q_cons_app]; simp)
+          have hallω : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+              (insert (∀⁰ ((Rew.subst w).q ▹ a)) Γ) :=
+            Zekd.allω ((Rew.subst w).q ▹ a) (fun _ => ONote.ofNat (2 * q))
+              (fun _ => embedding_ofNat_lt_of_lt (by omega))
+              (fun _ => inferInstance) inferInstance
+              (fun m => by rw [embedding_norm_ofNat]; omega) fam
+          rwa [Finset.insert_eq_self.mpr hp'] at hallω
+      | hexs a =>
+          have haq : a.complexity ≤ q := by
+            simp only [Semiformula.complexity_exs] at hψq
+            omega
+          have hp' : (∃⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by
+            simpa using hmem
+          rcases hBT with ⟨m, hbound, hBTm⟩
+          have dA : Zekd (ONote.ofNat (2 * q)) e K d c
+              (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ) :=
+            ih (K := K) (d := d) (c := c) (e := e)
+              (Γ := insert (((Rew.subst w).q ▹ a)/[nm m]) Γ)
+              (nm m :> w) a haq hBTm (by omega)
+              (by rw [← embedding_subst_q_cons_app]; simp)
+          have hexI : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+              (insert (∃⁰ ((Rew.subst w).q ▹ a)) Γ) :=
+            Zekd.exI ((Rew.subst w).q ▹ a) m
+              (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
+              (by rw [embedding_norm_ofNat]; omega) hbound dA
+          rwa [Finset.insert_eq_self.mpr hp'] at hexI
+
 /--
 Closed-term existential introduction using the checked bounded value-congruence EM engine.
 
@@ -1813,6 +1992,65 @@ def ZekdSomeK (α e : ONote) (d c : ℕ) (Γ : Seq) : Prop :=
   ∃ K : ℕ, Zekd α e K d c Γ
 
 namespace ZekdSomeK
+
+/-- Embed a concrete `Zekd` derivation into the existential-budget wrapper. -/
+theorem of {α e : ONote} {K d c : ℕ} {Γ : Seq}
+    (dd : Zekd α e K d c Γ) : ZekdSomeK α e d c Γ :=
+  ⟨K, dd⟩
+
+/-- Convert the ordinal-upper-bound wrapper back to an exact-ordinal existential-budget
+derivation by raising the stored derivation ordinal when needed. -/
+theorem ofProv {α e : ONote} {K d c : ℕ} {Γ : Seq}
+    (hαNF : α.NF) (dd : ZekdProv α e K d c Γ) : ZekdSomeK α e d c Γ := by
+  rcases dd with ⟨α', hα', hα'NF, hnorm, D⟩
+  by_cases hEq : α' = α
+  · subst hEq
+    exact ⟨K, D⟩
+  · have hrepr_ne : α'.repr ≠ α.repr := by
+      intro hr
+      exact hEq (repr_inj.mp hr)
+    have hlt : α' < α := lt_def.mpr (lt_of_le_of_ne (le_def.mp hα') hrepr_ne)
+    exact ⟨K, Zekd.weak hlt hα'NF hαNF hnorm (Finset.Subset.refl _) D⟩
+
+/-- Identity/complementary-literal axiom for the existential-budget wrapper. -/
+theorem axL {α e : ONote} {d c ar : ℕ} {Γ : Seq}
+    (r : (ℒₒᵣ).Rel ar) (v : Fin ar → SyntacticTerm ℒₒᵣ)
+    (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
+    ZekdSomeK α e d c Γ :=
+  ⟨0, Zekd.axL r v hp hn⟩
+
+/-- Truth of `⊤` for the existential-budget wrapper. -/
+theorem verumR {α e : ONote} {d c : ℕ} {Γ : Seq}
+    (h : (⊤ : Form) ∈ Γ) : ZekdSomeK α e d c Γ :=
+  ⟨0, Zekd.verumR h⟩
+
+/-- True positive atomic leaf for the existential-budget wrapper; the finite index is
+chosen large enough to pay the norm side condition. -/
+theorem trueRel {α e : ONote} {d c ar : ℕ} {Γ : Seq}
+    (r : (ℒₒᵣ).Rel ar) (v : Fin ar → SyntacticTerm ℒₒᵣ)
+    (htrue : atomTrue (Semiformula.rel r v)) (hαNF : α.NF)
+    (hmem : Semiformula.rel r v ∈ Γ) : ZekdSomeK α e d c Γ := by
+  let K := norm α + 1
+  exact ⟨K, Zekd.trueRel r v htrue (by dsimp [K]; omega) hαNF hmem⟩
+
+/-- True negative atomic leaf for the existential-budget wrapper; the finite index is
+chosen large enough to pay the norm side condition. -/
+theorem trueNrel {α e : ONote} {d c ar : ℕ} {Γ : Seq}
+    (r : (ℒₒᵣ).Rel ar) (v : Fin ar → SyntacticTerm ℒₒᵣ)
+    (htrue : atomTrue (Semiformula.nrel r v)) (hαNF : α.NF)
+    (hmem : Semiformula.nrel r v ∈ Γ) : ZekdSomeK α e d c Γ := by
+  let K := norm α + 1
+  exact ⟨K, Zekd.trueNrel r v htrue (by dsimp [K]; omega) hαNF hmem⟩
+
+/-- Existential-budget surface for bounded true closed-substitution leaves. -/
+theorem ofBoundedTruth {e : ONote} {d c n : ℕ} {Γ : Seq}
+    (q : ℕ) (w : Fin n → SyntacticTerm ℒₒᵣ) (ψ : SyntacticSemiformula ℒₒᵣ n)
+    (hψq : ψ.complexity ≤ q)
+    (hpack : ∃ K : ℕ, ZekdBoundedTruth e K d w ψ ∧ 2 * q < K + d)
+    (hmem : (Rew.subst w ▹ ψ) ∈ Γ) :
+    ZekdSomeK (ONote.ofNat (2 * q)) e d c Γ := by
+  rcases hpack with ⟨K, hBT, hbudget⟩
+  exact ⟨K, zekdOfBoundedTruth_probe q w ψ hψq hBT hbudget hmem⟩
 
 /-- Monotonicity in the sequent for the existential-budget wrapper. -/
 theorem wk {α e : ONote} {d c : ℕ} {Δ Γ : Seq}
@@ -1903,6 +2141,31 @@ theorem orI {α β e : ONote} {d c : ℕ} {Γ : Seq}
   · dsimp [K]; omega
   · exact D0.mono_k (by dsimp [K]; omega)
 
+/-- `allω` for the existential-budget wrapper when the premise family is already
+uniform at one finite base index `K`.  A fully existential premise family is not
+enough: the rule needs a single finite budget whose `max K n` handles every branch. -/
+theorem allω {α e : ONote} {K d c : ℕ} {Γ : Seq}
+    (φ : SyntacticSemiformula ℒₒᵣ 1) (β : ℕ → ONote)
+    (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
+    (hτ : ∀ n, norm (β n) < max K n + d)
+    (dd : ∀ n, Zekd (β n) e (max K n) d c (insert (φ/[nm n]) Γ)) :
+    ZekdSomeK α e d c (insert (∀⁰ φ) Γ) :=
+  ⟨K, Zekd.allω φ β hβ hβNF hαNF hτ dd⟩
+
+/-- `exI` for the existential-budget wrapper.  The wrapper chooses a finite
+index large enough for both the premise derivation and the explicit witness. -/
+theorem exI {α β e : ONote} {d c : ℕ} {Γ : Seq}
+    (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ)
+    (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
+    (dd : ZekdSomeK β e d c (insert (φ/[nm n]) Γ)) :
+    ZekdSomeK α e d c (insert (∃⁰ φ) Γ) := by
+  rcases dd with ⟨K0, D0⟩
+  let K := max K0 (max (norm β + 1) n)
+  refine ⟨K, Zekd.exI φ n hβ hβNF hαNF ?_ ?_ (D0.mono_k ?_)⟩
+  · dsimp [K]; omega
+  · exact le_trans (by dsimp [K]; omega) (le_hardy e (K + d))
+  · dsimp [K]; omega
+
 /-- `cut` for the existential-budget wrapper. -/
 theorem cut {α βφ βψ e : ONote} {d c : ℕ} {Γ : Seq}
     (φ : Form) (hcompl : φ.complexity < c)
@@ -1919,6 +2182,115 @@ theorem cut {α βφ βψ e : ONote} {d c : ℕ} {Γ : Seq}
   · dsimp [K]; omega
   · exact D₁.mono_k (by dsimp [K]; omega)
   · exact D₂.mono_k (by dsimp [K]; omega)
+
+/-- Disjunction inversion for the existential-budget wrapper. -/
+theorem orInv {φ ψ : Form} {α e : ONote} {d c : ℕ} {Γ : Seq}
+    (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
+    ZekdSomeK α e d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
+  rcases dd with ⟨K, D⟩
+  exact ⟨K, D.orInv hmem⟩
+
+/-- Left conjunction inversion for the existential-budget wrapper. -/
+theorem andInvL {φ ψ : Form} {α e : ONote} {d c : ℕ} {Γ : Seq}
+    (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+    ZekdSomeK α e d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
+  rcases dd with ⟨K, D⟩
+  exact ⟨K, D.andInvL hmem⟩
+
+/-- Right conjunction inversion for the existential-budget wrapper. -/
+theorem andInvR {φ ψ : Form} {α e : ONote} {d c : ℕ} {Γ : Seq}
+    (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+    ZekdSomeK α e d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
+  rcases dd with ⟨K, D⟩
+  exact ⟨K, D.andInvR hmem⟩
+
+/-- Universal inversion for the existential-budget wrapper.  The extracted witness
+index is the raw derivation index raised to `max K n₀`, matching `Zekd.allInv`. -/
+theorem allInv {φ : SyntacticSemiformula ℒₒᵣ 1} (n₀ : ℕ)
+    {α e : ONote} {d c : ℕ} {Γ : Seq}
+    (dd : ZekdSomeK α e d c Γ) (hmem : (∀⁰ φ) ∈ Γ) :
+    ZekdSomeK α e d c (insert (φ/[nm n₀]) (Γ.erase (∀⁰ φ))) := by
+  rcases dd with ⟨K, D⟩
+  exact ⟨max K n₀, D.allInv n₀ hmem⟩
+
+/-- Principal conjunction/disjunction cut reduction for the existential-budget wrapper.
+This is the `someK` surface of Towsner §19.5: the fixed-index raw reduction is reused after
+choosing one finite `K` large enough for both premises and the reduction ordinal. -/
+theorem cutReduceConj {a b : Form} {d c : ℕ} {α β δ e : ONote} {Γ : Seq}
+    (ha : a.complexity < c) (hb : b.complexity < c)
+    (hαδ : α < δ) (hβδ : β < δ)
+    (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
+    (hC : ZekdSomeK α e d c (insert (a ⋏ b) Γ))
+    (hNC : ZekdSomeK β e d c (insert (∼a ⋎ ∼b) Γ)) :
+    ZekdSomeK (osucc δ) e d c Γ := by
+  rcases hC with ⟨Kα, DC⟩
+  rcases hNC with ⟨Kβ, DNC⟩
+  let K := max Kα (max Kβ (max (norm α + 1) (max (norm β + 1) (norm δ + 1))))
+  refine ⟨K, Zekd.cutReduceConj ha hb hαδ hβδ hαNF hβNF hδNF ?_ ?_ ?_
+    (DC.mono_k ?_) (DNC.mono_k ?_)⟩
+  · dsimp [K]; omega
+  · dsimp [K]; omega
+  · dsimp [K]; omega
+  · dsimp [K]; omega
+  · dsimp [K]; omega
+
+/-- Principal disjunction/conjunction cut reduction for the existential-budget wrapper.
+Dual to `cutReduceConj`; again the wrapper absorbs the finite witness-index bookkeeping. -/
+theorem cutReduceDisj {a b : Form} {d c : ℕ} {α β δ e : ONote} {Γ : Seq}
+    (ha : a.complexity < c) (hb : b.complexity < c)
+    (hαδ : α < δ) (hβδ : β < δ)
+    (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
+    (hC : ZekdSomeK α e d c (insert (a ⋎ b) Γ))
+    (hNC : ZekdSomeK β e d c (insert (∼a ⋏ ∼b) Γ)) :
+    ZekdSomeK (osucc δ) e d c Γ := by
+  rcases hC with ⟨Kα, DC⟩
+  rcases hNC with ⟨Kβ, DNC⟩
+  let K := max Kα (max Kβ (max (norm α + 1) (max (norm β + 1) (norm δ + 1))))
+  refine ⟨K, Zekd.cutReduceDisj ha hb hαδ hβδ hαNF hβNF hδNF ?_ ?_ ?_
+    (DC.mono_k ?_) (DNC.mono_k ?_)⟩
+  · dsimp [K]; omega
+  · dsimp [K]; omega
+  · dsimp [K]; omega
+  · dsimp [K]; omega
+  · dsimp [K]; omega
+
+/-- Existential-budget surface for the proved §19.6 norm-budget auxiliary.
+
+This is intentionally still the *fixed-family* theorem: the ∀-side family is supplied at one
+finite index `k₀`. The wrapper absorbs the ∃-side finite index and converts the `ZekdProv`
+ordinal upper bound back to an exact `ZekdSomeK` derivation. -/
+theorem cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c k₀ d₀ d : ℕ}
+    {α γ e : ONote} {Γ Δ : Seq}
+    (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF) (heNF : e.NF)
+    (hd₀ : d₀ ≤ d)
+    (fam : ∀ n, Zekd α e k₀ d₀ c (insert (φ/[nm n]) Γ))
+    (D : ZekdSomeK γ e d c Δ) (hmem : (∃⁰ ∼φ) ∈ Δ) :
+    ZekdSomeK (osucc (α + γ)) e (d + norm α + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
+  rcases D with ⟨Kγ, Dγ⟩
+  let K := max Kγ (max k₀ (norm γ + 1))
+  have hprov : ZekdProv (osucc (α + γ)) e K (d + norm α + 1) c
+      (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
+    GoodsteinPA.OperatorZinfty.cutReduceAllAux hφc hαNF heNF fam
+      (Dγ.mono_k (by dsimp [K]; omega)) hγNF (by dsimp [K]; omega)
+      (by dsimp [K]; omega) hd₀ hmem
+  exact ofProv (osucc_NF (ONote.add_nf α γ)) hprov
+
+/-- Control-raised surface for the fixed-family §19.6 forall/ex cut reduction.
+
+This is the part of the full operator cut-elimination assembly where the norm-budget auxiliary
+has already fired and the control ordinal is then raised to enlarge every existential witness
+bound.  The existential-budget wrapper chooses the finite index needed by `mono_e` internally. -/
+theorem cutReduceAllAux_control {φ : SyntacticSemiformula ℒₒᵣ 1} {c k₀ d₀ d : ℕ}
+    {α γ e e' : ONote} {Γ Δ : Seq}
+    (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF)
+    (heNF : e.NF) (he'NF : e'.NF) (helt : e < e')
+    (hd₀ : d₀ ≤ d)
+    (fam : ∀ n, Zekd α e k₀ d₀ c (insert (φ/[nm n]) Γ))
+    (D : ZekdSomeK γ e d c Δ) (hmem : (∃⁰ ∼φ) ∈ Δ) :
+    ZekdSomeK (osucc (α + γ)) e' (d + norm α + 1) c
+      (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
+  mono_e heNF he'NF helt
+    (cutReduceAllAux hφc hαNF hγNF heNF hd₀ fam D hmem)
 
 end ZekdSomeK
 
@@ -2086,6 +2458,62 @@ theorem inductionLeaf_cutTowerStepWithTerm_probe
     hτStep hτCong hStep dCong
 
 /--
+Existential-budget surface for one successor-induction cut-tower step with a closed successor term.
+
+The exact `Zekd` probe above requires all four premises at the same running index `max k n`.
+This wrapper instead runs the same `andI`/`exI`/`cut` wiring in the `ZekdSomeK` calculus, letting
+the existential-budget rules absorb the independently chosen finite premise budgets.
+-/
+theorem inductionLeaf_cutTowerStepWithTerm_someK_probe
+    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {d c n : ℕ} {Δ : Seq}
+    {ψ step : SyntacticSemiformula ℒₒᵣ 1} (succT : SyntacticTerm ℒₒᵣ)
+    (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
+    (hmemEx : (∃⁰ ∼step) ∈ Δ)
+    (hψc : (ψ/[nm n]).complexity < c) (hsuccc : (ψ/[succT]).complexity < c)
+    (hIHlt : βIH < αStep) (hExlt : βEx < αStep)
+    (hAlt : βA < βAnd) (hBlt : βB < βAnd) (hAndlt : βAnd < βEx)
+    (hStepLt : αStep < α) (hCongLt : βCong < α)
+    (hIHNF : βIH.NF) (hANF : βA.NF) (hBNF : βB.NF)
+    (hAndNF : βAnd.NF) (hExNF : βEx.NF) (hStepNF : αStep.NF)
+    (hCongNF : βCong.NF) (hαNF : α.NF)
+    (dIH : ZekdSomeK βIH e d c (insert (ψ/[nm n]) Δ))
+    (dA : ZekdSomeK βA e d c
+      (insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))))
+    (dB : ZekdSomeK βB e d c
+      (insert (∼(ψ/[succT])) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))))
+    (dCong : ZekdSomeK βCong e d c
+      (insert (∼(ψ/[succT])) (insert (ψ/[nm (n + 1)]) Δ))) :
+    ZekdSomeK α e d c (insert (ψ/[nm (n + 1)]) Δ) := by
+  have hAnd : ZekdSomeK βAnd e d c
+      (insert ((ψ/[nm n]) ⋏ ∼(ψ/[succT]))
+        (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
+    ZekdSomeK.andI (ψ/[nm n]) (∼(ψ/[succT]))
+      hAlt hBlt hANF hBNF hAndNF dA dB
+  have hBadStep : ZekdSomeK βAnd e d c
+      (insert ((∼step)/[nm n])
+        (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) := by
+    rw [hstep]
+    exact hAnd
+  have hEx : ZekdSomeK βEx e d c
+      (insert (∃⁰ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
+    ZekdSomeK.exI (∼step) n hAndlt hAndNF hExNF hBadStep
+  have hEx' : ZekdSomeK βEx e d c
+      (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ)) := by
+    rw [Finset.insert_eq_self.mpr
+      (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmemEx))] at hEx
+    exact hEx
+  have hIH' : ZekdSomeK βIH e d c
+      (insert (ψ/[nm n]) (insert (ψ/[succT]) Δ)) :=
+    ZekdSomeK.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dIH
+  have hStep : ZekdSomeK αStep e d c (insert (ψ/[succT]) Δ) :=
+    ZekdSomeK.cut (ψ/[nm n]) hψc hIHlt hExlt hIHNF hExNF hStepNF hIH' hEx'
+  have hStep' : ZekdSomeK αStep e d c
+      (insert (ψ/[succT]) (insert (ψ/[nm (n + 1)]) Δ)) :=
+    ZekdSomeK.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) hStep
+  exact ZekdSomeK.cut (ψ/[succT]) hsuccc hStepLt hCongLt hStepNF hCongNF hαNF
+    hStep' dCong
+
+/--
 Package a running finite induction chain into the `allω` rule.
 
 This is the outer shape of `EmbeddingBound.metaInduction_cong_bdd` in the witness-bounded
@@ -2110,6 +2538,26 @@ theorem inductionLeaf_allOmegaFromStep_probe
     | succ n ih =>
         exact (hnext n ih).mono_k (by omega)
   exact Zekd.allω ψ β hβlt hβNF hαAllNF hβτ chain
+
+/-- Existential-budget surface for a uniform running-index induction chain.
+
+This packages the `allω` outer layer used by the bounded PA-induction leaf: once the chain data
+has a single base index `k`, the exported conclusion only remembers that some finite index exists. -/
+theorem inductionLeaf_allOmegaFromStep_someK_probe
+    {αAll e : ONote} {d c : ℕ} {Δ : Seq}
+    {ψ : SyntacticSemiformula ℒₒᵣ 1} (β : ℕ → ONote)
+    (hpack : ∃ k : ℕ,
+      (∀ n, β n < αAll) ∧
+      (∀ n, (β n).NF) ∧
+      αAll.NF ∧
+      (∀ n, norm (β n) < max k n + d) ∧
+      Zekd (β 0) e k d c (insert (ψ/[nm 0]) Δ) ∧
+      (∀ n,
+        Zekd (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) →
+        Zekd (β (n + 1)) e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ))) :
+    ZekdSomeK αAll e d c (insert (∀⁰ ψ) Δ) := by
+  rcases hpack with ⟨k, hβlt, hβNF, hαAllNF, hβτ, hbase, hnext⟩
+  exact ⟨k, inductionLeaf_allOmegaFromStep_probe β hβlt hβNF hαAllNF hβτ hbase hnext⟩
 
 /--
 The `allω` packaging for the numeral-successor cut tower.

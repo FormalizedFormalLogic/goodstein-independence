@@ -103,18 +103,20 @@ theorem peano_not_proves_goodstein_of_routeBNamedObligations
 
 The declarations below are the Path-B audit ledger.  They live in `src/` because Path B is now an
 active route, but they are imported through the dedicated `GoodsteinPABlueprint` root rather than
-the public `GoodsteinPA` root.  Each marker proposition is an empty inductive: the only way to
-inhabit it is through the correspondingly named capstone axiom.
+the public `GoodsteinPA` root.  The marker propositions expose the route's theorem boundaries:
+most are empty inductives whose only current inhabitants are the correspondingly named capstone axioms,
+while proved bookkeeping boundaries carry explicit constructors.
 
-The primitive axioms are the leaves.  The `_stage` theorems compose those leaves into a dependency chain:
-`#print axioms pathB_inductionAxiomShell_stage`, for example, reports the first three capstone axioms.
-When a milestone is actually proved, replace its primitive axiom with a theorem of the same name and keep
-the stage chain below unchanged.
+The primitive axioms are the open leaves.  The `_stage` theorems compose those leaves into a dependency
+chain: `#print axioms pathB_inductionAxiomShell_stage`, for example, reports the open capstone axioms
+up to that point. When a milestone is actually proved, replace its primitive axiom with a theorem of the
+same name and keep the stage chain below unchanged.
 -/
 
 /-- Capstone marker: the encoded Goodstein sentence has been normalized to the exact
 closed one-formula sequent shape consumed by the bounded embedding. -/
 inductive RouteBGoodsteinSentenceShape (_hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence) : Prop
+  | closedTarget
 
 /-- Capstone marker: all finite `𝗣𝗔⁻`/equality axiom leaves are derivable in the bounded operator
 calculus with finite extracted witness budget. -/
@@ -137,12 +139,15 @@ inductive RouteBOperatorCutElimination (_hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence
 Towsner's `B` calculus. -/
 inductive RouteBSubformulaProjection (_hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence) : Prop
 
-/-- Capstone marker: the projected derivation is the concrete Goodstein fragment terminal object. -/
+/-- Capstone marker: the projected derivation has been identified with the concrete Goodstein fragment
+terminal object consumed by the lower-bound contradiction. -/
 inductive RouteBGoodsteinFragmentExtraction (_hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence) : Prop
+  | terminal (route : RouteBCapstone)
 
-/-- Capstone 1: sentence-shape normalization for the encoded Goodstein theorem. -/
-axiom pathB_goodsteinSentenceShape_capstone {hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence} :
-    RouteBGoodsteinSentenceShape hpa
+/-- Capstone 1, discharged: the Path-B input is already the closed encoded Goodstein sentence. -/
+theorem pathB_goodsteinSentenceShape_capstone {hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence} :
+    RouteBGoodsteinSentenceShape hpa :=
+  .closedTarget
 
 /-- Capstone 2: finite `𝗣𝗔⁻` and equality axiom leaves. -/
 axiom pathB_peanoMinusAxiomLeaves_capstone {hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence} :
@@ -172,9 +177,10 @@ axiom pathB_subformulaProjection_capstone {hpa : 𝗣𝗔 ⊢ ↑goodsteinSenten
 axiom pathB_goodsteinFragmentExtraction_capstone {hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence} :
     RouteBSubformulaProjection hpa → RouteBGoodsteinFragmentExtraction hpa
 
-/-- Capstone 9: the full capstone chain yields the terminal `RouteBCapstone`. -/
-axiom pathB_terminalRouteBridge_capstone {hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence} :
+/-- Capstone 9, discharged: the fragment-extraction marker carries the terminal `RouteBCapstone`. -/
+theorem pathB_terminalRouteBridge_capstone {hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence} :
     RouteBGoodsteinFragmentExtraction hpa → RouteBCapstone
+  | .terminal route => route
 
 /-- Stage 1: sentence-shape normalization. -/
 theorem pathB_goodsteinSentenceShape_stage {hpa : 𝗣𝗔 ⊢ ↑goodsteinSentence} :
@@ -231,27 +237,30 @@ theorem immediately gives the Kirby-Paris headline. -/
 theorem peano_not_proves_goodstein_of_pathBCapstoneAxioms : 𝗣𝗔 ⊬ ↑goodsteinSentence :=
   peano_not_proves_goodstein_of_routeBBridge routeBBridgeFromCapstoneAxioms
 
-attribute [goodstein_blueprint 1 debt "capstone_axiom" "1-2" 80 pathB_goodsteinSentenceShape_stage
+attribute [goodstein_blueprint 1 clean "proved_bookkeeping" "0" 100 pathB_goodsteinSentenceShape_stage
   []
   ["Kirby-Paris 1982, Goodstein sentence as the PA target",
-   "GoodsteinPA.Encoding / GoodsteinPA.Bridge: local faithful encoding and standard-model bridge"]
-  "Normalize a PA proof of the encoded Goodstein sentence to the closed sequent shape consumed by the bounded embedding."]
+   "GoodsteinPA.Encoding.goodsteinSentence: transparent closed Π₂ Goodstein target",
+   "GoodsteinPA.Embedding: PA provability unfolds to a singleton closed sequent over the same language"]
+  "Record that the Path-B input is already a PA proof of the closed encoded Goodstein sentence."]
   pathB_goodsteinSentenceShape_capstone
 
-attribute [goodstein_blueprint 2 debt "capstone_axiom" "2-4" 70 pathB_peanoMinusAxiomLeaves_stage
+attribute [goodstein_blueprint 2 debt "capstone_axiom" "1-2" 80 pathB_peanoMinusAxiomLeaves_stage
   [pathB_goodsteinSentenceShape_stage]
-  ["Foundation PeanoMinus.Basic: finite PA-minus and equality axiom base",
+  ["Foundation PeanoMinus.Basic: finite PA-minus axiom inventory and [simp] standard-model truth",
+   "Foundation FirstOrder Theory.EqAxiom.finite: equality axioms are finite for the arithmetic language",
    "Towsner, Goodstein's Theorem, epsilon_0, and Unprovability, Section 16: embedding PA axioms into Z_infty",
-   "Buchholz lecture notes, Section 5 axioms; local X-free/value-congruent axiom leaves"]
-  "Discharge the finite PA-minus and equality axiom leaves in the witness-bounded operator calculus."]
+   "GoodsteinPA.OperatorZinfty.ZekdBoundedTruth and ZekdSomeK.ofBoundedTruth: bounded true leaves now derive in the witness-bounded operator calculus"]
+  "Discharge the finite PA-minus/equality axiom leaves by proving their finite bounded-truth certificates; the generic operator recursion is now closed, leaving the explicit axiom case split, with addEqOfLt as the only existential-witness case."]
   pathB_peanoMinusAxiomLeaves_capstone
 
-attribute [goodstein_blueprint 3 debt "capstone_axiom" "5-10" 60 pathB_inductionAxiomShell_stage
+attribute [goodstein_blueprint 3 debt "capstone_axiom" "4-8" 65 pathB_inductionAxiomShell_stage
   [pathB_peanoMinusAxiomLeaves_stage]
   ["Towsner Sections 16 and 18: PA induction through the infinitary calculus",
    "Buchholz Theorem 5.5 / local metaInduction_cong pattern for induction axioms",
-   "Foundation Arithmetic.Schemata: succInd and InductionScheme"]
-  "Simulate the PA induction-axiom shell without losing the finite witness budget."]
+   "Foundation Arithmetic.Schemata: succInd and InductionScheme",
+   "GoodsteinPA.OperatorZinfty.inductionLeaf_cutTowerStepWithTerm_someK_probe: successor-induction cut tower runs directly in the someK calculus"]
+  "Simulate the PA induction-axiom shell without losing the finite witness budget; the local with-term successor step now absorbs independent existential premise budgets."]
   pathB_inductionAxiomShell_capstone
 
 attribute [goodstein_blueprint 4 debt "capstone_axiom" "2-5" 75 pathB_closedWitnessBudgets_stage
@@ -262,40 +271,46 @@ attribute [goodstein_blueprint 4 debt "capstone_axiom" "2-5" 75 pathB_closedWitn
   "Extract finite K budgets for every Foundation existential and closed-witness step."]
   pathB_closedWitnessBudgets_capstone
 
-attribute [goodstein_blueprint 5 debt "capstone_axiom" "6-12" 55 pathB_someKStructuralEmbedding_stage
+attribute [goodstein_blueprint 5 debt "capstone_axiom" "4-8" 65 pathB_someKStructuralEmbedding_stage
   [pathB_closedWitnessBudgets_stage]
   ["Towsner Theorems 16.1/16.5/16.7: embedding PA proofs into Z_infty",
-   "GoodsteinPA.OperatorZinfty: ZekdSomeK structural combinators"]
-  "Embed the whole PA proof into the someK witness-bounded operator calculus."]
+   "GoodsteinPA.OperatorZinfty: ZekdSomeK structural combinators",
+   "GoodsteinPA.OperatorZinfty.inductionLeaf_allOmegaFromStep_someK_probe: someK packaging for the bounded induction chain",
+   "GoodsteinPA.OperatorZinfty.inductionLeaf_cutTowerStepWithTerm_someK_probe: local induction leaf composes at the someK surface"]
+  "Embed the whole PA proof into the someK witness-bounded operator calculus; both the running-index outer layer and the local successor-induction cut tower now export existential K shapes."]
   pathB_someKStructuralEmbedding_capstone
 
-attribute [goodstein_blueprint 6 debt "capstone_axiom" "8-16" 50 pathB_operatorCutElimination_stage
+attribute [goodstein_blueprint 6 debt "capstone_axiom" "5-10" 65 pathB_operatorCutElimination_stage
   [pathB_someKStructuralEmbedding_stage]
   ["Towsner Section 19, especially Theorems 19.5, 19.6, 19.7, 19.9: cut elimination",
-   "GoodsteinPA.OperatorZinfty: control-ordinal witness-bounded operator calculus"]
-  "Run bounded operator cut-elimination while preserving a finite witness budget after ordinal lift."]
+   "GoodsteinPA.OperatorZinfty: control-ordinal witness-bounded operator calculus",
+   "GoodsteinPA.OperatorZinfty.ZekdSomeK.cutReduceConj/cutReduceDisj/cutReduceAllAux: someK cut-reduction surfaces",
+   "GoodsteinPA.OperatorZinfty.ZekdSomeK.cutReduceAllAux_control: fixed-family forall/ex reduction composes with control-ordinal raising"]
+  "Run bounded operator cut-elimination while preserving finite witness budgets; principal propositional cuts, fixed-family forall/ex reduction, and control raising are now exposed at the someK surface, leaving the running-index operator-control replacement isolated."]
   pathB_operatorCutElimination_capstone
 
-attribute [goodstein_blueprint 7 debt "capstone_axiom" "4-8" 55 pathB_subformulaProjection_stage
+attribute [goodstein_blueprint 7 debt "capstone_axiom" "3-6" 65 pathB_subformulaProjection_stage
   [pathB_operatorCutElimination_stage]
   ["Towsner Section 17.1: lower bound for witness-bounded cut-free derivations",
-   "GoodsteinPA.LowerBound: LowerBoundHardy.B and allInv/mono_k terminal calculus"]
-  "Project the cut-free operator derivation to the subformula fragment consumed by the lower-bound theorem."]
+   "GoodsteinPA.LowerBound: LowerBoundHardy.B and allInv/mono_k terminal calculus",
+   "GoodsteinPA.OperatorZinfty.ZekdSomeK.orInv/andInvL/andInvR/allInv: someK subformula-inversion surfaces"]
+  "Project the cut-free operator derivation to the subformula fragment consumed by the lower-bound theorem; operator-side someK inversions now match the lower-bound inversion interface."]
   pathB_subformulaProjection_capstone
 
 attribute [goodstein_blueprint 8 debt "capstone_axiom" "2-5" 65 pathB_goodsteinFragmentExtraction_stage
   [pathB_subformulaProjection_stage]
   ["Towsner Section 17.1: Goodstein fragment forall x exists y g_y(x)=0",
-   "GoodsteinPA.LowerBound.lowerBound_hardy_selfcontained: concrete Hardy/Goodstein lower bound"]
-  "Identify the projected derivation with the concrete Goodstein-fragment terminal object."]
+   "GoodsteinPA.LowerBound.lowerBound_hardy_selfcontained: concrete Hardy/Goodstein lower bound",
+   "GoodsteinPA.PathBProbe.RouteBGoodsteinFragmentExtraction.terminal: fragment extraction now packages RouteBCapstone directly"]
+  "Identify the projected derivation with the concrete Goodstein-fragment terminal object packaged as RouteBCapstone."]
   pathB_goodsteinFragmentExtraction_capstone
 
-attribute [goodstein_blueprint 9 debt "capstone_axiom" "1-3" 80 pathB_terminalRouteBridge_stage
+attribute [goodstein_blueprint 9 clean "proved_bridge" "0" 100 pathB_terminalRouteBridge_capstone
   [pathB_goodsteinFragmentExtraction_stage]
   ["Towsner Section 20: assembly of unprovability from bounded embedding, cut elimination, and lower bound",
    "Kirby-Paris 1982: PA unprovability of Goodstein's theorem",
    "GoodsteinPA.PathBProbe.no_routeBCapstone: terminal contradiction from the promoted lower bound"]
-  "Assemble the staged capstones into the terminal RouteBCapstone consumed by the lower-bound contradiction."]
+  "Unpack the terminal RouteBCapstone carried by the fragment-extraction marker."]
   pathB_terminalRouteBridge_capstone
 
 end GoodsteinPA.PathBProbe
