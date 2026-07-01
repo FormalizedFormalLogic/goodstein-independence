@@ -1,5 +1,48 @@
 # Pending work — open obligations & attack paths
 
+## Lap 168 — ⭐⭐ `residual` DECOMPOSED into 4 named escapes; C-exit "pure weakening" plan REFUTED
+
+**Build 🟢 1326 (headline root) / 1266 (Crux2Blueprint). HEAD after the lap-168 commit.** Two advances,
+both on the live crux-2 `residual` (`genReduct_chain_noRedex_anySucc`, `Crux2Blueprint.lean:~4515`):
+
+### 1. Decomposition (banked)
+The single `residual : GenReductCert (zK s r ds) := sorry` is split into the **4 named sub-sorries** that
+`_core` (`:4276`) actually dispatches — src crux-2 sorry count rises 1→4 by design (tractable-izes the wall):
+- `cExitReplayAll` (hresidualIall) / `cExitReplayNeg` (hresidualIneg) — **C-exit R-intro replay**: the least
+  exit `jstar` node is itself a `zIall`/`zIneg` whose succedent IS the conclusion `C = seqSucc s`. Called
+  ONLY on the C-exit branch (`hjstar = Or.inl hC`), so `seqSucc s ≠ ⊥` there (⊥-branch is `absurd` via
+  `qqAll_ne_falsum`/`inegF_ne_falsum`). The genuine NEW content of the anySucc generalization.
+- `gammaAllCut` (hresidualAll, R2 `^∀G ∈ Γ`) / `gammaNegCut` (hresidualNeg, R1 `inegF q ∈ Γ`) — deep
+  Buchholz general-cut leaves; both need a formula in `Γ`, VACUOUS at the headline `∅→⊥`.
+
+### 2. In-kernel REFUTATION of the lap-166 "C-exit = grow the antecedent" plan
+Lap-166 PENDING said: close cExitReplay via internal weakening, "`Γ_j ⊆ Γ` via `hthread0`; grow the
+antecedent." **This is WRONG.** `hthread0`/`isChainInf` (`InternalZ.lean:1197-1198`) gives
+`inAnt B (chainAnt ds i) → inAnt B (seqAnt s) ∨ ∃ i' < i, B = chainAsucc ds i'` — i.e.
+`chainAnt ds jstar ⊆ seqAnt s ∪ {chainAsucc ds i' : i' < jstar}`, **NOT** `⊆ seqAnt s`. Those extra
+`chainAsucc ds i'` are earlier premises' succedents accumulated by the cut-chain threading; by jstar
+minimality they are non-C **and** non-⊥ (`hmin`), so in general NOT in `seqAnt s`. To derive `seqAnt s → C`
+from `chainAnt ds jstar → C` those formulas must be **removed** (cut against the earlier premises that
+derive them), which is the OPPOSITE of weakening. ⇒ the C-exit reduct is a **cut-restructuring**, not an
+antecedent-weakening. Pure weakening only closes the `jstar = 0` sub-case (no earlier premises, `∃ i'<0`
+vacuous).
+
+### 🎯 NEXT ATTACK on the C-exit pair (concrete, corrected)
+Candidate reduct = the **prefix sub-chain** `zK s ? (take ds (jstar+1))`: it satisfies `isChainInf s ? _`
+with distinguished `j0 := jstar` (the C-exit condition `chainAsucc ds jstar = seqSucc s` holds; threading
++ rank inherited for `i ≤ jstar`), so it is a ZDerivation of `seqAnt s → C` that DROPS every premise
+`> jstar`. OPEN feasibility question (the crux of this sub-approach): its `õ = iotil (zK s r (prefix))`
+vs `iotil (zK s r ds)` — a prefix folds a sub-multiset of premise iotils, so `õ` drops **iff** `jstar`
+is strictly before the end AND the dropped premises have positive iotil; but the rank `r` is UNCHANGED,
+so `iRedDescent` (which also constrains `idg`/rank) may fail. If the prefix keeps rank `r`, this is NOT a
+valid no-redex reduct (the reduction must lower the cut rank). Check `iRedDescent` + `iotil_zK`/`idg_zK`
+fold lemmas against the prefix `take ds (jstar+1)` FIRST; if rank-`r` blocks it, the R-intro's succedent
+`C` must instead be cut at rank `irk C < r` — i.e. the reduct is a rank-`(r-1)` cut of the prefix against
+the R-intro's own sub-derivation (cf. the `iCritReductG` splice machinery at `:3884`). Do NOT re-attempt
+"grow the antecedent."
+
+---
+
 ## Lap 166 — ⭐⭐⭐ STRUCTURAL CORRECTION: the reframe target was ORPHANED; live crux = exactly 2 src sorries
 
 **Build 🟢 1326. HEAD after the lap-166 commits.** Two threads this lap: (1) the named-axiom-blueprint LEDGER

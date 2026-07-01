@@ -4525,14 +4525,31 @@ lemma genReduct_chain_noRedex_anySucc {s r ds j0 : V}
         (zTag (znth ds i) = 3 ∨ zTag (znth ds i) = 4) →
         GenReductCert (znth ds i)) :
     GenReductCert (zK s r ds) := by
-  -- THE genuine general-succedent residual (the new deep content of the anySucc generalization):
-  -- (i) C-exit R-intro replay (tag-1/2 producing `seqSucc s`), (ii) the tag-5 climb-escape
-  -- (`^∀G∈Γ`), and (iii) the tag-6 partial thread. Everything else is WIRED in the core.
-  have residual : GenReductCert (zK s r ds) := sorry
+  -- THE genuine general-succedent residual, now DECOMPOSED into the four named escapes that
+  -- `_core` dispatches (lap-166/164 mandate). Separating them isolates the two families:
+  --   • `cExitReplayAll`/`cExitReplayNeg` — C-exit R-intro replay (tag-1/2 exit node is itself a
+  --     `zIall`/`zIneg` whose succedent IS the conclusion `C = seqSucc s`). Reduct = re-base that
+  --     R-intro's own sub-derivation to the grown antecedent `seqAnt s ⊇ Γ_jstar` (via `hthread0`):
+  --     the genuine NEW piece, needing INTERNAL ZDerivation antecedent-weakening (no such lemma
+  --     exists yet; depth ≈ how ⊥-exit ex-falso needed `zAxBot`). VACUOUS when `C=⊥` (no R-intro
+  --     produces `⊥`), which is why the dropped ⊥-version had no such hook.
+  --   • `gammaAllCut` (R2: `^∀G ∈ Γ`) / `gammaNegCut` (R1: `inegF q ∈ Γ`) — genuine Γ-general
+  --     ∀-cut / cut on `q`, the deep Buchholz general-cut leaves. Both need a formula in `Γ`, so
+  --     are VACUOUS at the headline `∅ → ⊥`.
+  have cExitReplayAll : ∀ j s' a p d0, j ≤ j0 → j < lh ds → chainAsucc ds j = seqSucc s →
+      znth ds j = zIall s' a p d0 → ZDerivation (zIall s' a p d0) →
+      ZRegular (zIall s' a p d0) → ZFresh (zIall s' a p d0) → ZSeqAnt (zIall s' a p d0) →
+      GenReductCert (zK s r ds) := fun _ _ _ _ _ _ _ _ _ _ _ _ _ => sorry
+  have cExitReplayNeg : ∀ j s' p d0, j ≤ j0 → j < lh ds → chainAsucc ds j = seqSucc s →
+      znth ds j = zIneg s' p d0 → ZDerivation (zIneg s' p d0) →
+      ZRegular (zIneg s' p d0) → ZFresh (zIneg s' p d0) → ZSeqAnt (zIneg s' p d0) →
+      GenReductCert (zK s r ds) := fun _ _ _ _ _ _ _ _ _ _ _ _ => sorry
+  have gammaAllCut : (∃ G, inAnt G (seqAnt s) ∧ ∃ Z, G = (^∀ Z : V)) →
+      GenReductCert (zK s r ds) := fun _ => sorry
+  have gammaNegCut : ∀ q, inAnt (inegF q : V) (seqAnt s) → GenReductCert (zK s r ds) :=
+    fun _ _ => sorry
   exact genReduct_chain_noRedex_anySucc_core hZ hreg hfresh hseqant hj0 hAj0 hthread0 hrank0 hnolow
-    (fun _ _ _ _ _ _ _ _ _ _ _ _ _ => residual)
-    (fun _ _ _ _ _ _ _ _ _ _ _ _ => residual)
-    (fun _ => residual) (fun _ _ => residual) IH
+    cExitReplayAll cExitReplayNeg gammaAllCut gammaNegCut IH
 
 /-- **GENERALIZED chain step off `seqSucc = ⊥` — PROVEN dispatcher.** Off-`⊥` twin of
 `genReduct_botSucc_chain` (`:3655`): extract SOME `isChainInf` exit `j0` (`chainAsucc ds j0 ∈ {seqSucc s, ⊥}`,
