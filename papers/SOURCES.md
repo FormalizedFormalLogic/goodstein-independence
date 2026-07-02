@@ -128,6 +128,11 @@ Verified open-access at download time 2026-06-22 (US network).
 - Local file: `weak-goodstein-formal-proof-2017.pdf`
 - Short paper (6 pp) on a machine-formalized proof of the *weak* Goodstein theorem (the base-2/fixed-base variant). Useful as a scoped warm-up target and a comparison point for the encoding. Phase: **formalization** (a smaller, fully-formalized fragment).
 
+### Eguchi, N. & Weiermann, A. (2012). "A simplified characterisation of provably computable functions of the system ID₁ of inductive definitions." arXiv:1205.2879 (technical report, 27 pp).
+- Source URL: https://arxiv.org/abs/1205.2879 (arXiv, open — downloaded 2026-07-02)
+- Local file: `eguchi-weiermann-2012-operator-controlled-id1.pdf` · summary: `eguchi-weiermann-2012-operator-controlled-id1.md`
+- **The fullest on-disk exposition of doubly operator-controlled derivations** — sequents `f,F ⊢^α_ρ Γ` controlled by a PAIR: `F : Ord→Ord` (Buchholz-style ordinal operator, `K_Ω`-coefficient control → collapsing/Π¹₁ side) + `f : ℕ→ℕ` (Weiermann-style number-theoretic operator, norm control → the quantitative Σ₁/Π⁰₂ read-off: the Witnessing Lemma bounds every existential witness by `f(0)`). Target is ID₁, but the PA specialization (drop Ω/F/collapse, keep the f-side) IS Weiermann's PA classification (BSL 2006, not on disk) — the template for the `wainer_bound` Σ₁ read-off. Control updates are compositional (`f∘g` at cut-reduction, `f ↦ f^{F^α(0)+1}` at collapse), i.e. structurally non-affine — the alternative shape to the `(k,d)` budget that SPIKE-W4B refuted; ω-premises conditioned family-uniformly via `f[N(ι)], F[ord(ι)]` (the `Zeh … H[n]` discipline). Norm-gated transfinite iteration `f^α` (Def 16) needs no fundamental sequences. Phase: **fast-growing** + Zᵉ-redesign method template.
+
 ### Reuse note: Lean / mathlib4
 - Searched `leanprover-community/mathlib4` for "Goodstein" (via `gh api search/code`): hits are **only** in `docs/references.bib` and `docs/1000.yaml` (the "1000 theorems" tracking list). **Goodstein's theorem is NOT yet formalized in mathlib4** — it is a listed but unclaimed target. Implication: this box's Lean formalization would be net-new in the Lean ecosystem; the Isabelle (`Nested_Multisets_Ordinals`) and Coq (`hydra-battles`) formalizations above are the cross-prover references to port intuition from. (No mathlib Goodstein PDF to download.)
 
