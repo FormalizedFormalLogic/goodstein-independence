@@ -168,6 +168,26 @@ theorem ewIter_infl {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (α : ONote) 
       simpa [ewIter_zero] using hlow
     exact le_trans (hf_infl m) (le_trans (hf_infl (f m)) hlow')
 
+/-- **`ewIter` inherits the `2m+1` lower bound** (lap-11 SERIES-1 Stage-4 rung-R prep).  The pass
+threads `Monotone ∧ inflationary ∧ (2m+1 ≤ f m)` (`EwLow`, all `rel1`-stable); rung R ITERATES the
+pass, so the output slot `ewIter f α` must ITSELF satisfy the same invariant to feed the next pass.
+Monotonicity/inflationarity are `ewIter_monotone`/`ewIter_infl`; here is the `2m+1` component —
+unlike `EwF1`'s STRICT monotonicity (which `ewIter` does NOT inherit, cf. the trap-8/plateau seam),
+the lower-bound floor DOES carry: for `α ≠ 0`, `ewIter f α m ≥ f (f m) ≥ 2·f m + 1 ≥ 2m+1`. -/
+theorem ewIter_low {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (hf_low : ∀ m, 2 * m + 1 ≤ f m)
+    (α : ONote) (m : ℕ) : 2 * m + 1 ≤ ewIter f α m := by
+  by_cases hα : α = 0
+  · subst hα; simpa [ewIter_zero] using hf_low m
+  · have h0α : (0 : ONote) < α := by
+      cases α with
+      | zero => exact (hα rfl).elim
+      | oadd e n a => exact oadd_pos e n a
+    have hlow := ewIter_lower (f := f) (β := 0) (α := α) (m := m) h0α (Nat.zero_le _)
+    have hff : f (f m) ≤ ewIter f α m := by simpa [ewIter_zero] using hlow
+    have hfm : m ≤ f m := hf_infl m
+    have hlf : 2 * f m + 1 ≤ f (f m) := hf_low (f m)
+    omega
+
 theorem ewIter_monotone {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
     (α : ONote) : Monotone (ewIter f α) := by
   intro m m' hmm'
