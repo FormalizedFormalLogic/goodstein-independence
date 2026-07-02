@@ -61,6 +61,13 @@ inductive Zef2 : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ 
 
 namespace Zef2
 
+/-- **Gate projection** — every `Zef2` constructor exposes its conclusion gate `ewN α ≤ f 0`, so
+a derivation is its own certificate for the size bound.  The uniform lever for re-threading the
+gate through the reduction / inversion. -/
+theorem gate {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (dd : Zef2 α e H f c Γ) : ewN α ≤ f 0 := by
+  cases dd <;> assumption
+
 theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Seq}
     (hαN : ewN α ≤ f 0) (hsub : Δ ⊆ Γ) (dd : Zef2 α e H f c Δ) :
     Zef2 α e H f c Γ :=
@@ -199,12 +206,95 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : SyntacticSemiformula ℒₒᵣ 1} {c : 
       Zef2Prov (osucc (α + γ)) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   sorry
 
-/-- **`allInv_Zef2`** — ∀-inversion over `Zef2` (port of `allInv_Zef`).  Disclosed sub-pin. -/
+/-- `f x ≤ rel1 f n₀ x` for monotone `f`. -/
+private theorem f_le_rel1_2 {f : ℕ → ℕ} (hf : Monotone f) (n₀ : ℕ) :
+    ∀ x, f x ≤ rel1 f n₀ x := fun x => hf (le_max_right n₀ x)
+
+/-- Transport a gate `ewN α ≤ f 0` to the relativized slot `rel1 f n₀`. -/
+private theorem gate_rel1 {f : ℕ → ℕ} (hmono : Monotone f) {α : ONote} (n₀ : ℕ)
+    (h : ewN α ≤ f 0) : ewN α ≤ rel1 f n₀ 0 := by
+  refine le_trans h ?_
+  simp only [rel1]
+  exact hmono (Nat.zero_le _)
+
+/-- **`allInv_Zef2`** — ∀-inversion over `Zef2` (port of `allInv_Zef`).  Ordinals are unchanged by
+inversion, so every rebuilt node's gate re-threads from its input gate through the relativized
+slot `rel1 f n₀` (`gate_rel1`, `f` monotone). -/
 theorem allInv_Zef2 {φ₀ : SyntacticSemiformula ℒₒᵣ 1} (n₀ : ℕ) :
     ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
       Zef2 α e H f c Γ → Monotone f → (∀⁰ φ₀) ∈ Γ →
       Zef2 α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
-  sorry
+  intro α e H f c Γ dd
+  induction dd with
+  | @axL α e H f c Γ ar hαN r v hp hn =>
+      intro hmono _
+      refine Zef2.axL (gate_rel1 hmono n₀ hαN) r v ?_ ?_ <;>
+        exact Finset.mem_insert_of_mem
+          (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), by assumption⟩)
+  | @wk α e H f c Δ Γ hαN hsub dd ih =>
+      intro hmono hmem
+      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      · exact Zef2.wk (gate_rel1 hmono n₀ hαN)
+          (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono hh)
+      · refine Zef2.wk (gate_rel1 hmono n₀ hαN) ?_ (dd.mono_Hf (f_le_rel1_2 hmono n₀))
+        intro x hx
+        exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
+  | @weak α β e H f c Δ Γ hαN hβ hβNF hαNF hβH hsub dd ih =>
+      intro hmono hmem
+      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      · exact Zef2.weak (gate_rel1 hmono n₀ hαN) hβ hβNF hαNF (Cl_of_NF hβNF)
+          (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono hh)
+      · refine Zef2.weak (gate_rel1 hmono n₀ hαN) hβ hβNF hαNF (Cl_of_NF hβNF) ?_
+          (dd.mono_Hf (f_le_rel1_2 hmono n₀))
+        intro x hx
+        exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
+  | @allω α e H f c Γ₀ hαN χ β hβ hβNF hαNF hβH dd ih =>
+      intro hmono hmem
+      by_cases hhd : (∀⁰ χ) = (∀⁰ φ₀)
+      · obtain rfl := (Semiformula.all_inj _ _).mp hhd
+        rw [Finset.erase_insert_eq_erase]
+        by_cases hh : (∀⁰ χ) ∈ Γ₀
+        · have h := ih n₀ (rel1_monotone hmono n₀) (Finset.mem_insert_of_mem hh)
+          have h2 : Zef2 (β n₀) e (adjoin H n₀) (rel1 f n₀) c
+              (insert (χ/[nm n₀]) ((insert (χ/[nm n₀]) Γ₀).erase (∀⁰ χ))) :=
+            h.mono_Hf (fun x => le_of_eq (by simp only [rel1]; congr 1; omega))
+          exact Zef2.weak (gate_rel1 hmono n₀ hαN) (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀))
+            (princAllSub (∀⁰ χ) _ Γ₀) h2
+        · rw [Finset.erase_eq_of_notMem hh]
+          exact Zef2.weak (gate_rel1 hmono n₀ hαN) (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀))
+            (Finset.Subset.refl _) (dd n₀)
+      · have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+        have key : ∀ n, Zef2 (β n) e (adjoin (adjoin H n₀) n) (rel1 (rel1 f n₀) n) c
+            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀⁰ φ₀)))) := by
+          intro n
+          have h := ih n (rel1_monotone hmono n) (Finset.mem_insert_of_mem hmem0)
+          have hg : ewN (β n) ≤ rel1 (rel1 f n₀) n 0 := by
+            have hgn := Zef2.gate (dd n)
+            simp only [rel1] at hgn ⊢
+            exact le_trans hgn (hmono (le_max_right n₀ (max n 0)))
+          exact Zef2.wk hg (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀)
+            (h.mono_Hf (fun x => le_of_eq (by simp only [rel1]; congr 1; omega)))
+        refine Zef2.wk (gate_rel1 hmono n₀ hαN) (inv1Pull (∀⁰ φ₀) _ hhd Γ₀) ?_
+        exact Zef2.allω (gate_rel1 hmono n₀ hαN) χ β hβ hβNF hαNF
+          (fun n => Cl_of_NF (hβNF n)) key
+  | @exI α β e H f c Γ₀ hαN χ n hβ hβNF hαNF hβH hbound dd ih =>
+      intro hmono hmem
+      have hhead : (∃⁰ χ) ≠ (∀⁰ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
+      have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have P := Zef2.wk (Zef2.gate (ih hmono (Finset.mem_insert_of_mem hmem0)))
+        (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀) (ih hmono (Finset.mem_insert_of_mem hmem0))
+      refine Zef2.wk (gate_rel1 hmono n₀ hαN) (inv1Pull (∀⁰ φ₀) _ hhead Γ₀) ?_
+      exact Zef2.exI (gate_rel1 hmono n₀ hαN) χ n hβ hβNF hαNF (Cl_of_NF hβNF)
+        (le_trans hbound (by simp only [rel1]; exact hmono (Nat.zero_le _))) P
+  | @cut α βφ βψ e H f c Γ₀ hαN χ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH d₁ d₂ ih₁ ih₂ =>
+      intro hmono hmem
+      have P₁ := Zef2.wk (Zef2.gate (ih₁ hmono (Finset.mem_insert_of_mem hmem)))
+        (inv1Push (∀⁰ φ₀) _ χ Γ₀) (ih₁ hmono (Finset.mem_insert_of_mem hmem))
+      have P₂ := Zef2.wk (Zef2.gate (ih₂ hmono (Finset.mem_insert_of_mem hmem)))
+        (inv1Push (∀⁰ φ₀) _ (∼χ) Γ₀) (ih₂ hmono (Finset.mem_insert_of_mem hmem))
+      exact Zef2.cut (gate_rel1 hmono n₀ hαN) χ hcompl (le_trans hcutRead
+        (by simp only [rel1]; exact hmono (Nat.zero_le _))) hβφ hβψ hβφNF hβψNF hαNF
+        (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
 /-- **`stepAllω_Zf2`** (pin-2 over `Zef2`): the principal ∀/∃ cut-reduction step.  Disclosed
 sub-pin — invert the ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`. -/
