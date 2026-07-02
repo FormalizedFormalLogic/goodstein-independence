@@ -928,7 +928,19 @@ theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
     (D₂ : ZehProv (expTower βψ) E H m c (insert (∃⁰ ∼χ) Γ)) :
     ∃ δ : ONote, δ.NF ∧ Cl H δ ∧
       ZehProv δ E H m c Γ ∧ NormControlled (f ∘ g) E m := by
-  sorry
+  -- Q3-unified step: invert the ∀-side to the running family, then apply the reduction (pin 1).
+  obtain ⟨α₁, _, hNF₁, hH₁, d₁⟩ := D₁
+  obtain ⟨γ₁, _, hNF₂, hH₂, d₂⟩ := D₂
+  have fam : ∀ n, Zeh α₁ E (adjoin H n) (max m n) c (insert (χ/[nm n]) Γ) := by
+    intro n
+    exact (allInv_Zeh n d₁ (Finset.mem_insert_self _ _)).weakening
+      (Finset.insert_subset_insert _ (Finset.erase_insert_subset _ _))
+  have hred := cutReduceAllAuxRunning_Zf f g hχc hNF₁ hENF hH₁ hg fam d₂ hf hNF₂ hH₂
+    le_rfl (Finset.mem_insert_self _ _)
+  refine ⟨osucc (α₁ + γ₁), osucc_NF (ONote.add_nf α₁ γ₁),
+    Cl_of_NF (osucc_NF (ONote.add_nf α₁ γ₁)), ?_, hred.2⟩
+  exact hred.1.weakening
+    (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))
 
 /-- **PIN (disclosed sorry): one elimination pass, f-slot form** (`cutElimPass_Zf`, the
 collapse/iteration shape — E–W Lemma 30: the ONE place the control raises and the slot
