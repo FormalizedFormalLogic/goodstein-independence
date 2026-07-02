@@ -10,15 +10,16 @@ The lap-3 "awaiting architect ratification" stall is RESOLVED by review-lap auth
 
 ### SLOT-JUDGMENT PORT — decomposition (each step ends GREEN; gate: build 🟢 + headline no-drift + §6 seams)
 
-- **P1 — introduce `Zef` into `src/GoodsteinPA/OperatorZeh.lean`** (alongside `Zeh`, do NOT delete
-  `Zeh` yet). Port from `wip/ZefSlotCalculus.lean` verbatim (namespace already
-  `GoodsteinPA.OperatorZeh`): the `Zef` inductive (6 constructors), `Zef.weakening`, `Zef.mono_f`
-  (slot weakening), `Zef.change_H`, `Zef.mono_Hf`, `ZefProv` + its `of`/`mono`/`weakening`, the
-  slot algebra (`rel1_monotone`, `rel1_infl`, `reslot_family`, `reslot_exside`), and `allInv_Zef`.
-  Nothing depends on the pins yet ⟹ trivially green. **This is the smallest first green step.**
-- **P2 — port `redDeriv_slot`** (the FULL §19.6 running-family reduction, output slot `g∘f`) and
-  `stepAllω_Zef`. Verbatim from wip. Green (still not wired to the src pins).
-- **P3 — restate + discharge pins 1–2.** Change `cutReduceAllAuxRunning_Zf` / `stepAllω_Zf` in
+- **P1 — DONE (lap 184).** `Zef` inductive + `Zef.weakening`/`mono_f`/`change_H`/`mono_Hf` +
+  `ZefProv` (+ `of`/`mono`/`weakening`) + slot algebra (`rel1_monotone`/`rel1_infl`/`reslot_family`/
+  `reslot_exside`) + `allInv_Zef` are now live in `src/GoodsteinPA/OperatorZeh.lean` §7 (inlined
+  verbatim from `wip/ZefSlotCalculus.lean`, which is now SUPERSEDED — it no longer compiles
+  standalone due to the duplicate `Zef`, harmless since it is off the build). Build 🟢 1333.
+- **P2 — DONE (lap 184).** `redDeriv_slot` (FULL §19.6 running-family reduction, output slot `g∘f`)
+  + `stepAllω_Zef` are live src theorems, axiom-clean `[propext, Classical.choice, Quot.sound]`
+  (verified real `#print axioms`). The read-off exit `readoff_sigma1_Zef`/`headline_readoff_Zef`
+  ported too (bound `f 0`). **These are the discharge machinery for pins 1–2, now in the live build.**
+- **P3 — NEXT: restate + discharge pins 1–2.** Change `cutReduceAllAuxRunning_Zf` / `stepAllω_Zf` in
   `src` §5 to the slot-judgment form (derivation conjunct over `ZefProv`, output slot `g∘f`),
   discharge via `redDeriv_slot`/`stepAllω_Zef` — **the `sorry`s at lines 829/845 disappear**.
   Update the §6 seam probes (`seam1`/`seam2`/non-vacuity) to the slot form; they must stay green
