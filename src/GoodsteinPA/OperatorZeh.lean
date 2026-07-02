@@ -795,39 +795,83 @@ theorem iter_comp (f : ℕ → ℕ) (j k : ℕ) : f^[j] ∘ f^[k] = f^[j + k] :=
   (Function.iterate_add f j k).symm
 
 /-! ## §5b The collapse + ordinal-indexed iterate — pin-3's restatement carriers (LOCK Addendum 2,
-C2/C5)
+C2/C5; **iterate AMENDED by the lap-5 judge pass — SEVENTH statement trap**)
 
 Pin 3 relates a rank-`c+1` derivation to a rank-`c` one by COLLAPSING the ordinal and ITERATING the
-slot.  Two explicit ONote-grounded definitions (design work of lap 5, E–W paper open):
+slot.  Two explicit ONote-grounded definitions:
 
 - `collapse α := ω^α` (`expTower`) — E–W Lemma 27's Ω-free predicative shadow `φ 0 β = ω^β` for one
   rank step; iterated `c` times it is the rank-lowering tower `Ω_c(α) = Ω^{Ω_{c-1}(α)}`
   (paper §5, `arai`-style tower).  NF-preserving + strictly monotone (the descent the collapse
   induction needs) — both proven below (C5), reusing `expTower_NF`/`expTower_lt_expTower`.
-- `iterSlot f α := f^[iterCount α]` with `iterCount α := norm α + 1` — the ordinal-INDEXED iterate
-  (E–W Def 16's `f^α` realized as a plain `Function.iterate` at a count that READS the ordinal via
-  the repo norm `N`).  NOT a fixed `f^[k]`: at an `allω` node the branch slot `rel1 (iterSlot f (β n)) n`
-  has per-branch count `iterCount (β n)` growing with `n` (`β n` unbounded), so no single `f^[k]`
-  dominates — exactly the branch-unbounded demand the architect flagged (C2).  The `+1` mirrors
-  Lemma 30's `f^{F^α(0)+1}` and keeps `iterSlot f 0 = f^[1] = f` (α = 0 is the cut-free axiom, slot
-  unchanged).
+- `iterSlot f α` — the **diagonalizing** ordinal-indexed iterate (E–W Def 16's `f^α`; Lemma 19's
+  `F^α(0)` is a TRANSFINITE iterate, not a syntactic count).  Defined by the same
+  fundamental-sequence recursion as the repo's `hardy` (which is exactly the successor's
+  `iterSlot`): base `iterSlot f 0 = f`, successor `iterSlot f (a+1) n = iterSlot f a (f n)`,
+  limit `iterSlot f λ n = iterSlot f (λ[n]) n`.  On finite ordinals it agrees with the retired
+  count form (`iterSlot f (ofNat k) = f^[k+1]`); at limits it DIAGONALIZES — the branch index
+  rides the numeric argument, which `rel1` raises (`rel1 (iterSlot f α) n` evaluates the ordinal
+  index at `α[max n x]`-stages, absorbing branch-growing budgets).
 
-**T-Z5(iii) note.**  `iterCount := norm · + 1` is a concrete DEFENSIBLE readoff; whether it is a
-count LARGE enough for the `allω`-lane arithmetic (E–W Lemma 19: every witness norm `≤ f^[iterCount α] 0`)
-is the grind-lap C5 adequacy obligation, and the pre-registered `allω`-lane risk.  If `norm` proves
-too weak, the response is architect-level (a different collapse/count normal form), not a body grind. -/
+**⚠️ SEVENTH STATEMENT TRAP (caught by the lap-5 judge pass; kernel evidence
+`wip/JudgeTrap7Probe.lean`).**  The lap-5 draft's fixed-count form
+`iterSlot f α := f^[norm α + 1]` is refuted at the `allω` reassembly: the pass's induction hands
+branch `n` its output at slot `(rel1 f n)^[norm (β n) + 1]`, while the pin's conclusion forces the
+parent's branch slot `rel1 (f^[norm α + 1]) n`; `Zef.mono_f` only RAISES slots, so reassembly needs
+`(rel1 f n)^[norm (β n) + 1] ≤ rel1 (f^[norm α + 1]) n` pointwise.  Kernel counterexample at
+`α = ω`, `β 2 = ofNat 2`, `f = hardy ω`, `x = 0`: parent side `f^[2] 2 = 11 < 23 = (rel1 f 2)^[3] 0`.
+Root cause: `norm` is not monotone along `<` (`norm (ofNat n) = n` grows along ω's fundamental
+sequence while `norm ω = 1`), so NO fixed ℕ-count read off the parent ordinal dominates the
+branches — the diagonalization is forced.  (The box's lap-5 docstring mis-read its own statement:
+it described branch slots as `rel1 (iterSlot f (β n)) n`, but the conclusion's slot parameter puts
+`iterSlot f α` — the branch ordinal never enters the branch slot.) -/
 
 /-- **`collapse`** — the single-rank predicative height map `α ↦ ω^α` (E–W Lemma 27's Ω-free
 shadow; iterated it is the rank-lowering tower). -/
 def collapse (α : ONote) : ONote := expTower α
 
-/-- **`iterCount`** — the ℕ-valued ordinal readoff feeding the iterate index (E–W Lemma 19's count
-`N(α) ≤ f^{F^α(0)}(0)`, here `norm α + 1`; wip finding's `Fω α`). -/
-def iterCount (α : ONote) : ℕ := norm α + 1
+/-- **`iterSlot`** — the diagonalizing ordinal-indexed numeric-slot iterate (E–W Def 16's `f^α` /
+Lemma 19's `F^α(0)`): `iterSlot f 0 = f`; `iterSlot f (a+1) n = iterSlot f a (f n)`;
+`iterSlot f λ n = iterSlot f (λ[n]) n` (limit, via `ONote.fundamentalSequence`).  Same well-founded
+recursion as `hardy`; `hardy` is `iterSlot` of the successor, up to the base case. -/
+def iterSlot (f : ℕ → ℕ) : ONote → ℕ → ℕ
+  | o =>
+    match fundamentalSequence o, fundamentalSequence_has_prop o with
+    | Sum.inl none, _ => f
+    | Sum.inl (some a), h =>
+      have : a < o := by rw [lt_def, h.1]; exact Order.lt_succ _
+      fun n => iterSlot f a (f n)
+    | Sum.inr fs, h => fun n =>
+      have : fs n < o := (h.2.1 n).2.1
+      iterSlot f (fs n) n
+  termination_by o => o
 
-/-- **`iterSlot`** — the ordinal-INDEXED numeric-slot iterate `f ↦ f^[iterCount α]` (E–W Def 16's
-`f^α`; the index reads `α`, so it is NOT a fixed `f^[k]`). -/
-def iterSlot (f : ℕ → ℕ) (α : ONote) : ℕ → ℕ := f^[iterCount α]
+/-- Unfolding lemma for `iterSlot`, mirroring `hardy_def`. -/
+theorem iterSlot_def (f : ℕ → ℕ) {o : ONote} {x} (e : fundamentalSequence o = x) :
+    iterSlot f o =
+      match
+        (motive := (x : Option ONote ⊕ (ℕ → ONote)) → FundamentalSequenceProp o x → ℕ → ℕ)
+        x, e ▸ fundamentalSequence_has_prop o with
+      | Sum.inl none, _ => f
+      | Sum.inl (some a), _ => fun n => iterSlot f a (f n)
+      | Sum.inr fs, _ => fun n => iterSlot f (fs n) n := by
+  subst x
+  rw [iterSlot]
+
+/-- `iterSlot f o = f` when `o = 0` (the `inl none` branch). -/
+theorem iterSlot_zero' (f : ℕ → ℕ) (o : ONote) (h : fundamentalSequence o = Sum.inl none) :
+    iterSlot f o = f := by
+  rw [iterSlot_def f h]
+
+/-- `iterSlot f o n = iterSlot f a (f n)` when `o` is the successor of `a`. -/
+theorem iterSlot_succ (f : ℕ → ℕ) (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) :
+    iterSlot f o = fun n => iterSlot f a (f n) := by
+  rw [iterSlot_def f h]
+
+/-- `iterSlot f o n = iterSlot f (o[n]) n` when `o` is a limit with fundamental sequence `fs`. -/
+theorem iterSlot_limit (f : ℕ → ℕ) (o) {fs} (h : fundamentalSequence o = Sum.inr fs) :
+    iterSlot f o = fun n => iterSlot f (fs n) n := by
+  rw [iterSlot_def f h]
 
 /-- **C5: `collapse` is NF-preserving** (so the assembly can splice at NF ordinals). -/
 theorem collapse_NF {α : ONote} (hα : α.NF) : (collapse α).NF := expTower_NF hα
@@ -837,18 +881,39 @@ rank-lowering induction needs (the `Zekd.add_osucc_descent`-class compatibility)
 theorem collapse_strictMono {β α : ONote} (hβ : β.NF) (h : β < α) : collapse β < collapse α :=
   expTower_lt_expTower hβ h
 
-/-- **C5: `iterSlot f α` is monotone** if `f` is (slot stays `Monotone` through the pass). -/
-theorem iterSlot_monotone {f : ℕ → ℕ} (hf : Monotone f) (α : ONote) : Monotone (iterSlot f α) :=
-  iter_monotone hf _
+/-- **C5: `iterSlot f α` is inflationary** if `f` is (slot stays inflationary through the pass).
+Mirrors `le_hardy`. -/
+theorem iterSlot_infl {f : ℕ → ℕ} (hf_infl : ∀ x, x ≤ f x) (o : ONote) (n : ℕ) :
+    n ≤ iterSlot f o n := by
+  rcases e : fundamentalSequence o with (_ | a) | fs
+  · rw [iterSlot_zero' f o e]; exact hf_infl n
+  · have hlt : a < o := by
+      have hp := fundamentalSequence_has_prop o
+      rw [e] at hp
+      rw [lt_def, hp.1]; exact Order.lt_succ _
+    rw [iterSlot_succ f o e]
+    exact le_trans (hf_infl n) (iterSlot_infl hf_infl a (f n))
+  · have hlt : fs n < o := by
+      have hp := fundamentalSequence_has_prop o
+      rw [e] at hp
+      exact (hp.2.1 n).2.1
+    rw [iterSlot_limit f o e]
+    exact iterSlot_infl hf_infl (fs n) n
+termination_by o
+decreasing_by all_goals exact hlt
 
-/-- **C5: `iterSlot f α` is inflationary** if `f` is (slot stays inflationary through the pass). -/
-theorem iterSlot_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) (α : ONote) : ∀ x, x ≤ iterSlot f α x :=
-  iter_infl hf _
+/-- **C5 PIN (disclosed sorry; discharging lap = lap 6, FIRST item): `iterSlot f α` is monotone**
+for `f` monotone + inflationary.  Mirrors `hardy_monotone`: zero/successor cases thread; the limit
+case needs the f-relative reaches comparison (the `hardy_le_of_reaches` /
+`fastGrowing_bachmann_reach` pattern generalized to base `f`) — grind machinery, not statement
+work, so it is pinned here per LOCK R5 rather than guessed. -/
+theorem iterSlot_monotone {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
+    (α : ONote) : Monotone (iterSlot f α) := by
+  sorry
 
-/-- **C5: `iterSlot f 0 = f`** — the α = 0 (cut-free axiom) case leaves the slot unchanged
-(`iterCount 0 = norm 0 + 1 = 1`, `f^[1] = f`). -/
-theorem iterSlot_zero (f : ℕ → ℕ) : iterSlot f 0 = f := by
-  simp [iterSlot, iterCount, norm]
+/-- **C5: `iterSlot f 0 = f`** — the α = 0 (cut-free axiom) case leaves the slot unchanged. -/
+theorem iterSlot_zero (f : ℕ → ℕ) : iterSlot f 0 = f :=
+  iterSlot_zero' f 0 rfl
 
 /-! ## §6 The two Z1 seams RE-EXPRESSED in the f-form (A2 — real proofs)
 
@@ -1766,11 +1831,11 @@ theorem cutElimPass_Zf {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq} 
 
 /-! ## §7b The C3 composed exit — the anti-vacuity test at statement level (LOCK Addendum 2, C3)
 
-The pin-3 restatement is only faithful if its output count is CONSUMED by the read-off.  This
+The pin-3 restatement is only faithful if its output iterate is CONSUMED by the read-off.  This
 corollary composes ONE elimination pass (rank `1 → 0`) with `headline_readoff_Zef`, at the canonical
 root slot `f = rel1 (hardy e) m` (the `Zeh → Zef` embedding image, `f 0 = hardy e m`).  The resulting
-witness bound is `iterSlot (rel1 (hardy e) m) α 0 = (rel1 (hardy e) m)^[iterCount α] 0` — the count
-`iterCount α` is VISIBLE in the statement and is what the read-off reads.  This is the C3 test that
+witness bound is `iterSlot (rel1 (hardy e) m) α 0` — the ordinal-indexed (diagonalizing) iterate
+is VISIBLE in the statement and is what the read-off reads.  This is the C3 test that
 distinguishes the pinned iterate from severed-slot (Q2) vacuity: a statement whose count the read-off
 never reads would not typecheck with the count in the bound.  Kernel-checked at statement level
 (pin body `sorry`, this corollary is a real derivation from the pin + the read-off). -/

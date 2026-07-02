@@ -96,3 +96,21 @@ stays laps 8–10 (target `readoff_sigma1_Zef`). No self-ratification of any sta
 **Estimates** (calibration: grind runs 2–4× optimistic; statement/judge cadence has been
 1-session-accurate): lap 5 = 1 session; the pass grind = 2–4 sessions with the `allω`/Lemma-19
 lane the likely long pole; then the Δ₀ extension (laps 8–10) before the assembly audit.
+
+---
+
+## ADDENDUM (2026-07-02, post-lap-5 judge ruling — C2 AMENDED, now LOCKED)
+
+Lap 5 (global lap 185) delivered a–e; the judge pass
+(`E-2026-07-02-JUDGE-rebuild-z-lap5-validation.md`) caught the **seventh statement trap** in the
+draft's iterate index: `iterCount α := norm α + 1` is a fixed syntactic count, and the `allω`
+reassembly containment is kernel-refuted (`wip/JudgeTrap7Probe.lean`: at `α = ω`, branch
+`ofNat 2`, `f = hardy ω`, parent side `11 < 23` branch side; `norm` is not monotone along `<`).
+**C2 as locked now reads**: the output slot is the **diagonalizing** ordinal-indexed iterate —
+`iterSlot f 0 = f`, `iterSlot f (a+1) n = iterSlot f a (f n)`, `iterSlot f λ n =
+iterSlot f (λ[n]) n` (the E–W Lemma 19 `F^α(0)` transfinite form, same fundamental-sequence
+recursion as `hardy`). `collapse := expTower` is ratified as drafted. Laps 6–7 are **OPEN**:
+first item = discharge the disclosed C5 pin `iterSlot_monotone` (mirror `hardy_monotone` with
+the f-relative reaches comparison), then the pass induction (`∃`-cut/structural lanes, then the
+`allω`/reaches lane). T-Z5(iii) is resolved at statement time; its grind residue is the
+reachability arithmetic, a proof burden, not a statement unknown.
