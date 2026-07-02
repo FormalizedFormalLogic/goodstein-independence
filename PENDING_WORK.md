@@ -26,6 +26,16 @@ Ran the ratified laps-6–7 order (`E-2026-07-02-JUDGE-rebuild-z-lap5-validation
   grind. Grind laps must NOT touch C2 (VOID). `iterSlot_monotone` + `iterSlot_le_of_reaches` carry
   over to any fix. **Do NOT re-attempt the bare-`iterSlot f α` pass induction** (kernel-refuted here).
 
+  **Sharpened + crux lemma banked (same lap, `ac775ab`/next commit):** (i)
+  `no_fixed_arg_monotone_unbounded_slot` (`wip/Trap8Probe.lean`) proves NO fixed-argument slot
+  works (monotone ⊕ unbounded is impossible: `ofNat n < ω ∀n` ⟹ `n ≤ S ω ∀n`), so the fix must make
+  the slot-READ node-relative, not swap the iterate. (ii) `iterSlot_le_of_lt` (src §5b, axiom-clean)
+  = the budgeted ordinal-monotonicity `β<α, x ≥ norm β ⟹ iterSlot f β x ≤ iterSlot f α x` (mirror
+  `hardy_le_of_lt`) — the crux lemma any node-relative fix splices in. **NEXT grind lap (wip-only):**
+  prototype a node-relative-slot pass reading the slot at argument `≥ norm α` (e.g.
+  `rel1 (iterSlot f α) (norm α)`) and check the four cases thread via `iterSlot_le_of_lt` (lift) +
+  the reaches arithmetic (`allω`), BEFORE the architect fixes C2.
+
 ## LAP 5 (185) — PIN-3 RESTATED (statement lap done) → judge-gated grind is the open work
 
 The lap-5 STATEMENT deliverables are DONE and committed (`435ed72`): pin 3 `cutElimPass_Zf` is

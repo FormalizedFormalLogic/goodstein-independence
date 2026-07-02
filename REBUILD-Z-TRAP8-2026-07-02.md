@@ -87,8 +87,12 @@ slot's *reading*, not its *shape*.
   `cut` sub-derivations lift. The diagonalizing iterate fails there.
 
 A slot form satisfying both is likely one that is **only ever read at arguments ≥ a node-budget**,
-where `iterSlot` *is* ordinal-monotone via `iterSlot_le_of_reaches` (`Reaches x α β` holds at large
-`x`). Candidate directions for the architect (all are C2 statement changes, hence off-limits to a
+where `iterSlot` *is* ordinal-monotone. **This is now a banked theorem** — `iterSlot_le_of_lt`
+(src §5b, axiom-clean): for `β < α` (NF) and budget `x ≥ norm β`, `iterSlot f β x ≤ iterSlot f α x`
+(mirror of `hardy_le_of_lt`, via `reaches_of_lt` + `iterSlot_le_of_reaches` + `iterSlot_monotone`).
+So a node-relative read at argument `≥ norm α` restores the `weak`/`exI`/`cut` lift the bare slot
+cannot supply — the crux lemma of the fix is proven; what remains for the architect is the
+statement shape that routes every slot-read through such a budget. Candidate directions for the architect (all are C2 statement changes, hence off-limits to a
 grind lap):
 - **Relativize the whole output slot**, not just `allω` branches: output `rel1 (iterSlot f α) K`
   (or `fun x => iterSlot f α (K + x)`) with `K` a node-budget, so the slot is read at argument

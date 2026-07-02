@@ -966,6 +966,24 @@ decreasing_by
 theorem iterSlot_zero (f : ℕ → ℕ) : iterSlot f 0 = f :=
   iterSlot_zero' f 0 rfl
 
+/-- **BUDGETED ordinal-monotonicity of `iterSlot`** (mirror of `hardy_le_of_lt`): for `β < α`
+(both NF) and a budget `x ≥ norm β`, `iterSlot f β x ≤ iterSlot f α x`.  Composes
+`reaches_of_lt` (the general Bachmann reachability `Reaches x α β`) with `iterSlot_le_of_reaches`
+(value transfer) and `iterSlot_monotone` (the per-notation monotonicity).
+
+This is the form-independent CRUX LEMMA for the trap-8 fix (`REBUILD-Z-TRAP8-2026-07-02.md`):
+`iterSlot f ·` is NOT ordinal-monotone at a FIXED small argument
+(`no_fixed_arg_monotone_unbounded_slot`), but it IS monotone once the argument reaches the
+`norm`-budget of the smaller ordinal.  So any pin-3 output slot whose READ is node-relative
+(argument `≥ norm` of the node's ordinal — e.g. a relativized `rel1 (iterSlot f α) K` with
+`K ≥ norm α`) restores the `weak`/`exI`/`cut` slot-lift that the bare `iterSlot f α` cannot
+supply.  Banked here so the architect's node-relative C2 amendment can splice it directly. -/
+theorem iterSlot_le_of_lt {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
+    {x : ℕ} {α β : ONote} (hα : α.NF) (hβ : β.NF) (hβα : β < α) (hnorm : norm β ≤ x) :
+    iterSlot f β x ≤ iterSlot f α x :=
+  iterSlot_le_of_reaches hf_infl (reaches_of_lt α hα β hβ hβα hnorm)
+    (fun γ _ => iterSlot_monotone hf_mono hf_infl γ)
+
 /-! ## §6 The two Z1 seams RE-EXPRESSED in the f-form (A2 — real proofs)
 
 The Z1 seam probes re-run against the §5 f-slot statements.  If either seam failed to
