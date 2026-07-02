@@ -6,6 +6,16 @@ div.proof_content {
 	border-left: .08rem solid grey;
 }
 
+/* lap/confidence line injected into dep-graph modals by
+   blueprint/annotate_depgraph.py (source of truth = the
+   @[goodstein_blueprint] attribute ledger in the Lean) */
+p.node-estimate {
+	font-family: monospace;
+	font-size: 90%;
+	opacity: .75;
+	margin: .4rem 0;
+}
+
 /* ---------------------------------------------------------------------------
    Dark mode (follows the OS appearance via prefers-color-scheme).
    plasTeX only ships light themes (theme-white/blue/green); this file is

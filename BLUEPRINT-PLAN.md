@@ -53,3 +53,21 @@ Current run: 9/9 nodes consistent (`debt`/`debt`), 0 warnings, exit 0. ~6s.
 ## Not yet ready
 
 - `leanblueprint pdf` — blocked on MacTeX download. Revisit when `pdflatex` is on PATH.
+
+## Lap/confidence estimates in the dep graph (added 2026-07-01)
+
+The `@[goodstein_blueprint]` ledger's `"<laps>"` + `<confidence>` fields are
+surfaced on the dep graph by `blueprint/annotate_depgraph.py`: each matched
+node's DOT label gains a second line (`~5-10 laps | 65%`) and its click-modal
+gains the same "Ledger estimate" line. Transport is verbatim from the Lean
+(single source of truth); the script never adjudicates status. Matching is
+tex `\lean{}` name vs. attribute stage ident, modulo `_stage`/`_capstone`.
+
+A plain `leanblueprint web` WIPES the annotations, so the one-command refresh is:
+
+    blueprint/annotate_depgraph.py --web
+
+Nodes without an attribute site (currently everything outside the 9 Path B
+capstones, e.g. `wainer_axiom` / `crux2_axiom` / `infinitary_tower`) carry no
+estimate; give them `@[goodstein_blueprint ...]` sites in the Lean and they
+flow through automatically.
