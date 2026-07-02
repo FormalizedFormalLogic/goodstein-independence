@@ -1027,4 +1027,37 @@ theorem osucc_add_mem {S : ONote → Prop} {α γ : ONote} (hα : Cl S α) (hγ 
     Cl S (osucc (α + γ)) :=
   Cl.osucc (Cl.add hα hγ)
 
+/-- Ordinal `+` is monotone in both arguments (non-strict; the wrapper's `≤`-slack bound for
+the cut combinator). -/
+theorem add_le_add_NF {α₁ β₁ α₂ β₂ : ONote} (hα₁ : α₁.NF) (hβ₁ : β₁.NF)
+    (hα₂ : α₂.NF) (hβ₂ : β₂.NF) (h₁ : α₁ ≤ β₁) (h₂ : α₂ ≤ β₂) : α₁ + α₂ ≤ β₁ + β₂ := by
+  haveI := hα₁; haveI := hβ₁; haveI := hα₂; haveI := hβ₂
+  exact le_def.mpr (by rw [repr_add, repr_add]; exact add_le_add (le_def.mp h₁) (le_def.mp h₂))
+
+/-- `osucc` non-strict monotonicity (pairs with `Zekd.osucc_lt_osucc`). -/
+theorem osucc_le_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x ≤ y) : osucc x ≤ osucc y := by
+  refine le_def.mpr ?_
+  rw [repr_osucc hx, repr_osucc hy, ← Order.succ_eq_add_one, ← Order.succ_eq_add_one]
+  exact Order.succ_le_succ (le_def.mp h)
+
+/-- **`ZehProv`-level cut combinator** (assembly plumbing, NOT the gated reduction): package
+the cut RULE at the wrapper level — combine proofs of `φ` and `∼φ` (with `φ.complexity < c`)
+into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, SAME rank and control (no rank-lowering, no
+control-raise — those are the judge-gated `cutElimPass_Zf`/reduction).  The step/reduction
+assembly reuses this to introduce cuts before eliminating them. -/
+theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq} (φ : Form)
+    (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
+    (D₁ : ZehProv βφ e H m c (insert φ Γ)) (D₂ : ZehProv βψ e H m c (insert (∼φ) Γ)) :
+    ZehProv (osucc (βφ + βψ)) e H m c Γ := by
+  obtain ⟨α₁, hle₁, hNF₁, hH₁, d₁⟩ := D₁
+  obtain ⟨α₂, hle₂, hNF₂, hH₂, d₂⟩ := D₂
+  refine ⟨osucc (α₁ + α₂),
+    osucc_le_osucc (ONote.add_nf α₁ α₂) (ONote.add_nf βφ βψ)
+      (add_le_add_NF hNF₁ hβφNF hNF₂ hβψNF hle₁ hle₂),
+    osucc_add_NF hNF₁ hNF₂, osucc_add_mem hH₁ hH₂,
+    Zeh.cut φ hcompl
+      (lt_of_le_of_lt (Zekd.le_add_right_NF hNF₁ hNF₂) (Zekd.lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (Zekd.le_add_left_NF hNF₁ hNF₂) (Zekd.lt_osucc (ONote.add_nf α₁ α₂)))
+      hNF₁ hNF₂ (osucc_add_NF hNF₁ hNF₂) hH₁ hH₂ d₁ d₂⟩
+
 end GoodsteinPA.OperatorZeh
