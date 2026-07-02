@@ -578,4 +578,181 @@ theorem allInv_Zeh {φ₀ : SyntacticSemiformula ℒₒᵣ 1} (n₀ : ℕ) :
       exact Zeh.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_mono (adjoin_le H n₀) hβφH) (Cl_mono (adjoin_le H n₀) hβψH) P₁ P₂
 
+/-- `ω·(n+1)` is a member of every closure — by an `n`-sized tree of equal-exponent merges
+(the seam-2 reversal brick; feeds `probe_allomega_reassembly_Zf`). -/
+theorem wmul_mem (S : ONote → Prop) (n : ℕ) : Cl S (wmul n) := by
+  induction n with
+  | zero => exact Cl.expTower (Cl.ofNat 1)
+  | succ n ih =>
+      have h : wmul n + wmul 0 = wmul (n + 1) := rfl
+      exact h ▸ Cl.add ih (Cl.expTower (Cl.ofNat 1))
+
+/-! ## §5 The f-slot elimination suite (A2 — LOCK §3/§6, statement pins, bodies `sorry`)
+
+The Eguchi–Weiermann number-theoretic operator slot `f : ℕ → ℕ` (arXiv:1205.2879, Def. 23 +
+Lemma 25) is what the `(k,d)` counter could never be (SPIKE-W4B: both seams are ℕ-slot
+overflow failures; SPIKE-Z1 §6: the non-affine function-slot absorbs both).  Per LOCK §3 the
+judgment `Zeh` stays f-free; the f-slots live HERE, in the elimination statements:
+
+* **composition at principal cuts** — the reduction's output slot is `f ∘ g` of the premises';
+* **max-relativization at ω-nodes** — `rel1 f n = fun x => f (max n x)`;
+* **`hardy e` at the root** — `NormControlled` collapses to `hardy e` when `m = 0`.
+
+These signatures are the NOT-LOCKED lap-1 draft (LOCK §6): bodies `sorry`, discharge is
+laps 2–7 behind the judge gate.  The composition-at-the-cut conjunct is exactly the P1
+hardy-domination-under-raise question (open; per-instance at the headline or f-slot
+carriage). -/
+
+/-- The Eguchi–Weiermann max-relativization of a number-theoretic operator (spike §6). -/
+def rel1 (f : ℕ → ℕ) (n : ℕ) : ℕ → ℕ := fun x => f (max n x)
+
+/-- **The reassembly algebra (E–W Lemma 25's commutation):** max-relativization commutes
+with composition definitionally — a composed (cut-reduced) slot re-enters the ω-rule's
+premise form with no residue. -/
+theorem rel1_comp (f g : ℕ → ℕ) (n : ℕ) : rel1 (f ∘ g) n = f ∘ rel1 g n := rfl
+
+/-- **Norm control** (the E–W "number-theoretic operator" bound, tied to the `(e, m)` axis):
+`f` dominates the Hardy witness bound at every relativization depth.  `hardy e` is the root
+instantiation (`normControlled_root`); the ω-node re-entry is `normControlled_rel1`. -/
+def NormControlled (f : ℕ → ℕ) (e : ONote) (m : ℕ) : Prop :=
+  ∀ x, hardy e (max m x) ≤ f x
+
+/-- **Root instantiation** (LOCK §3, third bullet): `hardy e` controls the stage-0 axis. -/
+theorem normControlled_root (e : ONote) : NormControlled (fun x => hardy e x) e 0 := by
+  intro x; simp
+
+/-- **Seam 2 in controlled form — the ω-node re-entry** (real proof): a controlled slot,
+relativized at branch `n` and run at the max-adjoined stage, is controlled by `rel1 f n`.
+This is `rel1_comp`'s semantic payload: the branch-unbounded demand that overflowed every
+`Zekd` `d`-slot re-enters through ONE function slot's relativization. -/
+theorem normControlled_rel1 {f : ℕ → ℕ} {e : ONote} {m : ℕ} (h : NormControlled f e m)
+    (n : ℕ) : NormControlled (rel1 f n) e (max m n) := by
+  intro x
+  have hx := h (max n x)
+  have he : max m (max n x) = max (max m n) x := by omega
+  rw [he] at hx
+  simpa [rel1] using hx
+
+/-- **PIN (disclosed sorry): the running-family reduction, f-slot form**
+(`cutReduceAllAuxRunning_Zf`).  Extends the Z1 pin `cutReduceAllAuxRunning_Zeh` with the
+E–W f-slots: the `∀`-family is `g`-controlled, the `∃`-side `f`-controlled, and the output
+at control `raise e α` carries the COMPOSED slot `f ∘ g` (composition at the principal cut).
+The `NormControlled (f ∘ g) (raise e α) m` conjunct is the P1 hardy-domination-under-raise
+obligation — the open threading question the reduction must discharge (laps 2–4). -/
+theorem cutReduceAllAuxRunning_Zf {φ : SyntacticSemiformula ℒₒᵣ 1} {c m₀ : ℕ}
+    {α e : ONote} {H : ONote → Prop} {Γ : Seq} (f g : ℕ → ℕ)
+    (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF) (hαH : Cl H α)
+    (hg : NormControlled g e m₀)
+    (fam : ∀ n, Zeh α e (adjoin H n) (max m₀ n) c (insert (φ/[nm n]) Γ)) :
+    ∀ {γ : ONote} {m : ℕ} {Δ : Seq}, Zeh γ e H m c Δ → NormControlled f e m →
+      γ.NF → Cl H γ → m₀ ≤ m → (∃⁰ ∼φ) ∈ Δ →
+      ZehProv (osucc (α + γ)) (raise e α) H m c (Δ.erase (∃⁰ ∼φ) ∪ Γ) ∧
+      NormControlled (f ∘ g) (raise e α) m := by
+  sorry
+
+/-- **PIN (disclosed sorry): the common-control step motive, f-slot form** (`stepAllω_Zf`,
+amendment A2).  The principal ∀/∃ cut-reduction step, IHs held at ONE control `E` through
+the recursion (per-branch raise-then-`mono_e`-unify is kernel-refuted in `Zeh`).  Output
+control `raise E δ`, composed slot `f ∘ g`. -/
+theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+    {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} (f g : ℕ → ℕ)
+    (hENF : E.NF) (hχc : χ.complexity < c)
+    (hg : NormControlled g E m)
+    (D₁ : ZehProv (expTower βφ) E H m c (insert (∀⁰ χ) Γ))
+    (hf : NormControlled f E m)
+    (D₂ : ZehProv (expTower βψ) E H m c (insert (∃⁰ ∼χ) Γ)) :
+    ∃ δ : ONote, δ.NF ∧ Cl H δ ∧
+      ZehProv δ (raise E δ) H m c Γ ∧ NormControlled (f ∘ g) (raise E δ) m := by
+  sorry
+
+/-- **PIN (disclosed sorry): one elimination pass, f-slot form** (`cutElimPass_Zf`, the
+collapse/iteration shape).  A rank-`c+1` derivation is lowered to rank `c` at a towered
+control `raise e α'` with the f-slot transfinitely ITERATED (`f ↦ f^{…}`, E–W collapse);
+the iterated slot is left existential (its exact iteration index is the collapse's ordinal
+count, pinned in the assembly laps 5–7). -/
+theorem cutElimPass_Zf {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq} (f : ℕ → ℕ)
+    (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
+    (D : Zeh α e H m (c + 1) Γ) (hf : NormControlled f e m) :
+    ∃ (α' : ONote) (f' : ℕ → ℕ), α'.NF ∧ Cl H α' ∧
+      ZehProv α' (raise e α') H m c Γ ∧ NormControlled f' (raise e α') m := by
+  sorry
+
+/-! ## §6 The two Z1 seams RE-EXPRESSED in the f-form (A2 — real proofs)
+
+The Z1 seam probes re-run against the §5 f-slot statements.  If either seam failed to
+compose HERE it would be trigger T-R(i) (the E–W carrier failing where the ℕ-slots failed —
+no third carrier is pinned).  It does not: both close as real proofs. -/
+
+/-- **Seam 1 absorbed by composition** (spike §6, ported; contrast
+`SpikeW4B.seam1_uniform_slot_unpayable`, `¬(dd + x + 1 ≤ dd)` for every ℕ-slot): the
+reduction's `+ norm α + 1`-class output bump re-enters the COMPOSED slot, which pays any
+structural bump exactly. -/
+theorem seam1_bump_absorbed_by_composition (x : ℕ) :
+    ∃ g : ℕ → ℕ, ∀ dd : ℕ, dd + x + 1 ≤ g dd :=
+  ⟨fun dd => dd + x + 1, fun _ => le_rfl⟩
+
+/-- **Seam 2 absorbed by a function slot** (spike §6, ported; contrast
+`SpikeW4B.seam2_no_uniform_slot`, which refuted every ℕ-slot `D` against exactly this
+family): the two-level configuration's branch-`n` demand is paid by ONE function-valued
+slot evaluated through its own relativization. -/
+theorem seam2_function_slot_payable (dBase eNorm : ℕ) :
+    ∃ f : ℕ → ℕ, ∀ n : ℕ, (dBase + eNorm + 1) + norm (expTower (wmul n)) + 1 ≤ rel1 f n 0 := by
+  refine ⟨fun x => dBase + eNorm + x + 3, fun n => ?_⟩
+  have h : norm (expTower (wmul n)) = n + 1 := by
+    rw [norm_expTower, norm_wmul]; omega
+  rw [h]
+  simp [rel1]
+  omega
+
+/-- **Seam-2 reversal probe, f-form (sorry-free):** the ω-node re-assembles over the
+reduction-output class, with each branch's control carried by the relativized f-slot
+`rel1 f n` (`normControlled_rel1`).  Mirrors the spike's `probe_allomega_reassembly_Zeh`
+membership form; here the numeric control rides the function slot the seam demands. -/
+theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+    {χ : SyntacticSemiformula ℒₒᵣ 1} {f : ℕ → ℕ} (hf : NormControlled f e m)
+    (dd : ∀ n, Zeh (osucc (wmul n + wmul n)) e (adjoin H n) (max m n) c
+      (insert (χ/[nm n]) Γ)) :
+    Zeh (expTower ONote.omega) e H m c (insert (∀⁰ χ) Γ) ∧
+      (∀ n, NormControlled (rel1 f n) e (max m n)) := by
+  refine ⟨?_, fun n => normControlled_rel1 hf n⟩
+  refine Zeh.allω χ (fun n => osucc (wmul n + wmul n))
+    (fun n => ?_) (fun n => ?_) (expTower_NF omegaO_NF)
+    (fun n => Cl.osucc (Cl.add (wmul_mem (adjoin H n) n) (wmul_mem (adjoin H n) n))) dd
+  · rw [wmul_add_wmul]
+    exact osucc_omega_coeff_lt _
+  · rw [wmul_add_wmul]
+    exact osucc_NF (nf_one.oadd _ NFBelow.zero)
+
+/-- **Seam-1 composition probe, f-form (a REAL proof; only sorry-dependence is the §5
+reduction pin — `allInv_Zeh` is now PROVEN).**  The ∀/∃ arm at an ω-branch, consuming the
+now-proven inversion and the f-slot reduction pin.  The emission carries NO output-side
+numeric slot (membership is closure-derived) AND its control rides the composed function
+slot `f ∘ g` (the reduction pin's f-conjunct).  Seam 1 reverses in the f-form exactly as it
+did in the membership form. -/
+theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {m nBr c : ℕ} {Γ : Seq}
+    {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} (f g : ℕ → ℕ)
+    (hENF : E.NF) (hχc : χ.complexity < c)
+    (hg : NormControlled g E (max m nBr)) (hf : NormControlled f E (max m nBr))
+    (IH1 : ZehProv (expTower βφ) E (adjoin H nBr) (max m nBr) c (insert (∀⁰ χ) Γ))
+    (IH2 : ZehProv (expTower βψ) E (adjoin H nBr) (max m nBr) c (insert (∃⁰ ∼χ) Γ)) :
+    ∃ αf γf : ONote, αf.NF ∧ αf ≤ expTower βφ ∧ γf ≤ expTower βψ ∧
+      Cl (adjoin H nBr) (osucc (αf + γf)) ∧
+      ZehProv (osucc (αf + γf)) (raise E αf) (adjoin H nBr) (max m nBr) c Γ ∧
+      NormControlled (f ∘ g) (raise E αf) (max m nBr) := by
+  obtain ⟨α₁, hle₁, hNF₁, hH₁, D₁⟩ := IH1
+  obtain ⟨γ₁, hle₂, hNF₂, hH₂, D₂⟩ := IH2
+  -- the RUNNING family, exactly the reduction pin's input shape: allInv_Zeh (PROVEN) hands
+  -- branch n₁ at the iterated relativization and the running stage
+  have fam : ∀ n₁, Zeh α₁ E (adjoin (adjoin H nBr) n₁) (max (max m nBr) n₁) c
+      (insert (χ/[nm n₁]) Γ) := by
+    intro n₁
+    exact (allInv_Zeh n₁ D₁ (Finset.mem_insert_self _ _)).weakening
+      (Finset.insert_subset_insert _ (Finset.erase_insert_subset _ _))
+  -- the f-slot reduction pin, then clean the sequent
+  have hred := cutReduceAllAuxRunning_Zf f g hχc hNF₁ hENF hH₁ hg fam D₂ hf hNF₂ hH₂
+    le_rfl (Finset.mem_insert_self _ _)
+  refine ⟨α₁, γ₁, hNF₁, hle₁, hle₂, Cl.osucc (Cl.add hH₁ hH₂), ?_, hred.2⟩
+  exact hred.1.weakening (Finset.union_subset (Finset.erase_insert_subset _ _)
+    (Finset.Subset.refl Γ))
+
 end GoodsteinPA.OperatorZeh
