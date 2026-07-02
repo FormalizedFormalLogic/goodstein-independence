@@ -16,6 +16,8 @@ premises (rank-`c` at `collapse βφ`, `collapse βψ`, `βφ,βψ < α`) into t
 namespace GoodsteinPA.OperatorZeh
 
 open ONote Ordinal
+open LO LO.FirstOrder
+open GoodsteinPA.OperatorZinfty GoodsteinPA.FastGrowing
 
 /-- `repr (expTower x) = ω ^ repr x`. -/
 theorem repr_expTower (x : ONote) : (expTower x).repr = ω ^ x.repr := by
@@ -37,30 +39,37 @@ theorem expTower_add_lt {βφ βψ α : ONote} (hβφ : βφ.NF) (hβψ : βψ.N
     (opow_lt_opow_iff_right one_lt_omega0).2 (lt_def.mp hψ)
   exact (Ordinal.isPrincipal_add_omega0_opow α.repr) hφr hψr
 
-/-- `ewN (collapse α) = ewN α + 1` (`collapse α = oadd α 1 0`). -/
-theorem ewN_collapse (α : ONote) : ewN (collapse α) = ewN α + 1 := by
-  simp [collapse, expTower, ewN]
+/-! ## Pass induction skeleton probe — the generalized-`f` helper (Monotone+infl threading) -/
 
-/-- **Per-node gate for the pass** — the rebuilt node at `collapse α` with slot `ewIter f α` needs
-gate `ewN (collapse α) ≤ (ewIter f α) 0`.  From the input derivation's base gate `ewN α ≤ f 0` +
-`EwF1 f`: `ewN (collapse α) = ewN α + 1`, and `ewIter f α 0 ≥ f (f 0) ≥ 2·f 0 + 1 ≥ ewN α + 1`
-(the `f(f 0)` floor via `ewIter_lower` at `0 < α`; `EwF1` at the base for `α = 0`). -/
-theorem ewN_collapse_le {f : ℕ → ℕ} (hf1 : EwF1 f) {α : ONote} (hgate : ewN α ≤ f 0) :
-    ewN (collapse α) ≤ ewIter f α 0 := by
-  rw [ewN_collapse]
-  by_cases hα : α = 0
-  · subst hα
-    simp only [ewN_zero, ewIter_zero]
-    have := hf1.2 0; omega
-  · have h0α : (0 : ONote) < α := by
-      cases α with
-      | zero => exact (hα rfl).elim
-      | oadd e n a => exact oadd_pos e n a
-    have hgate0 : ewN (0 : ONote) ≤ f (ewN α + 0) := Nat.zero_le _
-    have hlow := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) h0α hgate0
-    have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow
-    have hb : 2 * f 0 + 1 ≤ f (f 0) := hf1.2 (f 0)
-    have : ewN α + 1 ≤ f (f 0) := by omega
-    exact le_trans this hff
+/-- Skeleton probe: the pass as a Monotone+infl-threaded induction (NOT EwF1 on the slot, since
+`allω` branches carry `rel1 f n` which doesn't preserve strictness).  Establishes the motive +
+case tags compile; cases are disclosed sub-goals. -/
+theorem passAux_skel (c : ℕ) {e : ONote} (heNF : e.NF) :
+    ∀ {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq} {r : ℕ},
+      Zef2 α e H f r Γ → r = c + 1 → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
+      α.NF → Cl H α →
+      Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
+  intro α H f Γ r D
+  induction D with
+  | @axL α e H f r Γ ar hαN rel v hp hn =>
+      intro hr hmono hinfl hlow hαNF hαH
+      have hg := ewN_collapse_le hlow hαN
+      exact Zef2Prov.of (collapse_NF hαNF) (Cl_of_NF (collapse_NF hαNF)) hg
+        (Zef2.axL hg rel v hp hn)
+  | @wk α e H f r Δ Γ hαN hsub D' ih =>
+      intro hr hmono hinfl hlow hαNF hαH
+      exact (ih heNF hr hmono hinfl hlow hαNF hαH).weakening hsub
+  | @weak α β e H f r Δ Γ hαN hβ hβNF hαNF' hβH hsub D' ih =>
+      intro hr hmono hinfl hlow hαNF hαH
+      obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih heNF hr hmono hinfl hlow hβNF (Cl_of_NF hβNF)
+      have hslot := ewIter_slot_le hmono hinfl hβ (Zef2.gate D')
+      exact ⟨a, le_trans hale (le_of_lt (collapse_strictMono hβNF hβ)), haNF, haH,
+        le_trans hag (hslot 0), (Da.mono_f hslot).wk (le_trans hag (hslot 0)) hsub⟩
+  | @allω α e H f r Γ hαN χ β hβ hβNF hαNF' hβH dd ih =>
+      intro hr hmono hinfl hlow hαNF hαH; sorry
+  | @exI α β e H f r Γ hαN χ n hβ hβNF hαNF' hβH hbound dχ ih =>
+      intro hr hmono hinfl hlow hαNF hαH; sorry
+  | @cut α βφ βψ e H f r Γ hαN χ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
+      intro hr hmono hinfl hlow hαNF hαH; sorry
 
 end GoodsteinPA.OperatorZeh

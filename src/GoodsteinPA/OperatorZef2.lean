@@ -287,24 +287,26 @@ theorem ewN_collapse (α : ONote) : ewN (collapse α) = ewN α + 1 := by
   simp [collapse, expTower, ewN]
 
 /-- **Per-node gate for the pass** — the rebuilt node at `collapse α` with slot `ewIter f α` needs
-gate `ewN (collapse α) ≤ (ewIter f α) 0`.  From the derivation's base gate `ewN α ≤ f 0` + `EwF1 f`:
-`ewN (collapse α) = ewN α + 1`, and `ewIter f α 0 ≥ f (f 0) ≥ 2·f 0 + 1 ≥ ewN α + 1` (the `f(f 0)`
-floor via `ewIter_lower` at `0 < α`; `EwF1` at the base for `α = 0`).  Kernel-checked in
-`wip/Lap10PassProbe.lean`. -/
-theorem ewN_collapse_le {f : ℕ → ℕ} (hf1 : EwF1 f) {α : ONote} (hgate : ewN α ≤ f 0) :
-    ewN (collapse α) ≤ ewIter f α 0 := by
+gate `ewN (collapse α) ≤ (ewIter f α) 0`.  From the derivation's base gate `ewN α ≤ f 0` + the
+`2m+1 ≤ f m` LOWER bound (`hlow`): `ewN (collapse α) = ewN α + 1`, and `ewIter f α 0 ≥ f (f 0) ≥
+2·f 0 + 1 ≥ ewN α + 1` (the `f(f 0)` floor via `ewIter_lower` at `0 < α`; `hlow` at the base for
+`α = 0`).  Crucially uses only `hlow`, NOT strict monotonicity — so it survives the pass's `allω`
+branches where the slot is `rel1 f n` (which preserves `hlow` via `rel1_low` but breaks
+strictness).  Kernel-checked in `wip/Lap10PassProbe.lean`. -/
+theorem ewN_collapse_le {f : ℕ → ℕ} (hlow : ∀ m, 2 * m + 1 ≤ f m) {α : ONote}
+    (hgate : ewN α ≤ f 0) : ewN (collapse α) ≤ ewIter f α 0 := by
   rw [ewN_collapse]
   by_cases hα : α = 0
   · subst hα
     simp only [ewN_zero, ewIter_zero]
-    have := hf1.2 0; omega
+    have := hlow 0; omega
   · have h0α : (0 : ONote) < α := by
       cases α with
       | zero => exact (hα rfl).elim
       | oadd e n a => exact oadd_pos e n a
-    have hlow := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) h0α (Nat.zero_le _)
-    have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow
-    have hb : 2 * f 0 + 1 ≤ f (f 0) := hf1.2 (f 0)
+    have hlow' := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) h0α (Nat.zero_le _)
+    have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow'
+    have hb : 2 * f 0 + 1 ≤ f (f 0) := hlow (f 0)
     exact le_trans (by omega : ewN α + 1 ≤ f (f 0)) hff
 
 /-! ## Pins 1–2 over `Zef2` (P-d) — re-proven natively (disclosed sub-pins, laps-9+) -/
@@ -603,17 +605,63 @@ theorem stepAllω_Zf2 {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
   exact hred.weakening
     (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))
 
-/-! ## The cut-elimination pass (P-e) — the laps-9+ gate (`sorry`; grind FORBIDDEN) -/
+/-! ## The cut-elimination pass (P-e) — Stage-3 grind (UNLOCKED); `passAux` is the induction -/
 
-/-- **PIN (disclosed, mandated laps-9+ gate): one cut-ELIMINATION pass over `Zef2`.**  E–W Lemma
-27/30's single predicative rank step: the ONE place the ordinal COLLAPSES and the numeric slot
-ITERATES (`ewIter f α`).  Over `Zef2` the ewN gate rides the `collapse`/`ewIter` step; this is the
-trap-8 resolution locus.  Discharge is FORBIDDEN until the lap-8 port is judged. -/
+/-- **`passAux`** — the cut-elimination pass as a generalized induction, threading
+`Monotone f ∧ (∀x,x≤f x) ∧ (∀m,2m+1≤f m)` (NOT `EwF1`: the `2m+1` bound is what `ewN_collapse_le`
+needs and it, unlike strict monotonicity, is PRESERVED by the `allω`-branch relativization `rel1 f n`
+via `rel1_low`).  The rank is generalized to a variable `r` (with `r = c+1`) so `induction` can fire.
+Structural cases (`axL`/`wk`/`weak`) DISCHARGED via the banked pass-prep engine:
+- `axL`: build at `collapse α` with node gate `ewN_collapse_le`;
+- `wk`: IH + `Zef2Prov.weakening`;
+- `weak`: IH at `β<α` + ordinal-lift (`collapse_strictMono`) + slot-lift (`ewIter_slot_le`).
+
+Three cases remain as disclosed sub-`sorry`s (the crux decomposition):
+- `exI`: like `weak` + rebuild the `∃` node (bound `n ≤ ewIter f α 0`);
+- `allω`: the ω-branch reassembly (IH at `rel1 f n` branches, recombine via `ewIter_rel1_le`);
+- `cut`: sub-rank rebuild (χ.complexity < c) OR TOP-rank eliminate (χ.complexity = c, ∀/∃ →
+  `stepAllω_Zf2` + `collapse_add_lt` + `ewIter_comp_le`; the c=0 atomic case needs an atom-cut lemma).
+-/
+theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
+    ∀ {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq} {r : ℕ},
+      Zef2 α e H f r Γ → r = c + 1 → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
+      α.NF → Cl H α →
+      Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
+  intro α H f Γ r D
+  induction D with
+  | @axL α e H f r Γ ar hαN rel v hp hn =>
+      intro hr hmono hinfl hlow hαNF hαH
+      have hg := ewN_collapse_le hlow hαN
+      exact Zef2Prov.of (collapse_NF hαNF) (Cl_of_NF (collapse_NF hαNF)) hg
+        (Zef2.axL hg rel v hp hn)
+  | @wk α e H f r Δ Γ hαN hsub D' ih =>
+      intro hr hmono hinfl hlow hαNF hαH
+      exact (ih heNF hr hmono hinfl hlow hαNF hαH).weakening hsub
+  | @weak α β e H f r Δ Γ hαN hβ hβNF hαNF' hβH hsub D' ih =>
+      intro hr hmono hinfl hlow hαNF hαH
+      obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih heNF hr hmono hinfl hlow hβNF (Cl_of_NF hβNF)
+      have hslot := ewIter_slot_le hmono hinfl hβ (Zef2.gate D')
+      exact ⟨a, le_trans hale (le_of_lt (collapse_strictMono hβNF hβ)), haNF, haH,
+        le_trans hag (hslot 0), (Da.mono_f hslot).wk (le_trans hag (hslot 0)) hsub⟩
+  | @allω α e H f r Γ hαN χ β hβ hβNF hαNF' hβH dd ih =>
+      intro hr hmono hinfl hlow hαNF hαH
+      sorry
+  | @exI α β e H f r Γ hαN χ n hβ hβNF hαNF' hβH hbound dχ ih =>
+      intro hr hmono hinfl hlow hαNF hαH
+      sorry
+  | @cut α βφ βψ e H f r Γ hαN χ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
+      intro hr hmono hinfl hlow hαNF hαH
+      sorry
+
+/-- **PIN → THEOREM (Stage-3, in grind): one cut-ELIMINATION pass over `Zef2`.**  E–W Lemma 26/27's
+single predicative rank step: the ordinal COLLAPSES (`collapse α`) and the numeric slot ITERATES
+(`ewIter f α`).  Now a real derivation from `passAux` (its three remaining sub-`sorry`s are the
+disclosed crux decomposition). -/
 theorem cutElimPass_Zef2 {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f (c + 1) Γ) (hf1 : EwF1 f) (hf2 : EwF2 f) :
-    Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
-  sorry
+    Zef2Prov (collapse α) e H (ewIter f α) c Γ :=
+  passAux c heNF D rfl hf1.monotone hf1.infl hf1.2 hαNF hαH
 
 /-- The E–W root slot `2·(x + rel1 (hardy e) m x) + 3` — a concrete `EwF1`/`EwF2` witness slot
 (the `Zeh → Zef` root-slot analog, budgeted for the exit read-off). -/

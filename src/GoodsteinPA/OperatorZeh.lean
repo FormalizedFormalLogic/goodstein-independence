@@ -1498,6 +1498,15 @@ theorem rel1_monotone {f : ℕ → ℕ} (hf : Monotone f) (n : ℕ) : Monotone (
 theorem rel1_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) (n : ℕ) : ∀ x, x ≤ rel1 f n x :=
   fun x => le_trans (le_max_right n x) (hf (max n x))
 
+/-- **`rel1` preserves the `2m+1` lower bound** (lap-10 SERIES-3 pass prep) — the property the
+pass's per-node gate (`ewN_collapse_le`) needs.  Unlike strict monotonicity (the `EwF1` first
+component, which `rel1`'s `max`-plateau destroys), the `EwF1` SECOND component `2m+1 ≤ f m` is
+inherited: `(rel1 f n) m = f (max n m) ≥ f m ≥ 2m+1`.  This is what lets the pass thread its
+invariants through `allω` branches (slot `rel1 f n`) with NO `EwF1`-of-relativized-slot demand. -/
+theorem rel1_low {f : ℕ → ℕ} (hmono : Monotone f) (hlow : ∀ m, 2 * m + 1 ≤ f m) (n : ℕ) :
+    ∀ m, 2 * m + 1 ≤ rel1 f n m :=
+  fun m => le_trans (hlow m) (hmono (le_max_right n m))
+
 /-- **The ∀-family member re-slots to `g∘f`** (lap-3 `reslot_gof_family`): for `g` monotone, `f`
 monotone + inflationary, and witness `n ≤ f 0`, `rel1 g n ≤ g∘f` pointwise. -/
 theorem reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)

@@ -102,15 +102,29 @@ proven. The cut-elimination step of the pass is now arithmetically de-risked end
 and banked: `collapse_add_lt`, `collapse_strictMono` (existing), `ewIter_le_of_lt`, `ewIter_comp_le`,
 `ewIter_slot_le`, `ewIter_monotone`/`_infl` (existing), `ewN_collapse_le`.
 
-**NEXT (Stage-3 continuation) — ASSEMBLE the induction** `cutElimPass_Zef2` on
-`D : Zef2 α e H f (c+1) Γ`:
-- axL/wk/weak/exI/allω (non-elim): rebuild at `collapse α`/`ewIter f α`; ordinal lift via
-  `collapse_strictMono`, slot lift via `ewIter_slot_le`, gate via `ewN_collapse_le`. allω is the
-  ω-branch reassembly (uses `ewIter_rel1_le`).
-- cut, sub-rank (χ.complexity < c): rebuild the cut at rank c (lift both premises).
-- cut, TOP-rank (χ.complexity = c): ELIMINATE. For c ≥ 1 the cut formula is ∀/∃ → `stepAllω_Zf2` +
-  `collapse_add_lt` + `ewIter_comp_le`. ⚠️ **OPEN sub-question**: c = 0 (rank 1→0) eliminates
-  ATOMIC cuts — `stepAllω_Zf2` does NOT cover these; needs an atomic-cut-reduction lemma (inversion
-  on the atom / one premise is `axL`). This is the next real sub-crux to design.
+**KEY UNBLOCK — `EwLow` (`2m+1 ≤ f m`) threads through `allω`, not `EwF1`.**  The pass CANNOT
+require `EwF1` of the slot: `allω` branches carry `rel1 f n`, and `rel1`'s `max`-plateau BREAKS
+strict monotonicity (the order's flagged wall).  But `ewN_collapse_le` (the per-node gate) needs
+only the `EwF1` *second* component `2m+1 ≤ f m` — and `rel1 f n` PRESERVES that
+(`f(max n m) ≥ f m ≥ 2m+1`, banked `rel1_low`).  So the pass threads `Monotone + infl + (2m+1≤·)`,
+all three `rel1`-stable → the induction recurses into `allω` branches with NO `EwF1`-of-relativized
+demand.  **The order's halt-and-escalate wall does NOT fire.**
+
+**BANKED (src):** `ewN_collapse_le` weakened to the `hlow : ∀m,2m+1≤f m` hypothesis;
+`OperatorZeh.rel1_low` (`rel1` preserves the `2m+1` bound).
+
+**ASSEMBLED IN SRC — `OperatorZef2.passAux`** (the pass as a generalized-rank induction) with
+`cutElimPass_Zef2` now a REAL derivation from it (no longer a bare `sorry`).  3 of 6 cases
+DISCHARGED axiom-clean (validated first in `wip/Lap10PassProbe.lean`):
+- `axL` — build at `collapse α`, node gate `ewN_collapse_le`;
+- `wk` — IH + `Zef2Prov.weakening`;
+- `weak` — IH at β<α + `collapse_strictMono` (ordinal) + `ewIter_slot_le` (slot).
+
+**REMAINING (3 named sub-`sorry`s in `passAux`, the crux decomposition):**
+- `exI` — like `weak` + rebuild the `∃` node; bound `n ≤ ewIter f α 0` (need `f 0 ≤ ewIter f α 0`).
+- `allω` — ω-branch reassembly: IH at `rel1 f n` branches (invariants via `rel1_monotone`/`_infl`/
+  `rel1_low`), recombine into `ewIter f α` via `ewIter_rel1_le`.
+- `cut` — sub-rank (χ.complexity<c) rebuild; TOP-rank (=c) eliminate via `stepAllω_Zf2` +
+  `collapse_add_lt` + `ewIter_comp_le`. ⚠️ c=0 ATOMIC cut still needs an atom-cut lemma.
 
 **Gates**: build 🟢 1341 jobs · headline UNDRIFTED · all lemmas axiom-clean · no new axiom.
