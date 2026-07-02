@@ -89,6 +89,13 @@ def estimate_text(info: dict) -> str:
 STATUS_FOR = {"clean": "\\leanok", "trusted": "\\leanok",
               "debt": "\\notready", "broken": "\\notready"}
 
+# Route-A read-off nodes are BANKED per DIRECTION.md (2026-07-01 route pivot):
+# grey/dashed "abandoned trail" styling so the map doesn't show two live routes
+# to the summit. Deliberately NOT the pathB capstone chain — that is preserved
+# as the live someK substrate of the W0-W7 masterplan, i.e. genuinely-pending
+# debt (orange). This transports an operator decision, not a kernel fact.
+BANKED = {"thm:routeA_headline", "thm:crux2_axiom"}
+
 
 def sync_tex_statuses(ann: dict) -> bool:
     """Rewrite each ledger-matched node's status tag in content.tex from the
@@ -172,6 +179,25 @@ def main() -> int:
                 html,
                 count=1,
             )
+    # Summit at the TOP: rank flow bottom-to-top, so dependencies climb
+    # shores -> foothills -> routes -> crown (matches the mountain metaphor).
+    html = html.replace(
+        "graph [bgcolor=transparent];",
+        "graph [bgcolor=transparent,\trankdir=BT];",
+        1,
+    )
+
+    # Banked-route styling (see BANKED above).
+    for node in sorted(BANKED):
+        suffix = node.split(":", 1)[-1]
+        pat = re.compile(
+            r'("' + re.escape(node) + r'"\s*\[)color=[^,]*,(\s*)label=' + re.escape(suffix) + r','
+        )
+        def _grey(m, s=suffix):
+            return (m.group(1) + 'color="#8a9096",' + m.group(2)
+                    + 'label="' + s + '\\\\n(banked)",' + m.group(2) + 'style=dashed,')
+        html = pat.sub(_grey, html, count=1)
+
     HTML.write_text(html)
     print(f"annotated {changed} DOT labels / {len(matched)} matched nodes")
     return 0
