@@ -103,6 +103,22 @@ pin-3, touch Route-A, or open a speculative calculus rewrite — all FORBIDDEN u
 - **Forbidden drift:** manufacturing tractable side-leaves to look busy while the judge gate is the real blocker;
   grinding gated pins/Route-A; treating a green docs-only commit as the lap's advance.
 
+**2026-07-02 (LAP-1 VERDICT JUDGE-RATIFIED WITH AMENDMENT — REDUCTION-DISCHARGE GATE OPEN).**
+`REBUILD-Z-LAP1-VERDICT.md` is **RATIFIED with the Option-A statement amendment APPLIED by the
+judge** (`E-2026-07-02-JUDGE-rebuild-z-lap1-validation.md`): the lap-176 finding is confirmed —
+the drafted raised-control conjunct on pins 1–2 was refutable two independent ways (K2b re-tag +
+the judge's `axL`-instantiation), so the §5 statements now read **fixed-control** (E–W Lemma 25:
+reduction composes `f∘g` at ONE control; the raise + numeric ITERATION live only in
+`cutElimPass_Zf`, Lemma 30).  Rulings: **Q1** = Option A (kernel-forced); **Q2** = pin 3's `∃ f'`
+is vacuous — its RESTATEMENT (pinned E–W iterate) is the **lap-5 ENTRANCE gate** (statement
+mini-lock, judge-gated); **discharging pin 3 as written is FORBIDDEN**; **Q3** = `stepAllω_Zf`
+stays unified.  **OPEN NOW (laps 2–4): discharge pins 1–2 against the AMENDED fixed-control
+statements** — wire the banked bricks (`allInv_Zeh` + companions, `NormControlled.comp`,
+`hardy_add_le_comp`/Lemma 19, the `ZehProv` combinators, the splice-descent bricks); the §6 seam
+probes are the composition tests.  Still FORBIDDEN: pin 3 (until its lap-5 restatement),
+Route-A, the Δ₀ read-off extension (laps 8–10).  Each lap ends green with real `#print axioms`
+in the baton.
+
 **lap-171 (OPERATOR DECISION — PIVOT-B = WAINER GROWTH-RATE).** The route gate is closed:
 `PIVOT-B`, with B explicitly meaning the **Wainer/Cichon/Caicedo growth-rate route**, not the
 Towsner operator A' lane. Record: `ROUTE-DECISION-2026-07-01-WAINER.md`.

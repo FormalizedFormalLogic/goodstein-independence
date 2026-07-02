@@ -598,10 +598,15 @@ judgment `Zeh` stays f-free; the f-slots live HERE, in the elimination statement
 * **max-relativization at ω-nodes** — `rel1 f n = fun x => f (max n x)`;
 * **`hardy e` at the root** — `NormControlled` collapses to `hardy e` when `m = 0`.
 
-These signatures are the NOT-LOCKED lap-1 draft (LOCK §6): bodies `sorry`, discharge is
-laps 2–7 behind the judge gate.  The composition-at-the-cut conjunct is exactly the P1
-hardy-domination-under-raise question (open; per-instance at the headline or f-slot
-carriage). -/
+These signatures are the lap-1 draft as **JUDGE-AMENDED** (2026-07-02,
+`E-2026-07-02-JUDGE-rebuild-z-lap1-validation.md`, ratifying the lap-176 finding
+`REBUILD-Z-LAP1-FINDING-2026-07-02-fslot-control-raise.md` — Option A, kernel-forced):
+the reduction/step statements stay at **FIXED control** with the composed slot (E–W
+Lemma 25 — the raised-control conjunct of the original draft was refutable two independent
+ways: the K2b re-tag failure, and an `axL`-instantiation making the conjunct falsifiable
+outright).  ALL control-raising and numeric ITERATION is confined to `cutElimPass_Zf`
+(E–W Lemma 30), where the P1 domination obligation is paid by the pinned iterate — not by
+composition.  Bodies `sorry`, discharge laps 2–7 behind the judge gate. -/
 
 /-- The Eguchi–Weiermann max-relativization of a number-theoretic operator (spike §6). -/
 def rel1 (f : ℕ → ℕ) (n : ℕ) : ℕ → ℕ := fun x => f (max n x)
@@ -676,12 +681,14 @@ theorem normControlled_exists_trivial (e : ONote) (m : ℕ) :
     ∃ f : ℕ → ℕ, NormControlled f e m :=
   ⟨fun x => hardy e (max m x), fun _ => le_rfl⟩
 
-/-- **PIN (disclosed sorry): the running-family reduction, f-slot form**
-(`cutReduceAllAuxRunning_Zf`).  Extends the Z1 pin `cutReduceAllAuxRunning_Zeh` with the
-E–W f-slots: the `∀`-family is `g`-controlled, the `∃`-side `f`-controlled, and the output
-at control `raise e α` carries the COMPOSED slot `f ∘ g` (composition at the principal cut).
-The `NormControlled (f ∘ g) (raise e α) m` conjunct is the P1 hardy-domination-under-raise
-obligation — the open threading question the reduction must discharge (laps 2–4). -/
+/-- **PIN (disclosed sorry): the running-family reduction, f-slot form, FIXED control**
+(`cutReduceAllAuxRunning_Zf`; judge-amended per Option A).  E–W Lemma 25 shape: both
+premises and the conclusion run at ONE control `e`; the `∀`-family is `g`-controlled, the
+`∃`-side `f`-controlled, and the output carries the COMPOSED slot `f ∘ g` at the SAME
+control (numeric conjunct dischargeable via the banked `NormControlled.comp`).  The
+original draft's `raise e α` output was kernel-refutable (no `mono_e` re-tag exists — K2b;
+and an `axL`-instantiation falsifies the raised conjunct outright); the raise belongs to
+`cutElimPass_Zf` alone. -/
 theorem cutReduceAllAuxRunning_Zf {φ : SyntacticSemiformula ℒₒᵣ 1} {c m₀ : ℕ}
     {α e : ONote} {H : ONote → Prop} {Γ : Seq} (f g : ℕ → ℕ)
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF) (hαH : Cl H α)
@@ -689,14 +696,17 @@ theorem cutReduceAllAuxRunning_Zf {φ : SyntacticSemiformula ℒₒᵣ 1} {c m�
     (fam : ∀ n, Zeh α e (adjoin H n) (max m₀ n) c (insert (φ/[nm n]) Γ)) :
     ∀ {γ : ONote} {m : ℕ} {Δ : Seq}, Zeh γ e H m c Δ → NormControlled f e m →
       γ.NF → Cl H γ → m₀ ≤ m → (∃⁰ ∼φ) ∈ Δ →
-      ZehProv (osucc (α + γ)) (raise e α) H m c (Δ.erase (∃⁰ ∼φ) ∪ Γ) ∧
-      NormControlled (f ∘ g) (raise e α) m := by
+      ZehProv (osucc (α + γ)) e H m c (Δ.erase (∃⁰ ∼φ) ∪ Γ) ∧
+      NormControlled (f ∘ g) e m := by
   sorry
 
-/-- **PIN (disclosed sorry): the common-control step motive, f-slot form** (`stepAllω_Zf`,
-amendment A2).  The principal ∀/∃ cut-reduction step, IHs held at ONE control `E` through
-the recursion (per-branch raise-then-`mono_e`-unify is kernel-refuted in `Zeh`).  Output
-control `raise E δ`, composed slot `f ∘ g`. -/
+/-- **PIN (disclosed sorry): the common-control step motive, f-slot form, FIXED control**
+(`stepAllω_Zf`, amendment A2; judge-amended per Option A).  The principal ∀/∃
+cut-reduction step, IHs held at ONE control `E` through the recursion (per-branch
+raise-then-`mono_e`-unify is kernel-refuted in `Zeh`), output at the SAME control `E`
+with the composed slot `f ∘ g`.  **Kept UNIFIED per the Q3 ruling** (one ⋁-principal
+reduction, E–W Lemma 25 with `C = ∃⁰∼χ`): `D₂` is the witness-provider, `D₁` enters via
+`allInv_Zeh` inversion — the ∀-side has no separate reduction. -/
 theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
     {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} (f g : ℕ → ℕ)
     (hENF : E.NF) (hχc : χ.complexity < c)
@@ -705,14 +715,19 @@ theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
     (hf : NormControlled f E m)
     (D₂ : ZehProv (expTower βψ) E H m c (insert (∃⁰ ∼χ) Γ)) :
     ∃ δ : ONote, δ.NF ∧ Cl H δ ∧
-      ZehProv δ (raise E δ) H m c Γ ∧ NormControlled (f ∘ g) (raise E δ) m := by
+      ZehProv δ E H m c Γ ∧ NormControlled (f ∘ g) E m := by
   sorry
 
 /-- **PIN (disclosed sorry): one elimination pass, f-slot form** (`cutElimPass_Zf`, the
-collapse/iteration shape).  A rank-`c+1` derivation is lowered to rank `c` at a towered
-control `raise e α'` with the f-slot transfinitely ITERATED (`f ↦ f^{…}`, E–W collapse);
-the iterated slot is left existential (its exact iteration index is the collapse's ordinal
-count, pinned in the assembly laps 5–7). -/
+collapse/iteration shape — E–W Lemma 30: the ONE place the control raises and the slot
+iterates).  ⚠️ **SIGNATURE IS DRAFT-INVALID — restatement is the lap-5 ENTRANCE gate
+(statement mini-lock, judge-gated); DISCHARGE OF THIS PIN AS WRITTEN IS FORBIDDEN.**
+The `∃ f'` conjunct is kernel-checked VACUOUS (`normControlled_exists_trivial`: any
+control/stage has a trivial slot, so the existential severs `f` from the derivation and
+breaks the E–W Lemma 31 read-off `witness ≤ f 0`).  Per the Q2 ruling, `f'` must be
+PINNED to the E–W iterate of the input slot (`f ↦ f^{…}`, index = the collapse's ordinal
+count, Lemma 19 makes it achievable); the exact index expression is the first deliverable
+of lap 5, written against the assembly's ordinal bookkeeping — not guessed here. -/
 theorem cutElimPass_Zf {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zeh α e H m (c + 1) Γ) (hf : NormControlled f e m) :
@@ -794,9 +809,10 @@ theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ
 /-- **Seam-1 composition probe, f-form (a REAL proof; only sorry-dependence is the §5
 reduction pin — `allInv_Zeh` is now PROVEN).**  The ∀/∃ arm at an ω-branch, consuming the
 now-proven inversion and the f-slot reduction pin.  The emission carries NO output-side
-numeric slot (membership is closure-derived) AND its control rides the composed function
-slot `f ∘ g` (the reduction pin's f-conjunct).  Seam 1 reverses in the f-form exactly as it
-did in the membership form. -/
+numeric slot (membership is closure-derived) AND its numeric control rides the composed
+function slot `f ∘ g` at the FIXED control `E` (Option A: the reduction never raises —
+the raise/iteration live in `cutElimPass_Zf` alone).  Seam 1 reverses in the f-form
+exactly as it did in the membership form. -/
 theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {m nBr c : ℕ} {Γ : Seq}
     {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} (f g : ℕ → ℕ)
     (hENF : E.NF) (hχc : χ.complexity < c)
@@ -805,8 +821,8 @@ theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {m nBr c : ℕ} {�
     (IH2 : ZehProv (expTower βψ) E (adjoin H nBr) (max m nBr) c (insert (∃⁰ ∼χ) Γ)) :
     ∃ αf γf : ONote, αf.NF ∧ αf ≤ expTower βφ ∧ γf ≤ expTower βψ ∧
       Cl (adjoin H nBr) (osucc (αf + γf)) ∧
-      ZehProv (osucc (αf + γf)) (raise E αf) (adjoin H nBr) (max m nBr) c Γ ∧
-      NormControlled (f ∘ g) (raise E αf) (max m nBr) := by
+      ZehProv (osucc (αf + γf)) E (adjoin H nBr) (max m nBr) c Γ ∧
+      NormControlled (f ∘ g) E (max m nBr) := by
   obtain ⟨α₁, hle₁, hNF₁, hH₁, D₁⟩ := IH1
   obtain ⟨γ₁, hle₂, hNF₂, hH₂, D₂⟩ := IH2
   -- the RUNNING family, exactly the reduction pin's input shape: allInv_Zeh (PROVEN) hands

@@ -98,3 +98,12 @@ extension of `readoff_sigma1` is scheduled work, not a discovered surprise.
 The f-slot reduction/step signatures (`cutReduceAllAuxRunning_Zf`-class, the common-control
 step motive, the collapse iteration form `f ↦ f^{…}`). Lap 1 drafts them under §2–§3's rails
 and STOPS for the judge before any grinding (see `REBUILD-Z-ORDER-2026-07-02.md`).
+
+**Addendum (2026-07-02, post-lap-1 judge ruling — now LOCKED):** the lemma split is
+Eguchi–Weiermann's own: **reduction/step statements run at FIXED control and COMPOSE the
+slot (`f∘g`, Lemma 25); the elimination pass alone raises the control and ITERATES the slot
+(Lemma 30).** A raised-control conjunct on a reduction statement is refutable (K2b re-tag +
+`axL`-instantiation — see `E-2026-07-02-JUDGE-rebuild-z-lap1-validation.md`) and is now a
+rail violation. Pin 3's iterate must be EXPLICIT (a bare `∃ f'` is kernel-checked vacuous,
+`normControlled_exists_trivial`); its restatement is the lap-5 entrance statement mini-lock.
+`stepAllω_Zf` stays unified (one ⋁-principal reduction; the ∀-side enters via `allInv_Zeh`).
