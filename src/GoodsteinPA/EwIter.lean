@@ -201,6 +201,32 @@ theorem ewIter_le_of_lt {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) {β α : 
     ewIter f β m ≤ ewIter f α m :=
   le_trans (ewIter_infl hf_infl β (ewIter f β m)) (ewIter_lower hβα hgate)
 
+/-- **Slot-composition containment** (lap-10 SERIES-3 pass prep) — the cut-elimination step merges
+two IH-reduced premises' slots `ewIter f α₀ ∘ ewIter f α₁` (`α₀,α₁ < α`) and must fit under the
+declared output `ewIter f α`.  Pick δ = the larger of α₀,α₁ (< α); lift both iterates to δ by gated
+ordinal-monotonicity (`ewIter_le_of_lt`), giving the two-fold `ewIter f δ (ewIter f δ m)`; then
+`ewIter_lower` at δ < α collapses it to the one-fold `ewIter f α m`.  All ball gates follow from the
+base gates `ewN αᵢ ≤ f 0` + monotonicity.  CLOSES the slot side of the cut step — no
+`EwF1`-of-`rel1` escalation needed.  Kernel-checked in `wip/Lap10PassProbe.lean`. -/
+theorem ewIter_comp_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
+    {α₀ α₁ α : ONote} (hα₀ : α₀.NF) (hα₁ : α₁.NF)
+    (h0 : α₀ < α) (h1 : α₁ < α) (g0 : ewN α₀ ≤ f 0) (g1 : ewN α₁ ≤ f 0) (m : ℕ) :
+    ewIter f α₀ (ewIter f α₁ m) ≤ ewIter f α m := by
+  haveI := hα₀; haveI := hα₁
+  have gate0 : ∀ k, ewN α₀ ≤ f (ewN α + k) := fun k => le_trans g0 (hf_mono (Nat.zero_le _))
+  have gate1 : ∀ k, ewN α₁ ≤ f (ewN α + k) := fun k => le_trans g1 (hf_mono (Nat.zero_le _))
+  rcases lt_trichotomy α₀.repr α₁.repr with hlt | heq | hgt
+  · have hα₀α₁ : α₀ < α₁ := lt_def.mpr hlt
+    have g01 : ewN α₀ ≤ f (ewN α₁ + (ewIter f α₁ m)) := le_trans g0 (hf_mono (Nat.zero_le _))
+    exact le_trans (ewIter_le_of_lt hf_infl hα₀α₁ g01) (ewIter_lower h1 (gate1 m))
+  · have hαeq : α₀ = α₁ := repr_inj.mp heq
+    subst hαeq
+    exact ewIter_lower h0 (gate0 m)
+  · have hα₁α₀ : α₁ < α₀ := lt_def.mpr hgt
+    have g10 : ewN α₁ ≤ f (ewN α₀ + m) := le_trans g1 (hf_mono (Nat.zero_le _))
+    have hinner : ewIter f α₁ m ≤ ewIter f α₀ m := ewIter_le_of_lt hf_infl hα₁α₀ g10
+    exact le_trans (ewIter_monotone hf_mono hf_infl α₀ hinner) (ewIter_lower h0 (gate0 m))
+
 theorem ewIter_rel1_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
     (β : ONote) (n x : ℕ) :
     ewIter (rel1 f n) β x ≤ ewIter f β (max n x) := by

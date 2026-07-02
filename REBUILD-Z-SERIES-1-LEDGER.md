@@ -82,13 +82,21 @@ output `collapse α = ω^α` / `ewIter f α`.
   `ewN β ≤ f (ewN α + m)` ⟹ `ewIter f β m ≤ ewIter f α m`. The ewN gate RESTORES exactly the
   property trap-8 refuted for bare `iterSlot`. This is the key that un-walls the slot side.
 
-**NEXT (Stage-3 continuation):** the slot-composition lemma
-`ewIter f α₀ (ewIter f α₁ m) ≤ ewIter f α m` for `α₀,α₁ < α`. Plan (via `ewIter_le_of_lt` +
-`ewIter_lower` + `ewIter_monotone`): case on the ONote order of α₀,α₁; let δ = the larger (< α);
-lift both iterates to δ by gated mono, giving `ewIter f δ (ewIter f δ m)`, then `ewIter_lower` at
-δ < α. Gate bookkeeping: needs `ewN α₁ ≤ f(ewN δ + m)`, `ewN α₀ ≤ f(ewN δ + K)`,
-`ewN δ ≤ f(ewN α + m)` — supplied by the pass invariant (the Zef2Prov gates). State with gates as
-hypotheses (reusable), then wire into the pass induction. The slot side is NOT walled (gated
-`ewIter` is ordinal-monotone) — no `EwF1`-of-`rel1` escalation needed for these containments.
+**BANKED (slot side now COMPLETE, axiom-clean, `wip/Lap10PassProbe.lean` → `EwIter.lean`):**
+- `EwIter.ewIter_comp_le` — the slot-composition lemma `ewIter f α₀ (ewIter f α₁ m) ≤ ewIter f α m`
+  for `α₀,α₁ < α` (NF), from base gates `ewN αᵢ ≤ f 0` + monotone/infl. Proof: ONote-order
+  trichotomy → δ = larger (< α) → gated mono lifts both → two-fold `ewIter f δ (ewIter f δ m)` →
+  `ewIter_lower` at δ<α collapses to one-fold. The gate bookkeeping collapsed to trivial
+  (`f 0 ≤ f _`), no pass-invariant threading needed.
 
-**Gates**: build 🟢 1341 jobs · headline UNDRIFTED · both lemmas axiom-clean · no new axiom.
+**Cut-step containments COMPLETE**: ordinal (`collapse_add_lt`) + slot (`ewIter_comp_le`) both
+proven. The cut-elimination step of the pass is now arithmetically de-risked end-to-end.
+
+**NEXT (Stage-3 continuation):** ASSEMBLE the pass induction `cutElimPass_Zef2` on
+`D : Zef2 α e H f (c+1) Γ`: non-cut nodes rebuild at `collapse α` / `ewIter f α` (need per-node
+gate `ewN (collapse α) ≤ ewIter f α 0` — the remaining engine lemma to prove/bank); the top-rank
+cut node applies `stepAllω_Zf2` then `collapse_add_lt` + `ewIter_comp_le`; sub-rank cut rebuilds.
+Also need: `ewIter f α` monotone/infl (have `ewIter_monotone`/`_infl`), and the node-gate lemma
+`ewN (collapse α) ≤ ewIter f α 0`.
+
+**Gates**: build 🟢 1341 jobs · headline UNDRIFTED · all lemmas axiom-clean · no new axiom.
