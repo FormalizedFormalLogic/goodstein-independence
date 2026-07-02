@@ -68,6 +68,18 @@ numeric budget calculus is DEAD at that node. **The operator green-lit the `Zᵉ
   the scope carve-out above extends to this session verbatim. The `Zᵉ` rebuild grind (~7–11
   laps) is GATED on a judge-ratified Z1 PASS.
 
+**2026-07-02 (Z1 PASS JUDGE-RATIFIED — REBUILD GATE OPEN).** SPIKE-Z1 ran: **PASS, T-Z1 did
+NOT fire, judge-ratified** (`SPIKE-Z1-VERDICT.md` + `E-2026-07-02-JUDGE-spike-z1-validation.md`,
+spike commit `3683ef2`): both W4B seams close by closure (kernel-proven, rail held), the Σ₁
+read-off is PROVEN (`readoff_sigma1`/`headline_readoff`, sorry-free), the Σ₁-definability-of-`H`
+risk dissolves. Two kernel-forced amendments ratified (A1 judgment-carried stage; A2
+common-control motive — there is NO `Zeh` `mono_e`), plus the K1–K3 finding: membership at `ε₀`
+is information-free, so the numeric carrier is the Eguchi–Weiermann **function-slot** form
+(arXiv:1205.2879), binding. **Binding artifacts for the rebuild:
+`ZEH-STATEMENT-LOCK-2026-07-02.md`** (locked calculus core + rails; outranks lap momentum) **+
+`REBUILD-Z-ORDER-2026-07-02.md`** (~7–11 laps; lap 1 = f-slot statement lap, judge-gated before
+grinding; pre-registered trigger **T-R**). The rebuild starts when the operator fires it.
+
 **lap-171 (OPERATOR DECISION — PIVOT-B = WAINER GROWTH-RATE).** The route gate is closed:
 `PIVOT-B`, with B explicitly meaning the **Wainer/Cichon/Caicedo growth-rate route**, not the
 Towsner operator A' lane. Record: `ROUTE-DECISION-2026-07-01-WAINER.md`.
