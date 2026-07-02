@@ -50,6 +50,28 @@ decisive).  The `native_decide` anchors above (α ∈ {0,1,2}, all successor/fin
 exactly the regime where `=` holds.  So the load-bearing target is the INEQUALITY below — and that is
 precisely the UPPER bound P1 needs. -/
 
+/-- **The coefficient intermediate** (the classical Cichoń–Wainer core), parametrized by the
+exponent-`β` base bound `hbase` (supplied by the outer IH in the successor case):
+`H_{ω^β·(m+1)}(n) + 1 ≤ f_β^{[m+1]}(n+1)`.  Kernel-verified for β ∈ {0,1} (`#eval`, scratch).
+Induction on the coefficient `m`:
+* `m = 0`: `ω^β·1 = ω^β`, `f_β^{[1]} = f_β` — exactly `hbase`.
+* `m+1`: relate `H_{ω^β·(m+2)}` to `H_{ω^β·(m+1)}` (IH) with one extra `f_β`-iterate.  The
+  fund. seq. of `ω^β·(m+2)` (= `reaches_coeff_step'` territory) branches on β's shape (0/succ/limit);
+  this is the OPEN step. -/
+theorem hardy_omega_pow_coeff_le {β : ONote}
+    (hbase : ∀ n, hardy (oadd β 1 0) n + 1 ≤ fastGrowing β (n + 1)) :
+    ∀ (m n : ℕ), hardy (oadd β (Nat.succPNat m) 0) n + 1 ≤ (fastGrowing β)^[m + 1] (n + 1) := by
+  intro m
+  induction m with
+  | zero =>
+      intro n
+      show hardy (oadd β 1 0) n + 1 ≤ fastGrowing β (n + 1)
+      exact hbase n
+  | succ m ih =>
+      intro n
+      -- H_{ω^β·(m+2)}(n) + 1 ≤ f_β^{[m+2]}(n+1); OPEN (fund. seq. of ω^β·(m+2) branches on β).
+      sorry
+
 /-- **TARGET: the Hardy–fast-growing UPPER bound at `ω^α`** — `H_{ω^α}(n) + 1 ≤ f_α(n+1)`,
 unconditional.  Well-founded recursion on `α`:
 * `α = 0`: equality, `n+2 = succ(n+1)`.  ✓ (proven).
@@ -72,8 +94,14 @@ theorem hardy_omega_pow_add_one_le (α : ONote) : ∀ n : ℕ,
       have hfs1 : fundamentalSequence (oadd 0 1 0) = Sum.inl (some 0) := rfl
       rw [hardy_succ (oadd 0 1 0) hfs1, hardy_zero, fastGrowing_zero]
       simp only [id_eq]; omega
-    · -- α = β+1 (successor exponent): needs the H_{ω^β·(m+1)} coefficient intermediate. OPEN.
-      sorry
+    · -- α = β+1 (successor exponent): ω^{β+1}[i] = ω^β·(i+1); reduce to the coefficient intermediate.
+      have hlt : β < α := by
+        have hp := fundamentalSequence_has_prop α; rw [hα] at hp
+        rw [lt_def, hp.1]; exact Order.lt_succ _
+      have homega : fundamentalSequence (oadd α 1 0) = Sum.inr (fun i => oadd β i.succPNat 0) :=
+        fundamentalSequence_omega_pow_succ hα
+      rw [hardy_limit (oadd α 1 0) homega, fastGrowing_succ α hα]
+      exact hardy_omega_pow_coeff_le (ih β hlt) n n
     · -- α limit: ω^α[i] = ω^{α[i]}; IH + fastGrowing index-monotonicity.
       have hlim_h : fundamentalSequence (oadd α 1 0) = Sum.inr (fun i => oadd (f i) 1 0) :=
         fundamentalSequence_omega_pow_limit hα

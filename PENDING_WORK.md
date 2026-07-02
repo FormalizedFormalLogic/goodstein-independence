@@ -34,12 +34,16 @@ machinery. Kernel work this lap (`wip/HardyFastGrowingBridge.lean`):
   even THAT `=` holds only at successor/finite exponents — at LIMIT exponents it degrades to STRICT
   `<` (fund-seq index `f n` vs `f(n+1)`, fastGrowing strictly ordinal-monotone). So the UNCONDITIONAL,
   load-bearing truth is the INEQUALITY `hardy(oadd α 1 0) n + 1 ≤ fastGrowing α (n+1)`.
-- Target `hardy_omega_pow_add_one_le` (the `≤` form): **base case α=0 AND the LIMIT case proven**
-  (limit via IH + `fastGrowing_bachmann_reach`/`fastGrowing_le_of_reaches` index-monotonicity); the
-  SUCCESSOR case α=β+1 is the sole open sorry — needs the coefficient intermediate
-  `hardy(oadd β (m+1) 0) n + 1 = fastGrowing β^[m+1](n+1)` (kernel-verified β∈{0,1}, proved by
-  induction on coefficient `m`, base = outer IH at β). Corollary `hardy_omega_pow_lt_fastGrowing`
-  (`hardy(ω^{α'}) n < fastGrowing α' (n+1)`) derived. All in `wip/HardyFastGrowingBridge.lean`.
+- Target `hardy_omega_pow_add_one_le` (the `≤` form): **base α=0, LIMIT, AND the SUCCESSOR case all
+  proven** — the successor case is now WIRED to the coefficient intermediate
+  `hardy_omega_pow_coeff_le` (`hardy(oadd β (m+1) 0) n + 1 ≤ fastGrowing β^[m+1](n+1)`, parametrized
+  by the outer IH at β), whose **base case (m=0) is proven**. Corollary
+  `hardy_omega_pow_lt_fastGrowing` (`hardy(ω^{α'}) n < fastGrowing α'(n+1)`) derived.
+- **The SOLE remaining sorry** is the coefficient-induction step (`m→m+1`) of
+  `hardy_omega_pow_coeff_le`: `H_{ω^β·(m+2)}(n)+1 ≤ f_β^[m+2](n+1)` from the IH at `m+1`. The
+  fundamental sequence of `ω^β·(m+2)` branches on β's shape: β=0 is a finite SUCCESSOR (easy,
+  `hardy_succ`); β=succ/limit introduce a tail term `ω^δ·(i+1)` (the genuine Cichoń–Wainer core).
+  All in `wip/HardyFastGrowingBridge.lean` (out of build target).
 - **This reduces P1's raised-control domination to E–W Lemma 19 in the form
   `fastGrowing α' (n+1) ≤ (iterate of input slot)`** — a fast-growing bound on STABLE defs, NOT the
   Zeh calculus. The `≤` bridge is grindable NOW as B4 (permitted, calculus-independent growth
