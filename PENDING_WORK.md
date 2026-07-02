@@ -29,18 +29,26 @@ growing side "needs the fast-growing `F` + iterate `f^k` machinery = FORBIDDEN c
 premise is WRONG: `ONote.fastGrowing` is a mathlib def with full repo growth theory (`Hardy.lean`
 §Basic), and `f^k` is `Function.iterate`. So E–W Lemma 19 is stateable with existing stable-def
 machinery. Kernel work this lap (`wip/HardyFastGrowingBridge.lean`):
-- The repo's B4 identity `H_{ω^α}=f_α` is kernel-FALSE as an EQUALITY (off by a shift). The EXACT
-  relation is `hardy(oadd α 1 0) n + 1 = fastGrowing α (n+1)` (`native_decide`-anchored α∈{0,1,2}).
-  Target `hardy_omega_pow_add_one` stated, **base case α=0 proven**; succ/limit = open B4 grind
-  (Cichoń–Wainer, via the `H_{ω^β·k}` intermediate). Corollary `hardy_omega_pow_lt_fastGrowing`
-  (upper bound `hardy(ω^{α'}) n < fastGrowing α' (n+1)`) derived.
+- The repo's B4 identity `H_{ω^α}=f_α` is kernel-FALSE, off by TWO shifts: (1) `H_{ω^1}(3)=7≠6`, so
+  the shifted `=` is `hardy(oadd α 1 0) n + 1 = fastGrowing α (n+1)` (`native_decide` α∈{0,1,2}); (2)
+  even THAT `=` holds only at successor/finite exponents — at LIMIT exponents it degrades to STRICT
+  `<` (fund-seq index `f n` vs `f(n+1)`, fastGrowing strictly ordinal-monotone). So the UNCONDITIONAL,
+  load-bearing truth is the INEQUALITY `hardy(oadd α 1 0) n + 1 ≤ fastGrowing α (n+1)`.
+- Target `hardy_omega_pow_add_one_le` (the `≤` form): **base case α=0 AND the LIMIT case proven**
+  (limit via IH + `fastGrowing_bachmann_reach`/`fastGrowing_le_of_reaches` index-monotonicity); the
+  SUCCESSOR case α=β+1 is the sole open sorry — needs the coefficient intermediate
+  `hardy(oadd β (m+1) 0) n + 1 = fastGrowing β^[m+1](n+1)` (kernel-verified β∈{0,1}, proved by
+  induction on coefficient `m`, base = outer IH at β). Corollary `hardy_omega_pow_lt_fastGrowing`
+  (`hardy(ω^{α'}) n < fastGrowing α' (n+1)`) derived. All in `wip/HardyFastGrowingBridge.lean`.
 - **This reduces P1's raised-control domination to E–W Lemma 19 in the form
   `fastGrowing α' (n+1) ≤ (iterate of input slot)`** — a fast-growing bound on STABLE defs, NOT the
-  Zeh calculus. The exact bridge is grindable NOW as B4 (permitted, calculus-independent growth
+  Zeh calculus. The `≤` bridge is grindable NOW as B4 (permitted, calculus-independent growth
   theory); Lemma 19 + wiring into pin-3 stay judge-gated.
 
-Resume = judge ratification (Option A/B; pin `f'`); do NOT grind the gated pins. But B4 (the exact
-`hardy_omega_pow_add_one` bridge) is a permitted, load-bearing grind available regardless.
+**Immediate next step (permitted):** close the successor case of `hardy_omega_pow_add_one_le` via the
+coefficient intermediate `H_{ω^β·(m+1)}` (induction on `m`; the `ω^β·(m+1)` fund-seq is the
+`reaches_coeff_step'` territory in `Hardy.lean`). Resume of the GATED work = judge ratification
+(Option A/B; pin `f'`); do NOT grind the gated pins.
 
 ## Lap 177 — FRESH-MIND REVIEW: state confirmed, no trigger fired, awaiting judge (no in-scope grind)
 

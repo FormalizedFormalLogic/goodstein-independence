@@ -81,24 +81,33 @@ theory (`Hardy.lean` §Basic: `le_fastGrowing`, `fastGrowing_le_of_reaches`, `fa
 no new cut-elim definitions required for the fast-growing bound itself.
 
 The repo's own B4 note (`Hardy.lean:1082`) calls the connecting identity `H_{ω^α} = f_α`.  **That
-EQUALITY is kernel-FALSE** (a second convincing-identity trap this session): `hardy(ω^1) 3 = 7` but
-`fastGrowing 1 3 = 6` (`native_decide`), off by a shift.  Kernel `#eval` over α ∈ {0,1,2} pins the
-EXACT relation:
+EQUALITY is kernel-FALSE, off by TWO successive shifts** (two more convincing-identity traps caught
+this session):
+1. `H_{ω^1}(3) = 7 ≠ 6 = f_1(3)` (`native_decide`).  The shifted `=` is
+   `hardy(oadd α 1 0) n + 1 = fastGrowing α (n+1)` (`#eval`-anchored α ∈ {0,1,2}; α=2 data
+   hardy = 7,23,63 vs fastGrowing(n+1) = 8,24,64 — exact −1).
+2. **Even that `=` holds ONLY at successor/finite exponents.**  At a LIMIT exponent `α` (fund. seq.
+   `f`), `H_{ω^α}(n) = H_{ω^{f n}}(n)` uses `f n` while `f_α(n+1) = f_{f(n+1)}(n+1)` uses
+   `f(n+1) > f n`, and `fastGrowing` is strictly ordinal-monotone — so the LHS is STRICTLY smaller.
+   (`fastGrowing ω`-scale values are too large to `#eval`; the strict-monotone argument is decisive.)
 
-    hardy (oadd α 1 0) n + 1 = fastGrowing α (n + 1)     -- H_{ω^α}(n) = f_α(n+1) − 1
+So the UNCONDITIONAL, load-bearing truth is the INEQUALITY
 
-(anchored by `native_decide` in `wip/HardyFastGrowingBridge.lean`; α=2 data: hardy = 7,23,63 vs
-fastGrowing(n+1) = 8,24,64 — exact −1).  **Consequence for P1:** in the absorbing regime the raised
-control is `≈ hardy(ω^{α'})`, and this bridge gives the UPPER bound
-`hardy(ω^{α'}) n < fastGrowing α' (n+1)` (`hardy_omega_pow_lt_fastGrowing`, proven from the target).
-So P1's raised-control domination REDUCES to E–W Lemma 19 in the form
-`fastGrowing α' (n+1) ≤ (iterate of the input slot)` — a fast-growing bound stateable/attackable
-with existing stable-def machinery.
+    hardy (oadd α 1 0) n + 1 ≤ fastGrowing α (n + 1)     -- H_{ω^α}(n) < f_α(n+1)
 
-Banked in `wip/HardyFastGrowingBridge.lean` (out of build target): the exact-bridge TARGET
-`hardy_omega_pow_add_one` (**base case α=0 proven**; successor/limit steps = open B4 grind, the
-classical Cichoń–Wainer correspondence via the `H_{ω^β·k}` intermediate), the corollary
-`hardy_omega_pow_lt_fastGrowing`, and `native_decide` anchors (incl. the equality-is-false anchor so
-no lap re-attempts `H_{ω^α} = f_α`).  This REOPENS a concrete, permitted, stable-def attack path on
-the P1 domination that lap-177 wrongly declared closed — advance it (prove the exact bridge, then
-Lemma 19) once the judge opens the pin gate; the bridge itself is grindable now as B4.
+— which is EXACTLY the upper bound P1 needs.  **Consequence for P1:** in the absorbing regime the
+raised control is `≈ hardy(ω^{α'})`, and this bound (`hardy_omega_pow_lt_fastGrowing`, proven from
+the target) REDUCES P1's raised-control domination to E–W Lemma 19 in the form
+`fastGrowing α' (n+1) ≤ (iterate of the input slot)` — a fast-growing bound stateable/attackable with
+existing stable-def machinery.
+
+Banked in `wip/HardyFastGrowingBridge.lean` (out of build target): the `≤` TARGET
+`hardy_omega_pow_add_one_le` (**base case α=0 AND the LIMIT case proven** — the limit via IH +
+`fastGrowing_bachmann_reach`/`fastGrowing_le_of_reaches`; the SUCCESSOR case α=β+1 is the sole open
+sorry, needing the coefficient intermediate `H_{ω^β·(m+1)}(n) + 1 = f_β^{[m+1]}(n+1)`, kernel-verified
+β∈{0,1}, provable by induction on the coefficient with base = the outer IH at β — the classical
+Cichoń–Wainer core), the corollary `hardy_omega_pow_lt_fastGrowing`, and `native_decide` anchors
+(incl. the equality-is-false anchor so no lap re-attempts `H_{ω^α} = f_α`).  This REOPENS a concrete,
+permitted, stable-def attack path on the P1 domination that lap-177 wrongly declared closed —
+the `≤` bridge is grindable now as B4 (finish the successor case), Lemma 19 + pin-3 wiring stay
+judge-gated.
