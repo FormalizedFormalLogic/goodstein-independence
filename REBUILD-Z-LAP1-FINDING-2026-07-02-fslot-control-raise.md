@@ -174,6 +174,28 @@ docstring should record the asymmetry (D₂ = witness-provider, D₁ = inverted)
 | #2 `cutElimPass_Zf` existential slot | The existential `f'` is **vacuous & read-off-breaking** (kernel-checked). Must be **pinned** to the E-W iterate `f^{…}` (Lemma 30); Lemma 19 makes it achievable. |
 | #3 split `stepAllω_Zf` ∀/∃? | **No** — one ⋁-principal reduction (E-W Lemma 25); ∀-side enters via `allInv_Zeh` inversion. |
 
+## Adversarial self-check — three attempts to REFUTE the finding, all fail
+
+A finding that survives its author's refutation is worth more to the judge. Three concrete attacks
+on "pins 1–2's `raise e α` is unsound":
+
+1. **"The reduct's `exI` witnesses are bounded by `hardy (raise e α)`, not `hardy e`, so the raise
+   is fine."** No — in E-W cut-reduction the witnesses come from the *original* premises (bounded by
+   `hardy e`, via the `exI` rule `n ≤ hardy e m`). Re-tagging them to control `raise e α` needs
+   `n ≤ hardy (raise e α) m`, and `mono_e_membership_gate_refuted` exhibits `n=5 ≤ hardy 5 0` with
+   `hardy (raise 5 1) 0 = hardy ω 0 = 1 < 5`. The re-tag fails on a concrete witness. **Attack fails.**
+2. **"Pins 1–2 are vacuously provable — the premises are unsatisfiable, so the raise never bites."**
+   No — `two_level_config_Zeh` (banked, sorry-free) is an explicit non-vacuity witness: derivations
+   in exactly the premise shape exist. **Attack fails.**
+3. **"`raise e α` might collapse to `e` (no-op) in the cases that matter."** No — `raise e α =
+   e + ω^α` (line 58) is strictly increasing: `mono_e_membership_gate_refuted` already carries the
+   kernel-proven clause `e < e'` for `e' = raise e 1` (via `↑5 < ω`), and `raise_lt_raise` (line 65)
+   gives strict monotonicity in the exponent. The raise is never a no-op. **Attack fails.**
+
+The finding is robust: pins 1–2 as stated are unsound reductions, Option A is forced. (The one thing
+NOT refuted — because it is not a defect — is pin 3's raise, which is sound *precisely* because it
+carries the iterate; that asymmetry is the finding's core, not a counterexample to it.)
+
 ## Recommended gate action
 
 Before opening laps 2–4: rule on Option A vs B. If A (recommended), amend the §5 draft so the
