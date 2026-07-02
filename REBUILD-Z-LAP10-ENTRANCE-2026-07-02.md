@@ -1,5 +1,9 @@
 # REBUILD-Z — LAP-10 ENTRANCE ORDER: the α+γ restatement + pins 1–2 grind (architect, 2026-07-02) 🔒
 
+> ⚠️ **SUPERSEDED same-day by `REBUILD-Z-SERIES-1-ORDER-2026-07-02.md`** (operator-directed
+> batching: grind stages chain in series, one judge pass over the pipeline). The R-items below
+> live on verbatim as that order's Stage 1; the rulings cited remain binding. Do not fire this.
+
 > **Binding.** Written by the judge/architect pass that ruled on laps 8–9
 > (`E-2026-07-02-JUDGE-rebuild-z-lap8-validation.md`). Ruling #1 resolved trap 9 PAPER-LITERAL:
 > E–W Lemma 25's cut-reduction concludes at `α + β` — **no successor bump** — and Def 23's
