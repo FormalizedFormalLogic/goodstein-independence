@@ -14,8 +14,26 @@ autonomous treadmill campaign. Read both.
 > over every few review laps. Keep it SHORT; detail lives in `PENDING_WORK.md` / `REFLECTION-*.md`.
 > (Live milestone map = `E-CRUX2-ROADMAP-2026-06-24.md`; the phase list below is the standing charter.)
 
+**2026-07-02 (JUDGE PASS on laps 8–9 — port RATIFIED; traps 9 AND 10 caught; ruling #1
+resolved PAPER-LITERAL. This is the current binding block.)** Ruling:
+`E-2026-07-02-JUDGE-rebuild-z-lap8-validation.md`. Lap 8 (codex, committed) delivered the port
+verbatim (`toZef` discharge of both read-offs as mandated; `allInv_Zef2` real; ewN bank; L-R
+ratified) + two honest escalations; lap 9 kernel-sharpened escalation #1
+(`wip/Lap9GateProbe.lean`, judge-reverified). ⚖️ **Ruling #1**: E–W Lemma 25 concludes at
+`α + β` — NO successor bump; the repo's `osucc (α + γ)` was a self-inflicted cascade. Pins 1–2
+restate at `α + γ` with `∀ k, g 0 + k ≤ g k` + `φ.complexity ≤ f 0` hypotheses; the judgment
+gate `ewN α ≤ f 0` is Def-23-faithful and UNCHANGED (fix (b) REFUSED — a Def-16/Def-23
+conflation). ⚖️ **Trap 10**: L-D (tautological `matrixTrue` form) and L-W (trivially
+dischargeable) VOID — judge-supplied restatements; L-E placeholder VOID + deleted (rung E =
+its own statement lap in `WainerLadder.lean` with the MANDATED Ax2-adequacy pre-probe: `Zekd`
+has `trueRel`/`trueNrel`, `Zef2` has none, E–W Def 23 has (Ax2)). 🚦 NEXT FIRE: **lap 10** per
+`REBUILD-Z-LAP10-ENTRANCE-2026-07-02.md` (`--max-laps 2 --max-duration 6h`): seam probe R-0 →
+restatements R-1..R-6 → probe-gated pins 1–2 GRIND (R-3). FORBIDDEN: the pass body; rung E;
+alternative output ordinals beyond the ratified `α + γ`; self-ratification (VOID).
+
 **2026-07-02 (JUDGE PASS on lap 7 — PASS at statement level; trap 9 did NOT fire; the E–W
-ruling is KERNEL-VERIFIED. This is the current binding block.)** Ruling:
+ruling is KERNEL-VERIFIED. Superseded by the laps-8–9 judge block above; rulings still
+binding.)** Ruling:
 `E-2026-07-02-JUDGE-rebuild-z-lap7-validation.md`. Lap 7 delivered wip-only as ordered:
 `wip/EwIter.lean` (Def-16-verbatim norm-gated max iterate over the constructor norm `ewN` +
 finite `ewBall` with sorry-free completeness; **P1 the lift is KERNEL-PURE** — the exact

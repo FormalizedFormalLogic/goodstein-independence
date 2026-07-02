@@ -7,6 +7,11 @@ The `Zeh` cut-elimination substrate, promoted from the judge-ratified spike
 (`mono_H`, `ZehProv`), and the read-off exit (§3) are the LOCK §1 forms VERBATIM
 (namespace change only, `SpikeZ1 → OperatorZeh`).
 
+**SUPERSEDED (lap 8, ratified in `E-2026-07-02-JUDGE-rebuild-z-lap8-validation.md`):** the
+`Zef` layer (§5/§7), `iterSlot` + the §5b lemmas, and old pin 3 (`cutElimPass_Zf`) are
+superseded by `OperatorZef2.lean` (`Zef2`, the ewN-gated calculus). They remain here as frozen
+evidence — statement tokens untouched.
+
 Beyond the verbatim seed this module carries the lap-1 statement work:
 
 * **§4 — the inversion suite (A3, PROVEN).**  `allInv_Zeh` (Z1 pin 1) is discharged as a
