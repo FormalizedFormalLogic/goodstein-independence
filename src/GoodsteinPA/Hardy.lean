@@ -2020,4 +2020,30 @@ theorem hardy_omega_pow_coeff_bracket (α : ONote) (hα : α ≠ 0) (k n : ℕ) 
   ⟨fastGrowing_iterate_le_hardy_coeff α hα k n,
     Nat.lt_of_succ_le (hardy_coeff_add_one_le α hα k n)⟩
 
+/-! ### The ε₀-diagonal capstone
+
+`fastGrowingε₀ i = f_{tower i}(i)` and `tower (i+1) = ω^{tower i}` (`tower_succ`), so the `ω^α`
+bracket at `α = tower i`, argument `i`, pins the ε₀-diagonal against the Hardy function at the next
+tower level. This is the `ε₀`-tier reading of the E–W Lemma 19 comparison — the level at which the
+Goodstein length function itself lives (`goodsteinLength` tracks `H_{ε₀}`). -/
+
+/-- **The ε₀ diagonal is dominated by Hardy at the tower:** `fastGrowingε₀ i ≤ H_{tower(i+1)}(i)`.
+Directly the lower `ω^α` bracket at `α = tower i`, argument `i`, using `tower(i+1) = ω^{tower i}`. -/
+theorem fastGrowingε₀_le_hardy_tower_succ (i : ℕ) :
+    fastGrowingε₀ i ≤ hardy (tower (i + 1)) i := by
+  have h : fastGrowing (tower i) i ≤ hardy (oadd (tower i) 1 0) i :=
+    (hardy_omega_pow_bracket (tower i) i).1
+  rw [← tower_succ] at h
+  exact h
+
+/-- **The matching ε₀-diagonal upper bound:** `H_{tower(i+1)}(i) < f_{tower i}(i+1)` — Hardy at the
+next tower level is under the previous diagonal level at the bumped argument. The upper `ω^α` bracket
+at `α = tower i`. Together with `fastGrowingε₀_le_hardy_tower_succ` this brackets `H_{tower(i+1)}(i)`
+strictly between `fastGrowingε₀ i` and `f_{tower i}(i+1)`. -/
+theorem hardy_tower_succ_lt_fastGrowing (i : ℕ) :
+    hardy (tower (i + 1)) i < fastGrowing (tower i) (i + 1) := by
+  have h := (hardy_omega_pow_bracket (tower i) i).2
+  rw [← tower_succ] at h
+  exact h
+
 end GoodsteinPA.FastGrowing
