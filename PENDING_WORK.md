@@ -34,9 +34,12 @@ consuming the f-slots — ALL built this lap, axiom-clean): `allInv_Zeh` +
 `orInv_Zeh`/`andInvL_Zeh`/`andInvR_Zeh` (§4/§7); `Zeh.mono_c` rank-monotonicity (§8);
 `NormControlled.mono`/`.stage_antitone`/`rel1_mono` (slot/stage domination);
 `osucc_add_NF`/`osucc_add_lt_osucc_add`/`add_lt_osucc_add`/`osucc_add_mem` (splice descent);
-`ZehProv.cut` + `add_le_add_NF`/`osucc_le_osucc` (the cut combinator at wrapper level);
-`two_level_config_Zeh` (seam-2 non-vacuity witness); `Zeh.mono_H`, `ZehProv` combinators,
-read-off exit (§2/§3).  **The safe pre-build surface is now EXHAUSTED**: the only un-built
+`add_le_add_NF`/`osucc_le_osucc` (ordinal ≤-bricks); the COMPLETE `ZehProv` rule API
+`ZehProv.cut`/`.exI`/`.allω` (each calculus rule packaged at the wrapper level, output
+ordinals determined, no rank/control change — the assembly reuses them to introduce and
+reassemble) plus `.of`/`.mono`/`.weakening`; `two_level_config_Zeh` (seam-2 non-vacuity
+witness); `Zeh.mono_H`, read-off exit (§2/§3).  **The safe pre-build surface is now
+EXHAUSTED**: the only un-built
 obligations are (i) the gated reduction/step/pass bodies (FORBIDDEN pre-ratification) and
 (ii) the P1 `hardy (raise e α)`-domination facts — which must NOT be pre-built, because the
 natural domination is FALSE unconditionally (K2b: `raise` can DECREASE `hardy`, e.g.
