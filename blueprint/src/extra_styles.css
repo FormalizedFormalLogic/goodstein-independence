@@ -5,3 +5,72 @@ div.theorem_thmcontent {
 div.proof_content {
 	border-left: .08rem solid grey;
 }
+
+/* ---------------------------------------------------------------------------
+   Dark mode (follows the OS appearance via prefers-color-scheme).
+   plasTeX only ships light themes (theme-white/blue/green); this file is
+   loaded LAST on every page, so it can re-skin the chrome and the dep-graph
+   SVG. Node status colors (green/orange/blue borders) keep their meaning;
+   Graphviz's black text/edges and light fills are re-tinted for contrast.
+   --------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; }
+
+  /* page chrome */
+  body { background: #1a1d21; color: #d6d9dc; }
+  body > header { background: #22262b; color: #d6d9dc; }
+  h1, h2, h3, h4, h1#doc_title { color: #d6d9dc; }
+  #doc_title a, #doc_title a:visited { color: #d6d9dc; }
+  div.content a { color: #8ab4f8; }
+  header a, header a:visited { color: #d6d9dc; }
+  a.icon { color: #d6d9dc; }
+  hr { color: #565e66; }
+  ::selection { color: #1a1d21; background: #d6d9dc; }
+
+  /* toc sidebar + bottom nav */
+  nav.toc { background-color: #1e2226; border-right-color: #2c3238; }
+  .toc ul li, .toc ul li.current { background-color: #1e2226; }
+  .toc ul a, .local_toc ul a { color: #b8bec4; }
+  .toc ul a:hover { background: #2c3238; }
+  span.expand-toc, svg.close-toc { color: #9aa0a6; }
+  nav.prev_up_next { background: #22262b; }
+  nav.prev_up_next a { color: #d6d9dc; }
+  ul.breadcrumbs a { color: #b8bec4; }
+
+  /* theorem statements, proofs, verbatim, tables */
+  div.theorem_thmcontent { border-left-color: #d6d9dc; }
+  div.proof_content { border-left-color: #9aa0a6; }
+  pre.verbatim { background-color: #22262b; }
+  table, .tabular { background: #1e2226; color: #d6d9dc; }
+  div[class$=_thmwrapper]:target, div.hilite { animation: none; }
+
+  /* modals (both the main-text ones and the dep-graph ones) */
+  div.modal-content, div.dep-modal-content {
+    background-color: #22262b;
+    color: #d6d9dc;
+    border-color: #3a4046;
+  }
+  div.modal-content header { background: #2c3238; color: #d6d9dc; }
+  div.modal-content header h1 { color: #d6d9dc; }
+  div.modal-content header button.closebtn { color: #d6d9dc; }
+  button.dep-closebtn { color: #d6d9dc; }
+
+  /* dep-graph page: legend + statements drawer */
+  div#statements { background-color: #22262b; }
+  #Legend dl { background: #22262b; }
+  #Legend div.bar { background: #d6d9dc; }
+
+  /* dep-graph SVG: Graphviz emits black text/edges + light fills as
+     presentation attributes, which stylesheet rules override. */
+  #graph svg text { fill: #d6d9dc; }
+  #graph svg .edge path { stroke: #9aa0a6; }
+  #graph svg .edge polygon { stroke: #9aa0a6; fill: #9aa0a6; }
+  /* leanblueprint fills: proved (light green) / ready-to-formalize (light blue)
+     -> darken so the light text stays readable */
+  #graph svg [fill="#B0ECA3"] { fill: #33582b; }
+  #graph svg [fill="#A3D6FF"] { fill: #274b73; }
+  #graph svg [fill="#1CAC78"] { fill: #1d6b4e; }
+  /* low-contrast border colors on dark backgrounds */
+  #graph svg .node [stroke="blue"] { stroke: #6ea8fe; }
+  #graph svg .node [stroke="green"] { stroke: #4cc25a; }
+}
