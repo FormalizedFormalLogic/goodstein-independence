@@ -1,5 +1,41 @@
 # Pending work — open obligations & attack paths
 
+## Lap 176 — ⭐⭐⭐ CRUX FINDING: the P1 obstruction is a statement-shape artifact (E-W Lemma 25/30 conflation)
+
+**Source cross-check (`papers/eguchi-weiermann-2012-…md`, Def 23 + Lemmas 24–31) of the three
+NOT-LOCKED §5 pins.**  Full writeup: `REBUILD-Z-LAP1-FINDING-2026-07-02-fslot-control-raise.md`
+(read alongside the verdict before the judge opens the gate).  Kernel-checked facts used:
+`raise e α = e + ω^α` (line 58); `raise (ofNat 5) 1 = ω`, `hardy ω 0 = 1 < hardy 5 0 = 5` (line 216).
+
+**The finding.**  Pins 1–2 (`cutReduceAllAuxRunning_Zf`:659, `stepAllω_Zf`:674) pair a
+control-RAISE (`raise e α` / `raise E δ` — E-W's **Lemma 30 collapse** move) with numeric
+COMPOSITION (`f∘g` — E-W's **Lemma 25 cut-reduction** move).  No single E-W lemma does both: Lemma
+25 keeps the control FIXED and composes; Lemma 30 RAISES and ITERATES (`f ↦ f^{F^α(0)+1}`).  Pin 3
+(`cutElimPass_Zf`:690) correctly pairs raise with iteration (`f'`, ∃) — it is fine.
+
+**Why it matters (this IS the crux).**  The verdict's #1 judge-question and the "P1
+hardy-domination-under-raise, false unconditionally per K2b" obstruction unfold to
+`∀x, hardy (raise e α)(max m x) ≤ (f∘g) x` — asking COMPOSITION to dominate the faster-growing
+RAISED Hardy target.  That is a category error: dominating a raised control is what ITERATION buys
+(Lemma 30 / the Lemma 19 norm bound `N(α) ≤ f^{F^α(0)}(0)`), not composition.  **The P1 wall is an
+artifact of gluing Lemma 30's raise onto Lemma 25's numeric update.**
+
+**The fix (judge-owned statement amendment; RECOMMENDED = Option A).**  Confine ALL control-raise +
+numeric-iteration to `cutElimPass_Zf` (pin 3, faithful Lemma 30).  Restate the reduction/step
+conjuncts at FIXED control: `cutReduceAllAuxRunning_Zf` / `stepAllω_Zf` output at `e`/`E` with
+`NormControlled (f∘g) e m` — composition dominating the SAME-control Hardy, provable from input
+domination via `NormControlled.mono` + banked `seam1_bump_absorbed_by_composition`, NOT subject to
+the K2b raise pathology.  Consequence: **P1 dissolves from the reduction** and the R3 "once per
+pass" tension (pins 1–2 raise per-step, but no `mono_e` to unify — a re-entry of the W4B
+per-branch-raise-then-unify death) evaporates too.  Option B (raise stays at reduction) forces the
+numeric slot to iteration → the "reduction" becomes a collapse → reject unless K1 info-free
+membership provably blocks the E-W fixed-`F` "run-at-`F[K]`-then-absorb" step (the ~20% escape).
+
+**Next (still judge-gated — do NOT grind pins pre-ratification):** judge rules Option A vs B.  If A,
+the §5 draft is amended (statement change, judge-owned) and lap-2 discharges
+`NormControlled (f∘g) e m` (should be near-immediate from the banked plumbing), with the real
+threading work relocated to `cutElimPass_Zf`'s iterated slot.
+
 ## Lap 175 — ⭐⭐⭐ REBUILD-Z lap 1 (Scope-A) done; crux = the f-slot reduction, JUDGE-GATED
 
 **Module: `src/GoodsteinPA/OperatorZeh.lean` (green, 1333 jobs).**  Open obligations here are
