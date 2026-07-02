@@ -1060,4 +1060,15 @@ theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ :
       (lt_of_le_of_lt (Zekd.le_add_left_NF hNF₁ hNF₂) (Zekd.lt_osucc (ONote.add_nf α₁ α₂)))
       hNF₁ hNF₂ (osucc_add_NF hNF₁ hNF₂) hH₁ hH₂ d₁ d₂⟩
 
+/-- **`ZehProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
+wrapper level — the output ordinal `osucc β` is fully determined, no rank/control change.
+Reused by the assembly to introduce existentials at the prov level. -/
+theorem ZehProv.exI {β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+    (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ) (hβNF : β.NF) (hβH : Cl H β)
+    (hbound : n ≤ hardy e m) (D : ZehProv β e H m c (insert (φ/[nm n]) Γ)) :
+    ZehProv (osucc β) e H m c (insert (∃⁰ φ) Γ) := by
+  obtain ⟨β', hle, hNF', hH', d⟩ := D
+  exact ⟨osucc β, le_rfl, osucc_NF hβNF, Cl.osucc hβH,
+    Zeh.exI φ n (lt_of_le_of_lt hle (Zekd.lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
+
 end GoodsteinPA.OperatorZeh
