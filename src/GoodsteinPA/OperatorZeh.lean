@@ -902,14 +902,65 @@ theorem iterSlot_infl {f : ℕ → ℕ} (hf_infl : ∀ x, x ≤ f x) (o : ONote)
 termination_by o
 decreasing_by all_goals exact hlt
 
-/-- **C5 PIN (disclosed sorry; discharging lap = lap 6, FIRST item): `iterSlot f α` is monotone**
-for `f` monotone + inflationary.  Mirrors `hardy_monotone`: zero/successor cases thread; the limit
-case needs the f-relative reaches comparison (the `hardy_le_of_reaches` /
-`fastGrowing_bachmann_reach` pattern generalized to base `f`) — grind machinery, not statement
-work, so it is pinned here per LOCK R5 rather than guessed. -/
+/-- **Value transfer for `iterSlot`** (mirror of `hardy_le_of_reaches`, base `f`).  If `β`
+structurally reaches `α` at budget `x`, and *every* notation `β` reaches has a monotone slot
+iterate, then `iterSlot f α x ≤ iterSlot f β x`.  Unlike the fast-growing transfer, the successor
+step `iterSlot f β x = iterSlot f γ (f x)` shifts the argument from `x` to `f x`; that shift is
+absorbed by inflationarity (`x ≤ f x`, `hf_infl`) plus monotonicity of the intermediate
+`iterSlot f γ` — the exact analog of `hardy_le_of_reaches`'s `Nat.le_succ` absorption. -/
+theorem iterSlot_le_of_reaches {f : ℕ → ℕ} (hf_infl : ∀ x, x ≤ f x) {x : ℕ} {β α : ONote}
+    (h : Reaches x β α) :
+    (∀ γ, Reaches x β γ → Monotone (iterSlot f γ)) → iterSlot f α x ≤ iterSlot f β x := by
+  induction h with
+  | refl a => intro _; exact le_rfl
+  | @succ β γ α hb _ ih =>
+      intro hmono
+      have hmγ : Monotone (iterSlot f γ) := hmono γ (Reaches.succ hb (Reaches.refl γ))
+      have ihγ : iterSlot f α x ≤ iterSlot f γ x := ih (fun δ hδ => hmono δ (Reaches.succ hb hδ))
+      have heq : iterSlot f β x = iterSlot f γ (f x) := by rw [iterSlot_succ f _ hb]
+      rw [heq]; exact le_trans ihγ (hmγ (hf_infl x))
+  | @limit β α g hb _ ih =>
+      intro hmono
+      have ihg : iterSlot f α x ≤ iterSlot f (g x) x :=
+        ih (fun δ hδ => hmono δ (Reaches.limit hb hδ))
+      have heq : iterSlot f β x = iterSlot f (g x) x := by rw [iterSlot_limit f _ hb]
+      rw [heq]; exact ihg
+
+/-- **C5 (discharged lap 6): `iterSlot f α` is monotone** for `f` monotone + inflationary.
+Mirrors `hardy_monotone`: zero case is `hf_mono`, successor threads the IH through `f`'s
+monotonicity, and the limit case combines monotonicity of `iterSlot f (α[n])` (IH) with the index
+step `iterSlot f (α[n])(n+1) ≤ iterSlot f (α[n+1])(n+1)` = `iterSlot_le_of_reaches` on the
+structural Bachmann reach `fastGrowing_bachmann_reach` (every intermediate is `< α`, so the IH
+supplies its monotonicity). -/
 theorem iterSlot_monotone {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
     (α : ONote) : Monotone (iterSlot f α) := by
-  sorry
+  refine monotone_nat_of_le_succ (fun n => ?_)
+  rcases e : fundamentalSequence α with (_ | a) | fs
+  · rw [iterSlot_zero' f α e]; exact hf_mono (Nat.le_succ n)
+  · have hlt : a < α := by
+      have hp := fundamentalSequence_has_prop α; rw [e] at hp
+      rw [lt_def, hp.1]; exact Order.lt_succ _
+    rw [iterSlot_succ f α e]
+    exact iterSlot_monotone hf_mono hf_infl a (hf_mono (Nat.le_succ n))
+  · have hlt : fs n < α := by
+      have hp := fundamentalSequence_has_prop α; rw [e] at hp
+      exact (hp.2.1 n).2.1
+    have hltn1 : fs (n + 1) < α := by
+      have hp := fundamentalSequence_has_prop α; rw [e] at hp
+      exact (hp.2.1 (n + 1)).2.1
+    rw [iterSlot_limit f α e]
+    have mono_fn : Monotone (iterSlot f (fs n)) := iterSlot_monotone hf_mono hf_infl (fs n)
+    have step : iterSlot f (fs n) (n + 1) ≤ iterSlot f (fs (n + 1)) (n + 1) := by
+      apply iterSlot_le_of_reaches hf_infl (fastGrowing_bachmann_reach e n)
+      intro γ hγ
+      have hγα : γ < α := lt_of_le_of_lt (reaches_le hγ) hltn1
+      exact iterSlot_monotone hf_mono hf_infl γ
+    exact le_trans (mono_fn (Nat.le_succ n)) step
+termination_by α
+decreasing_by
+  · exact hlt
+  · exact hlt
+  · exact hγα
 
 /-- **C5: `iterSlot f 0 = f`** — the α = 0 (cut-free axiom) case leaves the slot unchanged. -/
 theorem iterSlot_zero (f : ℕ → ℕ) : iterSlot f 0 = f :=
