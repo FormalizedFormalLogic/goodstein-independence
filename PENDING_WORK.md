@@ -31,6 +31,12 @@ single `hardy e m` `exI` bound cannot express a composed bound at a fixed stage.
 the CONTROL axis (correctly) but left the STAGE axis tied to input `m`, inheriting
 `OperatorZinfty.lean:766–773`'s "witness-budget" wall.
 
+**DECISIVE DIAGNOSIS (kernel-proven):** `wip/RedDerivFixedStageProbe.lean` = `redDeriv` verbatim
+with the ONE change that the family is at FIXED stage `m₀` (not `max m₀ n`) — it closes
+**sorry-free**, axiom `[propext, choice, Quot.sound]`. So the running stage is the SOLE culprit;
+the fix must give the reduction a fixed-stage inverted family (or a function-valued witness bound,
+or route around).
+
 **ESCALATED** (LOCK: believe a gated form wrong → STOP + writeup, do not improvise):
 `REBUILD-Z-LAP2-FINDING-2026-07-02-fixed-stage-reduction-wall.md`. Proposed resolutions (judge/
 architect call): (1) grow output stage (likely ⇒ iterate, not clean); (2) function-valued `exI`

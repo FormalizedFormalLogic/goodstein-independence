@@ -51,6 +51,16 @@ cut-reduction COMPOSES the witness bound (`f∘g`, Lemma 25); the `Zeh` judgment
 CONTROL axis correctly (E–W does compose at fixed control) but left the STAGE axis tied to input
 `m`, inheriting `OperatorZinfty.lean:766–773`'s "witness-budget" wall (there proven FALSE numerically).
 
+## Decisive diagnosis (kernel-proven): the running stage is the SOLE culprit
+
+`wip/RedDerivFixedStageProbe.lean` = `redDeriv` verbatim, ONE change: the family at FIXED stage
+`m₀` (not `max m₀ n`).  It closes **sorry-free**, axiom `[propext, choice, Quot.sound]`
+(`lake env lean wip/RedDerivFixedStageProbe.lean`).  So the obstruction is EXACTLY the inverted
+family's running stage; the reduction is otherwise standard.  The fix must hand the reduction a
+fixed-stage inverted family (LOCK §1 `allω`/`allInv` stage discipline), OR a function-valued
+witness bound (resolution 2), OR route around (resolution 3).  Growing only the output stage
+(resolution 1) is insufficient — the reduction wants the INPUT family fixed-stage.
+
 ## ESCALATION (per LOCK: believe a gated form wrong → STOP + writeup)
 
 `REBUILD-Z-LAP2-FINDING-2026-07-02-fixed-stage-reduction-wall.md`.  Proposed resolutions

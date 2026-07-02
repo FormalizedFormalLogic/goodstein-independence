@@ -106,6 +106,27 @@ Resolution (2) is the one that makes the running-family reduction TRUE as a fixe
 §1 is locked; the pin shape is judge-owned).  Grinding the gap as written is refused, per the
 LOCK escalation rail.
 
+## Decisive diagnosis: the RUNNING STAGE is the sole culprit (kernel-proven)
+
+`wip/RedDerivFixedStageProbe.lean` is `redDeriv` **verbatim with ONE change** — the family is
+supplied at the FIXED stage `m₀` (`∀ n H', Zeh α e H' m₀ c …`) instead of the running stage
+`max m₀ n`.  With that single change the principal `exI` **closes sorry-free** (raise `fam n` from
+`m₀` to the ambient `m` via `m₀ ≤ m`, cut at `m`, output at `m` — no leak), and the whole
+reduction is axiom-clean:
+
+```
+redDerivFixed   [propext, Classical.choice, Quot.sound]     -- sorry-FREE (lake env lean wip/RedDerivFixedStageProbe.lean)
+```
+
+So the obstruction is EXACTLY the running stage `max m₀ n` of the inverted family, nothing else.
+`allInv_Zeh` returns the `n`-th ω-premise, and the `allω` rule bakes `max m n` into every branch
+(LOCK §1 A1) — so a fixed-stage inversion does not exist in the calculus.  This pinpoints the fix:
+either the ∀-side must be invertible to a FIXED-stage family (a change to `allInv_Zeh`/the `allω`
+stage discipline — LOCK §1), or the witness bound must be function-valued so the running stage is
+never read (resolution 2), or the reduction is routed around (resolution 3).  Restating the pin's
+output stage (resolution 1) does NOT suffice on its own — `redDerivFixed` shows the reduction
+wants the INPUT family at a fixed stage, not merely a grown output.
+
 ## Kernel evidence (real `#print axioms`, build 🟢 1333)
 
 ```
