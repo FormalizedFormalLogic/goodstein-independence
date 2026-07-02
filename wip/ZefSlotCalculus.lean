@@ -99,6 +99,12 @@ theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c 
       intro H'; exact Zef.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
 
+/-- Combined operator+slot move (operator free via `change_H`, slot raised via `mono_f`) — the
+`mono_H` analog the inversion port needs. -/
+theorem mono_Hf {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (dd : Zef α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
+    Zef α e H' f' c Γ := (dd.change_H).mono_f hff'
+
 end Zef
 
 /-- The `≤`-slack wrapper (slot form of `ZehProv`). -/
@@ -311,5 +317,102 @@ theorem redDeriv_slot {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α e : 
         (lt_of_le_of_lt ha₁le (Zekd.add_osucc_descent hαNF hβφNF hγNF hβφ))
         (lt_of_le_of_lt ha₂le (Zekd.add_osucc_descent hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF hsuccNF ha₁H ha₂H D₁' D₂'
+
+/-! ## ∀-inversion in the slot calculus (feeds the reduction from a ∀-side derivation) -/
+
+/-- `f ≤ rel1 f n₀` for monotone `f` (`f x ≤ f (max n₀ x)`). -/
+private theorem f_le_rel1 {f : ℕ → ℕ} (hf : Monotone f) (n₀ : ℕ) :
+    ∀ x, f x ≤ rel1 f n₀ x := fun x => hf (le_max_right n₀ x)
+
+/-- **`allInv_Zef`** — ∀-inversion, slot form: port of `allInv_Zeh` with `max m n₀ ⤳ rel1 f n₀`.
+The extracted instance runs at the relativization `adjoin H n₀` and the relativized slot
+`rel1 f n₀`.  Needs `f` monotone (to raise `exI` bounds `n ≤ f 0 ≤ (rel1 f n₀) 0 = f n₀`).  The
+operator threading is FREE (`mono_Hf`/`change_H`, R1). -/
+theorem allInv_Zef {φ₀ : SyntacticSemiformula ℒₒᵣ 1} (n₀ : ℕ) :
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+      Zef α e H f c Γ → Monotone f → (∀⁰ φ₀) ∈ Γ →
+      Zef α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
+  intro α e H f c Γ dd
+  induction dd with
+  | @axL α e H f c Γ ar r v hp hn =>
+      intro _ _
+      refine Zef.axL r v ?_ ?_ <;>
+        exact Finset.mem_insert_of_mem
+          (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), by assumption⟩)
+  | @wk α e H f c Δ Γ hsub dd ih =>
+      intro hmono hmem
+      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      · exact Zef.wk (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono hh)
+      · refine Zef.wk ?_ (dd.mono_Hf (f_le_rel1 hmono n₀))
+        intro x hx
+        exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
+  | @weak α β e H f c Δ Γ hβ hβNF hαNF hβH hsub dd ih =>
+      intro hmono hmem
+      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      · exact Zef.weak hβ hβNF hαNF (Cl_of_NF hβNF)
+          (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono hh)
+      · refine Zef.weak hβ hβNF hαNF (Cl_of_NF hβNF) ?_ (dd.mono_Hf (f_le_rel1 hmono n₀))
+        intro x hx
+        exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
+  | @allω α e H f c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
+      intro hmono hmem
+      by_cases hhd : (∀⁰ χ) = (∀⁰ φ₀)
+      · obtain rfl := (Semiformula.all_inj _ _).mp hhd
+        rw [Finset.erase_insert_eq_erase]
+        by_cases hh : (∀⁰ χ) ∈ Γ₀
+        · have h := ih n₀ (rel1_monotone hmono n₀) (Finset.mem_insert_of_mem hh)
+          have h2 : Zef (β n₀) e (adjoin H n₀) (rel1 f n₀) c
+              (insert (χ/[nm n₀]) ((insert (χ/[nm n₀]) Γ₀).erase (∀⁰ χ))) :=
+            h.mono_Hf (fun x => le_of_eq (by simp only [rel1]; congr 1; omega))
+          exact Zef.weak (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀)) (princAllSub (∀⁰ χ) _ Γ₀) h2
+        · rw [Finset.erase_eq_of_notMem hh]
+          exact Zef.weak (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀)) (Finset.Subset.refl _) (dd n₀)
+      · have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+        have key : ∀ n, Zef (β n) e (adjoin (adjoin H n₀) n) (rel1 (rel1 f n₀) n) c
+            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀⁰ φ₀)))) := by
+          intro n
+          have h := ih n (rel1_monotone hmono n) (Finset.mem_insert_of_mem hmem0)
+          exact Zef.wk (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀)
+            (h.mono_Hf (fun x => le_of_eq (by simp only [rel1]; congr 1; omega)))
+        exact Zef.wk (inv1Pull (∀⁰ φ₀) _ hhd Γ₀)
+          (Zef.allω χ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n)) key)
+  | @exI α β e H f c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
+      intro hmono hmem
+      have hhead : (∃⁰ χ) ≠ (∀⁰ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
+      have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have P := Zef.wk (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀) (ih hmono (Finset.mem_insert_of_mem hmem0))
+      exact Zef.wk (inv1Pull (∀⁰ φ₀) _ hhead Γ₀)
+        (Zef.exI χ n hβ hβNF hαNF (Cl_of_NF hβNF)
+          (le_trans hbound (hmono (Nat.zero_le _))) P)
+  | @cut α βφ βψ e H f c Γ₀ χ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH d₁ d₂ ih₁ ih₂ =>
+      intro hmono hmem
+      have P₁ := Zef.wk (inv1Push (∀⁰ φ₀) _ χ Γ₀) (ih₁ hmono (Finset.mem_insert_of_mem hmem))
+      have P₂ := Zef.wk (inv1Push (∀⁰ φ₀) _ (∼χ) Γ₀) (ih₂ hmono (Finset.mem_insert_of_mem hmem))
+      exact Zef.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
+        (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
+
+/-- **`stepAllω_Zef`** (pin-2 analog in the slot calculus): the principal ∀/∃ cut-reduction step,
+IHs at ONE control `E` and stage-slots, output slot `g∘f`.  Invert the ∀-side `D₁` (slot `g`) to
+the running family via `allInv_Zef`, then apply `redDeriv_slot` against the ∃-side `D₂` (slot `f`).
+Both premises are `ZefProv` wrappers; slots monotone + inflationary. -/
+theorem stepAllω_Zef {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
+    {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
+    (hENF : E.NF) (hχc : χ.complexity < c)
+    (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
+    (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
+    (D₁ : ZefProv (expTower βφ) E H g c (insert (∀⁰ χ) Γ))
+    (D₂ : ZefProv (expTower βψ) E H f c (insert (∃⁰ ∼χ) Γ)) :
+    ∃ δ : ONote, δ.NF ∧ Cl H δ ∧ ZefProv δ E H (g ∘ f) c Γ := by
+  obtain ⟨α₁, _, hNF₁, hH₁, d₁⟩ := D₁
+  obtain ⟨γ₁, _, hNF₂, hH₂, d₂⟩ := D₂
+  have fam : ∀ n (H' : ONote → Prop), Zef α₁ E H' (rel1 g n) c (insert (χ/[nm n]) Γ) := by
+    intro n H'
+    exact ((allInv_Zef n d₁ hg_mono (Finset.mem_insert_self _ _)).weakening
+      (Finset.insert_subset_insert _ (Finset.erase_insert_subset _ _))).change_H
+  have hred := redDeriv_slot hχc hNF₁ hENF hg_mono hg_infl fam d₂ hNF₂ hf_mono hf_infl
+    (Finset.mem_insert_self _ _)
+  refine ⟨osucc (α₁ + γ₁), osucc_NF (ONote.add_nf α₁ γ₁),
+    Cl_of_NF (osucc_NF (ONote.add_nf α₁ γ₁)), ?_⟩
+  exact hred.weakening (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))
 
 end GoodsteinPA.OperatorZeh
