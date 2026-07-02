@@ -6,6 +6,8 @@ importing them from the public `GoodsteinPA` root.
 -/
 import GoodsteinPA.OperatorZinfty
 import GoodsteinPA.OperatorZeh
+import GoodsteinPA.EwIter
+import GoodsteinPA.OperatorZef2
 import GoodsteinPA.PathBProbe
 -- Foundation's finitary Gentzen Hauptsatz, imported solely so the blueprint's
 -- `\lean{LO.FirstOrder.hauptsatz}` binding resolves (making thm:hauptsatz a real
