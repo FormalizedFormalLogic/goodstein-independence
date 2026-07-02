@@ -1,5 +1,33 @@
 # Pending work — open obligations & attack paths
 
+## CRITICAL-PATH CRUX MAP (lap 179 refresh — unblock-playbook §2.5/§3)
+
+**The crux** = `wainer_bound_of_pa_proves_goodstein` (`WainerRoute.lean:118`), i.e. originating the
+Gentzen ε₀ ordinal analysis of PA in Lean via the `Zeh` operator-controlled calculus. Feasibility is
+in genuine doubt (unprecedented Lean milestone). **It is BLOCKED by an external governance gate, not
+a fixation:** REBUILD-Z-ORDER permits treadmill laps Scope-A ONLY; reduction discharge + all
+`OperatorZeh` §5 pins + the operator-controlled substrate are FORBIDDEN until the judge ratifies
+`REBUILD-Z-LAP1-VERDICT.md`. So the honest lap loop is: advance the crux's *permitted* pure-growth
+sub-bricks, keep the build green, and await the judge.
+
+Full open-inventory (this lap): every `src/` sorry is either FORBIDDEN Route-A/Crux2 machinery
+(`Crux2Blueprint`, `InternalZ/Grz/Ig/ONote/Cor34`, `Embedding(X)`, `Descent*`, `Reduction`, `Thm56`,
+`Bridge`) or judge-gated (`OperatorZeh` 12, `Statement` audit surface). `Hardy`/`Domination` are
+sorry-FREE (their "sorry" hits are docstring text). No permitted, non-gated `src/` sorry remains.
+
+Three paths on the crux (all judge-gated until lap-1 ratification — do NOT execute in Scope-A):
+1. **f-slot carriage** (LOCK §6, not-locked): thread the composed control through the reduction so
+   `exI` bounds re-establish at the raised control. Needs the f-slot reduction/step signatures.
+2. **Per-instance headline discharge**: `e` is concrete at the read-off, so P1 is a fixed-`(e,m)`
+   arithmetic bound there; uses the banked `hardy_omega_pow_lt_fastGrowing` + `hardy_le_fastGrowing`.
+3. **BW87 cut-free fallback**: don't thread — eliminate cuts (ordinal towers) and read off with
+   `readoff_sigma1` (needs the P2 Δ₀ matrix extension, ORDER laps 8–10).
+
+Permitted pure-growth sub-bricks (the only Scope-A-legal lane): the P1 UPPER bound is now BANKED
+(lap 179, see below). Remaining candidates are thin and of uncertain reuse (`f_α ≤ f_{ω^α}` via a
+Reaches ω^α→α descent — non-trivial, not obviously needed; the E–W Lemma 19/20 iterate-flattening is
+operator-controlled = gated). Next substantive move is the judge, then ORDER lap 2.
+
 ## Lap 179 — P1 CRUX ADVANCE: the E–W Lemma 19 upper bound is CLOSED and BANKED in `src/`
 
 The sole remaining sorry of the P1 fast-growing-domination bridge —
