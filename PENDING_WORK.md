@@ -61,6 +61,15 @@ whether to pin `f'`.  If A + pin: (1) lap-2's reduction conjunct is `NormControl
 (near-immediate, plumbing banked); (2) the real threading work is the pinned-iterate
 `NormControlled (f^{…}) (raise e α') m` at `cutElimPass_Zf`, discharged via the Lemma-19 norm bound.
 
+**NO ELIGIBLE ALTERNATIVE SORRY EXISTS (lap 176 empirical check, don't re-investigate).**  The
+"pick another open sorry when blocked" fallback has no valid target here: the only open sorry
+*bodies* in `src/` are (a) the 3 gated Scope-A §5 pins (`OperatorZeh`, judge-gated) and (b) the
+FORBIDDEN Route-A machinery (`Crux2Blueprint`/`DescentSemantic`, per DIRECTION.md).  The
+non-forbidden Wainer-mainline growth infrastructure — `Hardy.lean`, `Domination.lean` — is
+**sorry-FREE** (every "sorry" in them is a docstring, e.g. "PROVED, `#print axioms` clean").  So a
+resumed lap that finds Scope-A exhausted genuinely has nothing eligible to grind; ending is the only
+faithful action (per operator instruction + `box done` bounded-subset guidance).
+
 **SAFE CRUX SURFACE EXHAUSTED for this gate (lap 176 checked, don't re-derive on resume).**  The
 finding is complete + kernel-decisive (Option A forced, validated, localized; all 3 verdict
 judge-questions answered).  Every remaining crux thread now crosses the gate or builds against the
