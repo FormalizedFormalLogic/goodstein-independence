@@ -14,8 +14,28 @@ autonomous treadmill campaign. Read both.
 > over every few review laps. Keep it SHORT; detail lives in `PENDING_WORK.md` / `REFLECTION-*.md`.
 > (Live milestone map = `E-CRUX2-ROADMAP-2026-06-24.md`; the phase list below is the standing charter.)
 
+**2026-07-02 (JUDGE PASS on the laps-6–7 run — PARTIAL PASS + EIGHTH statement trap RATIFIED;
+pin 3 ARCHITECT-GATED; the E–W rebuild order is open. This is the current binding block.)**
+Ruling: `E-2026-07-02-JUDGE-rebuild-z-laps6-7-validation.md`. Lap 186 discharged the C5 pin
+`iterSlot_monotone` (ratified, axiom-clean) and then correctly ESCALATED the pass induction: the
+lap-5-amended output slot (fs-recursion diagonalizing `iterSlot f α`) is unprovable-as-stated —
+`iterSlot` dips at limit bases (`iterSlot f ω 0 < iterSlot f 2 0`), the only slot move
+(`Zef.mono_f`) needs the pointwise lift, kernel-refuted (`wip/Trap8Probe.lean`; sharp form: NO
+fixed-argument slot read is both ordinal-monotone and unbounded). Judge probe
+(`wip/JudgeTrap8FixProbe.lean`): the E–W side condition alone does NOT rescue the fs-form.
+**Architect ruling (PDF-grounded, E–W Def 16 + Def 23): norm-gated MAX iterate (`ewIter`) +
+judgment-level norm side condition (`norm α ≤ f 0` at every node) + witness reads STAY at
+argument 0.** 🚦 NEXT FIRE: **lap 7 = STATEMENT LAP, WIP-ONLY** per
+`REBUILD-Z-LAP7-ENTRANCE-2026-07-02.md` (`--max-laps 1`): define `ewIter` + `Zef2` in wip, run
+the mandatory kernel pre-probes P1–P4 (the lift theorem FIRST — if it fails, trap 9, STOP),
+restate pin 3 + the C3 exit (bodies `sorry`), verdict, STOP for the judge. Then lap 8 = judged
+src port (pins 1–2/inversions/embedding/read-off re-proven on `Zef2`); laps 9+ = the pass grind.
+FORBIDDEN: ANY `src/` edit this lap; grind on the current pin-3 form (kernel-refuted);
+fs-recursion/fixed-count/fixed-read iterates; pins 1–2/`Zeh`/`Zef`/`zeh_to_zef`/read-off frozen;
+Route-A; Δ₀; `(k,d)`; self-ratification (VOID).
+
 **2026-07-02 (JUDGE PASS on lap 5 — PASS WITH AMENDMENT; SEVENTH statement trap caught; laps 6–7
-OPEN. This is the current binding block.)** Ruling: `E-2026-07-02-JUDGE-rebuild-z-lap5-validation.md`.
+OPEN. Superseded by the laps-6–7 judge block above; process rulings still binding.)** Ruling: `E-2026-07-02-JUDGE-rebuild-z-lap5-validation.md`.
 Lap 185 delivered the statement lap faithfully (collapse/pin-shape/exit-corollary RATIFIED), but its
 iterate index `iterCount := norm·+1` (fixed count) is **kernel-refuted at the `allω` reassembly**
 (`wip/JudgeTrap7Probe.lean`: parent `11 < 23` branch at `α = ω`/`ofNat 2`/`hardy ω`; `norm` is not
