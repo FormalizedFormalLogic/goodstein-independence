@@ -52,6 +52,24 @@ side) and final assembly stay on the masterplan's ladder and are NOT this order'
   reconcile the blueprint ledger; a REFLECTION doc mapping what remains on the W-ladder
   (embedding + assembly) with fresh estimates.
 
+## Overnight / treadmill scope — **Scope-A** (what runs WITHOUT the lap-1 judge pass)
+
+A treadmill fired against this order executes **Scope-A only**, then self-stops:
+
+- **(A1)** Seed `src/GoodsteinPA/OperatorZeh.lean` verbatim per LOCK §1 (mechanical; the
+  statements are judge-ratified). Repo stays green.
+- **(A2)** The lap-1 statement work: draft the f-slot elimination statements (bodies `sorry`)
+  and kernel-re-check the two Z1 seams in f-form; write `REBUILD-Z-LAP1-VERDICT.md`. If a
+  seam re-check fails in f-form, that is T-R(i) territory: write the finding, self-stop —
+  do NOT grind against it.
+- **(A3)** The inversion-suite grind: discharge `allInv_Zeh` (pin 1) + the companion
+  inversions mirroring the banked, PROVEN `Zekd` suite. Their statements were audited in the
+  Z1 judge pass and do not consume the f-slot statements — safe grind regardless of how A2
+  lands. Park hard cases with named blockers rather than forcing them.
+- **SELF-STOP when Scope-A is exhausted** (A2's verdict written + A3 discharged-or-parked).
+  Everything else — reduction discharge, cut-elimination, the Δ₀ read-off extension — is
+  **judge-gated behind the lap-1 verdict** and FORBIDDEN until the judge ratifies it.
+
 ## Session rules (per lap)
 
 Treadmill grind rules as standing (DIRECTION.md) plus:
