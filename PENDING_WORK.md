@@ -66,6 +66,26 @@ Why blocked NOW: pin 3 is DIRECTION-forbidden until its lap-5 restatement (judge
 fixation, not a difficulty wall — an explicit scope prohibition.  When the gate opens, path 1 is
 the first move.
 
+### UPDATE (lap 183) — pin-3 SLOT SHAPE determined (kernel-grounded), iterate carrier banked
+
+`wip/ZefCutElim.lean` (sorry-free, axiom-clean) banks the E–W numeric-slot ITERATE `f^[k]`
+(`Function.iterate`) infrastructure — `iter_monotone`, `iter_infl`, `iter_normControlled`,
+`iter_le_of_le`, `iter_comp` (`f^[j]∘f^[k]=f^[j+k]`) — the carrier pin 3's `f'` must be pinned to.
+
+**Finding (attempting `cutElimPass` in the slot calculus):** pin 3's output slot is the
+ORDINAL-COUNT iterate, NOT the draft's free `∃ f'` (vacuous, Q2) AND NOT a plain `f^[k]`:
+- a top-rank `∃`-cut composes premise iterates `f^[k₁]∘f^[k₂] = f^[k₁+k₂]` (`iter_comp`) — count
+  ADDS, stays an iterate (confirms Q2's pinned-iterate);
+- but the `allω` node has ℕ-many branches with per-branch counts `kₙ` and NO finite `max kₙ`
+  (branch-unbounded — the SPIKE-W4B demand), so the slot must be the RELATIVIZED ordinal-indexed
+  iterate `f^[F^α(0)]` (E–W Lemma 19), coupling the numeric slot to the ordinal operator.
+
+So the lap-5 pin-3 restatement is
+`cutElimPass_Zf : Zef α e H f (c+1) Γ → ZefProv (collapse α) e H (f^[Fω α]) c Γ`
+(`collapse` = E–W L30 ordinal collapse `F^α(0)`; `Fω` = the matching iterate count, L19/20).  The
+OPEN hard part is the ordinal-collapse arithmetic (`collapse`, `Fω`) — the ε₀ girder (E–W L19/20/
+26/27/30).  path 1 above is refined by this: the slot is `f^[Fω α]`, not a plain `∃ k`.
+
 ---
 
 ## LAP 2 (REBUILD-Z laps 2–4 gate-open) — pins 1–2 reduced to ONE localized gap; candidate SIXTH trap → ESCALATED (SUPERSEDED by LAP 3 above)
