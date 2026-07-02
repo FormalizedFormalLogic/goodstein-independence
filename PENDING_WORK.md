@@ -28,6 +28,44 @@ only.  The math obstruction the escalation flagged is GONE.
 Findings: `REBUILD-Z-LAP3-FINDING-2026-07-02-gof-order-resolves-slot-reduction.md`;
 baton `HANDOFF-2026-07-02-lap183.md`.
 
+### Full open-item inventory (lap 183, per how-to-get-unblocked)
+
+Every open axiom/sorry the headline could rest on, and its gate status under the CURRENT
+DIRECTIVE (2026-07-02 REBUILD-Z, laps 2–4 = pins 1–2 only):
+
+| open item | route | status |
+|---|---|---|
+| pins 1–2 (`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) | B / REBUILD-Z | **PROVEN PROVABLE** this lap (slot calculus); src discharge = LOCK §1 amendment (architect) |
+| pin 3 (`cutElimPass_Zf`, cut-ELIMINATION / E–W L30 collapse) | B / REBUILD-Z | **FORBIDDEN until lap-5 restatement (judge-gated)** — the next feasibility-in-doubt crux |
+| `wainer_bound_of_pa_proves_goodstein` | B (target) | reached via the full pipeline (embed + cut-elim + classification); gated behind pin 3 |
+| `goodstein_implies_consistency` | A (headline girder) | **FORBIDDEN as mainline** |
+| `exists_sigma1_descending_step`, `false_of_ZDerivesEmpty`, Crux2Blueprint residuals | A | **FORBIDDEN** |
+| Δ₀ read-off extension | B | **FORBIDDEN (laps 8–10)** |
+
+So the permitted lane (pins 1–2) is MINED; every sibling is DIRECTION-forbidden (not merely hard).
+
+### NEXT CRUX = pin 3 (cut-elimination), when the lap-5 gate opens — three concrete attack paths
+
+The E–W collapse (Lemma 30: `f,F ⊢^α_{Ω+1} Γ ⟹ ⊢^{F^α(0)}_{F^α(0)} Γ`, updates `f^{F^α(0)+1},
+F^{α+1}`) is where the control raises and the slot iterates — the feasibility-in-doubt piece and
+the ε₀-girder locus.  Concrete attacks (build in `wip/ZefSlotCalculus.lean` once the gate opens):
+1. **Predicative rank-step first (E–W L26/L27 shadow, smallest non-trivial case).** Prove ONE
+   rank-lowering pass `Zef α e H f (c+1) Γ → ZefProv α' (raise e α') H f' c Γ` by induction on the
+   derivation, applying `redDeriv_slot`/`stepAllω_Zef` at each top-rank (complexity-`c`) cut; the
+   non-cut cases thread.  Determine `α'` (E–W: `ω^α`-ish) and `f'` (the iterate `f^{F^α(0)+1}`)
+   from the bookkeeping — THIS pins pin 3's correct restatement (the lap-5 deliverable, replacing
+   the vacuous `∃ f'`).  The reduction bricks are DONE; this is their assembly.
+2. **Slot-iterate arithmetic.** Prove `f'` is `NormControlled`/monotone/inflationary at the raised
+   control (`hardy`-iterate domination; the banked `hardy_add_le_comp` = `H_{e+β} ≤ H_e∘H_β` is the
+   composition brick, `wip/HardyAddProbe.lean` + `src/Hardy.lean`).  Feeds path 1's `f'` conjunct.
+3. **Read-off closes the pipeline (already DONE for the exit).** After cut-elim to rank 0,
+   `readoff_sigma1_Zef` (this lap) reads `witness ≤ f' 0` = E–W L31.  So paths 1–2 + the banked
+   exit = the full slot-calculus pipeline; only the collapse bookkeeping (path 1) is open.
+
+Why blocked NOW: pin 3 is DIRECTION-forbidden until its lap-5 restatement (judge-gated).  Not a
+fixation, not a difficulty wall — an explicit scope prohibition.  When the gate opens, path 1 is
+the first move.
+
 ---
 
 ## LAP 2 (REBUILD-Z laps 2–4 gate-open) — pins 1–2 reduced to ONE localized gap; candidate SIXTH trap → ESCALATED (SUPERSEDED by LAP 3 above)
