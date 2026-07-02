@@ -1,5 +1,34 @@
 # Pending work — open obligations & attack paths
 
+## Lap 178 — CRUX PROBE: additive-identity shortcut to P1 kernel-REFUTED (absorption wall)
+
+Under sustained governor push (cap-bounded, still awaiting judge), attacked the hardest open
+calculus obligation directly rather than idle: the P1 raised-control conjunct
+`NormControlled f' (raise e α') m` with `raise e α' = e + ω^{α'}`.  Tested the tempting shortcut —
+the classical additive Hardy identity `H_{e+β} = H_e ∘ H_β` would make `f' = hardy e ∘ hardy(ω^{α'})`
+a concrete E–W iterate, collapsing pin-3's existential iterate (judge Q2).
+
+**KERNEL-VERIFIED (`wip/HardyAddProbe.lean`, sorry-free, build untouched at 1333):** the shortcut is
+DEAD. The unconditional identity is FALSE under absorption — `1 + ω = ω` (`rfl`),
+`fundamentalSequence (1+ω) = fundamentalSequence ω` (`rfl`), so `H_{1+ω} = H_ω ≠ H_1 ∘ H_ω`. Only the
+successor/finite fragment survives (proved the unconditional successor fs homomorphism
+`fundamentalSequence_add_succ`, generalizing the banked finite `hardy_add_ofNat`, `Hardy.lean:1257`).
+The cut-elimination `raise` grows `ω^{α'}` INTO the absorbing regime, so:
+
+- **P1 is NOT an algebraic identity in `hardy e`** — it is the genuine fast-growing domination
+  `hardy(ω^{α'}) ≤ (iterate of the input slot)` (E–W Lemma 19). Pin-3's iterate index is *essential*
+  (kills the "collapse `f'` to a composition" idea), corroborates the BW87 cut-free fallback, and
+  favors the per-instance headline locus for the P1 conjunct (judge Q1).
+- This SHARPENS lap-177's assertion "no option-independent pass infra exists": lap 177 argued the
+  E–W norm bound can't be *stated* without forbidden machinery; lap 178 shows the one algebraic
+  shortcut that WOULD sidestep it is kernel-false. Full detail:
+  `REBUILD-Z-LAP178-FINDING-2026-07-02-additive-identity-absorption-wall.md`.
+
+**Next attack (still judge-gated for the pin body):** the surviving route to pin-3 is the genuine
+fast-growing domination `N(α') = norm(ω^{α'}) ≤ hardy-iterate` bound (E–W Lemma 19), which needs the
+fast-growing `F` + iterate `f^k` machinery — the FORBIDDEN cut-elim work. No unforbidden shortcut
+remains. Resume = judge ratification (Option A/B; pin `f'`); do NOT grind the gated pins.
+
 ## Lap 177 — FRESH-MIND REVIEW: state confirmed, no trigger fired, awaiting judge (no in-scope grind)
 
 Independent re-audit (real `#print axioms`, build 🟢 1327) reproduces lap-176 with **no drift**:
