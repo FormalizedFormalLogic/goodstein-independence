@@ -27,6 +27,7 @@ vacuous restatement. See `DIRECTION.md` (ANTI-FRAUD guard) and the KB note `name
 Goodstein-terminates` is proved (`Bridge.lean`, axiom-clean). Those faithfulness anchors are LOCKED.
 -/
 import GoodsteinPA.Reduction
+import GoodsteinPA.BlueprintAttr
 
 namespace GoodsteinPA
 
@@ -39,5 +40,19 @@ contraposition (`not_proves_of_implies_consistency`, axiom-clean). Ledger:
 `#print axioms` ⇒ `[propext, Classical.choice, Quot.sound, goodstein_implies_consistency]`. -/
 theorem peano_not_proves_goodstein : 𝗣𝗔 ⊬ ↑goodsteinSentence :=
   not_proves_of_implies_consistency goodstein_implies_consistency
+
+/- Blueprint ledger: the CROWN is a RE-POINT node — zero intrinsic laps by design. The summit
+is currently proven through the banked Route-A wiring, so its machine-audited footprint carries
+`goodstein_implies_consistency` (⇒ `debt`). All of its real work lives in its dependency chain
+(the wainer ladder + the W7 native_decide burndown); when `routeB_headline` goes clean, the
+summit flips green in ONE lap by re-pointing its body to `peano_not_proves_goodstein_growth`
+(the literally identical proposition `𝗣𝗔 ⊬ ↑goodsteinSentence`). The Route-A body stays banked
+under its own name. See `WAINER-LADDER-2026-07-02.md` rung C. -/
+attribute [goodstein_blueprint 16 debt "pa_not_proves_goodstein" "1" 95 peano_not_proves_goodstein
+  []
+  ["WAINER-LADDER-2026-07-02.md rung C: crown re-point, unlocked by routeB_headline clean (ladder P/R/D/E/W + W7)",
+   "Both headlines state the identical proposition; the rewire is `:= peano_not_proves_goodstein_growth`"]
+  "Crown: the PA ⊬ Goodstein summit. Zero intrinsic work — re-points to the route-B headline when it goes clean; debt inherited from the banked Route-A axiom until then."]
+  peano_not_proves_goodstein
 
 end GoodsteinPA

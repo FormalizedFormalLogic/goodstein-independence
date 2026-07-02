@@ -97,7 +97,8 @@ is a pointer, not a substitute). Three coupled elements, ratified as one design:
 - **Lap 8 — the judged src port** (only after the lap-7 judge pass): `Zef2` + `ewIter` into src,
   re-prove pins 1–2 + inversion suite + `zeh_to_zef2` + read-off on the amended judgment,
   retire/re-pin pin 3 in the new form. (Precedent: the lap-184 wip → laps-2–4 judged-port
-  pattern.)
+  pattern.) **Also erects the wainer ladder** — the named pin chain E/P/R/D/W/C decomposing the
+  `wainer_axiom` discharge, with per-rung ledger attributes (`WAINER-LADDER-2026-07-02.md`).
 - **Laps 9+ — the pass grind** on the ratified `Zef2` form (estimate re-based at the lap-7
   verdict; the Lemma-20/21/Cor-22 flattening arithmetic is the expected long pole).
 
