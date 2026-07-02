@@ -53,6 +53,21 @@ Buchholz-operator-control fallback fork, fired on day 1 instead of 20 laps in). 
 as W3/W4 (execute ITS order only: probe + binary verdict + commit + STOP; sorries expected; NO new
 `axiom` declarations), and the scope carve-out above extends to this session verbatim.
 
+**2026-07-02 (OPERATOR DECISION — `Zᵉ` FORK GREEN-LIT).** SPIKE-W4B ran: **FAIL, T-W4B FIRED,
+judge-ratified** (`SPIKE-W4B-VERDICT.md` + `E-2026-07-02-JUDGE-spike-w4b-validation.md`) — the
+principal ∀/∃ `d`-budget overflow under ω-nodes is kernel-confirmed structural; the `(k,d)`
+numeric budget calculus is DEAD at that node. **The operator green-lit the `Zᵉ` redesign**
+(Buchholz operator-controlled derivations, per the W4B verdict's pin: judgment `Zeh α e H c Γ`,
+`H` closed under `+`/`ω^·`/`osucc`, ω-premises at `H[n]`). Consequences, binding on all laps:
+- **Do NOT grind ANYTHING on the `(k,d)` motive** — the seven mechanical W4 cases, the rank-0
+  twins, the running-family port: all re-keyed by the fork. `wip/SpikeW4*.lean` are evidence
+  artifacts, not work sites.
+- **Next work order (binding, one session): `SPIKE-Z1-SEAMS.md`** — deciding experiment #4
+  (seam re-run under closure + the concrete-`H` Σ₁/read-off probe; pre-registered trigger
+  **T-Z1**, which returns the fork to the operator with abandon live). Same spike session rules;
+  the scope carve-out above extends to this session verbatim. The `Zᵉ` rebuild grind (~7–11
+  laps) is GATED on a judge-ratified Z1 PASS.
+
 **lap-171 (OPERATOR DECISION — PIVOT-B = WAINER GROWTH-RATE).** The route gate is closed:
 `PIVOT-B`, with B explicitly meaning the **Wainer/Cichon/Caicedo growth-rate route**, not the
 Towsner operator A' lane. Record: `ROUTE-DECISION-2026-07-01-WAINER.md`.
