@@ -190,6 +190,17 @@ termination_by α
 decreasing_by
   exact hδlt
 
+/-- **Gated ordinal-monotonicity of `ewIter`** (lap-10 SERIES-1 Stage-3 pass prep).  The property
+trap-8 refuted for the bare `iterSlot` but which the ewN GATE restores for `ewIter`: for `β < α`
+with the ball gate `ewN β ≤ f (ewN α + m)`, the smaller-ordinal iterate is dominated by the larger,
+`ewIter f β m ≤ ewIter f α m` (inflate once, then `ewIter_lower`).  This is what un-walls the pass's
+slot side — the cut-elimination step composes iterates at DIFFERENT ordinals `< α`, and this lemma
+lifts each to the common `α`.  Kernel-checked in `wip/Lap10PassProbe.lean`. -/
+theorem ewIter_le_of_lt {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) {β α : ONote} {m : ℕ}
+    (hβα : β < α) (hgate : ewN β ≤ f (ewN α + m)) :
+    ewIter f β m ≤ ewIter f α m :=
+  le_trans (ewIter_infl hf_infl β (ewIter f β m)) (ewIter_lower hβα hgate)
+
 theorem ewIter_rel1_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
     (β : ONote) (n x : ℕ) :
     ewIter (rel1 f n) β x ≤ ewIter f β (max n x) := by

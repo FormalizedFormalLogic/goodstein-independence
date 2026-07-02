@@ -258,6 +258,30 @@ theorem ewN_add_le_comp {α γ : ONote} {f g : ℕ → ℕ}
     ewN (α + γ) ≤ g (f 0) :=
   le_trans (ewN_add_le α γ) (base_add_le_comp hg_base hα hγ)
 
+/-! ## The pass's ordinal-collapse containment (Stage-3 prep) -/
+
+/-- `repr (collapse x) = ω ^ repr x` (`collapse = expTower = oadd · 1 0`). -/
+theorem repr_collapse (x : ONote) : (collapse x).repr = ω ^ x.repr := by
+  simp [collapse, expTower, ONote.repr]
+
+/-- **Ordinal-collapse containment** (lap-10 SERIES-3 pass prep) — the cut-elimination step feeds two
+IH-reduced premises (at `collapse βφ`, `collapse βψ`, `βφ,βψ < α`) into the reduction pin, whose
+additive output `collapse βφ + collapse βψ` must fit strictly under the single collapse
+`collapse α = ω^α`.  This is the additive principality of `ω^α`.  Kernel-checked in
+`wip/Lap10PassProbe.lean`. -/
+theorem collapse_add_lt {βφ βψ α : ONote} (hβφ : βφ.NF) (hβψ : βψ.NF) (hα : α.NF)
+    (hφ : βφ < α) (hψ : βψ < α) : collapse βφ + collapse βψ < collapse α := by
+  haveI := hβφ; haveI := hβψ; haveI := hα
+  haveI := collapse_NF hβφ; haveI := collapse_NF hβψ; haveI := collapse_NF hα
+  haveI := ONote.add_nf (collapse βφ) (collapse βψ)
+  refine lt_def.mpr ?_
+  rw [repr_add, repr_collapse, repr_collapse, repr_collapse]
+  have hφr : (ω : Ordinal) ^ βφ.repr < ω ^ α.repr :=
+    (opow_lt_opow_iff_right one_lt_omega0).2 (lt_def.mp hφ)
+  have hψr : (ω : Ordinal) ^ βψ.repr < ω ^ α.repr :=
+    (opow_lt_opow_iff_right one_lt_omega0).2 (lt_def.mp hψ)
+  exact (Ordinal.isPrincipal_add_omega0_opow α.repr) hφr hψr
+
 /-! ## Pins 1–2 over `Zef2` (P-d) — re-proven natively (disclosed sub-pins, laps-9+) -/
 
 /-- `β < γ → α < α + γ` (NF): the fresh `α + γ` root strictly dominates the `∀`-family base `α`

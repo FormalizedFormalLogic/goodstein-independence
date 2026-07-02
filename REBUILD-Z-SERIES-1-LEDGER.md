@@ -60,3 +60,35 @@ against the ∃-side `D₂`; output `δ = α₁ + γ₁`.
 
 **Gates**: build 🟢 1341 jobs · headline UNDRIFTED · pins `#print axioms` clean · no new axiom · no
 native_decide. **Commit**: (this checkpoint). Lane P now advances to Stage 3 (THE PASS grind).
+
+---
+
+## Stage 3 — THE PASS grind (`cutElimPass_Zef2`)  · STATUS: IN PROGRESS (crux de-risked)
+
+The pass (E–W Lemma 26/27, predicative cut-elimination) is the concentrated-risk girder. The old
+`Zef` pin-3 (`cutElimPass_Zf`) was ALSO never proven, so this is written from scratch. This lap
+DE-RISKED the two decisive containments the cut-elimination step needs and banked them to `src`.
+
+**Cut-elim step structure** (induction on `D : Zef2 α e H f (c+1) Γ`): at a top-rank cut with
+premises at `βφ,βψ < α`, the IH gives rank-`c` derivations at `collapse βφ`, `collapse βψ` with
+slots `ewIter f βφ`, `ewIter f βψ`; the reduction pin (`stepAllω_Zf2`) merges them → ordinal
+`≤ collapse βφ + collapse βψ`, slot `ewIter f βφ ∘ ewIter f βψ`. Both must fit under the declared
+output `collapse α = ω^α` / `ewIter f α`.
+
+**BANKED (both `#print axioms`-clean, `wip/Lap10PassProbe.lean` → `src`):**
+- `OperatorZef2.collapse_add_lt` — ordinal side: `βφ,βψ < α → collapse βφ + collapse βψ <
+  collapse α` (additive principality of `ω^α`). Ordinal side of the cut step is DONE.
+- `EwIter.ewIter_le_of_lt` — **gated ordinal-monotonicity of `ewIter`**: `β < α`, gate
+  `ewN β ≤ f (ewN α + m)` ⟹ `ewIter f β m ≤ ewIter f α m`. The ewN gate RESTORES exactly the
+  property trap-8 refuted for bare `iterSlot`. This is the key that un-walls the slot side.
+
+**NEXT (Stage-3 continuation):** the slot-composition lemma
+`ewIter f α₀ (ewIter f α₁ m) ≤ ewIter f α m` for `α₀,α₁ < α`. Plan (via `ewIter_le_of_lt` +
+`ewIter_lower` + `ewIter_monotone`): case on the ONote order of α₀,α₁; let δ = the larger (< α);
+lift both iterates to δ by gated mono, giving `ewIter f δ (ewIter f δ m)`, then `ewIter_lower` at
+δ < α. Gate bookkeeping: needs `ewN α₁ ≤ f(ewN δ + m)`, `ewN α₀ ≤ f(ewN δ + K)`,
+`ewN δ ≤ f(ewN α + m)` — supplied by the pass invariant (the Zef2Prov gates). State with gates as
+hypotheses (reusable), then wire into the pass induction. The slot side is NOT walled (gated
+`ewIter` is ordinal-monotone) — no `EwF1`-of-`rel1` escalation needed for these containments.
+
+**Gates**: build 🟢 1341 jobs · headline UNDRIFTED · both lemmas axiom-clean · no new axiom.
