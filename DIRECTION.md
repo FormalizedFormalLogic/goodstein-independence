@@ -44,6 +44,15 @@ candidate discharge substrate for `wainer_bound_of_pa_proves_goodstein` — not 
 - **After both verdicts:** hand to the operator. PASS+PASS ⟹ ratify MASTERPLAN W0–W7 as the standing
   directive. Either FAIL ⟹ trigger T-W3/T-W4 fired: operator decides fallback-architecture vs abandon.
 
+**2026-07-02 (SPIKE STATUS + THIRD ORDER).** W3 + W4 both **PASS w/ mandatory amendments,
+judge-ratified** (`SPIKE-W{3,4}-VERDICT.md` + `E-2026-07-02-JUDGE-spike-w{3,4}-validation.md`);
+neither T-trigger fired. Before the full W-ladder is ratified/ground, the operator commissioned a
+THIRD bounded order — **`SPIKE-W4B-BUDGET.md`** (deciding experiment #3: the W4 residual, the
+principal ∀/∃ `d`-budget under enclosing ω-nodes; pre-registered trigger **T-W4B** = the `Zᵉ`
+Buchholz-operator-control fallback fork, fired on day 1 instead of 20 laps in). Same session rules
+as W3/W4 (execute ITS order only: probe + binary verdict + commit + STOP; sorries expected; NO new
+`axiom` declarations), and the scope carve-out above extends to this session verbatim.
+
 **lap-171 (OPERATOR DECISION — PIVOT-B = WAINER GROWTH-RATE).** The route gate is closed:
 `PIVOT-B`, with B explicitly meaning the **Wainer/Cichon/Caicedo growth-rate route**, not the
 Towsner operator A' lane. Record: `ROUTE-DECISION-2026-07-01-WAINER.md`.
