@@ -19,17 +19,28 @@ The lap-3 "awaiting architect ratification" stall is RESOLVED by review-lap auth
   + `stepAllω_Zef` are live src theorems, axiom-clean `[propext, Classical.choice, Quot.sound]`
   (verified real `#print axioms`). The read-off exit `readoff_sigma1_Zef`/`headline_readoff_Zef`
   ported too (bound `f 0`). **These are the discharge machinery for pins 1–2, now in the live build.**
-- **P3 — NEXT: restate + discharge pins 1–2.** Change `cutReduceAllAuxRunning_Zf` / `stepAllω_Zf` in
-  `src` §5 to the slot-judgment form (derivation conjunct over `ZefProv`, output slot `g∘f`),
-  discharge via `redDeriv_slot`/`stepAllω_Zef` — **the `sorry`s at lines 829/845 disappear**.
-  Update the §6 seam probes (`seam1`/`seam2`/non-vacuity) to the slot form; they must stay green
-  (they ARE the composition test). Delete the now-dead `redDeriv` stage-gap proof + its
-  `principal_witness_exceeds_stage` witness (or keep the witness as a documented obstruction lemma).
-- **P4 — read-off / bridge + `Zeh` retirement.** Port `readoff_sigma1_Zef` / `headline_readoff_Zef`
-  (bound `f 0`; at root `f := rel1 (hardy e) m` gives `f 0 = hardy e m`, so the LOCK §4 exit bound
-  is preserved). Re-point the §6 read-off exit + the blueprint attribute (`zeh_readoff_exit`). If
-  every `Zeh` use is subsumed by `Zef`, retire `Zeh`; else keep the embedding
-  `Zeh α e H m c Γ → Zef α e H (rel1 (hardy e) m) c Γ` as the bridge.
+- **P3 — DONE (lap 184). PINS 1–2 DISCHARGED.** The §5 stage pins + the stage `redDeriv` gap-proof
+  were deleted; the §7 slot workhorses were renamed to the pin names, so `cutReduceAllAuxRunning_Zf`
+  (pin 1) and `stepAllω_Zf` (pin 2) are now **real sorry-free theorems** in the `Zef` slot judgment
+  (output slot `g∘f`), verified `[propext, Classical.choice, Quot.sound]`. Seam-1 rebuilt as the
+  slot corollary `probe_cut_all_arm_Zf` (green); seam-2 (`probe_allomega_reassembly_Zf`) +
+  non-vacuity (`two_level_config_Zeh`) untouched + green. `principal_witness_exceeds_stage` kept as
+  the documented LOCK-§1-A1 obstruction lemma. Build 🟢 1333, headline NO DRIFT. Only `sorry` left
+  in OperatorZeh = pin 3 `cutElimPass_Zf` (forbidden).
+- **P4 — read-off already ported; remaining = cleanup/consolidation (NEXT lap, optional-order).**
+  `readoff_sigma1_Zef` / `headline_readoff_Zef` (slot form, bound `f 0`) are live in §7. Remaining
+  P4 items, none blocking the discharge: (a) decide whether to re-point the blueprint attribute
+  `zeh_readoff_exit` from the stage `headline_readoff` to `headline_readoff_Zef` (or add a slot one);
+  (b) prove the embedding bridge `Zeh α e H m c Γ → Zef α e H (rel1 (hardy e) m) c Γ` (root
+  `f 0 = hardy e m`) so the two stage-form §6 probes (`probe_allomega_reassembly_Zf`,
+  `two_level_config_Zeh`) and the stage read-off can be re-expressed / retired; (c) if every `Zeh`
+  use is subsumed, retire `Zeh`. Deferrable — `Zeh` and `Zef` coexist green today.
+
+### After the port: the live REBUILD-Z crux is now PIN 3 (`cutElimPass_Zf`) — but it stays the
+### lap-5 entrance gate (statement mini-lock, discharge FORBIDDEN until its restatement is ratified).
+The banked growth-lane bricks (`hardy_add_le_comp`, E–W Lemma 19 `hardy_omega_pow_lt_fastGrowing`)
+are pin-3's iterate-domination inputs. Pin 3's `∃ f'` is kernel-vacuous; its faithful restatement
+(iterate `f ↦ f^{Fω α}`, control raise) is the lap-5 deliverable — do NOT grind it as written.
 
 **Watch-outs:** (1) src `Zeh` carries MORE than the wip minimal clone (read-off, seams, `mono_H`,
 blueprint attributes) — P3/P4 must re-key all of them. (2) The composition order is `g∘f` in pin

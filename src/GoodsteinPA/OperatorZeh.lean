@@ -13,13 +13,17 @@ Beyond the verbatim seed this module carries the lap-1 statement work:
   real proof — the six-case induction mirroring the banked `Zekd.allInv`
   (`OperatorZinfty.lean:484`) with the numeric `max k n₀`/`d`-inert bookkeeping re-keyed to
   the stage `max m n₀` and the relativization `adjoin H n₀`.  `#print axioms` clean.
-* **§5 — the f-slot elimination suite (A2, statement pins, bodies `sorry`).**  The
-  Eguchi–Weiermann function-slot forms (LOCK §3): the running-family reduction
-  `cutReduceAllAuxRunning_Zf`, the common-control step motive `stepAllω_Zf`, and the
-  collapse/iteration shape `cutElimPass_Zf` — each with its `f : ℕ → ℕ` slot composed at
-  principal cuts (`f ∘ g`), max-relativized at ω-nodes (`rel1`), and instantiated to
-  `hardy e` at the root.  These are the NOT-LOCKED lap-1 drafts (LOCK §6); they STOP for
-  the judge.
+* **§5/§7 — the f-slot elimination suite (A2; pins 1–2 DISCHARGED lap 184, pin 3 `sorry`).**
+  The Eguchi–Weiermann function-slot forms (LOCK §3): the running-family reduction
+  `cutReduceAllAuxRunning_Zf` (pin 1) and the common-control step motive `stepAllω_Zf`
+  (pin 2) are **real sorry-free theorems** in the function-slot judgment `Zef` (§7) — the
+  slot `f : ℕ → ℕ` composed at principal cuts (output slot `g ∘ f`), max-relativized at
+  ω-nodes (`rel1`), instantiated to `hardy e` at the root.  This required amending LOCK
+  §1-A1/§3: the ℕ-stage judgment `Zeh` could not carry the reduction (kernel-refuted,
+  `principal_witness_exceeds_stage`), so the R4-compliant slot judgment `Zef` replaces the
+  ℕ-stage with the function-slot (RATIFIED lap 184,
+  `REBUILD-Z-LAP4-RATIFICATION-2026-07-02.md`).  The collapse/iteration shape
+  `cutElimPass_Zf` (pin 3) stays the lap-5 entrance gate — `sorry`, discharge FORBIDDEN.
 * **§6 — the two Z1 seams RE-EXPRESSED in the f-form (A2, PROVEN).**  The Z1 seam probes
   re-run against the §5 statements: seam 1 (`seam1_f_absorbed_by_composition`) and seam 2
   (`seam2_f_slot_payable`) close as REAL proofs against the function-slot reduction shape —
@@ -612,12 +616,20 @@ theorem wmul_mem (S : ONote → Prop) (n : ℕ) : Cl S (wmul n) := by
       have h : wmul n + wmul 0 = wmul (n + 1) := rfl
       exact h ▸ Cl.add ih (Cl.expTower (Cl.ofNat 1))
 
-/-! ## §5 The f-slot elimination suite (A2 — LOCK §3/§6, statement pins, bodies `sorry`)
+/-! ## §5 The f-slot elimination suite (A2 — LOCK §3/§6; pins 1–2 DISCHARGED in §7, pin 3 `sorry`)
 
 The Eguchi–Weiermann number-theoretic operator slot `f : ℕ → ℕ` (arXiv:1205.2879, Def. 23 +
 Lemma 25) is what the `(k,d)` counter could never be (SPIKE-W4B: both seams are ℕ-slot
-overflow failures; SPIKE-Z1 §6: the non-affine function-slot absorbs both).  Per LOCK §3 the
-judgment `Zeh` stays f-free; the f-slots live HERE, in the elimination statements:
+overflow failures; SPIKE-Z1 §6: the non-affine function-slot absorbs both).
+
+**LOCK §1-A1/§3 amendment (RATIFIED lap 184, `REBUILD-Z-LAP4-RATIFICATION-2026-07-02.md`):** the
+draft kept the ℕ-stage judgment `Zeh` f-free with the slot only in the elimination *statements*,
+but laps 2–3 proved in-kernel that the ℕ-stage `Zeh` **cannot** carry the running-family reduction
+(`principal_witness_exceeds_stage`: the `exI` witness `n ≤ hardy e m > m` cannot be lowered to the
+output stage — the exact ℕ-budget failure LOCK R4 forbids).  The fix is the R4-compliant
+function-slot judgment `Zef` (§7): the ℕ-stage `m` is replaced by the slot `f`.  Pins 1–2
+(`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) are DISCHARGED there as real theorems.  The f-slot
+enters the elimination lemmas as:
 
 * **composition at principal cuts** — the reduction's output slot is `f ∘ g` of the premises';
 * **max-relativization at ω-nodes** — `rel1 f n = fun x => f (max n x)`;
@@ -631,7 +643,8 @@ Lemma 25 — the raised-control conjunct of the original draft was refutable two
 ways: the K2b re-tag failure, and an `axL`-instantiation making the conjunct falsifiable
 outright).  ALL control-raising and numeric ITERATION is confined to `cutElimPass_Zf`
 (E–W Lemma 30), where the P1 domination obligation is paid by the pinned iterate — not by
-composition.  Bodies `sorry`, discharge laps 2–7 behind the judge gate. -/
+composition.  Pins 1–2 are DISCHARGED (§7, slot judgment `Zef`); pin 3 `cutElimPass_Zf` stays
+`sorry` (lap-5 entrance gate, discharge FORBIDDEN). -/
 
 /-- The Eguchi–Weiermann max-relativization of a number-theoretic operator (spike §6). -/
 def rel1 (f : ℕ → ℕ) (n : ℕ) : ℕ → ℕ := fun x => f (max n x)
@@ -722,164 +735,9 @@ theorem normControlled_exists_trivial (e : ONote) (m : ℕ) :
     ∃ f : ℕ → ℕ, NormControlled f e m :=
   ⟨fun x => hardy e (max m x), fun _ => le_rfl⟩
 
-/-- **The derivation half of the running-family §19.6 reduction** (pin 1's first conjunct),
-operator-agnostic form (uses `change_H`: the family and output operator are free — R1).
-The induction on the ∃-side derivation `D` mirrors the banked `Zekd.cutReduceAllAux`
-(`OperatorZinfty.lean:789`) with the norm bookkeeping deleted and the numeric `(k,d)` axis
-replaced by the stage axis `m`.  Every case threads verbatim EXCEPT the principal `exI`, where
-the branch-`n` family member `fam n` lives at stage `max m₀ n` and the cut lands the output at
-stage `max m n` (`n ≤ hardy e m` = the witness bound) — which the fixed-output-stage `m` of the
-statement cannot absorb (`Zeh` has no stage-lowering rule; A1 "no rule lowers `m`").  That
-single gap is the honest locus of the reduction's difficulty. -/
-theorem redDeriv {φ : SyntacticSemiformula ℒₒᵣ 1} {c m₀ : ℕ} {α e : ONote} {Γ : Seq}
-    (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
-    (fam : ∀ n (H' : ONote → Prop), Zeh α e H' (max m₀ n) c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {H : ONote → Prop} {m : ℕ} {Δ : Seq}, Zeh γ e H m c Δ → γ.NF →
-      m₀ ≤ m → (∃⁰ ∼φ) ∈ Δ →
-      ZehProv (osucc (α + γ)) e H m c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
-  intro γ H m Δ D
-  induction D with
-  | @axL γ e H m c Δ ar r v hp hn =>
-      intro hγNF hm hmem
-      refine ZehProv.of (osucc_NF (ONote.add_nf α γ)) (Cl_of_NF (osucc_NF (ONote.add_nf α γ))) ?_
-      exact Zeh.axL r v
-        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩))
-        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩))
-  | @wk γ e H m c Δsub Δsup hsub D' ih =>
-      intro hγNF hm hmem
-      by_cases hd : (∃⁰ ∼φ) ∈ Δsub
-      · exact (ih hφc heNF fam hγNF hm hd).weakening (by
-          intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
-          rcases hx with ⟨hne, hxs⟩ | hxΓ
-          · exact Or.inl ⟨hne, hsub hxs⟩
-          · exact Or.inr hxΓ)
-      · refine ⟨γ, le_trans (Zekd.le_add_left_NF hαNF hγNF)
-          (le_of_lt (Zekd.lt_osucc (ONote.add_nf α γ))), hγNF, Cl_of_NF hγNF, D'.wk (by
-            intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
-            exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
-  | @weak γ β e H m c Δsub Δsup hβ hβNF hγNF' hβH hsub D' ih =>
-      intro hγNF hm hmem
-      by_cases hd : (∃⁰ ∼φ) ∈ Δsub
-      · exact ((ih hφc heNF fam hβNF hm hd).weakening (by
-          intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
-          rcases hx with ⟨hne, hxs⟩ | hxΓ
-          · exact Or.inl ⟨hne, hsub hxs⟩
-          · exact Or.inr hxΓ)).mono
-          (le_of_lt (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
-      · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (Zekd.le_add_left_NF hαNF hγNF)
-          (le_of_lt (Zekd.lt_osucc (ONote.add_nf α γ))))), hβNF, Cl_of_NF hβNF, D'.wk (by
-            intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
-            exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
-  | @allω γ e H m c Γ₀ χ β hβ hβNF hγNF' hβH dd ih =>
-      intro hγNF hm hmem
-      have hhead : (∀⁰ χ) ≠ (∃⁰ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
-      have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-      have hsuccNF : (osucc (α + γ)).NF := osucc_NF (ONote.add_nf α γ)
-      have ihn : ∀ n, ZehProv (osucc (α + β n)) e (adjoin H n) (max m n) c
-          (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
-        intro n
-        exact (ih n hφc heNF fam (hβNF n) (le_trans hm (le_max_left _ _)) (Finset.mem_insert_of_mem hmem0)).weakening (by
-          intro x hx
-          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-      refine ZehProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
-      have hAll : Zeh (osucc (α + γ)) e H m c
-          (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
-        refine Zeh.allω χ (fun n => (ihn n).choose)
-          (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
-            (Zekd.add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
-          (fun n => (ihn n).choose_spec.2.1) hsuccNF
-          (fun n => Cl_of_NF (ihn n).choose_spec.2.1)
-          (fun n => (ihn n).choose_spec.2.2.2)
-      exact hAll.wk (by
-        intro x hx
-        simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
-        rcases hx with rfl | hx
-        · exact Or.inl ⟨hhead, Or.inl rfl⟩
-        · tauto)
-  | @exI γ β e H m c Γ₀ χ n hβ hβNF hγNF' hβH hbound dχ ih =>
-      intro hγNF hm hmem
-      have hsuccNF : (osucc (α + γ)).NF := osucc_NF (ONote.add_nf α γ)
-      by_cases hhd : (∃⁰ χ) = (∃⁰ ∼φ)
-      · -- PRINCIPAL: χ = ∼φ; cut `fam n` against the ∃-premise on `φ/[nm n]`.
-        have hχ : χ = ∼φ := by simpa [ExsQuantifier.exs] using hhd
-        subst hχ
-        rw [Finset.erase_insert_eq_erase]
-        have hNeg : (∼φ)/[nm n] = ∼(φ/[nm n]) := by simp
-        have hcompl : (φ/[nm n]).complexity < c := by simpa using hφc
-        -- fam n raised to the cut stage; dχ raised to the cut stage.  Cut stage = `max m n`
-        -- (both premises must sit at ONE stage ≥ their own).  Output lands at `max m n`.
-        have famn : Zeh α e H (max m n) c (insert (φ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-          ((fam n H).mono_H (fun _ h => h) (max_le_max hm (le_refl n))).wk (by
-            intro x hx; simp only [Finset.mem_insert, Finset.mem_union] at hx ⊢; tauto)
-        have hαlt : α < osucc (α + γ) :=
-          lt_of_le_of_lt (Zekd.le_add_right_NF hαNF hγNF) (Zekd.lt_osucc (ONote.add_nf α γ))
-        by_cases hd : (∃⁰ ∼φ) ∈ Γ₀
-        · obtain ⟨a, hale, haNF, haH, Da⟩ := ih hφc heNF fam hβNF hm (Finset.mem_insert_of_mem hd)
-          have Da' : Zeh a e H (max m n) c
-              (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-            (Da.mono_H (fun _ h => h) (le_max_left m n)).wk (by
-              intro x hx
-              simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-          have hCut : Zeh (osucc (α + γ)) e H (max m n) c (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
-            Zeh.cut (φ/[nm n]) hcompl hαlt
-              (lt_of_le_of_lt hale (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
-              hαNF haNF hsuccNF (Cl_of_NF hαNF) haH famn Da'
-          -- OUTPUT MUST BE AT STAGE `m`, but `hCut` is at stage `max m n`.  `Zeh` has no
-          -- stage-lowering rule (A1); the running-family witness `n ≤ hardy e m` can exceed `m`.
-          sorry
-        · have Dβ' : Zeh β e H (max m n) c
-              (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-            (dχ.mono_H (fun _ h => h) (le_max_left m n)).wk (by
-              intro x hx
-              simp only [hNeg, Finset.mem_insert] at hx
-              simp only [Finset.mem_insert, Finset.mem_union, Finset.mem_erase]
-              rcases hx with rfl | hxΓ₀
-              · exact Or.inl rfl
-              · exact Or.inr (Or.inl ⟨fun e0 => hd (e0 ▸ hxΓ₀), hxΓ₀⟩))
-          have hCut : Zeh (osucc (α + γ)) e H (max m n) c (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
-            Zeh.cut (φ/[nm n]) hcompl hαlt
-              (lt_of_lt_of_le hβ (le_trans (Zekd.le_add_left_NF hαNF hγNF)
-                (le_of_lt (Zekd.lt_osucc (ONote.add_nf α γ)))))
-              hαNF hβNF hsuccNF (Cl_of_NF hαNF) (Cl_of_NF hβNF) famn Dβ'
-          -- Same stage wall: `hCut` at `max m n`, output required at `m`.
-          sorry
-      · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
-        obtain ⟨a, hale, haNF, haH, Da⟩ := ih hφc heNF fam hβNF hm (Finset.mem_insert_of_mem hmem0)
-        have Da' : Zeh a e H m c (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-          Da.wk (by
-            intro x hx
-            simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-        refine ZehProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
-        have hExI : Zeh (osucc (α + γ)) e H m c
-            (insert (∃⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-          Zeh.exI χ n (lt_of_le_of_lt hale (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
-            haNF hsuccNF haH hbound Da'
-        exact hExI.wk (by
-          intro x hx
-          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
-          rcases hx with rfl | hx
-          · exact Or.inl ⟨hhd, Or.inl rfl⟩
-          · tauto)
-  | @cut γ βφ βψ e H m c Γ₀ χ hχc hβφ hβψ hβφNF hβψNF hγNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
-      intro hγNF hm hmem
-      obtain ⟨a₁, ha₁le, ha₁NF, ha₁H, D₁⟩ := ih₁ hφc heNF fam hβφNF hm (Finset.mem_insert_of_mem hmem)
-      obtain ⟨a₂, ha₂le, ha₂NF, ha₂H, D₂⟩ := ih₂ hφc heNF fam hβψNF hm (Finset.mem_insert_of_mem hmem)
-      have hsuccNF : (osucc (α + γ)).NF := osucc_NF (ONote.add_nf α γ)
-      have D₁' : Zeh a₁ e H m c (insert χ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-        D₁.wk (by
-          intro x hx
-          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-      have D₂' : Zeh a₂ e H m c (insert (∼χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-        D₂.wk (by
-          intro x hx
-          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-      refine ZehProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
-      exact Zeh.cut χ hχc
-        (lt_of_le_of_lt ha₁le (Zekd.add_osucc_descent hαNF hβφNF hγNF hβφ))
-        (lt_of_le_of_lt ha₂le (Zekd.add_osucc_descent hαNF hβψNF hγNF hβψ))
-        ha₁NF ha₂NF hsuccNF ha₁H ha₂H D₁' D₂'
-
-/-- **Kernel witness for the `redDeriv` gap (the candidate sixth-trap root).**  In the
+/-- **Kernel witness for the stage-`m` reduction gap (the candidate sixth-trap root, now the
+LOCK §1-A1 obstruction).**  The former stage-`m` reduction `redDeriv` (deleted lap 184) had a
+principal-`exI` case where the witness satisfies only `n ≤ hardy e m`, which STRICTLY exceeds the
 principal `exI` case the witness satisfies only `n ≤ hardy e m`, which STRICTLY exceeds the
 stage `m` at any nontrivial control — e.g. `hardy ω m = 2m+1 > m`.  So `n ≤ hardy e m` does
 NOT give `n ≤ m`, and the family member `fam n` (stage `max m₀ n`) cannot be lowered to the
@@ -888,59 +746,6 @@ analog of the judge's fifth-trap kernel fact `hardy ω 0 = 1 > 0`. -/
 theorem principal_witness_exceeds_stage (m : ℕ) : m < hardy ONote.omega m := by
   rw [show ONote.omega = oadd 1 1 0 from rfl, hardy_omega]; omega
 
-/-- **PIN (disclosed sorry): the running-family reduction, f-slot form, FIXED control**
-(`cutReduceAllAuxRunning_Zf`; judge-amended per Option A).  E–W Lemma 25 shape: both
-premises and the conclusion run at ONE control `e`; the `∀`-family is `g`-controlled, the
-`∃`-side `f`-controlled, and the output carries the COMPOSED slot `f ∘ g` at the SAME
-control (numeric conjunct dischargeable via the banked `NormControlled.comp`).  The
-original draft's `raise e α` output was kernel-refutable (no `mono_e` re-tag exists — K2b;
-and an `axL`-instantiation falsifies the raised conjunct outright); the raise belongs to
-`cutElimPass_Zf` alone. -/
-theorem cutReduceAllAuxRunning_Zf {φ : SyntacticSemiformula ℒₒᵣ 1} {c m₀ : ℕ}
-    {α e : ONote} {H : ONote → Prop} {Γ : Seq} (f g : ℕ → ℕ)
-    (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF) (hαH : Cl H α)
-    (hg : NormControlled g e m₀)
-    (fam : ∀ n, Zeh α e (adjoin H n) (max m₀ n) c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {m : ℕ} {Δ : Seq}, Zeh γ e H m c Δ → NormControlled f e m →
-      γ.NF → Cl H γ → m₀ ≤ m → (∃⁰ ∼φ) ∈ Δ →
-      ZehProv (osucc (α + γ)) e H m c (Δ.erase (∃⁰ ∼φ) ∪ Γ) ∧
-      NormControlled (f ∘ g) e m := by
-  intro γ m Δ D hf hγNF hγH hm₀m hmem
-  -- Second conjunct DISCHARGED (Option A, judge Q1): `NormControlled (f∘g) e m`.
-  refine ⟨?_, normControlled_comp_running hg hf⟩
-  -- First conjunct: the full §19.6 induction is `redDeriv` (all cases proven except the
-  -- single principal-`exI` stage-lowering gap — see its docstring + the lap-2 FINDING).
-  exact redDeriv hφc hαNF heNF (fun n H' => (fam n).change_H) D hγNF hm₀m hmem
-
-/-- **PIN (disclosed sorry): the common-control step motive, f-slot form, FIXED control**
-(`stepAllω_Zf`, amendment A2; judge-amended per Option A).  The principal ∀/∃
-cut-reduction step, IHs held at ONE control `E` through the recursion (per-branch
-raise-then-`mono_e`-unify is kernel-refuted in `Zeh`), output at the SAME control `E`
-with the composed slot `f ∘ g`.  **Kept UNIFIED per the Q3 ruling** (one ⋁-principal
-reduction, E–W Lemma 25 with `C = ∃⁰∼χ`): `D₂` is the witness-provider, `D₁` enters via
-`allInv_Zeh` inversion — the ∀-side has no separate reduction. -/
-theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
-    {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} (f g : ℕ → ℕ)
-    (hENF : E.NF) (hχc : χ.complexity < c)
-    (hg : NormControlled g E m)
-    (D₁ : ZehProv (expTower βφ) E H m c (insert (∀⁰ χ) Γ))
-    (hf : NormControlled f E m)
-    (D₂ : ZehProv (expTower βψ) E H m c (insert (∃⁰ ∼χ) Γ)) :
-    ∃ δ : ONote, δ.NF ∧ Cl H δ ∧
-      ZehProv δ E H m c Γ ∧ NormControlled (f ∘ g) E m := by
-  -- Q3-unified step: invert the ∀-side to the running family, then apply the reduction (pin 1).
-  obtain ⟨α₁, _, hNF₁, hH₁, d₁⟩ := D₁
-  obtain ⟨γ₁, _, hNF₂, hH₂, d₂⟩ := D₂
-  have fam : ∀ n, Zeh α₁ E (adjoin H n) (max m n) c (insert (χ/[nm n]) Γ) := by
-    intro n
-    exact (allInv_Zeh n d₁ (Finset.mem_insert_self _ _)).weakening
-      (Finset.insert_subset_insert _ (Finset.erase_insert_subset _ _))
-  have hred := cutReduceAllAuxRunning_Zf f g hχc hNF₁ hENF hH₁ hg fam d₂ hf hNF₂ hH₂
-    le_rfl (Finset.mem_insert_self _ _)
-  refine ⟨osucc (α₁ + γ₁), osucc_NF (ONote.add_nf α₁ γ₁),
-    Cl_of_NF (osucc_NF (ONote.add_nf α₁ γ₁)), ?_, hred.2⟩
-  exact hred.1.weakening
-    (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))
 
 /-- **PIN (disclosed sorry): one elimination pass, f-slot form** (`cutElimPass_Zf`, the
 collapse/iteration shape — E–W Lemma 30: the ONE place the control raises and the slot
@@ -1030,38 +835,6 @@ theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ
   · rw [wmul_add_wmul]
     exact osucc_NF (nf_one.oadd _ NFBelow.zero)
 
-/-- **Seam-1 composition probe, f-form (a REAL proof; only sorry-dependence is the §5
-reduction pin — `allInv_Zeh` is now PROVEN).**  The ∀/∃ arm at an ω-branch, consuming the
-now-proven inversion and the f-slot reduction pin.  The emission carries NO output-side
-numeric slot (membership is closure-derived) AND its numeric control rides the composed
-function slot `f ∘ g` at the FIXED control `E` (Option A: the reduction never raises —
-the raise/iteration live in `cutElimPass_Zf` alone).  Seam 1 reverses in the f-form
-exactly as it did in the membership form. -/
-theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {m nBr c : ℕ} {Γ : Seq}
-    {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} (f g : ℕ → ℕ)
-    (hENF : E.NF) (hχc : χ.complexity < c)
-    (hg : NormControlled g E (max m nBr)) (hf : NormControlled f E (max m nBr))
-    (IH1 : ZehProv (expTower βφ) E (adjoin H nBr) (max m nBr) c (insert (∀⁰ χ) Γ))
-    (IH2 : ZehProv (expTower βψ) E (adjoin H nBr) (max m nBr) c (insert (∃⁰ ∼χ) Γ)) :
-    ∃ αf γf : ONote, αf.NF ∧ αf ≤ expTower βφ ∧ γf ≤ expTower βψ ∧
-      Cl (adjoin H nBr) (osucc (αf + γf)) ∧
-      ZehProv (osucc (αf + γf)) E (adjoin H nBr) (max m nBr) c Γ ∧
-      NormControlled (f ∘ g) E (max m nBr) := by
-  obtain ⟨α₁, hle₁, hNF₁, hH₁, D₁⟩ := IH1
-  obtain ⟨γ₁, hle₂, hNF₂, hH₂, D₂⟩ := IH2
-  -- the RUNNING family, exactly the reduction pin's input shape: allInv_Zeh (PROVEN) hands
-  -- branch n₁ at the iterated relativization and the running stage
-  have fam : ∀ n₁, Zeh α₁ E (adjoin (adjoin H nBr) n₁) (max (max m nBr) n₁) c
-      (insert (χ/[nm n₁]) Γ) := by
-    intro n₁
-    exact (allInv_Zeh n₁ D₁ (Finset.mem_insert_self _ _)).weakening
-      (Finset.insert_subset_insert _ (Finset.erase_insert_subset _ _))
-  -- the f-slot reduction pin, then clean the sequent
-  have hred := cutReduceAllAuxRunning_Zf f g hχc hNF₁ hENF hH₁ hg fam D₂ hf hNF₂ hH₂
-    le_rfl (Finset.mem_insert_self _ _)
-  refine ⟨α₁, γ₁, hNF₁, hle₁, hle₂, Cl.osucc (Cl.add hH₁ hH₂), ?_, hred.2⟩
-  exact hred.1.weakening (Finset.union_subset (Finset.erase_insert_subset _ _)
-    (Finset.Subset.refl Γ))
 
 /-! ## §7 Companion inversions (A3 — mirroring the banked `Zekd` suite)
 
@@ -1356,9 +1129,10 @@ theorem ZehProv.allω {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
 
 /-! ## Blueprint ledger coverage (machine-synced status for the proven Zᵉ nodes)
 
-Only the PROVEN nodes carry ledger attributes — the three §5 pins are `sorryAx`-bearing, and the
-audit treats a sorried footprint as `broken` = CI FAIL by design; they stay `notready` TeX nodes
-until their discharging laps land (at which point they get attributes here). -/
+Only the PROVEN nodes carry ledger attributes.  Pins 1–2 (`cutReduceAllAuxRunning_Zf`,
+`stepAllω_Zf`) are now DISCHARGED (§7 slot judgment, lap 184) and eligible for attributes; pin 3
+(`cutElimPass_Zf`) is still `sorryAx`-bearing, and the audit treats a sorried footprint as
+`broken` = CI FAIL by design, so it stays a `notready` TeX node until its lap-5 discharge lands. -/
 
 attribute [goodstein_blueprint 10 clean "zeh_inversion_suite" "0" 100 allInv_Zeh
   []
@@ -1384,7 +1158,7 @@ Ported verbatim from `wip/ZefSlotCalculus.lean` (kernel-verified sorry-free / ax
 stage judgment could not provide (the stage-`m` reduction is kernel-refuted:
 `principal_witness_exceeds_stage`; see `REBUILD-Z-LAP4-RATIFICATION-2026-07-02.md`).  `exI` bound
 `n ≤ f 0`, `allω` branch slot `rel1 f n`, reduction output slot **`g∘f`**.  This block discharges
-pins 1–2 (`redDeriv_slot`, `stepAllω_Zef`) and the read-off exit (`headline_readoff_Zef`) as REAL
+pins 1–2 (`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) and the read-off exit (`headline_readoff_Zef`) as REAL
 theorems; the §5 stage pins are rewired to consume them next (port step P3). -/
 /-! ## The slot calculus `Zef` (`Zeh` with stage `m` ⤳ slot `f : ℕ → ℕ`) -/
 
@@ -1518,7 +1292,7 @@ theorem reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) :
 
 /-! ## The running-family reduction, SORRY-FREE (the lap-2 gap, now closed) -/
 
-/-- **`redDeriv_slot`** — the full Towsner §19.6 running-family cut-reduction in the slot
+/-- **`cutReduceAllAuxRunning_Zf`** — the full Towsner §19.6 running-family cut-reduction in the slot
 calculus, output slot `g∘f`.  The lap-2 `redDeriv` port with the stage `m` replaced by the
 current slot `f'` (threaded monotone + inflationary) and the two axis-critical moves:
 - **principal `exI`** — both cut premises re-slot to `g∘f'` (`reslot_family` / `reslot_exside`),
@@ -1526,7 +1300,7 @@ current slot `f'` (threaded monotone + inflationary) and the two axis-critical m
   could not cross;
 - **`allω`** — each branch's IH output slot `g ∘ rel1 f' n` is `rel1 (g∘f') n` by `rel1_comp`
   (definitional), exactly the `allω` node's branch slot. -/
-theorem redDeriv_slot {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α e : ONote} {Γ : Seq}
+theorem cutReduceAllAuxRunning_Zf {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α e : ONote} {Γ : Seq}
     {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
@@ -1751,11 +1525,11 @@ theorem allInv_Zef {φ₀ : SyntacticSemiformula ℒₒᵣ 1} (n₀ : ℕ) :
       exact Zef.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
-/-- **`stepAllω_Zef`** (pin-2 analog in the slot calculus): the principal ∀/∃ cut-reduction step,
+/-- **`stepAllω_Zf`** (pin-2 analog in the slot calculus): the principal ∀/∃ cut-reduction step,
 IHs at ONE control `E` and stage-slots, output slot `g∘f`.  Invert the ∀-side `D₁` (slot `g`) to
-the running family via `allInv_Zef`, then apply `redDeriv_slot` against the ∃-side `D₂` (slot `f`).
+the running family via `allInv_Zef`, then apply `cutReduceAllAuxRunning_Zf` against the ∃-side `D₂` (slot `f`).
 Both premises are `ZefProv` wrappers; slots monotone + inflationary. -/
-theorem stepAllω_Zef {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
+theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
     {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
     (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
@@ -1769,11 +1543,26 @@ theorem stepAllω_Zef {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
     intro n H'
     exact ((allInv_Zef n d₁ hg_mono (Finset.mem_insert_self _ _)).weakening
       (Finset.insert_subset_insert _ (Finset.erase_insert_subset _ _))).change_H
-  have hred := redDeriv_slot hχc hNF₁ hENF hg_mono hg_infl fam d₂ hNF₂ hf_mono hf_infl
+  have hred := cutReduceAllAuxRunning_Zf hχc hNF₁ hENF hg_mono hg_infl fam d₂ hNF₂ hf_mono hf_infl
     (Finset.mem_insert_self _ _)
   refine ⟨osucc (α₁ + γ₁), osucc_NF (ONote.add_nf α₁ γ₁),
     Cl_of_NF (osucc_NF (ONote.add_nf α₁ γ₁)), ?_⟩
   exact hred.weakening (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))
+
+/-- **§6 seam-1 composition probe, slot form (a REAL corollary — the §5 reduction pins are now
+DISCHARGED).**  The ∀/∃ arm at an ω-branch: the two premises' slots `g` (∀-family) and `f`
+(∃-side) compose to `g ∘ f` on the output, at the FIXED control `E` (the raise/iteration live in
+`cutElimPass_Zf` alone).  Formerly the sorry-dependent `probe_cut_all_arm_Zf`; now a direct
+consequence of the discharged `stepAllω_Zf`.  Seam 1 reverses in the slot form. -/
+theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
+    {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
+    (hENF : E.NF) (hχc : χ.complexity < c)
+    (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
+    (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
+    (IH1 : ZefProv (expTower βφ) E H g c (insert (∀⁰ χ) Γ))
+    (IH2 : ZefProv (expTower βψ) E H f c (insert (∃⁰ ∼χ) Γ)) :
+    ∃ δ : ONote, δ.NF ∧ Cl H δ ∧ ZefProv δ E H (g ∘ f) c Γ :=
+  stepAllω_Zf hENF hχc hg_mono hg_infl hf_mono hf_infl IH1 IH2
 
 /-! ## The read-off EXIT in the slot calculus (E–W Lemma 31 EXACTLY: witness ≤ `f 0`)
 
