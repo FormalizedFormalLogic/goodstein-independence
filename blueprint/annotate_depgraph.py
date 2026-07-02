@@ -91,9 +91,10 @@ STATUS_FOR = {"clean": "\\leanok", "trusted": "\\leanok",
 
 # Route-A read-off nodes are BANKED per DIRECTION.md (2026-07-01 route pivot):
 # grey/dashed "abandoned trail" styling so the map doesn't show two live routes
-# to the summit. Deliberately NOT the pathB capstone chain — that is preserved
-# as the live someK substrate of the W0-W7 masterplan, i.e. genuinely-pending
-# debt (orange). This transports an operator decision, not a kernel fact.
+# to the summit. (The pathB capstone chain was originally kept live as "the
+# someK substrate of the W0-W7 masterplan" — that framing died with the Zᵉ
+# fork; see SUPERSEDED below.) This transports an operator decision, not a
+# kernel fact.
 #
 # EDGES touching a banked node recede with it (dotted, dim, thin). Rationale:
 # leanblueprint's \uses is conjunctive-only — the dep graph has NO native
@@ -102,6 +103,22 @@ STATUS_FOR = {"clean": "\\leanok", "trusted": "\\leanok",
 # makes the banked alternative's edges read as deprioritized, not required.
 BANKED = {"thm:routeA_headline", "thm:crux2_axiom"}
 BANKED_EDGE_STYLE = 'style=dotted, color="#4a5056", penwidth=0.7, arrowsize=0.6]'
+
+# The pathB capstone chain is SUPERSEDED-IN-SUBSTRATE (2026-07-02, Zᵉ fork):
+# its capstones 2–8 are stated over the (k,d)/someK calculus that SPIKE-W4B
+# kernel-killed, and its only consumer is the banked crux2_axiom. The
+# decomposition SHAPE re-keys onto Zeh at the embedding phase (it will then
+# feed wainer_axiom); until that restatement exists, the chain's EDGES fade
+# like the banked trail. Node colors stay kernel-honest (ledger-audited) —
+# only the edges transport this operator decision.
+SUPERSEDED = {
+    "thm:pathBGoodsteinSentenceShape", "thm:pathBPeanoMinusAxiomLeaves",
+    "thm:pathBInductionAxiomShell", "thm:pathBClosedWitnessBudgets",
+    "thm:pathBSomeKStructuralEmbedding", "thm:pathBOperatorCutElimination",
+    "thm:pathBSubformulaProjection", "thm:pathBGoodsteinFragmentExtraction",
+    "thm:pathBTerminalRouteBridge",
+}
+FADED = BANKED | SUPERSEDED
 
 
 def sync_tex_statuses(ann: dict) -> bool:
@@ -205,17 +222,17 @@ def main() -> int:
                     + 'label="' + s + '\\\\n(banked)",' + m.group(2) + 'style=dashed,')
         html = pat.sub(_grey, html, count=1)
 
-    # Banked-route EDGE styling (see the BANKED comment): every edge with a
-    # banked endpoint fades. Idempotent — already-faded edges no longer match
-    # the stock `style=dashed]` tail.
+    # Banked/superseded EDGE styling (see the BANKED/SUPERSEDED comments):
+    # every edge with a faded endpoint recedes. Idempotent — already-faded
+    # edges no longer match the stock `style=dashed]` tail.
     edge_pat = re.compile(r'("(?P<tail>[^"]+)" -> "(?P<head>[^"]+)"\s*\[)style=dashed\]')
     def _fade(m):
-        if m.group("tail") in BANKED or m.group("head") in BANKED:
+        if m.group("tail") in FADED or m.group("head") in FADED:
             return m.group(1) + BANKED_EDGE_STYLE
         return m.group(0)
-    html, faded = edge_pat.subn(_fade, html)
+    html, _ = edge_pat.subn(_fade, html)
     faded = len(re.findall(re.escape(BANKED_EDGE_STYLE), html))
-    print(f"banked-edge fade: {faded} edge(s) deprioritized")
+    print(f"banked/superseded-edge fade: {faded} edge(s) deprioritized")
 
     HTML.write_text(html)
     print(f"annotated {changed} DOT labels / {len(matched)} matched nodes")

@@ -380,7 +380,7 @@ then \(\mathsf{PA}\nvdash\gamma\).  This is the honest ``collapse the whole head
 deliverable; both declarations are axiom-clean.
 \end{theorem}
 
-\section{The crux-2 milestone chain (witness-bounded operator calculus, preserved)}
+\section{The crux-2 milestone chain (superseded substrate --- re-keys onto \(Z^{e}\))}
 
 The following nine nodes are the internalized-cut-elimination decomposition of the Phase 2--3 girder,
 imported through \texttt{GoodsteinPABlueprint}.  Status semantics: a node's color rates that node's
@@ -388,8 +388,19 @@ imported through \texttt{GoodsteinPABlueprint}.  Status semantics: a node's colo
 this'' --- while chain-completeness is a property of the \emph{ancestry} (the legend's dark green).
 Steps 1 and 9 are discharged and audited clean (green); capstones 2--8 are still named
 \texttt{axiom}s classified \texttt{debt} by \texttt{blueprint\_audit}
-(\texttt{\textbackslash notready}, with per-step lap/confidence estimates on the nodes).  They are
-the ``how would the internalization actually be built'' skeleton, retained as a banked asset.
+(\texttt{\textbackslash notready}, with per-step lap/confidence estimates on the nodes).
+
+\emph{Post-fork status (2026-07-02):} capstones 2--8 are stated over the \((k,d)\)/someK calculus
+that SPIKE-W4B \emph{kernel-killed}, and the chain's only consumer is the banked
+Thm~\ref{thm:crux2_axiom} --- so as stated, nothing required flows through it and it will never be
+discharged in this form (the fork directive freezes all \((k,d)\)-motive work; its edges render
+faded).  What survives is the \emph{decomposition shape} --- sentence shape \(\to\) PA\(^-\) leaves
+\(\to\) induction shell \(\to\) witness budgets \(\to\) embedding \(\to\) cut-elimination \(\to\)
+extraction --- which is exactly the embedding-phase map for the \(Z^{e}\) rebuild
+(Section~\ref{sec:zeh}); when that phase opens, these nodes are restated over \texttt{Zeh} and the
+restated chain feeds Thm~\ref{thm:wainer_axiom} (the live target), not the banked girder.  The
+per-step estimates below are old-substrate numbers; re-estimate at the embedding-phase statement
+lock.
 
 \begin{theorem}\label{thm:pathBGoodsteinSentenceShape}
   \lean{GoodsteinPA.PathBProbe.pathB_goodsteinSentenceShape_stage}
