@@ -37,38 +37,30 @@ theorem expTower_add_lt {βφ βψ α : ONote} (hβφ : βφ.NF) (hβψ : βψ.N
     (opow_lt_opow_iff_right one_lt_omega0).2 (lt_def.mp hψ)
   exact (Ordinal.isPrincipal_add_omega0_opow α.repr) hφr hψr
 
-/-- **Slot-composition containment** — the pass's cut-elimination step merges two IH-reduced
-premises' slots `ewIter f α₀ ∘ ewIter f α₁` (`α₀,α₁ < α`) and must fit under the declared output
-`ewIter f α`.  Proof: pick δ = the larger of α₀,α₁ (< α); lift both iterates to δ by gated
-ordinal-monotonicity (`ewIter_le_of_lt`), giving the two-fold `ewIter f δ (ewIter f δ m)`; then
-`ewIter_lower` at δ < α collapses the two-fold to one-fold `ewIter f α m`.  All ball gates follow
-from the base gates `ewN αᵢ ≤ f 0` + `f 0 ≤ f _` (monotone).  This CLOSES the slot side of the cut
-step — no `EwF1`-of-`rel1` needed. -/
-theorem ewIter_comp_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
-    {α₀ α₁ α : ONote} (hα₀ : α₀.NF) (hα₁ : α₁.NF)
-    (h0 : α₀ < α) (h1 : α₁ < α) (g0 : ewN α₀ ≤ f 0) (g1 : ewN α₁ ≤ f 0) (m : ℕ) :
-    ewIter f α₀ (ewIter f α₁ m) ≤ ewIter f α m := by
-  haveI := hα₀; haveI := hα₁
-  -- ball gates from base gates + monotonicity
-  have gate0 : ∀ k, ewN α₀ ≤ f (ewN α + k) := fun k => le_trans g0 (hf_mono (Nat.zero_le _))
-  have gate1 : ∀ k, ewN α₁ ≤ f (ewN α + k) := fun k => le_trans g1 (hf_mono (Nat.zero_le _))
-  rcases lt_trichotomy α₀.repr α₁.repr with hlt | heq | hgt
-  · -- α₀ < α₁ ; δ = α₁
-    have hα₀α₁ : α₀ < α₁ := lt_def.mpr hlt
-    have g01 : ∀ k, ewN α₀ ≤ f (ewN α₁ + k) := fun k => le_trans g0 (hf_mono (Nat.zero_le _))
-    have step1 : ewIter f α₀ (ewIter f α₁ m) ≤ ewIter f α₁ (ewIter f α₁ m) :=
-      ewIter_le_of_lt hf_infl hα₀α₁ (g01 _)
-    exact le_trans step1 (ewIter_lower h1 (gate1 m))
-  · -- α₀ = α₁ ; δ = α₀ = α₁
-    have hαeq : α₀ = α₁ := repr_inj.mp heq
-    subst hαeq
-    exact ewIter_lower h0 (gate0 m)
-  · -- α₁ < α₀ ; δ = α₀
-    have hα₁α₀ : α₁ < α₀ := lt_def.mpr hgt
-    have g10 : ewN α₁ ≤ f (ewN α₀ + m) := le_trans g1 (hf_mono (Nat.zero_le _))
-    have hinner : ewIter f α₁ m ≤ ewIter f α₀ m := ewIter_le_of_lt hf_infl hα₁α₀ g10
-    have step1 : ewIter f α₀ (ewIter f α₁ m) ≤ ewIter f α₀ (ewIter f α₀ m) :=
-      ewIter_monotone hf_mono hf_infl α₀ hinner
-    exact le_trans step1 (ewIter_lower h0 (gate0 m))
+/-- `ewN (collapse α) = ewN α + 1` (`collapse α = oadd α 1 0`). -/
+theorem ewN_collapse (α : ONote) : ewN (collapse α) = ewN α + 1 := by
+  simp [collapse, expTower, ewN]
+
+/-- **Per-node gate for the pass** — the rebuilt node at `collapse α` with slot `ewIter f α` needs
+gate `ewN (collapse α) ≤ (ewIter f α) 0`.  From the input derivation's base gate `ewN α ≤ f 0` +
+`EwF1 f`: `ewN (collapse α) = ewN α + 1`, and `ewIter f α 0 ≥ f (f 0) ≥ 2·f 0 + 1 ≥ ewN α + 1`
+(the `f(f 0)` floor via `ewIter_lower` at `0 < α`; `EwF1` at the base for `α = 0`). -/
+theorem ewN_collapse_le {f : ℕ → ℕ} (hf1 : EwF1 f) {α : ONote} (hgate : ewN α ≤ f 0) :
+    ewN (collapse α) ≤ ewIter f α 0 := by
+  rw [ewN_collapse]
+  by_cases hα : α = 0
+  · subst hα
+    simp only [ewN_zero, ewIter_zero]
+    have := hf1.2 0; omega
+  · have h0α : (0 : ONote) < α := by
+      cases α with
+      | zero => exact (hα rfl).elim
+      | oadd e n a => exact oadd_pos e n a
+    have hgate0 : ewN (0 : ONote) ≤ f (ewN α + 0) := Nat.zero_le _
+    have hlow := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) h0α hgate0
+    have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow
+    have hb : 2 * f 0 + 1 ≤ f (f 0) := hf1.2 (f 0)
+    have : ewN α + 1 ≤ f (f 0) := by omega
+    exact le_trans this hff
 
 end GoodsteinPA.OperatorZeh

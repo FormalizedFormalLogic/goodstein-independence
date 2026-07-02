@@ -92,11 +92,25 @@ output `collapse α = ω^α` / `ewIter f α`.
 **Cut-step containments COMPLETE**: ordinal (`collapse_add_lt`) + slot (`ewIter_comp_le`) both
 proven. The cut-elimination step of the pass is now arithmetically de-risked end-to-end.
 
-**NEXT (Stage-3 continuation):** ASSEMBLE the pass induction `cutElimPass_Zef2` on
-`D : Zef2 α e H f (c+1) Γ`: non-cut nodes rebuild at `collapse α` / `ewIter f α` (need per-node
-gate `ewN (collapse α) ≤ ewIter f α 0` — the remaining engine lemma to prove/bank); the top-rank
-cut node applies `stepAllω_Zf2` then `collapse_add_lt` + `ewIter_comp_le`; sub-rank cut rebuilds.
-Also need: `ewIter f α` monotone/infl (have `ewIter_monotone`/`_infl`), and the node-gate lemma
-`ewN (collapse α) ≤ ewIter f α 0`.
+**BANKED (node-gate + slot-lift, axiom-clean, `wip/Lap10PassProbe.lean` → `src`):**
+- `EwIter.ewIter_slot_le` — pointwise slot lift `ewIter f β x ≤ ewIter f α x` (β<α) for
+  `Zef2.mono_f` at internal nodes.
+- `OperatorZef2.ewN_collapse` (`ewN (collapse α) = ewN α + 1`) + `OperatorZef2.ewN_collapse_le`
+  (per-node gate `ewN (collapse α) ≤ ewIter f α 0` from base gate + `EwF1 f`).
+
+**Pass-prep engine COMPLETE.** All containment/gate/lift lemmas the pass induction needs are proven
+and banked: `collapse_add_lt`, `collapse_strictMono` (existing), `ewIter_le_of_lt`, `ewIter_comp_le`,
+`ewIter_slot_le`, `ewIter_monotone`/`_infl` (existing), `ewN_collapse_le`.
+
+**NEXT (Stage-3 continuation) — ASSEMBLE the induction** `cutElimPass_Zef2` on
+`D : Zef2 α e H f (c+1) Γ`:
+- axL/wk/weak/exI/allω (non-elim): rebuild at `collapse α`/`ewIter f α`; ordinal lift via
+  `collapse_strictMono`, slot lift via `ewIter_slot_le`, gate via `ewN_collapse_le`. allω is the
+  ω-branch reassembly (uses `ewIter_rel1_le`).
+- cut, sub-rank (χ.complexity < c): rebuild the cut at rank c (lift both premises).
+- cut, TOP-rank (χ.complexity = c): ELIMINATE. For c ≥ 1 the cut formula is ∀/∃ → `stepAllω_Zf2` +
+  `collapse_add_lt` + `ewIter_comp_le`. ⚠️ **OPEN sub-question**: c = 0 (rank 1→0) eliminates
+  ATOMIC cuts — `stepAllω_Zf2` does NOT cover these; needs an atomic-cut-reduction lemma (inversion
+  on the atom / one premise is `axL`). This is the next real sub-crux to design.
 
 **Gates**: build 🟢 1341 jobs · headline UNDRIFTED · all lemmas axiom-clean · no new axiom.

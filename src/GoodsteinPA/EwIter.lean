@@ -201,6 +201,14 @@ theorem ewIter_le_of_lt {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) {β α : 
     ewIter f β m ≤ ewIter f α m :=
   le_trans (ewIter_infl hf_infl β (ewIter f β m)) (ewIter_lower hβα hgate)
 
+/-- **Pointwise slot-lift** (lap-10 SERIES-3 pass prep) — at internal pass nodes the IH slot
+`ewIter f β` (`β < α`) must be raised to the node slot `ewIter f α` via `Zef2.mono_f`; gated
+ordinal-monotonicity gives it pointwise from the base gate `ewN β ≤ f 0`. -/
+theorem ewIter_slot_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
+    {β α : ONote} (hβα : β < α) (g : ewN β ≤ f 0) :
+    ∀ x, ewIter f β x ≤ ewIter f α x :=
+  fun x => ewIter_le_of_lt hf_infl hβα (le_trans g (hf_mono (Nat.zero_le _)))
+
 /-- **Slot-composition containment** (lap-10 SERIES-3 pass prep) — the cut-elimination step merges
 two IH-reduced premises' slots `ewIter f α₀ ∘ ewIter f α₁` (`α₀,α₁ < α`) and must fit under the
 declared output `ewIter f α`.  Pick δ = the larger of α₀,α₁ (< α); lift both iterates to δ by gated

@@ -282,6 +282,31 @@ theorem collapse_add_lt {βφ βψ α : ONote} (hβφ : βφ.NF) (hβψ : βψ.N
     (opow_lt_opow_iff_right one_lt_omega0).2 (lt_def.mp hψ)
   exact (Ordinal.isPrincipal_add_omega0_opow α.repr) hφr hψr
 
+/-- `ewN (collapse α) = ewN α + 1` (`collapse α = oadd α 1 0`). -/
+theorem ewN_collapse (α : ONote) : ewN (collapse α) = ewN α + 1 := by
+  simp [collapse, expTower, ewN]
+
+/-- **Per-node gate for the pass** — the rebuilt node at `collapse α` with slot `ewIter f α` needs
+gate `ewN (collapse α) ≤ (ewIter f α) 0`.  From the derivation's base gate `ewN α ≤ f 0` + `EwF1 f`:
+`ewN (collapse α) = ewN α + 1`, and `ewIter f α 0 ≥ f (f 0) ≥ 2·f 0 + 1 ≥ ewN α + 1` (the `f(f 0)`
+floor via `ewIter_lower` at `0 < α`; `EwF1` at the base for `α = 0`).  Kernel-checked in
+`wip/Lap10PassProbe.lean`. -/
+theorem ewN_collapse_le {f : ℕ → ℕ} (hf1 : EwF1 f) {α : ONote} (hgate : ewN α ≤ f 0) :
+    ewN (collapse α) ≤ ewIter f α 0 := by
+  rw [ewN_collapse]
+  by_cases hα : α = 0
+  · subst hα
+    simp only [ewN_zero, ewIter_zero]
+    have := hf1.2 0; omega
+  · have h0α : (0 : ONote) < α := by
+      cases α with
+      | zero => exact (hα rfl).elim
+      | oadd e n a => exact oadd_pos e n a
+    have hlow := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) h0α (Nat.zero_le _)
+    have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow
+    have hb : 2 * f 0 + 1 ≤ f (f 0) := hf1.2 (f 0)
+    exact le_trans (by omega : ewN α + 1 ≤ f (f 0)) hff
+
 /-! ## Pins 1–2 over `Zef2` (P-d) — re-proven natively (disclosed sub-pins, laps-9+) -/
 
 /-- `β < γ → α < α + γ` (NF): the fresh `α + γ` root strictly dominates the `∀`-family base `α`
