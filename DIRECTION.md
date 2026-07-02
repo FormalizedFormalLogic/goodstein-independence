@@ -14,8 +14,51 @@ autonomous treadmill campaign. Read both.
 > over every few review laps. Keep it SHORT; detail lives in `PENDING_WORK.md` / `REFLECTION-*.md`.
 > (Live milestone map = `E-CRUX2-ROADMAP-2026-06-24.md`; the phase list below is the standing charter.)
 
+**2026-07-02 (FRESH-MIND REVIEW, global lap 192 — top-rank cut escalation UPHELD + SHARPENED;
+lane B REFUTED; productive lane = D. THIS IS THE CURRENT BINDING BLOCK; it supersedes the
+lap-191 handoff "NEXT" and the laps-8–9 block's grind order for lane P only — all judge rulings
+below stay binding.)** Independently re-verified terminal state (real `#print axioms`, build 🟢
+`GoodsteinPA`): headline `GoodsteinPA.peano_not_proves_goodstein = [propext, Classical.choice,
+goodstein_implies_consistency, Quot.sound]`, sorryAx OFF, **no drift**. THE objective is unchanged
+(discharge `wainer_bound_of_pa_proves_goodstein` via the E–W `Zef2` pipeline; headline stays
+undrifted).
+
+⚖️ **Crux ruling (top-rank cut = the sole open `passAux` case, `OperatorZef2.lean:748`).** The
+lap-191 escalation is **CORRECT — the pre-registered `rel1`/(f.1) base-additivity wall FIRED as
+anticipated** (Stage-3 order: "if a step is kernel-blocked WITHOUT `EwF1`-of-`rel1`-slots → statement
+wall, halt lane P, escalate; a `rel1` redesign is a judged amendment — NOT yours"). Two sharpenings
+this review adds:
+> (1) **Lane B (the PENDING/ledger "PROOF-only resolution") is REFUTED.** Its floor route needs the
+>     tight bound `ewN(∀-witness) ≤ f 0 + 1`, but (a) the reduction only gives `ewN(∀-witness) ≤ g 0`
+>     (the ∀-slot base, unbounded relative to the ∃-base, un-absorbable by the `2m+1` floor), and
+>     (b) the tight bound is NOT inductive: `ewN` grows additively under `α + γ` outputs while `ω^α`
+>     absorbs additively, so a depth-`d` nest of top-rank cuts blows `ewN(witness)` up ~`2^d·(f0+1)`
+>     while the ∃-base stays fixed. So do NOT "pursue lane B next" — it does not close.
+> (2) **The obstruction is a TRILEMMA among three RATIFIED pillars.** Closing the node gate
+>     `ewN(α+γ) ≤ g(f 0)` needs one of: an **absorbing** norm (`ewN(α+γ)=max(…)`) — breaks the
+>     finite-fiber requirement that forced `ewN` (T-Z7(i)); OR base-additivity `hg_base` of the
+>     ∀-slot — destroyed by `rel1 f n = f(max n ·)` in nested ω-contexts (banked kernel-refutation,
+>     `wip/Lap11CutFloorProbe.lean`); OR a non-additive output ordinal — the `α+γ` fixed by ruling #1.
+>     `rel1` max→+ ALONE is insufficient (it preserves base-additivity only for *strictly* monotone
+>     `g`, which `ewIter` lacks — the trap-8 plateau). This is judge/architect-owned; the prime
+>     amendment candidate to hand the judge = **a finite-fibered ABSORBING norm** (dissolves the gate
+>     with no slot property at all).
+
+🚦 **MANDATED next move: lane D — `readoff_delta0_Zef2` (`OperatorZef2.lean:892`, Towsner §5.4
+bounded-∀ read-off).** It is the sole open PROOF-only lane, fully independent of the escalated
+crux, on the headline path, est. 2–3 laps; template = `readoff_sigma1_Zef2`/the `Zef` axL true-side
+split (`OperatorZeh.lean:1801`ff). The top-rank crux may be advanced ONLY by a **wip-only** kernel
+probe of a candidate amendment (the absorbing-norm question above) as escalation input — recorded to
+`REBUILD-Z-SERIES-1-LEDGER.md`, NEVER ported to `src`.
+
+**FORBIDDEN (lane P, this block):** grinding the top-rank cut in `src` as a proof-only problem (wall
+fired, lane B refuted); re-deriving the `hg_base` refutation (banked); self-ratifying any `rel1` /
+norm / output-ordinal / statement change (VOID); porting an amendment probe to `src`. Rung E stays
+architect-gated; all FORBIDDENs from the laps-8–9 block remain.
+
 **2026-07-02 (JUDGE PASS on laps 8–9 — port RATIFIED; traps 9 AND 10 caught; ruling #1
-resolved PAPER-LITERAL. This is the current binding block.)** Ruling:
+resolved PAPER-LITERAL. Superseded for lane-P grind order by the lap-192 review block above;
+all judge rulings remain binding.)** Ruling:
 `E-2026-07-02-JUDGE-rebuild-z-lap8-validation.md`. Lap 8 (codex, committed) delivered the port
 verbatim (`toZef` discharge of both read-offs as mandated; `allInv_Zef2` real; ewN bank; L-R
 ratified) + two honest escalations; lap 9 kernel-sharpened escalation #1
@@ -398,6 +441,7 @@ Re-verified (lap 161, real `#print axioms`, build 🟢 1326): headline `peano_no
   RE-PLAN toward the M2 bridge — that becomes the dominant feasibility unknown.
 
 ### Directive history (newest first; append one line per altitude lap — never delete)
+- **lap-192** (FRESH-MIND REVIEW): directive CHANGED (lane-P grind order only; all judge rulings kept). Re-verified terminal state (real `#print axioms`, build 🟢 `GoodsteinPA`): headline `[propext, Classical.choice, goodstein_implies_consistency, Quot.sound]`, sorryAx OFF, no drift. UPHELD the lap-191 top-rank-cut escalation (the pre-registered `rel1`/(f.1) base-additivity wall fired as anticipated) and SHARPENED it two ways: (1) **REFUTED lane B** (the PENDING/ledger "PROOF-only" floor route) — `ewN(∀-witness)` is bounded only by the ∀-slot base `g 0` (un-absorbable by the `2m+1` floor), AND the tight-norm bound is non-inductive (`ewN` blows up ~`2^d(f0+1)` under depth-`d` nested top-rank cuts while `ω^α` absorbs the ordinal); (2) reframed the obstruction as a **TRILEMMA** among three ratified pillars (additive output `α+γ` / finite-fibered⇒additive norm `ewN` / `rel1`-max relativization) — any single fix touches a ratified pillar; prime judge-amendment candidate = a finite-fibered ABSORBING norm; `rel1` max→+ alone is insufficient (needs strict-mono `ewIter` lacks). MANDATE = **lane D `readoff_delta0_Zef2`** (sole open proof-only lane); the crux advances ONLY by wip-only amendment probes → ledger, never src. FORBIDDEN = grinding the top-rank cut in src / re-deriving `hg_base` refutation / self-ratifying rel1/norm/output/statement changes / porting probes to src. Corrected the stale PENDING/ledger "pursue lane B next" pointer.
 - **JUDGE PASS lap 5** (host, 2026-07-02): PASS WITH AMENDMENT — **seventh statement trap** caught at statement time (the draft's fixed-count iterate `norm·+1` kernel-refuted at the `allω` reassembly, `wip/JudgeTrap7Probe.lean` `11 < 23`; `norm` not monotone along `<`). Judge amendment applied: `iterSlot` = the diagonalizing ordinal-indexed iterate (hardy-style fundamental-sequence recursion; E–W Lemma 19 `F^α(0)`). `collapse`/pin-shape/exit-corollary ratified as drafted; `iterSlot_infl` proven; `iterSlot_monotone` = disclosed C5 pin, lap-6 first item. Laps 6–7 OPEN. Box conduct clean (honest T-Z5(iii) flag — mis-classified as grind-deferrable, the exact error class the gate catches). Seven traps caught at statement time, zero reached a grind lap. Ruling: `E-2026-07-02-JUDGE-rebuild-z-lap5-validation.md`.
 - **JUDGE PASS laps 2–4** (host, 2026-07-02): PASS — pins 1–2 discharge ACCEPTED, slot-judgment amendment RATIFIED with judge authority (LOCK Addendum 2; `Zeh` RETAINED as embedding-side, `zeh_to_zef` the sanctioned lift). Independent kernel re-verification of the whole `Zef` layer + freeze checks (pin 3 / `Zeh` core / headline hash-identical or undrifted) + both wip refutation probes re-compiled + `blueprint_audit` 13/13. Sixth statement trap recorded (stage axis; kernel-localized, NOT falsified — precision note in the ruling §3). Box self-ratification ruled out-of-authority, mitigated this once, future instances = VOID. Next: lap-5 entrance mini-lock (pin-3 restatement over `Zef`), laps 5–7 assembly on operator fire. Ruling: `E-2026-07-02-JUDGE-rebuild-z-laps2-4-validation.md`.
 - **lap-184** (FRESH-MIND REVIEW): directive CHANGED — RATIFIED the slot-judgment amendment (LOCK §1-A1/§3), turning the lap-3 escalation into a green-lit `src` port. FINDING = the LOCK contradicts itself (§1 A1 mandates an ℕ-stage judgment; R4 forbids ℕ-valued budgets in reduction motives) and laps 2–3 exposed it in-kernel: `principal_witness_exceeds_stage` (`m < hardy ω m`) makes the stage-`m` fixed-control reduction unreachable — R4's predicted failure. The R4-compliant function-slot judgment `Zef` discharges pins 1–2 + read-off exit SORRY-FREE (`redDeriv_slot`/`stepAllω_Zef`/`headline_readoff_Zef`, all `[propext,choice,Quot.sound]`, verified real `#print axioms` this lap). Re-verified terminal state (build 🟢 **1333**): headline `[propext,choice,goodstein_implies_consistency,Quot.sound]`, NO drift. WHY the change (not KEEP): three consecutive laps (180 wait, 3 escalate) advanced nothing while a judge that isn't coming this autonomous run stayed the notional blocker; the math is kernel-done in `wip/`, so the review-lap makes the ratification call under the operator's full-discharge mandate. MANDATE = execute the staged port (PENDING_WORK § "SLOT-JUDGMENT PORT"); gate on green + no-drift + §6-seams each lap. FORBIDDEN = stage-`m` reduction / `f∘g` order (both kernel-refuted) / pin 3 / Route-A / Δ₀ / docs-only theatre. Ratification doc: `REBUILD-Z-LAP4-RATIFICATION-2026-07-02.md`.

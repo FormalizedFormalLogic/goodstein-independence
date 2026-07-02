@@ -153,3 +153,31 @@ witness. If unclosable → statement escalation (judge-gated); do NOT self-ratif
 
 **Gates:** build 🟢 · headline UNDRIFTED · all landed lemmas axiom-clean · no new axiom · probe
 `wip/`-only (not in build).
+
+---
+
+## REVIEW — lap 192 (fresh-mind): top-rank cut escalation UPHELD + SHARPENED; lane B REFUTED
+
+**No new src code.** Independent re-verification (real `#print axioms`, build 🟢 `GoodsteinPA`):
+headline `[propext, Classical.choice, goodstein_implies_consistency, Quot.sound]`, sorryAx OFF, no
+drift. The lap-191 escalation of the top-rank cut (`OperatorZef2.lean:748`) is **correct** — the
+Stage-3 order's pre-registered `rel1`/(f.1) base-additivity wall fired. Two sharpenings for the
+series-end judge pass:
+
+1. **Lane B is REFUTED** (was scoped in lap-11 as the "PROOF-only resolution to pursue next"). The
+   floor route needs `ewN(∀-witness) ≤ f0+1`, but the reduction only bounds it by the ∀-slot base
+   `g0` (un-absorbable by the `2m+1` floor), and the bound is non-inductive: `ewN` grows additively
+   under the `α+γ` output while `ω^α` absorbs the ordinal, so nested top-rank cuts blow `ewN(witness)`
+   up ~`2^d·(f0+1)`. Lane B does not close; do not re-open it.
+
+2. **The obstruction is a TRILEMMA among ratified pillars**, not a fixable proof gap. The node gate
+   `ewN(α+γ) ≤ g(f0)` closes iff one of: (a) an **absorbing norm** `ewN(α+γ)=max(ewNα,ewNγ)` — breaks
+   the finite-fiber requirement that forced `ewN` (T-Z7(i)); (b) **base-additivity** of the ∀-slot —
+   destroyed by `rel1 f n = f(max n·)` in nested ω-contexts, and `rel1` max→+ recovers it only for
+   strictly-monotone `g` (which `ewIter` lacks, trap-8 plateau); (c) a **non-additive output ordinal**
+   — fixed at `α+γ` by ruling #1. **JUDGE AMENDMENT MENU:** the prime candidate is (a) — *does a
+   finite-fibered absorbing norm exist?* (a `max`-based CNF rank has infinite fibers, so this is a
+   real design question). Grind laps may probe it wip-only; never port to src.
+
+**Productive lane (this review's mandate):** lane D `readoff_delta0_Zef2` — independent of the
+escalated crux. See DIRECTION.md CURRENT DIRECTIVE (lap-192 block) + PENDING_WORK.md (lap-192 top).

@@ -1,6 +1,42 @@
 # Pending work — open obligations & attack paths
 
-## LAP 11 (191) — `passAux` 5/6 cases discharged; top-rank CUT hits the `hg_base` floor seam (kernel-refuted, resolution lane scoped)
+## LAP 192 (FRESH-MIND REVIEW) — lane B REFUTED; top-rank crux is a judge-owned TRILEMMA; productive lane = D
+
+**Verdict:** the lap-191 top-rank-cut escalation is CORRECT (the pre-registered `rel1`/(f.1)
+base-additivity wall fired). Two corrections to the LAP-11 block below:
+
+**(1) Lane B ("PROOF-only resolution", scoped below) does NOT close — REFUTED this review.** Its
+floor route needs the tight bound `ewN(∀-witness) ≤ f 0 + 1`. But:
+- the reduction only delivers `ewN(∀-witness) ≤ g 0` where `g` is the **∀-slot** base — this is
+  un-absorbable by the `2m+1` floor once `g` is `rel1`-plateau'd (the floor gives `g(f'0) ≥ 2f'0+1`,
+  but `g 0` can exceed `f'0` by an unbounded margin);
+- the tight bound is **not inductive**: `ewN(α+γ) ≤ ewN α + ewN γ` grows ADDITIVELY under the
+  ratified `α+γ` output, while `collapse α = ω^α` absorbs the ordinal additively. A depth-`d` nest of
+  top-rank cuts therefore blows `ewN(witness)` up to ~`2^d·(f0+1)` while the ∃-side base stays fixed.
+  So passAux cannot carry `ewN(witness) ≤ f0+1`, and the "collapse-shaped ∀-premise is tight"
+  observation fails at nesting depth ≥ 2. **Do NOT pursue lane B.**
+
+**(2) The real obstruction is a TRILEMMA among three RATIFIED pillars.** Closing the node gate
+`ewN(α+γ) ≤ g(f 0)` requires exactly one of:
+- an **absorbing** norm `ewN(α+γ) = max(ewN α, ewN γ)` → closes trivially (`max(g0,f0) ≤ g(f0)`), but
+  breaks the finite-fiber property that FORCED `ewN` over the CNF norm (T-Z7(i), lap 7);
+- **base-additivity** `hg_base : ∀k, g0+k ≤ gk` of the ∀-slot → destroyed by `rel1 f n = f(max n·)`
+  in nested ω-contexts (banked kernel-refutation `wip/Lap11CutFloorProbe.lean`); `rel1` max→+ recovers
+  it only for *strictly* monotone `g`, which `ewIter` lacks (trap-8 plateau);
+- a **non-additive output ordinal** → the `α+γ` output is fixed by ruling #1 (E–W Lemma 25).
+
+Each fix touches a ratified pillar ⇒ **judge/architect-owned**. Prime amendment candidate to hand the
+series-end judge: **does a finite-fibered ABSORBING norm exist?** (a `max`-based CNF height/rank has
+infinite fibers, so this is a genuine open design question, not a trivial swap). The only sanctioned
+crux move for a grind lap is a **wip-only** kernel probe of such a candidate → record to
+`REBUILD-Z-SERIES-1-LEDGER.md`; NEVER port to `src`.
+
+**MANDATE (grind laps):** work **lane D `readoff_delta0_Zef2`** (`OperatorZef2.lean:892`) — the sole
+open PROOF-only lane, independent of the crux, on the headline path. See the LAP-11 lane-D notes.
+
+---
+
+## LAP 11 (191) — `passAux` 5/6 cases discharged; top-rank CUT hits the `hg_base` floor seam (kernel-refuted; ⚠️ lane B below REFUTED by lap-192 review — see top)
 
 **Landed (green, axiom-clean `[propext, Classical.choice, Quot.sound]`):** four of the five open
 `passAux` sub-`sorry`s from the lap-189 handoff — **`exI`** (∃-node rebuild, bound `n ≤ ewIter f α 0`
