@@ -1,5 +1,47 @@
 # Pending work — open obligations & attack paths
 
+## LAP 2 (REBUILD-Z laps 2–4 gate-open) — pins 1–2 reduced to ONE localized gap; candidate SIXTH trap → ESCALATED
+
+Gate-open work (DIRECTION 2026-07-02 laps 2–4): discharge pins 1–2
+(`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) against the judge-AMENDED fixed-control §5
+statements in `src/GoodsteinPA/OperatorZeh.lean`.  **Both pins are now sorry-FREE modulo ONE
+precisely-characterized obstruction.**  Build 🟢 1333, headline no drift, §6 seam probes green.
+
+**Banked axiom-clean (`[propext, choice, Quot.sound]`):**
+- `Zeh.change_H` — operator irrelevance (R1 in-kernel; `Cl_of_NF` makes `H` freely replaceable
+  both ways). Dissolves all operator threading in the reduction.
+- `normControlled_comp_running` — the `NormControlled (f∘g) e m` conjunct of pins 1–2, DISCHARGED
+  (judge Q1; no inflationarity hyp — `g`-control ⟹ `g` inflationary via `le_hardy`).
+- `principal_witness_exceeds_stage` — `m < hardy ω m` (the gap's root, fifth-trap analog).
+
+**Reduction skeleton (`sorryAx`, gap disclosed):**
+- `redDeriv` — full §19.6 running-family cut-reduction (induction on ∃-side D, mirrors banked
+  `Zekd.cutReduceAllAux`, norm deleted, `(k,d)`→stage `m`). EVERY case closes except the
+  principal `exI` (2 subcases, same wall).
+- pin 1 body = `⟨redDeriv …, normControlled_comp_running hg hf⟩`.
+- pin 2 body = `allInv_Zeh` → running family → pin 1 (the `probe_cut_all_arm_Zf` construction),
+  Q3-unified, both conjuncts assembled.
+
+**The gap (candidate SIXTH statement trap):** in the principal `exI`, the cut of the inverted
+family member `fam n` (inherently at stage `max m₀ n` — `allInv_Zeh` returns the `n`-th ω-premise,
+`allω` bakes running stage into branches) lands the output at stage `max m n`, and `Zeh` has NO
+stage-lowering rule (LOCK §1 A1). Need `n ≤ m`; only have `n ≤ hardy e m` with `hardy e m > m` at
+`e = ω`. Root: E–W cut-reduction COMPOSES the witness bound (`f∘g`, Lemma 25); the `Zeh` judgment's
+single `hardy e m` `exI` bound cannot express a composed bound at a fixed stage. Option A repaired
+the CONTROL axis (correctly) but left the STAGE axis tied to input `m`, inheriting
+`OperatorZinfty.lean:766–773`'s "witness-budget" wall.
+
+**ESCALATED** (LOCK: believe a gated form wrong → STOP + writeup, do not improvise):
+`REBUILD-Z-LAP2-FINDING-2026-07-02-fixed-stage-reduction-wall.md`. Proposed resolutions (judge/
+architect call): (1) grow output stage (likely ⇒ iterate, not clean); (2) function-valued `exI`
+bound in the judgment (LOCK §1 change, faithful E–W); (3) BW87 fallback (P1: full cut-elim + read
+off, pin-3/lap-5 territory). **Do NOT grind the gap as written** — it is unprovable for `e > 0`.
+
+**NEXT (resume trigger = judge ruling on which resolution):** if (3)/BW87, the running-family
+reduction is bypassed and the work moves to `cutElimPass_Zf` (pin 3, lap-5 entrance mini-lock); if
+(2), the Z1 judgment form reopens (architect); if (1), restate pins 1–2 output stage and re-thread
+`redDeriv` (the skeleton ports — only the two principal-`exI` sorries change to the grown stage).
+
 ## DONE (lap 181) — Aristotle headline faithfulness cross-check → PASS
 
 Sanctioned NL→formalization faithfulness audit of the headline (permitted, non-gated, touches no §5
