@@ -645,7 +645,28 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
         le_trans hag (hslot 0), (Da.mono_f hslot).wk (le_trans hag (hslot 0)) hsub⟩
   | @allω α e H f r Γ hαN χ β hβ hβNF hαNF' hβH dd ih =>
       intro hr hmono hinfl hlow hαNF hαH
-      sorry
+      have hg := ewN_collapse_le hlow hαN
+      have hbranch : ∀ n, Zef2Prov (collapse (β n)) e (adjoin H n)
+          (ewIter (rel1 f n) (β n)) c (insert (χ/[nm n]) Γ) := fun n =>
+        ih n heNF hr (rel1_monotone hmono n) (rel1_infl hinfl n) (rel1_low hmono hlow n)
+          (hβNF n) (Cl_of_NF (hβNF n))
+      choose a hale haNF haH hagate Da using hbranch
+      have hlift : ∀ n x, ewIter (rel1 f n) (β n) x ≤ rel1 (ewIter f α) n x := by
+        intro n x
+        refine le_trans (ewIter_rel1_le hmono hinfl (β n) n x) ?_
+        have hgate : ewN (β n) ≤ f (ewN α + max n x) := by
+          have hgn := Zef2.gate (dd n)
+          simp only [rel1] at hgn
+          refine le_trans hgn (hmono ?_)
+          omega
+        simpa [rel1] using ewIter_le_of_lt (f := f) hinfl (hβ n) hgate
+      have Da' : ∀ n, Zef2 (a n) e (adjoin H n) (rel1 (ewIter f α) n) c
+          (insert (χ/[nm n]) Γ) := fun n => (Da n).mono_f (hlift n)
+      have haltcol : ∀ n, a n < collapse α :=
+        fun n => lt_of_le_of_lt (hale n) (collapse_strictMono (hβNF n) (hβ n))
+      refine Zef2Prov.of (collapse_NF hαNF) (Cl_of_NF (collapse_NF hαNF)) hg ?_
+      exact Zef2.allω hg χ a haltcol haNF (collapse_NF hαNF)
+        (fun n => Cl_of_NF (haNF n)) Da'
   | @exI α β e H f r Γ hαN χ n hβ hβNF hαNF' hβH hbound dχ ih =>
       intro hr hmono hinfl hlow hαNF hαH
       obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih heNF hr hmono hinfl hlow hβNF (Cl_of_NF hβNF)
