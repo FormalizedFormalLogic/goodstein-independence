@@ -57,9 +57,11 @@ onto Lemma 25's numeric update.
 **Option A (faithful E-W architecture; recommended).** Keep the *reduction* at **fixed control**:
 - `cutReduceAllAuxRunning_Zf` / `stepAllω_Zf` output at `e` / `E` (not `raise …`), numeric slot
   `f∘g`; conjunct becomes `NormControlled (f∘g) e m` — composition dominating the **same-control**
-  Hardy target, which is *not* subject to the K2b raise pathology and is provable from the input
-  domination (`NormControlled.mono` + the `f∘g` growth already banked as
-  `seam1_bump_absorbed_by_composition`).
+  Hardy target, which is *not* subject to the K2b raise pathology and is **now discharged
+  in-kernel** by the banked lemma `NormControlled.comp` (added this lap,
+  `[propext, choice, Quot.sound]`): `NormControlled g e m → (∀y, y ≤ f y) → NormControlled (f∘g) e m`,
+  the inflationary hypothesis being exactly E-W's `(f.1)`. Option A's reduction obligation is a
+  one-liner from banked plumbing.
 - **All** control-raising *and* numeric iteration is confined to `cutElimPass_Zf` (pin 3), faithful
   to Lemma 30. The genuine "domination under raise" obligation lives there and is discharged by the
   **iterated** slot `f'` via the Lemma 19 norm bound — *not* by hardy-domination of a composed slot.

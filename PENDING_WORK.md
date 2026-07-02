@@ -41,9 +41,16 @@ MUST be pinned to the E-W iterate of the INPUT `f` (`f' = f^{…}`, Lemma 30), w
 Option A relocates the real P1 work and where Lemma 19 (`N(α) ≤ f^{F^α(0)}(0)`) makes it achievable.
 (Pins 1–2 are NOT vacuous — their `f, g` are explicit params, `f∘g` determined.)
 
+**Option A now VALIDATED in-kernel (not just recommended):** the fixed-control reduction conjunct
+`NormControlled (f∘g) e m` is discharged by the new banked lemma `NormControlled.comp`
+(`OperatorZeh.lean`, §5; `[propext, choice, Quot.sound]`): `NormControlled g e m → (∀y, y ≤ f y) →
+NormControlled (f∘g) e m`.  The inflationary hypothesis `∀y, y ≤ f y` is exactly E-W's `(f.1)`
+(`2y+1 ≤ f y`).  So under Option A the reduction's numeric obligation is a one-liner from banked
+plumbing — confirming P1 was mis-located, not hard.
+
 **Next (still judge-gated — do NOT grind pins pre-ratification):** judge rules Option A vs B AND
-whether to pin `f'`.  If A + pin: (1) lap-2 discharges the reduction conjunct `NormControlled (f∘g)
-e m` (near-immediate from banked plumbing); (2) the real threading work is the pinned-iterate
+whether to pin `f'`.  If A + pin: (1) lap-2's reduction conjunct is `NormControlled.comp` applied
+(near-immediate, plumbing banked); (2) the real threading work is the pinned-iterate
 `NormControlled (f^{…}) (raise e α') m` at `cutElimPass_Zf`, discharged via the Lemma-19 norm bound.
 
 ## Lap 175 — ⭐⭐⭐ REBUILD-Z lap 1 (Scope-A) done; crux = the f-slot reduction, JUDGE-GATED

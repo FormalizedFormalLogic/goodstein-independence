@@ -650,6 +650,19 @@ theorem NormControlled.stage_antitone {f : ℕ → ℕ} {e : ONote} {m m' : ℕ}
 theorem rel1_mono {f f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) (n : ℕ) :
     ∀ x, rel1 f n x ≤ rel1 f' n x := fun x => hff' (max n x)
 
+/-- **Composition preserves control at a FIXED control** (E–W Lemma 25's numeric update,
+`f ↦ f∘g`, at the *same* control — the faithful reduction shape per the lap-176 finding
+`REBUILD-Z-LAP1-FINDING-2026-07-02-fslot-control-raise.md`, Option A).  If `g` controls `e`
+at `m` and `f` is inflationary (E–W condition `(f.1)`: `2y+1 ≤ f y ⟹ y ≤ f y`), then the
+composed slot `f ∘ g` still controls `e` at `m`.  This is the banked plumbing that discharges
+the reduction conjunct `NormControlled (f∘g) e m` once the raise is confined to the
+elimination pass — VALIDATING the lap-176 claim that Option A's reduction discharge is
+near-immediate.  Note: this is the *fixed*-control fact (K2b-benign); the *raised*-control
+demand belongs to `cutElimPass_Zf`'s pinned iterate, NOT here. -/
+theorem NormControlled.comp {f g : ℕ → ℕ} {e : ONote} {m : ℕ}
+    (hg : NormControlled g e m) (hf : ∀ y, y ≤ f y) : NormControlled (f ∘ g) e m :=
+  fun x => le_trans (hg x) (hf (g x))
+
 /-- **PIN (disclosed sorry): the running-family reduction, f-slot form**
 (`cutReduceAllAuxRunning_Zf`).  Extends the Z1 pin `cutReduceAllAuxRunning_Zeh` with the
 E–W f-slots: the `∀`-family is `g`-controlled, the `∃`-side `f`-controlled, and the output
