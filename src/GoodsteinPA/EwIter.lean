@@ -87,6 +87,15 @@ theorem EwF1.monotone {f : ℕ → ℕ} (hf : EwF1 f) : Monotone f :=
 theorem EwF1.infl {f : ℕ → ℕ} (hf : EwF1 f) : ∀ m, m ≤ f m :=
   fun m => le_trans (by omega) (hf.2 m)
 
+/-- **Base-additive composite** (lap-10 SERIES-1 R-0(ii), the `noOsucc_closes` pattern).  With the
+judge's `α + γ` reduction output (no successor `+1`), a per-step growth floor `g 0 + k ≤ g k` on the
+`∀`-side slot converts the two additive input gates into the composed-slot base gate: any
+`a ≤ g 0`, `b ≤ f 0` give `a + b ≤ g (f 0)`.  Kernel-checked in `wip/Lap10SeamProbe.lean`; the
+`ewN`-level composite `ewN (α+γ) ≤ g (f 0)` (via `ewN_add_le`) is `OperatorZef2.ewN_add_le_comp`. -/
+theorem base_add_le_comp {f g : ℕ → ℕ} (hg_base : ∀ k, g 0 + k ≤ g k) {a b : ℕ}
+    (ha : a ≤ g 0) (hb : b ≤ f 0) : a + b ≤ g (f 0) := by
+  have := hg_base (f 0); omega
+
 noncomputable def ewStep (f : ℕ → ℕ) (α : ONote) (rec : (β : ONote) → β < α → ℕ → ℕ)
     (m : ℕ) : ℕ :=
   if hα : α = 0 then

@@ -248,31 +248,36 @@ theorem ewN_osucc_add_le {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) :
   have := ewN_add_le α γ
   omega
 
+/-- **The composed-slot base gate** (lap-10 SERIES-1 R-0(ii)) — the judge's `α + γ` output gate.
+`ewN α ≤ g 0`, `ewN γ ≤ f 0`, and the `∀`-side per-step floor `g 0 + k ≤ g k` close the fresh
+node's gate `ewN (α + γ) ≤ (g ∘ f) 0 = g (f 0)`.  Kernel-checked in `wip/Lap10SeamProbe.lean`
+(`seam_ewN_add_comp`, `#print axioms` clean); this REPLACES the refuted `osucc`-`+1` composite for
+Stage-2's node gates. -/
+theorem ewN_add_le_comp {α γ : ONote} {f g : ℕ → ℕ}
+    (hα : ewN α ≤ g 0) (hγ : ewN γ ≤ f 0) (hg_base : ∀ k, g 0 + k ≤ g k) :
+    ewN (α + γ) ≤ g (f 0) :=
+  le_trans (ewN_add_le α γ) (base_add_le_comp hg_base hα hγ)
+
 /-! ## Pins 1–2 over `Zef2` (P-d) — re-proven natively (disclosed sub-pins, laps-9+) -/
 
 /-- **PIN (disclosed sub-pin, P-d): the running-family cut-reduction over `Zef2`.**  Port of
 `cutReduceAllAuxRunning_Zf` with the ewN/cut-read gate re-threaded at every rebuilt node.
 
-**LAP-8 FINDING — the synthesized `osucc (α + γ)` roots hit a GATE-COMPOSITION obstruction (a
-candidate reduction-level trap; architect-owned, not self-ratifiable).**  The `allω`/`cut`/`exI`
-roots the reduction builds sit at `osucc (α + γ)`; over `Zef2` each needs a gate
-`ewN (osucc (α + γ)) ≤ (g ∘ f) 0 = g (f 0)`.  The banked `ewN_osucc_add_le` reduces this to
-`ewN α + ewN γ + 1 ≤ g (f 0)`.  The available gates are `ewN γ ≤ f 0` (the node's own gate, at
-the ∃-side base slot `f`) and `ewN α ≤ g 0` (the ∀-family gate from `fam`, at the ∀-side base
-slot `g`).  With `EwF1 g` (`g (f 0) ≥ 2·f 0 + 1`) the bound closes IFF `ewN α ≤ f 0` — i.e. the
-∀-family ordinal must be gated at the **∃-side** base.  But `fam`'s gate lives at the ∀-side base
-`g`, and `ewN` is NOT ordinal-monotone (the very trap-8 pathology), so no `α' ≤ …` slack recovers
-it.  The cross-slot gate `ewN α ≤ f 0` is neither derivable nor an `f.1`-class hypothesis, so
-baking it in would be a statement change → escalation.  The resolution is entangled with how
-`cutElimPass_Zef2` wires the two premise slots (are they both dominated by a common base?), which
-is the FORBIDDEN pass — hence architect-owned.  See `REBUILD-Z-LAP8-VERDICT.md`. -/
-theorem cutReduceAllAuxRunning_Zf2 {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α e : ONote} {Γ : Seq}
-    {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
-    (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
+**SUPERSEDES the `osucc (α + γ)` form** per the judge ruling (§3, trap 9, E–W Lemma 25,
+`E-2026-07-02-JUDGE-rebuild-z-lap8-validation.md`): the reduction's fresh root is `α + γ` (NO
+successor `+1`) and the lap-9 refutation of the `osucc`-`+1` gate no longer applies.  The two
+Stage-1 additions to the signature — `hg_base : ∀ k, g 0 + k ≤ g k` (a per-step growth floor on the
+`∀`-side slot) and `φ.complexity ≤ f 0` (the fresh cut-read) — are exactly what the R-0 seam probe
+proved close the fresh node's gates: `ewN (α + γ) ≤ g (f 0)` via `ewN_add_le_comp` and
+`φ.complexity ≤ (g ∘ f) 0` via `hg_infl`.  Premises land strictly below `α + γ` by the R-0(i)
+covariance seams.  Body `sorry` until Stage 2 (grind UNLOCKED). -/
+theorem cutReduceAllAuxRunning_Zf2 {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α e : ONote}
+    {Γ : Seq} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
+    (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x) (hg_base : ∀ k, g 0 + k ≤ g k)
     (fam : ∀ n (H' : ONote → Prop), Zef2 α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
     ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Seq}, Zef2 γ e H f c Δ → γ.NF →
-      Monotone f → (∀ x, x ≤ f x) → (∃⁰ ∼φ) ∈ Δ →
-      Zef2Prov (osucc (α + γ)) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
+      Monotone f → (∀ x, x ≤ f x) → φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δ →
+      Zef2Prov (α + γ) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   sorry
 
 /-- `f x ≤ rel1 f n₀ x` for monotone `f`. -/
@@ -366,12 +371,13 @@ theorem allInv_Zef2 {φ₀ : SyntacticSemiformula ℒₒᵣ 1} (n₀ : ℕ) :
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
 /-- **`stepAllω_Zf2`** (pin-2 over `Zef2`): the principal ∀/∃ cut-reduction step.  Disclosed
-sub-pin — invert the ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`. -/
+sub-pin — invert the ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`.  Restated per the
+judge ruling with the `hg_base` floor + `hχRead : χ.complexity ≤ f 0` cut-read (Stage-1 R-2). -/
 theorem stepAllω_Zf2 {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
     {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
     (hENF : E.NF) (hχc : χ.complexity < c)
-    (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
-    (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
+    (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x) (hg_base : ∀ k, g 0 + k ≤ g k)
+    (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x) (hχRead : χ.complexity ≤ f 0)
     (D₁ : Zef2Prov (expTower βφ) E H g c (insert (∀⁰ χ) Γ))
     (D₂ : Zef2Prov (expTower βψ) E H f c (insert (∃⁰ ∼χ) Γ)) :
     ∃ δ : ONote, δ.NF ∧ Cl H δ ∧ Zef2Prov δ E H (g ∘ f) c Γ := by
