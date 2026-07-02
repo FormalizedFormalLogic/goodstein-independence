@@ -1992,4 +1992,32 @@ theorem fastGrowing_iterate_le_hardy_coeff (α : ONote) (hα : α ≠ 0) (k n : 
   rw [hardy_oadd_coeff α hα k n]
   exact iterate_le_iterate_of_le (fastGrowing_le_hardy_omega_pow α) (hardy_monotone _) (k + 1) n
 
+/-- Inequality iterate-offset: if `g y + 1 ≤ F (y+1)` for all `y` and `F` is monotone, the `+1`
+carries through the iteration one extra argument step: `g^[m] y + 1 ≤ F^[m] (y+1)`. The `≤`
+generalization of `iterate_offset` (which needs the exact equality). -/
+private theorem iterate_offset_le {g F : ℕ → ℕ} (hF : Monotone F) (h : ∀ y, g y + 1 ≤ F (y + 1))
+    (m y : ℕ) : g^[m] y + 1 ≤ F^[m] (y + 1) := by
+  induction m generalizing y with
+  | zero => exact le_rfl
+  | succ m ih =>
+      rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
+      exact le_trans (ih (g y)) (hF.iterate m (h y))
+
+/-- **Coefficient-general upper bound:** `H_{ω^α·(k+1)}(n) + 1 ≤ (f_α)^[k+1](n+1)` (for `α ≠ 0`).
+The `hardy_oadd_coeff` companion of the `ω^α` upper bound: `H_{ω^α·(k+1)} = (H_{ω^α})^[k+1]`, and the
+`+1` shift `H_{ω^α}(y)+1 ≤ f_α(y+1)` carries through `k+1` iterations via `iterate_offset_le`. -/
+theorem hardy_coeff_add_one_le (α : ONote) (hα : α ≠ 0) (k n : ℕ) :
+    hardy (oadd α k.succPNat 0) n + 1 ≤ (fastGrowing α)^[k + 1] (n + 1) := by
+  rw [hardy_oadd_coeff α hα k n]
+  exact iterate_offset_le (fastGrowing_monotone α) (hardy_omega_pow_add_one_le α) (k + 1) n
+
+/-- **The coefficient-general two-sided bracket:** `(f_α)^[k+1](n) ≤ H_{ω^α·(k+1)}(n) < (f_α)^[k+1](n+1)`
+(for `α ≠ 0`). The `hardy_oadd_coeff`-lifted form of `hardy_omega_pow_bracket`: the Hardy hierarchy at
+`ω^α·(k+1)` is sandwiched between consecutive values of the `(k+1)`-fold iterate of `f_α`. -/
+theorem hardy_omega_pow_coeff_bracket (α : ONote) (hα : α ≠ 0) (k n : ℕ) :
+    (fastGrowing α)^[k + 1] n ≤ hardy (oadd α k.succPNat 0) n
+      ∧ hardy (oadd α k.succPNat 0) n < (fastGrowing α)^[k + 1] (n + 1) :=
+  ⟨fastGrowing_iterate_le_hardy_coeff α hα k n,
+    Nat.lt_of_succ_le (hardy_coeff_add_one_le α hα k n)⟩
+
 end GoodsteinPA.FastGrowing
