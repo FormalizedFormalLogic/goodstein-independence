@@ -118,3 +118,18 @@ including the one pending `DIRECTION.md` change exempting the someK substrate fr
 reification off the W3-corrected K-hypothesis form + this spike's pinned step statement); the W4
 grind's first target is `step_cut_principal`'s ∀/∃ sub-case with the residual risk
 pre-registered.
+
+## 8. ADDENDUM (2026-07-02, post-hoc evidence check — operator-prompted)
+
+§2's "hit this **independently**" was ratified WITHOUT checking the box's inputs — a process
+flaw: `FABLE-HANDOFF-2026-07-01-2150.md`, which spells out the trap AND its likely fix (§2 item
+3), sat committed at the repo root while the W4 box ran, and boxes demonstrably read repo-root
+handoff files. Transcript check (box session `dbb9a3e2…`, host-side
+`~/.claude/projects/-Users-gotrevor-src-goodstein-independence/*.jsonl`): the box's ONLY access
+to that file was `grep -in "lap"` (a baton-numbering hunt), whose matches — lines 51/53/66/91/100
+— do NOT include the trap paragraph. **The independence claim therefore survives on evidence —
+but by luck, not by verification.** Two standing rules, binding on the architect/judge
+henceforth: (1) judge-side notes (traps-to-check, verdict rubrics, priors) are NEVER committed to
+the tree before or while the examinee box runs — they live host-side until the verdict is judged;
+(2) any "independently corroborated" claim is verified against the box transcript BEFORE
+ratification, not assumed.
