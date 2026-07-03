@@ -251,3 +251,28 @@ PRINCIPAL cut shapes (the `erase_inert` dodge stops applying — E–W Lemma 25'
 mirror of the ∀/∃ shapes at fixed finite branching), read-offs gain two cases each.  The E-1
 grind continues over `Zef2TC` (next block: clone + the leaf/EM cases against the amended
 draft); the DRAFT text amendment itself is flagged for the judge, not self-ratified.
+
+---
+
+## Block 7 — E-1 block 2: `Zef2TC` erected + the budgeted EM PROVEN (lap 199d)
+
+**File**: `wip/E1EmbeddingGrind.lean` (src untouched). Standard triple throughout.
+
+1. **`Zef2TC`** — the amended target calculus (block-6 flag): `Zef2` verbatim + (Ax2)
+   `trueRel`/`trueNrel` + the finite `verumR`/`andI`/`orI` (`Zekd` shapes, `Nlog` gates,
+   `weak`-style NF/`Cl` side conditions; slot untouched — E–W relativizes only the ω-rule).
+   `gate` + inclusion `Zef2TC.ofZef2` proven.
+2. **`em_Zef2TC` — the budgeted excluded middle, SORRY-FREE** (the W3 `closed`-case engine =
+   E–W Lemma 32's identity mechanism): any `Γ ∋ φ, ∼φ` is cut-free derivable at the
+   DETERMINISTIC ordinal `ofNat (2·complexity+1)`, for every slot `f` monotone + inflationary
+   with `clog (2·complexity+1) ≤ f 0`.  All hypotheses `rel1`-stable; ∀/∃ cases pair `allω`
+   with `exI n` (bound `n ≤ f n` by inflationarity), finite cases ride `andI`/`orI`; ordinal
+   ladder `ofNat` toolkit (`ofNat_lt_ofNat`, `Nlog_ofNat_le`, `clog_mono`) banked.  First
+   nontrivial derivability content of the (Ax2)-extended calculus — the `closed` case of the
+   W3 Derivation2 ladder is DONE modulo the value-congruence variant.
+3. `embedding_Zef2TC_DRAFT` (typechecked, sorry) = the E-0 draft with the sole change
+   `Zef2T → Zef2TC`.
+
+**Next E-1 targets** (W3 ladder): `verum` (trivial now via `verumR`), `and`/`or` case lemmas
+(budget-max bookkeeping), then the hard pair: `axm` (PA-axiom leaves via `trueRel` +
+`em`-style Δ₀ verification — W1/W2 content) and `all` (ω-rule budget uniformity).
