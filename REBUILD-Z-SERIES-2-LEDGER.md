@@ -165,3 +165,28 @@ headline path** — it stays solely a rung-E calculus-faithfulness question (Sta
 other horn's evidence.
 
 ---
+
+## Stage C-2 — goodstein matrix vs the mono guard (wip probe) — ❌ guard REFUTED (lap 197)
+
+**File**: `wip/GuardMonoProbe.lean` (standalone; `src` untouched). Kernel-clean
+`[propext, Classical.choice, Quot.sound]`, no `native_decide`.
+
+**FINDING — the `readoffD_trapped_of_mono` guard `atomTrue (χ/[nm 0]) → atomTrue (∀⁰ χ)` does
+NOT hold for the goodstein matrix's bounded-∀ step-clause shape.** `guardShape_not_mono`:
+on the minimal representative `χ = (x < 2 → x = 0)` of the guarded-implication class (the
+`igoodsteinDef`/`resultDef` β-coding certifies runs by `∀ i (i < N → step-i-equation)` clauses),
+the `0`-instance is TRUE while `∀⁰ χ` is FALSE (`1`-instance fails inside the guard) — the
+run-miscoded-at-step-1 adversary. Evaluated via `Evalm ℕ` simp in the kernel.
+
+**Consequence (ruling-(2) input): Option B is LOAD-BEARING.** The mono fragment does NOT cover
+the concrete goodstein translation, so the lane-D residue on the headline path needs one of the
+two judged amendments. Combined with Stage C-1 (Option-B splice cost = one definitional tower
+level), Stage C's evidence points at the **R-4′ restatement** (bound `f 0 → ewIter f α 0`) as
+the ruling-(2) recommendation; (Ax2) remains solely the rung-E faithfulness question (Stage B).
+
+**Scope honesty (recorded in-file)**: this is the SHAPE-CLASS refutation (what any generic
+`hmono` instantiation would need), not a computation inside the machine-generated `resultDef`
+blob; but the run-miscoding adversary is a semantic counterexample family for the specific
+coding too.
+
+---
