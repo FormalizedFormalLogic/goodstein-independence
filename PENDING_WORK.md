@@ -1,5 +1,30 @@
 # PENDING WORK
 
+## Lap 208 (2026-07-03, grind) — 2b MASTER MAJORIZATION CLOSED sorry-free
+
+- **`ewIter_hardy_le`** (`wip/HardyMajorization.lean`): `ewIter f α m ≤ H_{ω^{e'+1+α}}(H_{ω^{e'}}(Nlog α + m + p))`
+  for ALL NF α, kernel-clean `[propext, choice, Quot.sound]` — THE 2b growth-conversion crux.
+  WF induction on α; branch = outer IH → inner IH → `hardy_arg_add` pushes `Nlog δ` costs
+  innermost → middle engine raised to branch level (`Wpow_lt` + `hardy_le_of_lt`, gate ≤ p) →
+  `hardy_chain3_eq` collapses to `H_{ω^{gδ}·3+ω^{e'}}` → final raise to `ω^{gα}` at the
+  engine-inflated argument, norm gate = `norm_add_le` + `norm_lt_of_Nlog_le` bridge + `hEng`.
+  Single growth hypothesis `hEng : ∀x, x + 2f(x) + 2^(f x+1) + normSum(e'+1) + norm e' + 2p + 4
+  ≤ H_{ω^{e'}}(x+p)`; NO f-monotonicity/inflationarity needed.
+- New bank (same file): `hardy_succ_ge`/`hardy_arg_add` (argument super-additivity of hardy,
+  WF-recursion mirroring `hardy_monotone`), `Wpow_lt`, `normSum` + `norm_addAux_le` +
+  `norm_add_le` (linear-norm control of ONote add), `stepOrd3`/`hardy_chain3_eq`/
+  `stepOrd3_lt_Wpow` (coefficient-3 chain via `hardy_oadd_tail` + `hardy_coeff_add` — no repr
+  arithmetic).
+- Gotchas: `omega` chokes on `2^(f x + 1)` atoms — `generalize 2^(...) = Q at *` first, and keep
+  `Wpow` folded/unfolded CONSISTENTLY across hyps and goal before omega (a `simp only [Wpow]`
+  on the goal only splits the hardy atom). `set` inside the WF-recursive branch made the IH
+  application fail with a δ✝/δ mismatch — inline the terms instead.
+- **NEXT (2b remaining)**: (a) instantiate `hEng` at concrete e' (needs `2^y ≤ H_{ω²}(y)`-class
+  lemma + `f ≤ H_{ω^{e₀}}`-form domination of the pipeline slot S* → e' ≈ e₀+2-shape); (b) gvb
+  numeral contraction (P_m ≤ P* fixed, ReadoffValueGate); (c) Sslot-level assembly of the
+  m-uniformized pipeline bound feeding ewIter_hardy_le; (d) semantic link atomTrue→goodsteinLength;
+  (e) final EventuallyLE vs one fixed fastGrowing o. Then the ONE judge package (do NOT self-ratify).
+
 ### 2b analysis (this lap, paper-level — kernel-probe the refutation next)
 
 - **m-uniformization**: the pipeline bound's m-dependence = (i) slot stage K_m = max(C, m)

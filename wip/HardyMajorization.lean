@@ -264,4 +264,162 @@ theorem stepOrd3_lt_Wpow {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF)
 #print axioms GoodsteinPA.HardyMajorization.hardy_chain3_eq
 #print axioms GoodsteinPA.HardyMajorization.stepOrd3_lt_Wpow
 
+/-! ## THE MASTER MAJORIZATION (lap 208) — `ewIter f α m ≤ H_{ω^{e'+1+α}}(H_{ω^{e'}}(Nlog α + m + p))`
+
+The 2b growth-conversion crux.  Assignment exponent `g α := e' + 1 + α` (ONote add — strictly
+monotone, always above the engine `e'`).  WF induction on `α`; the branch (a ball member
+`δ < α`, `Nlog δ ≤ K := f (Nlog α + m)`) pays:
+
+1. outer IH + inner IH (two `H_{ω^{gδ}}∘H_{ω^{e'}}` layers with additive `Nlog δ` costs in
+   between);
+2. `hardy_arg_add` pushes the additive costs innermost;
+3. the middle engine raises to the branch level (`Wpow_lt` + `hardy_le_of_lt`, gate `≤ p`);
+4. `hardy_chain3_eq` collapses the three same-level principals + engine into
+   `H_{ω^{gδ}·3 + ω^{e'}}`;
+5. the final raise to `ω^{gα}` happens at the engine-inflated argument
+   `z = H_{ω^{e'}}(Nlog α + m + p)`, whose size pays the `2^{K+1}` norm gate
+   (`norm_add_le` + the `Nlog→norm` bridge) via the single engine hypothesis `hEng`.
+
+`hEng` is the ONLY growth assumption: the engine level `e'` absorbs one `f`-application,
+the exponential of one `f`-application, and fixed constants.  Instantiating it at a concrete
+`e'` (from `f ≤ H_{ω^{e₀}}`-form domination, `e' ≈ e₀ + 2`) is separate downstream work. -/
+
+theorem ewIter_hardy_le {f : ℕ → ℕ} {e' : ONote} {p : ℕ}
+    (he' : e'.NF) (hp : norm e' + 1 ≤ p)
+    (hEng : ∀ x, x + 2 * f x + 2 ^ (f x + 1) + normSum (e' + 1) + norm e' + 2 * p + 4
+        ≤ hardy (Wpow e') (x + p))
+    (α : ONote) (hα : α.NF) (m : ℕ) :
+    ewIter f α m ≤ hardy (Wpow (e' + 1 + α)) (hardy (Wpow e') (Nlog α + m + p)) := by
+  haveI := he'
+  haveI hNF1 : (1 : ONote).NF := NF.oadd NF.zero 1 NFBelow.zero
+  haveI hNFe1 : (e' + 1).NF := ONote.add_nf e' 1
+  have hrepr_e1 : (e' + 1).repr = e'.repr + 1 := by
+    rw [ONote.repr_add, ONote.repr_one]; norm_num
+  by_cases h0 : α = 0
+  · subst h0
+    have hbase : f m ≤ hardy (Wpow e') (m + p) := by
+      refine le_trans ?_ (hEng m)
+      calc f m ≤ m + 2 * f m := by omega
+        _ ≤ m + 2 * f m + 2 ^ (f m + 1) := Nat.le_add_right _ _
+        _ ≤ m + 2 * f m + 2 ^ (f m + 1) + normSum (e' + 1) := Nat.le_add_right _ _
+        _ ≤ m + 2 * f m + 2 ^ (f m + 1) + normSum (e' + 1) + norm e' :=
+            Nat.le_add_right _ _
+        _ ≤ m + 2 * f m + 2 ^ (f m + 1) + normSum (e' + 1) + norm e' + 2 * p :=
+            Nat.le_add_right _ _
+        _ ≤ m + 2 * f m + 2 ^ (f m + 1) + normSum (e' + 1) + norm e' + 2 * p + 4 :=
+            Nat.le_add_right _ _
+    simp only [ewIter_zero, Nlog_zero, Nat.zero_add]
+    exact le_trans hbase (le_hardy _ _)
+  · haveI := hα
+    haveI hgαNF : (e' + 1 + α).NF := ONote.add_nf (e' + 1) α
+    conv_lhs => rw [ewIter_unfold f α m]
+    rw [ewStep]
+    simp only [dif_neg h0]
+    apply Finset.max'_le
+    intro v hv
+    obtain ⟨δ, hδmem, rfl⟩ := Finset.mem_image.mp hv
+    have hδlt : (δ : ONote) < α := (Finset.mem_filter.mp δ.2).2.1
+    have hδNF : (δ : ONote).NF := (mem_NlogBall.mp (Finset.mem_filter.mp δ.2).1).1
+    have hδgate : Nlog (δ : ONote) ≤ f (Nlog α + m) := (Finset.mem_filter.mp δ.2).2.2
+    haveI := hδNF
+    haveI hgδNF : (e' + 1 + (δ : ONote)).NF := ONote.add_nf (e' + 1) δ
+    have hreprδ : (e' + 1 + (δ : ONote)).repr = e'.repr + 1 + (δ : ONote).repr := by
+      rw [ONote.repr_add, hrepr_e1]
+    have hreprα : (e' + 1 + α).repr = e'.repr + 1 + α.repr := by
+      rw [ONote.repr_add, hrepr_e1]
+    -- ordinal facts about the assignment
+    have hegδ : e' < e' + 1 + (δ : ONote) := by
+      rw [lt_def, hreprδ]
+      calc e'.repr < e'.repr + 1 := lt_add_of_pos_right _ zero_lt_one
+        _ ≤ e'.repr + 1 + (δ : ONote).repr := le_self_add
+    have hgδα : e' + 1 + (δ : ONote) < e' + 1 + α := by
+      rw [lt_def, hreprδ, hreprα]
+      exact (add_lt_add_iff_left _).2 (lt_def.mp hδlt)
+    have hgδ0 : e' + 1 + (δ : ONote) ≠ 0 := by
+      intro h
+      have := lt_def.mp (h ▸ hegδ)
+      simp at this
+    -- step 1+2: the two IH layers
+    have ih_inner : ewIter f (δ : ONote) m
+        ≤ hardy (Wpow (e' + 1 + (δ : ONote)))
+            (hardy (Wpow e') (Nlog (δ : ONote) + m + p)) :=
+      ewIter_hardy_le he' hp hEng (δ : ONote) hδNF m
+    have ih_outer : ewIter f (δ : ONote) (ewIter f (δ : ONote) m)
+        ≤ hardy (Wpow (e' + 1 + (δ : ONote)))
+            (hardy (Wpow e') (Nlog (δ : ONote) + ewIter f (δ : ONote) m + p)) :=
+      ewIter_hardy_le he' hp hEng (δ : ONote) hδNF (ewIter f (δ : ONote) m)
+    -- step 3+4: monotone lift of the outer seed, then push the additive cost innermost
+    have hpush : Nlog (δ : ONote) + ewIter f (δ : ONote) m + p
+        ≤ hardy (Wpow (e' + 1 + (δ : ONote)))
+            (hardy (Wpow e') (Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p))) := by
+      have h1 : Nlog (δ : ONote) + ewIter f (δ : ONote) m + p
+          ≤ hardy (Wpow (e' + 1 + (δ : ONote)))
+              (hardy (Wpow e') (Nlog (δ : ONote) + m + p)) + (Nlog (δ : ONote) + p) := by
+        have := ih_inner; omega
+      have h2 := hardy_arg_add (Wpow (e' + 1 + (δ : ONote)))
+        (hardy (Wpow e') (Nlog (δ : ONote) + m + p)) (Nlog (δ : ONote) + p)
+      have h3 := hardy_arg_add (Wpow e') (Nlog (δ : ONote) + m + p) (Nlog (δ : ONote) + p)
+      exact le_trans h1 (le_trans h2 (hardy_monotone _ h3))
+    -- assemble the four-layer stack
+    have hY2 : ewIter f (δ : ONote) (ewIter f (δ : ONote) m)
+        ≤ hardy (Wpow (e' + 1 + (δ : ONote))) (hardy (Wpow e')
+            (hardy (Wpow (e' + 1 + (δ : ONote)))
+              (hardy (Wpow e') (Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p))))) :=
+      le_trans ih_outer (hardy_monotone _ (hardy_monotone _ hpush))
+    -- step 5: raise the middle engine to the branch level
+    have hmid : hardy (Wpow e')
+          (hardy (Wpow (e' + 1 + (δ : ONote)))
+            (hardy (Wpow e') (Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p))))
+        ≤ hardy (Wpow (e' + 1 + (δ : ONote)))
+          (hardy (Wpow (e' + 1 + (δ : ONote)))
+            (hardy (Wpow e') (Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p)))) := by
+      apply hardy_le_of_lt (Wpow_NF he') (Wpow_NF hgδNF) (Wpow_lt hegδ)
+      have hnw : norm (Wpow e') ≤ p := by
+        simp only [Wpow, norm_oadd, norm_zero, PNat.one_coe]
+        omega
+      calc norm (Wpow e') ≤ p := hnw
+        _ ≤ Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p) := by omega
+        _ ≤ hardy (Wpow e') (Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p)) :=
+            le_hardy _ _
+        _ ≤ hardy (Wpow (e' + 1 + (δ : ONote)))
+              (hardy (Wpow e') (Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p))) :=
+            le_hardy _ _
+    -- step 6: collapse via the coefficient-3 chain identity
+    have hchain : ewIter f (δ : ONote) (ewIter f (δ : ONote) m)
+        ≤ hardy (stepOrd3 (e' + 1 + (δ : ONote)) e')
+            (Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p)) := by
+      rw [← hardy_chain3_eq hgδ0]
+      exact le_trans hY2 (hardy_monotone _ hmid)
+    -- step 7: the collapsed argument fits under the engine-inflated seed
+    have hsc_z : Nlog (δ : ONote) + m + p + (Nlog (δ : ONote) + p)
+        ≤ hardy (Wpow e') (Nlog α + m + p) := by
+      have hE := hEng (Nlog α + m)
+      generalize 2 ^ (f (Nlog α + m) + 1) = Q at hE
+      omega
+    -- step 8: final raise, norm gate paid by the bridge + hEng
+    have hraise : hardy (stepOrd3 (e' + 1 + (δ : ONote)) e')
+          (hardy (Wpow e') (Nlog α + m + p))
+        ≤ hardy (Wpow (e' + 1 + α)) (hardy (Wpow e') (Nlog α + m + p)) := by
+      apply hardy_le_of_lt (stepOrd3_NF hgδNF he' hegδ) (Wpow_NF hgαNF)
+        (stepOrd3_lt_Wpow hgδNF he' hegδ hgδα)
+      have hnormδ : norm (δ : ONote) < 2 ^ (f (Nlog α + m) + 1) :=
+        norm_lt_of_Nlog_le hδgate
+      have hnormgδ : norm (e' + 1 + (δ : ONote)) ≤ normSum (e' + 1) + norm (δ : ONote) :=
+        norm_add_le (e' + 1) (δ : ONote)
+      have hE := hEng (Nlog α + m)
+      simp only [Wpow] at hE
+      simp only [stepOrd3, Wpow, norm_oadd, norm_zero, PNat.one_coe]
+      have h3 : ((3 : ℕ+) : ℕ) = 3 := rfl
+      rw [h3]
+      generalize 2 ^ (f (Nlog α + m) + 1) = Q at hE hnormδ
+      have hm1 := le_max_left (norm e') (max 1 0)
+      omega
+    exact le_trans hchain (le_trans (hardy_monotone _ hsc_z) hraise)
+termination_by α
+decreasing_by
+  · exact hδlt
+  · exact hδlt
+
+#print axioms GoodsteinPA.HardyMajorization.ewIter_hardy_le
+
 end GoodsteinPA.HardyMajorization
