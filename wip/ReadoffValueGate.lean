@@ -582,8 +582,38 @@ theorem gvb_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
       exact ⟨c, fun B => by
         rw [show gvb (Semiformula.exs χ) B = gvb χ B from rfl]; exact h B⟩
 
+/-- **The uniform root certificate** (SERIES-4 S-3): for the numeral family
+`ψ_m = ∃⁰((subst ![nm m]).q ▹ body)` over a FIXED matrix `body`, ONE iterate count `k` serves
+every `m`: the canonical `P := gvb ψ_m (max V ·)` is monotone, `Gated`, and `G^[k]`-bounded at
+the `max (max V m)`-shifted argument (`gvb_substs_q_le` contracts the numeral out,
+`gvb_le_iter` bounds the fixed matrix). -/
+theorem gated_certificate_uniform {G : ℕ → ℕ} (hG_mono : Monotone G)
+    (hG_succ : ∀ x, x + 1 ≤ G x)
+    (hG_add : ∀ a b, a + b ≤ G (max a b)) (hG_mul : ∀ a b, a * b ≤ G (max a b))
+    (body : SyntacticSemiformula ℒₒᵣ 2) :
+    ∃ k : ℕ, ∀ (m V : ℕ) (χ : SyntacticSemiformula ℒₒᵣ 1),
+      χ = (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q ▹ body →
+      Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) →
+      ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V (∃⁰ χ) ∧
+        ∀ z, P z ≤ G^[k] (max (max V m) z) := by
+  obtain ⟨k, hk⟩ := gvb_le_iter hG_mono hG_succ hG_add hG_mul body
+  refine ⟨k, fun m V χ hχ hH => ?_⟩
+  refine ⟨fun B => gvb (∃⁰ χ) (max V B),
+    fun _ _ hb => gvb_mono _ (max_le_max le_rfl hb), ?_, ?_⟩
+  · refine gated_of_sigma1 (fun _ _ hb => gvb_mono _ (max_le_max le_rfl hb)) _ hH V
+      (fun B => ?_)
+    exact gvb_mono _ (le_trans (le_max_right V B) (le_max_right V (max V B)))
+  · intro z
+    have h1 : gvb (∃⁰ χ) (max V z) = gvb χ (max V z) := rfl
+    show gvb (∃⁰ χ) (max V z) ≤ G^[k] (max (max V m) z)
+    rw [h1, hχ]
+    refine le_trans (gvb_substs_q_le m (max V z)) ?_
+    refine le_trans (hk (max (max V z) m)) ?_
+    exact (hG_mono.iterate k) (by omega)
+
 end IterDom
 
+#print axioms GoodsteinPA.ReadoffValueGate.gated_certificate_uniform
 #print axioms GoodsteinPA.ReadoffValueGate.gvb_le_iter
 #print axioms GoodsteinPA.ReadoffValueGate.gated_root_of_sigma1
 #print axioms GoodsteinPA.ReadoffValueGate.gated_of_sigma1
