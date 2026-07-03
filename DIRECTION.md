@@ -14,8 +14,57 @@ autonomous treadmill campaign. Read both.
 > over every few review laps. Keep it SHORT; detail lives in `PENDING_WORK.md` / `REFLECTION-*.md`.
 > (Live milestone map = `E-CRUX2-ROADMAP-2026-06-24.md`; the phase list below is the standing charter.)
 
+**2026-07-03 (DEEP REFLECTION, global lap 206 — the lap-205 soft trigger FIRED and the rethink is
+DONE: read-off trap-fix routes (a)/(b) are DEAD on the real matrix; route (c) = the E–W-faithful
+VALUE-BUDGET read-off is MANDATED. THIS IS THE CURRENT BINDING BLOCK; it supersedes the lap-205
+block below for piece-1 route choice; everything else in that block stays in force.)**
+Independently re-verified this lap (real `#print axioms`, bare `lake build` 🟢 1342, full wip re-run):
+headline undrifted sorryAx-OFF; rungs P/R/D clean in src; the whole wip bank kernel-clean except
+exactly `readoffTC_core`/`readoff_delta0_Zef2TC` (the ONE `allω`-trap sorry). ROUTE VERDICT:
+**CONTINUE** — no unhandled trigger; laps 202–205 closed whole-lemma targets each lap (no false
+summit). THE objective unchanged.
+
+⭐ **STATE CHANGE:** checked the trap-fix candidates against the ACTUAL pipeline matrix.
+`igoodsteinDef` is the machine-generated `PR.Blueprint.resultDef` computation-history formula; its
+bounded-∀ coherence clauses ("∀ i < len, step i+1 follows from step i") FALSIFY the (a) mono-guard
+(`0-instance-true → all-true`), and they sit on the instantiation spine so (b) vacuity fails too.
+Source diagnosis (`papers/eguchi-weiermann-…md` §4–5): E–W gate every branch index via rule side
+conditions + value-relativized controls (`f[m+k]`, `f[N(ι)]`); `Zef2TC.allω` has NO gate — the trap
+is a calculus/invariant MISMATCH artifact, and their Thm-37 exit bound is an α-indexed ITERATE
+(`s^α(m₀+⋯)`), not a constant `f(0)`.
+
+🚦 **MANDATED next move — route (c), the value-budget read-off (`wip/E1EmbeddingGrind.lean`), in
+this probe order** (full design in `PENDING_WORK.md` lap-206 reflection):
+> **(1) The S-iterate gadget FIRST** — `S x := max (f x) (P_φ x)` norm-gated transfinite iterate
+>   (reuse banked `ewIter` machinery); prove its two threading inequalities (ordinal-descent
+>   absorption, `rel1`-slot absorption) BEFORE touching the induction. This is the decisive algebra;
+>   if kernel-refuted beyond `ewIter`-style norm-gating, STOP and escalate (c′).
+> **(2) `P_φ`** — max subterm value under numeral inputs `≤ B` (fixed, monotone) + the value gate:
+>   a standard-false ball-shaped instance has least false branch `k₀ < val(bounding term) ≤ P_φ V`.
+> **(3) Re-grind `readoffTC_core` V-threaded** — invariant gains "every false member is a
+>   ≤V-numeral instance of a φ-subformula" (junk can't enter: weakening shrinks going up, cut
+>   impossible at c=0); the 8 closed cases survive with V-edits; the trap case closes by descending
+>   into the gated false branch.
+> **(4) Piece 2a structural wiring** (bound-shape-independent, may interleave) then **2b growth
+>   conversion** — the splice target `∃ o, o.NF ∧ EventuallyLE …` has total ordinal freedom, so the
+>   loosened S-iterate bound absorbs via the banked Hardy brackets.
+> Read-off (c) statement shape + `Zef2TC` + (Ax2) go to the next judge pass as ONE package; do NOT
+> self-ratify into `src`.
+
+**Why:** the read-off is the last real proof uncertainty on the Route-B girder; (a)/(b) are dead on
+the pipeline's φ, so grinding them would be wasted laps; (c) is the source's own mechanism
+reconstructed semantically, confined to ONE wip lemma + two gadgets, with zero re-grind of the
+banked ladder/pass.
+
+**FORBIDDEN (this block):** grinding trap routes (a)/(b) (kernel/source-dead); starting (c′) (the
+`allω`-gate calculus amendment — escalation-only, re-opens the whole bank); re-grinding a landed
+rung (P/R/D, V3 ladder, TC pass); self-ratifying rung-E artifacts into `src`; Route-A surfaces;
+hygiene/leaf-retreat while the E-seam is open; idle laps. All SERIES-3-order FORBIDDENs remain.
+
 **2026-07-03 (FRESH-MIND REVIEW, global lap 205 — RUNG E REALIZED + TC PASS PORT COMPLETE; the
-E-seam is down to TWO wip proof pieces. THIS IS THE CURRENT BINDING BLOCK. It supersedes the lap-201
+E-seam is down to TWO wip proof pieces. ⛔ SUPERSEDED by the lap-206 block above for the piece-1
+route choice (its "(a) guard / (b) φ-shape" NEXT pointer is dead); its mandate order and FORBIDDENs
+otherwise remain in force. It superseded the lap-201
 block below (whose mandated "V3 predicate" move is DONE) and stays aligned with
 `REBUILD-Z-SERIES-3-ORDER-2026-07-03.md`.)** Independently re-verified this lap (real `#print axioms`,
 bare `lake build` 🟢 1342, + `lake env lean wip/E1EmbeddingGrind.lean`): headline
@@ -540,6 +589,7 @@ Re-verified (lap 161, real `#print axioms`, build 🟢 1326): headline `peano_no
   RE-PLAN toward the M2 bridge — that becomes the dominant feasibility unknown.
 
 ### Directive history (newest first; append one line per altitude lap — never delete)
+- **lap-206** (DEEP REFLECTION, every-9th): directive CHANGED — piece-1 route retargeted. The lap-205 soft trigger ("bound can't thread through nested `allω` → rethink the statement shape before splicing") FIRED (trap kernel-real, general statement refuted); rethink executed THIS lap: routes (a) mono-guard and (b) φ-shape vacuity are both DEAD on the actual pipeline matrix (`igoodsteinDef` = machine-generated `PR.Blueprint.resultDef` history formula; its bounded-∀ coherence clauses falsify the mono-guard and sit on the instantiation spine). Source diagnosis (E–W §4–5): their controls carry numeral VALUES (`f[m+k]`, `f[N(ι)]` relativization) and rule side conditions gate every branch index; `Zef2TC.allω` has no gate ⇒ the trap is a calculus/invariant mismatch artifact; their Thm-37 exit bound is an α-indexed iterate, not constant `f(0)`. MANDATE = route (c), the value-budget read-off: S-iterate gadget probe FIRST, then `P_φ` + value gate, then the V-threaded re-grind of `readoffTC_core`; exposed bound may loosen (splice target has total ordinal freedom); (c′) `allω`-gate calculus amendment = escalation-only. ROUTE VERDICT: CONTINUE (no unhandled trigger; laps 202–205 closed whole-lemma targets each lap). Independently re-verified: build 🟢 1342, headline undrifted sorryAx-OFF, rungs P/R/D clean, full wip bank kernel-clean except the ONE trap sorry. Ledger re-grade: Route-B girder 🟠→🟡 (P/R/D real + E realized dissolves the "generational" reason; remaining = one lemma + composition + ratification).
 - **lap-205** (FRESH-MIND REVIEW): directive CHANGED — retargeted from the (now-DONE) "V3 predicate" move to **the two remaining E-seam wip pieces**: (1) the BOUNDED rank-0 `Zef2TC` read-off (the flagged hard piece — `sound0_TC` gives the unbounded true member, the bound needs its own induction threading through nested `allω`; probe that threading EARLY), then (2) `wip/SpliceAssembly.lean` composing `embedding_Zef2TC_V3`→`rankToZero_TC`→bounded read-off into the `wainer_splice_Zef2` shape. Re-verified this lap (real `#print axioms`, bare `lake build` 🟢 **1342** + `lake env lean wip/E1EmbeddingGrind.lean`): headline `[propext, Classical.choice, goodstein_implies_consistency, Quot.sound]` sorryAx OFF no drift; rungs P/R/D real in src; and in wip **`embedding_Zef2TC_V3`** (rung E), **`budgetedEmbeddingV3`** (V3 ladder 10/10), **`passAuxTC`**, **`rankToZero_TC`**, **`sound0_TC`** ALL kernel-clean `[propext, choice, Quot.sound]`. STATE CHANGE since lap 201: laps 202–204 CLOSED the lap-201 mandate (V3 structural-budget predicate → `all`/`axm`/`exs` leaves → ladder 10/10 → rung E realized) AND ported the whole cut-elim pass to `Zef2TC` (`passAuxTC`/`rankToZero_TC`/`sound0_TC`). CRUX CHECK: laps 200→204 walked the crux hardest-first with real verified progress (V3 ladder → rung E → TC pass port), no fixation/dead-end — direction SOUND; only the stale lap-201 "next move" (V3 predicate, now done) needed retargeting. The E-seam is no longer a "hard rung" — it is TWO concrete wip proofs + a judge pass. MANDATE = close those two wip pieces; rung-E statement + `Zef2TC` amendment → next judge pass; do NOT self-ratify rung-E statement / `Zef2TC` / (Ax2) into src. FORBIDDEN = hygiene/leaf-retreat while E-seam open / Route-A / self-ratifying rung-E artifacts into src / re-grinding a landed rung (P/R/D, V3 ladder, TC pass) / idle laps; all SERIES-3-order FORBIDDENs remain. SERIES-3 order stays binding for operational detail.
 - **lap-201** (FRESH-MIND REVIEW): directive CHANGED — retargeted from the (now-resolved) top-rank-cut escalation + Lane D to **Lane E / rung E (the embedding)**, the sole remaining hard rung. Re-verified terminal state (real `#print axioms`, bare `lake build` 🟢 **1342**): headline `[propext, Classical.choice, goodstein_implies_consistency, Quot.sound]`, sorryAx OFF, no drift. STATE CHANGE since lap 192: the SERIES-2 judge pass RESOLVED the trilemma (ruling (1) = absorbing norm `ewN→Nlog`) and SERIES-3 EXECUTED it — **the top-rank cut LANDED (lap 198)**; rungs P (`cutElimPass_Zef2`), R (`rankToZero_Zef2`), D (`readoff_delta0_Zef2`, R-4′) are all REAL axiom-clean theorems (verified this lap `[propext, choice, Quot.sound]`); the splice `wainer_splice_Zef2` (rung W, src) carries the sole live `sorryAx` at the rung-E consumption point. CRUX CHECK: laps 198→200 correctly walked N→D→E (crux-first, no fixation, no dead-end) — direction SOUND, only the stale lap-192 directive needed retargeting to match SERIES-3 reality. MANDATE = continue the E-1 wip grind (`wip/E1EmbeddingGrind.lean`), **E-1 block 6 = the V3 predicate** (structural witness budget `Gexp^[c](envSup env N)`; growth kit banked lap 200), re-close the 8 landed cases + `exs`, then close `all` (ω-rule uniformization — the decisive case; probe early) and `axm` (W1/W2). When V3 closes the ladder, rung-E statement + Ax2 probe → next judge pass; do NOT self-ratify into src. FORBIDDEN = hygiene/leaf-retreat while E open / Route-A / self-ratifying rung-E statement (or Zef2T/(Ax2)) into src / re-grinding a landed rung / idle laps; all SERIES-3-order FORBIDDENs remain. SERIES-3 order stays binding for operational detail.
 - **lap-192** (FRESH-MIND REVIEW): directive CHANGED (lane-P grind order only; all judge rulings kept). Re-verified terminal state (real `#print axioms`, build 🟢 `GoodsteinPA`): headline `[propext, Classical.choice, goodstein_implies_consistency, Quot.sound]`, sorryAx OFF, no drift. UPHELD the lap-191 top-rank-cut escalation (the pre-registered `rel1`/(f.1) base-additivity wall fired as anticipated) and SHARPENED it two ways: (1) **REFUTED lane B** (the PENDING/ledger "PROOF-only" floor route) — `ewN(∀-witness)` is bounded only by the ∀-slot base `g 0` (un-absorbable by the `2m+1` floor), AND the tight-norm bound is non-inductive (`ewN` blows up ~`2^d(f0+1)` under depth-`d` nested top-rank cuts while `ω^α` absorbs the ordinal); (2) reframed the obstruction as a **TRILEMMA** among three ratified pillars (additive output `α+γ` / finite-fibered⇒additive norm `ewN` / `rel1`-max relativization) — any single fix touches a ratified pillar; prime judge-amendment candidate = a finite-fibered ABSORBING norm; `rel1` max→+ alone is insufficient (needs strict-mono `ewIter` lacks). MANDATE = **lane D `readoff_delta0_Zef2`** (sole open proof-only lane); the crux advances ONLY by wip-only amendment probes → ledger, never src. FORBIDDEN = grinding the top-rank cut in src / re-deriving `hg_base` refutation / self-ratifying rel1/norm/output/statement changes / porting probes to src. Corrected the stale PENDING/ledger "pursue lane B next" pointer.

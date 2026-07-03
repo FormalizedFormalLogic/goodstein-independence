@@ -15,7 +15,7 @@
 > a plausible-but-wrong argument — quote the source (the per-PDF `.md` summaries are the record), don't
 > reconstruct it. And challenge THIS file too — it is a past lap's read of the literature, not ground
 > truth; verify against the sources.** Update it when new reading (or a returned `ON-LINE-FINDINGS-*`)
-> changes the map. Last updated: 2026-06-28.
+> changes the map. Last updated: 2026-07-03 (lap 206 — E–W witnessing-mechanism note added to Route B).
 
 ## The question the corpus answers
 `PA ⊬ Goodstein` is documented textbook math (Kirby–Paris 1982) that has **never been formalized in any
@@ -69,6 +69,20 @@ coded-derivation arithmetization.
   route's capstone **is the ε₀ girder**, not an alternative to it. So "port not invent" (Castéran) covers
   only the *lower* bound (already done: `goodsteinLength_dominates_fastGrowing`); the upper bound must be
   originated and is Bryce–Goré-scale.
+
+- **Mechanism note (2026-07-03, from `eguchi-weiermann-2012-operator-controlled-id1.md` §4–5;
+  relevant to ANY function-slot re-implementation of the witnessing read-off):** E–W's calculus
+  carries the numeric content in the CONTROL the whole way down — the embedding relativizes the
+  numeric operator by numeral *values* (Lemma 33 `f[m+k]`; Lemma 34 "the numeral's value enters the
+  f-relativization"), the ⋀/ω-rule relativizes each branch to `f[N(ι)]`, and rule side conditions
+  (`N(ι₀) ≤ f(0)`, `N(max k^Π(A)) ≤ f(0)`) gate every index that the terminal Witnessing Lemma 31
+  must descend through. Consequently their Thm-37 exit bound is an **α-indexed iterate**
+  `∃n ≤ s^α(m₀+⋯+m_{l-1})` absorbing the relativization tower — NOT a constant `f(0)`. A
+  re-implementation whose ω-rule does *not* gate branch indices (e.g. a bare `allω` over all of ℕ)
+  will hit a "standard-false ∀ with true 0-instance" trap at the read-off: the false-branch index
+  is bounded only by the *semantic term values* of the principal formula, so the gate must be
+  reconstructed semantically (subformula closure from the read-off's root + bounded-quantifier
+  value gate + a value-budget iterate as the exit bound), or built into the rules as E–W do.
 
 ### Route C — model-theoretic ( Kirby–Paris original: nonstandard models + indicators )
 - **Source:** `kirby-paris-1982-accessible-independence.md` — the *original* proof, via nonstandard models

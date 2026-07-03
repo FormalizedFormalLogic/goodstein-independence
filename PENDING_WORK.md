@@ -1,5 +1,105 @@
 # PENDING WORK
 
+## Reflection — 2026-07-03 (lap 206, DEEP REFLECTION) — routes (a)/(b) for the read-off trap are DEAD on the real matrix; route (c) = the E–W-faithful VALUE-BUDGET read-off is MANDATED
+
+**ROUTE VERDICT: CONTINUE** (destination + route sound; no unhandled fired trigger), **with a
+piece-1 statement-shape retarget** — the lap-205 soft trigger ("if the bound cannot thread through
+nested `allω` under the TC rules, the read-off statement shape must be rethought before assembling
+the splice") HAS fired, and this reflection performs the mandated rethink.
+
+**Independently re-verified this lap** (real `#print axioms`, bare `lake build` 🟢 1342, full
+`lake env lean wip/E1EmbeddingGrind.lean` re-run): headline
+`[propext, Classical.choice, goodstein_implies_consistency, Quot.sound]` sorryAx OFF, no drift;
+Route-B headline = trust base + `wainer_bound_of_pa_proves_goodstein` + 12 native_decide; rungs
+P/R/D `[propext, choice, Quot.sound]` in src; the ENTIRE wip bank kernel-clean (V3 ladder 10/10,
+`embedding_Zef2TC_V3`, `passAuxTC`/`rankToZero_TC`/`sound0_TC`, `f0_le_ewIter`,
+`three_le_rel1_rootSlot`, `ewIterTower_infl`) except exactly `readoffTC_core`/`readoff_delta0_Zef2TC`
+(the ONE disclosed `allω`-trap sorry). Both headline statements re-read against the source claim —
+`𝗣𝗔 ⊬ ↑goodsteinSentence`, `goodsteinSentence = “∀ m, ∃ N, !igoodsteinDef 0 m N”` — no transcription
+drift. Fixation check: laps 202–205 each closed their mandated targets (no spin, no false summit —
+whole-lemma targets closed repeatedly); the trap was probed EARLY as directed and honestly stalled.
+
+### The central finding (source- and kernel-grounded): the handoff's two candidate trap-fixes both die
+
+The lap-205 handoff proposed (a) the downward-closed guard `atomTrue (χ/[nm 0]) → atomTrue (∀⁰ χ)`
+threaded over the spine, or (b) a φ-shape vacuity argument (no bounded-∀ reachable). Checked
+against the ACTUAL pipeline matrix this lap:
+
+- `igoodsteinDef : 𝚺₁.Semisentence 3` is `goodstein.blueprint.resultDef.rew …`
+  (`InternalGoodstein.lean:46`) — the Foundation `PR.Construction` **machine-generated
+  computation-history formula**: "∃ history code, decoded coherently". Its coherence clauses are
+  bounded-∀s over the history ("∀ i < len, step i+1 follows from step i").
+- **(a) is DEAD**: a history coherent at index 0 need not be coherent at index 3 — the mono-guard
+  `0-instance-true → all-true` is FALSE for exactly these clauses. The guard hypothesis could be
+  threaded through the read-off but could NEVER be discharged in piece 2a for the real φ.
+- **(b) is DEAD**: those bounded-∀s sit inside the matrix on the instantiation spine; a rank-0
+  cut-elim OUTPUT derivation may `allω`-decompose them (nothing in `Zef2TC` forbids it), so the
+  trap is not vacuous for the pipeline.
+- **Why E–W never see this trap** (`papers/eguchi-weiermann-2012-operator-controlled-id1.md` §4–5):
+  their calculus carries the numeric content in the control THE WHOLE WAY — the embedding
+  relativizes `f` by numeral VALUES (Lemma 33 `f[m+k]`, Lemma 34 "the numeral's value enters the
+  f-relativization"), and rule side conditions (`N(ι₀) ≤ f(0)`, `N(max k^Π(A)) ≤ f(0)`, the
+  `f[N(ι)]` ω-branch relativization) gate every branch index. `Zef2TC`'s `allω` carries NO such
+  gate — **the trap is a calculus/invariant mismatch artifact, not a wall.** Their Thm-37 exit
+  bound is `∃n ≤ s^α(m₀+⋯)` — an α-indexed iterate absorbing the relativization tower, NOT a
+  constant `f(0)`; the repo's read-off should mirror that shape.
+
+### Route (c) — MANDATED: the value-budget read-off (no calculus change, no re-grind of the bank)
+
+Replace `readoffTC_core`'s invariant (constant bound `f 0`) by a value-budgeted one. The pieces are
+all kernel-shaped:
+
+1. **Subformula closure (free, already half-proven)**: from the singleton root `{∃⁰ φ}`, every
+   Γ-member along the induction is a numeral-instance of a φ-subformula — weakening only SHRINKS
+   contexts going up (`wk`/`weak` cases), `cut` is IMPOSSIBLE at `c = 0` (kernel-proven by `omega`
+   in `zef2_rank0_uniform_spine_underivable`'s cut case), and every other rule inserts only
+   subformula-instances. So junk ∀⁰-members never enter; χ is always a φ-subformula instance.
+2. **The value gate**: φ (Σ₁/Δ₀, `Hierarchy 𝚺` structure) has ALL its ∀s ball-shaped
+   `∀x (x <' t → …)`; a standard-FALSE instance has its least false branch `k₀ < val(t-instance)`
+   (a false instance must satisfy the guard). With `P_φ B :=` max value of φ's (finitely many)
+   subterms under numeral inputs `≤ B` — a FIXED monotone function of `B` — the trap descent is
+   gated: `k₀ ≤ P_φ V` where `V` = the running instantiation budget.
+3. **Bound algebra**: master bound = a norm-gated transfinite iterate (reuse the banked `ewIter`
+   machinery / its threading lemmas) of the step `S x := max (f x) (P_φ x)`, seeded at
+   `max (f 0) V`. Updates: `exI`-vacuous `V ↦ max V (f 0)`; `allω` false-branch descent
+   `V ↦ max V k₀`, slot `f ↦ rel1 f k₀` (reads absorbed since `k₀ ≤` current seed). The 8 closed
+   cases of `readoffTC_core` survive with V-threading edits.
+4. **The exposed bound may legitimately loosen** from `ewIter f α 0` to the S-iterate: the ratified
+   splice target `∃ o : ONote, o.NF ∧ EventuallyLE goodsteinLength (fastGrowing o)`
+   (`WainerLadder.lean`) has TOTAL ordinal freedom in `o` — `P_φ` is elementary, `f` is the
+   hardy-class tower slot, so the S-iterate is `fastGrowing`-dominated below ε₀ via the banked
+   Hardy brackets (piece 2b's job anyway). `readoff_delta0_Zef2TC` is a wip draft — its statement
+   is authoring-free; flag the (c) shape as judge input at promotion (package: read-off (c) +
+   `Zef2TC` + (Ax2)).
+
+**Probe order (trap-8 lesson — statement risk lives in the iterate algebra):** define the S-iterate
+gadget + prove its TWO threading inequalities FIRST (ordinal-descent absorption at gated norms;
+`rel1`-slot absorption), against the banked `ewIter` lemmas, BEFORE re-grinding the 9-case
+induction. If the gadget's ordinal-monotonicity is kernel-refuted in a way `ewIter`'s norm-gating
+can't fix, THAT is the escalation point for (c′).
+
+**(c′) fallback — ESCALATION-ONLY, do NOT start it**: amend `Zef2TC.allω` with an E–W-style
+branch/norm gate. Statement-cleanest but re-opens the ENTIRE banked V3 ladder + TC pass
+(~10+ laps re-grind). Only on a kernel-refuted (c).
+
+### KEEP / STOP / next target
+
+- **KEEP**: the E-seam order (read-off first, then composition); wip-only discipline (no src
+  self-ratification); probing decisive cases early; the banked-theorem freeze.
+- **STOP**: pursuing routes (a)/(b) for the trap (kernel/source-dead above); treating the
+  read-off's `f 0`-constant bound as required (the splice target doesn't need it).
+- **Highest-value next target**: route (c), starting with the S-iterate gadget probe (the decisive
+  algebra), then P_φ, then the V-threaded re-grind of `readoffTC_core`. Piece 2a's structural
+  wiring (root-slot plumbing → `rankToZeroAuxTC`, banked lap 205) is bound-shape-independent and
+  may proceed in parallel when a lap needs a second thread.
+- **Ledger re-grade**: `wainer_bound_of_pa_proves_goodstein` 🟠 → **🟡** (the named "generational"
+  reason — un-originated ordinal analysis of PA — has been dissolved by construction: P/R/D are
+  src theorems, E is realized in wip; what remains is ONE lemma + composition + ratification =
+  project-scale debt, chipped every lap). `goodstein_implies_consistency` stays 🟠 (frozen lane;
+  discharged by re-point at endgame — its final disposition is an operator/judge call).
+
+---
+
 ## lap 205 (FRESH-MIND REVIEW + E-seam piece 1) — bounded rank-0 `Zef2TC` read-off REALIZED (E–W Lemma 31), modulo ONE trap ✅
 
 **Review**: direction SOUND (laps 202–204 CLOSED the lap-201 V3 mandate — V3 ladder 10/10, rung E
