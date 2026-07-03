@@ -276,3 +276,49 @@ draft); the DRAFT text amendment itself is flagged for the judge, not self-ratif
 **Next E-1 targets** (W3 ladder): `verum` (trivial now via `verumR`), `and`/`or` case lemmas
 (budget-max bookkeeping), then the hard pair: `axm` (PA-axiom leaves via `trueRel` +
 `em`-style Δ₀ verification — W1/W2 content) and `all` (ω-rule budget uniformity).
+
+---
+
+## Block 8 — E-1 block 3: the master predicate + case ladder, 7/10 cases SORRY-FREE; the `∃ K` statement amendment (lap 200)
+
+**File**: `wip/E1EmbeddingGrind.lean` (src untouched). Build green (1342 jobs),
+`blueprint_audit` ✓ 16, headline undrifted.
+
+1. **STATEMENT DISCOVERY (amendment input, flagged for the judge — NOT self-ratified)**: the
+   E-0/E-1 DRAFT's **fixed root slot cannot pay the `exI` gate**.  `Zef2TC.exI` demands the
+   witness numeral `n ≤ f 0` with `f = ewRootSlot e B` structural (outside `∀ env`/`∀ m`),
+   but the `Derivation2` `exs` witness value `(asg env) t` — and at the root the true
+   goodstein witness `N(m)` — is assignment-dependent and unbounded.  The fixed-slot DRAFT is
+   unprovable as stated.  Fix = the W3 `SomeK` witness-budget discipline transplanted to the
+   slot: an **env-local relativization index `∃ K`** with slot `rel1 (ewRootSlot e B) K`
+   (composes with the ω-rule via `rel1_rel1`, keeps `EwF1`/`EwF2` via `rel1_low` — pipeline
+   undisturbed).  `embedding_Zef2TC_DRAFT2` = the so-amended rung-E statement (typechecked,
+   sorry); DRAFT1 retained verbatim as judge input.
+2. **`BudgetedEmbedsTC`** (the W3 master predicate over `Zef2TC`, amended shape):
+   `∃ B d e (NF e), ∀ env, ∃ K α (NF α), Zef2TC α e ⊤ (rel1 (ewRootSlot e B) K) d (Γ.image (asg env ▹ ·))`
+   with the operator fixed at the full closure `Cl ⊤` (every side condition `Cl.base trivial`).
+3. **Monotonicity ports (all sorry-free)**: `Zef2TC.mono_f` / `mono_c` / `change_H` /
+   `change_e` (the control ordinal is a phantom index of the derivation relation — proven by
+   trivial induction; it acquires meaning only in the cut-elim pass).
+4. **Slot/`Nlog` toolkit (all sorry-free)**: `Nlog_osucc_le` (mirror of `ewN_osucc_le`);
+   `relSlot_le` (cross-`e` slot domination — `hardy_le_of_lt`'s `norm e₁ ≤ B` budget gate
+   absorbed into the structural `B`); `relSlot_mono`; `relSlot_succ_gap` (one `K`-rung buys
+   `+2` of root-gate slack — the `2·(x+…)` slot shape); `le_relSlot_zero`.
+5. **The case ladder — SEVEN of ten `Derivation2` cases closed sorry-free** (standard triple,
+   `#print axioms` anchors in-file): `closed` (consumes `em_Zef2TC'`; complexity is
+   env-independent via `complexity_rew`), `verum`, `wk`, `shift` (assignment-collapse
+   computation from `embedC` verbatim), `or` (osucc root + one `K`-rung), `and` and `cut`
+   (two-premise joins: control tower `osucc (e₁+e₂)` — both strictly below, `norm eᵢ` into
+   `B`; root `osucc (α₁+α₂)` — `Nlog_add_le_max_succ` absorbing + gate slack; budgets by
+   `max`; cut rank `max (max d₁ d₂) (complexity+1)`, read gate paid via `B`).
+6. **`budgetedEmbedding_Zef2TC`** — the master ladder ASSEMBLED by a real (non-sorry)
+   induction; `sorryAx` enters exactly through the three disclosed hard leaves:
+   **`axm`** (PA-axiom leaf = W1/W2 content: `trueRel`-driven bounded truth for 𝗣𝗔⁻,
+   cut-tower for the induction schema), **`all`** (ω-rule: per-branch `(K_n, α_n)` must be
+   uniformized — the `EmbeddingBound` uniform-ω-family port), **`exs`** (closed-term
+   collapse: `asg env t` is closed but not a numeral — needs the `Zef2TC` (Ax2)-driven
+   Leibniz kit; the witness VALUE is what forced the `∃ K` amendment).
+
+**Next E-1 targets**: `exs` (closed-term collapse — likely the cheapest of the three;
+`Zef2TC` equality congruence via `trueRel`, mirror `Provable.exI_closed`), then `all`
+(uniform-ω-family), then `axm` (W1/W2 proper).

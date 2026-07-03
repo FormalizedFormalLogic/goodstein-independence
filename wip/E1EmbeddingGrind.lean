@@ -1,5 +1,6 @@
 import GoodsteinPA.OperatorZef2
 import GoodsteinPA.WainerRoute
+import GoodsteinPA.Embedding
 
 /-!
 # E-1 grind (Series-3) — `Zef2TC` (full E–W Def-23 rule set) + the budgeted EM lemma
@@ -282,4 +283,509 @@ theorem embedding_Zef2TC_DRAFT :
         Cl H α ∧ Zef2TC α e H (ewRootSlot e B) d {(goodsteinBodyE/[nm m])} := by
   sorry
 
+/-! ## E-1 block 3 — monotonicity ports, the slot toolkit, and the case ladder
+
+### The block-3 STATEMENT discovery (amendment input for the judge)
+
+The E-0/E-1 DRAFT's **fixed root slot cannot pay the `exI` gate**: `Zef2TC.exI` demands the
+witness numeral `n ≤ f 0`, and in the `Derivation2` `exs` case the witness value
+`(asg env) t` is **env-dependent and unbounded** while `f = ewRootSlot e B` is structural
+(chosen before `∀ env`).  Concretely, at the root the DRAFT's conclusion sequent
+`{goodsteinBodyE/[nm m]}` is a Σ₁ instance whose only introduction rule is `exI` at the true
+goodstein witness `N(m)` — unbounded in `m` — so the fixed-slot DRAFT is unprovable as stated
+(and morally false).  This is exactly the seam the W3 verdict solved in `ZekdSomeK` with the
+env-local `∃ K` witness budget; the fix here is the same discipline transplanted to the slot:
+the master predicate carries an **env-local relativization index `K`** and runs the derivation
+at slot `rel1 (ewRootSlot e B) K`.  `rel1`-slots compose with the ω-rule
+(`rel1_rel1 : rel1 (rel1 f m) n = rel1 f (max m n)`) and keep `EwF1`/`EwF2` (`rel1_low`), so
+the downstream pass/read-off pipeline is undisturbed.  `embedding_Zef2TC_DRAFT2` below is the
+so-amended rung-E statement (the DRAFT above is retained verbatim as the flagged judge input).
+-/
+
+namespace Zef2TC
+
+/-- Slot monotonicity (port of `Zef2.mono_f` over the full rule set). -/
+theorem mono_f : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    Zef2TC α e H f c Γ → ∀ {f' : ℕ → ℕ}, (∀ x, f x ≤ f' x) → Zef2TC α e H f' c Γ := by
+  intro α e H f c Γ dd
+  induction dd with
+  | axL hαN r v hp hn =>
+      intro f' hff'; exact .axL (le_trans hαN (hff' 0)) r v hp hn
+  | trueRel hαN r v htrue hmem =>
+      intro f' hff'; exact .trueRel (le_trans hαN (hff' 0)) r v htrue hmem
+  | trueNrel hαN r v htrue hmem =>
+      intro f' hff'; exact .trueNrel (le_trans hαN (hff' 0)) r v htrue hmem
+  | verumR hαN h => intro f' hff'; exact .verumR (le_trans hαN (hff' 0)) h
+  | wk hαN hsub _ ih => intro f' hff'; exact .wk (le_trans hαN (hff' 0)) hsub (ih hff')
+  | weak hαN hβ hβNF hαNF hβH hsub _ ih =>
+      intro f' hff'; exact .weak (le_trans hαN (hff' 0)) hβ hβNF hαNF hβH hsub (ih hff')
+  | andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
+      intro f' hff'
+      exact .andI (le_trans hαN (hff' 0)) φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH
+        (ih₁ hff') (ih₂ hff')
+  | orI hαN φ ψ hβ hβNF hαNF hβH _ ih =>
+      intro f' hff'; exact .orI (le_trans hαN (hff' 0)) φ ψ hβ hβNF hαNF hβH (ih hff')
+  | allω hαN φ β hβ hβNF hαNF hβH _ ih =>
+      intro f' hff'
+      exact .allω (le_trans hαN (hff' 0)) φ β hβ hβNF hαNF hβH
+        (fun n => ih n (rel1_mono hff' n))
+  | exI hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
+      intro f' hff'
+      exact .exI (le_trans hαN (hff' 0)) φ n hβ hβNF hαNF hβH
+        (le_trans hbound (hff' 0)) (ih hff')
+  | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
+      intro f' hff'
+      exact .cut (le_trans hαN (hff' 0)) φ hcompl (le_trans hcutRead (hff' 0))
+        hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hff') (ih₂ hff')
+
+/-- Cut-rank monotonicity (only `cut` mentions `c`). -/
+theorem mono_c : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    Zef2TC α e H f c Γ → ∀ {c' : ℕ}, c ≤ c' → Zef2TC α e H f c' Γ := by
+  intro α e H f c Γ dd
+  induction dd with
+  | axL hαN r v hp hn => intro c' _; exact .axL hαN r v hp hn
+  | trueRel hαN r v htrue hmem => intro c' _; exact .trueRel hαN r v htrue hmem
+  | trueNrel hαN r v htrue hmem => intro c' _; exact .trueNrel hαN r v htrue hmem
+  | verumR hαN h => intro c' _; exact .verumR hαN h
+  | wk hαN hsub _ ih => intro c' hcc; exact .wk hαN hsub (ih hcc)
+  | weak hαN hβ hβNF hαNF hβH hsub _ ih =>
+      intro c' hcc; exact .weak hαN hβ hβNF hαNF hβH hsub (ih hcc)
+  | andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
+      intro c' hcc
+      exact .andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hcc) (ih₂ hcc)
+  | orI hαN φ ψ hβ hβNF hαNF hβH _ ih =>
+      intro c' hcc; exact .orI hαN φ ψ hβ hβNF hαNF hβH (ih hcc)
+  | allω hαN φ β hβ hβNF hαNF hβH _ ih =>
+      intro c' hcc; exact .allω hαN φ β hβ hβNF hαNF hβH (fun n => ih n hcc)
+  | exI hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
+      intro c' hcc; exact .exI hαN φ n hβ hβNF hαNF hβH hbound (ih hcc)
+  | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
+      intro c' hcc
+      exact .cut hαN φ (lt_of_lt_of_le hcompl hcc) hcutRead hβφ hβψ hβφNF hβψNF hαNF
+        hβφH hβψH (ih₁ hcc) (ih₂ hcc)
+
+/-- Operator swap (port of `Zef2.change_H`; `Cl_of_NF` supplies every `Cl` obligation). -/
+theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    Zef2TC α e H f c Γ → ∀ {H' : ONote → Prop}, Zef2TC α e H' f c Γ := by
+  intro α e H f c Γ dd
+  induction dd with
+  | axL hαN r v hp hn => intro H'; exact .axL hαN r v hp hn
+  | trueRel hαN r v htrue hmem => intro H'; exact .trueRel hαN r v htrue hmem
+  | trueNrel hαN r v htrue hmem => intro H'; exact .trueNrel hαN r v htrue hmem
+  | verumR hαN h => intro H'; exact .verumR hαN h
+  | wk hαN hsub _ ih => intro H'; exact .wk hαN hsub ih
+  | weak hαN hβ hβNF hαNF _ hsub _ ih =>
+      intro H'; exact .weak hαN hβ hβNF hαNF (Cl_of_NF hβNF) hsub ih
+  | andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF _ _ _ _ ih₁ ih₂ =>
+      intro H'
+      exact .andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
+  | orI hαN φ ψ hβ hβNF hαNF _ _ ih =>
+      intro H'; exact .orI hαN φ ψ hβ hβNF hαNF (Cl_of_NF hβNF) ih
+  | allω hαN φ β hβ hβNF hαNF _ _ ih =>
+      intro H'
+      exact .allω hαN φ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n)) (fun n => ih n)
+  | exI hαN φ n hβ hβNF hαNF _ hbound _ ih =>
+      intro H'; exact .exI hαN φ n hβ hβNF hαNF (Cl_of_NF hβNF) hbound ih
+  | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF _ _ _ _ ih₁ ih₂ =>
+      intro H'
+      exact .cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF
+        (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
+
+/-- Control-ordinal swap: `e` is a phantom index of the derivation relation (no rule inspects
+it), so a derivation transports to ANY control ordinal.  (The control ordinal only acquires
+meaning in the cut-elimination pass, where it drives the `ewIter`/`hardy` slot arithmetic.) -/
+theorem change_e : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    Zef2TC α e H f c Γ → ∀ (e' : ONote), Zef2TC α e' H f c Γ := by
+  intro α e H f c Γ dd
+  induction dd with
+  | axL hαN r v hp hn => intro e'; exact .axL hαN r v hp hn
+  | trueRel hαN r v htrue hmem => intro e'; exact .trueRel hαN r v htrue hmem
+  | trueNrel hαN r v htrue hmem => intro e'; exact .trueNrel hαN r v htrue hmem
+  | verumR hαN h => intro e'; exact .verumR hαN h
+  | wk hαN hsub _ ih => intro e'; exact .wk hαN hsub (ih e')
+  | weak hαN hβ hβNF hαNF hβH hsub _ ih =>
+      intro e'; exact .weak hαN hβ hβNF hαNF hβH hsub (ih e')
+  | andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
+      intro e'
+      exact .andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ e') (ih₂ e')
+  | orI hαN φ ψ hβ hβNF hαNF hβH _ ih =>
+      intro e'; exact .orI hαN φ ψ hβ hβNF hαNF hβH (ih e')
+  | allω hαN φ β hβ hβNF hαNF hβH _ ih =>
+      intro e'; exact .allω hαN φ β hβ hβNF hαNF hβH (fun n => ih n e')
+  | exI hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
+      intro e'; exact .exI hαN φ n hβ hβNF hαNF hβH hbound (ih e')
+  | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
+      intro e'
+      exact .cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ e') (ih₂ e')
+
+end Zef2TC
+
+/-! ### `Nlog`/slot toolkit for the ordinal joins -/
+
+/-- `Nlog` is near-stable under `osucc` (mirror of `ewN_osucc_le`). -/
+theorem Nlog_osucc_le : ∀ {o : ONote}, o.NF → Nlog (osucc o) ≤ Nlog o + 1
+  | 0, _ => by
+      show Nlog (oadd 0 1 0) ≤ Nlog 0 + 1
+      simp only [Nlog_oadd, Nlog_zero, PNat.one_coe]
+      have : clog 1 = 1 := by decide
+      omega
+  | oadd 0 n a, h => by
+      have ha0 : a = 0 := by
+        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
+        rw [ONote.repr_zero, Ordinal.opow_zero] at hlt
+        exact (@ONote.repr_inj a 0 h.snd ONote.NF.zero).1
+          (by rw [ONote.repr_zero]; exact Order.lt_one_iff.1 hlt)
+      subst ha0
+      show Nlog (oadd 0 (n + 1) 0) ≤ Nlog (oadd 0 n 0) + 1
+      have hadd := clog_add_le (n : ℕ) 1
+      have hpos := clog_pos n
+      have h1 : clog 1 = 1 := by decide
+      simp only [Nlog_oadd, Nlog_zero, PNat.add_coe, PNat.one_coe, Nat.zero_add]
+      omega
+  | oadd (oadd e' n' a') m b, h => by
+      show Nlog (oadd (oadd e' n' a') m (osucc b)) ≤ Nlog (oadd (oadd e' n' a') m b) + 1
+      have hIH := Nlog_osucc_le h.snd
+      simp only [Nlog_oadd] at hIH ⊢
+      omega
+
+/-- The `K`-relativized root slot dominates a smaller-budget one: `e₁ < e` (with
+`norm e₁ ≤ B`), `B₁ ≤ B`, `K₁ ≤ K` give pointwise domination.  The `norm e₁ ≤ B`
+side condition is exactly `hardy_le_of_lt`'s budget gate, absorbed into the structural `B`. -/
+theorem relSlot_le {e₁ e : ONote} (he₁ : e₁.NF) (he : e.NF) (hlt : e₁ < e)
+    {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ K) (hnorm : norm e₁ ≤ B) (x : ℕ) :
+    rel1 (ewRootSlot e₁ B₁) K₁ x ≤ rel1 (ewRootSlot e B) K x := by
+  simp only [rel1, ewRootSlot]
+  have harg : max B₁ (max K₁ x) ≤ max B (max K x) :=
+    max_le_max hB (max_le_max hK le_rfl)
+  have h1 : hardy e₁ (max B₁ (max K₁ x)) ≤ hardy e₁ (max B (max K x)) :=
+    hardy_monotone e₁ harg
+  have h2 : hardy e₁ (max B (max K x)) ≤ hardy e (max B (max K x)) :=
+    hardy_le_of_lt he₁ he hlt (le_trans hnorm (le_max_left _ _))
+  have h3 : max K₁ x ≤ max K x := max_le_max hK le_rfl
+  omega
+
+/-- Same-`e` slot monotonicity in `(B, K)`. -/
+theorem relSlot_mono {e : ONote} {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ K) (x : ℕ) :
+    rel1 (ewRootSlot e B₁) K₁ x ≤ rel1 (ewRootSlot e B) K x := by
+  simp only [rel1, ewRootSlot]
+  have h1 : hardy e (max B₁ (max K₁ x)) ≤ hardy e (max B (max K x)) :=
+    hardy_monotone e (max_le_max hB (max_le_max hK le_rfl))
+  have h3 : max K₁ x ≤ max K x := max_le_max hK le_rfl
+  omega
+
+/-- One `K`-rung buys `+2` of root-gate slack (the `2·(x + …)` slot shape). -/
+theorem relSlot_succ_gap (e : ONote) (B M : ℕ) :
+    rel1 (ewRootSlot e B) M 0 + 2 ≤ rel1 (ewRootSlot e B) (M + 1) 0 := by
+  simp only [rel1, ewRootSlot]
+  have h1 : hardy e (max B (max M 0)) ≤ hardy e (max B (max (M + 1) 0)) :=
+    hardy_monotone e (max_le_max le_rfl (max_le_max (Nat.le_succ M) le_rfl))
+  have h2 : max M 0 + 1 ≤ max (M + 1) 0 := by omega
+  omega
+
+/-- The structural budget `B` is readable off the slot at `0`. -/
+theorem le_relSlot_zero (e : ONote) (B K : ℕ) : B ≤ rel1 (ewRootSlot e B) K 0 := by
+  simp only [rel1, ewRootSlot]
+  have h1 := le_hardy e (max B (max K 0))
+  have h2 : B ≤ max B (max K 0) := le_max_left _ _
+  omega
+
+/-! ### The master predicate and the `Derivation2` case ladder -/
+
+/-- **The rung-E master predicate** (block-3 amendment of the W3 shape): structural budgets
+`B` (slot), `d` (cut rank), `e` (control tower) OUTSIDE `∀ env`; per-assignment an env-local
+relativization index `K` (the `SomeK` witness-budget discipline — see the block-3 discovery
+note) and a node ordinal `α`; operator fixed at the full closure `Cl (⊤)` (every `Cl`
+obligation is `Cl.base trivial`, and `∃ H, Cl H α ∧ …` follows). -/
+def BudgetedEmbedsTC (Γ : Finset (SyntacticFormula ℒₒᵣ)) : Prop :=
+  ∃ B d : ℕ, ∃ e : ONote, e.NF ∧ ∀ env : ℕ → ℕ, ∃ K : ℕ, ∃ α : ONote, α.NF ∧
+    Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) K) d
+      (Γ.image (fun φ => Embedding.asg env ▹ φ))
+
+/-- Every `Cl (⊤)` obligation is free. -/
+theorem clT (β : ONote) : Cl (fun _ : ONote => True) β := Cl.base trivial
+
+/-- **`closed`** — consume `em_Zef2TC'`; the ordinal is the deterministic complexity rung
+(env-independent since rewriting preserves `complexity`), the budget is its `clog` gate. -/
+theorem budgetedEmbedsTC_closed {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    (φ : SyntacticFormula ℒₒᵣ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+    BudgetedEmbedsTC Γ := by
+  refine ⟨clog (2 * φ.complexity + 1), 0, 0, ONote.NF.zero, fun env => ?_⟩
+  refine ⟨0, ONote.ofNat (2 * (Embedding.asg env ▹ φ).complexity + 1), ONote.nf_ofNat _, ?_⟩
+  have hf1 := ewRootSlot_f1 0 (clog (2 * φ.complexity + 1))
+  have hmono : Monotone (rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) 0) :=
+    rel1_monotone hf1.1.monotone 0
+  have hinfl : ∀ m, m ≤ rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) 0 m :=
+    rel1_infl (fun m => by have := hf1.2 m; omega) 0
+  have hgate : clog (2 * (Embedding.asg env ▹ φ).complexity + 1)
+      ≤ rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) 0 0 := by
+    simp only [Semiformula.complexity_rew]
+    exact le_relSlot_zero 0 _ 0
+  exact em_Zef2TC' (Embedding.asg env ▹ φ) hmono hinfl hgate
+    (Finset.mem_image_of_mem _ hp)
+    (by simpa using Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) hn)
+
+/-- **`verum`** — `verumR` at ordinal `0`. -/
+theorem budgetedEmbedsTC_verum {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    (h : (⊤ : SyntacticFormula ℒₒᵣ) ∈ Γ) :
+    BudgetedEmbedsTC Γ := by
+  refine ⟨0, 0, 0, ONote.NF.zero, fun env => ⟨0, 0, ONote.NF.zero, ?_⟩⟩
+  have hmem : (⊤ : SyntacticFormula ℒₒᵣ) ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
+    have := Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) h
+    simpa using this
+  exact Zef2TC.verumR (by simp) hmem
+
+/-- **`wk`** — image weakening; all budgets carried. -/
+theorem budgetedEmbedsTC_wk {Δ Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    (hsub : Δ ⊆ Γ) (ih : BudgetedEmbedsTC Δ) :
+    BudgetedEmbedsTC Γ := by
+  obtain ⟨B, d, e, he, ih⟩ := ih
+  refine ⟨B, d, e, he, fun env => ?_⟩
+  obtain ⟨K, α, hαNF, D⟩ := ih env
+  exact ⟨K, α, hαNF, D.wk D.gate (Finset.image_subset_image hsub)⟩
+
+/-- **`shift`** — the image collapses under the shifted assignment (`embedC`'s `hB`
+computation, verbatim); budgets and derivation carried unchanged. -/
+theorem budgetedEmbedsTC_shift {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    (ih : BudgetedEmbedsTC Γ) :
+    BudgetedEmbedsTC (Γ.image Rewriting.shift) := by
+  obtain ⟨B, d, e, he, ih⟩ := ih
+  refine ⟨B, d, e, he, fun env => ?_⟩
+  obtain ⟨K, α, hαNF, D⟩ := ih (fun x => env (x + 1))
+  refine ⟨K, α, hαNF, ?_⟩
+  have himg : (Γ.image (Rewriting.shift : SyntacticFormula ℒₒᵣ → SyntacticFormula ℒₒᵣ)).image
+        (fun φ => Embedding.asg env ▹ φ)
+      = Γ.image (fun φ => Embedding.asg (fun x => env (x + 1)) ▹ φ) := by
+    have hcompB : (Embedding.asg env).comp Rew.shift
+        = Embedding.asg (fun x => env (x + 1)) := by
+      ext x
+      · exact Fin.elim0 x
+      · simp [Embedding.asg, Rew.comp_app]
+    rw [Finset.image_image]
+    refine Finset.image_congr (fun ψ _ => ?_)
+    show Embedding.asg env ▹ (Rew.shift ▹ ψ) = Embedding.asg (fun x => env (x + 1)) ▹ ψ
+    rw [← TransitiveRewriting.comp_app, hcompB]
+  rwa [himg]
+
+/-- **`or`** — single premise; `osucc` root, one `K`-rung pays the `Nlog` gate. -/
+theorem budgetedEmbedsTC_or {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    {φ ψ : SyntacticFormula ℒₒᵣ} (h : φ ⋎ ψ ∈ Γ)
+    (ih : BudgetedEmbedsTC (insert φ (insert ψ Γ))) :
+    BudgetedEmbedsTC Γ := by
+  obtain ⟨B, d, e, he, ih⟩ := ih
+  refine ⟨B, d, e, he, fun env => ?_⟩
+  obtain ⟨K, α, hαNF, D⟩ := ih env
+  refine ⟨K + 1, osucc α, osucc_NF hαNF, ?_⟩
+  have hgate := D.gate
+  rw [Finset.image_insert, Finset.image_insert] at D
+  have D' := D.mono_f (relSlot_mono (le_refl B) (Nat.le_succ K))
+  have hg : Nlog (osucc α) ≤ rel1 (ewRootSlot e B) (K + 1) 0 := by
+    have hs := Nlog_osucc_le hαNF
+    have hgap := relSlot_succ_gap e B K
+    omega
+  have hor := Zef2TC.orI (α := osucc α) hg
+    (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
+    (Zekd.lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
+  have hmem : (Embedding.asg env ▹ φ ⋎ Embedding.asg env ▹ ψ)
+      ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
+    have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
+    simpa using this
+  rwa [Finset.insert_eq_self.mpr hmem] at hor
+
+/-- **`and`** — the two-premise join: control tower `osucc (e₁ + e₂)` (both strictly below,
+`hardy_le_of_lt` fed by `norm eᵢ` absorbed into the structural `B`), root `osucc (α₁ + α₂)`
+(`Nlog` absorbing + one `K`-rung of gate slack), budgets aligned by `max`/`mono`. -/
+theorem budgetedEmbedsTC_and {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    {φ ψ : SyntacticFormula ℒₒᵣ} (h : φ ⋏ ψ ∈ Γ)
+    (ihp : BudgetedEmbedsTC (insert φ Γ)) (ihq : BudgetedEmbedsTC (insert ψ Γ)) :
+    BudgetedEmbedsTC Γ := by
+  obtain ⟨B₁, d₁, e₁, he₁, ih₁⟩ := ihp
+  obtain ⟨B₂, d₂, e₂, he₂, ih₂⟩ := ihq
+  have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
+  have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
+  have hlt₁ : e₁ < osucc (e₁ + e₂) :=
+    lt_of_le_of_lt (Zekd.le_add_right_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+  have hlt₂ : e₂ < osucc (e₁ + e₂) :=
+    lt_of_le_of_lt (Zekd.le_add_left_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+  refine ⟨B₁ + B₂ + norm e₁ + norm e₂, max d₁ d₂, osucc (e₁ + e₂), heNF, fun env => ?_⟩
+  obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
+  obtain ⟨K₂, α₂, hα₂NF, D₂⟩ := ih₂ env
+  have haddNF : (α₁ + α₂).NF := by haveI := hα₁NF; haveI := hα₂NF; exact ONote.add_nf α₁ α₂
+  refine ⟨max K₁ K₂ + 1, osucc (α₁ + α₂), osucc_NF haddNF, ?_⟩
+  have hg₁ := D₁.gate
+  have hg₂ := D₂.gate
+  rw [Finset.image_insert] at D₁ D₂
+  have hff₁ : ∀ x, rel1 (ewRootSlot e₁ B₁) K₁ x
+      ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂))
+          (max K₁ K₂ + 1) x :=
+    relSlot_le he₁ heNF hlt₁ (by omega) (by omega) (by omega)
+  have hff₂ : ∀ x, rel1 (ewRootSlot e₂ B₂) K₂ x
+      ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂))
+          (max K₁ K₂ + 1) x :=
+    relSlot_le he₂ heNF hlt₂ (by omega) (by omega) (by omega)
+  have D₁' := ((D₁.change_e (osucc (e₁ + e₂))).mono_f hff₁).mono_c (le_max_left d₁ d₂)
+  have D₂' := ((D₂.change_e (osucc (e₁ + e₂))).mono_f hff₂).mono_c (le_max_right d₁ d₂)
+  have hg : Nlog (osucc (α₁ + α₂))
+      ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂))
+          (max K₁ K₂ + 1) 0 := by
+    have hs := Nlog_osucc_le haddNF
+    have ha := Nlog_add_le_max_succ α₁ hα₁NF α₂ hα₂NF
+    have j₁ : rel1 (ewRootSlot e₁ B₁) K₁ 0
+        ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂)) (max K₁ K₂) 0 :=
+      relSlot_le he₁ heNF hlt₁ (by omega) (le_max_left _ _) (by omega) 0
+    have j₂ : rel1 (ewRootSlot e₂ B₂) K₂ 0
+        ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂)) (max K₁ K₂) 0 :=
+      relSlot_le he₂ heNF hlt₂ (by omega) (le_max_right _ _) (by omega) 0
+    have hgap := relSlot_succ_gap (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂) (max K₁ K₂)
+    omega
+  have hand := Zef2TC.andI (α := osucc (α₁ + α₂)) hg
+    (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
+    (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
+    (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
+    hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
+  have hmem : (Embedding.asg env ▹ φ ⋏ Embedding.asg env ▹ ψ)
+      ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
+    have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
+    simpa using this
+  rwa [Finset.insert_eq_self.mpr hmem] at hand
+
+/-- **`cut`** — same two-premise join as `and`; the cut rank is `max`ed with
+`φ.complexity + 1` (env-independent: rewriting preserves `complexity`) and the read gate
+`complexity ≤ f 0` is paid by absorbing `φ.complexity` into the structural `B`. -/
+theorem budgetedEmbedsTC_cut {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    {φ : SyntacticFormula ℒₒᵣ}
+    (ihp : BudgetedEmbedsTC (insert φ Γ)) (ihn : BudgetedEmbedsTC (insert (∼φ) Γ)) :
+    BudgetedEmbedsTC Γ := by
+  obtain ⟨B₁, d₁, e₁, he₁, ih₁⟩ := ihp
+  obtain ⟨B₂, d₂, e₂, he₂, ih₂⟩ := ihn
+  have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
+  have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
+  have hlt₁ : e₁ < osucc (e₁ + e₂) :=
+    lt_of_le_of_lt (Zekd.le_add_right_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+  have hlt₂ : e₂ < osucc (e₁ + e₂) :=
+    lt_of_le_of_lt (Zekd.le_add_left_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+  refine ⟨B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity, max (max d₁ d₂) (φ.complexity + 1),
+    osucc (e₁ + e₂), heNF, fun env => ?_⟩
+  obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
+  obtain ⟨K₂, α₂, hα₂NF, D₂⟩ := ih₂ env
+  have haddNF : (α₁ + α₂).NF := by haveI := hα₁NF; haveI := hα₂NF; exact ONote.add_nf α₁ α₂
+  refine ⟨max K₁ K₂ + 1, osucc (α₁ + α₂), osucc_NF haddNF, ?_⟩
+  have hg₁ := D₁.gate
+  have hg₂ := D₂.gate
+  rw [Finset.image_insert] at D₁ D₂
+  have hff₁ : ∀ x, rel1 (ewRootSlot e₁ B₁) K₁ x
+      ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity))
+          (max K₁ K₂ + 1) x :=
+    relSlot_le he₁ heNF hlt₁ (by omega) (by omega) (by omega)
+  have hff₂ : ∀ x, rel1 (ewRootSlot e₂ B₂) K₂ x
+      ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity))
+          (max K₁ K₂ + 1) x :=
+    relSlot_le he₂ heNF hlt₂ (by omega) (by omega) (by omega)
+  have D₁' := ((D₁.change_e (osucc (e₁ + e₂))).mono_f hff₁).mono_c
+    (c' := max (max d₁ d₂) (φ.complexity + 1))
+    (le_trans (le_max_left d₁ d₂) (le_max_left _ _))
+  have D₂' := ((D₂.change_e (osucc (e₁ + e₂))).mono_f hff₂).mono_c
+    (c' := max (max d₁ d₂) (φ.complexity + 1))
+    (le_trans (le_max_right d₁ d₂) (le_max_left _ _))
+  rw [show Embedding.asg env ▹ (∼φ) = ∼(Embedding.asg env ▹ φ) by simp] at D₂'
+  have hg : Nlog (osucc (α₁ + α₂))
+      ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity))
+          (max K₁ K₂ + 1) 0 := by
+    have hs := Nlog_osucc_le haddNF
+    have ha := Nlog_add_le_max_succ α₁ hα₁NF α₂ hα₂NF
+    have j₁ : rel1 (ewRootSlot e₁ B₁) K₁ 0
+        ≤ rel1 (ewRootSlot (osucc (e₁ + e₂))
+            (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity)) (max K₁ K₂) 0 :=
+      relSlot_le he₁ heNF hlt₁ (by omega) (le_max_left _ _) (by omega) 0
+    have j₂ : rel1 (ewRootSlot e₂ B₂) K₂ 0
+        ≤ rel1 (ewRootSlot (osucc (e₁ + e₂))
+            (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity)) (max K₁ K₂) 0 :=
+      relSlot_le he₂ heNF hlt₂ (by omega) (le_max_right _ _) (by omega) 0
+    have hgap := relSlot_succ_gap (osucc (e₁ + e₂))
+      (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity) (max K₁ K₂)
+    omega
+  have hread : (Embedding.asg env ▹ φ).complexity
+      ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity))
+          (max K₁ K₂ + 1) 0 := by
+    simp only [Semiformula.complexity_rew]
+    exact le_trans (by omega) (le_relSlot_zero _ _ _)
+  have hcompl : (Embedding.asg env ▹ φ).complexity < max (max d₁ d₂) (φ.complexity + 1) := by
+    simp only [Semiformula.complexity_rew]
+    omega
+  exact Zef2TC.cut hg (Embedding.asg env ▹ φ) hcompl hread
+    (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
+    (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
+    hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
+
+/-- **`axm`** — PA-axiom leaf; THE hard pair's first half (= W1/W2 content).  Finite `𝗣𝗔⁻` +
+equality axioms are true closed Δ₀-ish formulas after `asg env` — dischargeable by a
+`trueRel`-driven bounded-truth lemma (the `Zef2TC` analogue of `provable_true`, using (Ax2)
+where `embedC` used ω-completeness); the **induction schema** needs the bounded cut-tower
+(the W1/W2 campaign).  Disclosed `sorry` — next E-1 block. -/
+theorem budgetedEmbedsTC_axm {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    (φ : SyntacticFormula ℒₒᵣ) (hφ : φ ∈ (𝗣𝗔 : Schema ℒₒᵣ)) (hΓ : φ ∈ Γ) :
+    BudgetedEmbedsTC Γ := by
+  sorry
+
+/-- **`all`** — the ω-rule; THE hard pair's second half.  Per branch `n` the IH at `n :>ₙ env`
+gives `(K_n, α_n)`; `Zef2TC.allω` needs a SINGLE root `α` with `β n < α` for all `n` and
+premises at slot `rel1 f n` — so the per-branch `α_n, K_n` must be UNIFORMIZED into `α` and
+absorbed into the branch relativization (the `EmbeddingBound.embedC_LX_bdd` uniform-ω-family
+discipline, ported to the slot calculus).  Requires the ordinal-family bound port; disclosed
+`sorry` — the block after `axm`. -/
+theorem budgetedEmbedsTC_all {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    {φ : SyntacticSemiformula ℒₒᵣ 1} (h : ∀⁰ φ ∈ Γ)
+    (ih : BudgetedEmbedsTC (insert (Rewriting.free φ) (Γ.image Rewriting.shift))) :
+    BudgetedEmbedsTC Γ := by
+  sorry
+
+/-- **`exs`** — witness term `t`; `asg env t` is CLOSED but not a literal numeral, so
+`Zef2TC.exI` (premise at `φ/[nm n]`) needs the **closed-term collapse**: replace `asg env t`
+by the numeral of its standard value via (Ax2)-driven equality congruence (the `Zef2TC`
+analogue of `Provable.exI_closed`).  The witness VALUE is env-dependent — this is the case
+that forced the `∃ K` amendment (the value is absorbed into `K`, bound `n ≤ f 0` paid by
+`rel1 … K 0 ≥ K`).  Disclosed `sorry` — needs the `Zef2TC` Leibniz kit. -/
+theorem budgetedEmbedsTC_exs {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    {φ : SyntacticSemiformula ℒₒᵣ 1} (h : ∃⁰ φ ∈ Γ) (t : SyntacticTerm ℒₒᵣ)
+    (ih : BudgetedEmbedsTC (insert (φ/[t]) Γ)) :
+    BudgetedEmbedsTC Γ := by
+  sorry
+
+/-- **The rung-E master ladder, assembled** (REAL induction, mirroring `SpikeW3Embedding`'s
+skeleton): every `Derivation2` from `𝗣𝗔` is budgeted-embeddable into `Zef2TC`.  Seven of ten
+cases are closed sorry-free above; the remaining leaves are `axm` (W1/W2), `all`
+(uniform-ω-family port), `exs` (closed-term collapse). -/
+theorem budgetedEmbedding_Zef2TC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    (d : Derivation2 (𝗣𝗔 : Schema ℒₒᵣ) Γ) :
+    BudgetedEmbedsTC Γ := by
+  induction d with
+  | closed Γ φ hp hn => exact budgetedEmbedsTC_closed φ hp hn
+  | axm φ hφ hΓ => exact budgetedEmbedsTC_axm φ hφ hΓ
+  | verum h => exact budgetedEmbedsTC_verum h
+  | @and Γ φ ψ h _dp _dq ihp ihq => exact budgetedEmbedsTC_and h ihp ihq
+  | @or Γ φ ψ h _d ih => exact budgetedEmbedsTC_or h ih
+  | @all Γ φ h _d ih => exact budgetedEmbedsTC_all h ih
+  | @exs Γ φ h t _d ih => exact budgetedEmbedsTC_exs h t ih
+  | @wk Δ Γ _d hsub ih => exact budgetedEmbedsTC_wk hsub ih
+  | @shift Γ _d ih => exact budgetedEmbedsTC_shift ih
+  | @cut Γ φ _dp _dn ihp ihn => exact budgetedEmbedsTC_cut ihp ihn
+
+/-- **DRAFT2 (the block-3 amendment of `embedding_Zef2TC_DRAFT`; NOT ratified).**  Sole
+change: the env-local relativization index `∃ K` inside `∀ m`, slot
+`rel1 (ewRootSlot e B) K` — forced by the `exs` witness-budget seam (see the block-3
+discovery note).  The fixed-slot DRAFT above is retained verbatim as flagged judge input. -/
+theorem embedding_Zef2TC_DRAFT2 :
+    (𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) →
+      ∃ B d : ℕ, ∃ e : ONote, e.NF ∧ ∀ m : ℕ, ∃ K : ℕ, ∃ α : ONote, α.NF ∧
+        ∃ H : ONote → Prop, Cl H α ∧
+          Zef2TC α e H (rel1 (ewRootSlot e B) K) d {(goodsteinBodyE/[nm m])} := by
+  sorry
+
 end GoodsteinPA.E1EmbeddingGrind
+
+-- Audit anchors.  The seven closed ladder cases are standard-triple
+-- (`[propext, Classical.choice, Quot.sound]`, no sorryAx); the assembled master carries
+-- `sorryAx` exactly through the three disclosed hard leaves (`axm`/`all`/`exs`).
+#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_closed
+#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_and
+#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_cut
+#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedding_Zef2TC
