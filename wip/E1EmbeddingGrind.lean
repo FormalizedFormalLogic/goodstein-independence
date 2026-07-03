@@ -738,17 +738,345 @@ theorem budgetedEmbedsTC_all {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     BudgetedEmbedsTC Γ := by
   sorry
 
-/-- **`exs`** — witness term `t`; `asg env t` is CLOSED but not a literal numeral, so
-`Zef2TC.exI` (premise at `φ/[nm n]`) needs the **closed-term collapse**: replace `asg env t`
-by the numeral of its standard value via (Ax2)-driven equality congruence (the `Zef2TC`
-analogue of `Provable.exI_closed`).  The witness VALUE is env-dependent — this is the case
-that forced the `∃ K` amendment (the value is absorbed into `K`, bound `n ≤ f 0` paid by
-`rel1 … K 0 ≥ K`).  Disclosed `sorry` — needs the `Zef2TC` Leibniz kit. -/
+/-! ### The value-congruent EM engine + the closed-term collapse (the `exs` kit)
+
+Mirror of `provable_em_cong_gen`/`Provable.exI_closed` (`Embedding.lean`) with the `Zef2TC`
+budget bookkeeping of `em_Zef2TC`; the atomic cases split on `atomTrue` and close by
+`trueRel`/`trueNrel` — this is exactly where (Ax2) is load-bearing (in `Z∞` the split used
+`axTrue`; `Zef2` alone has no true-literal leaf).  The congruence kit
+(`stdClosedVal`/`atomTrue_rel_congr`/`embedding_subst_q_cons_app`) is banked in
+`OperatorZinfty`. -/
+
+private theorem em_cong_atomic_rel {n : ℕ} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+    (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
+    {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → SyntacticSemiterm ℒₒᵣ n)
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (hαN : Nlog α ≤ f 0)
+    (hp : (Rew.subst w ▹ Semiformula.rel r v) ∈ Γ)
+    (hn : (∼(Rew.subst w' ▹ Semiformula.rel r v)) ∈ Γ) :
+    Zef2TC α e H f c Γ := by
+  have hp' : Semiformula.rel r (fun i => Rew.subst w (v i)) ∈ Γ := by
+    simpa [Semiformula.rew_rel] using hp
+  have hn' : Semiformula.nrel r (fun i => Rew.subst w' (v i)) ∈ Γ := by
+    simpa [Semiformula.rew_rel] using hn
+  by_cases ht : atomTrue (Semiformula.rel r (fun i => Rew.subst w (v i)))
+  · exact Zef2TC.trueRel hαN r _ ht hp'
+  · have htn : atomTrue (Semiformula.nrel r (fun i => Rew.subst w (v i))) :=
+      (atomTrue_nrel_iff_not_rel r _).mpr ht
+    have htn' : atomTrue (Semiformula.nrel r (fun i => Rew.subst w' (v i))) :=
+      (atomTrue_nrel_congr r _ _
+        (fun i => embedding_valm_subst_congr w w' hval (v i))).mp htn
+    exact Zef2TC.trueNrel hαN r _ htn' hn'
+
+private theorem em_cong_atomic_nrel {n : ℕ} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+    (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
+    {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → SyntacticSemiterm ℒₒᵣ n)
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (hαN : Nlog α ≤ f 0)
+    (hp : (Rew.subst w ▹ Semiformula.nrel r v) ∈ Γ)
+    (hn : (∼(Rew.subst w' ▹ Semiformula.nrel r v)) ∈ Γ) :
+    Zef2TC α e H f c Γ := by
+  have hp' : Semiformula.nrel r (fun i => Rew.subst w (v i)) ∈ Γ := by
+    simpa [Semiformula.rew_nrel] using hp
+  have hn' : Semiformula.rel r (fun i => Rew.subst w' (v i)) ∈ Γ := by
+    simpa [Semiformula.rew_nrel] using hn
+  by_cases ht : atomTrue (Semiformula.nrel r (fun i => Rew.subst w (v i)))
+  · exact Zef2TC.trueNrel hαN r _ ht hp'
+  · have htn : atomTrue (Semiformula.rel r (fun i => Rew.subst w (v i))) := by
+      by_contra hno
+      exact ht ((atomTrue_nrel_iff_not_rel r _).mpr hno)
+    have htn' : atomTrue (Semiformula.rel r (fun i => Rew.subst w' (v i))) :=
+      (atomTrue_rel_congr r _ _
+        (fun i => embedding_valm_subst_congr w w' hval (v i))).mp htn
+    exact Zef2TC.trueRel hαN r _ htn' hn'
+
+/-- **Value-congruent budgeted EM** (arity-general; the `exs`-case engine): for pointwise
+value-equal closed substitutions `w, w'`, any sequent containing `Rew.subst w ▹ ψ` and
+`∼(Rew.subst w' ▹ ψ)` is cut-free `Zef2TC`-derivable at the deterministic rung
+`ofNat (2k+1)`.  Same budget discipline as `em_Zef2TC` (all hypotheses `rel1`-stable);
+atomic cases via `trueRel`/`trueNrel` + `stdClosedVal` congruence — the (Ax2)-load-bearing
+step. -/
+theorem em_cong_Zef2TC (k : ℕ) :
+    ∀ {n : ℕ} (w w' : Fin n → SyntacticTerm ℒₒᵣ) (ψ : SyntacticSemiformula ℒₒᵣ n),
+      ψ.complexity ≤ k →
+      (∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) →
+      ∀ {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq},
+        Monotone f → (∀ m, m ≤ f m) → clog (2 * k + 1) ≤ f 0 →
+        (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ →
+        Zef2TC (ONote.ofNat (2 * k + 1)) e H f 0 Γ := by
+  induction k with
+  | zero =>
+    intro n w w' ψ hk hval e H f Γ hmono hinfl hgate hp hn
+    have hgate' : Nlog (ONote.ofNat 1) ≤ f 0 := le_trans (Nlog_ofNat_le 1) hgate
+    cases ψ using Semiformula.cases' with
+    | hverum => exact Zef2TC.verumR hgate' (by simpa using hp)
+    | hfalsum => exact Zef2TC.verumR hgate' (by simpa using hn)
+    | hrel r v => exact em_cong_atomic_rel w w' hval r v hgate' hp hn
+    | hnrel r v => exact em_cong_atomic_nrel w w' hval r v hgate' hp hn
+    | hand φ ψ => simp at hk
+    | hor φ ψ => simp at hk
+    | hall φ => simp at hk
+    | hexs φ => simp at hk
+  | succ k ih =>
+    intro n w w' ψ hk hval e H f Γ hmono hinfl hgate hp hn
+    rw [show 2 * (k + 1) + 1 = 2 * k + 3 by ring] at hgate ⊢
+    have hNF : ∀ m : ℕ, (ONote.ofNat m).NF := fun m => ONote.nf_ofNat m
+    have hlt12 : ONote.ofNat (2 * k + 1) < ONote.ofNat (2 * k + 2) := ofNat_lt_ofNat (by omega)
+    have hlt23 : ONote.ofNat (2 * k + 2) < ONote.ofNat (2 * k + 3) := ofNat_lt_ofNat (by omega)
+    have hroot : Nlog (ONote.ofNat (2 * k + 3)) ≤ f 0 := le_trans (Nlog_ofNat_le _) hgate
+    have hg2 : Nlog (ONote.ofNat (2 * k + 2)) ≤ f 0 :=
+      le_trans (Nlog_ofNat_le _) (le_trans (clog_mono (by omega)) hgate)
+    have hg1 : clog (2 * k + 1) ≤ f 0 := le_trans (clog_mono (by omega)) hgate
+    cases ψ using Semiformula.cases' with
+    | hverum => exact Zef2TC.verumR hroot (by simpa using hp)
+    | hfalsum => exact Zef2TC.verumR hroot (by simpa using hn)
+    | hrel r v => exact em_cong_atomic_rel w w' hval r v hroot hp hn
+    | hnrel r v => exact em_cong_atomic_nrel w w' hval r v hroot hp hn
+    | hand a b =>
+        have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
+        have hbk : b.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
+        have hp' : ((Rew.subst w ▹ a) ⋏ (Rew.subst w ▹ b)) ∈ Γ := by simpa using hp
+        have hn' : (∼(Rew.subst w' ▹ a) ⋎ ∼(Rew.subst w' ▹ b)) ∈ Γ := by simpa using hn
+        have h1 := ih (n := n) w w' a hak hval (e := e) (H := H) (f := f)
+          (Γ := insert (Rew.subst w ▹ a)
+            (insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ)))
+          hmono hinfl hg1 (by simp) (by simp)
+        have h2 := ih (n := n) w w' b hbk hval (e := e) (H := H) (f := f)
+          (Γ := insert (Rew.subst w ▹ b)
+            (insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ)))
+          hmono hinfl hg1 (by simp) (by simp)
+        have hand := Zef2TC.andI (α := ONote.ofNat (2 * k + 2)) hg2
+          (Rew.subst w ▹ a) (Rew.subst w ▹ b) hlt12 hlt12
+          (hNF _) (hNF _) (hNF _) (Cl.ofNat _) (Cl.ofNat _) h1 h2
+        rw [Finset.insert_eq_self.mpr
+          (show ((Rew.subst w ▹ a) ⋏ (Rew.subst w ▹ b))
+            ∈ insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ)
+            by simp [hp'])] at hand
+        have hor := Zef2TC.orI (α := ONote.ofNat (2 * k + 3)) hroot
+          (∼(Rew.subst w' ▹ a)) (∼(Rew.subst w' ▹ b)) hlt23
+          (hNF _) (hNF _) (Cl.ofNat _) hand
+        rwa [Finset.insert_eq_self.mpr hn'] at hor
+    | hor a b =>
+        have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
+        have hbk : b.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
+        have hp' : ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) ∈ Γ := by simpa using hp
+        have hn' : (∼(Rew.subst w' ▹ a) ⋏ ∼(Rew.subst w' ▹ b)) ∈ Γ := by simpa using hn
+        have h1 := ih (n := n) w w' a hak hval (e := e) (H := H) (f := f)
+          (Γ := insert (∼(Rew.subst w' ▹ a))
+            (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ)))
+          hmono hinfl hg1 (by simp) (by simp)
+        have h2 := ih (n := n) w w' b hbk hval (e := e) (H := H) (f := f)
+          (Γ := insert (∼(Rew.subst w' ▹ b))
+            (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ)))
+          hmono hinfl hg1 (by simp) (by simp)
+        have hand := Zef2TC.andI (α := ONote.ofNat (2 * k + 2)) hg2
+          (∼(Rew.subst w' ▹ a)) (∼(Rew.subst w' ▹ b)) hlt12 hlt12
+          (hNF _) (hNF _) (hNF _) (Cl.ofNat _) (Cl.ofNat _) h1 h2
+        rw [Finset.insert_eq_self.mpr
+          (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hn'))] at hand
+        have hor := Zef2TC.orI (α := ONote.ofNat (2 * k + 3)) hroot
+          (Rew.subst w ▹ a) (Rew.subst w ▹ b) hlt23
+          (hNF _) (hNF _) (Cl.ofNat _) hand
+        rwa [Finset.insert_eq_self.mpr (show ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) ∈ Γ
+          by simp [hp'])] at hor
+    | hall a =>
+        have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_all] at hk; omega
+        have hp' : (∀⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
+        have hn' : (∃⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
+        have fam : ∀ m, Zef2TC (ONote.ofNat (2 * k + 2)) e (adjoin H m) (rel1 f m) 0
+            (insert ((((Rew.subst w).q ▹ a))/[nm m]) Γ) := by
+          intro m
+          have hf0m : f 0 ≤ rel1 f m 0 := by
+            simpa [rel1] using hmono (Nat.zero_le (max m 0))
+          have hvalm : ∀ i, stdClosedVal ((nm m :> w) i) = stdClosedVal ((nm m :> w') i) :=
+            embedding_valm_cons_nm_congr w w' m hval
+          have h0 := ih (n := n + 1) (nm m :> w) (nm m :> w') a hak hvalm
+            (e := e) (H := adjoin H m) (f := rel1 f m)
+            (Γ := insert (((Rew.subst w).q ▹ a)/[nm m])
+              (insert (∼(((Rew.subst w').q ▹ a)/[nm m])) Γ))
+            (rel1_monotone hmono m) (rel1_infl hinfl m) (le_trans hg1 hf0m)
+            (by rw [← embedding_subst_q_cons_app]; simp)
+            (by rw [← embedding_subst_q_cons_app]; simp)
+          have hbound : m ≤ rel1 f m 0 := by
+            simpa [rel1] using hinfl m
+          have hexI := Zef2TC.exI (α := ONote.ofNat (2 * k + 2))
+            (le_trans hg2 hf0m)
+            ((Rew.subst w').q ▹ ∼a) m hlt12 (hNF _) (hNF _) (Cl.ofNat _) hbound
+            (by
+              have heq : (((Rew.subst w').q ▹ ∼a)/[nm m])
+                  = ∼(((Rew.subst w').q ▹ a)/[nm m]) := by simp
+              rw [heq, Finset.insert_comm]
+              exact h0)
+          rwa [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hn')] at hexI
+        have hall := Zef2TC.allω (α := ONote.ofNat (2 * k + 3)) hroot
+          ((Rew.subst w).q ▹ a) (fun _ => ONote.ofNat (2 * k + 2)) (fun _ => hlt23)
+          (fun _ => hNF _) (hNF _) (fun _ => Cl.ofNat _) fam
+        rwa [Finset.insert_eq_self.mpr hp'] at hall
+    | hexs a =>
+        have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_exs] at hk; omega
+        have hp' : (∃⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
+        have hn' : (∀⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
+        have fam : ∀ m, Zef2TC (ONote.ofNat (2 * k + 2)) e (adjoin H m) (rel1 f m) 0
+            (insert ((((Rew.subst w').q ▹ ∼a))/[nm m]) Γ) := by
+          intro m
+          have hf0m : f 0 ≤ rel1 f m 0 := by
+            simpa [rel1] using hmono (Nat.zero_le (max m 0))
+          have hvalm : ∀ i, stdClosedVal ((nm m :> w) i) = stdClosedVal ((nm m :> w') i) :=
+            embedding_valm_cons_nm_congr w w' m hval
+          have h0 := ih (n := n + 1) (nm m :> w) (nm m :> w') a hak hvalm
+            (e := e) (H := adjoin H m) (f := rel1 f m)
+            (Γ := insert (((Rew.subst w).q ▹ a)/[nm m])
+              (insert (∼(((Rew.subst w').q ▹ a)/[nm m])) Γ))
+            (rel1_monotone hmono m) (rel1_infl hinfl m) (le_trans hg1 hf0m)
+            (by rw [← embedding_subst_q_cons_app]; simp)
+            (by rw [← embedding_subst_q_cons_app]; simp)
+          have hbound : m ≤ rel1 f m 0 := by
+            simpa [rel1] using hinfl m
+          have hexI := Zef2TC.exI (α := ONote.ofNat (2 * k + 2))
+            (le_trans hg2 hf0m)
+            ((Rew.subst w).q ▹ a) m hlt12 (hNF _) (hNF _) (Cl.ofNat _) hbound h0
+          rw [Finset.insert_eq_self.mpr
+            (Finset.mem_insert_of_mem hp')] at hexI
+          have heq : (((Rew.subst w').q ▹ ∼a)/[nm m])
+              = ∼(((Rew.subst w').q ▹ a)/[nm m]) := by simp
+          rw [heq]
+          exact hexI
+        have hall := Zef2TC.allω (α := ONote.ofNat (2 * k + 3)) hroot
+          ((Rew.subst w').q ▹ ∼a) (fun _ => ONote.ofNat (2 * k + 2)) (fun _ => hlt23)
+          (fun _ => hNF _) (hNF _) (fun _ => Cl.ofNat _) fam
+        rwa [Finset.insert_eq_self.mpr hn'] at hall
+
+/-- Single-term wrapper: closed terms `s, s'` of equal standard value. -/
+theorem em_cong1_Zef2TC (s s' : SyntacticTerm ℒₒᵣ)
+    (hval : stdClosedVal s = stdClosedVal s')
+    (ψ : SyntacticSemiformula ℒₒᵣ 1) {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq}
+    (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (hgate : clog (2 * ψ.complexity + 1) ≤ f 0)
+    (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) :
+    Zef2TC (ONote.ofNat (2 * ψ.complexity + 1)) e H f 0 Γ := by
+  refine em_cong_Zef2TC ψ.complexity ![s] ![s'] ψ le_rfl ?_ hmono hinfl hgate hp hn
+  intro i
+  cases i using Fin.cases with
+  | zero => simpa using hval
+  | succ j => exact j.elim0
+
+/-- The relativization index is readable off the slot at `0`. -/
+theorem index_le_relSlot_zero (e : ONote) (B K : ℕ) : K ≤ rel1 (ewRootSlot e B) K 0 := by
+  simp only [rel1, ewRootSlot]
+  omega
+
+/-- **`exs`** — the closed-term collapse, DISCHARGED.  `asg env t` is closed with standard
+value `m`; the value-congruent EM (`em_cong1_Zef2TC`, at pair `(nm m, asg env t)`) + one
+`cut` at rank `complexity+1` convert the IH's `ψ'/[asg env t]` into `ψ'/[nm m]`, and `exI`
+fires at witness `m` — env-dependent, absorbed into the relativization index
+`K := max K₁ m + 3` (the `∃ K` amendment's raison d'être; `n ≤ f 0` paid by
+`index_le_relSlot_zero`, the two ordinal-join gates by `relSlot_succ_gap` rungs). -/
 theorem budgetedEmbedsTC_exs {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     {φ : SyntacticSemiformula ℒₒᵣ 1} (h : ∃⁰ φ ∈ Γ) (t : SyntacticTerm ℒₒᵣ)
     (ih : BudgetedEmbedsTC (insert (φ/[t]) Γ)) :
     BudgetedEmbedsTC Γ := by
-  sorry
+  obtain ⟨B₁, d₁, e₁, he₁, ih₁⟩ := ih
+  refine ⟨B₁ + φ.complexity + clog (2 * φ.complexity + 1), max d₁ (φ.complexity + 1), e₁,
+    he₁, fun env => ?_⟩
+  set B : ℕ := B₁ + φ.complexity + clog (2 * φ.complexity + 1) with hB
+  set d : ℕ := max d₁ (φ.complexity + 1) with hd
+  obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
+  -- the closed witness and its standard value
+  set ψ' : SyntacticSemiformula ℒₒᵣ 1 := (Embedding.asg env).q ▹ φ with hψ'
+  set s : SyntacticTerm ℒₒᵣ := Embedding.asg env t with hs
+  set m : ℕ := stdClosedVal s with hm
+  set K : ℕ := max K₁ m + 3 with hK
+  set F : ℕ → ℕ := rel1 (ewRootSlot e₁ B) K with hF
+  have hψc : ψ'.complexity = φ.complexity := by simp [hψ']
+  have hf1 := ewRootSlot_f1 e₁ B
+  have hFmono : Monotone F := rel1_monotone hf1.1.monotone K
+  have hFinfl : ∀ x, x ≤ F x := rel1_infl (fun x => by have := hf1.2 x; omega) K
+  -- the IH derivation, re-based to the joined budget and rewritten to the substituted head
+  have hg₁ := D₁.gate
+  rw [Finset.image_insert, Embedding.rew_subst_term (Embedding.asg env) φ t] at D₁
+  have D₁' := (D₁.mono_f (relSlot_mono (show B₁ ≤ B by omega) (show K₁ ≤ K by omega))).mono_c
+    (c' := d) (le_max_left _ _)
+  -- left cut premise: add ψ'/[nm m] to the context
+  have Dsrc : Zef2TC α₁ e₁ (fun _ => True) F d
+      (insert (ψ'/[s]) (insert (ψ'/[nm m])
+        (Γ.image (fun χ => Embedding.asg env ▹ χ)))) :=
+    D₁'.wk D₁'.gate (Finset.insert_subset_insert _ (Finset.subset_insert _ _))
+  -- right cut premise: value-congruent EM at the pair (nm m, s)
+  have hgateEM : clog (2 * ψ'.complexity + 1) ≤ F 0 := by
+    rw [hψc]
+    exact le_trans (by omega) (le_relSlot_zero e₁ B K)
+  have Dcong : Zef2TC (ONote.ofNat (2 * ψ'.complexity + 1)) e₁ (fun _ => True) F 0
+      (insert (∼(ψ'/[s])) (insert (ψ'/[nm m])
+        (Γ.image (fun χ => Embedding.asg env ▹ χ)))) := by
+    refine em_cong1_Zef2TC (nm m) s (by simp [hm]) ψ' hFmono hFinfl hgateEM ?_ ?_
+    · exact Finset.mem_insert_of_mem (Finset.mem_insert_self _ _)
+    · exact Finset.mem_insert_self _ _
+  have Dcong' := Dcong.mono_c (c' := d) (Nat.zero_le d)
+  -- the cut, at root `osucc (α₁ + ofNat (2·complexity+1))`
+  have hofNF : (ONote.ofNat (2 * ψ'.complexity + 1)).NF := ONote.nf_ofNat _
+  have haddNF : (α₁ + ONote.ofNat (2 * ψ'.complexity + 1)).NF := by
+    haveI := hα₁NF; haveI := hofNF; exact ONote.add_nf _ _
+  have hslack : ∀ M, rel1 (ewRootSlot e₁ B) M 0 + 2
+      ≤ rel1 (ewRootSlot e₁ B) (M + 2) 0 := by
+    intro M
+    have g1 := relSlot_succ_gap e₁ B M
+    have g2 := relSlot_succ_gap e₁ B (M + 1)
+    rw [show M + 1 + 1 = M + 2 from rfl] at g2
+    omega
+  have hgcut : Nlog (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))) ≤ F 0 := by
+    rw [hF, hK]
+    have hs' := Nlog_osucc_le haddNF
+    have ha := Nlog_add_le_max_succ α₁ hα₁NF _ hofNF
+    have hα₁K : rel1 (ewRootSlot e₁ B₁) K₁ 0 ≤ rel1 (ewRootSlot e₁ B) (max K₁ m) 0 :=
+      relSlot_mono (by omega) (le_max_left _ _) 0
+    have hof : Nlog (ONote.ofNat (2 * ψ'.complexity + 1)) ≤ rel1 (ewRootSlot e₁ B) (max K₁ m) 0 :=
+      le_trans (Nlog_ofNat_le _) (le_trans (by rw [hψc]; omega)
+        (le_relSlot_zero e₁ B (max K₁ m)))
+    have hgap := hslack (max K₁ m)
+    have hlast := relSlot_succ_gap e₁ B (max K₁ m + 2)
+    rw [show max K₁ m + 2 + 1 = max K₁ m + 3 from rfl] at hlast
+    omega
+  have hcompl : (ψ'/[s]).complexity < d := by
+    have : (ψ'/[s]).complexity = φ.complexity := by simp [hψ']
+    omega
+  have hread : (ψ'/[s]).complexity ≤ F 0 := by
+    have hc : (ψ'/[s]).complexity = φ.complexity := by simp [hψ']
+    rw [hc]
+    exact le_trans (by omega) (le_relSlot_zero e₁ B K)
+  have Dnum : Zef2TC (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))) e₁ (fun _ => True) F d
+      (insert (ψ'/[nm m]) (Γ.image (fun χ => Embedding.asg env ▹ χ))) :=
+    Zef2TC.cut hgcut (ψ'/[s]) hcompl hread
+      (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hofNF) (Zekd.lt_osucc haddNF))
+      (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hofNF) (Zekd.lt_osucc haddNF))
+      hα₁NF hofNF (osucc_NF haddNF) (clT _) (clT _) Dsrc Dcong'
+  -- the ∃-introduction at the numeral witness `m`
+  refine ⟨K, osucc (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))),
+    osucc_NF (osucc_NF haddNF), ?_⟩
+  have hgout : Nlog (osucc (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1)))) ≤ F 0 := by
+    rw [hF, hK]
+    have hs' := Nlog_osucc_le (osucc_NF haddNF)
+    have hs'' := Nlog_osucc_le haddNF
+    have ha := Nlog_add_le_max_succ α₁ hα₁NF _ hofNF
+    have hα₁K : rel1 (ewRootSlot e₁ B₁) K₁ 0 ≤ rel1 (ewRootSlot e₁ B) (max K₁ m) 0 :=
+      relSlot_mono (by omega) (le_max_left _ _) 0
+    have hof : Nlog (ONote.ofNat (2 * ψ'.complexity + 1)) ≤ rel1 (ewRootSlot e₁ B) (max K₁ m) 0 :=
+      le_trans (Nlog_ofNat_le _) (le_trans (by rw [hψc]; omega)
+        (le_relSlot_zero e₁ B (max K₁ m)))
+    have g1 := relSlot_succ_gap e₁ B (max K₁ m)
+    have g2 := relSlot_succ_gap e₁ B (max K₁ m + 1)
+    have g3 := relSlot_succ_gap e₁ B (max K₁ m + 2)
+    rw [show max K₁ m + 1 + 1 = max K₁ m + 2 from rfl] at g2
+    rw [show max K₁ m + 2 + 1 = max K₁ m + 3 from rfl] at g3
+    omega
+  have hwit : m ≤ F 0 := le_trans (by omega) (index_le_relSlot_zero e₁ B K)
+  have hexI := Zef2TC.exI (α := osucc (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))))
+    hgout ψ' m
+    (Zekd.lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
+    (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
+  have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
+    have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
+    simpa [hψ'] using this
+  rwa [Finset.insert_eq_self.mpr hmem] at hexI
 
 /-- **The rung-E master ladder, assembled** (REAL induction, mirroring `SpikeW3Embedding`'s
 skeleton): every `Derivation2` from `𝗣𝗔` is budgeted-embeddable into `Zef2TC`.  Seven of ten
@@ -789,3 +1117,5 @@ end GoodsteinPA.E1EmbeddingGrind
 #print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_and
 #print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_cut
 #print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedding_Zef2TC
+#print axioms GoodsteinPA.E1EmbeddingGrind.em_cong_Zef2TC
+#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_exs

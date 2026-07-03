@@ -322,3 +322,33 @@ draft); the DRAFT text amendment itself is flagged for the judge, not self-ratif
 **Next E-1 targets**: `exs` (closed-term collapse — likely the cheapest of the three;
 `Zef2TC` equality congruence via `trueRel`, mirror `Provable.exI_closed`), then `all`
 (uniform-ω-family), then `axm` (W1/W2 proper).
+
+---
+
+## Block 9 — E-1 block 4: the `exs` closed-term collapse DISCHARGED — ladder 8/10 (lap 200b)
+
+**File**: `wip/E1EmbeddingGrind.lean`. Build green (1342 jobs), `blueprint_audit` ✓ 16,
+headline undrifted. New content, all SORRY-FREE (standard triple, `#print axioms` anchors):
+
+1. **`em_cong_Zef2TC`** — the value-congruent budgeted EM (arity-general): for pointwise
+   `stdClosedVal`-equal substitutions `w, w'`, any `Γ ∋ Rew.subst w ▹ ψ, ∼(Rew.subst w' ▹ ψ)`
+   is cut-free derivable at rung `ofNat (2k+1)`, same budget discipline as `em_Zef2TC`.  The
+   atomic cases split on `atomTrue` and close by `trueRel`/`trueNrel` + the banked
+   `OperatorZinfty` congruence kit (`atomTrue_rel/nrel_congr`, `embedding_valm_subst_congr`,
+   `embedding_subst_q_cons_app`) — **the (Ax2)-load-bearing step** (in `Z∞` this was `axTrue`;
+   `Zef2` alone has no true-literal leaf).  Wrapper `em_cong1_Zef2TC` (single closed-term
+   pair `s, s'`).
+2. **`budgetedEmbedsTC_exs` PROVEN** (was the third disclosed leaf): the closed-term
+   collapse — `asg env t` closed with standard value `m`; one `cut` at rank `complexity+1`
+   against the congruent-EM premise (pair `(nm m, asg env t)`) converts `ψ'/[asg env t]` to
+   `ψ'/[nm m]`, then `exI` fires at `m`.  The env-dependent witness value is absorbed into
+   the relativization index `K := max K₁ m + 3` (bound `m ≤ f 0` by `index_le_relSlot_zero`;
+   the cut/exI root gates by `relSlot_succ_gap` rungs; cut ordinal join
+   `osucc (α₁ + ofNat(2c+1))`, exI root its `osucc`).  This VALIDATES the block-8 `∃ K`
+   amendment mechanically: the case is exactly provable with the amended predicate and
+   exactly unprovable without it.
+3. The master `budgetedEmbedding_Zef2TC` now carries `sorryAx` through TWO leaves only:
+   `axm` (W1/W2) and `all` (uniform-ω-family port).
+
+**Next**: `all` (uniformize per-branch `(K_n, α_n)` — the genuinely new ordinal content;
+`EmbeddingBound.embedC_LX_bdd` discipline), then `axm`.
