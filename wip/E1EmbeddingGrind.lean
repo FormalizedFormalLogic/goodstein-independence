@@ -3410,6 +3410,319 @@ theorem stepVerum_Zef2TC {βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
   rw [Finset.erase_insert_eq_erase] at C
   exact Zef2TC.wk C.gate (Finset.erase_subset _ _) C
 
+/-! ### Block 12d — `Zef2TCProv` + the TC running-family ∀/∃ cut-reduction + `stepAllωTC_bnd`
+
+The last reduction the TC pass needs: the port of `cutReduceAllAuxRunning_Zf2` (the Towsner
+§19.6 running-family reduction, fresh root `α + γ`, output slot `g ∘ f`) to the full `Zef2TC`
+rule set.  The five NEW rules are all head-inert for the erased `∃⁰ ∼φ` (truth leaves survive
+the erasure; `andI`/`orI` rebuild at the fresh root exactly like `allω`), so the port is
+mechanical; the live cases (`exI` principal, `cut`) are verbatim.  `stepAllωTC_bnd` then
+mirrors `stepAllω_Zf2_bnd` via the banked `allω_inversion`. -/
+
+/-- The `≤`-slack wrapper over `Zef2TC` (mirror of `Zef2Prov`). -/
+def Zef2TCProv (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (Γ : Seq) : Prop :=
+  ∃ α', α' ≤ α ∧ α'.NF ∧ Cl H α' ∧ Nlog α' ≤ f 0 ∧ Zef2TC α' e H f c Γ
+
+namespace Zef2TCProv
+
+theorem of {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (hNF : α.NF) (hH : Cl H α) (hN : Nlog α ≤ f 0) (D : Zef2TC α e H f c Γ) :
+    Zef2TCProv α e H f c Γ :=
+  ⟨α, le_refl _, hNF, hH, hN, D⟩
+
+theorem mono {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (hα : α ≤ β) : Zef2TCProv α e H f c Γ → Zef2TCProv β e H f c Γ := by
+  rintro ⟨α', hα', hNF, hH, hN, D⟩
+  exact ⟨α', le_trans hα' hα, hNF, hH, hN, D⟩
+
+theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Δ : Seq}
+    (h : Γ ⊆ Δ) : Zef2TCProv α e H f c Γ → Zef2TCProv α e H f c Δ := by
+  rintro ⟨α', hα', hNF, hH, hN, D⟩
+  exact ⟨α', hα', hNF, hH, hN, Zef2TC.wk hN h D⟩
+
+theorem mono_f {α e : ONote} {H : ONote → Prop} {f f' : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (h : ∀ x, f x ≤ f' x) : Zef2TCProv α e H f c Γ → Zef2TCProv α e H f' c Γ := by
+  rintro ⟨α', hα', hNF, hH, hN, D⟩
+  exact ⟨α', hα', hNF, hH, le_trans hN (h 0), D.mono_f h⟩
+
+end Zef2TCProv
+
+set_option maxHeartbeats 1000000 in
+/-- **`cutReduceAllAuxRunning_TC`** — the running-family ∀/∃ cut-reduction over `Zef2TC`
+(port of `cutReduceAllAuxRunning_Zf2`; fresh root `α + γ`, output slot `g ∘ f`). -/
+theorem cutReduceAllAuxRunning_TC {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α e : ONote}
+    {Γ : Seq} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
+    (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
+    (fam : ∀ n (H' : ONote → Prop), Zef2TC α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
+    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Seq}, Zef2TC γ e H f c Δ → γ.NF →
+      Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
+      φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δ →
+      Zef2TCProv (α + γ) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
+  have hg0 : Nlog α ≤ g 0 := by
+    have h := Zef2TC.gate (fam 0 (fun _ => True)); simpa [rel1] using h
+  intro γ H f Δ D
+  induction D with
+  | @axL γ e H f c Δ ar hαN r v hp hn =>
+      intro hγNF _ _ hsl _ hmem
+      refine Zef2TCProv.of (ONote.add_nf α γ) (Cl_of_NF (ONote.add_nf α γ))
+        (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+      exact Zef2TC.axL (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) r v
+        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩))
+        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩))
+  | @trueRel γ e H f c Δ ar hαN r v htrue hmemr =>
+      intro hγNF _ _ hsl _ hmem
+      refine Zef2TCProv.of (ONote.add_nf α γ) (Cl_of_NF (ONote.add_nf α γ))
+        (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+      exact Zef2TC.trueRel (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) r v htrue
+        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemr⟩))
+  | @trueNrel γ e H f c Δ ar hαN r v htrue hmemr =>
+      intro hγNF _ _ hsl _ hmem
+      refine Zef2TCProv.of (ONote.add_nf α γ) (Cl_of_NF (ONote.add_nf α γ))
+        (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+      exact Zef2TC.trueNrel (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) r v htrue
+        (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemr⟩))
+  | @verumR γ e H f c Δ hαN hmemv =>
+      intro hγNF _ _ hsl _ hmem
+      refine Zef2TCProv.of (ONote.add_nf α γ) (Cl_of_NF (ONote.add_nf α γ))
+        (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+      exact Zef2TC.verumR (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl))
+        (Finset.mem_union_left _ (Finset.mem_erase.mpr
+          ⟨by intro h; simp [ExsQuantifier.exs] at h, hmemv⟩))
+  | @wk γ e H f c Δsub Δsup hαN hsub D' ih =>
+      intro hγNF hmono hinfl hsl hφread hmem
+      by_cases hd : (∃⁰ ∼φ) ∈ Δsub
+      · exact (ih hφc heNF fam hγNF hmono hinfl hsl hφread hd).weakening (by
+          intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
+          rcases hx with ⟨hne, hxs⟩ | hxΓ
+          · exact Or.inl ⟨hne, hsub hxs⟩
+          · exact Or.inr hxΓ)
+      · exact ⟨γ, Zekd.le_add_left_NF hαNF hγNF, hγNF, Cl_of_NF hγNF,
+          le_trans hαN (reslot_exside hg_infl 0),
+          Zef2TC.wk (le_trans hαN (reslot_exside hg_infl 0)) (by
+            intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
+            exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩) (D'.mono_f (reslot_exside hg_infl))⟩
+  | @weak γ β e H f c Δsub Δsup hαN hβ hβNF hγNF' hβH hsub D' ih =>
+      intro hγNF hmono hinfl hsl hφread hmem
+      by_cases hd : (∃⁰ ∼φ) ∈ Δsub
+      · exact ((ih hφc heNF fam hβNF hmono hinfl hsl hφread hd).weakening (by
+          intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
+          rcases hx with ⟨hne, hxs⟩ | hxΓ
+          · exact Or.inl ⟨hne, hsub hxs⟩
+          · exact Or.inr hxΓ)).mono
+          (le_of_lt (Zekd.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+      · exact ⟨β, le_of_lt (lt_of_lt_of_le hβ (Zekd.le_add_left_NF hαNF hγNF)), hβNF, Cl_of_NF hβNF,
+          le_trans (Zef2TC.gate D') (reslot_exside hg_infl 0),
+          Zef2TC.wk (le_trans (Zef2TC.gate D') (reslot_exside hg_infl 0)) (by
+            intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
+            exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩) (D'.mono_f (reslot_exside hg_infl))⟩
+  | @andI γ βφ' βψ' e H f c Γ₀ hαN χ₁ χ₂ hβφ hβψ hβφNF hβψNF hγNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
+      intro hγNF hmono hinfl hsl hφread hmem
+      have hhead : (χ₁ ⋏ χ₂ : Form) ≠ (∃⁰ ∼φ) := by
+        intro h; simp [ExsQuantifier.exs] at h
+      have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have haddNF : (α + γ).NF := ONote.add_nf α γ
+      obtain ⟨a₁, ha₁le, ha₁NF, ha₁H, ha₁g, D₁⟩ := ih₁ hφc heNF fam hβφNF hmono hinfl hsl hφread
+        (Finset.mem_insert_of_mem hmem0)
+      obtain ⟨a₂, ha₂le, ha₂NF, ha₂H, ha₂g, D₂⟩ := ih₂ hφc heNF fam hβψNF hmono hinfl hsl hφread
+        (Finset.mem_insert_of_mem hmem0)
+      have D₁' : Zef2TC a₁ e H (g ∘ f) c (insert χ₁ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zef2TC.wk ha₁g (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) D₁
+      have D₂' : Zef2TC a₂ e H (g ∘ f) c (insert χ₂ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zef2TC.wk ha₂g (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) D₂
+      refine Zef2TCProv.of haddNF (Cl_of_NF haddNF)
+        (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+      have hAnd : Zef2TC (α + γ) e H (g ∘ f) c
+          (insert (χ₁ ⋏ χ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zef2TC.andI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ₁ χ₂
+          (lt_of_le_of_lt ha₁le (Zekd.add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
+          (lt_of_le_of_lt ha₂le (Zekd.add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
+          ha₁NF ha₂NF haddNF ha₁H ha₂H D₁' D₂'
+      exact Zef2TC.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
+        intro x hx
+        simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+        rcases hx with rfl | hx
+        · exact Or.inl ⟨hhead, Or.inl rfl⟩
+        · tauto) hAnd
+  | @orI γ β e H f c Γ₀ hαN χ₁ χ₂ hβ hβNF hγNF' hβH d₁ ih =>
+      intro hγNF hmono hinfl hsl hφread hmem
+      have hhead : (χ₁ ⋎ χ₂ : Form) ≠ (∃⁰ ∼φ) := by
+        intro h; simp [ExsQuantifier.exs] at h
+      have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have haddNF : (α + γ).NF := ONote.add_nf α γ
+      obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hφc heNF fam hβNF hmono hinfl hsl hφread
+        (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))
+      have Da' : Zef2TC a e H (g ∘ f) c
+          (insert χ₁ (insert χ₂ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ))) :=
+        Zef2TC.wk hag (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) Da
+      refine Zef2TCProv.of haddNF (Cl_of_NF haddNF)
+        (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+      have hOr : Zef2TC (α + γ) e H (g ∘ f) c
+          (insert (χ₁ ⋎ χ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zef2TC.orI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ₁ χ₂
+          (lt_of_le_of_lt hale (Zekd.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+          haNF haddNF haH Da'
+      exact Zef2TC.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
+        intro x hx
+        simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+        rcases hx with rfl | hx
+        · exact Or.inl ⟨hhead, Or.inl rfl⟩
+        · tauto) hOr
+  | @allω γ e H f c Γ₀ hαN χ β hβ hβNF hγNF' hβH dd ih =>
+      intro hγNF hmono hinfl hsl hφread hmem
+      have hhead : (∀⁰ χ) ≠ (∃⁰ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
+      have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have haddNF : (α + γ).NF := ONote.add_nf α γ
+      have ihn : ∀ n, Zef2TCProv (α + β n) e (adjoin H n) (g ∘ rel1 f n) c
+          (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
+        intro n
+        have hread : φ.complexity ≤ (rel1 f n) 0 := by
+          simp only [rel1]; exact le_trans hφread (hmono (Nat.zero_le _))
+        exact (ih n hφc heNF fam (hβNF n) (rel1_monotone hmono n) (rel1_infl hinfl n)
+          (fun k hk => hsl k (le_trans (by
+            simp only [rel1]; exact hmono (Nat.zero_le _)) hk))
+          hread (Finset.mem_insert_of_mem hmem0)).weakening (by
+            intro x hx
+            simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
+      refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+      have hAll : Zef2TC (α + γ) e H (g ∘ f) c
+          (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
+        exact Zef2TC.allω (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ (fun n => (ihn n).choose)
+          (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
+            (Zekd.add_lt_add_left_NF hαNF (hβNF n) hγNF (hβ n)))
+          (fun n => (ihn n).choose_spec.2.1) haddNF
+          (fun n => Cl_of_NF (ihn n).choose_spec.2.1)
+          (fun n => (ihn n).choose_spec.2.2.2.2)
+      exact Zef2TC.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
+        intro x hx
+        simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+        rcases hx with rfl | hx
+        · exact Or.inl ⟨hhead, Or.inl rfl⟩
+        · tauto) hAll
+  | @exI γ β e H f c Γ₀ hαN χ n hβ hβNF hγNF' hβH hbound dχ ih =>
+      intro hγNF hmono hinfl hsl hφread hmem
+      have haddNF : (α + γ).NF := ONote.add_nf α γ
+      by_cases hhd : (∃⁰ χ) = (∃⁰ ∼φ)
+      · have hχ : χ = ∼φ := by simpa [ExsQuantifier.exs] using hhd
+        subst hχ
+        rw [Finset.erase_insert_eq_erase]
+        have hNeg : (∼φ)/[nm n] = ∼(φ/[nm n]) := by simp
+        have hcompl : (φ/[nm n]).complexity < c := by simpa using hφc
+        have hcutRead : (φ/[nm n]).complexity ≤ (g ∘ f) 0 := by
+          have he : (φ/[nm n]).complexity = φ.complexity := by simp
+          rw [he]; exact le_trans hφread (hg_infl (f 0))
+        have hg0comp : Nlog α ≤ (g ∘ f) 0 := le_trans hg0 (hg_mono (Nat.zero_le _))
+        have famn : Zef2TC α e H (g ∘ f) c (insert (φ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          Zef2TC.wk hg0comp (by
+            intro x hx; simp only [Finset.mem_insert, Finset.mem_union] at hx ⊢; tauto)
+            ((fam n H).mono_f (reslot_family hg_mono hinfl hmono hbound))
+        have hαlt : α < α + γ := by
+          haveI := hαNF; haveI := hγNF
+          refine ONote.lt_def.mpr ?_
+          rw [ONote.repr_add]
+          have hγpos : (0 : Ordinal) < γ.repr := lt_of_le_of_lt (by simp) (ONote.lt_def.mp hβ)
+          simpa using (add_lt_add_iff_left α.repr).mpr hγpos
+        by_cases hd : (∃⁰ ∼φ) ∈ Γ₀
+        · obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hφc heNF fam hβNF hmono hinfl hsl hφread
+            (Finset.mem_insert_of_mem hd)
+          have Da' : Zef2TC a e H (g ∘ f) c
+              (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+            Zef2TC.wk hag (by
+              intro x hx
+              simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) Da
+          refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+          exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
+            (lt_of_le_of_lt hale (Zekd.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+            hαNF haNF haddNF (Cl_of_NF hαNF) haH famn Da'
+        · have Dβ' : Zef2TC β e H (g ∘ f) c
+              (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+            Zef2TC.wk (le_trans (Zef2TC.gate dχ) (reslot_exside hg_infl 0)) (by
+              intro x hx
+              simp only [hNeg, Finset.mem_insert] at hx
+              simp only [Finset.mem_insert, Finset.mem_union, Finset.mem_erase]
+              rcases hx with rfl | hxΓ₀
+              · exact Or.inl rfl
+              · exact Or.inr (Or.inl ⟨fun e0 => hd (e0 ▸ hxΓ₀), hxΓ₀⟩))
+              (dχ.mono_f (reslot_exside hg_infl))
+          refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+          exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
+            (lt_of_lt_of_le hβ (Zekd.le_add_left_NF hαNF hγNF))
+            hαNF hβNF haddNF (Cl_of_NF hαNF) (Cl_of_NF hβNF) famn Dβ'
+      · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+        obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hφc heNF fam hβNF hmono hinfl hsl hφread
+          (Finset.mem_insert_of_mem hmem0)
+        have Da' : Zef2TC a e H (g ∘ f) c (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          Zef2TC.wk hag (by
+            intro x hx
+            simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) Da
+        refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+        have hbound' : n ≤ (g ∘ f) 0 := le_trans hbound (hg_infl (f 0))
+        exact Zef2TC.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
+          rcases hx with rfl | hx
+          · exact Or.inl ⟨hhd, Or.inl rfl⟩
+          · tauto)
+          (Zef2TC.exI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ n
+            (lt_of_le_of_lt hale (Zekd.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+            haNF haddNF haH hbound' Da')
+  | @cut γ βφ βψ e H f c Γ₀ hαN χ hχc hcutRead' hβφ hβψ hβφNF hβψNF hγNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
+      intro hγNF hmono hinfl hsl hφread hmem
+      obtain ⟨a₁, ha₁le, ha₁NF, ha₁H, ha₁g, D₁⟩ := ih₁ hφc heNF fam hβφNF hmono hinfl hsl hφread
+        (Finset.mem_insert_of_mem hmem)
+      obtain ⟨a₂, ha₂le, ha₂NF, ha₂H, ha₂g, D₂⟩ := ih₂ hφc heNF fam hβψNF hmono hinfl hsl hφread
+        (Finset.mem_insert_of_mem hmem)
+      have haddNF : (α + γ).NF := ONote.add_nf α γ
+      have D₁' : Zef2TC a₁ e H (g ∘ f) c (insert χ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zef2TC.wk ha₁g (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) D₁
+      have D₂' : Zef2TC a₂ e H (g ∘ f) c (insert (∼χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        Zef2TC.wk ha₂g (by
+          intro x hx
+          simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) D₂
+      refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
+      exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ hχc
+        (le_trans hcutRead' (hg_infl (f 0)))
+        (lt_of_le_of_lt ha₁le (Zekd.add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
+        (lt_of_le_of_lt ha₂le (Zekd.add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
+        ha₁NF ha₂NF haddNF ha₁H ha₂H D₁' D₂'
+
+/-- **`stepAllωTC_bnd`** — the bound-exposing principal ∀/∃ cut-reduction step over `Zef2TC`
+(mirror of `stepAllω_Zf2_bnd`): invert the ∀-side via `allω_inversion`, feed the running
+reduction; output witness ordinal bounded by `P₁ + P₂`. -/
+theorem stepAllωTC_bnd {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
+    {χ : SyntacticSemiformula ℒₒᵣ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
+    (hP₁ : P₁.NF) (hP₂ : P₂.NF)
+    (hENF : E.NF) (hχc : χ.complexity < c)
+    (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
+    (hg_slack : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k)
+    (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x) (hχRead : χ.complexity ≤ f 0)
+    (D₁ : Zef2TCProv P₁ E H g c (insert (∀⁰ χ) Γ))
+    (D₂ : Zef2TCProv P₂ E H f c (insert (∃⁰ ∼χ) Γ)) :
+    Zef2TCProv (P₁ + P₂) E H (g ∘ f) c Γ := by
+  obtain ⟨α₁, hα₁le, hNF₁, _, _, d₁⟩ := D₁
+  obtain ⟨γ₁, hγ₁le, hNF₂, _, _, d₂⟩ := D₂
+  have fam : ∀ n (H' : ONote → Prop), Zef2TC α₁ E H' (rel1 g n) c (insert (χ/[nm n]) Γ) := by
+    intro n H'
+    have hinv := allω_inversion (φ := χ) n d₁ hg_mono
+    rw [Finset.erase_insert_eq_erase] at hinv
+    exact (Zef2TC.wk (Zef2TC.gate hinv)
+      (Finset.insert_subset_insert _ (Finset.erase_subset _ _)) hinv).change_H
+  have hred := cutReduceAllAuxRunning_TC hχc hNF₁ hENF hg_mono hg_infl fam
+    d₂ hNF₂ hf_mono hf_infl hg_slack hχRead (Finset.mem_insert_self _ _)
+  have hbnd : α₁ + γ₁ ≤ P₁ + P₂ := by
+    haveI := hNF₁; haveI := hNF₂; haveI := hP₁; haveI := hP₂
+    rw [ONote.le_def, ONote.repr_add, ONote.repr_add]
+    exact add_le_add (ONote.le_def.mp hα₁le) (ONote.le_def.mp hγ₁le)
+  exact ((hred.weakening
+    (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))).mono hbnd)
+
 end GoodsteinPA.E1EmbeddingGrind
 
 #print axioms GoodsteinPA.E1EmbeddingGrind.term_val_le_Gexp_iter
@@ -3442,4 +3755,6 @@ end GoodsteinPA.E1EmbeddingGrind
 #print axioms GoodsteinPA.E1EmbeddingGrind.false_nrel_erase
 #print axioms GoodsteinPA.E1EmbeddingGrind.false_rel_erase
 #print axioms GoodsteinPA.E1EmbeddingGrind.stepAtom_Zef2TC
+#print axioms GoodsteinPA.E1EmbeddingGrind.cutReduceAllAuxRunning_TC
+#print axioms GoodsteinPA.E1EmbeddingGrind.stepAllωTC_bnd
 #print axioms GoodsteinPA.E1EmbeddingGrind.falsum_erase
