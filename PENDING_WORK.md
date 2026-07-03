@@ -19,8 +19,14 @@
   `Wpow` folded/unfolded CONSISTENTLY across hyps and goal before omega (a `simp only [Wpow]`
   on the goal only splits the hardy atom). `set` inside the WF-recursive branch made the IH
   application fail with a δ✝/δ mismatch — inline the terms instead.
-- **NEXT (2b remaining)**: (a) instantiate `hEng` at concrete e' (needs `2^y ≤ H_{ω²}(y)`-class
-  lemma + `f ≤ H_{ω^{e₀}}`-form domination of the pipeline slot S* → e' ≈ e₀+2-shape); (b) gvb
+- **(a) CLOSED same lap** (`hEng_of_dom` + `ewIter_hardy_le_of_dom`, GREEN kernel-clean):
+  concrete engine `e' := e₀+2` discharges `hEng` from bare pointwise `∀z, f z ≤ H_{ω^{e₀}}(z)`
+  (e₀ ≠ 0 NF), explicit pad `p := norm(e₀+1)+norm e₀+normSum(e₀+3)+norm(e₀+2)+8`.  Chain:
+  closed form `H_{ω²}(y)+1 = 2^{y+1}(y+1)` (`hardy_omega_pow_ofNat` + `fastGrowing_two`) at
+  `y := H_{ω^{e₀}}(x+p)` → raise ω²→ω^{e₀+1} (eq-split at e₀=1 via `repr_inj`) → exact comp
+  (`hardy_add_comp`) → final raise under ω^{e₀+2}.  End-to-end:
+  `ewIter f α m ≤ H_{ω^{e₀+3+α}}(H_{ω^{e₀+2}}(Nlog α + m + p))`.
+- **NEXT (2b remaining)**: (b) gvb
   numeral contraction (P_m ≤ P* fixed, ReadoffValueGate); (c) Sslot-level assembly of the
   m-uniformized pipeline bound feeding ewIter_hardy_le; (d) semantic link atomTrue→goodsteinLength;
   (e) final EventuallyLE vs one fixed fastGrowing o. Then the ONE judge package (do NOT self-ratify).
