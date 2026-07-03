@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     # blueprint/, docbuild/, and workflow edits don't change the Lean build;
-    # skipping them here keeps private-repo Actions minutes for real Lean pushes.
+    # skipping them keeps CI runs to real Lean pushes.
     paths-ignore: ['**.md', 'blueprint/**', 'docbuild/**', '.github/workflows/**', '.gitignore']
   pull_request:
   workflow_dispatch:
