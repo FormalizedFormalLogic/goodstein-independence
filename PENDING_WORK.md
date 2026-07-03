@@ -1,5 +1,43 @@
 # PENDING WORK
 
+## lap 201 (FRESH-MIND REVIEW) — direction RETARGETED to Lane E; rung E is the last hard rung
+
+**Re-verified this lap** (real `#print axioms`, bare `lake build` 🟢 1342): headline
+`[propext, Classical.choice, goodstein_implies_consistency, Quot.sound]`, sorryAx OFF, no drift.
+Rungs **P** (`cutElimPass_Zef2`), **R** (`rankToZero_Zef2`), **D** (`readoff_delta0_Zef2`) all
+`[propext, choice, Quot.sound]` — REAL. Splice `wainer_splice_Zef2` (`WainerLadder.lean:41`)
+carries the sole live `sorryAx`, at the rung-E consumption point.
+
+**Direction is SOUND** — laps 198→200 correctly walked N→D→E (crux-first: the top-rank cut
+landed lap 198, the escalated lap-192 trilemma dissolved by SERIES-2 ruling (1) `ewN→Nlog`). Only
+the stale lap-192 `DIRECTION.md` directive (still mandating the now-done Lane D + the now-resolved
+top-rank escalation) needed retargeting → set the lap-201 CURRENT DIRECTIVE block.
+
+**MANDATED next attack — Lane E, rung E, E-1 block 6 = the V3 predicate** (`wip/E1EmbeddingGrind.lean`):
+1. Restate `BudgetedEmbedsTC` with the witness budget bounded by a STRUCTURAL function of the
+   assignment — slot `rel1 (ewRootSlot e B) (Gexp^[c] (envSup env N))`-shaped, or a side condition
+   `K ≤ hardy e (max B (envSup env N))`. Growth kit banked lap 200: `Gexp = H_{ω²}` closed form,
+   `term_val_le_Gexp_iter` (term value ≤ `Gexp^[c](envSup env N)`), `Gexp_iter_eq_hardy`
+   (`Gexp^[c] = H_{ω²·c}`, absorbable into the control ordinal `e`), `envSup` + `envSup_cons_le`.
+2. Re-close the 8 landed cases (joins unchanged — mechanical) + re-prove `exs` against
+   `stdClosedVal_asg_le_Gexp_iter`.
+3. **`all`** — THE DECISIVE CASE — uniformize the per-branch `(K_n, α_n)` over the ω-rule via
+   `envSup_cons_le` (branch sup ≤ `max n` root sup) + `rel1_rel1`. If this cannot close, the
+   SomeK/W3 statement shape itself must be rethought → probe `all` EARLY, before polishing the rest.
+4. **`axm`** — W1/W2 finite 𝗣𝗔⁻ axioms via `trueRel` bounded truth (à la `provable_true`);
+   induction schema = cut-tower.
+
+When V3 closes the ladder (`all` + `axm` sorry-free), the accumulated rung-E statement + the E-0
+Ax2-need probe go to the **next judge pass** for ratification. **Do NOT self-ratify the rung-E
+statement into `src`** — promotion is post-ratification (SERIES-3 order). Lane W (`wainer_splice_Zef2`)
+shrinks to the E-seam as rungs land.
+
+**FORBIDDEN** (lap-201 block + SERIES-3 order): hygiene/leaf-retreat while rung E is open;
+Route-A surfaces; self-ratifying the rung-E statement (or `Zef2T`/(Ax2)) into `src`; re-grinding a
+landed rung; `rel1`/norm/output `src` changes except a ratified SERIES-3 pivot; idle/padding laps.
+
+---
+
 ## lap 198 (SERIES-3, Lane N COMPLETE) — pass LANDED; next = D-3
 
 - Rungs P + R are REAL (`cutElimPass_Zef2`, `rankToZero_Zef2` = standard triple); norm swap
