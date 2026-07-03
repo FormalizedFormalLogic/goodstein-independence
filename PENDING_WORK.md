@@ -37,6 +37,29 @@ padded form is the expected route and is a small generalization, not a new crux.
 concrete `ewRootSlot`/tower/`P*` padded-domination bounds → `S*`-domination; (3) 2b(c) Sslot assembly;
 (4) 2b(e) EventuallyLE + contradiction. Then the ONE judge package. Do NOT self-ratify into `src`.
 
+### Progress (lap 209 grind, `wip/HardyMajorization.lean`, all `[propext, choice, Quot.sound]`)
+- ✅ **(1) padded engine DONE** — `hEng_of_fx` (abstract core = `hEng_of_dom`'s proof parameterized by
+  the raised-arg domination `∀x, f x ≤ H_{ω^{e₀}}(x+p)`), `hEng_of_dom_pad` (hyp `∀z, f z ≤ H_{ω^{e₀}}(z+c)`),
+  `ewIter_hardy_le_of_dom_pad` (end-to-end, pad `= norm-const + 8 + c`). Banked bare versions untouched.
+- ✅ **(2, base) `ewRootSlot_dom_pad` DONE** — `ewRootSlot e m x ≤ H_{ω^{(e+1)+2}}(x + P_R)` where
+  `P_R = norm-const((e+1)) + 8 + (m + norm e)`. Route: `e_lt_Wpow_succ` (`e < ω^{e+1}`) + `hardy_maxpad`
+  (`hardy e (max m ·) ≤ H_{ω^{e+1}}(· + (m+norm e))`, the pad pays `hardy_le_of_lt`'s norm gate at z=0)
+  → feed `f z := hardy e (max m z)` to `hEng_of_dom_pad`; `2x+2f+3 ≤ engine LHS` since `x ≤ f ≤ 2^{f+1}`.
+- ⏭️ **NEXT (2, tower)** — the remaining hard piece, in `wip/HardyMajorization.lean`:
+  - `rel1_dom_pad`: from `ewRootSlot_dom_pad`, get `rel1 (ewRootSlot e B) K z = ewRootSlot e B (max K z)
+    ≤ H_{ω^{(e+1)+2}}(z + (K + P_R))` (monotone `max K z ≤ z + K` folds into the pad). EASY.
+  - `ewIterTower_dom_pad`: induction on `d`. Base `d=0`: `= rel1_dom_pad`. Step: `ewIterTower g (d+1) α
+    = ewIter (ewIterTower g d α) (collapseIter d α)`; apply `ewIter_hardy_le_of_dom_pad` with the IH, giving
+    a DOUBLE hardy `H_{ω^A}(H_{ω^B}(Nlog·+m+p))` (A = e_d+2+1+collapseIter d α, B = e_d+2, B<A). COLLAPSE
+    to single `H_{ω^{A+1}}(m + C)` via `hardy_add_comp` (`H_{ω^A}(H_{ω^B} y) = H_{ω^A+ω^B} y`, needs B<A)
+    then `hardy_le_of_lt` (`ω^A+ω^B < ω^{A+1}`, gate `norm(...) ≤ y` paid by the pad ≥ that norm) — this
+    keeps the IH's single-hardy-at-padded-arg shape. After d steps: fixed level, fixed pad (both functions
+    of e,B,K,d,α).  ⚠️ the pad must be threaded to STAY ≥ the collapse norm gate each level (bump c).
+  - Then in `wip/E1EmbeddingGrind.lean` (has `Sslot`, `P*`): `Sslot_dom_pad` = max of the tower bound and
+    `P*`-domination (`P* = gvb goodsteinBodyE`, a fixed formula — `gvb` of a fixed φ is elementary in its
+    arg; bound by `H_{ω^1}(·+c)` or just linear ⟹ `H_{ω^{e₀}}`), then `ewIter_hardy_le_of_dom_pad` on `S*`.
+  - Then 2b(c) Sslot assembly (`Sslot_mono_slot`+`ewIter_mono_slot`) and 2b(e) EventuallyLE.
+
 ## Lap 208 (2026-07-03, grind) — 2b MASTER MAJORIZATION CLOSED sorry-free
 
 - **`ewIter_hardy_le`** (`wip/HardyMajorization.lean`): `ewIter f α m ≤ H_{ω^{e'+1+α}}(H_{ω^{e'}}(Nlog α + m + p))`
