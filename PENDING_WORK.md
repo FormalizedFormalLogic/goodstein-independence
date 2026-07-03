@@ -14,9 +14,17 @@ Quot.sound]`:
   fibers **on NF notations** (the only population the calculus uses; `ewBall` clients are NF).
 - Property (ii) was already proven lap 196 (`Nlog_add_le_max_succ`).
 
-**NEXT (ladder P2, remaining independent stages, priority order per lap-196 baton):**
-1. **Stage C — lane-D Option-B feasibility**: kernel-check whether the splice consumer closes
-   with the achievable `ewIter f α 0` bound instead of `f 0` (dodges Ax2). Feeds ruling (2).
+**Stage C-1 DONE (same lap): Option-B splice feasibility = YES, structurally free.**
+`wip/OptionBSpliceProbe.lean`: the Option-B exit bound is the `(d+1)`-tower BY DEFINITION
+(`optionB_tower_step`, `rfl`); generic composition `optionB_splice_exit` through `rankToZeroAux`
+(inherits only rung R's disclosed sorryAx). R-4′ draft text in the probe docstring. With
+`readoffD_trapped_of_mono`, (Ax2) is needed by NEITHER read-off NOR splice on the headline
+path. Ledger Stage C-1 block written. Producer-side caveat recorded (Series-3).
+
+**NEXT (ladder P2, remaining stages):**
+1. **Stage C-2** — confirm the goodstein matrix's bounded-∀ step clauses satisfy the
+   `readoffD_trapped_of_mono` guard (`atomTrue (χ/[nm 0]) → atomTrue (∀⁰ χ)`) on the CONCRETE
+   translation (kernel example, no native_decide, wip).
 2. **Stage B — rung-E Ax2-adequacy probe** (`wip/Ax2AdequacyProbe.lean`, full `Zef2T` clone).
 3. **Stage D-2 — shift-relativization `rel1'` cost probe.**
 
