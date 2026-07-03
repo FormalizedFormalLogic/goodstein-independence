@@ -281,6 +281,155 @@ theorem gvb_substs_le {χ : SyntacticSemiformula ℒₒᵣ 1} (k B : ℕ) :
     intro x; simp
   exact gvb_rew_le (K := k) χ (Rew.subst ![nm k]) hb hf B
 
+/-! ## The root discharge `gated_of_sigma1` (lap 207, DIRECTION lap-206 block item 1)
+
+`Hierarchy 𝚺 1 ψ` supplies the ball shape at every `∀`-head (the Foundation `Hierarchy`
+constructors `all`/`pi`/`dummy_sigma` are polarity/level-blocked at `𝚺 1`), and the coupled
+value hypothesis `∀ B, gvb ψ B ≤ P (max V B)` self-threads through numeral instantiation via
+`gvb_substs_le`.  Together they discharge `Gated P V ψ` — the ONE root obligation the
+V-threaded read-off invariant needs at the pipeline root. -/
+
+/-- At arity 1, a `Positive` term has no bounded variables, so its value ignores the bounded
+environment. -/
+theorem valm_env_irrel_of_positive : ∀ (t : Semiterm ℒₒᵣ ℕ 1), t.Positive →
+    ∀ (e e' : Fin 1 → ℕ) (ε : ℕ → ℕ),
+      Semiterm.valm ℕ e ε t = Semiterm.valm ℕ e' ε t := by
+  intro t
+  induction t with
+  | bvar x =>
+      intro hpos
+      rcases Fin.eq_zero x with rfl
+      simp at hpos
+  | fvar x => intro _ e e' ε; simp
+  | func f v ih =>
+      intro hpos e e' ε
+      have hv : ∀ i, (v i).Positive := by simpa using hpos
+      simp only [Semiterm.val_func]
+      congr 1
+      funext i
+      exact ih i (hv i) e e' ε
+
+/-- **The gate extraction** (probe-verified): a false numeral instance of a ball
+`“x. x < !!t” 🡒 φ` pins the instance index strictly below the guard value `tvB t 0`
+(env-independent by positivity) and falsifies the body instance. -/
+theorem gate_extract {t : Semiterm ℒₒᵣ ℕ 1} (hpos : t.Positive)
+    {φ : SyntacticSemiformula ℒₒᵣ 1} {k : ℕ}
+    (h : ¬ atomTrue (((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ)/[nm k])) :
+    k < tvB t 0 ∧ ¬ atomTrue (φ/[nm k]) := by
+  simp [atomTrue, Semiformula.imp_eq, Semiformula.Operator.lt_def,
+    Matrix.constant_eq_singleton] at h
+  refine ⟨?_, by
+    simpa [atomTrue, Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton]
+      using h.2⟩
+  have he : (fun _ => (0:ℕ) : Fin 0 → ℕ) = ![] := by funext i; exact i.elim0
+  have h1 : Semiterm.val (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0)
+      ((Rew.subst ![nm k]) t) = Semiterm.valm ℕ ![k] (fun _ => 0) t := by
+    rw [Semiterm.val_rew]
+    congr 1
+    funext i
+    rcases Fin.eq_zero i with rfl
+    show Semiterm.val (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0)
+      ((Rew.subst ![nm k]) #0) = k
+    rw [show (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]) #0 = nm k by simp, he]
+    exact valm_nm k _
+  rw [h1, valm_env_irrel_of_positive t hpos ![k] (fun _ => 0)] at h
+  exact h.1
+
+/-- The ball body's syntactic normal form (probe-verified): the guard is a genuine `<`-relation
+atom, the implication is `∼guard ⋎ φ`. -/
+theorem ball_body_eq (t : Semiterm ℒₒᵣ ℕ 1) (φ : SyntacticSemiformula ℒₒᵣ 1) :
+    ((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ)
+      = (Semiformula.nrel Language.LT.lt ![#0, t] ⋎ φ) := by
+  simp [Semiformula.imp_eq, Semiformula.Operator.lt_def]
+
+/-- The guard value sits inside the ball body's `gvb`. -/
+theorem tvB_le_gvb_ball (t : Semiterm ℒₒᵣ ℕ 1) (φ : SyntacticSemiformula ℒₒᵣ 1) (B : ℕ) :
+    tvB t B ≤ gvb ((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ) B := by
+  rw [ball_body_eq]
+  refine le_trans ?_ (le_max_left _ _)
+  exact Finset.le_sup (f := fun i => tvB (![#0, t] i) B) (Finset.mem_univ 1)
+
+/-- **Σ₁ `all`-head inversion**: at `𝚺 1`, a `∀`-head can only be a ball
+(`all`/`pi` are 𝚷-constructors; `dummy_sigma` needs level ≥ 2). -/
+theorem sigma1_all_inv {χ : SyntacticSemiformula ℒₒᵣ 1}
+    (H : Arithmetic.Hierarchy 𝚺 1 (Semiformula.all χ)) :
+    ∃ (t : Semiterm ℒₒᵣ ℕ 1) (φ : SyntacticSemiformula ℒₒᵣ 1),
+      t.Positive ∧ χ = ((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ)
+        ∧ Arithmetic.Hierarchy 𝚺 1 φ := by
+  generalize hq : Semiformula.all χ = ψ at H
+  cases H <;> try simp [LO.FirstOrder.ball, LO.FirstOrder.bexs] at hq
+  case ball t hpos hp =>
+    exact ⟨t, _, hpos, Semiformula.all.inj hq, hp⟩
+
+/-- **THE ROOT DISCHARGE** — `Hierarchy 𝚺 1` plus the coupled guard-value bound gives `Gated`.
+At the pipeline root instantiate `P := fun B => gvb φ_root (max V_root B)` (monotone by
+`gvb_mono`, and the hypothesis is `gvb_mono` + max-algebra). -/
+theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
+    ∀ (ψ : Form), Arithmetic.Hierarchy 𝚺 1 ψ →
+      ∀ V : ℕ, (∀ B, gvb ψ B ≤ P (max V B)) → Gated P V ψ
+  | Semiformula.rel _ _, _, _, _ => by rw [Gated]; trivial
+  | Semiformula.nrel _ _, _, _, _ => by rw [Gated]; trivial
+  | Semiformula.verum, _, _, _ => by rw [Gated]; trivial
+  | Semiformula.falsum, _, _, _ => by rw [Gated]; trivial
+  | Semiformula.and χ₁ χ₂, H, V, hgv => by
+      rw [show (Semiformula.and χ₁ χ₂) = (χ₁ ⋏ χ₂) from rfl] at H
+      rw [Gated]
+      have h := Arithmetic.Hierarchy.and_iff.mp H
+      exact ⟨gated_of_sigma1 hP χ₁ h.1 V
+          (fun B => le_trans (le_max_left _ _) (hgv B)),
+        gated_of_sigma1 hP χ₂ h.2 V
+          (fun B => le_trans (le_max_right _ _) (hgv B))⟩
+  | Semiformula.or χ₁ χ₂, H, V, hgv => by
+      rw [show (Semiformula.or χ₁ χ₂) = (χ₁ ⋎ χ₂) from rfl] at H
+      rw [Gated]
+      have h := Arithmetic.Hierarchy.or_iff.mp H
+      exact ⟨gated_of_sigma1 hP χ₁ h.1 V
+          (fun B => le_trans (le_max_left _ _) (hgv B)),
+        gated_of_sigma1 hP χ₂ h.2 V
+          (fun B => le_trans (le_max_right _ _) (hgv B))⟩
+  | Semiformula.exs χ, H, V, hgv => by
+      rw [Gated]
+      intro n
+      have hχ : Arithmetic.Hierarchy 𝚺 1 χ := Arithmetic.Hierarchy.sigma_of_sigma_ex H
+      refine gated_of_sigma1 hP (χ/[nm n]) (hχ.rew _) (max V n) (fun B => ?_)
+      calc gvb (χ/[nm n]) B ≤ gvb χ (max B n) := gvb_substs_le n B
+        _ = gvb (Semiformula.exs χ) (max B n) := rfl
+        _ ≤ P (max V (max B n)) := hgv (max B n)
+        _ ≤ P (max (max V n) B) := hP (by omega)
+  | Semiformula.all χ, H, V, hgv => by
+      obtain ⟨t, φ, hpos, hχeq, hφ⟩ := sigma1_all_inv H
+      rw [Gated]
+      constructor
+      · intro hf
+        have hnall : ¬ ∀ k, atomTrue (χ/[nm k]) :=
+          fun h => hf ((atomTrue_all_iff χ).mpr h)
+        obtain ⟨k, hk⟩ := not_forall.mp hnall
+        refine ⟨k, ?_, hk⟩
+        have hlt : k < tvB t 0 := by
+          rw [hχeq] at hk
+          exact (gate_extract hpos hk).1
+        have hle : tvB t 0 ≤ P V := by
+          have h1 : tvB t 0 ≤ gvb χ 0 := hχeq ▸ tvB_le_gvb_ball t φ 0
+          have h2 : gvb (Semiformula.all χ) 0 ≤ P (max V 0) := hgv 0
+          calc tvB t 0 ≤ gvb χ 0 := h1
+            _ = gvb (Semiformula.all χ) 0 := rfl
+            _ ≤ P (max V 0) := h2
+            _ = P V := by rw [Nat.max_zero]
+        omega
+      · intro k
+        have hχH : Arithmetic.Hierarchy 𝚺 1 χ := by
+          rw [hχeq]
+          simpa [Arithmetic.Hierarchy.imp_iff, Semiformula.Operator.lt_def] using hφ
+        refine gated_of_sigma1 hP (χ/[nm k]) (hχH.rew _) (max V k) (fun B => ?_)
+        calc gvb (χ/[nm k]) B ≤ gvb χ (max B k) := gvb_substs_le k B
+          _ = gvb (Semiformula.all χ) (max B k) := rfl
+          _ ≤ P (max V (max B k)) := hgv (max B k)
+          _ ≤ P (max (max V k) B) := hP (by omega)
+termination_by ψ _ _ _ => ψ.complexity
+decreasing_by
+  all_goals simp [Semiformula.complexity_rew]
+
+#print axioms GoodsteinPA.ReadoffValueGate.gated_of_sigma1
 #print axioms GoodsteinPA.ReadoffValueGate.Gated_mono
 #print axioms GoodsteinPA.ReadoffValueGate.Gated_all_iff
 #print axioms GoodsteinPA.ReadoffValueGate.gvb_mono
