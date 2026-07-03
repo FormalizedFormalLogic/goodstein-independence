@@ -131,3 +131,65 @@ proof body swapped to the kernel checkpoint route (statement byte-identical, FRO
 **BEFORE** (Block 2 / pre-lap-211): the same chain carried `Lean.ofReduceBool` from the 12
 `native_decide` base cases. **`Lean.ofReduceBool` is now OFF the growth headline entirely.**
 Anti-vacuity `example`s elsewhere retain native_decide by design (no theorem's axiom path).
+
+---
+
+## Block 4 — B-2: the 15 src `sorry` sites — re-point / retirement PROPOSALS (lap 212)
+
+Inventory is exact (regex over `src/`, 2026-07-03): 15 proof-term `sorry`s. NONE is on the
+headline axiom path (`peano_not_proves_goodstein` = `[propext, choice, Quot.sound,
+goodstein_implies_consistency]`, re-verified lap 209; growth headline now ofReduceBool-free per
+Block 3). Proposals only — **the judge executes all deletions/edits**.
+
+### Group 1 — discharged by the SERIES-4 splice (1 site)
+| site | decl | proposal |
+|---|---|---|
+| `WainerLadder.lean:45` | `wainer_splice_Zef2` | **RE-POINT at the judge pass**: statement's conclusion is verbatim `wainer_bound_witness`'s (Lane S summit, Block 1); its 3 hypotheses are kernel-clean module theorems. The SERIES-4 splice closes this `sorry` by composition — no restatement. |
+
+### Group 2 — dead `red`-cluster (Route-A superseded engine) — RETIREMENT proposals (6 sites)
+The `red`-engine soundness cluster was superseded laps 141–144 (engine = `iRKcCrit`/keep-tip;
+memory + `DIRECTION.md` lap-140/142 blocks: "`red` is the WRONG engine; 1108/82 are false
+shadows"; lap-166: "dead `red` cluster STILL sorries"). None feeds the live genReduct/master-key
+frontier or any headline.
+| site | decl / locus | proposal |
+|---|---|---|
+| `Crux2Blueprint.lean:82` | `zKValidF_iIndReduct_of_zInd` | **RETIRE** — target kernel-refuted lap 136 (ordinal shadow; correct reduct is the substituted multi-step chain, realized via `iIndReductSeqG`). Unprovable as stated. |
+| `Crux2Blueprint.lean:1299` | `ZDerivation_red_zK_crit` | **RETIRE** — false shadow (ex-:1108); superseded by sorry-free `ZDerivation_iRKcCrit_critical_all` (lap 142). |
+| `Crux2Blueprint.lean:1411` | `ZDerivation_red_zK_splice` | **RETIRE** — same cluster; splice superseded by GenReductCert flatten route (lap 151). |
+| `Crux2Blueprint.lean:1607` | `redSound` dispatcher, axNeg Path-C residual | **RETIRE with cluster** — axNeg handled red-free by keep-tip reconstruction (lap 144). |
+| `Crux2Blueprint.lean:1698` | `redSound` dispatcher, `redZKReady` residual | **RETIRE with cluster**. |
+| `Crux2Blueprint.lean:1814` | `redSoundGen` chain-REPLACE IH residual | **RETIRE with cluster** — recursion realized on the genReduct side (master keys, laps 152–153). |
+Retirement = judge deletes the decls + their dead downstream consumers (audit: nothing outside
+the cluster references them; `blueprint_audit` must stay green after deletion).
+
+### Group 3 — LIVE Route-A crux-2 frontier — KEEP as disclosed decomposition (6 sites)
+These are the named decomposition of `false_of_ZDerivesEmpty`'s builder (the structural escape
+set + master-key no-redex cases + the M2 entry bridge). They are the *active* Route-A frontier —
+deleting them would erase the decomposition, not debt. Not currently mandated (growth route is),
+but not retirable.
+| site | decl | status |
+|---|---|---|
+| `Crux2Blueprint.lean:1931` | `foundation_bot_to_Z_empty` | KEEP — the M2 embedding entry (Foundation ⊥-derivation → Z). |
+| `Crux2Blueprint.lean:3691` | `ind_reduct_anySucc` | KEEP — named leaf 1 (generalized Ind reduct off `seqSucc = ⊥`). |
+| `Crux2Blueprint.lean:4542/4546/4548/4550` | `GenReductCert (zK …)` no-redex arms | KEEP — §14.254b replace-recursion cases (the genuine wall, lap-148 record). |
+
+### Group 4 — superseded pin / live Phase-3 wall (2 sites)
+| site | decl | proposal |
+|---|---|---|
+| `OperatorZeh.lean:1925` | `cutElimPass_Zf` (pin 3, lap-5 entrance gate) | **RETIRE (SUPERSEDED)** — `cutElimPass_Zef2` (`OperatorZef2.lean:1105`, via `passAux`) is now a REAL kernel-clean theorem `[propext, choice, Quot.sound]` (fresh `#print axioms`, 2026-07-03) at the upgraded Zef2 judgment; no consumer of `cutElimPass_Zf` exists outside `OperatorZeh.lean`. LOCK-owned → judge amends the LOCK + deletes (or downgrades to a historical comment). ⚠️ Same check exposed STALE comments in `OperatorZef2.lean` (lines 20, 363, 1103: "pass stays `sorry`/three sub-sorries") — judge should refresh them; the pass is sorry-free. |
+| `DescentSemantic.lean:582` | `no_min_descent_absurd_of_goodstein` | **KEEP** — the lone Phase-3 wall (Rathjen §3 inside `M`), discharge plan documented in-file. Feeds the `goodstein_implies_consistency` girder (Route independent of the growth splice). Genuinely open math, correctly stated; not retirable, not superseded. |
+
+**Net if all proposals executed**: 15 → 8 src sorries (Groups 1+2+pin-3 gone), every survivor a
+live, correctly-stated frontier obligation.
+
+---
+
+## Block 5 — SERIES-4 judge package: COMPLETE (lap 212)
+
+Per DIRECTION §4 STOP condition: **S-5 ledgered** (Block 1: `wainer_bound_witness` at the
+axiom's verbatim type, kernel-clean, hypothesis pairing table + transcripts) · **B-1 ledgered**
+(Blocks 2–3: base cases kernel-only, src swap executed, ofReduceBool OFF the growth chain) ·
+**B-2 ledgered** (Block 4: all 15 sites classified with proposals). Judge-gated remainder (grind
+FORBIDDEN, untouched): the src axiom→theorem swap in `WainerRoute.lean`, the rung-C crown
+re-point, `Statement.lean`, all deletions. The SERIES-4 judge pass can execute from this ledger
+alone.
