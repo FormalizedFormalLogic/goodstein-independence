@@ -1,5 +1,25 @@
 # Pending work — open obligations & attack paths
 
+## LAP 197 (SERIES-2 D-1 CLOSED) — `Nlog_finite_fiber` PROVEN; probe sorry-free; NF restriction shown necessary
+
+**D-1 is now FULLY dispositive: BOTH ruling properties are theorems.**
+`wip/AbsorbingNormProbe.lean` is sorry-free, all kernel-clean `[propext, Classical.choice,
+Quot.sound]`:
+- `Nlog_finite_fiber : ∀ K, {α | NF α ∧ Nlog α ≤ K}.Finite` — property (i) PROVEN. Method:
+  induction on `K` + inner **well-founded induction on the `NFBelow` bound ordinal** (the tail
+  of `oadd e n a` lives in the `NFBelow (repr e)` fiber, `repr e < b`; the exponent lives in the
+  outer-IH finite `Nlog ≤ K` fiber; coefficient `< 2^(K+2)`). No Finset `nlogBallBelow` needed.
+- `Nlog_fiber_infinite_without_NF` — the lap-196 UNRESTRICTED statement was FALSE: non-NF flat
+  chains `oadd 0 1 (oadd 0 1 …)` all have `Nlog = 1`. The correct ruling candidate is finite
+  fibers **on NF notations** (the only population the calculus uses; `ewBall` clients are NF).
+- Property (ii) was already proven lap 196 (`Nlog_add_le_max_succ`).
+
+**NEXT (ladder P2, remaining independent stages, priority order per lap-196 baton):**
+1. **Stage C — lane-D Option-B feasibility**: kernel-check whether the splice consumer closes
+   with the achievable `ewIter f α 0` bound instead of `f 0` (dodges Ax2). Feeds ruling (2).
+2. **Stage B — rung-E Ax2-adequacy probe** (`wip/Ax2AdequacyProbe.lean`, full `Zef2T` clone).
+3. **Stage D-2 — shift-relativization `rel1'` cost probe.**
+
 ## LAP 196 (SERIES-2 Stage A + D-1) — rung-W homed at concrete translation; absorbing-norm EXISTS (top-rank-cut ruling input)
 
 **Order in force:** `REBUILD-Z-SERIES-2-ORDER-2026-07-03.md` (statement/probe series, 2–4 laps;

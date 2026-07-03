@@ -107,12 +107,20 @@ merge so `α+γ = oadd e (n+ng) ag`, coefficient tamed by `clog_add_le`. The sin
 means the two `+1`s never compound. Helper `add_eq_right_of_repr` banked. So absorption is now a
 THEOREM, not just evidenced on adversaries — the D-1 disposition is DISPOSITIVE for property (ii).
 
-**One documented `sorry` remaining:**
-- `Nlog_finite_fiber` (property (i) in full) — strategy documented (exponent-set induction:
-  exponents of a `Nlog ≤ K` element are drawn from the finite `{e : Nlog e ≤ K-1}` and strictly
-  decrease, bounding length). `Nlog_spine` growth is the decisive kernel witness that `Nlog`
-  avoids the max-coeff norm's infinite-fiber failure mode; full mechanization needs a
-  `nlogBallBelow` construction (à la `NFBelow`), a follow-up P3 target.
+**Finite fibers — PROVEN (lap 197, D-1 CLOSED; probe now sorry-free, kernel-clean
+`[propext, Classical.choice, Quot.sound]`):**
+- `Nlog_finite_fiber : ∀ K, {α : ONote | NF α ∧ Nlog α ≤ K}.Finite` — property (i) fully
+  mechanized. Proof: induction on `K`; at `K+1` an inner **well-founded induction on the
+  `NFBelow` bound ordinal** `b`: any `oadd e n a` in the `NFBelow · b` fiber has exponent `e`
+  in the finite (outer-IH) `Nlog ≤ K` NF-fiber with `repr e < b`, coefficient `< 2^(K+2)`
+  (`coe_lt_of_clog_le`), and tail in the `NFBelow · (repr e)` fiber (inner IH, `repr e < b`) —
+  a finite union of images. No `nlogBallBelow` Finset construction needed.
+- **The NF restriction is NECESSARY** (`Nlog_fiber_infinite_without_NF`, kernel-clean): the
+  lap-196 unrestricted statement `{α : ONote | Nlog α ≤ K}.Finite` is FALSE — the non-NF flat
+  chains `oadd 0 1 (oadd 0 1 (…))` are pairwise distinct with `Nlog = 1` (infinite `≤ 1` ball).
+  NF is exactly the population the calculus feeds the norm (`ewBall` clients are all NF), so
+  the ruling candidate reads: finite fibers **on NF notations**. The NF strict exponent descent
+  is precisely what the inner ordinal induction consumes.
 
 **DISPOSITION for the reserved top-rank-cut ruling:** the TRILEMMA's prime amendment candidate
 (finite-fibered ABSORBING norm) is now KERNEL-EVIDENCED to EXIST — the judge can dissolve the

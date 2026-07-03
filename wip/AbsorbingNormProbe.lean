@@ -25,8 +25,11 @@ tames the merge, and the max-over-terms shape (instead of a sum) tames concatena
 
 Deliverables (all kernel-checked; no `native_decide`):
   * `clog_add_le` — the merge lemma for the log coefficient charge (pure ℕ);
-  * `Nlog` — the candidate norm, and `Nlog_finite_fiber_*` witnesses on the tower spine
-    (the family that makes `ewN`'s max-coefficient source-norm INfinite-fibered);
+  * `Nlog` — the candidate norm; `Nlog_finite_fiber` — property (i) fully **PROVEN**
+    (kernel-clean) on NF notations, with the NF restriction shown NECESSARY
+    (`Nlog_fiber_infinite_without_NF`: non-NF flat chains give an infinite `Nlog ≤ 1` ball);
+    plus the `Nlog_spine` growth witness on the tower spine (the family that makes `ewN`'s
+    max-coefficient source-norm INfinite-fibered);
   * `nlog_absorbs_merge`, `nlog_absorbs_concat`, … — the absorbing inequality kernel-checked
     (`decide`) on the adversarial merge/concat pairs that REFUTE `ewN`/max-coeff;
   * `ewN_not_absorbing` — the concrete family where `ewN` violates absorption (contrast);
@@ -138,8 +141,9 @@ domination does NOT transfer finiteness (wrong direction).  Finite-fiberedness i
 from a self-referential induction: any `α` with `Nlog α ≤ K` (for `K ≥ 1`) has EVERY CNF
 exponent `e` satisfying `Nlog e ≤ K - 1` (since each leading charge `Nlog e + clog n ≤ K` with
 `clog n ≥ 1`), so all exponents are drawn from the finite set `{e : Nlog e ≤ K-1}` and, being
-strictly decreasing in the CNF, the LENGTH is `≤ |{e : Nlog e ≤ K-1}|`; with coefficients
-`≤ 2^K`, there are finitely many such `α`.  See `Nlog_finite_fiber` (documented).
+strictly decreasing in the CNF, the tail lives strictly below the head exponent; the
+mechanized proof (`Nlog_finite_fiber` below, PROVEN) runs a well-founded induction on the
+`NFBelow` bound ordinal inside an induction on `K`.
 
 The DECISIVE contrast with the failure mode `ewN` was built to avoid: the E–W max-coefficient
 source norm `‖·‖` is CONSTANT `= 1` on the whole tower spine `ω, ω^ω, ω^{ω^ω}, …` (infinite
@@ -184,20 +188,133 @@ theorem Nlog_spine (k : ℕ) : Nlog (spine k) = k + 1 := by
       rw [h1, hc]
       omega
 
-/-- **Finite fibers of `Nlog`** — every `Nlog`-ball is finite.
+/-! ### The NF restriction is NECESSARY for finite fibers
 
-Proof strategy (the exponent-set induction; documented, not yet mechanized):
-strong induction on `K`.  For `K = 0`, `{α : Nlog α ≤ 0} = {0}` (any `oadd e n a` has
-`Nlog ≥ clog n ≥ clog 1 = 1`).  For `K+1`: any `α` in the fiber is `oadd e n a` with
-`Nlog e ≤ K` (leading charge `Nlog e + clog n ≤ K+1`, `clog n ≥ 1`), `n ≤ 2^(K+1)`
-(`clog n ≤ K+1`), and `a` a strictly-lower CNF with `Nlog a ≤ K+1` and top exponent `< e`.
-By IH the exponent set `E := {e : Nlog e ≤ K}` is finite; the CNF is a strictly-decreasing
-sequence of `(exponent ∈ E, coeff ≤ 2^(K+1))` pairs, so length `≤ |E|` and there are finitely
-many.  Mechanizing this needs a `nlogBallBelow b K` construction (exponents `< b`, à la
-`NFBelow`); deferred — the concrete `Nlog_spine` growth already refutes the only known
-infinite-fiber failure mode, which is what the ruling turns on. -/
-theorem Nlog_finite_fiber (K : ℕ) : {α : ONote | Nlog α ≤ K}.Finite := by
-  sorry
+Over ALL of `ONote` (non-NF included) the fiber `{α : Nlog α ≤ 1}` is INFINITE: the flat
+chains `oadd 0 1 (oadd 0 1 (… 0))` are pairwise distinct notations, all with `Nlog = 1`
+(each layer charges `max (Nlog 0 + clog 1) · = max 1 ·`).  So property (i) must be read on
+NF notations — which is the only population the calculus ever feeds the norm (`ewBall`'s
+clients are all NF).  Kernel-checked below (`Nlog_fiber_infinite_without_NF`). -/
+
+/-- The non-NF flat chain: `flatChain (k+1) = oadd 0 1 (flatChain k)`.  Not NF for `k ≥ 2`
+(exponents don't strictly decrease), but a perfectly good `ONote` term. -/
+def flatChain : ℕ → ONote
+  | 0 => 0
+  | k + 1 => oadd 0 1 (flatChain k)
+
+theorem Nlog_flatChain_le (k : ℕ) : Nlog (flatChain k) ≤ 1 := by
+  induction k with
+  | zero => simp [flatChain]
+  | succ k ih =>
+      have hc : clog ((1 : ℕ+) : ℕ) = 1 := by decide
+      simp only [flatChain, Nlog_oadd, Nlog_zero, hc]
+      omega
+
+theorem flatChain_injective : Function.Injective flatChain := by
+  intro k l h
+  induction k generalizing l with
+  | zero => cases l with
+      | zero => rfl
+      | succ l => exact absurd h (by simp [flatChain])
+  | succ k ih => cases l with
+      | zero => exact absurd h (by simp [flatChain])
+      | succ l =>
+          simp only [flatChain, oadd.injEq] at h
+          exact congrArg Nat.succ (ih h.2.2)
+
+/-- **The unrestricted finite-fiber statement is FALSE**: without the NF hypothesis the
+`Nlog ≤ 1` ball is infinite (flat non-NF chains). -/
+theorem Nlog_fiber_infinite_without_NF : {α : ONote | Nlog α ≤ 1}.Infinite :=
+  Set.infinite_of_injective_forall_mem flatChain_injective
+    (fun k => Nlog_flatChain_le k)
+
+/-! ### Finite fibers on NF notations — PROVEN -/
+
+/-- `clog n ≥ 1` for positive `n` — every CNF term charges at least `1`. -/
+theorem clog_pos (n : ℕ+) : 1 ≤ clog (n : ℕ) :=
+  Nat.log_pos Nat.one_lt_two (by have := n.pos; omega)
+
+/-- Coefficient bound from the log charge: `clog n ≤ K → n < 2^(K+1)`. -/
+theorem coe_lt_of_clog_le {n : ℕ+} {K : ℕ} (h : clog (n : ℕ) ≤ K) : (n : ℕ) < 2 ^ (K + 1) := by
+  have h1 : (n : ℕ) + 1 < 2 ^ (Nat.log 2 ((n : ℕ) + 1) + 1) :=
+    Nat.lt_pow_succ_log_self Nat.one_lt_two _
+  have h2 : 2 ^ (Nat.log 2 ((n : ℕ) + 1) + 1) ≤ 2 ^ (K + 1) :=
+    Nat.pow_le_pow_right (by norm_num) (by unfold clog at h; omega)
+  omega
+
+/-- `{n : ℕ+ | n < B}` is finite (preimage of `Iio B` under the injective coercion). -/
+theorem finite_pnat_coe_lt (B : ℕ) : {n : ℕ+ | (n : ℕ) < B}.Finite := by
+  have h : {n : ℕ+ | (n : ℕ) < B} = ((↑) : ℕ+ → ℕ) ⁻¹' Set.Iio B := rfl
+  rw [h]
+  exact (Set.finite_Iio B).preimage PNat.coe_injective.injOn
+
+/-- **Finite fibers of `Nlog` on NF notations** — every NF `Nlog`-ball is finite.
+(Property (i) of the ruling candidate, fully mechanized; the NF restriction is forced,
+see `Nlog_fiber_infinite_without_NF`.)
+
+Proof: induction on `K`.  `K = 0`: the fiber is `{0}` (`clog n ≥ 1`).  `K+1`: inner
+well-founded induction on the `NFBelow` bound ordinal `b` — any `oadd e n a` in the
+`NFBelow · b` fiber has exponent `e` in the (finite, by outer IH) `Nlog ≤ K` NF-fiber
+with `repr e < b`, coefficient `< 2^(K+2)`, and tail in the `NFBelow · (repr e)` fiber
+(finite by inner IH, `repr e < b`); so the fiber is covered by a finite union of images.
+The strict exponent descent of NF is exactly what the inner ordinal induction consumes —
+this is where the flat-chain counterexample is excluded. -/
+theorem Nlog_finite_fiber : ∀ K : ℕ, {α : ONote | NF α ∧ Nlog α ≤ K}.Finite := by
+  intro K
+  induction K with
+  | zero =>
+      apply Set.Finite.subset (Set.finite_singleton (0 : ONote))
+      rintro α ⟨_, hle⟩
+      cases α with
+      | zero => exact Set.mem_singleton _
+      | oadd e n a =>
+          exfalso
+          have h1 := clog_pos n
+          simp only [Nlog_oadd] at hle
+          omega
+  | succ K ihK =>
+      -- inner: fibers cut by an `NFBelow` bound, by well-founded induction on the bound
+      have inner : ∀ b : Ordinal, {α : ONote | NFBelow α b ∧ Nlog α ≤ K + 1}.Finite := by
+        intro b
+        induction b using WellFoundedLT.induction with
+        | _ b ihb =>
+          have hcov : {α : ONote | NFBelow α b ∧ Nlog α ≤ K + 1} ⊆
+              insert 0 (⋃ e ∈ {e : ONote | (NF e ∧ Nlog e ≤ K) ∧ ONote.repr e < b},
+                ⋃ n ∈ {n : ℕ+ | (n : ℕ) < 2 ^ (K + 2)},
+                  (fun a => oadd e n a) ''
+                    {a : ONote | NFBelow a (ONote.repr e) ∧ Nlog a ≤ K + 1}) := by
+            rintro α ⟨hbel, hle⟩
+            cases α with
+            | zero => exact Set.mem_insert _ _
+            | oadd e n a =>
+                refine Set.mem_insert_iff.2 (Or.inr ?_)
+                simp only [Nlog_oadd] at hle
+                have hc1 := clog_pos n
+                simp only [Set.mem_iUnion, Set.mem_image, Set.mem_setOf_eq]
+                exact ⟨e, ⟨⟨hbel.fst, by omega⟩, hbel.lt⟩,
+                  n, coe_lt_of_clog_le (by omega),
+                  a, ⟨hbel.snd, by omega⟩, rfl⟩
+          apply Set.Finite.subset _ hcov
+          refine Set.Finite.insert 0 ?_
+          refine Set.Finite.biUnion (ihK.subset (fun e he => he.1)) ?_
+          rintro e ⟨⟨_, _⟩, hlt⟩
+          refine Set.Finite.biUnion (finite_pnat_coe_lt _) ?_
+          intro n _
+          exact (ihb (ONote.repr e) hlt).image _
+      -- conclude: every NF element sits below the successor of its own head exponent
+      apply Set.Finite.subset
+        (Set.Finite.insert 0 (Set.Finite.biUnion ihK
+          (fun e _ => inner (Order.succ (ONote.repr e)))))
+      rintro α ⟨hNF, hle⟩
+      cases α with
+      | zero => exact Set.mem_insert _ _
+      | oadd e n a =>
+          refine Set.mem_insert_iff.2 (Or.inr ?_)
+          simp only [Nlog_oadd] at hle
+          have hc1 := clog_pos n
+          simp only [Set.mem_iUnion, Set.mem_setOf_eq]
+          exact ⟨e, ⟨hNF.fst, by omega⟩,
+            hNF.below_of_lt (Order.lt_succ _), by simp only [Nlog_oadd]; omega⟩
 
 /-! ## The general absorbing theorem
 
