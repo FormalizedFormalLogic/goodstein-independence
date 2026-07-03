@@ -230,3 +230,24 @@ ratified; the `Zef2T` adoption decision stays with the rung-E ruling.
    P/R read-off obligations re-home to `Zef2T` at the measured Stage-B costs (reduction
    mechanical, read-offs native re-proof — spine-head vacuity intentionally does not survive
    (Ax2)).
+
+---
+
+## Block 6 — E-1 first block: the CONNECTIVE-RULE GAP fires at statement level (lap 199c)
+
+**File**: `wip/E0Ax2NeedProbe.lean` (§ E-1 seam probe; src untouched). Standard triple.
+
+**Kernel fact**: `zef2T_not_derives_verum` — even WITH (Ax2), `Zef2T` cannot derive `{⊤}` at
+rank 0 (`zef2T_rank0_noneSpine_underivable`, the none-spine invariant: (Ax2) only helps
+literal heads; `⊤/⊥/⋏/⋎` remain ruleless).  The W3 case ladder's `verum`/`and`/`or` cases —
+present in every PA-proof embedding, and covered in `Zekd` by `verumR`/`andI`/`orI` — have NO
+counterpart in `Zef2`/`Zef2T`: the connective rules were dropped in the `Zef` port (sound for
+cut-elim, where `erase_inert` shows they are never principal) and rung E now forces them back.
+
+**Consequence (statement-level, judge-owned):** `embedding_Zef2T_DRAFT` is UNPROVABLE-AS-SHAPED;
+the target calculus must be the FULL E–W Def-23 rule set `Zef2TC = Zef2T + verumR/andI/orI`
+(`Zekd` shapes, `Nlog` gates).  Measured fallout to hand the ruling: `passAux` gains ⋏/⋎
+PRINCIPAL cut shapes (the `erase_inert` dodge stops applying — E–W Lemma 25's finite arms,
+mirror of the ∀/∃ shapes at fixed finite branching), read-offs gain two cases each.  The E-1
+grind continues over `Zef2TC` (next block: clone + the leaf/EM cases against the amended
+draft); the DRAFT text amendment itself is flagged for the judge, not self-ratified.

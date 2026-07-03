@@ -217,4 +217,88 @@ theorem embedding_Zef2T_DRAFT :
         Cl H α ∧ Zef2T α e H (ewRootSlot e B) d {(goodsteinBodyE/[nm m])} := by
   sorry
 
+
+/-! ## E-1 seam probe — `Zef2T` LACKS the connective rules the embedding needs
+
+First E-1 grind block, and it fires at the STATEMENT level: the W3 case ladder (Derivation2
+induction) has `verum`/`and`/`or` cases (PA proofs contain arbitrary connective formulas), and
+`Zekd` — the calculus the W3 skeleton targeted — has `verumR`/`andI`/`orI` rules for them
+(`OperatorZinfty.lean:50,58,62`).  `Zef2` deleted the connective rules (sound for the cut-elim
+grind, where `⊤/⊥/⋏/⋎` cut formulas are never principal — `Zef2.erase_inert`), and the `Zef2T`
+clone above inherits the deletion.
+
+**Kernel fact: even WITH (Ax2), the `verum` case is underivable** —
+`zef2T_not_derives_verum` below, via the none-spine invariant (every member inert-headed ⇒ no
+leaf can fire: `axL`/`trueRel`/`trueNrel` need a literal head, `allω`/`exI` insert
+spine-preserving instances, no rank-0 cut).  `{A ⋏ B}` singletons with inert-headed `A ⋏ B`
+are covered by the same invariant, and the `and` case has no rule to split on regardless.
+
+**Consequence for the rung-E DRAFT (judge input, statement-level):** `embedding_Zef2T_DRAFT`
+is UNPROVABLE-AS-SHAPED unless the target calculus is extended to the FULL E–W Def-23 rule
+set: `Zef2TC := Zef2T + verumR + andI + orI` (the `Zekd` shapes with `Nlog` gates threaded,
+ordinal-descending premises).  E–W's (⋀)/(⋁) rules cover finite conjunction/disjunction
+alongside the ω-rules; the `Zef2` port narrowed to the ω-fragment for the cut-elim grind, and
+rung E forces the finite fragment back in.  Cost fallout to measure for the ruling: `passAux`
+gains ⋏/⋎ PRINCIPAL cut shapes (the `erase_inert` dodge stops applying — genuine
+inversion/reduction cases, E–W Lemma 25's finite arms), and each read-off gains two cases.
+This is the honest Def-23-faithfulness cost deferred when `Zef2` dropped the connectives. -/
+
+/-- **None-spine sequents are rank-0 underivable EVEN IN `Zef2T`** — (Ax2) only helps literal
+heads.  Mirror of the src spine-head invariant with the two extra leaf cases. -/
+theorem zef2T_rank0_noneSpine_underivable :
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+      Zef2T α e H f c Γ → c = 0 → (∀ ψ ∈ Γ, spineHead ψ = none) → False := by
+  intro α e H f c Γ dd
+  induction dd with
+  | @axL α e H f c Γ ar hαN r v hp hn =>
+      intro _ hyp
+      have h1 := hyp _ hp
+      rw [show spineHead (Semiformula.rel r v) = some (true, ⟨ar, r⟩) from rfl] at h1
+      simp at h1
+  | @trueRel α e H f c Γ ar hαN r v htrue hmem =>
+      intro _ hyp
+      have h1 := hyp _ hmem
+      rw [show spineHead (Semiformula.rel r v) = some (true, ⟨ar, r⟩) from rfl] at h1
+      simp at h1
+  | @trueNrel α e H f c Γ ar hαN r v htrue hmem =>
+      intro _ hyp
+      have h1 := hyp _ hmem
+      rw [show spineHead (Semiformula.nrel r v) = some (false, ⟨ar, r⟩) from rfl] at h1
+      simp at h1
+  | wk hαN hsub _ ih =>
+      intro hc hyp
+      exact ih hc (fun ψ hψ => hyp ψ (hsub hψ))
+  | weak hαN hβ hβNF hαNF hβH hsub _ ih =>
+      intro hc hyp
+      exact ih hc (fun ψ hψ => hyp ψ (hsub hψ))
+  | @allω α e H f c Γ hαN φ β hβ hβNF hαNF hβH dd ih =>
+      intro hc hyp
+      refine ih 0 hc ?_
+      intro ψ hψ
+      rcases Finset.mem_insert.mp hψ with rfl | hψΓ
+      · rw [spineHead_substs]
+        simpa using hyp (∀⁰ φ) (Finset.mem_insert_self _ _)
+      · exact hyp ψ (Finset.mem_insert_of_mem hψΓ)
+  | @exI α β e H f c Γ hαN φ n hβ hβNF hαNF hβH hbound dd ih =>
+      intro hc hyp
+      refine ih hc ?_
+      intro ψ hψ
+      rcases Finset.mem_insert.mp hψ with rfl | hψΓ
+      · rw [spineHead_substs]
+        simpa using hyp (∃⁰ φ) (Finset.mem_insert_self _ _)
+      · exact hyp ψ (Finset.mem_insert_of_mem hψΓ)
+  | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ _ _ =>
+      intro hc _
+      omega
+
+/-- **The embedding's `verum` case is UNDERIVABLE in `Zef2T`** — the connective-rule gap. -/
+theorem zef2T_not_derives_verum {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} :
+    ¬ Zef2T α e H f 0 {(⊤ : Form)} := by
+  intro dd
+  refine zef2T_rank0_noneSpine_underivable dd rfl ?_
+  intro ψ hψ
+  rw [Finset.mem_singleton] at hψ
+  rw [hψ]
+  rfl
+
 end GoodsteinPA.E0Ax2NeedProbe
