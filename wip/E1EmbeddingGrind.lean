@@ -4706,8 +4706,44 @@ theorem readoff_value_Zef2TC {φ : SyntacticSemiformula ℒₒᵣ 1} {f₀ P : �
       rcases Finset.mem_singleton.mp hψ with rfl
       exact ⟨hroot, Or.inl rfl⟩)
 
+/-- The tower slot preserves monotonicity (copy of `wip/NlogGateProbe.ewIterTower_monotone`). -/
+theorem ewIterTower_monotone {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (α : ONote) : ∀ d, Monotone (ewIterTower f d α)
+  | 0 => hmono
+  | (d + 1) => ewIter_monotone (ewIterTower_monotone hmono hinfl α d)
+      (ewIterTower_infl hinfl α d) _
+
+/-- **Piece 2a — the STRUCTURAL PIPELINE** (bound-shape-independent): from a rank-`d` `Zef2TC`
+derivation of a singleton `{∃⁰ φ}` at the embedding's root slot `rel1 (ewRootSlot e B) K`
+(the `embedding_Zef2TC_V3` output shape) + the root `Gated` certificate, compose
+`rankToZeroAuxTC` (the EwLow entry — the `rel1` plateau breaks `StrictMono`, so NOT the `EwF1`
+wrapper) with `readoff_value_Zef2TC`: a TRUE numeral instance under the concrete
+`ewIter (Sslot tower P)` bound at some NF ordinal `α' ≤ collapseIter d α`.  Step 2b converts
+this bound into the ratified splice target (`∃ o, o.NF ∧ …` has total ordinal freedom). -/
+theorem readoff_value_pipeline {φ : SyntacticSemiformula ℒₒᵣ 1} {P : ℕ → ℕ}
+    (hP_mono : Monotone P)
+    {α e : ONote} {H : ONote → Prop} {B K d : ℕ}
+    (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
+    (D : Zef2TC α e H (rel1 (ewRootSlot e B) K) d {(∃⁰ φ)})
+    (V : ℕ) (hroot : Gated P V (∃⁰ φ)) :
+    ∃ α', α' ≤ collapseIter d α ∧ α'.NF ∧
+      ∃ n, n ≤ ewIter (Sslot (ewIterTower (rel1 (ewRootSlot e B) K) d α) P) α'
+              (Sslot (ewIterTower (rel1 (ewRootSlot e B) K) d α) P V) ∧
+        atomTrue (φ/[nm n]) := by
+  have hf1 := ewRootSlot_f1 e B
+  have hmono : Monotone (rel1 (ewRootSlot e B) K) := rel1_monotone hf1.monotone K
+  have hinfl : ∀ x, x ≤ rel1 (ewRootSlot e B) K x := rel1_infl hf1.infl K
+  have hlow : ∀ m, 2 * m + 1 ≤ rel1 (ewRootSlot e B) K m := rel1_low hf1.monotone hf1.2 K
+  obtain ⟨α', hα'le, hα'NF, _hα'H, _hα'N, D0⟩ :=
+    rankToZeroAuxTC e heNF d D hmono hinfl hlow (three_le_rel1_rootSlot e B K) hαNF hαH
+  obtain ⟨n, hn, htn⟩ := readoff_value_Zef2TC
+    (ewIterTower_monotone hmono hinfl α d) (ewIterTower_infl hinfl α d)
+    hP_mono D0 V hroot
+  exact ⟨α', hα'le, hα'NF, n, hn, htn⟩
+
 end GoodsteinPA.E1EmbeddingGrind
 
+#print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_pipeline
 #print axioms GoodsteinPA.E1EmbeddingGrind.readoffVTC_core
 #print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_Zef2TC
 
