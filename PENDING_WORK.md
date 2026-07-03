@@ -1,5 +1,37 @@
 # Pending work — open obligations & attack paths
 
+## LAP 195 (grind, lane D) — `readoffD_trapped` NARROWED in-kernel to the NON-MONOTONE-MATRIX case (branch-0 sharp bound via `rel1 f 0 = f`)
+
+Landed a real narrowing of the sole rung-D residue (build 🟢 1328, headline undrifted, sorryAx OFF;
+commit on `plan`). **The whole monotone/branch-0-false portion of the trap is now DISCHARGED
+in-kernel**, isolating the obstruction to a strictly smaller case.
+
+### The advance
+- **Structural key: `rel1 f 0 = f`.**  `rel1 f n = fun x => f (max n x)`, and `max 0 x = x`, so
+  branch `0` of the `allω` node runs at the *un-relativized* slot `f`.  In particular
+  `rel1 f 0 0 = f 0` — the sharp bound with NO relativization growth.
+- **`readoffD_aux`'s `allω`/trapped case now splits on `χ/[nm 0]`:**
+  - `χ/[nm 0]` FALSE ⇒ recurse into branch 0 (slot `rel1 f 0 = f`), IH yields `∃ m ≤ rel1 f 0 0 = f 0`.
+    **Closed, no residue.**
+  - `χ/[nm 0]` TRUE ⇒ residue `readoffD_trapped`, which now carries the added hypothesis
+    `h0 : atomTrue (χ/[nm 0])`.
+- **Consequence:** the residue survives ONLY when the Δ₀ matrix `χ` is *non-monotone* in its numeral
+  instances — `χ/[nm 0]` true while `∀⁰ χ` is false (so every FALSE branch sits at index `≥ 1`,
+  where the slot has grown to `rel1 f k₀ 0 = f k₀ ≥ f 0`).  This is precisely the case E–W close via
+  the (Ax2) true-literal rule.
+
+### Why this matters / NEXT
+- It **confirms and sharpens** the lap-194c diagnosis: (Ax2)'s job is exactly to short-circuit the
+  non-monotone-matrix branch (close a true Δ₀ leaf without deep-witnessing the trapped `∃⁰ φ`).  The
+  monotone-guard fragment (any matrix where `∀⁰ χ` false forces `χ/[nm 0]` false — e.g. a bounded-`∀`
+  guard `y < t → ψ` with `ψ` downward-closed) is now fully handled WITHOUT (Ax2).
+- **Option 2 (pure-proof vacuity) is now scoped to a decidable question:** can `Zef2`-without-(Ax2)
+  derive a rank-0 sequent whose only true member is a `∃⁰ φ` witnessed solely at index `≥ 1` inside a
+  false-`∀⁰ χ` branch with `χ/[nm 0]` TRUE?  This is the concrete target for a wip kernel probe (build
+  a candidate trap term, or prove no `axL`-closable leaf can arise) — a much tighter goal than the
+  original monolith.  Start there next lap.
+- The (Ax2) architect gate (shared with rung E) is UNCHANGED; this lap did not touch the calculus.
+
 ## LAP 194c (grind, lane D) — `readoffD_trapped` ROOT-CAUSED via the E–W Lemma 31 PROOF: it needs the (Ax2) amendment (architect-gated, SHARED with rung E)
 
 Read the actual E–W Lemma 31 proof from the PDF (`papers/eguchi-weiermann-2012-…`, extracted). It
