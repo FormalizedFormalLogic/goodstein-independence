@@ -105,3 +105,29 @@ HALF-stale: it still holds for `bump`, no longer for `Nat.log`).
 `lake build`, re-`#print axioms` the growth headline — `Lean.ofReduceBool` should drop from
 `goodsteinLength_exp_lower_uncond` and everything downstream. The 12 anti-vacuity `example`s
 elsewhere may keep native_decide (they sit on no theorem's axiom path).
+
+---
+
+## Block 3 — B-1 src swap EXECUTED (lap 212)
+
+**Commit**: (this commit) · full bare `lake build` GREEN (1342 jobs).
+
+The 5 kernel helpers (`bumpF`, `bumpF_eq`, `gvalF`, `gvalF_goodstein`, `goodsteinSeq_zero_absorb`,
+`glen_ge_of_seq_value`) moved from `wip/KernelBaseCases.lean` into
+`src/GoodsteinPA/Domination.lean` directly above `goodsteinLength_base_cases`; that theorem's
+proof body swapped to the kernel checkpoint route (statement byte-identical, FROZEN). The
+`native_decide` route (`glen_ge_of_gpos` + 12 native passes) no longer feeds any theorem.
+
+**Axiom transcript AFTER swap** (fresh `lake env lean` run, 2026-07-03):
+
+```
+'GoodsteinPA.Dom.goodsteinLength_base_cases'      : [propext, Classical.choice, Quot.sound]
+'GoodsteinPA.Dom.goodsteinLength_exp_lower_uncond': [propext, Classical.choice, Quot.sound]
+'GoodsteinPA.Dom.fastGrowing_two_le_goodsteinLength': [propext, Classical.choice, Quot.sound]
+'GoodsteinPA.WainerRoute.goodsteinLength_eventually_dominates_fixed_fastGrowing':
+                                                    [propext, Classical.choice, Quot.sound]
+```
+
+**BEFORE** (Block 2 / pre-lap-211): the same chain carried `Lean.ofReduceBool` from the 12
+`native_decide` base cases. **`Lean.ofReduceBool` is now OFF the growth headline entirely.**
+Anti-vacuity `example`s elsewhere retain native_decide by design (no theorem's axiom path).
