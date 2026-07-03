@@ -1259,9 +1259,46 @@ theorem ewIter_dom_pad_levelcap {f : ℕ → ℕ} {e₀ γ : ONote} {c : ℕ}
         _ < (e₀ + 2 + 1).repr + γ.repr + 1 := lt_add_one _))
     hgate)
 
+/-- **Padded Hardy eventually under ONE fastGrowing level** (SERIES-4 S-4 brick):
+`H_{ω^L}(m+C) < f_{osucc L}(m)` for `m ≥ C+3`.  Route: `hardy_omega_pow_lt_fastGrowing` into
+the successor level's iterate stack — each `f_L` application gains `≥ 1`, so `C+2` of them
+absorb the pad, and `monotone_iterate_of_id_le` climbs to the full `m`-stack. -/
+theorem hardy_pad_lt_fastGrowing_osucc (L : ONote) (hL : L.NF) (C : ℕ) :
+    ∀ m, C + 3 ≤ m → hardy (Wpow L) (m + C) < fastGrowing (osucc L) m := by
+  intro m hm
+  have h1 : hardy (Wpow L) (m + C) < fastGrowing L (m + C + 1) :=
+    hardy_omega_pow_lt_fastGrowing L (m + C)
+  have hA : ∀ j, m + j ≤ (fastGrowing L)^[j] m := by
+    intro j
+    induction j with
+    | zero => simp
+    | succ j ih =>
+        rw [Function.iterate_succ_apply']
+        have hge1 : 1 ≤ (fastGrowing L)^[j] m := by omega
+        have := lt_fastGrowing L hge1
+        omega
+  have hB : fastGrowing L (m + C + 1) ≤ (fastGrowing L)^[C + 2] m := by
+    rw [Function.iterate_succ_apply']
+    exact fastGrowing_monotone L (hA (C + 1))
+  have hC : (fastGrowing L)^[C + 2] m ≤ (fastGrowing L)^[m] m :=
+    Function.monotone_iterate_of_id_le (fun x => le_fastGrowing L x) (by omega) m
+  have hD : fastGrowing (osucc L) m = (fastGrowing L)^[m] m := by
+    rw [fastGrowing_succ _ (fundamentalSequence_osucc hL)]
+  omega
+
+/-- The eventual-domination package: a padded-Hardy-dominated function sits eventually under
+the ONE fixed level `f_{osucc L}`. -/
+theorem dom_pad_eventuallyLE {f : ℕ → ℕ} {L : ONote} {C : ℕ} (hL : L.NF)
+    (hdom : ∀ m, f m ≤ hardy (Wpow L) (m + C)) :
+    ∃ o : ONote, o.NF ∧ ∃ N, ∀ m, N ≤ m → f m ≤ fastGrowing o m :=
+  ⟨osucc L, osucc_NF hL, C + 3, fun m hm =>
+    le_trans (hdom m) (le_of_lt (hardy_pad_lt_fastGrowing_osucc L hL C m hm))⟩
+
 #print axioms GoodsteinPA.HardyMajorization.dom_pad_max
 #print axioms GoodsteinPA.HardyMajorization.Sstar_dom_pad
 #print axioms GoodsteinPA.HardyMajorization.dom_pad_comp
+#print axioms GoodsteinPA.HardyMajorization.hardy_pad_lt_fastGrowing_osucc
+#print axioms GoodsteinPA.HardyMajorization.dom_pad_eventuallyLE
 #print axioms GoodsteinPA.HardyMajorization.two_pow_le_hardy_Wpow2
 #print axioms GoodsteinPA.HardyMajorization.ewIter_dom_pad_levelcap
 #print axioms GoodsteinPA.HardyMajorization.hEng_of_dom_pad
