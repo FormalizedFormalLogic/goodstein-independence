@@ -21,6 +21,7 @@ onto `Zef2` (or `Zef2T`), add `embedding_Zef2 : (𝗣𝗔 ⊢ ↑goodsteinSenten
 -/
 import GoodsteinPA.OperatorZef2
 import GoodsteinPA.WainerRoute
+import GoodsteinPA.WainerBound
 
 namespace GoodsteinPA.WainerLadder
 
@@ -35,13 +36,15 @@ This is the rung that flips that axiom from `axiom` to `theorem`.
 
 Restated VERBATIM at the Series-1 order R-5 shape (non-parametric, homed at the concrete
 goodstein translation): from a PA proof of the goodstein sentence, produce a single fixed
-fast-growing `f_o`, `o.NF`, eventually dominating `goodsteinLength`.  The `sorry` sits exactly
-where the rung pins (E/R/D) are consumed — the composition is the Series-3 (post-ruling) grind.
-**Ledger: debt, "2-4", 75** (rung W). -/
+fast-growing `f_o`, `o.NF`, eventually dominating `goodsteinLength`.
+
+**SERIES-5 Lane C: DISCHARGED.** The splice is now realized — this rung's statement is byte-identical
+to `WainerRoute.wainer_bound_of_pa_proves_goodstein`, which was discharged (axiom → theorem) via the
+`embed → pass → rank-0 → Δ₀ value read-off → Hardy-majorization` ladder. Re-points to it. -/
 theorem wainer_splice_Zef2 :
     (𝗣𝗔 ⊢ ↑goodsteinSentence) →
       ∃ o : ONote, o.NF ∧
-        EventuallyLE GoodsteinPA.Dom.goodsteinLength (fun n => fastGrowing o n) := by
-  sorry
+        EventuallyLE GoodsteinPA.Dom.goodsteinLength (fun n => fastGrowing o n) :=
+  GoodsteinPA.WainerRoute.wainer_bound_of_pa_proves_goodstein
 
 end GoodsteinPA.WainerLadder
