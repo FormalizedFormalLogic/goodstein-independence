@@ -83,9 +83,30 @@ own slot-at-0.)*  Hence the residue closes by exactly two routes, **both judged/
 
 **Disposition:** lane D's generic residue is **GATED** (the DIRECTION lap-192 premise "sole open
 PROOF-only lane" is refuted for the residue by this lap's algebra check).  The maximal structural
-fragment IS banked sorry-free (`readoffD_trapped_of_mono` + the branch-0 narrowing).  The productive
-in-scope move that remains is the **wip-only (Ax2) probe** (route A) — escalation input for the
-series-end judge, who owns both the (Ax2) decision (D & E share it) and the option-(B) restatement.
+fragment IS banked sorry-free (`readoffD_trapped_of_mono` + the branch-0 narrowing).
+
+### SHARPENED (Ax2) analysis — (Ax2) is NOT a mechanical add-on to the falsity invariant
+The handoff-194c NEXT ("add (Ax2), then prove the read-off à la Lemma 31") is NOT a mechanical
+follow-through.  Reasoning directly about the `readoffD_aux` induction:
+- Adding a leaf rule `axT` (a true closed literal closes the sequent) adds a NEW induction case, but
+  that case is **VACUOUS under the falsity hypothesis** (a true literal member contradicts "every
+  member is `∃⁰φ` or `¬atomTrue`"), exactly like `axL`.  So the problematic **`allω` trapped case is
+  entirely UNCHANGED** — (Ax2) does not touch it.
+- Worse, (Ax2) **ENLARGES** the derivation set, so `readoffD_trapped`'s premise `hbranch` (all
+  branches derivable) is EASIER to satisfy ⇒ MORE potential traps.  So bolting (Ax2) onto the naive
+  falsity-invariant is counterproductive.
+- **Therefore E–W's Lemma 31 must exploit (Ax2) via a fundamentally DIFFERENT read-off** — a
+  top-level-`∃` witness extraction (collect each `⋁`/`exI` witness, all `≤ f 0`) with the Δ₀ matrices
+  verified SEMANTICALLY through (Ax2)+soundness, NEVER the structural `allω` descent that
+  `readoffD_aux` performs.  The current `readoffD_aux` scaffold is the WRONG frame for the (Ax2)
+  route; a from-scratch Lemma-31 read-off is required, and reproducing that mechanism faithfully is
+  the DEEP content (it is where E–W's growth coupling / operator-relativization bookkeeping lives).
+
+**Net:** lane D is **GATED ((Ax2) or statement amendment, judge/architect-owned) AND heroic** (the
+(Ax2) route needs the deep E–W Lemma 31 mechanism, not a mechanical add-on).  Narrowed maximally this
+lap.  The productive future work is either the judge's (Ax2)/restatement ruling, or a from-scratch
+E–W-Lemma-31 read-off in `wip/` (heroic; a copy of `Zef2 + axT`, top-`∃` extraction, NO `allω`
+descent) — the latter narrows the deep content but cannot reach `src` until the ruling lands.
 
 ## LAP 194c (grind, lane D) — `readoffD_trapped` ROOT-CAUSED via the E–W Lemma 31 PROOF: it needs the (Ax2) amendment (architect-gated, SHARED with rung E)
 
