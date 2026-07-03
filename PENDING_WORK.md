@@ -29,12 +29,19 @@ guarded-implication step-clause shape (`x < 2 → x = 0` as the minimal represen
 verdict for ruling (2): recommend the R-4′ restatement (bound `f 0 → ewIter f α 0`; splice cost
 one definitional tower level per C-1); (Ax2) stays solely a rung-E question. Ledger updated.
 
-**NEXT (ladder, remaining stages):**
-1. **Stage B — rung-E Ax2-adequacy probe** (`wip/Ax2AdequacyProbe.lean`): clone `Zef2` as
-   `Zef2T` = `Zef2` + (Ax2) true-literal rule; kernel-answer (i) `toZef` extension, (ii) pins
-   1–2 re-prove, (iii) Lemma-31-style read-off miniature. Heavier (full inductive clone).
-2. **Stage D-2 — shift-relativization `rel1'` cost probe** (`rel1' f n = fun m => f (n+m)`;
-   preserves `hg_base`/`2m+1`/Monotone? blast radius on Series-1-ratified statements?).
+**Stage B DONE (same lap): (Ax2)-adequacy ANSWERED.** `wip/Ax2AdequacyProbe.lean`
+(kernel-clean): `Zef2T` clone; (i) STRICT extension at rank 0 (`{0=0}` Zef2T-derivable,
+Zef-underivable via the all-literal pair invariant) — `toZef` read-off route breaks;
+(ii) pins-1–2 new leaf case mechanical (`reduction_trueLit_case`, same `ewN_add_le_comp`
+arithmetic); (iii) falsity-invariant read-offs extend with vacuous cases; `allω` trap
+UNCHANGED per-derivation — (Ax2)'s value is embedding-side derivation existence (Lemma 31).
+Recommendation shape: (Ax2) iff rung E needs it; lane D takes R-4′ regardless. Ledger updated.
+
+**NEXT (ladder, last remaining stage):**
+1. **Stage D-2 — shift-relativization `rel1'` cost probe** (`rel1' f n = fun m => f (n+m)`;
+   kernel-check it preserves `hg_base`/`2m+1` floor/Monotone; measure blast radius — which
+   Series-1-ratified statements mention `rel1`, does `allω` bind `rel1` or take slot as data).
+   After D-2: SERIES END → STOP for the judge (per the order).
 
 ## LAP 196 (SERIES-2 Stage A + D-1) — rung-W homed at concrete translation; absorbing-norm EXISTS (top-rank-cut ruling input)
 
