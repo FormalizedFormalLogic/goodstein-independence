@@ -51,7 +51,25 @@ concrete `ewRootSlot`/tower/`P*` padded-domination bounds → `S*`-domination; (
   Gotchas: `ring` useless on ordinal repr (non-comm) — after explicit-arg `repr_add`s + `push_cast`,
   `rfl`; bare `le_add_right` resolves to the `a≤b → a≤b+c` order lemma, use `Ordinal.le_add_right _ _`;
   give the `hardy_monotone`/norm-gate inequalities as explicit `have`s (inline `by omega` sees metavars).
-- ⏭️ **NEXT (2, Sslot + P\*)** then (3) assembly + (4) EventuallyLE — remaining design:
+- ✅ **(2, P\* bricks) DONE lap-210 (`15f6617`)** — `gvb_le_iter` (`wip/ReadoffValueGate.lean`:
+  `∃c, ∀B, gvb ψ B ≤ G^[c] B` for ANY engine G closed under succ/add/mul — abstract because wip
+  modules can't import each other; instantiate with `Gexp = hardy ω²` via `succ_le_Gexp`/
+  `add_le_Gexp_max`/`mul_le_Gexp_max` in E1EmbeddingGrind) + `hardy_Wpow_iter_dom_pad`
+  (`wip/HardyMajorization.lean`: `∀k, ∃ E c, NF ∧ ≠0 ∧ E₀<E ∧ ∀z, (hardy (Wpow E₀))^[k] z ≤
+  H_{ω^E}(z+c)` — mirror of the tower proof, `iterate_succ_apply` puts the single pass INSIDE,
+  `hardy_arg_add` absorbs the pad, collapse+raise as before). Both `[propext, choice, Quot.sound]`.
+- ⏭️ **NEXT (2 finish + 3 + 4)** — remaining, in `wip/E1EmbeddingGrind.lean` (state cross-wip
+  inputs as hypotheses in the tower/P\*-bound shapes, discharge at final splice):
+  - `Sslot_dom_pad`: S\* z = max(tower z, P\* z); tower bound from `ewIterTower_dom_pad`
+    (hypothesis), P\* bound from `gvb_le_iter`@Gexp (note `Gexp = hardy (oadd (ofNat 2) 1 0) =
+    hardy (Wpow 2)`) + `hardy_Wpow_iter_dom_pad` (hypothesis); align the two levels by
+    `hardy_le_of_lt` at the max level (need levels comparable — use `E₁ < E₁+E₂+1`-style bump or
+    trichotomy; gate paid by pad).
+  - Then `ewIter_hardy_le_of_dom_pad` on S\* ⟹ n ≤ H(H(g m)); 2b(c) Sslot assembly
+    (`Sslot_mono_slot` may need proving + banked `ewIter_mono_slot`); 2b(e) EventuallyLE vs
+    `WainerRoute.goodsteinLength_eventually_dominates_fixed_fastGrowing` → contradiction; S-5
+    verbatim-type splice witness. Then the ONE judge package. Do NOT self-ratify into src.
+- (original design notes for the tower step, kept for reference:)
   - `rel1_dom_pad`: from `ewRootSlot_dom_pad`, get `rel1 (ewRootSlot e B) K z = ewRootSlot e B (max K z)
     ≤ H_{ω^{(e+1)+2}}(z + (K + P_R))` (monotone `max K z ≤ z + K` folds into the pad). EASY.
   - `ewIterTower_dom_pad`: induction on `d`. Base `d=0`: `= rel1_dom_pad`. Step: `ewIterTower g (d+1) α
