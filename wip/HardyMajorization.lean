@@ -835,8 +835,77 @@ theorem hardy_double_collapse {A B : ONote} (hA : A.NF) (hB : B.NF) (hBA : B < A
   have hBltA : B.repr < A.repr := by rw [lt_def] at hBA; exact hBA
   exact (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr hBltA
 
+/-- **The tower is padded-Hardy-dominated** (existential level/pad).  Each `ewIter` pass raises
+the level to a double Hardy `H_{ω^A}(H_{ω^B}(·))` with `B < A`; `hardy_double_collapse` folds it
+to `H_{ω^A+ω^B}` and one `Wpow_add_lt_Wpow_succ` raise brings it back to a SINGLE `ω`-power level
+`ω^{A+1}` at a bigger pad — so induction on `d` keeps the single-hardy-at-padded-arg shape.  The
+gate `norm (ω^A + ω^B) ≤ x + c'` is paid by putting that norm INTO `c'` (it is not in `p_d`). -/
+theorem ewIterTower_dom_pad {g : ℕ → ℕ} {E : ONote} {c : ℕ} (hE : E.NF) (hE0 : E ≠ 0)
+    (hg : ∀ x, g x ≤ hardy (Wpow E) (x + c)) (α : ONote) (hα : α.NF) :
+    ∀ d, ∃ (E' : ONote) (c' : ℕ), E'.NF ∧ E' ≠ 0 ∧
+      ∀ x, ewIterTower g d α x ≤ hardy (Wpow E') (x + c') := by
+  intro d
+  induction d with
+  | zero => exact ⟨E, c, hE, hE0, hg⟩
+  | succ d ih =>
+    obtain ⟨Ed, cd, hEd, hEd0, hdom⟩ := ih
+    have hγ : (collapseIter d α).NF := collapseIter_NF hα d
+    haveI := hEd
+    haveI : (2 : ONote).NF := nf_ofNat 2
+    haveI hB : (Ed + 2).NF := ONote.add_nf Ed 2
+    haveI hB1 : (Ed + 2 + 1).NF := ONote.add_nf (Ed + 2) 1
+    haveI := hγ
+    haveI hA : (Ed + 2 + 1 + collapseIter d α).NF :=
+      ONote.add_nf (Ed + 2 + 1) (collapseIter d α)
+    have hBA : Ed + 2 < Ed + 2 + 1 + collapseIter d α := by
+      have h1 : (Ed + 2 + 1 + collapseIter d α).repr
+          = (Ed + 2).repr + 1 + (collapseIter d α).repr := by
+        rw [ONote.repr_add (Ed + 2 + 1) (collapseIter d α),
+          ONote.repr_add (Ed + 2) 1, ONote.repr_one]
+        push_cast
+        rfl
+      rw [lt_def, h1]
+      calc (Ed + 2).repr < (Ed + 2).repr + 1 := lt_add_one _
+        _ ≤ (Ed + 2).repr + 1 + (collapseIter d α).repr := Ordinal.le_add_right _ _
+    haveI hWA : (Wpow (Ed + 2 + 1 + collapseIter d α)).NF := Wpow_NF hA
+    haveI hWB : (Wpow (Ed + 2)).NF := Wpow_NF hB
+    haveI hA1 : (Ed + 2 + 1 + collapseIter d α + 1).NF :=
+      ONote.add_nf (Ed + 2 + 1 + collapseIter d α) 1
+    have hA10 : Ed + 2 + 1 + collapseIter d α + 1 ≠ 0 := by
+      intro h
+      have hh := congrArg ONote.repr h
+      rw [ONote.repr_add, ONote.repr_one, repr_zero] at hh
+      push_cast at hh
+      exact (lt_of_lt_of_le zero_lt_one le_add_self).ne' hh
+    refine ⟨Ed + 2 + 1 + collapseIter d α + 1,
+      Nlog (collapseIter d α)
+        + (norm (Ed + 1) + norm Ed + normSum (Ed + 2 + 1) + norm (Ed + 2) + 8 + cd)
+        + norm (Wpow (Ed + 2 + 1 + collapseIter d α) + Wpow (Ed + 2)),
+      hA1, hA10, ?_⟩
+    intro x
+    have hpass := ewIter_hardy_le_of_dom_pad hEd hEd0 hdom (collapseIter d α) hγ x
+    have hstep : ewIterTower g (d + 1) α x
+        = ewIter (ewIterTower g d α) (collapseIter d α) x := rfl
+    rw [hstep]
+    refine le_trans hpass ?_
+    rw [hardy_double_collapse hA hB hBA]
+    have harg : Nlog (collapseIter d α) + x
+          + (norm (Ed + 1) + norm Ed + normSum (Ed + 2 + 1) + norm (Ed + 2) + 8 + cd)
+        ≤ x + (Nlog (collapseIter d α)
+          + (norm (Ed + 1) + norm Ed + normSum (Ed + 2 + 1) + norm (Ed + 2) + 8 + cd)
+          + norm (Wpow (Ed + 2 + 1 + collapseIter d α) + Wpow (Ed + 2))) := by omega
+    refine le_trans (hardy_monotone _ harg) ?_
+    haveI hsum : (Wpow (Ed + 2 + 1 + collapseIter d α) + Wpow (Ed + 2)).NF :=
+      ONote.add_nf _ _
+    have hgate : norm (Wpow (Ed + 2 + 1 + collapseIter d α) + Wpow (Ed + 2))
+        ≤ x + (Nlog (collapseIter d α)
+          + (norm (Ed + 1) + norm Ed + normSum (Ed + 2 + 1) + norm (Ed + 2) + 8 + cd)
+          + norm (Wpow (Ed + 2 + 1 + collapseIter d α) + Wpow (Ed + 2))) := by omega
+    exact hardy_le_of_lt hsum (Wpow_NF hA1) (Wpow_add_lt_Wpow_succ hA hB hBA) hgate
+
 #print axioms GoodsteinPA.HardyMajorization.hEng_of_dom
 #print axioms GoodsteinPA.HardyMajorization.ewIter_hardy_le_of_dom
+#print axioms GoodsteinPA.HardyMajorization.ewIterTower_dom_pad
 #print axioms GoodsteinPA.HardyMajorization.hEng_of_dom_pad
 #print axioms GoodsteinPA.HardyMajorization.ewIter_hardy_le_of_dom_pad
 #print axioms GoodsteinPA.HardyMajorization.ewRootSlot_dom_pad
