@@ -439,3 +439,16 @@ simplification), re-prove `exs` against `stdClosedVal_asg_le_Gexp_iter` + the `G
 field (`m ≤ Gexp^[c](envSup env N) ≤ ewRootSlot e B (envSup env N) = f 0`, needing `e > ω²·c`,
 `B ≥ norm(ω²·c)` to make the domination field discharge­able), then `axm` (W1/W2).  With `all`
 done, the ordinal-uniformization risk is retired — the remaining work is bookkeeping + `axm`.
+
+**Block 11 addendum (same lap 201, 2nd green commit)** — V3 predicate finalized field-free
+(`∃ B d N, ∃ e α, e.NF ∧ α.NF ∧ Nlog α ≤ B ∧ ∀ env, Zef2TC α e ⊤ (rel1 (ewRootSlot e B)
+(envSup env N)) d (Γ.image …)`; the `Gexp`-domination is a LOCAL `exs`/`axm` concern, not a
+global merge-able field — dropping it makes the joins trivial).  **6/… V3 cases now SORRY-FREE**
+(`[propext, Classical.choice, Quot.sound]`): `closed` (`em_Zef2TC'`, structural
+`α = ofNat(2·complexity+1)`, `envSup env 0 = 0`), `verum`, `wk`, `or` (`osucc` root, `B+1`
+gate/`Nlog` slack via `relSlot_mono` + `le_relSlot_zero`), `shift` (index absorbed by `N+1`,
+banked `envSup_shift_le`), `all` (re-proved field-free).  Remaining V3 cases: `and`/`cut`
+(two-premise joins — control `osucc(e₁+e₂)` + `relSlot_le`, `B := max B₁ B₂ + norm + slack`),
+`exs` (local `Gexp`-domination via `e > ω²·c`), `axm` (W1/W2 bounded-truth engine).  Gotcha:
+`em_Zef2TC'` needs its `{e}{H}` implicits pinned by an explicit `have` type before `rwa`
+converts `(asg env ▹ φ).complexity → φ.complexity`.
