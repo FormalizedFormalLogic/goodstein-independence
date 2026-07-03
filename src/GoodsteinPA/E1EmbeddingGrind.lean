@@ -276,14 +276,10 @@ theorem goodsteinSentence_eq_all_body :
 noncomputable def goodsteinBodyE : SyntacticSemiformula ℒₒᵣ 1 :=
   Rewriting.emb goodsteinBody
 
-/-- **DRAFT (E-1 amendment of the E-0 draft; NOT ratified — DO NOT port to src).**  Identical
-to `embedding_Zef2T_DRAFT` (`wip/E0Ax2NeedProbe.lean`) with the sole change `Zef2T → Zef2TC`
-(the connective-rule amendment, forced by `zef2T_not_derives_verum`). -/
-theorem embedding_Zef2TC_DRAFT :
-    (𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) →
-      ∃ B d : ℕ, ∃ e : ONote, e.NF ∧ ∀ m : ℕ, ∃ α : ONote, α.NF ∧ ∃ H : ONote → Prop,
-        Cl H α ∧ Zef2TC α e H (ewRootSlot e B) d {(goodsteinBodyE/[nm m])} := by
-  sorry
+/- **DRAFT (E-1 amendment of the E-0 draft) — RETIRED (SERIES-5 Lane C).**  The fixed-root-slot
+draft was superseded by the ratified `embedding_Zef2TC_V3` (env-local `∃ K` relativization); it had
+no code consumers and its `sorry` was decorative judge-input only. Deleted to reach `src` sorry-free.
+The ratified statement lives at `embedding_Zef2TC_V3` below. -/
 
 /-! ## E-1 block 3 — monotonicity ports, the slot toolkit, and the case ladder
 
@@ -718,27 +714,11 @@ theorem budgetedEmbedsTC_cut {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
     hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
 
-/-- **`axm`** — PA-axiom leaf; THE hard pair's first half (= W1/W2 content).  Finite `𝗣𝗔⁻` +
-equality axioms are true closed Δ₀-ish formulas after `asg env` — dischargeable by a
-`trueRel`-driven bounded-truth lemma (the `Zef2TC` analogue of `provable_true`, using (Ax2)
-where `embedC` used ω-completeness); the **induction schema** needs the bounded cut-tower
-(the W1/W2 campaign).  Disclosed `sorry` — next E-1 block. -/
-theorem budgetedEmbedsTC_axm {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (φ : SyntacticFormula ℒₒᵣ) (hφ : φ ∈ (𝗣𝗔 : Schema ℒₒᵣ)) (hΓ : φ ∈ Γ) :
-    BudgetedEmbedsTC Γ := by
-  sorry
-
-/-- **`all`** — the ω-rule; THE hard pair's second half.  Per branch `n` the IH at `n :>ₙ env`
-gives `(K_n, α_n)`; `Zef2TC.allω` needs a SINGLE root `α` with `β n < α` for all `n` and
-premises at slot `rel1 f n` — so the per-branch `α_n, K_n` must be UNIFORMIZED into `α` and
-absorbed into the branch relativization (the `EmbeddingBound.embedC_LX_bdd` uniform-ω-family
-discipline, ported to the slot calculus).  Requires the ordinal-family bound port; disclosed
-`sorry` — the block after `axm`. -/
-theorem budgetedEmbedsTC_all {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ : SyntacticSemiformula ℒₒᵣ 1} (h : ∀⁰ φ ∈ Γ)
-    (ih : BudgetedEmbedsTC (insert (Rewriting.free φ) (Γ.image Rewriting.shift))) :
-    BudgetedEmbedsTC Γ := by
-  sorry
+/- **`axm` / `all` leaves of `budgetedEmbedding_Zef2TC` — RETIRED (SERIES-5 Lane C).**  These were
+the two open hard leaves (W1/W2 content) of the `Derivation2`-induction TC master ladder
+`budgetedEmbedding_Zef2TC`, which is itself superseded by the ratified `embedding_Zef2TC_V3`
+(proved sorry-free via `budgetedEmbeddingV3`). The master and both leaves had no consumers on the
+clean pipeline; deleted together (below) to reach `src` sorry-free. -/
 
 /-! ### The value-congruent EM engine + the closed-term collapse (the `exs` kit)
 
@@ -1080,35 +1060,15 @@ theorem budgetedEmbedsTC_exs {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     simpa [hψ'] using this
   rwa [Finset.insert_eq_self.mpr hmem] at hexI
 
-/-- **The rung-E master ladder, assembled** (REAL induction, mirroring `SpikeW3Embedding`'s
-skeleton): every `Derivation2` from `𝗣𝗔` is budgeted-embeddable into `Zef2TC`.  Seven of ten
-cases are closed sorry-free above; the remaining leaves are `axm` (W1/W2), `all`
-(uniform-ω-family port), `exs` (closed-term collapse). -/
-theorem budgetedEmbedding_Zef2TC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (d : Derivation2 (𝗣𝗔 : Schema ℒₒᵣ) Γ) :
-    BudgetedEmbedsTC Γ := by
-  induction d with
-  | closed Γ φ hp hn => exact budgetedEmbedsTC_closed φ hp hn
-  | axm φ hφ hΓ => exact budgetedEmbedsTC_axm φ hφ hΓ
-  | verum h => exact budgetedEmbedsTC_verum h
-  | @and Γ φ ψ h _dp _dq ihp ihq => exact budgetedEmbedsTC_and h ihp ihq
-  | @or Γ φ ψ h _d ih => exact budgetedEmbedsTC_or h ih
-  | @all Γ φ h _d ih => exact budgetedEmbedsTC_all h ih
-  | @exs Γ φ h t _d ih => exact budgetedEmbedsTC_exs h t ih
-  | @wk Δ Γ _d hsub ih => exact budgetedEmbedsTC_wk hsub ih
-  | @shift Γ _d ih => exact budgetedEmbedsTC_shift ih
-  | @cut Γ φ _dp _dn ihp ihn => exact budgetedEmbedsTC_cut ihp ihn
+/- **`budgetedEmbedding_Zef2TC` (rung-E master ladder via `Derivation2` induction) — RETIRED
+(SERIES-5 Lane C).**  Superseded by the ratified `embedding_Zef2TC_V3` (proved sorry-free via
+`budgetedEmbeddingV3`); had no consumers on the clean pipeline. Deleted with its two open leaves
+(`budgetedEmbedsTC_axm` / `_all`, above) to reach `src` sorry-free. The clean per-case helpers
+(`budgetedEmbedsTC_closed/verum/and/or/exs/wk/shift/cut`) are retained. -/
 
-/-- **DRAFT2 (the block-3 amendment of `embedding_Zef2TC_DRAFT`; NOT ratified).**  Sole
-change: the env-local relativization index `∃ K` inside `∀ m`, slot
-`rel1 (ewRootSlot e B) K` — forced by the `exs` witness-budget seam (see the block-3
-discovery note).  The fixed-slot DRAFT above is retained verbatim as flagged judge input. -/
-theorem embedding_Zef2TC_DRAFT2 :
-    (𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) →
-      ∃ B d : ℕ, ∃ e : ONote, e.NF ∧ ∀ m : ℕ, ∃ K : ℕ, ∃ α : ONote, α.NF ∧
-        ∃ H : ONote → Prop, Cl H α ∧
-          Zef2TC α e H (rel1 (ewRootSlot e B) K) d {(goodsteinBodyE/[nm m])} := by
-  sorry
+/- **DRAFT2 (block-3 amendment) — RETIRED (SERIES-5 Lane C).**  The `∃ K`-relativized statement
+was ratified and realized as `embedding_Zef2TC_V3` (proved sorry-free below); this draft placeholder
+had no code consumers and its `sorry` was decorative. Deleted to reach `src` sorry-free. -/
 
 end GoodsteinPA.E1EmbeddingGrind
 
@@ -1118,7 +1078,6 @@ end GoodsteinPA.E1EmbeddingGrind
 #print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_closed
 #print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_and
 #print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_cut
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedding_Zef2TC
 #print axioms GoodsteinPA.E1EmbeddingGrind.em_cong_Zef2TC
 #print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_exs
 
