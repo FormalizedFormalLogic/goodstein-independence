@@ -4741,8 +4741,48 @@ theorem readoff_value_pipeline {φ : SyntacticSemiformula ℒₒᵣ 1} {P : ℕ 
     hP_mono D0 V hroot
   exact ⟨α', hα'le, hα'NF, n, hn, htn⟩
 
+/-- **The root shape + Σ₁ certificate input**: the pipeline instance `goodsteinBodyE/[nm m]`
+IS an `∃⁰ χ` (definitionally — the two rewrites push through the `∃`), and it is
+`Hierarchy 𝚺 1` (rew-invariance + `igoodsteinDef`'s own Σ₁-ness).  The `Gated` certificate
+follows from Σ₁-ness by `gated_root_of_sigma1` (`wip/ReadoffValueGate.lean`) at assembly. -/
+theorem goodsteinBodyE_inst_shape (m : ℕ) :
+    ∃ χ : SyntacticSemiformula ℒₒᵣ 1,
+      goodsteinBodyE/[nm m] = (∃⁰ χ) ∧ Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) := by
+  refine ⟨_, rfl, ?_⟩
+  show Arithmetic.Hierarchy 𝚺 1 (goodsteinBodyE/[nm m])
+  apply Arithmetic.Hierarchy.rew
+  apply Arithmetic.Hierarchy.rew
+  simp [goodsteinBody]
+
+/-- **The route-(c) rung-E chain, ASSEMBLED modulo the root `Gated` certificate**: from a PA
+proof of the goodstein sentence — uniform budgets `B, d`, control `e`, node `α`, and per-`m` a
+matrix `χ` (with the Σ₁ certificate input) and a slot stage `K` such that ANY `Gated`
+certificate for `∃⁰ χ` yields a TRUE numeral instance under the concrete
+`ewIter (Sslot tower P)` bound.  `embedding_Zef2TC_V3 → readoff_value_pipeline` composed at
+`goodsteinBodyE`; the certificate is discharged from `Hierarchy 𝚺 1 (∃⁰ χ)` by
+`gated_root_of_sigma1` at assembly (its `gvb` layer lives in `wip/ReadoffValueGate.lean`). -/
+theorem readoff_value_goodstein
+    (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) :
+    ∃ B d : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ ∀ m : ℕ,
+      ∃ (χ : SyntacticSemiformula ℒₒᵣ 1) (K : ℕ),
+        goodsteinBodyE/[nm m] = (∃⁰ χ) ∧ Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) ∧
+        ∀ (P : ℕ → ℕ) (V : ℕ), Monotone P → Gated P V (∃⁰ χ) →
+          ∃ α', α' ≤ collapseIter d α ∧ α'.NF ∧
+            ∃ n, n ≤ ewIter (Sslot (ewIterTower (rel1 (ewRootSlot e B) K) d α) P)
+                    α' (Sslot (ewIterTower (rel1 (ewRootSlot e B) K) d α) P V) ∧
+              atomTrue (χ/[nm n]) := by
+  obtain ⟨B, d, e, α, heNF, hαNF, hall⟩ := embedding_Zef2TC_V3 h
+  refine ⟨B, d, e, α, heNF, hαNF, fun m => ?_⟩
+  obtain ⟨K, H, hαH, D⟩ := hall m
+  obtain ⟨χ, hχeq, hchiS⟩ := goodsteinBodyE_inst_shape m
+  rw [hχeq] at D
+  refine ⟨χ, K, hχeq, hchiS, fun P V hP_mono hroot => ?_⟩
+  exact readoff_value_pipeline hP_mono heNF hαNF hαH D V hroot
+
 end GoodsteinPA.E1EmbeddingGrind
 
+#print axioms GoodsteinPA.E1EmbeddingGrind.goodsteinBodyE_inst_shape
+#print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_goodstein
 #print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_pipeline
 #print axioms GoodsteinPA.E1EmbeddingGrind.readoffVTC_core
 #print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_Zef2TC

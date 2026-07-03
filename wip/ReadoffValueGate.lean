@@ -429,6 +429,15 @@ termination_by ψ _ _ _ => ψ.complexity
 decreasing_by
   all_goals simp [Semiformula.complexity_rew]
 
+/-- **The certificate-exists form** — at the pipeline root the coupled hypothesis is
+self-discharging with `P := fun B => gvb ψ (max V B)`. -/
+theorem gated_root_of_sigma1 (ψ : Form) (h : Arithmetic.Hierarchy 𝚺 1 ψ) (V : ℕ) :
+    ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V ψ := by
+  refine ⟨fun B => gvb ψ (max V B), fun _ _ hb => gvb_mono ψ (max_le_max le_rfl hb), ?_⟩
+  refine gated_of_sigma1 (fun _ _ hb => gvb_mono ψ (max_le_max le_rfl hb)) ψ h V (fun B => ?_)
+  exact gvb_mono ψ (le_trans (le_max_right V B) (le_max_right V (max V B)))
+
+#print axioms GoodsteinPA.ReadoffValueGate.gated_root_of_sigma1
 #print axioms GoodsteinPA.ReadoffValueGate.gated_of_sigma1
 #print axioms GoodsteinPA.ReadoffValueGate.Gated_mono
 #print axioms GoodsteinPA.ReadoffValueGate.Gated_all_iff
