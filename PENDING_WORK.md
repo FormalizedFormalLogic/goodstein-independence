@@ -45,7 +45,13 @@ concrete `ewRootSlot`/tower/`P*` padded-domination bounds → `S*`-domination; (
   `P_R = norm-const((e+1)) + 8 + (m + norm e)`. Route: `e_lt_Wpow_succ` (`e < ω^{e+1}`) + `hardy_maxpad`
   (`hardy e (max m ·) ≤ H_{ω^{e+1}}(· + (m+norm e))`, the pad pays `hardy_le_of_lt`'s norm gate at z=0)
   → feed `f z := hardy e (max m z)` to `hEng_of_dom_pad`; `2x+2f+3 ≤ engine LHS` since `x ≤ f ≤ 2^{f+1}`.
-- ⏭️ **NEXT (2, tower)** — the remaining hard piece, in `wip/HardyMajorization.lean`:
+- ✅ **(2, tower) DONE lap-210 (`564b51f`)** — `ewIterTower_dom_pad` GREEN kernel-clean: existential
+  form `∃ E' c', NF ∧ ≠0 ∧ ∀x, ewIterTower g d α x ≤ H_{ω^{E'}}(x+c')`, induction on d exactly per
+  the design below (double-collapse + `Wpow_add_lt_Wpow_succ` raise; gate norm(ω^A+ω^B) paid FROM c').
+  Gotchas: `ring` useless on ordinal repr (non-comm) — after explicit-arg `repr_add`s + `push_cast`,
+  `rfl`; bare `le_add_right` resolves to the `a≤b → a≤b+c` order lemma, use `Ordinal.le_add_right _ _`;
+  give the `hardy_monotone`/norm-gate inequalities as explicit `have`s (inline `by omega` sees metavars).
+- ⏭️ **NEXT (2, Sslot + P\*)** then (3) assembly + (4) EventuallyLE — remaining design:
   - `rel1_dom_pad`: from `ewRootSlot_dom_pad`, get `rel1 (ewRootSlot e B) K z = ewRootSlot e B (max K z)
     ≤ H_{ω^{(e+1)+2}}(z + (K + P_R))` (monotone `max K z ≤ z + K` folds into the pad). EASY.
   - `ewIterTower_dom_pad`: induction on `d`. Base `d=0`: `= rel1_dom_pad`. Step: `ewIterTower g (d+1) α
