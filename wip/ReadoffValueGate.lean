@@ -281,6 +281,24 @@ theorem gvb_substs_le {χ : SyntacticSemiformula ℒₒᵣ 1} (k B : ℕ) :
     intro x; simp
   exact gvb_rew_le (K := k) χ (Rew.subst ![nm k]) hb hf B
 
+/-- **The one-binder numeral-instance law** (lap 208, 2b item (b)) — the `.q`-lifted form:
+substituting `nm k` for the OUTER variable under one residual binder still contracts `gvb`
+into the `max B k` frame.  This is what contracts the pipeline's per-`m` value budget
+`P_m = gvb (goodsteinBodyE/[nm m])` into ONE fixed `P* = gvb goodsteinBodyE` with a `max m`
+argument shift — the m-uniformization of the read-off bound. -/
+theorem gvb_substs_q_le {χ : SyntacticSemiformula ℒₒᵣ 2} (k B : ℕ) :
+    gvb ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]).q ▹ χ) B ≤ gvb χ (max B k) := by
+  have hb : ∀ (i : Fin 1) B', tvB ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]) #i) B' ≤ max B' k := by
+    intro i B'
+    have h0 : (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]) #i = nm k := by
+      simp
+    rw [h0, tvB_nm]
+    exact le_max_right _ _
+  have hf : ∀ x, (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]) &x = &x := by
+    intro x; simp
+  obtain ⟨hb', hf'⟩ := q_class (K := k) (Rew.subst ![nm k]) hb hf
+  exact gvb_rew_le (K := k) χ (Rew.subst ![nm k]).q hb' hf' B
+
 /-! ## The root discharge `gated_of_sigma1` (lap 207, DIRECTION lap-206 block item 1)
 
 `Hierarchy 𝚺 1 ψ` supplies the ball shape at every `∀`-head (the Foundation `Hierarchy`
@@ -444,5 +462,6 @@ theorem gated_root_of_sigma1 (ψ : Form) (h : Arithmetic.Hierarchy 𝚺 1 ψ) (V
 #print axioms GoodsteinPA.ReadoffValueGate.gvb_mono
 #print axioms GoodsteinPA.ReadoffValueGate.gvb_rew_le
 #print axioms GoodsteinPA.ReadoffValueGate.gvb_substs_le
+#print axioms GoodsteinPA.ReadoffValueGate.gvb_substs_q_le
 
 end GoodsteinPA.ReadoffValueGate
