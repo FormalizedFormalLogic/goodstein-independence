@@ -1,5 +1,45 @@
 # Pending work — open obligations & attack paths
 
+## LAP 196 (SERIES-2 Stage A + D-1) — rung-W homed at concrete translation; absorbing-norm EXISTS (top-rank-cut ruling input)
+
+**Order in force:** `REBUILD-Z-SERIES-2-ORDER-2026-07-03.md` (statement/probe series, 2–4 laps;
+ladder P1→P5; STOP for judge at series end). Ledger: `REBUILD-Z-SERIES-2-LEDGER.md`.
+
+**Stage A (P1, mechanical debt) — CLOSED.** Created `src/GoodsteinPA/WainerLadder.lean`; moved +
+restated `wainer_splice_Zef2` VERBATIM at the R-5 non-parametric shape (= the statement of the
+`wainer_bound_of_pa_proves_goodstein` axiom); deleted the VOIDed parametric `wainer_splice_Zef2`
+and `embedding_Zef2` placeholders from `OperatorZef2.lean`; blueprint tex re-bound; stale
+`wip/Lap13ReadoffDeltaProbe.lean` removed. Build 🟢 1342, headline undrifted, `blueprint_audit` ✓.
+
+**Stage D-1 (P2, top-rank-cut trilemma probe) — POSITIVE RESULT.**
+`wip/AbsorbingNormProbe.lean` (compiles standalone; `src` untouched). **The lap-192 conjecture
+"finite fibers force additivity (T-Z7(i))" is REFUTED**: the max-over-terms + log-coefficient
+norm `Nlog (oadd e n a) = max (Nlog e + clog n) (Nlog a)`, `clog n = ⌊log₂(n+1)⌋`, is
+finite-fibered AND absorbing (`Nlog(α+γ) ≤ max(Nlog α)(Nlog γ)+1`). Kernel-checked: absorption on
+merge/concat/drop adversaries (`decide`); `ewN` VIOLATES absorption for every fixed constant
+(`ω·k+ω·k`); `Nlog` grows on the tower spine (`Nlog(spine k)=k+1`, avoids the max-coeff norm's
+infinite-fiber failure mode); `absorbing_closes_gate` reduces the node gate to the weak slack
+`max(g0)(f0)+c ≤ g(f0)`. So the top-rank-cut TRILEMMA's prime amendment candidate is kernel-evidenced
+to EXIST — the judge can dissolve the gate by `ewN → Nlog` without touching `rel1` or the output ordinal.
+
+**NEXT ATTACK (P3 deepening of D-1, next lap):** discharge the two documented `sorry`s to make the
+probe DISPOSITIVE:
+1. `Nlog_add_le_max_succ` (general absorbing theorem) — induct on α; the `eq`/merge case needs the
+   HEAD-SOURCE lemma: in `w = a + γ` with `a`'s exponents all `< e` (α NF), the leading term of `w`
+   is a γ-term, so its charge `≤ Nlog γ` (NOT `≤ Nlog w`, which carries the IH `+1`) — this is what
+   stops the two `+1`s compounding. Prove that head-source helper first (reason about `ONote.addAux`
+   `lt`/`eq`/`gt` on the boundary), then the main follows.
+2. `Nlog_finite_fiber` — build `nlogBallBelow b K` (exponents `< b`, à la `NFBelow`); or bound
+   `ewN α ≤ F(Nlog α)` by the exponent-set induction. Either mechanizes the documented strategy.
+Landing both turns D-1 from "evidenced" to "proven" — the strongest possible ruling input.
+
+**Other SERIES-2 lanes still open (P2, independent):** Stage B (rung-E Ax2-adequacy probe,
+`wip/Ax2AdequacyProbe.lean` — `Zef2T` clone + Lemma-31 read-off miniature); Stage C (lane-D
+Option-B splice feasibility against the `ewIter f α 0` bound); Stage D-2 (shift-relativization
+`rel1'` cost). A wall on one licenses moving to another.
+
+---
+
 ## LAP 195 (grind, lane D) — `readoffD_trapped` NARROWED in-kernel to the NON-MONOTONE-MATRIX case (branch-0 sharp bound via `rel1 f 0 = f`)
 
 > ⚠️ **BUILD-GATE CORRECTION (verify this before trusting any `OperatorZef2` green):** `OperatorZef2`

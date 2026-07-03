@@ -59,3 +59,57 @@ Gate summary: 🟢 build · headline undrifted · no new `src` axiom · no `nati
 files · wip freeze refs untouched · `blueprint_audit` ✓. Stage A CLOSED.
 
 ---
+
+## Stage D-1 — absorbing-norm existence (wip probe) — ✅ POSITIVE RESULT (lap 196)
+
+**File**: `wip/AbsorbingNormProbe.lean` (compiles standalone via `lake env lean`; NOT imported
+by any lib, so `src`/`lake build` UNCHANGED — pure ruling input). No `native_decide`.
+
+**FINDING — the lap-192 conjecture "finite fibers force additivity-like growth (T-Z7(i))" is
+REFUTED.** A finite-fibered ABSORBING norm on `ONote` exists: the **max-over-terms norm with a
+logarithmic coefficient charge**
+
+  `Nlog (oadd e n a) = max (Nlog e + clog n) (Nlog a)`,  `clog n = ⌊log₂ (n+1)⌋`.
+
+Two design moves defeat the two obstructions to `ewN` being absorbing:
+- **max-over-terms** (not `ewN`'s SUM) tames CONCATENATION (`α+γ` with disjoint exponents):
+  the max of two maxes is a max — absorbing with `c = 0`;
+- **log coefficient charge** tames the MERGE `ω^β·n + ω^β·m = ω^β·(n+m)` (`ONote.addAux`
+  `Ordering.eq` arm, where coefficients ADD): `clog_add_le` proves
+  `clog (n+m) ≤ max (clog n)(clog m) + 1` (pure ℕ, kernel-clean), vs `ewN`'s linear charge
+  which costs the unbounded `min(n,m)`.
+
+**Kernel-checked (`decide`, no `native_decide`):**
+- `nlog_absorbs_merge_small/_big`, `nlog_absorbs_concat`, `nlog_absorbs_drop` — `Nlog` satisfies
+  `Nlog (α+γ) ≤ max (Nlog α)(Nlog γ) + 1` on the adversarial merge/concat/drop pairs;
+- `ewN_not_absorbing`, `ewN_not_absorbing_const_30` — the CONTRAST family `ω·k + ω·k` where
+  `ewN` violates absorption for EVERY fixed constant (gap grows as `k`);
+- `Nlog_spine : Nlog (spine k) = k+1` — `Nlog` GROWS on the tower spine `ω, ω^ω, …`, i.e. it
+  does NOT share the E–W max-coefficient source norm's infinite-fiber failure mode (constant `1`
+  on the spine — the exact reason `src` needed `ewN`);
+- `clog_le_self`, `Nlog_le_ewN` — `Nlog ≤ ewN` (recorded to flag it is the WRONG direction to
+  transfer finite fibers).
+
+**Node-gate consequence (kernel-clean): `absorbing_closes_gate`** — ANY absorbing norm with
+constant `c` closes the top-rank-cut node gate `N (α+γ) ≤ g (f 0)` from `N α ≤ g 0`, `N γ ≤ f 0`
+needing ONLY `max (g 0)(f 0) + c ≤ g (f 0)` — vastly weaker than the refuted base-additivity
+`hg_base : ∀ k, g 0 + k ≤ g k`. With `f 0 ≥ 1` (the EwF1 `2m+1` floor) this needs essentially
+just `g 0 + c < g (f 0)`, i.e. `g` non-constant across `[0, f 0]` — the trap-8 plateau at a
+SINGLE point no longer blocks it.
+
+**Two documented `sorry`s (ruling-input, honest):**
+- `Nlog_add_le_max_succ` (general absorbing theorem, all NF α,γ) — proof STRATEGY documented
+  (single merge-boundary: the leading term of `w = a+γ` in the `eq` case comes from γ, so the
+  two `+1`s don't compound). Concrete `decide` battery already establishes the ruling-relevant
+  existence; full general proof is the P3 deepening target.
+- `Nlog_finite_fiber` — finite fibers in full; strategy documented (exponent-set induction:
+  exponents of a `Nlog ≤ K` element are drawn from the finite `{e : Nlog e ≤ K-1}` and strictly
+  decrease, bounding length). Spine growth is the decisive concrete witness.
+
+**DISPOSITION for the reserved top-rank-cut ruling:** the TRILEMMA's prime amendment candidate
+(finite-fibered ABSORBING norm) is now KERNEL-EVIDENCED to EXIST — the judge can dissolve the
+node gate by swapping `ewN → Nlog` (an absorbing norm) with a trivial non-constancy slack, WITHOUT
+touching `rel1` or the additive output ordinal. This is the strongest of the three trilemma horns
+and was the one the lap-192 review believed impossible.
+
+---
