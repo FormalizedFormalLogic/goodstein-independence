@@ -386,3 +386,56 @@ structurally (slot `rel1 (ewRootSlot e B) (Gexp^[c] (envSup env N))`-shaped or t
 `K ≤ hardy e (…)` side condition), re-close the 8 landed cases (mechanical — joins as
 before), re-prove `exs` against `stdClosedVal_asg_le_Gexp_iter`, then `all` via
 `envSup_cons_le` + `rel1_rel1`.  `axm` stays after.
+
+---
+
+## Block 11 — E-1 block 6: V3 predicate erected + THE `all` CASE DISCHARGED (lap 201)
+
+**File**: `wip/E1EmbeddingGrind.lean`. Build green (1342 jobs), `blueprint_audit` ✓ 16,
+headline undrifted. `budgetedEmbedsV3_all` SORRY-FREE, `[propext, Classical.choice, Quot.sound]`.
+
+**The V3 design (block-6, refined from the block-8/10 sketch).** The block-8 predicate
+existentially bound BOTH the node ordinal `α` AND the witness index `K` *per assignment*, which
+is exactly what made the ω-rule `all` demand a single root dominating unbounded per-branch
+`(K_n, α_n)`.  **V3 moves the node ordinal `α` and the budgets `B,d,N,c` OUTSIDE `∀ env`** (they
+are env-independent in fact — every landed case builds them from `complexity`, which rewriting
+preserves), leaving the ONLY env-dependence in the slot's relativization index, fixed as the
+canonical assignment sup `envSup env N`:
+
+```
+def BudgetedEmbedsV3 (Γ) : Prop :=
+  ∃ B d N c : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ Nlog α ≤ B ∧
+    (∀ x, Gexp^[c] x ≤ ewRootSlot e B x) ∧
+    ∀ env, Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) (envSup env N)) d
+      (Γ.image (fun φ => Embedding.asg env ▹ φ))
+```
+
+**This dissolves BOTH uniformizations that blocked block-8 `all`:**
+1. **Ordinal** — `α` is structural, so `β n := α` (uniform over branches), root `osucc α`, and
+   `β n = α < osucc α` is free (`Zekd.lt_osucc`).  There is no per-branch `α_n` to bound.
+2. **Budget index** — the IH branch at `env' = n :>ₙ env` has index `envSup (n :>ₙ env) N`, and
+   the `allω` branch relativization is `rel1 (rel1 (ewRootSlot e (B+1)) (envSup env N)) n
+   = rel1 (ewRootSlot e (B+1)) (max (envSup env N) n)` (`rel1_rel1`).  `envSup_cons_le` gives
+   `envSup (n :>ₙ env) N ≤ envSup (n :>ₙ env) (N+1) ≤ max n (envSup env N) = max (envSup env N) n`,
+   so the branch slot dominates the IH slot via `relSlot_mono` — **no unbounded `K_n`**.
+
+**Gate + operator bookkeeping (mechanical, all closed):** the absorbing-norm gate is the
+structural invariant `Nlog α ≤ B` (root uses `B+1`: `Nlog (osucc α) ≤ Nlog α + 1 ≤ B+1 ≤ f 0` by
+`le_relSlot_zero`); the `Gexp`-domination field transports `B → B+1` by `ewRootSlot_mono_B` (new,
+one line); the ω-branch operator `adjoin (fun _ => True) n` is reached by `change_H` and its
+`relOp` obligation is `Cl.base (Or.inl trivial)`.  The `free`/`shift`/`nm` sequent identities
+(`hA`/`hB`) port verbatim from `Embedding.lean`'s `Provable`-level `all` case — the ONLY snag was
+`Embedding.asg` using `ZinftyF.nm` while `Zef2TC`'s scope uses `OperatorZinfty.nm` (defeq; unfold
+both in the `simp` set).
+
+**Significance.** The `all` case was the DECISIVE, route-critical sub-crux of rung E (the sole
+remaining hard rung): its failure would have forced a redesign of the SomeK/W3 statement shape.
+It now has a compiler-verified proof.  The block-8 "the `all` case cannot close under the block-8
+predicate" obstruction is confirmed a **predicate-shape artifact**, not a real wall.
+
+**Next (block 7)**: re-close the mechanical cases (`closed`/`verum`/`wk`/`shift`/`or`/`and`/`cut`)
+against `BudgetedEmbedsV3` (structural `α`; joins as before but ordinals now outside `∀ env` — a
+simplification), re-prove `exs` against `stdClosedVal_asg_le_Gexp_iter` + the `Gexp`-domination
+field (`m ≤ Gexp^[c](envSup env N) ≤ ewRootSlot e B (envSup env N) = f 0`, needing `e > ω²·c`,
+`B ≥ norm(ω²·c)` to make the domination field discharge­able), then `axm` (W1/W2).  With `all`
+done, the ordinal-uniformization risk is retired — the remaining work is bookkeeping + `axm`.

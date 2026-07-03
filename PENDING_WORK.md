@@ -1,5 +1,20 @@
 # PENDING WORK
 
+## lap 201b (E-1 block 6) — V3 predicate + THE `all` CASE DISCHARGED ✅
+
+`budgetedEmbedsV3_all` SORRY-FREE, `[propext, Classical.choice, Quot.sound]`
+(`wip/E1EmbeddingGrind.lean`, build 🟢 1342). The decisive route-critical sub-crux of rung E is
+CLOSED — the block-8 `all` obstruction is a predicate-shape artifact. V3 = move node ordinal `α`
++ budgets OUTSIDE `∀ env`; ordinal uniformizes free (`β n := α`), budget index paid by
+`envSup_cons_le` + `rel1_rel1`. See ledger block 11 + `HANDOFF-2026-07-03-lap201.md`.
+
+**NEXT (block 7)**: re-close mechanical cases against `BudgetedEmbedsV3` (structural α — simpler
+than block 8); then `exs` (domination field discharged by `e > ω²·c`, `B ≥ norm(ω²·c)` ⇒
+`Gexp^[c] = H_{ω²·c} ≤ ewRootSlot e B` via `hardy_le_of_lt`); then `axm` (W1/W2). Reassemble over
+V3 → rung-E statement + Ax2 probe → next judge pass. Do NOT self-ratify into src.
+
+---
+
 ## lap 201 (FRESH-MIND REVIEW) — direction RETARGETED to Lane E; rung E is the last hard rung
 
 **Re-verified this lap** (real `#print axioms`, bare `lake build` 🟢 1342): headline

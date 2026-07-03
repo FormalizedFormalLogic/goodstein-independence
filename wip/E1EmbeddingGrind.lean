@@ -1323,7 +1323,109 @@ theorem stdClosedVal_asg_le_Gexp_iter (t : SyntacticTerm ℒₒᵣ) :
   obtain ⟨c, N, h⟩ := term_val_le_Gexp_iter t
   exact ⟨c, N, fun env => by rw [stdClosedVal_asg]; exact h env⟩
 
+/-! ### V3 — the structural-budget master predicate (block 6)
+
+The block-8 predicate `BudgetedEmbedsTC` existentially bound the node ordinal `α` AND the
+witness index `K` *per assignment*, which made the ω-rule `all` case demand a uniform root over
+unbounded per-branch `(K_n, α_n)`.  **V3 dissolves both**: the node ordinal `α` and the budgets
+`B,d,N,c` all live OUTSIDE `∀ env` (env-independent — as, in fact, every landed case builds them,
+since rewriting preserves `complexity`), and the ONLY env-dependence is the slot's relativization
+index, fixed as the canonical assignment sup `envSup env N`.  Then:
+* **ordinal uniformization is free** — `β n := α` (structural, uniform over branches), root `osucc α`;
+* **budget uniformization is `envSup_cons_le`** — the branch index `envSup (n:>ₙenv) N` is dominated
+  by `max (envSup env N) n`, which is exactly the `allω` branch relativization `rel1 · n` (via
+  `rel1_rel1`).  No unbounded `K_n`.
+The absorbing-norm gate `Nlog α ≤ f 0` is maintained by the structural invariant `Nlog α ≤ B`
+(`Nlog` absorbing under `osucc`/`+`), and the `Gexp`-domination field pays the `exs`/atomic witness
+budgets (control tower absorbs term growth). -/
+def BudgetedEmbedsV3 (Γ : Finset (SyntacticFormula ℒₒᵣ)) : Prop :=
+  ∃ B d N c : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ Nlog α ≤ B ∧
+    (∀ x, Gexp^[c] x ≤ ewRootSlot e B x) ∧
+    ∀ env : ℕ → ℕ,
+      Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) (envSup env N)) d
+        (Γ.image (fun φ => Embedding.asg env ▹ φ))
+
+/-- `ewRootSlot` is monotone in the structural budget `B`. -/
+theorem ewRootSlot_mono_B (e : ONote) {B B' : ℕ} (h : B ≤ B') (x : ℕ) :
+    ewRootSlot e B x ≤ ewRootSlot e B' x := by
+  simp only [ewRootSlot, rel1]
+  have := hardy_monotone e (max_le_max h (le_refl x))
+  omega
+
+/-- **V3 `all` — THE DECISIVE CASE (block-6 probe).**  The ω-rule closes under the structural-budget
+predicate: the node ordinal is uniform (`β n := α`, root `osucc α`), and the env-local budget index
+`envSup env N` is paid by the branch relativization `rel1 · n` via `envSup_cons_le`.  This validates
+the V3 design — the block-8 `all` obstruction (unbounded per-branch `K_n, α_n`) is a predicate-shape
+artifact, dissolved by moving `α`/budgets outside `∀ env`. -/
+theorem budgetedEmbedsV3_all {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+    {φ : SyntacticSemiformula ℒₒᵣ 1} (h : ∀⁰ φ ∈ Γ)
+    (ih : BudgetedEmbedsV3 (insert (Rewriting.free φ) (Γ.image Rewriting.shift))) :
+    BudgetedEmbedsV3 Γ := by
+  obtain ⟨B, d, N, c, e, α, he, hαNF, hNlogB, hdom, ih⟩ := ih
+  refine ⟨B + 1, d, N, c, e, osucc α, he, osucc_NF hαNF, ?_, ?_, fun env => ?_⟩
+  · have := Nlog_osucc_le hαNF; omega
+  · intro x; exact le_trans (hdom x) (ewRootSlot_mono_B e (Nat.le_succ B) x)
+  · -- the ω-family: each branch is the IH at `n :>ₙ env`, transported to the branch slot/operator
+    have hfam : ∀ n, Zef2TC α e (adjoin (fun _ : ONote => True) n)
+        (rel1 (rel1 (ewRootSlot e (B + 1)) (envSup env N)) n) d
+        (insert (((Embedding.asg env).q ▹ φ)/[nm n])
+          (Γ.image (fun ψ => Embedding.asg env ▹ ψ))) := by
+      intro n
+      have Dn := ih (n :>ₙ env)
+      rw [Finset.image_insert] at Dn
+      have hA : Embedding.asg (n :>ₙ env) ▹ (Rewriting.free φ)
+          = ((Embedding.asg env).q ▹ φ)/[nm n] := by
+        have hRew : (Embedding.asg (n :>ₙ env)).comp Rew.free
+            = (Rew.subst ![nm n]).comp (Embedding.asg env).q := by
+          ext x
+          · refine Fin.cases ?_ (fun i => Fin.elim0 i) x
+            simp [Embedding.asg, Rew.comp_app, ZinftyF.nm, GoodsteinPA.OperatorZinfty.nm]
+          · simp [Embedding.asg, Rew.comp_app, ZinftyF.nm, GoodsteinPA.OperatorZinfty.nm]
+        show Embedding.asg (n :>ₙ env) ▹ (Rew.free ▹ φ)
+            = Rew.subst ![nm n] ▹ ((Embedding.asg env).q ▹ φ)
+        rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, hRew]
+      have hB : (Γ.image Rewriting.shift).image (fun ψ => Embedding.asg (n :>ₙ env) ▹ ψ)
+          = Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
+        have hcompB : (Embedding.asg (n :>ₙ env)).comp Rew.shift = Embedding.asg env := by
+          ext x
+          · exact Fin.elim0 x
+          · simp [Embedding.asg, Rew.comp_app]
+        rw [Finset.image_image]
+        refine Finset.image_congr (fun ψ _ => ?_)
+        show Embedding.asg (n :>ₙ env) ▹ (Rew.shift ▹ ψ) = Embedding.asg env ▹ ψ
+        rw [← TransitiveRewriting.comp_app, hcompB]
+      rw [hA, hB] at Dn
+      have hK : envSup (n :>ₙ env) N ≤ max (envSup env N) n :=
+        calc envSup (n :>ₙ env) N
+            ≤ envSup (n :>ₙ env) (N + 1) := envSup_mono_N (n :>ₙ env) (Nat.le_succ N)
+          _ ≤ max n (envSup env N) := envSup_cons_le env n N
+          _ = max (envSup env N) n := Nat.max_comm _ _
+      have hff : ∀ x, rel1 (ewRootSlot e B) (envSup (n :>ₙ env) N) x
+          ≤ rel1 (rel1 (ewRootSlot e (B + 1)) (envSup env N)) n x := by
+        intro x
+        rw [rel1_rel1]
+        exact relSlot_mono (Nat.le_succ B) hK x
+      exact (Dn.change_H).mono_f hff
+    have hgate : Nlog (osucc α)
+        ≤ rel1 (ewRootSlot e (B + 1)) (envSup env N) 0 := by
+      have h1 := Nlog_osucc_le hαNF
+      have h2 : (B + 1 : ℕ) ≤ rel1 (ewRootSlot e (B + 1)) (envSup env N) 0 :=
+        le_relSlot_zero e (B + 1) (envSup env N)
+      omega
+    have hrel : ∀ n, relOp (fun _ : ONote => True) n α :=
+      fun n => Cl.base (Or.inl trivial)
+    have hall := Zef2TC.allω (α := osucc α)
+      (f := rel1 (ewRootSlot e (B + 1)) (envSup env N)) hgate
+      ((Embedding.asg env).q ▹ φ) (fun _ => α)
+      (fun _ => Zekd.lt_osucc hαNF) (fun _ => hαNF) (osucc_NF hαNF) hrel hfam
+    have hmem : (Embedding.asg env ▹ (∀⁰ φ))
+        ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := Finset.mem_image_of_mem _ h
+    rw [show (Embedding.asg env ▹ (∀⁰ φ)) = ∀⁰ ((Embedding.asg env).q ▹ φ) by simp] at hmem
+    rw [Finset.insert_eq_self.mpr hmem] at hall
+    exact hall
+
 end GoodsteinPA.E1EmbeddingGrind
 
 #print axioms GoodsteinPA.E1EmbeddingGrind.term_val_le_Gexp_iter
 #print axioms GoodsteinPA.E1EmbeddingGrind.stdClosedVal_asg_le_Gexp_iter
+#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_all
