@@ -22,7 +22,7 @@ The existing repo already proves the main concrete growth asset:
 that asset to the exact no-fixed-bound theorem needed by the route.  The remaining
 named axiom is the Wainer PA-provably-total classification bridge.
 -/
-import GoodsteinPA.Statement
+import GoodsteinPA.Reduction  -- (SERIES-5 Lane B) was: import GoodsteinPA.Statement, dropped to break the WainerRoute->Statement cycle
 import GoodsteinPA.Domination
 import GoodsteinPA.BlueprintAttr
 
