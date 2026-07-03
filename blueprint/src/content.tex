@@ -360,13 +360,17 @@ amendment (Series-2 ruling (1)): quantifier cut shapes reduce via
 \begin{theorem}\label{thm:zeh_readoff_delta0}
   \lean{GoodsteinPA.OperatorZeh.readoff_delta0_Zef2}
   \uses{thm:zeh_readoff}
-  \notready
+  \leanok
 \textbf{\(\Delta_0\)-matrix read-off extension (ladder rung D).}  The proven read-off covers atomic
-matrices; the Goodstein sentence's matrix is \(\Delta_0\) (bounded quantifiers introduce
-\(\omega\)-nodes the \(\forall\)-free lemma excludes).  R-4-restated + decomposed SERIES-1
-(\(\texttt{sound0}\) + falsity invariant \(\texttt{readoffD\_aux}\) proven; the downward-closed-guard
-fragment closes sorry-free via \(\texttt{readoffD\_trapped\_of\_mono}\)); the generic residue is
-gated on the shared (Ax2)/restatement decision (ruling \S4.2).
+matrices; the Goodstein sentence's matrix is \(\Delta_0\).  R-4\('\)-restated per Series-2 ruling (2)
+(conclusion bound \(\mathrm{ewIter}\,f\,\alpha\,0\)) and DISCHARGED Series-3 D-3 by VACUITY: the
+spine-head invariant (\(\texttt{zef2\_rank0\_singleton\_ex\_underivable}\)) shows \(Z^{ef}_2\)
+without E--W's (Ax2) cannot derive any singleton \(\{\exists^0\varphi\}\) at rank 0 (no complementary
+\(\mathrm{axL}\) pair can form from a single quantifier spine), so the ratified statement holds at
+every bound.  The abandoned falsity-invariant route is parked in
+\(\texttt{wip/ReadoffDAuxRetired.lean}\); the downward-closed-guard fragment remains banked
+(\(\texttt{readoffD\_trapped\_of\_mono}\)).  Decisive rung-E input: the embedding must target the
+(Ax2)-extended calculus.
 \end{theorem}
 
 \begin{theorem}\label{thm:zeh_rank_zero}

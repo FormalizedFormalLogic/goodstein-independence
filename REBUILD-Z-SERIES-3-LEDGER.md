@@ -158,3 +158,47 @@ premises to rank `c` at `(collapse βφ, ewIter f βφ)` / `(collapse βψ, ewIt
 
 **Ladder state**: rungs P + R **GREEN**.  Remaining: D-3 (lane D, R-4′ restatement — retires
 `readoffD_trapped`), E-0/E-1 (rung E statement + wip grind), W-1 (splice composition).
+
+---
+
+## Block 4 — D-3 EXECUTED: R-4′ landed verbatim — by VACUITY, not aggregation (lap 199)
+
+**Claim (diff-verifiable):** `readoff_delta0_Zef2` (`src/GoodsteinPA/OperatorZef2.lean`) now
+carries the R-4′-ratified conclusion `∃ n ≤ ewIter f α 0, atomTrue (φ/[nm n])` (statement text
+= the ruling's verbatim form; zero authoring freedom exercised) and is **sorry-free on the
+standard triple** `[propext, Classical.choice, Quot.sound]`.  The SOLE `OperatorZef2` sorry
+(`readoffD_trapped`) is RETIRED.  Full `lake build` 🟢 (1342 jobs); headline quadruple
+UNDRIFTED; `blueprint_audit` ✓ (16 nodes, `thm:zeh_readoff_delta0` flipped `\leanok`).
+
+**HOW — the ordered route was impossible; the rung is VACUOUS (kernel-proven):**
+
+1. **The order's aggregation plan FAILS.** "Trapped case closes via `ewIter_lower`
+   aggregation" hits the lap-195 `k₀` wall unchanged: the false-branch index `k₀` is the
+   least false matrix instance — SEMANTIC, bounded by no gate.  Adversary (prose, recorded in
+   `wip/D3SpineProbe.lean`): matrix `x < N`, `Γ₀ = {∃⁰φ, ∼(φ/[nm N])} ∪ {∼(χ/[nm i]) : i<N}`,
+   `φ = (x = N)`, `f = ·+1`, `α = 2` — the aux dichotomy holds, the derivation exists, the
+   sole witness is `N ≫ ewIter f 2 0`.  The general-context aux-at-`ewIter`-bound is FALSE.
+2. **What IS true — lap-195's flagged "residue vacuous" alternative, globalized.**  NEW src
+   machinery: `spineHead` (strip the `∀/∃` spine, report terminal polarity + rel symbol;
+   `⊤/⊥/⋏/⋎` = none), `spineHead_rew` (substitution-invariant), and
+   `zef2_rank0_uniform_spine_underivable`: a uniform-spine sequent has NO rank-0 `Zef2`
+   derivation — the sole leaf `axL` needs a complementary pair, but `allω`/`exI` insert only
+   spine-head-preserving instances, and `Zef2` has no (Ax2) true-literal leaf and no
+   `⊤/⋏/⋎` rules.  Corollary `zef2_rank0_singleton_ex_underivable`: `{∃⁰φ}` underivable at
+   rank 0 for EVERY φ.  All standard-triple.  R-4′ then holds vacuously (`(·).elim`).
+3. **Retirement:** the falsity-invariant scaffold (`readoffD_aux` + `readoffD_trapped`) moved
+   VERBATIM to `wip/ReadoffDAuxRetired.lean` (frozen evidence; its sorry is designated-retired,
+   not open).  `readoffD_trapped_of_mono` STAYS in src (ordered; true, goodstein-inapplicable
+   per C-2).  `sound0`, `atomTrue_all_iff/ex_iff` stay (general lemmas).
+
+**Ruling-relevant fallout (E-0 input, judge-owned):** rung D is CONTENT-FREE over `Zef2`.
+`wip/D3SpineProbe.lean` adds the any-rank corollary `zef2_singleton_ex_underivable_anyRank`
+(compose rung R + vacuity: `Zef2` cannot derive `{∃⁰φ}` at ANY cut rank under the rung-R side
+conditions; standard triple).  So the rung-E embedding CANNOT target `Zef2` — it needs the
+(Ax2)-extended `Zef2T`, exactly the Stage-B B(iii) prediction, now proven at the source rather
+than probed at a leaf.  The pipeline's real load then runs: embedding in `Zef2T` → (Ax2)-aware
+pass/read-off re-proofs (costs already measured, Stage B).  NOT self-ratified: R-4′ landed as
+ratified; the `Zef2T` adoption decision stays with the rung-E ruling.
+
+**Ladder state**: rungs P + R + **D** GREEN.  Remaining: E-0/E-1 (rung E statement + Ax2 probe
+— the vacuity theorem IS most of the Ax2-need answer), W-1 (splice composition).
