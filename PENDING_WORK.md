@@ -1,6 +1,14 @@
 # PENDING WORK
 
-## Lap 210 (2026-07-03, grind) — S-1 + S-2 CLOSED; S-3 bricks (all `[propext, choice, Quot.sound]`)
+## Lap 210 (2026-07-03, grind) — SERIES-4 LANE S COMPLETE (S-1…S-5); see HANDOFF-2026-07-03-lap210.md
+
+**`wainer_bound_witness` (E1) GREEN kernel-clean at the axiom's VERBATIM type** (`649b1e4`), with
+3 hypotheses = verbatim statements of kernel-clean sibling-module theorems (gated_certificate_uniform /
+Scirc_dom_pad / master_conversion). NEXT = (1) the ONE judge package (evidence doc + #print transcript;
+judge executes splice + axiom swap — grind laps MUST NOT), (2) Lane B (native_decide burndown; 15 src
+sorries re-point/retirement proposals).
+
+## (earlier lap-210 log)
 
 - ✅ S-1 `ewIterTower_dom_pad` (`564b51f`), S-2 `gvb_le_iter`+`hardy_Wpow_iter_dom_pad` (`15f6617`),
   `dom_pad_max`+`Sstar_dom_pad` (`b22dbc3`), S-3 brick `ewIter_dom_pad_levelcap`+`two_pow_le_hardy_Wpow2`
