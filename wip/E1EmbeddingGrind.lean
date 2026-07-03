@@ -4378,7 +4378,338 @@ theorem readoff_delta0_Zef2TC {φ : SyntacticSemiformula ℒₒᵣ 1}
       (fun ψ hψ => Or.inl (Finset.mem_singleton.mp hψ))
   exact ⟨n, le_trans hn (f0_le_ewIter hinfl α), htn⟩
 
+/-! ### Route-(c): the V-threaded VALUE-BUDGET read-off (DIRECTION lap-206 step (3))
+
+The `allω`-trap dissolves against the master bound `BND V α := ewIter S α (S V)`,
+`S x := max (f₀ x) (P x)`: the invariant requires every member `Gated P V` (the hereditary
+semantic value gate, `wip/ReadoffValueGate.lean`), so a false `∀⁰ χ` member always admits a
+false branch `k₀ ≤ P V`, and the T3 descent inequality absorbs the budget bump `V ↦ max V k₀`.
+`Gated`/accessors/`Gated_mono` and the T-gadgets are COPIED from `wip/ReadoffValueGate.lean` /
+`wip/ReadoffValueGadgetProbe.lean` (wip files are not importable); the ROOT discharge
+`gated_of_sigma1` (`Hierarchy 𝚺 1` + guard-value bound ⟹ `Gated`) lives in the former. -/
+
+/-- The hereditary value gate (copy of `ReadoffValueGate.Gated`). -/
+def Gated (P : ℕ → ℕ) : ℕ → Form → Prop
+  | _, Semiformula.rel _ _ => True
+  | _, Semiformula.nrel _ _ => True
+  | _, Semiformula.verum => True
+  | _, Semiformula.falsum => True
+  | V, Semiformula.and χ₁ χ₂ => Gated P V χ₁ ∧ Gated P V χ₂
+  | V, Semiformula.or χ₁ χ₂ => Gated P V χ₁ ∧ Gated P V χ₂
+  | V, Semiformula.all χ =>
+      (¬ atomTrue (Semiformula.all χ) → ∃ k, k ≤ P V ∧ ¬ atomTrue (χ/[nm k])) ∧
+      ∀ k, Gated P (max V k) (χ/[nm k])
+  | V, Semiformula.exs χ => ∀ n, Gated P (max V n) (χ/[nm n])
+termination_by _ φ => φ.complexity
+decreasing_by
+  all_goals simp [Semiformula.complexity_rew]
+
+theorem Gated_and_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : Form} :
+    Gated P V (χ₁ ⋏ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
+  rw [show (χ₁ ⋏ χ₂) = Semiformula.and χ₁ χ₂ from rfl, Gated]
+
+theorem Gated_or_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : Form} :
+    Gated P V (χ₁ ⋎ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
+  rw [show (χ₁ ⋎ χ₂) = Semiformula.or χ₁ χ₂ from rfl, Gated]
+
+theorem Gated_all_iff {P : ℕ → ℕ} {V : ℕ} {χ : SyntacticSemiformula ℒₒᵣ 1} :
+    Gated P V (∀⁰ χ) ↔
+      ((¬ atomTrue (∀⁰ χ) → ∃ k, k ≤ P V ∧ ¬ atomTrue (χ/[nm k])) ∧
+        ∀ k, Gated P (max V k) (χ/[nm k])) := by
+  rw [show (∀⁰ χ) = Semiformula.all χ from rfl, Gated]
+
+theorem Gated_exs_iff {P : ℕ → ℕ} {V : ℕ} {χ : SyntacticSemiformula ℒₒᵣ 1} :
+    Gated P V (∃⁰ χ) ↔ ∀ n, Gated P (max V n) (χ/[nm n]) := by
+  rw [show (∃⁰ χ) = Semiformula.exs χ from rfl, Gated]
+
+theorem Gated_mono {P : ℕ → ℕ} (hP : Monotone P) :
+    ∀ (φ : Form) (V V' : ℕ), V ≤ V' → Gated P V φ → Gated P V' φ
+  | Semiformula.rel _ _, _, _, _, _ => by rw [Gated]; trivial
+  | Semiformula.nrel _ _, _, _, _, _ => by rw [Gated]; trivial
+  | Semiformula.verum, _, _, _, _ => by rw [Gated]; trivial
+  | Semiformula.falsum, _, _, _, _ => by rw [Gated]; trivial
+  | Semiformula.and χ₁ χ₂, V, V', h, hg => by
+      rw [Gated] at hg ⊢
+      exact ⟨Gated_mono hP χ₁ V V' h hg.1, Gated_mono hP χ₂ V V' h hg.2⟩
+  | Semiformula.or χ₁ χ₂, V, V', h, hg => by
+      rw [Gated] at hg ⊢
+      exact ⟨Gated_mono hP χ₁ V V' h hg.1, Gated_mono hP χ₂ V V' h hg.2⟩
+  | Semiformula.all χ, V, V', h, hg => by
+      rw [Gated] at hg ⊢
+      refine ⟨fun hf => ?_, fun k => ?_⟩
+      · obtain ⟨k, hk, hkf⟩ := hg.1 hf
+        exact ⟨k, le_trans hk (hP h), hkf⟩
+      · exact Gated_mono hP (χ/[nm k]) (max V k) (max V' k)
+          (max_le_max h le_rfl) (hg.2 k)
+  | Semiformula.exs χ, V, V', h, hg => by
+      rw [Gated] at hg ⊢
+      intro n
+      exact Gated_mono hP (χ/[nm n]) (max V n) (max V' n)
+        (max_le_max h le_rfl) (hg n)
+termination_by φ _ _ _ _ => φ.complexity
+decreasing_by
+  all_goals simp [Semiformula.complexity_rew]
+
+/-- The combined value-budget step `S x := max (f₀ x) (P x)`. -/
+def Sslot (f₀ P : ℕ → ℕ) : ℕ → ℕ := fun x => max (f₀ x) (P x)
+
+theorem Sslot_mono {f₀ P : ℕ → ℕ} (hf : Monotone f₀) (hP : Monotone P) :
+    Monotone (Sslot f₀ P) := fun _ _ h => max_le_max (hf h) (hP h)
+
+theorem Sslot_infl {f₀ P : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f₀ m) :
+    ∀ m, m ≤ Sslot f₀ P m := fun m => le_trans (hf_infl m) (le_max_left _ _)
+
+/-- One-step absorption at a nonzero ordinal (copy of the probe's `SS_le_ewIter`). -/
+theorem SS_le_ewIter' {S : ℕ → ℕ} {β : ONote} (hβ : β ≠ 0) (x : ℕ) :
+    S (S x) ≤ ewIter S β x := by
+  have h0β : (0 : ONote) < β := by
+    cases β with
+    | zero => exact (hβ rfl).elim
+    | oadd e n a => exact oadd_pos e n a
+  have h := ewIter_lower (f := S) (β := 0) (α := β) (m := x) NF.zero h0β (Nat.zero_le _)
+  simpa [ewIter_zero] using h
+
+/-- **T3 — the decisive descent inequality** (copy of the probe's `T3_descent`): a premise at
+`β < α` with any bumped budget `V' ≤ S V` has its master bound absorbed by the node's. -/
+theorem T3_descent' {S : ℕ → ℕ} (hS_mono : Monotone S) (hS_infl : ∀ m, m ≤ S m)
+    {β α : ONote} (hβNF : β.NF) (hβα : β < α)
+    {V V' : ℕ} (hV' : V' ≤ S V)
+    (hgate : Nlog β ≤ S (S V)) :
+    ewIter S β (S V') ≤ ewIter S α (S V) := by
+  have ha : ewIter S β (S V') ≤ ewIter S β (S (S V)) :=
+    ewIter_monotone hS_mono hS_infl β (hS_mono hV')
+  have hb : S (S V) ≤ ewIter S β (S V) := by
+    by_cases hβ0 : β = 0
+    · subst hβ0
+      simp [ewIter_zero]
+    · exact le_trans (hS_infl (S (S V))) (SS_le_ewIter' hβ0 (S V))
+  have hc : ewIter S β (S (S V)) ≤ ewIter S β (ewIter S β (S V)) :=
+    ewIter_monotone hS_mono hS_infl β hb
+  have hd : ewIter S β (ewIter S β (S V)) ≤ ewIter S α (S V) :=
+    ewIter_lower hβNF hβα (le_trans hgate (hS_mono (by omega)))
+  exact le_trans ha (le_trans hc hd)
+
+/-- **`readoffVTC_core`** — the V-threaded value-budget read-off (route (c)).  Invariant: the
+tracked `∃⁰ φ` is a member, every member is `Gated P V`, every non-tracked member is
+standard-false; slot frame `g = rel1 f₀ j`, `j ≤ V`.  Conclusion bound: the master
+`BND V α = ewIter S α (S V)`, `S = Sslot f₀ P`.  SORRY-FREE: the `allω` trap descends into the
+`Gated` false branch `k₀ ≤ P V`; `T3_descent'` absorbs every budget bump. -/
+theorem readoffVTC_core {φ : SyntacticSemiformula ℒₒᵣ 1} {f₀ P : ℕ → ℕ}
+    (hf_mono : Monotone f₀) (hf_infl : ∀ m, m ≤ f₀ m) (hP_mono : Monotone P) :
+    ∀ {α e : ONote} {H : ONote → Prop} {g : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+      Zef2TC α e H g c Γ → c = 0 →
+      ∀ (V j : ℕ), g = rel1 f₀ j → j ≤ V →
+      (∃⁰ φ) ∈ Γ →
+      (∀ ψ ∈ Γ, Gated P V ψ ∧ (ψ = (∃⁰ φ) ∨ ¬ atomTrue ψ)) →
+      ∃ n, n ≤ ewIter (Sslot f₀ P) α (Sslot f₀ P V) ∧ atomTrue (φ/[nm n]) := by
+  have hS_mono : Monotone (Sslot f₀ P) := Sslot_mono hf_mono hP_mono
+  have hS_infl : ∀ m, m ≤ Sslot f₀ P m := Sslot_infl hf_infl
+  intro α e H g c Γ dd
+  induction dd with
+  | @axL α e H g c Γ ar hαN r v hp hn =>
+      intro _ _ _ _ _ _ hinv
+      have h1 : ¬ atomTrue (Semiformula.rel r v) :=
+        (hinv _ hp).2.resolve_left (Semiformula.ne_of_ne_complexity (by simp))
+      have h2 : ¬ atomTrue (Semiformula.nrel r v) :=
+        (hinv _ hn).2.resolve_left (Semiformula.ne_of_ne_complexity (by simp))
+      exact absurd ((atomTrue_nrel_iff_not_rel r v).mpr h1) h2
+  | trueRel hαN r v htrue hmem =>
+      intro _ _ _ _ _ _ hinv
+      exact absurd htrue ((hinv _ hmem).2.resolve_left (Semiformula.ne_of_ne_complexity (by simp)))
+  | trueNrel hαN r v htrue hmem =>
+      intro _ _ _ _ _ _ hinv
+      exact absurd htrue ((hinv _ hmem).2.resolve_left (Semiformula.ne_of_ne_complexity (by simp)))
+  | verumR hαN h =>
+      intro _ _ _ _ _ _ hinv
+      have hf := (hinv _ h).2.resolve_left (Semiformula.ne_of_ne_complexity (by simp))
+      exact absurd (show atomTrue (⊤ : Form) by simp [atomTrue]) hf
+  | @wk α e H g c Δ Γ hαN hsub dpr ih =>
+      intro hc V j hg hjV _ hinv
+      obtain ⟨ψ, hψΔ, htψ⟩ := sound0_TC dpr hc
+      have hφΔ : (∃⁰ φ) ∈ Δ := by
+        rcases (hinv ψ (hsub hψΔ)).2 with rfl | hfalse
+        · exact hψΔ
+        · exact absurd htψ hfalse
+      exact ih hc V j hg hjV hφΔ (fun ψ' hψ' => hinv ψ' (hsub hψ'))
+  | @weak α β e H g c Δ Γ hαN hβ hβNF hαNF hβH hsub dpr ih =>
+      intro hc V j hg hjV _ hinv
+      obtain ⟨ψ, hψΔ, htψ⟩ := sound0_TC dpr hc
+      have hφΔ : (∃⁰ φ) ∈ Δ := by
+        rcases (hinv ψ (hsub hψΔ)).2 with rfl | hfalse
+        · exact hψΔ
+        · exact absurd htψ hfalse
+      obtain ⟨n, hn, htn⟩ := ih hc V j hg hjV hφΔ (fun ψ' hψ' => hinv ψ' (hsub hψ'))
+      refine ⟨n, le_trans hn ?_, htn⟩
+      refine T3_descent' hS_mono hS_infl hβNF hβ (hS_infl V) ?_
+      have hgpr : Nlog β ≤ g 0 := Zef2TC.gate dpr
+      have hg0 : g 0 = f₀ j := by simp [hg, rel1]
+      calc Nlog β ≤ f₀ j := hg0 ▸ hgpr
+        _ ≤ Sslot f₀ P V := le_trans (hf_mono hjV) (le_max_left _ _)
+        _ ≤ Sslot f₀ P (Sslot f₀ P V) := hS_infl _
+  | @andI α βφ βψ e H g c Γ hαN χ₁ χ₂ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH dφ dψ ih₁ ih₂ =>
+      intro hc V j hg hjV hmem hinv
+      have hφΓ : (∃⁰ φ) ∈ Γ :=
+        (Finset.mem_insert.mp hmem).resolve_left
+          (fun h => (by simp : (χ₁ ⋏ χ₂) ≠ (∃⁰ φ)) h.symm)
+      obtain ⟨hgAnd, horAnd⟩ := hinv _ (Finset.mem_insert_self _ _)
+      obtain ⟨hg1, hg2⟩ := Gated_and_iff.mp hgAnd
+      have hfalse : ¬ (atomTrue χ₁ ∧ atomTrue χ₂) := by
+        have hnand : ¬ atomTrue (χ₁ ⋏ χ₂) := horAnd.resolve_left (by simp)
+        simpa [atomTrue] using hnand
+      have hgate : Nlog βφ ≤ Sslot f₀ P (Sslot f₀ P V) ∧
+          Nlog βψ ≤ Sslot f₀ P (Sslot f₀ P V) := by
+        have hgφ : Nlog βφ ≤ g 0 := Zef2TC.gate dφ
+        have hgψ : Nlog βψ ≤ g 0 := Zef2TC.gate dψ
+        have hg0 : g 0 = f₀ j := by simp [hg, rel1]
+        have hto : f₀ j ≤ Sslot f₀ P (Sslot f₀ P V) :=
+          le_trans (le_trans (hf_mono hjV) (le_max_left _ _)) (hS_infl _)
+        exact ⟨le_trans (hg0 ▸ hgφ) hto, le_trans (hg0 ▸ hgψ) hto⟩
+      rcases not_and_or.mp hfalse with h1 | h2
+      · obtain ⟨n, hn, htn⟩ := ih₁ hc V j hg hjV (Finset.mem_insert_of_mem hφΓ) (fun ψ hψ => by
+          rcases Finset.mem_insert.mp hψ with rfl | hψΓ
+          · exact ⟨hg1, Or.inr h1⟩
+          · exact hinv ψ (Finset.mem_insert_of_mem hψΓ))
+        exact ⟨n, le_trans hn
+          (T3_descent' hS_mono hS_infl hβφNF hβφ (hS_infl V) hgate.1), htn⟩
+      · obtain ⟨n, hn, htn⟩ := ih₂ hc V j hg hjV (Finset.mem_insert_of_mem hφΓ) (fun ψ hψ => by
+          rcases Finset.mem_insert.mp hψ with rfl | hψΓ
+          · exact ⟨hg2, Or.inr h2⟩
+          · exact hinv ψ (Finset.mem_insert_of_mem hψΓ))
+        exact ⟨n, le_trans hn
+          (T3_descent' hS_mono hS_infl hβψNF hβψ (hS_infl V) hgate.2), htn⟩
+  | @orI α β e H g c Γ hαN χ₁ χ₂ hβ hβNF hαNF hβH dpr ih =>
+      intro hc V j hg hjV hmem hinv
+      have hφΓ : (∃⁰ φ) ∈ Γ :=
+        (Finset.mem_insert.mp hmem).resolve_left
+          (fun h => (by simp : (χ₁ ⋎ χ₂) ≠ (∃⁰ φ)) h.symm)
+      obtain ⟨hgOr, horOr⟩ := hinv _ (Finset.mem_insert_self _ _)
+      obtain ⟨hg1, hg2⟩ := Gated_or_iff.mp hgOr
+      have hfalse : ¬ (atomTrue χ₁ ∨ atomTrue χ₂) := by
+        have hnor : ¬ atomTrue (χ₁ ⋎ χ₂) := horOr.resolve_left (by simp)
+        simpa [atomTrue] using hnor
+      obtain ⟨hf1, hf2⟩ := not_or.mp hfalse
+      obtain ⟨n, hn, htn⟩ := ih hc V j hg hjV
+        (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hφΓ)) (fun ψ hψ => by
+          rcases Finset.mem_insert.mp hψ with rfl | hψ'
+          · exact ⟨hg1, Or.inr hf1⟩
+          · rcases Finset.mem_insert.mp hψ' with rfl | hψΓ
+            · exact ⟨hg2, Or.inr hf2⟩
+            · exact hinv ψ (Finset.mem_insert_of_mem hψΓ))
+      refine ⟨n, le_trans hn (T3_descent' hS_mono hS_infl hβNF hβ (hS_infl V) ?_), htn⟩
+      have hgpr : Nlog β ≤ g 0 := Zef2TC.gate dpr
+      have hg0 : g 0 = f₀ j := by simp [hg, rel1]
+      calc Nlog β ≤ f₀ j := hg0 ▸ hgpr
+        _ ≤ Sslot f₀ P (Sslot f₀ P V) :=
+          le_trans (le_trans (hf_mono hjV) (le_max_left _ _)) (hS_infl _)
+  | @allω α e H g c Γ hαN χ β hβ hβNF hαNF hβH dpr ih =>
+      intro hc V j hg hjV hmem hinv
+      have hφΓ : (∃⁰ φ) ∈ Γ :=
+        (Finset.mem_insert.mp hmem).resolve_left (by simp)
+      obtain ⟨hgAll, horAll⟩ := hinv _ (Finset.mem_insert_self _ _)
+      have hnall : ¬ atomTrue (∀⁰ χ) := horAll.resolve_left (by simp)
+      rw [Gated_all_iff] at hgAll
+      obtain ⟨k₀, hk₀P, hk₀f⟩ := hgAll.1 hnall
+      -- descend into the GATED false branch k₀ at bumped budget max V k₀
+      obtain ⟨n, hn, htn⟩ := ih k₀ hc (max V k₀) (max j k₀)
+        (by rw [hg, rel1_rel1])
+        (max_le_max hjV le_rfl)
+        (Finset.mem_insert_of_mem hφΓ)
+        (fun ψ hψ => by
+          rcases Finset.mem_insert.mp hψ with rfl | hψΓ
+          · exact ⟨hgAll.2 k₀, Or.inr hk₀f⟩
+          · obtain ⟨hgψ, horψ⟩ := hinv ψ (Finset.mem_insert_of_mem hψΓ)
+            exact ⟨Gated_mono hP_mono ψ V (max V k₀) (le_max_left _ _) hgψ, horψ⟩)
+      refine ⟨n, le_trans hn (T3_descent' hS_mono hS_infl (hβNF k₀) (hβ k₀) ?_ ?_), htn⟩
+      · -- V' = max V k₀ ≤ S V
+        exact max_le (le_trans (hf_infl V) (le_max_left _ _))
+          (le_trans hk₀P (le_max_right _ _))
+      · -- gate: Nlog (β k₀) ≤ (rel1 g k₀) 0 = f₀ (max j k₀) ≤ S (S V)
+        have hgpr : Nlog (β k₀) ≤ (rel1 g k₀) 0 := Zef2TC.gate (dpr k₀)
+        have hg0 : (rel1 g k₀) 0 = f₀ (max j k₀) := by simp [hg, rel1_rel1, rel1]
+        have harg : max j k₀ ≤ Sslot f₀ P V :=
+          max_le (le_trans hjV (hS_infl V)) (le_trans hk₀P (le_max_right _ _))
+        calc Nlog (β k₀) ≤ f₀ (max j k₀) := hg0 ▸ hgpr
+          _ ≤ f₀ (Sslot f₀ P V) := hf_mono harg
+          _ ≤ Sslot f₀ P (Sslot f₀ P V) := le_max_left _ _
+  | @exI α β e H g c Γ hαN χ n hβ hβNF hαNF hβH hbound dpr ih =>
+      intro hc V j hg hjV hmem hinv
+      have hnfj : n ≤ f₀ j := by
+        have := hbound
+        rw [hg] at this
+        simpa [rel1] using this
+      have hnSV : n ≤ Sslot f₀ P V :=
+        le_trans (le_trans hnfj (hf_mono hjV)) (le_max_left _ _)
+      have hgate : Nlog β ≤ Sslot f₀ P (Sslot f₀ P V) := by
+        have hgpr : Nlog β ≤ g 0 := Zef2TC.gate dpr
+        have hg0 : g 0 = f₀ j := by simp [hg, rel1]
+        calc Nlog β ≤ f₀ j := hg0 ▸ hgpr
+          _ ≤ Sslot f₀ P (Sslot f₀ P V) :=
+            le_trans (le_trans (hf_mono hjV) (le_max_left _ _)) (hS_infl _)
+      have hVbump : max V n ≤ Sslot f₀ P V := max_le (hS_infl V) hnSV
+      by_cases hχφ : (∃⁰ χ) = (∃⁰ φ)
+      · have hχeq : χ = φ := by simpa using hχφ
+        subst hχeq
+        by_cases htn : atomTrue (χ/[nm n])
+        · exact ⟨n, le_trans hnSV (ewIter_infl hS_infl α _), htn⟩
+        · obtain ⟨hgEx, _⟩ := hinv _ hmem
+          have hgInst : Gated P (max V n) (χ/[nm n]) := (Gated_exs_iff.mp hgEx) n
+          have hInvP : ∀ ψ ∈ insert (χ/[nm n]) Γ,
+              Gated P (max V n) ψ ∧ (ψ = (∃⁰ χ) ∨ ¬ atomTrue ψ) := by
+            intro ψ hψ
+            rcases Finset.mem_insert.mp hψ with rfl | hψΓ
+            · exact ⟨hgInst, Or.inr htn⟩
+            · obtain ⟨hgψ, horψ⟩ := hinv ψ (Finset.mem_insert_of_mem hψΓ)
+              exact ⟨Gated_mono hP_mono ψ V (max V n) (le_max_left _ _) hgψ, horψ⟩
+          by_cases hin : (∃⁰ χ) ∈ insert (χ/[nm n]) Γ
+          · obtain ⟨n', hn', htn'⟩ := ih hc (max V n) j hg
+              (le_trans hjV (le_max_left _ _)) hin hInvP
+            exact ⟨n', le_trans hn'
+              (T3_descent' hS_mono hS_infl hβNF hβ hVbump hgate), htn'⟩
+          · obtain ⟨ψ, hψ, htψ⟩ := sound0_TC dpr hc
+            rcases (hInvP ψ hψ).2 with rfl | hfψ
+            · exact absurd hψ hin
+            · exact absurd htψ hfψ
+      · have hφΓ : (∃⁰ φ) ∈ Γ :=
+          (Finset.mem_insert.mp hmem).resolve_left (fun h => hχφ h.symm)
+        obtain ⟨hgEx, horEx⟩ := hinv _ (Finset.mem_insert_self _ _)
+        have hexχ : ¬ atomTrue (∃⁰ χ) := horEx.resolve_left hχφ
+        have hχn : ¬ atomTrue (χ/[nm n]) :=
+          fun ht => hexχ ((atomTrue_ex_iff χ).mpr ⟨n, ht⟩)
+        have hgInst : Gated P (max V n) (χ/[nm n]) := (Gated_exs_iff.mp hgEx) n
+        obtain ⟨n', hn', htn'⟩ := ih hc (max V n) j hg
+          (le_trans hjV (le_max_left _ _))
+          (Finset.mem_insert_of_mem hφΓ)
+          (fun ψ hψ => by
+            rcases Finset.mem_insert.mp hψ with rfl | hψΓ
+            · exact ⟨hgInst, Or.inr hχn⟩
+            · obtain ⟨hgψ, horψ⟩ := hinv ψ (Finset.mem_insert_of_mem hψΓ)
+              exact ⟨Gated_mono hP_mono ψ V (max V n) (le_max_left _ _) hgψ, horψ⟩)
+        exact ⟨n', le_trans hn'
+          (T3_descent' hS_mono hS_infl hβNF hβ hVbump hgate), htn'⟩
+  | @cut α βφ βψ e H g c Γ hαN χ hcompl hcutRead _ _ _ _ _ _ _ _ _ _ _ =>
+      intro hc _ _ _ _ _ _; subst hc
+      exact absurd hcompl (by omega)
+
+/-- **`readoff_value_Zef2TC`** — route (c) at the SINGLETON root `{∃⁰ φ}`: given the root
+`Gated` certificate (discharged by `gated_of_sigma1`, `wip/ReadoffValueGate.lean`, from
+`Hierarchy 𝚺 1 φ` + the guard-value bound `gvb`), the read-off closes SORRY-FREE at the master
+bound `ewIter (Sslot f₀ P) α (Sslot f₀ P V)`. -/
+theorem readoff_value_Zef2TC {φ : SyntacticSemiformula ℒₒᵣ 1} {f₀ P : ℕ → ℕ}
+    (hf_mono : Monotone f₀) (hf_infl : ∀ m, m ≤ f₀ m) (hP_mono : Monotone P)
+    {α e : ONote} {H : ONote → Prop}
+    (dd : Zef2TC α e H f₀ 0 {(∃⁰ φ)}) (V : ℕ) (hroot : Gated P V (∃⁰ φ)) :
+    ∃ n, n ≤ ewIter (Sslot f₀ P) α (Sslot f₀ P V) ∧ atomTrue (φ/[nm n]) :=
+  readoffVTC_core hf_mono hf_infl hP_mono dd rfl V 0
+    (by funext x; simp [rel1]) (Nat.zero_le V)
+    (Finset.mem_singleton_self _)
+    (fun ψ hψ => by
+      rcases Finset.mem_singleton.mp hψ with rfl
+      exact ⟨hroot, Or.inl rfl⟩)
+
 end GoodsteinPA.E1EmbeddingGrind
+
+#print axioms GoodsteinPA.E1EmbeddingGrind.readoffVTC_core
+#print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_Zef2TC
 
 #print axioms GoodsteinPA.E1EmbeddingGrind.term_val_le_Gexp_iter
 #print axioms GoodsteinPA.E1EmbeddingGrind.stdClosedVal_asg_le_Gexp_iter
