@@ -22,16 +22,18 @@ infinite-fiber failure mode); `absorbing_closes_gate` reduces the node gate to t
 `max(g0)(f0)+c ≤ g(f0)`. So the top-rank-cut TRILEMMA's prime amendment candidate is kernel-evidenced
 to EXIST — the judge can dissolve the gate by `ewN → Nlog` without touching `rel1` or the output ordinal.
 
-**NEXT ATTACK (P3 deepening of D-1, next lap):** discharge the two documented `sorry`s to make the
-probe DISPOSITIVE:
-1. `Nlog_add_le_max_succ` (general absorbing theorem) — induct on α; the `eq`/merge case needs the
-   HEAD-SOURCE lemma: in `w = a + γ` with `a`'s exponents all `< e` (α NF), the leading term of `w`
-   is a γ-term, so its charge `≤ Nlog γ` (NOT `≤ Nlog w`, which carries the IH `+1`) — this is what
-   stops the two `+1`s compounding. Prove that head-source helper first (reason about `ONote.addAux`
-   `lt`/`eq`/`gt` on the boundary), then the main follows.
-2. `Nlog_finite_fiber` — build `nlogBallBelow b K` (exponents `< b`, à la `NFBelow`); or bound
-   `ewN α ≤ F(Nlog α)` by the exponent-set induction. Either mechanizes the documented strategy.
-Landing both turns D-1 from "evidenced" to "proven" — the strongest possible ruling input.
+**P3 DEEPENING DONE this lap: `Nlog_add_le_max_succ` PROVEN** (kernel-clean
+`[propext, Classical.choice, Quot.sound]`). The general absorbing theorem — `∀ NF α γ,
+Nlog(α+γ) ≤ max(Nlog α)(Nlog γ)+1` — is a THEOREM now, not just evidenced: induct on α,
+`lt_trichotomy` on the two leading exponents, each case pins the syntactic form of `α+γ` via
+`repr_inj` + ordinal absorption (the `eq`/merge case's `a+γ=γ` absorption collapses the two-`+1`
+compounding). So absorbing property (ii) is DISPOSITIVE.
+
+**NEXT ATTACK (remaining D-1 sorry):** `Nlog_finite_fiber` (property (i) in full) — build
+`nlogBallBelow b K` (ONotes with `Nlog ≤ K`, exponents `< b`, à la `NFBelow`) by well-founded
+recursion; or prove `ewN α ≤ F(Nlog α)` by the exponent-set induction. Either mechanizes the
+documented strategy (`Nlog_spine` growth is the kernel witness it avoids the infinite-fiber
+failure mode). Landing this makes BOTH ruling properties fully proven.
 
 **Other SERIES-2 lanes still open (P2, independent):** Stage B (rung-E Ax2-adequacy probe,
 `wip/Ax2AdequacyProbe.lean` — `Zef2T` clone + Lemma-31 read-off miniature); Stage C (lane-D

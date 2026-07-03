@@ -97,14 +97,22 @@ needing ONLY `max (g 0)(f 0) + c ≤ g (f 0)` — vastly weaker than the refuted
 just `g 0 + c < g (f 0)`, i.e. `g` non-constant across `[0, f 0]` — the trap-8 plateau at a
 SINGLE point no longer blocks it.
 
-**Two documented `sorry`s (ruling-input, honest):**
-- `Nlog_add_le_max_succ` (general absorbing theorem, all NF α,γ) — proof STRATEGY documented
-  (single merge-boundary: the leading term of `w = a+γ` in the `eq` case comes from γ, so the
-  two `+1`s don't compound). Concrete `decide` battery already establishes the ruling-relevant
-  existence; full general proof is the P3 deepening target.
-- `Nlog_finite_fiber` — finite fibers in full; strategy documented (exponent-set induction:
+**General absorbing theorem — PROVEN (lap 196 P3 deepening, kernel-clean
+`[propext, Classical.choice, Quot.sound]`):** `Nlog_add_le_max_succ : ∀ NF α γ,
+Nlog (α+γ) ≤ max (Nlog α)(Nlog γ) + 1`. Proof: induct on α, `lt_trichotomy` on the two leading
+exponents `repr e`, `repr eg`; each case pins the SYNTACTIC form of `α+γ` via `repr_inj` +
+ordinal absorption (`add_of_omega0_opow_le`, `isPrincipal_add_omega0_opow`): `lt`→ `α+γ = γ`
+(α absorbed); `gt`→ `α+γ = oadd e n (a+γ)` (prepend, IH on `a`); `eq`→ `a+γ = γ` collapses the
+merge so `α+γ = oadd e (n+ng) ag`, coefficient tamed by `clog_add_le`. The single merge boundary
+means the two `+1`s never compound. Helper `add_eq_right_of_repr` banked. So absorption is now a
+THEOREM, not just evidenced on adversaries — the D-1 disposition is DISPOSITIVE for property (ii).
+
+**One documented `sorry` remaining:**
+- `Nlog_finite_fiber` (property (i) in full) — strategy documented (exponent-set induction:
   exponents of a `Nlog ≤ K` element are drawn from the finite `{e : Nlog e ≤ K-1}` and strictly
-  decrease, bounding length). Spine growth is the decisive concrete witness.
+  decrease, bounding length). `Nlog_spine` growth is the decisive kernel witness that `Nlog`
+  avoids the max-coeff norm's infinite-fiber failure mode; full mechanization needs a
+  `nlogBallBelow` construction (à la `NFBelow`), a follow-up P3 target.
 
 **DISPOSITION for the reserved top-rank-cut ruling:** the TRILEMMA's prime amendment candidate
 (finite-fibered ABSORBING norm) is now KERNEL-EVIDENCED to EXIST — the judge can dissolve the

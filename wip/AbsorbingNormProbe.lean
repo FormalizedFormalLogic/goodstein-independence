@@ -30,8 +30,9 @@ Deliverables (all kernel-checked; no `native_decide`):
   * `nlog_absorbs_merge`, `nlog_absorbs_concat`, … — the absorbing inequality kernel-checked
     (`decide`) on the adversarial merge/concat pairs that REFUTE `ewN`/max-coeff;
   * `ewN_not_absorbing` — the concrete family where `ewN` violates absorption (contrast);
-  * `Nlog_add_le_max_succ` — the GENERAL absorbing theorem (proof strategy documented; the
-    single genuine merge boundary means a uniform `+1` suffices).
+  * `Nlog_add_le_max_succ` — the GENERAL absorbing theorem, **PROVEN** (kernel-clean
+    `[propext, Classical.choice, Quot.sound]`): `Nlog (α+γ) ≤ max (Nlog α)(Nlog γ) + 1` for all
+    NF `α, γ`, via ordinal-absorption `repr_inj` case analysis on the two leading exponents.
 
 This is **wip-only ruling input** (SERIES-2 order Stage D-1 / ladder P2).  Nothing here touches
 `src`; `ewN` and the ratified `rel1`/output pillars are UNCHANGED.
@@ -40,6 +41,7 @@ This is **wip-only ruling input** (SERIES-2 order Stage D-1 / ladder P2).  Nothi
 namespace GoodsteinPA.AbsorbingNormProbe
 
 open ONote
+open scoped Ordinal
 open GoodsteinPA.OperatorZeh
 
 /-! ## The logarithmic coefficient charge -/
@@ -213,13 +215,123 @@ induct on `α`.  `α = oadd e n a`, `w := a + γ`, IH `Nlog w ≤ max (Nlog a)(N
     `Nlog e + clog (n+n') ≤ Nlog e + max (clog n)(clog n') + 1 ≤ max (Nlog α)(Nlog γ) + 1` via
     `clog_add_le`, and `Nlog a' ≤ Nlog w ≤ max + 1`.
 
-The `eq`-case head-source lemma (`NlogHead (a+γ)` comes from γ when `a`'s top `< γ`'s head)
-is the one remaining piece; the concrete `decide` battery above already confirms the inequality
-on the adversarial cases, so the ruling-relevant EXISTENCE claim is kernel-established
-independently of this general form. -/
-theorem Nlog_add_le_max_succ (α γ : ONote) :
+The absorption `x + γ = γ` (when `x`'s exponents are all below γ's head) COLLAPSES the merge
+sub-case (`a + γ = γ`), so the two `+1`s never compound.  PROVEN below (kernel-clean
+`[propext, Classical.choice, Quot.sound]`). -/
+
+/-- Absorption on `ONote`, packaged: `x + γ = γ` whenever their reprs satisfy the ordinal
+absorption `repr x + repr γ = repr γ`.  Via `repr_inj` (both NF) + `repr_add`. -/
+theorem add_eq_right_of_repr {x γ : ONote} [NF x] [NF γ]
+    (h : ONote.repr x + ONote.repr γ = ONote.repr γ) : x + γ = γ := by
+  haveI : NF (x + γ) := inferInstance
+  exact repr_inj.1 (by rw [repr_add]; exact h)
+
+/-- **The general absorbing theorem** (all NF `α, γ`): `Nlog (α+γ) ≤ max (Nlog α)(Nlog γ) + 1`.
+Induct on `α`; compare the two leading exponents via `lt_trichotomy` on `repr e`, `repr eg`.
+`lt`: α is absorbed (`α+γ = γ`).  `gt`: α's head is prepended (`α+γ = oadd e n (a+γ)`), IH on `a`.
+`eq`: the merge — but `a+γ = γ` (absorption, `a`'s exps `< e = eg`), so `α+γ = oadd e (n+ng) ag`
+with the coefficient merge tamed by `clog_add_le`. -/
+theorem Nlog_add_le_max_succ : ∀ (α : ONote), NF α → ∀ (γ : ONote), NF γ →
     Nlog (α + γ) ≤ max (Nlog α) (Nlog γ) + 1 := by
-  sorry
+  intro α
+  induction α with
+  | zero =>
+      intro _ γ _
+      show Nlog γ ≤ max (Nlog ONote.zero) (Nlog γ) + 1
+      have : Nlog γ ≤ max (Nlog ONote.zero) (Nlog γ) := le_max_right _ _
+      omega
+  | oadd e n a _ihe iha =>
+      intro hα γ hγ
+      haveI := hα
+      haveI := hγ
+      haveI hNFe : NF e := hα.fst
+      haveI hNFa : NF a := hα.snd
+      have hab : NFBelow a (ONote.repr e) := hα.snd'
+      cases γ with
+      | zero =>
+          have hz : oadd e n a + ONote.zero = oadd e n a := by
+            apply repr_inj.1
+            rw [repr_add]; simp
+          rw [hz]
+          have : Nlog (oadd e n a) ≤ max (Nlog (oadd e n a)) (Nlog ONote.zero) := le_max_left _ _
+          omega
+      | oadd eg ng ag =>
+          haveI hNFeg : NF eg := hγ.fst
+          haveI hNFag : NF ag := hγ.snd
+          have hagb : NFBelow ag (ONote.repr eg) := hγ.snd'
+          rcases lt_trichotomy (ONote.repr e) (ONote.repr eg) with hlt | heq | hgt
+          · -- `lt`: α absorbed, `α + γ = γ`
+            have hαbelow : NFBelow (oadd e n a) (ONote.repr eg) := NF.below_of_lt hlt hα
+            have hform : oadd e n a + oadd eg ng ag = oadd eg ng ag :=
+              add_eq_right_of_repr
+                (Ordinal.add_of_omega0_opow_le hαbelow.repr_lt (omega0_le_oadd eg ng ag))
+            rw [hform]
+            have : Nlog (oadd eg ng ag) ≤ max (Nlog (oadd e n a)) (Nlog (oadd eg ng ag)) :=
+              le_max_right _ _
+            omega
+          · -- `eq`: merge; `e = eg`, `a + γ = γ`, so `α + γ = oadd e (n+ng) ag`
+            have hee : e = eg := repr_inj.1 heq
+            subst hee
+            haveI : NF (oadd e (n + ng) ag) := NF.oadd hNFe (n + ng) hagb
+            have hform : oadd e n a + oadd e ng ag = oadd e (n + ng) ag := by
+              apply repr_inj.1
+              rw [repr_add]
+              simp only [ONote.repr, PNat.add_coe, Nat.cast_add, mul_add]
+              have hng : (0 : Ordinal) < ((ng : ℕ) : Ordinal) := by exact_mod_cast ng.pos
+              have habsorb : ONote.repr a + ω ^ ONote.repr e * ((ng : ℕ) : Ordinal)
+                  = ω ^ ONote.repr e * ((ng : ℕ) : Ordinal) :=
+                Ordinal.add_of_omega0_opow_le hab.repr_lt (Ordinal.le_mul_left _ hng)
+              rw [add_assoc, ← add_assoc (ONote.repr a), habsorb, ← add_assoc]
+            rw [hform, Nlog_oadd, Nlog_oadd, Nlog_oadd]
+            have hcoeN : (((n + ng : ℕ+) : ℕ)) = ((n : ℕ)) + ((ng : ℕ)) := by
+              push_cast; ring
+            rw [hcoeN]
+            have hcl := clog_add_le (n : ℕ) (ng : ℕ)
+            have e1 : Nlog e + clog (n : ℕ) ≤ max (Nlog e + clog (n : ℕ)) (Nlog a) := le_max_left _ _
+            have e2 : Nlog e + clog (ng : ℕ) ≤ max (Nlog e + clog (ng : ℕ)) (Nlog ag) :=
+              le_max_left _ _
+            have e3 : Nlog ag ≤ max (Nlog e + clog (ng : ℕ)) (Nlog ag) := le_max_right _ _
+            apply max_le
+            · have b1 : Nlog e + clog (n : ℕ)
+                  ≤ max (max (Nlog e + clog (n:ℕ)) (Nlog a)) (max (Nlog e + clog (ng:ℕ)) (Nlog ag)) :=
+                le_trans e1 (le_max_left _ _)
+              have b2 : Nlog e + clog (ng : ℕ)
+                  ≤ max (max (Nlog e + clog (n:ℕ)) (Nlog a)) (max (Nlog e + clog (ng:ℕ)) (Nlog ag)) :=
+                le_trans e2 (le_max_right _ _)
+              omega
+            · have b3 : Nlog ag
+                  ≤ max (max (Nlog e + clog (n:ℕ)) (Nlog a)) (max (Nlog e + clog (ng:ℕ)) (Nlog ag)) :=
+                le_trans e3 (le_max_right _ _)
+              omega
+          · -- `gt`: α's head prepended, `α + γ = oadd e n (a + γ)`
+            have hγbelow : NFBelow (oadd eg ng ag) (ONote.repr e) := NF.below_of_lt hgt hγ
+            haveI hNFaγ : NF (a + oadd eg ng ag) := inferInstance
+            have haγ_below : NFBelow (a + oadd eg ng ag) (ONote.repr e) := by
+              apply NF.below_of_lt' _ hNFaγ
+              rw [repr_add]
+              exact Ordinal.isPrincipal_add_omega0_opow (ONote.repr e) hab.repr_lt hγbelow.repr_lt
+            haveI : NF (oadd e n (a + oadd eg ng ag)) := NF.oadd hNFe n haγ_below
+            have hform : oadd e n a + oadd eg ng ag = oadd e n (a + oadd eg ng ag) := by
+              apply repr_inj.1
+              simp only [repr_add, ONote.repr]
+              exact add_assoc _ _ _
+            rw [hform, Nlog_oadd, Nlog_oadd]
+            have hIH : Nlog (a + oadd eg ng ag) ≤ max (Nlog a) (Nlog (oadd eg ng ag)) + 1 :=
+              iha hNFa (oadd eg ng ag) hγ
+            have hA : Nlog e + clog (n : ℕ) ≤ max (Nlog e + clog (n:ℕ)) (Nlog a) := le_max_left _ _
+            have hAa : Nlog a ≤ max (Nlog e + clog (n:ℕ)) (Nlog a) := le_max_right _ _
+            apply max_le
+            · have : Nlog e + clog (n:ℕ)
+                  ≤ max (max (Nlog e + clog (n:ℕ)) (Nlog a)) (Nlog (oadd eg ng ag)) :=
+                le_trans hA (le_max_left _ _)
+              omega
+            · have hb1 : Nlog a
+                  ≤ max (max (Nlog e + clog (n:ℕ)) (Nlog a)) (Nlog (oadd eg ng ag)) :=
+                le_trans hAa (le_max_left _ _)
+              have hb2 : Nlog (oadd eg ng ag)
+                  ≤ max (max (Nlog e + clog (n:ℕ)) (Nlog a)) (Nlog (oadd eg ng ag)) :=
+                le_max_right _ _
+              omega
 
 /-! ## Node-gate consequence (the (ii)→gate reduction)
 
