@@ -3162,6 +3162,86 @@ theorem falsum_erase :
       · exact Zef2TC.wk ih₁.gate (hreshape φ Γ') ih₁
       · exact Zef2TC.wk ih₂.gate (hreshape (∼φ) Γ') ih₂
 
+/-! ### The TC pass-port kit, part 2 — the ⋏/⋎ principal cut-reduction + ⊤/⊥ principal cuts
+
+Block 12b: the finite mirror of `stepAllω_Zf2_bnd`.  A top-rank cut on `φ ⋏ ψ` reduces to two
+nested LOWER-complexity cuts (on `ψ`, then `φ`) via the block-12a inversions.  No slot change,
+no operator change; ordinal cost = two successors above the ordinal SUM of the premises
+(`osucc (osucc (βφ + βψ))`) — strictly under `collapse α` at the pass's call site via
+`collapse_add_lt` + limit headroom.  The gate is paid by the single slack hypothesis
+`Nlog (βφ + βψ) + 2 ≤ f 0` (both successor gates ride `Nlog_osucc_le`).
+
+The ⋎-principal cut is the SAME lemma with the premises swapped (`∼(φ ⋎ ψ) = ∼φ ⋏ ∼ψ`, and
+`φ ⋎ ψ = ∼(∼φ) ⋎ ∼(∼ψ)` after double-negation cleanup — exactly how `passAux`'s `exs` case
+reuses `all`).  The ⊤/⊥ principal cuts are FREE: `∼⊤ = ⊥` and ⊥ is never principal
+(`falsum_erase`), so the ⊥-side premise already derives `Γ`. -/
+
+/-- **`stepAnd_Zef2TC`** — the ⋏-principal top-rank cut reduction (E–W/Buchholz finite
+reduction).  From `⊢ φ⋏ψ, Γ` and `⊢ ∼φ⋎∼ψ, Γ` (same slot `f`, rank `c`), derive `Γ` at rank
+`c` using two cuts on `ψ` and `φ` (both `complexity < c`), at root `osucc (osucc (βφ + βψ))`. -/
+theorem stepAnd_Zef2TC {φ ψ : Form} {βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
+    {c : ℕ} {Γ : Seq}
+    (hβφNF : βφ.NF) (hβψNF : βψ.NF)
+    (hφc : φ.complexity < c) (hψc : ψ.complexity < c)
+    (hφRead : φ.complexity ≤ f 0) (hψRead : ψ.complexity ≤ f 0)
+    (hgate : Nlog (βφ + βψ) + 2 ≤ f 0)
+    (D₁ : Zef2TC βφ e H f c (insert (φ ⋏ ψ) Γ))
+    (D₂ : Zef2TC βψ e H f c (insert (∼φ ⋎ ∼ψ) Γ)) :
+    Zef2TC (osucc (osucc (βφ + βψ))) e H f c Γ := by
+  have hσNF : (βφ + βψ).NF := ONote.add_nf βφ βψ
+  have hα₁NF : (osucc (βφ + βψ)).NF := osucc_NF hσNF
+  have hα₂NF : (osucc (osucc (βφ + βψ))).NF := osucc_NF hα₁NF
+  have hβφ1 : βφ < osucc (βφ + βψ) :=
+    lt_of_le_of_lt (Zekd.le_add_right_NF hβφNF hβψNF) (Zekd.lt_osucc hσNF)
+  have hβψ1 : βψ < osucc (βφ + βψ) :=
+    lt_of_le_of_lt (Zekd.le_add_left_NF hβφNF hβψNF) (Zekd.lt_osucc hσNF)
+  have h12 : osucc (βφ + βψ) < osucc (osucc (βφ + βψ)) := Zekd.lt_osucc hα₁NF
+  have hβφ2 : βφ < osucc (osucc (βφ + βψ)) := lt_trans hβφ1 h12
+  have hα₁N : Nlog (osucc (βφ + βψ)) ≤ f 0 :=
+    le_trans (Nlog_osucc_le hσNF) (by omega)
+  have hα₂N : Nlog (osucc (osucc (βφ + βψ))) ≤ f 0 := by
+    have h1 := Nlog_osucc_le hα₁NF
+    have h2 := Nlog_osucc_le hσNF
+    omega
+  -- left ⋏-inversion → `⊢ φ, Γ` at `βφ`
+  have PL : Zef2TC βφ e H f c (insert φ Γ) := by
+    have A := and_inversion_left (χ₁ := φ) (χ₂ := ψ) D₁
+    rw [Finset.erase_insert_eq_erase] at A
+    exact Zef2TC.wk A.gate
+      (Finset.insert_subset_insert _ (Finset.erase_subset _ _)) A
+  -- right ⋏-inversion → `⊢ ψ, ∼φ, Γ` at `βφ`
+  have PR : Zef2TC βφ e H f c (insert ψ (insert (∼φ) Γ)) := by
+    have B := and_inversion_right (χ₁ := φ) (χ₂ := ψ) D₁
+    rw [Finset.erase_insert_eq_erase] at B
+    refine Zef2TC.wk B.gate ?_ B
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
+    tauto
+  -- ⋎-inversion → `⊢ ∼ψ, ∼φ, Γ` at `βψ`
+  have PN : Zef2TC βψ e H f c (insert (∼ψ) (insert (∼φ) Γ)) := by
+    have C := or_inversion (χ₁ := ∼φ) (χ₂ := ∼ψ) D₂
+    rw [Finset.erase_insert_eq_erase] at C
+    refine Zef2TC.wk C.gate ?_ C
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
+    tauto
+  -- inner cut on `ψ` → `⊢ ∼φ, Γ` at `osucc (βφ + βψ)`
+  have cutψ : Zef2TC (osucc (βφ + βψ)) e H f c (insert (∼φ) Γ) :=
+    Zef2TC.cut hα₁N ψ hψc hψRead hβφ1 hβψ1 hβφNF hβψNF hα₁NF
+      (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) PR PN
+  -- outer cut on `φ` → `⊢ Γ`
+  exact Zef2TC.cut hα₂N φ hφc hφRead hβφ2 h12 hβφNF hα₁NF hα₂NF
+    (Cl_of_NF hβφNF) (Cl_of_NF hα₁NF) PL cutψ
+
+/-- **`stepVerum_Zef2TC`** — the ⊤-principal top-rank cut is FREE: `∼⊤ = ⊥` and ⊥ is never
+principal, so `falsum_erase` on the ⊥-side premise already derives `Γ` at ITS ordinal `βψ`. -/
+theorem stepVerum_Zef2TC {βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (D₂ : Zef2TC βψ e H f c (insert (⊥ : Form) Γ)) :
+    Zef2TC βψ e H f c Γ := by
+  have C := falsum_erase D₂
+  rw [Finset.erase_insert_eq_erase] at C
+  exact Zef2TC.wk C.gate (Finset.erase_subset _ _) C
+
 end GoodsteinPA.E1EmbeddingGrind
 
 #print axioms GoodsteinPA.E1EmbeddingGrind.term_val_le_Gexp_iter
@@ -3189,4 +3269,6 @@ end GoodsteinPA.E1EmbeddingGrind
 #print axioms GoodsteinPA.E1EmbeddingGrind.and_inversion_left
 #print axioms GoodsteinPA.E1EmbeddingGrind.and_inversion_right
 #print axioms GoodsteinPA.E1EmbeddingGrind.or_inversion
+#print axioms GoodsteinPA.E1EmbeddingGrind.stepAnd_Zef2TC
+#print axioms GoodsteinPA.E1EmbeddingGrind.stepVerum_Zef2TC
 #print axioms GoodsteinPA.E1EmbeddingGrind.falsum_erase
