@@ -1,3 +1,13 @@
+# PENDING WORK
+
+## lap 198 (SERIES-3, Lane N COMPLETE) — pass LANDED; next = D-3
+
+- Rungs P + R are REAL (`cutElimPass_Zef2`, `rankToZero_Zef2` = standard triple); norm swap
+  `ewN → Nlog` executed in src; see `HANDOFF-2026-07-03-lap198.md` + Series-3 ledger blocks 1-3.
+- NEXT: **D-3** — R-4′ restatement of `readoff_delta0_Zef2` (bound `∃ n ≤ ewIter f α 0`),
+  retire `readoffD_trapped` (`OperatorZef2.lean:~1369`, the sole remaining sorry there),
+  over the Nlog calculus. Then E-0 (rung-E DRAFT + Ax2-need probe, wip), E-1, W-1.
+
 # Pending work — open obligations & attack paths
 
 ## LAP 197 (SERIES-2 D-1 CLOSED) — `Nlog_finite_fiber` PROVEN; probe sorry-free; NF restriction shown necessary
