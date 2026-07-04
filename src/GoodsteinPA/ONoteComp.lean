@@ -63,7 +63,7 @@ theorem encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
 theorem encode_decode_eq (n : ℕ) :
     Encodable.encode (Encodable.decode n : Option ONote) = n + 1 := by
   rw [ decode_eq ];
-  simp +decide [ Encodable.encode, encode_eq, encodeONote_decodeONote ]
+  simp +decide [ Encodable.encode, encodeONote_decodeONote ]
 
 theorem primrec_encode_decode :
     Nat.Primrec (fun n => Encodable.encode (Encodable.decode n : Option ONote)) := by
@@ -223,7 +223,7 @@ theorem computable_cmpStep : Computable cmpStep := by
 theorem cmpStep_spec (m : ℕ) : cmpStep ((List.range m).map Cnat) = some (Cnat m) := by
   unfold cmpStep;
   simp +decide [ cmpIdxE, cmpIdxA, cmpNV ];
-  rcases n : Nat.unpair m with ⟨ x, y ⟩ ; rcases x with ( _ | x ) <;> rcases y with ( _ | y ) <;> simp +decide [ n ];
+  rcases n : Nat.unpair m with ⟨ x, y ⟩ ; rcases x with ( _ | x ) <;> rcases y with ( _ | y ) <;> simp +decide;
   · rw [ show m = 0 by rw [ ← Nat.pair_unpair m, n ] ; rfl ] ; simp +decide [ Cnat ] ;
     native_decide;
   · unfold Cnat; simp +decide [ n ] ;
@@ -415,8 +415,7 @@ theorem enc_strictMono : StrictMono enc := by
     have h2 : (natCode a) = (Encodable.equivRangeEncode NONote).symm
         (Nat.Subtype.ofNat (Set.range (Encodable.encode : NONote → ℕ)) a) := by
       show Denumerable.ofNat NONote a = _
-      simp only [Denumerable.ofEquiv_ofNat,
-        Nat.Subtype.denumerable, Denumerable.ofNat_nat, Equiv.coe_fn_symm_mk]
+      simp only [Denumerable.ofEquiv_ofNat, Denumerable.ofNat_nat, Equiv.coe_fn_symm_mk]
     unfold enc
     rw [h2]
     exact congrArg Subtype.val

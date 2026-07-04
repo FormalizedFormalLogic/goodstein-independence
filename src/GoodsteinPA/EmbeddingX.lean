@@ -66,8 +66,8 @@ def XFreeForm {ξ n} : Semiformula LX ξ n → Prop :=
   induction φ using Semiformula.rec' generalizing ζ m with
   | hverum => simp
   | hfalsum => simp
-  | hrel r v => simp [Semiformula.rew_rel, Function.comp_def]
-  | hnrel r v => simp [Semiformula.rew_nrel, Function.comp_def]
+  | hrel r v => simp [Function.comp_def]
+  | hnrel r v => simp [Function.comp_def]
   | hand φ ψ ihφ ihψ => simp [ihφ, ihψ]
   | hor φ ψ ihφ ihψ => simp [ihφ, ihψ]
   | hall φ ih => simpa using ih _
@@ -775,10 +775,9 @@ lemma relExtBody_subst_eq (v : Fin (1 + 1) → ℕ) :
       = (Semiformula.nrel Language.Eq.eq ![nm (v 0), nm (v 1)] ⋎ (⊥ : Form LX)) ⋎
           (Semiformula.nrel Xsym ![nm (v 0)] ⋎ Semiformula.rel Xsym ![nm (v 1)]) := by
   unfold relExtBody
-  simp only [Matrix.conj, Matrix.vecTail, Function.comp, Semiformula.Operator.operator,
+  simp only [Matrix.conj, Semiformula.Operator.operator,
     Semiformula.Operator.Eq.sentence_eq]
-  simp [Semiformula.imp_eq, Semiformula.rew_rel, Semiformula.rew_nrel, Fin.addCast, Fin.addNat,
-    ← TransitiveRewriting.comp_app, Rew.comp_app, Function.comp_def]
+  simp [Semiformula.imp_eq, Fin.addCast, Fin.addNat, Function.comp_def]
   refine ⟨?_, ?_, ?_⟩
   · funext i
     refine i.cases ?_ (fun j => j.cases ?_ (fun k => k.elim0)) <;>

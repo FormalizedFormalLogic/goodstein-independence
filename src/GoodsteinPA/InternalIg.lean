@@ -437,6 +437,7 @@ memory `definability-aesop-depth-blowup`). The remaining links (`ig0`/`ig`/`igtT
 need an `ite`-definability lemma + the `ig` meta-recursion, deferred (`PENDING_WORK`). -/
 
 open LO.FirstOrder.Arithmetic.HierarchySymbol in
+omit [V ⊧ₘ* 𝗜𝚺₁] in
 /-- **`ite`-definability** (the key unlock for the `ig`/`bbeta` chain — Foundation has no direct
 helper). `fun v ↦ if P v then f v else g v` is definable from a Δ-definable `P` (both `P` and `¬P`
 definable) and definable `f`,`g`, via the graph disjunction `z = ite ↔ (P ∧ z=f) ∨ (¬P ∧ z=g)`. -/

@@ -56,12 +56,12 @@ successor term `succInd`'s step uses. -/
 theorem lMap_succT {ξ} :
     Semiterm.lMap Φ (‘(#0 + 1)’ : Semiterm ℒₒᵣ ξ 1) = (‘(#0 + 1)’ : Semiterm LX ξ 1) := by
   simp only [Semiterm.Operator.operator, Semiterm.Operator.Add.term_eq, Rew.func,
-    Semiterm.lMap_func, Rew.emb_bvar, Rew.subst_bvar]
+    Semiterm.lMap_func]
   refine congrArg (Semiterm.func Language.Add.add) (funext fun i => ?_)
   refine i.cases ?_ (fun j => ?_)
   · simp
   · refine j.cases ?_ (fun k => k.elim0)
-    simp only [Matrix.cons_val_one, Fin.succ_zero_eq_one]
+    simp only [Fin.succ_zero_eq_one]
     exact lMap_one_const
 
 set_option maxHeartbeats 1600000 in
@@ -171,7 +171,7 @@ lemma lMap_relExt {k} (r : (ℒₒᵣ : Language).Rel k) :
   cases r <;>
     simp [Theory.Eq.relExt, Semiformula.Operator.eq_def, Semiformula.lMap_rel, Semiterm.lMap_bvar,
       Matrix.conj, Matrix.vecTail, Function.comp, lx_eq, phi_rel, Matrix.fun_eq_vec_two,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+      Matrix.cons_val_zero, Matrix.cons_val_one]
 
 set_option maxHeartbeats 4000000 in
 /-- `lMap Φ (Eq.funcExt f) = Eq.funcExt (Φ.func f)`. -/
@@ -180,7 +180,7 @@ lemma lMap_funcExt {k} (f : (ℒₒᵣ : Language).Func k) :
   cases f <;>
     simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def, Semiformula.lMap_rel, Semiterm.lMap_func,
       Semiterm.lMap_bvar, Matrix.conj, Matrix.vecTail, Function.comp_def, lx_eq, phi_rel, phi_func,
-      Matrix.fun_eq_vec_two, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
+      Matrix.fun_eq_vec_two, Matrix.cons_val_zero, Matrix.cons_val_one]
 
 /-- **`𝗘𝗤(LX) ⊆ paLX`.** Each `𝗘𝗤(LX)` axiom is either the `lMap Φ`-image of an `𝗘𝗤(ℒₒᵣ) ⊆ 𝗣𝗔⁻`
 axiom (refl/symm/trans/funcExt/relExt over ℒₒᵣ symbols — `paLX`'s first summand) or `relExt Xsym`

@@ -208,7 +208,7 @@ theorem satpos_subset {γ : Ordinal.{0}} {Δ Δ' : Seq LX} (h : Δ ⊆ Δ') :
 
 /-- `(X #0)/[nm n] = X (nm n)`. -/
 theorem xat_subst (n : ℕ) : (Xat (#0 : Semiterm LX ℕ 1))/[nm n] = Xat (nm n) := by
-  simp [Xat, Semiformula.rew_rel, Matrix.constant_eq_singleton, Function.comp_def]
+  simp [Xat, Matrix.constant_eq_singleton, Function.comp_def]
 
 /-- The `¬Prog` body `∼(hyp 🡒 X #0)` substitutes to `hyp/[nm n] ⋏ ¬X(nm n)` — the two Buchholz
 case-2 conjuncts (the X-positive `∀y≺n Xy` and the bounded negative atom `¬Xn`). -/

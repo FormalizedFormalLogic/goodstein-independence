@@ -1332,8 +1332,8 @@ def spineHead : ∀ {n}, SyntacticSemiformula ℒₒᵣ n → Option (Bool × ((
 /-- Rewriting (in particular substitution `φ/[nm n]`) preserves the spine head. -/
 theorem spineHead_rew : ∀ {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : SyntacticSemiformula ℒₒᵣ n₁),
     spineHead (om ▹ φ) = spineHead φ
-  | _, _, om, Semiformula.rel r v => by simp [Semiformula.rew_rel, spineHead, Function.comp_def]
-  | _, _, om, Semiformula.nrel r v => by simp [Semiformula.rew_nrel, spineHead, Function.comp_def]
+  | _, _, om, Semiformula.rel r v => by simp [spineHead, Function.comp_def]
+  | _, _, om, Semiformula.nrel r v => by simp [spineHead, Function.comp_def]
   | _, _, om, Semiformula.all φ => by
       rw [show (Semiformula.all φ) = ∀⁰ φ from rfl, Rewriting.app_all]
       simpa [spineHead] using spineHead_rew om.q φ

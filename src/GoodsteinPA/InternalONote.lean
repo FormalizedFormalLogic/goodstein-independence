@@ -1041,7 +1041,7 @@ lemma cmpV_eq_zero {a b : V} : cmpV a b = 0 ↔ a < b := by
   unfold cmpV
   by_cases h : a < b
   · simp [h]
-  · simp only [h, if_false]; by_cases h2 : a = b <;> simp [h, h2]
+  · simp only [h]; by_cases h2 : a = b <;> simp [h2]
 
 lemma cmpV_eq_one {a b : V} : cmpV a b = 1 ↔ a = b := by
   unfold cmpV
@@ -1173,7 +1173,7 @@ private def MONOstmt (b o p : V) : Prop :=
 private def Combined (b w : V) : Prop :=
   (∀ c ≤ w, TBstmt b c) ∧ (∀ o ≤ w, ∀ p ≤ w, MONOstmt b o p)
 
-theorem evalNat_reflect_combined {b : V} (hb : 1 ≤ b) : ∀ w, Combined b w := by
+theorem evalNat_reflect_combined {b : V} (_ : 1 ≤ b) : ∀ w, Combined b w := by
   have hB1 : (1 : V) ≤ b + 1 := by simp
   intro w
   induction w using ISigma1.sigma1_order_induction
@@ -1411,8 +1411,8 @@ theorem ineq6_step_internal {k bk bk1 : V}
     (hck : iCanon (k + 1) bk) (hck1 : iCanon (k + 2) bk1)
     (hdesc : icmp bk1 bk = 0) {m : V} (hm : ievalNat (k + 1) bk ≤ m) :
     ievalNat (k + 2) bk1 ≤ ibump (k + 2) m - 1 := by
-  have hk1 : (1 : V) ≤ k + 1 := by simpa using add_le_add_right (zero_le k) (1 : V)
-  have hk2 : (2 : V) ≤ k + 2 := by simpa using add_le_add_right (zero_le k) (2 : V)
+  have hk1 : (1 : V) ≤ k + 1 := by simp
+  have hk2 : (2 : V) ≤ k + 2 := by simp
   have h121 : (1 : V) ≤ k + 2 := le_trans (by simp) hk2
   have hk12 : k + 1 + 1 = k + 2 := by rw [add_assoc, one_add_one_eq_two]
   -- `iCanon (k+1) bk → iCanon (k+2) bk` (max coefficient ≤ k+1 ≤ k+2)
@@ -1481,7 +1481,7 @@ instance iaddNext_defined : 𝚺₁-Function₃ (iaddNext : V → V → V → V)
     · by_cases h0 : icmp (ocExp (v 2)) (ocExp (v 1)) = 0
       · simp [hc, hb, h0]
       · by_cases h1 : icmp (ocExp (v 2)) (ocExp (v 1)) = 1
-        · simp [hc, hb, h0, h1]
+        · simp [hc, hb, h1]
         · simp [hc, hb, h0, h1]
 
 instance iaddNext_definable : 𝚺₁-Function₃ (iaddNext : V → V → V → V) := iaddNext_defined.to_definable
@@ -1893,7 +1893,7 @@ lemma icmp_iadd_iomul_finite (α p q : V) :
 gives a strictly `≺`-larger code, so `ω·α + p ≺ ω·α + (p+1)`. -/
 lemma icmp_betaTail_within (α p : V) :
     icmp (iadd (iomul α) (ocOadd 0 p 0)) (iadd (iomul α) (ocOadd 0 (p + 1) 0)) = 0 := by
-  rw [icmp_iadd_iomul_finite]; simp [cmpV, lt_succ_iff_le]
+  rw [icmp_iadd_iomul_finite]; simp [cmpV]
 
 /-! ### `1 + e` order-preservation (toward `icmp_iomul`, the boundary descent) -/
 

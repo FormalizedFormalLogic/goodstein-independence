@@ -713,7 +713,7 @@ lemma iAbove_zero_iomul : ∀ a : V, a ≠ 0 → iAbove 0 (iomul a) := by
 /-- The `MinExpGe` threshold iterate `(1+·)^[k] 0` is NF at every step (`isNF_iadd_one`). -/
 lemma isNF_oadd1iter (k : ℕ) : isNF ((iadd (ocOadd 0 1 0))^[k] (0 : V)) := by
   induction k with
-  | zero => simpa using isNF_zero
+  | zero => simp
   | succ k ih => rw [Function.iterate_succ_apply']; exact isNF_iadd_one ih
 
 /-- **`MinExpGe` meta-iterate** (internal `Grz.MinExpGe_bigMul`): `ω^(k+1)·β` has every leading

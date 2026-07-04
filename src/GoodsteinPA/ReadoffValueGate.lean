@@ -335,8 +335,7 @@ theorem gate_extract {t : Semiterm ℒₒᵣ ℕ 1} (hpos : t.Positive)
     {φ : SyntacticSemiformula ℒₒᵣ 1} {k : ℕ}
     (h : ¬ atomTrue (((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ)/[nm k])) :
     k < tvB t 0 ∧ ¬ atomTrue (φ/[nm k]) := by
-  simp [atomTrue, Semiformula.imp_eq, Semiformula.Operator.lt_def,
-    Matrix.constant_eq_singleton] at h
+  simp [atomTrue, Semiformula.imp_eq, Semiformula.Operator.lt_def] at h
   refine ⟨?_, by
     simpa [atomTrue, Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton]
       using h.2⟩

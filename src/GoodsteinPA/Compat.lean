@@ -103,7 +103,7 @@ variable {L : Language} {ξ : Type*} {M : Type*} {n : ℕ}
   (s : Structure L M) (e : Fin n → M) (ε : ξ → M)
 
 @[simp] lemma eval_rel₀ {r : L.Rel 0} : gEval s e ε (Semiformula.rel r ![]) ↔ s.rel r ![] := by
-  simp [gEval, gVal, Semiformula.eval_rel, Matrix.empty_eq]
+  simp [gEval, Semiformula.eval_rel, Matrix.empty_eq]
 
 @[simp] lemma eval_rel₁ {r : L.Rel 1} (t : Semiterm L ξ n) :
     gEval s e ε (Semiformula.rel r ![t]) ↔ s.rel r ![gVal s e ε t] := by
@@ -118,7 +118,7 @@ variable {L : Language} {ξ : Type*} {M : Type*} {n : ℕ}
   funext i; cases' i using Fin.cases with i <;> simp
 
 @[simp] lemma eval_nrel₀ {r : L.Rel 0} : gEval s e ε (Semiformula.nrel r ![]) ↔ ¬s.rel r ![] := by
-  simp [gEval, gVal, Semiformula.eval_nrel, Matrix.empty_eq]
+  simp [gEval, Semiformula.eval_nrel, Matrix.empty_eq]
 
 @[simp] lemma eval_nrel₁ {r : L.Rel 1} (t : Semiterm L ξ n) :
     gEval s e ε (Semiformula.nrel r ![t]) ↔ ¬s.rel r ![gVal s e ε t] := by

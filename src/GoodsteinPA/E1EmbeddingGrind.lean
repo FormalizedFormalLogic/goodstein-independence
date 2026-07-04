@@ -1755,8 +1755,8 @@ theorem ExFree.rew : ∀ {n₁ : ℕ} (ψ : SyntacticSemiformula ℒₒᵣ n₁)
   induction ψ using Semiformula.rec' with
   | hverum => intro _ n₂ ω; simp
   | hfalsum => intro _ n₂ ω; simp
-  | hrel r v => intro _ n₂ ω; simp [Semiformula.rew_rel, Function.comp_def]
-  | hnrel r v => intro _ n₂ ω; simp [Semiformula.rew_nrel, Function.comp_def]
+  | hrel r v => intro _ n₂ ω; simp [Function.comp_def]
+  | hnrel r v => intro _ n₂ ω; simp [Function.comp_def]
   | hand φ ψ ihφ ihψ =>
       intro h n₂ ω
       simp only [LogicalConnective.HomClass.map_and, exFree_and]
@@ -1927,8 +1927,8 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     rw [asg_emb_fix]
     simp only [Arithmetic.PeanoMinus.Axiom.addEqOfLt, Semiformula.Operator.eq_def,
       Semiformula.Operator.lt_def, Semiformula.imp_eq]
-    simp [Semiformula.rew_rel, Semiformula.rew_nrel, Function.comp_def]
-    constructor <;> simp [Matrix.comp_vecCons, Rew.func, Matrix.empty_eq]
+    simp [Function.comp_def]
+    constructor <;> simp [Matrix.comp_vecCons]
   have hmem := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) hΓ
   rw [himg] at hmem
   set M : SyntacticSemiformula ℒₒᵣ 2 :=
@@ -1965,8 +1965,8 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
             ⋎ (∃⁰ ((Rew.subst (nm b :> ![nm a])).q
                 ▹ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]))) := by
         rw [embedding_subst_q_cons_app]
-        simp [hM, Semiformula.rew_rel, Semiformula.rew_nrel, Matrix.comp_vecCons,
-          Matrix.empty_eq, Function.comp_def, Matrix.constant_eq_singleton]
+        simp [hM, Matrix.comp_vecCons,
+          Function.comp_def, Matrix.constant_eq_singleton]
       rw [hsubB]
       set A : SyntacticFormula ℒₒᵣ := ∼(Semiformula.rel Language.LT.lt ![nm a, nm b]) with hA
       set Eb : SyntacticSemiformula ℒₒᵣ 1 := (Rew.subst (nm b :> ![nm a])).q
@@ -1980,13 +1980,12 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
               = Semiformula.rel Language.Eq.eq
                   ![Semiterm.func Language.Add.add ![nm a, nm (b - a)], nm b] := by
             rw [hE, embedding_subst_q_cons_app]
-            simp [Semiformula.rew_rel, Rew.func, Matrix.comp_vecCons, Matrix.empty_eq,
+            simp [Rew.func, Matrix.comp_vecCons,
               Semiterm.Operator.operator, Semiterm.Operator.Add.term_eq, Function.comp_def,
               Matrix.constant_eq_singleton]
           have htrue : atomTrue (Semiformula.rel Language.Eq.eq
               ![Semiterm.func Language.Add.add ![nm a, nm (b - a)], nm b]) := by
-            simp [atomTrue, Semiformula.eval_rel, Semiterm.val_func, Matrix.empty_eq,
-              Embedding.valm_nm, Function.comp_def]
+            simp [atomTrue, Semiformula.eval_rel, Semiterm.val_func, Matrix.empty_eq, Function.comp_def]
             omega
           have hleaf : Zef2TC (ONote.ofNat 1) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
               (rel1 (rel1 f a) b) 0 (insert (Eb/[nm (b - a)]) Δ) := by
@@ -2002,7 +2001,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
             (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))] at hexI
         · -- trueNrel leaf on ¬(a < b)
           have htrue : atomTrue (Semiformula.nrel Language.LT.lt ![nm a, nm b]) := by
-            simp [atomTrue, Semiformula.eval_nrel, Matrix.empty_eq, Embedding.valm_nm, Function.comp_def]
+            simp [atomTrue, Semiformula.eval_nrel, Matrix.empty_eq, Function.comp_def]
             omega
           exact Zef2TC.trueNrel (hgb 2 (by omega)) _ _ htrue
             (by
@@ -2036,113 +2035,87 @@ theorem budgetedEmbedsV3_axm_PAminus {Γ : Finset (SyntacticFormula ℒₒᵣ)}
   | equal φ hφ =>
       cases hφ with
       | refl => exact budgetedEmbedsV3_of_exFree_true _ (by
-          simp [Theory.Eq.refl, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-            Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq]) hmod hΓ
+          simp [Theory.Eq.refl, Semiformula.Operator.eq_def]) hmod hΓ
       | symm => exact budgetedEmbedsV3_of_exFree_true _ (by
-          simp [Theory.Eq.symm, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-            Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq]) hmod hΓ
+          simp [Theory.Eq.symm, Semiformula.Operator.eq_def, Semiformula.imp_eq]) hmod hΓ
       | trans => exact budgetedEmbedsV3_of_exFree_true _ (by
-          simp [Theory.Eq.trans, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-            Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq]) hmod hΓ
+          simp [Theory.Eq.trans, Semiformula.Operator.eq_def, Semiformula.imp_eq]) hmod hΓ
       | funcExt f =>
           cases f with
           | zero => exact budgetedEmbedsV3_of_exFree_true _ (by
-              simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-                Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq, Matrix.conj,
-                Semiformula.rew_rel, Semiformula.rew_nrel, Matrix.vecTail, Matrix.vecHead,
+              simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def,
+                Semiformula.imp_eq, Matrix.conj,
                 Matrix.comp_vecCons, Function.comp_def]) hmod hΓ
           | one => exact budgetedEmbedsV3_of_exFree_true _ (by
-              simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-                Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq, Matrix.conj,
-                Semiformula.rew_rel, Semiformula.rew_nrel, Matrix.vecTail, Matrix.vecHead,
+              simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def,
+                Semiformula.imp_eq, Matrix.conj,
                 Matrix.comp_vecCons, Function.comp_def]) hmod hΓ
           | add => exact budgetedEmbedsV3_of_exFree_true _ (by
-              simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-                Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq, Matrix.conj,
-                Semiformula.rew_rel, Semiformula.rew_nrel, Matrix.vecTail, Matrix.vecHead,
+              simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def,
+                Semiformula.imp_eq, Matrix.conj,
+                Matrix.vecTail,
                 Matrix.comp_vecCons, Function.comp_def]) hmod hΓ
           | mul => exact budgetedEmbedsV3_of_exFree_true _ (by
-              simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-                Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq, Matrix.conj,
-                Semiformula.rew_rel, Semiformula.rew_nrel, Matrix.vecTail, Matrix.vecHead,
+              simp [Theory.Eq.funcExt, Semiformula.Operator.eq_def,
+                Semiformula.imp_eq, Matrix.conj,
+                Matrix.vecTail,
                 Matrix.comp_vecCons, Function.comp_def]) hmod hΓ
       | relExt r =>
           cases r with
           | eq => exact budgetedEmbedsV3_of_exFree_true _ (by
-              simp [Theory.Eq.relExt, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-                Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq, Matrix.conj,
-                Semiformula.rew_rel, Semiformula.rew_nrel, Matrix.vecTail, Matrix.vecHead,
+              simp [Theory.Eq.relExt, Semiformula.Operator.eq_def, Semiformula.imp_eq, Matrix.conj,
+                Matrix.vecTail,
                 Matrix.comp_vecCons, Function.comp_def]) hmod hΓ
           | lt => exact budgetedEmbedsV3_of_exFree_true _ (by
-              simp [Theory.Eq.relExt, Semiformula.Operator.eq_def, Semiformula.Operator.lt_def,
-                Semiformula.Operator.LE.def_of_Eq_of_LT, Semiformula.imp_eq, Matrix.conj,
-                Semiformula.rew_rel, Semiformula.rew_nrel, Matrix.vecTail, Matrix.vecHead,
+              simp [Theory.Eq.relExt, Semiformula.Operator.eq_def,
+                Semiformula.imp_eq, Matrix.conj,
+                Matrix.vecTail,
                 Matrix.comp_vecCons, Function.comp_def]) hmod hΓ
   | addZero => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.addZero, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.addZero, Semiformula.Operator.eq_def]) hmod hΓ
   | addAssoc => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.addAssoc, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.addAssoc, Semiformula.Operator.eq_def]) hmod hΓ
   | addComm => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.addComm, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.addComm, Semiformula.Operator.eq_def]) hmod hΓ
   | addEqOfLt => exact budgetedEmbedsV3_addEqOfLt hΓ
   | zeroLe => exact budgetedEmbedsV3_of_exFree_true _ (by
       simp [Arithmetic.PeanoMinus.Axiom.zeroLe, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT]) hmod hΓ
   | zeroLtOne => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.zeroLtOne, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.zeroLtOne,
+        Semiformula.Operator.lt_def]) hmod hΓ
   | oneLeOfZeroLt => exact budgetedEmbedsV3_of_exFree_true _ (by
       simp [Arithmetic.PeanoMinus.Axiom.oneLeOfZeroLt, Semiformula.Operator.eq_def,
         Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
         Semiformula.imp_eq]) hmod hΓ
   | addLtAdd => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.addLtAdd, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
+      simp [Arithmetic.PeanoMinus.Axiom.addLtAdd,
+        Semiformula.Operator.lt_def,
         Semiformula.imp_eq]) hmod hΓ
   | mulZero => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.mulZero, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.mulZero, Semiformula.Operator.eq_def]) hmod hΓ
   | mulOne => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.mulOne, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.mulOne, Semiformula.Operator.eq_def]) hmod hΓ
   | mulAssoc => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.mulAssoc, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.mulAssoc, Semiformula.Operator.eq_def]) hmod hΓ
   | mulComm => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.mulComm, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.mulComm, Semiformula.Operator.eq_def]) hmod hΓ
   | mulLtMul => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.mulLtMul, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
+      simp [Arithmetic.PeanoMinus.Axiom.mulLtMul,
+        Semiformula.Operator.lt_def,
         Semiformula.imp_eq]) hmod hΓ
   | distr => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.distr, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.distr, Semiformula.Operator.eq_def]) hmod hΓ
   | ltIrrefl => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.ltIrrefl, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+      simp [Arithmetic.PeanoMinus.Axiom.ltIrrefl,
+        Semiformula.Operator.lt_def]) hmod hΓ
   | ltTrans => exact budgetedEmbedsV3_of_exFree_true _ (by
-      simp [Arithmetic.PeanoMinus.Axiom.ltTrans, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
+      simp [Arithmetic.PeanoMinus.Axiom.ltTrans,
+        Semiformula.Operator.lt_def,
         Semiformula.imp_eq]) hmod hΓ
   | ltTri => exact budgetedEmbedsV3_of_exFree_true _ (by
       simp [Arithmetic.PeanoMinus.Axiom.ltTri, Semiformula.Operator.eq_def,
-        Semiformula.Operator.lt_def, Semiformula.Operator.LE.def_of_Eq_of_LT,
-        Semiformula.imp_eq]) hmod hΓ
+        Semiformula.Operator.lt_def]) hmod hΓ
 
 /-! ### The induction-schema kit, part 1 — `osuccs` + the ∀-closure peel -/
 
@@ -2471,8 +2444,7 @@ noncomputable def succTerm (n : ℕ) : SyntacticTerm ℒₒᵣ :=
   Rew.subst ![nm n] (‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1)
 
 theorem stdClosedVal_succTerm (n : ℕ) : stdClosedVal (succTerm n) = n + 1 := by
-  simp [succTerm, stdClosedVal, Semiterm.val_operator₂, Semiterm.val_operator₀,
-    Matrix.empty_eq, nm]
+  simp [succTerm, stdClosedVal, Matrix.empty_eq, nm]
 
 /-- **The succInd instance shape**: any (rewritten) induction-axiom instance
 `succInd ψw` is `Zef2TC`-derivable at the FIXED structural root `osucc² ω` — the ω-root
@@ -3871,7 +3843,7 @@ theorem passAuxTC (c : ℕ) {e : ONote} (heNF : e.NF) :
             have hcR := hcutRead
             have hcm := hcompl
             have hcn := hc
-            simp only [Semiformula.complexity_and, Semiformula.complexity_and'] at hcR hcm hcn
+            simp only [Semiformula.complexity_and'] at hcR hcm hcn
             have hφ₁c : φ₁.complexity < c := by omega
             have hφ₂c : φ₂.complexity < c := by omega
             have hread₁ : φ₁.complexity ≤ ewIter f α 0 := by omega
@@ -3907,7 +3879,7 @@ theorem passAuxTC (c : ℕ) {e : ONote} (heNF : e.NF) :
             have hcR := hcutRead
             have hcm := hcompl
             have hcn := hc
-            simp only [Semiformula.complexity_or, Semiformula.complexity_or'] at hcR hcm hcn
+            simp only [Semiformula.complexity_or'] at hcR hcm hcn
             have hn₁ : (∼φ₁ : Form).complexity = φ₁.complexity := Semiformula.complexity_neg φ₁
             have hn₂ : (∼φ₂ : Form).complexity = φ₂.complexity := Semiformula.complexity_neg φ₂
             have hφ₁c : (∼φ₁ : Form).complexity < c := by omega
@@ -4394,7 +4366,7 @@ theorem readoffVTC_core {φ : SyntacticSemiformula ℒₒᵣ 1} {f₀ P : ℕ �
           (le_trans hk₀P (le_max_right _ _))
       · -- gate: Nlog (β k₀) ≤ (rel1 g k₀) 0 = f₀ (max j k₀) ≤ S (S V)
         have hgpr : Nlog (β k₀) ≤ (rel1 g k₀) 0 := Zef2TC.gate (dpr k₀)
-        have hg0 : (rel1 g k₀) 0 = f₀ (max j k₀) := by simp [hg, rel1_rel1, rel1]
+        have hg0 : (rel1 g k₀) 0 = f₀ (max j k₀) := by simp [hg, rel1]
         have harg : max j k₀ ≤ Sslot f₀ P V :=
           max_le (le_trans hjV (hS_infl V)) (le_trans hk₀P (le_max_right _ _))
         calc Nlog (β k₀) ≤ f₀ (max j k₀) := hg0 ▸ hgpr
@@ -4624,8 +4596,7 @@ theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : SyntacticSemiformula ℒ�
           : Semisentence ℒₒᵣ 2))) : SyntacticSemiformula ℒₒᵣ 1)/[nm n]) := h
   apply GoodsteinPA.Dom.goodsteinLength_le (m := m) (N := n)
   rw [← GoodsteinPA.InternalPow.igoodstein_nat]
-  simp only [atomTrue, Semiformula.eval_substs, Semiformula.eval_rew, Semiformula.eval_emb,
-    Function.comp_def] at h'
+  simp only [atomTrue, Semiformula.eval_rew, Function.comp_def] at h'
   have hcast : ∀ (E : Fin 3 → ℕ) (ε₁ ε₂ : Empty → ℕ),
       GoodsteinPA.Compat.gEval (Arithmetic.standardModel ℕ) E ε₁
         (↑(LO.FirstOrder.Arithmetic.igoodsteinDef)) →
@@ -4648,7 +4619,7 @@ theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : SyntacticSemiformula ℒ�
     simp [Semiterm.val_bShift', Matrix.empty_eq, valm_nm]
   simp at hkey
   rw [hval] at hkey
-  simpa using hkey.symm 
+  simpa using hkey.symm
 
 /-! ### Lap 210 (SERIES-4 S-3) — the Nlog-PRIMED pipeline
 

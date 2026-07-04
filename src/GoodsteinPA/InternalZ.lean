@@ -50,22 +50,22 @@ instance zAtom_defined : 𝚺₀-Function₁ (zAtom : V → V) via zAtomGraph :=
 def zIallGraph : 𝚺₀.Semisentence 5 :=
   .mkSigma “y s a p d0. ∃ y' < y, !pair₅Def y' s 1 a p d0 ∧ y = y' + 1”
 instance zIall_defined : 𝚺₀-Function₄ (zIall : V → V → V → V → V) via zIallGraph := .mk fun v ↦ by
-  simp_all [zIallGraph, numeral_eq_natCast, zIall]
+  simp_all [zIallGraph, zIall]
 
 def zInegGraph : 𝚺₀.Semisentence 4 :=
   .mkSigma “y s p d0. ∃ y' < y, !pair₄Def y' s 2 p d0 ∧ y = y' + 1”
 instance zIneg_defined : 𝚺₀-Function₃ (zIneg : V → V → V → V) via zInegGraph := .mk fun v ↦ by
-  simp_all [zInegGraph, numeral_eq_natCast, zIneg]
+  simp_all [zInegGraph, zIneg]
 
 def zIndGraph : 𝚺₀.Semisentence 6 :=
   .mkSigma “y s at' p d0 d1. ∃ y' < y, !pair₆Def y' s 3 at' p d0 d1 ∧ y = y' + 1”
 instance zInd_defined : 𝚺₀-Function₅ (zInd : V → V → V → V → V → V) via zIndGraph := .mk fun v ↦ by
-  simp_all [zIndGraph, numeral_eq_natCast, zInd]
+  simp_all [zIndGraph, zInd]
 
 def zKGraph : 𝚺₀.Semisentence 4 :=
   .mkSigma “y s r ds. ∃ y' < y, !pair₄Def y' s 4 r ds ∧ y = y' + 1”
 instance zK_defined : 𝚺₀-Function₃ (zK : V → V → V → V) via zKGraph := .mk fun v ↦ by
-  simp_all [zKGraph, numeral_eq_natCast, zK]
+  simp_all [zKGraph, zK]
 
 /-! ## Subterm `<`-bounds (well-foundedness of the eventual `Fixpoint`) -/
 
@@ -463,7 +463,7 @@ noncomputable def isymRep : V := ⟪2, (0 : V)⟫
 def _root_.LO.FirstOrder.Arithmetic.isymLkGraph : 𝚺₀.Semisentence 3 :=
   .mkSigma “y k A. !pair₃Def y 1 k A”
 instance isymLk_defined : 𝚺₀-Function₂ (isymLk : V → V → V) via isymLkGraph := .mk fun v ↦ by
-  simp [isymLkGraph, isymLk, numeral_eq_natCast]
+  simp [isymLkGraph, isymLk]
 instance isymLk_definable : 𝚺₀-Function₂ (isymLk : V → V → V) := isymLk_defined.to_definable
 instance isymLk_definable' (ℌ) : ℌ-Function₂ (isymLk : V → V → V) := isymLk_definable.of_zero
 
@@ -877,11 +877,11 @@ instance tp_defined : 𝚺₁-Function₁ (tp : V → V) via tpDef := .mk fun v 
   by_cases h1 : zTag (v 1) = 1
   · simp [h1]
   · by_cases h2 : zTag (v 1) = 2
-    · simp [h1, h2]
+    · simp [h2]
     · by_cases h5 : zTag (v 1) = 5
-      · simp [h1, h2, h5]
+      · simp [h5]
       · by_cases h6 : zTag (v 1) = 6
-        · simp [h1, h2, h5, h6]
+        · simp [h6]
         · simp [h1, h2, h5, h6]
 
 instance tp_definable : 𝚺₁-Function₁ (tp : V → V) := tp_defined.to_definable
@@ -927,13 +927,13 @@ instance tpSeqAux_definable' (Γ) : Γ-[m + 1]-Function₂ (tpSeqAux : V → V �
 @[simp] lemma tpSeqAux_seq (ds n : V) : Seq (tpSeqAux ds n) := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using seq_empty
+  case zero => simp
   case succ n ih => rw [tpSeqAux_succ]; exact ih.seqCons _
 
 @[simp] lemma tpSeqAux_lh (ds n : V) : lh (tpSeqAux ds n) = n := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using lh_empty
+  case zero => simp
   case succ n ih => rw [tpSeqAux_succ, Seq.lh_seqCons _ (tpSeqAux_seq ds n), ih]
 
 /-- Top read-out: the freshly-appended entry. -/
@@ -1514,7 +1514,7 @@ noncomputable def _root_.LO.FirstOrder.Arithmetic.zKValidFDef : 𝚫₁.Semisent
 
 instance zKValidF_defined : 𝚫₁-Relation₃ (zKValidF : V → V → V → Prop) via zKValidFDef :=
   ⟨by intro v
-      simp [zKValidFDef, zKValidF, HierarchySymbol.Semiformula.val_sigma, znth_defined.iff,
+      simp [zKValidFDef, HierarchySymbol.Semiformula.val_sigma, znth_defined.iff,
         tp_defined.iff, fstIdx_defined.iff, iperm_defined.iff, zTag_defined.iff, zIallF_defined.iff,
         zInegF_defined.iff, zAxAllF_defined.iff, zAxNegF_defined.iff, chainAsucc_defined.iff,
         seqSucc_defined.iff, seqAnt_defined.iff, lh_defined.iff],
@@ -1591,7 +1591,7 @@ instance zAxAllSuccWff_defined : 𝚫₁-Relation₃ (zAxAllSuccWff : V → V �
       simp [zAxAllSuccWffDef, seqSucc_defined.iff,
         (Bootstrapping.Arithmetic.numeral_defined (V := V)).iff, (substs1.defined (L := ℒₒᵣ)).iff],
    by intro v
-      simp [zAxAllSuccWffDef, zAxAllSuccWff, HierarchySymbol.Semiformula.val_sigma,
+      simp [zAxAllSuccWffDef, zAxAllSuccWff,
         seqSucc_defined.iff, (Bootstrapping.Arithmetic.numeral_defined (V := V)).iff,
         (substs1.defined (L := ℒₒᵣ)).iff]⟩
 
@@ -1623,7 +1623,7 @@ instance zInegAntWff_defined : 𝚫₁-Relation₃ (zInegAntWff : V → V → V 
       simp [zInegAntWffDef, fstIdx_defined.iff, seqAnt_defined.iff, seqCons_defined.iff,
         seq_defined.iff],
    by intro v
-      simp [zInegAntWffDef, zInegAntWff, HierarchySymbol.Semiformula.val_sigma,
+      simp [zInegAntWffDef, zInegAntWff,
         fstIdx_defined.iff, seqAnt_defined.iff, seqCons_defined.iff, seq_defined.iff]⟩
 
 instance zInegAntWff_definable : 𝚫₁-Relation₃ (zInegAntWff : V → V → V → Prop) :=
@@ -1963,11 +1963,11 @@ instance idgNext_defined : 𝚺₁-Function₂ (idgNext : V → V → V) via idg
   by_cases h1 : zTag (v 1) = 1
   · simp [h1]
   · by_cases h2 : zTag (v 1) = 2
-    · simp [h1, h2]
+    · simp [h2]
     · by_cases h3 : zTag (v 1) = 3
-      · simp [h1, h2, h3]
+      · simp [h3]
       · by_cases h4 : zTag (v 1) = 4
-        · simp [h1, h2, h3, h4]
+        · simp [h4]
         · simp [h1, h2, h3, h4]
 
 instance idgNext_definable : 𝚺₁-Function₂ (idgNext : V → V → V) := idgNext_defined.to_definable
@@ -2311,17 +2311,17 @@ instance ioNext_defined : 𝚺₁-Function₂ (ioNext : V → V → V) via ioNex
   by_cases h1 : zTag (v 1) = 1
   · simp [h1]
   · by_cases h2 : zTag (v 1) = 2
-    · simp [h1, h2]
+    · simp [h2]
     · by_cases h3 : zTag (v 1) = 3
-      · simp [h1, h2, h3]
+      · simp [h3]
       · by_cases h4 : zTag (v 1) = 4
-        · simp [h1, h2, h3, h4]
+        · simp [h4]
         · by_cases h5 : zTag (v 1) = 5
-          · simp [h1, h2, h3, h4, h5]
+          · simp [h5]
           · by_cases h6 : zTag (v 1) = 6
-            · simp [h1, h2, h3, h4, h5, h6]
+            · simp [h6]
             · by_cases h7 : zTag (v 1) = 7
-              · simp [h1, h2, h3, h4, h5, h6, h7]
+              · simp [h7]
               · simp [h1, h2, h3, h4, h5, h6, h7]
 
 instance ioNext_definable : 𝚺₁-Function₂ (ioNext : V → V → V) := ioNext_defined.to_definable
@@ -2837,7 +2837,7 @@ lemma isNF_iseqNaddIdgAux {ds : V} (hall : ∀ i < lh ds, isNF (iotil (znth ds i
   intro j
   induction j using ISigma1.sigma1_succ_induction
   · definability
-  case zero => intro _; simpa using isNF_zero
+  case zero => intro _; simp
   case succ j ih =>
     intro hj
     rw [iseqNaddIdgAux_succ]
@@ -2915,13 +2915,13 @@ private lemma def_iRepeatSeq {k} (v : V) (i : Fin k) :
 @[simp] lemma iRepeatSeq_seq (v k : V) : Seq (iRepeatSeq v k) := by
   induction k using ISigma1.sigma1_succ_induction
   · exact Definable.comp₁ (def_iRepeatSeq v 0)
-  case zero => simpa using seq_empty
+  case zero => simp
   case succ k ih => rw [iRepeatSeq_succ]; exact ih.seqCons _
 
 @[simp] lemma iRepeatSeq_lh (v k : V) : lh (iRepeatSeq v k) = k := by
   induction k using ISigma1.sigma1_succ_induction
   · exact Definable.comp₂ (DefinableFunction₁.comp (F := lh) (def_iRepeatSeq v 0)) (by definability)
-  case zero => simpa using lh_empty
+  case zero => simp
   case succ k ih => rw [iRepeatSeq_succ, Seq.lh_seqCons _ (iRepeatSeq_seq v k), ih]
 
 /-- Every in-range entry of `iRepeatSeq v k` is `v`. -/
@@ -3551,13 +3551,13 @@ instance seqUpdateAux_definable' (Γ) : Γ-[m + 1]-Function₄ (seqUpdateAux : V
 @[simp] lemma seqUpdateAux_seq (ds i v n : V) : Seq (seqUpdateAux ds i v n) := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using seq_empty
+  case zero => simp
   case succ n ih => rw [seqUpdateAux_succ]; exact ih.seqCons _
 
 @[simp] lemma seqUpdateAux_lh (ds i v n : V) : lh (seqUpdateAux ds i v n) = n := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using lh_empty
+  case zero => simp
   case succ n ih =>
     rw [seqUpdateAux_succ, Seq.lh_seqCons _ (seqUpdateAux_seq ds i v n), ih]
 
@@ -3852,7 +3852,7 @@ premise sits above the tip, so it never enters the tip-bounded exit/threading/ra
 conclusion succedent or `⊥` and threading up to `i`. This is the route that frees the ¬-case `haux0` from
 needing `redexJ ≤ j0` (`PENDING_WORK` lap-142/143): when `redexJ > j0` the §5 axNeg reduct lands above the
 tip and is invisible to the tip-`j0` validity. -/
-lemma isChainInf_reduceR_keepTip {s s' r ds i j0 v : V} (hi : i < lh ds)
+lemma isChainInf_reduceR_keepTip {s s' r ds i j0 v : V} (_ : i < lh ds)
     (hj0i : j0 < i) (hj0 : j0 < lh ds)
     (hbot : chainAsucc ds j0 = (^⊥ : V))
     (hX_ant : seqAnt s' = seqAnt s)
@@ -4068,9 +4068,9 @@ noncomputable def seqInsertAux.construction : PR.Construction V seqInsertAux.blu
     · simp [seqInsertAux.blueprint, h1, not_le.mpr h1, znth_defined.iff, seqCons_defined.iff]
     · have hle : v 4 ≤ v 2 := not_lt.mp h1
       by_cases h2 : v 2 = v 4
-      · simp [seqInsertAux.blueprint, h1, hle, h2, seqCons_defined.iff]
+      · simp [seqInsertAux.blueprint, h2, seqCons_defined.iff]
       · by_cases h3 : v 2 = v 4 + 1
-        · simp [seqInsertAux.blueprint, h1, hle, h2, h3, seqCons_defined.iff]
+        · simp [seqInsertAux.blueprint, h3, seqCons_defined.iff]
         · simp [seqInsertAux.blueprint, h1, hle, h2, h3, sub_defined.iff, znth_defined.iff,
             seqCons_defined.iff]
 
@@ -4099,13 +4099,13 @@ instance seqInsertAux_definable' (Γ) :
 @[simp] lemma seqInsertAux_seq (ds i a b n : V) : Seq (seqInsertAux ds i a b n) := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using seq_empty
+  case zero => simp
   case succ n ih => rw [seqInsertAux_succ]; exact ih.seqCons _
 
 @[simp] lemma seqInsertAux_lh (ds i a b n : V) : lh (seqInsertAux ds i a b n) = n := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using lh_empty
+  case zero => simp
   case succ n ih => rw [seqInsertAux_succ, Seq.lh_seqCons _ (seqInsertAux_seq ds i a b n), ih]
 
 /-- Top-entry read-out (freshly-appended entry at index `n`). -/
@@ -4465,9 +4465,9 @@ lemma zKValidF_seqInsert {s r' i ds a b : V}
     (hcf : ∀ k < lh ds, IsUFormula ℒₒᵣ (chainAsucc ds k)) :
     zKValidF s r' (seqInsert ds i a b) :=
   zKValidF_seqInsert_spec hci (seqInsert_lh ds i a b)
-    (fun k hk => znth_seqInsert_pre hk (lt_trans hk hi_lt))
+    (fun _ hk => znth_seqInsert_pre hk (lt_trans hk hi_lt))
     (znth_seqInsert_at hi_lt) (znth_seqInsert_at1 hi_lt)
-    (fun m hm hm2 => znth_seqInsert_suf hm hm2)
+    (fun _ hm hm2 => znth_seqInsert_suf hm hm2)
     hi_lt hperm_a hperm_b hf1_a hf1_b hf2_a hf2_b hf5_a hf5_b hf6_a hf6_b hfa_a hfa_b hss hsa
     hperm hg1 hg2 hg5 hg6 hcf
 
@@ -5680,8 +5680,7 @@ lemma zPhi_definable :
       zAxBot_defined.iff, qqFalsum_defined.iff,
       seq_defined.iff, lh_defined.iff, znth_defined.iff,
       seqSucc_defined.iff, seqAnt_defined.iff, inAnt_defined.iff,
-      qqForall_defined.iff, inegF_defined.iff, zInegWff_defined.iff, zIallWff_defined.iff,
-      zIndWff_defined.iff, zAxAllSuccWff_defined.iff, zInegAntWff_defined.iff]
+      qqForall_defined.iff, inegF_defined.iff]
 
 /-- The Z-derivation `Fixpoint.Construction` (`Φ = ZPhi`, with the proved monotonicity). -/
 noncomputable def zconstruction : Fixpoint.Construction V zblueprint where
@@ -6573,7 +6572,7 @@ instance tpReduce_defined : 𝚺₁-Function₃ (tpReduce : V → V → V → V)
   by_cases h2 : π₁ (v 1) = 2
   · simp [h2]
   · by_cases h0 : π₁ (v 1) = 0
-    · simp [h2, h0]
+    · simp [h0]
       by_cases hq : π₁ (π₂ (v 1) - 1) = 6 <;> simp [hq, numeral_eq_natCast]
     · simp [h2, h0]
       by_cases hq : π₁ (π₂ (π₂ (v 1)) - 1) = 6 <;> simp [hq, numeral_eq_natCast]
@@ -6778,7 +6777,7 @@ instance zAxReduct_defined : 𝚺₁-Function₁ (zAxReduct : V → V) via zAxRe
   by_cases h5 : zTag (v 1) = 5
   · simp [h5]
   · by_cases h6 : zTag (v 1) = 6
-    · simp [h5, h6]
+    · simp [h6]
     · simp [h5, h6]
 
 instance zAxReduct_definable : 𝚺₁-Function₁ (zAxReduct : V → V) := zAxReduct_defined.to_definable
@@ -6813,11 +6812,11 @@ instance iRNext_defined : 𝚺₁-Function₂ (iRNext : V → V → V) via iRNex
   by_cases h1 : zTag (v 1) = 1
   · simp [h1]
   · by_cases h2 : zTag (v 1) = 2
-    · simp [h1, h2]
+    · simp [h2]
     · by_cases h3 : zTag (v 1) = 3
-      · simp [h1, h2, h3]
+      · simp [h3]
       · by_cases h4 : zTag (v 1) = 4
-        · simp [h1, h2, h3, h4]
+        · simp [h4]
         · simp [h1, h2, h3, h4]
 
 instance iRNext_definable : 𝚺₁-Function₂ (iRNext : V → V → V) := iRNext_defined.to_definable
@@ -7217,13 +7216,13 @@ instance fvSubstSeqAux_definable' (Γ) : Γ-[m + 1]-Function₃ (fvSubstSeqAux :
 @[simp] lemma fvSubstSeqAux_seq (w Γ n : V) : Seq (fvSubstSeqAux w Γ n) := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using seq_empty
+  case zero => simp
   case succ n ih => rw [fvSubstSeqAux_succ]; exact ih.seqCons _
 
 @[simp] lemma fvSubstSeqAux_lh (w Γ n : V) : lh (fvSubstSeqAux w Γ n) = n := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using lh_empty
+  case zero => simp
   case succ n ih => rw [fvSubstSeqAux_succ, Seq.lh_seqCons _ (fvSubstSeqAux_seq w Γ n), ih]
 
 lemma znth_fvSubstSeqAux_top (w Γ n : V) :
@@ -7346,13 +7345,13 @@ instance tblMapSeqAux_definable' (Γ) : Γ-[m + 1]-Function₃ (tblMapSeqAux : V
 @[simp] lemma tblMapSeqAux_seq (tbl ds n : V) : Seq (tblMapSeqAux tbl ds n) := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using seq_empty
+  case zero => simp
   case succ n ih => rw [tblMapSeqAux_succ]; exact ih.seqCons _
 
 @[simp] lemma tblMapSeqAux_lh (tbl ds n : V) : lh (tblMapSeqAux tbl ds n) = n := by
   induction n using ISigma1.sigma1_succ_induction
   · definability
-  case zero => simpa using lh_empty
+  case zero => simp
   case succ n ih => rw [tblMapSeqAux_succ, Seq.lh_seqCons _ (tblMapSeqAux_seq tbl ds n), ih]
 
 lemma znth_tblMapSeqAux_top (tbl ds n : V) :
@@ -7465,7 +7464,7 @@ noncomputable def _root_.LO.FirstOrder.Arithmetic.zsubstNextDef : 𝚺₁.Semise
     ∨ (tg = 8 ∧ !zAxBotGraph y s')
     ∨ (tg ≠ 0 ∧ tg ≠ 1 ∧ tg ≠ 2 ∧ tg ≠ 3 ∧ tg ≠ 4 ∧ tg ≠ 5 ∧ tg ≠ 6 ∧ tg ≠ 7 ∧ tg ≠ 8 ∧ y = d) )”
 
-set_option maxHeartbeats 1000000 in
+-- set_option maxHeartbeats 1000000 in
 instance zsubstNext_defined : 𝚺₁-Function₄ (zsubstNext : V → V → V → V → V) via zsubstNextDef :=
   .mk fun v ↦ by
     simp [zsubstNextDef, zsubstNext, numeral_eq_natCast, zTag_defined.iff, fstIdx_defined.iff, fvSubstSeqt_defined.iff,
@@ -7480,21 +7479,21 @@ instance zsubstNext_defined : 𝚺₁-Function₄ (zsubstNext : V → V → V �
     by_cases h0 : zTag (v 1) = 0
     · simp [h0]
     · by_cases h1 : zTag (v 1) = 1
-      · simp [h0, h1]
+      · simp [h1]
       · by_cases h2 : zTag (v 1) = 2
-        · simp [h0, h1, h2]
+        · simp [h2]
         · by_cases h3 : zTag (v 1) = 3
-          · simp [h0, h1, h2, h3]
+          · simp [h3]
           · by_cases h4 : zTag (v 1) = 4
-            · simp [h0, h1, h2, h3, h4]
+            · simp [h4]
             · by_cases h5 : zTag (v 1) = 5
-              · simp [h0, h1, h2, h3, h4, h5]
+              · simp [h5]
               · by_cases h6 : zTag (v 1) = 6
-                · simp [h0, h1, h2, h3, h4, h5, h6]
+                · simp [h6]
                 · by_cases h7 : zTag (v 1) = 7
-                  · simp [h0, h1, h2, h3, h4, h5, h6, h7]
+                  · simp [h7]
                   · by_cases h8 : zTag (v 1) = 8
-                    · simp [h0, h1, h2, h3, h4, h5, h6, h7, h8]
+                    · simp [h8]
                     · simp [h0, h1, h2, h3, h4, h5, h6, h7, h8]
 
 instance zsubstNext_definable : 𝚺₁-Function₄ (zsubstNext : V → V → V → V → V) :=
@@ -7574,11 +7573,11 @@ instance iRNextG_defined : 𝚺₁-Function₂ (iRNextG : V → V → V) via iRN
   by_cases h1 : zTag (v 1) = 1
   · simp [h1]
   · by_cases h2 : zTag (v 1) = 2
-    · simp [h1, h2]
+    · simp [h2]
     · by_cases h3 : zTag (v 1) = 3
-      · simp [h1, h2, h3]
+      · simp [h3]
       · by_cases h4 : zTag (v 1) = 4
-        · simp [h1, h2, h3, h4]
+        · simp [h4]
         · simp [h1, h2, h3, h4]
 
 instance iRNextG_definable : 𝚺₁-Function₂ (iRNextG : V → V → V) := iRNextG_defined.to_definable
@@ -7871,7 +7870,7 @@ instance iRKcCrit_defined : 𝚺₁-Function₁ (iRKcCrit : V → V) via iRKcCri
     pi₁_defined.iff, pi₂_defined.iff, (Bootstrapping.Arithmetic.numeral_defined (V := V)).iff,
     zsubst_defined.iff, zInegPrem_defined.iff, zAx1_defined.iff, seqUpdate_defined.iff,
     iCritReductSeq_defined.iff, zK_defined.iff]
-  by_cases hti : zTag (znth (zKseq (v 1)) (redexI (v 1))) = 1 <;> simp [hti, numeral_eq_natCast]
+  by_cases hti : zTag (znth (zKseq (v 1)) (redexI (v 1))) = 1 <;> simp [hti]
 
 instance iRKcCrit_definable : 𝚺₁-Function₁ (iRKcCrit : V → V) := iRKcCrit_defined.to_definable
 
@@ -8209,9 +8208,9 @@ lemma red_eq_iR2_of_tag_ne_one_four {x : V} (h1 : zTag x ≠ 1) (h : zTag x ≠ 
   · have hp := pos_iff_ne_zero.mpr hpos
     rw [red_eq_iRNextG hp, iR2_eq_iRNext hp, iRNextG, iRNext]
     by_cases h2 : zTag x = 2
-    · simp [h1, h2]
+    · simp [h2]
     · by_cases h3 : zTag x = 3
-      · simp [h1, h2, h3]
+      · simp [h3]
       · simp [h1, h2, h3, h]
 
 /-- **The redexI premise's `iR2`-reduct satisfies the IH bundle, concretely** (the recursive-`iR2`

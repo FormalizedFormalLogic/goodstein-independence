@@ -72,10 +72,12 @@ instance instDecidableEqLXRel (k : ℕ) : DecidableEq (LX.Rel k) :=
   inferInstanceAs (DecidableEq (Language.Rel ℒₒᵣ k ⊕ XRel k))
 
 /-- The standard ℕ-model of `ℒₒᵣ`, obtained from its registered `Structure ℒₒᵣ ℕ` instance. -/
+@[reducible]
 private def lorN : Structure ℒₒᵣ ℕ := inferInstance
 
 /-- **The ℕ-model of `LX` with the set variable `X` interpreted as `S`.** The `ℒₒᵣ` fragment is the
 standard arithmetic model; `X t` is true iff `S (val t)`. This is the `⊨^α` carrier. -/
+@[reducible]
 noncomputable def structLX (S : ℕ → Prop) : Structure LX ℕ where
   func := fun _ f =>
     Sum.elim (fun f₀ => lorN.func f₀) (fun e => e.elim) f
