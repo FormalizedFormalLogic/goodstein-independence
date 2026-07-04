@@ -75,4 +75,15 @@ this `axiom` becomes `theorem … := <crux2 ∘ crux1 assembly>` at the identica
 axiom goodstein_implies_consistency :
     𝗣𝗔 ⊢ ↑goodsteinSentence → 𝗣𝗔 ⊢ ↑𝗣𝗔.consistent
 
+/-- **Route-A summit (banked, incomplete).** The original Con(𝗣𝗔)/Gödel-II proof of `𝗣𝗔 ⊬ γ`:
+feed the Phase 2–3 girder `goodstein_implies_consistency` (still an open `axiom`) into the
+meta-reduction above. Its footprint therefore carries that girder —
+`[propext, Classical.choice, Quot.sound, goodstein_implies_consistency]` — so this is NOT the clean
+summit. The marquee headline `Statement.peano_not_proves_goodstein` re-points instead to the route-B
+growth headline (SERIES-5 Lane B), which is fully kernel-clean. Kept here under its own name as the
+alternative route: if `goodstein_implies_consistency` is ever discharged, this becomes a second
+fully-clean proof of the same proposition for free. -/
+theorem peano_not_proves_goodstein_routeA : 𝗣𝗔 ⊬ ↑goodsteinSentence :=
+  not_proves_of_implies_consistency goodstein_implies_consistency
+
 end GoodsteinPA
