@@ -2,6 +2,12 @@ name: CI
 
 on:
   push:
+    # Only the default branch on push. A branch WITH an open PR would otherwise
+    # trigger BOTH `push` and `pull_request` for the same commit — two identical
+    # CI runs (the "CI / build (push)" + "CI / build (pull_request)" double).
+    # PRs are covered by the `pull_request` trigger below; direct main pushes
+    # (i.e. merges) are covered here.
+    branches: [main]
     # blueprint/, docbuild/, and workflow edits don't change the Lean build;
     # skipping them keeps CI runs to real Lean pushes.
     paths-ignore: ['**.md', 'blueprint/**', 'docbuild/**', '.github/workflows/**', '.gitignore']
@@ -13,17 +19,90 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Runners are pinned to ubuntu-26.04 (NOT `ubuntu-latest`): a floating image is a
+# silent explosion waiting for GitHub's next bump. 26.04 is the newest LTS — if it
+# breaks it's a clean upstream bug report, which is the point. Bump by hand.
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  # ── Job 1: hydrate + cleanse the dependency layer ──────────────────────────────────────────────
+  # Absorb ALL the dependency-build noise HERE, off in its own job, so the build job below is clean.
+  #   • mathlib comes from `lake exe cache get` (downloaded oleans carry no per-module log → silent).
+  #   • Foundation is a git dependency with NO public olean cache, so it compiles from source (~135
+  #     modules) and emits ~200 lint/deprecation warnings that are upstream's, not ours. We build it
+  #     once here, then CLEAR its cached build logs so they don't `Replayed`-spam the build job (and
+  #     the blueprint gate) with warnings we can't fix and don't want to read.
+  # The built+cleansed Foundation is handed to the build job via a manifest-keyed cache (only ~226M —
+  # we deliberately do NOT cache mathlib's ~6GB of oleans, since `cache get` re-hydrates those fast).
+  # Bonus: keyed on toolchain+manifest, so Foundation only recompiles when its pinned rev bumps —
+  # lint-only / proof-only commits reuse it and skip the ~1600-job Foundation build entirely.
+  deps:
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4
-      # elan + `lake exe cache get` (prebuilt Mathlib oleans, via the Foundation→Mathlib dep) +
-      # `lake build`. NB: Foundation itself is a git dependency with no public olean cache, so CI
-      # rebuilds it from source (~1671 jobs) on top of the cached Mathlib — slower than the host's
-      # CoW'd lean-universe store. If this gets too heavy on the free runner, add a `.lake` cache
-      # keyed on the Foundation rev in lakefile.toml.
+      # elan + `lake exe cache get` only (build: false); we drive `lake build Foundation` ourselves.
+      # Skip lean-action's own whole-.lake GitHub cache (use-github-cache: false) — we manage a
+      # tighter, Foundation-only cache below instead of shuttling the full 8GB tree.
       - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          use-github-cache: false
+      - name: Cache Foundation build (keyed on toolchain + manifest)
+        id: foundation-cache
+        uses: actions/cache@v4
+        with:
+          path: .lake/packages/Foundation/.lake/build
+          key: foundation-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
+      - name: Build Foundation from source (cache miss only)
+        if: steps.foundation-cache.outputs.cache-hit != 'true'
+        run: lake build Foundation
+      # ── Clear Foundation's cached warnings ───────────────────────────────────────────────────────
+      # Modern Lake stores each module's build diagnostics in its `.trace` file's `"log"` array and
+      # RE-EMITS them (`⚠ Replayed`) on every downstream build. Emptying `"log"` drops the replay
+      # WITHOUT touching the `.olean` (verified: no recompile, diagnostics vanish, build still green).
+      # This only silences replayed *text* — it cannot change what the axiom/blueprint gates verify,
+      # which read the oleans. Idempotent, so it's a harmless no-op on a cache hit.
+      - name: Clear Foundation's replayed-warning cache
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          root = pathlib.Path('.lake/packages/Foundation/.lake/build')
+          cleared = 0
+          for t in root.rglob('*.trace'):
+              try:
+                  d = json.loads(t.read_text())
+              except (ValueError, OSError):
+                  continue
+              if d.get('log'):
+                  d['log'] = []
+                  t.write_text(json.dumps(d))
+                  cleared += 1
+          print(f'cleared warning cache in {cleared} Foundation trace(s)')
+          PY
+
+  # ── Job 2: build GoodsteinPA — the one we care about, on its own with clean output ─────────────
+  # Restores the hydrated+cleansed dependency layer from Job 1, then compiles ONLY our own modules
+  # (Foundation replays silent, mathlib replays silent), so this job's log is just OUR build output
+  # plus the two trust gates. This is the job to read.
+  build:
+    needs: deps
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v4
+      # elan + `lake exe cache get` (materializes deps + downloads mathlib oleans); no lake build yet.
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          use-github-cache: false
+      # Restore Foundation built+cleansed by Job 1 (must exist — `needs: deps` guarantees it ran).
+      - name: Restore Foundation build (warnings cleared)
+        uses: actions/cache/restore@v4
+        with:
+          path: .lake/packages/Foundation/.lake/build
+          key: foundation-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
+          fail-on-cache-miss: true
+      # `lake build` = defaultTargets (GoodsteinPA + GoodsteinPABlueprint). Deps are up-to-date and
+      # silent, so the only diagnostics printed are ours.
+      - name: Build GoodsteinPA
+        run: lake build
 
       # ── Axiom-clean gate (EXACT-MATCH) ─────────────────────────────────────────────────────────
       # Prove the published claim's ledger: the headline `peano_not_proves_goodstein` is a REAL
