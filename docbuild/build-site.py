@@ -57,6 +57,13 @@ def main() -> int:
     if not skip_docs:
         if ci:
             subprocess.run(["lake", "exe", "cache", "get"], cwd=DOCBUILD, check=False)
+        # Build the library FIRST, then doc-gen as a separate invocation (Foundation's
+        # own docs CI recipe: `lake build Foundation` then `lake build Foundation:docs`).
+        # Going straight to `:docs` makes lake interleave Lean elaboration (Foundation is
+        # compiled from source) with doc-gen4 rendering in one parallel DAG, doubling peak
+        # RSS and OOMing the 16 GB runner. Splitting the phases means doc-gen runs on
+        # already-built oleans, so peak = doc-gen alone (which fits, as Foundation proves).
+        run(["lake", "build", "GoodsteinPA"], cwd=DOCBUILD)
         run(["lake", "build", "GoodsteinPA:docs"], cwd=DOCBUILD)
         run([sys.executable, str(DOCBUILD / "trim-docs.py"), str(DOC_OUT), "GoodsteinPA"], cwd=REPO)
     elif not DOC_OUT.is_dir():

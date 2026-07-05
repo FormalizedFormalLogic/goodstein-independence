@@ -78,19 +78,6 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4
-      # doc-gen4 renders the WHOLE Mathlib + Foundation import closure, and its peak
-      # RSS exceeds the 16 GB hosted runner (Foundation is the extra weight over
-      # lean-gallery's Mathlib-only docs), OOMing with `resource exhausted (cannot
-      # allocate memory)`. A large swapfile on the roomy /mnt ephemeral disk lets the
-      # peak spill to disk instead of dying. Free fix on the standard runner —
-      # larger hosted runners need a paid Team/Enterprise plan.
-      - name: Add swap space (doc-gen4 peak exceeds runner RAM)
-        run: |
-          sudo fallocate -l 14G /mnt/swapfile
-          sudo chmod 600 /mnt/swapfile
-          sudo mkswap /mnt/swapfile
-          sudo swapon /mnt/swapfile
-          free -h
       # elan only; we drive the build ourselves inside docbuild/ (the parent lib is
       # compiled as a dependency of the `:docs` facet: cached Mathlib oleans via
       # `lake exe cache get`, Foundation rebuilt from source like the main CI).
