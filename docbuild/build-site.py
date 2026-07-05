@@ -57,14 +57,19 @@ def main() -> int:
     if not skip_docs:
         if ci:
             subprocess.run(["lake", "exe", "cache", "get"], cwd=DOCBUILD, check=False)
-        # Build the library FIRST, then doc-gen as a separate invocation (Foundation's
-        # own docs CI recipe: `lake build Foundation` then `lake build Foundation:docs`).
-        # Going straight to `:docs` makes lake interleave Lean elaboration (Foundation is
-        # compiled from source) with doc-gen4 rendering in one parallel DAG, doubling peak
-        # RSS and OOMing the 16 GB runner. Splitting the phases means doc-gen runs on
-        # already-built oleans, so peak = doc-gen alone (which fits, as Foundation proves).
+        # Two levers keep the 16 GB CI runner from OOMing on the doc build:
+        #  (1) Build the library FIRST, then doc-gen separately (Foundation's own recipe:
+        #      `lake build Foundation` then `:docs`). Going straight to `:docs` interleaves
+        #      Lean elaboration (Foundation compiled from source) with doc-gen4 in one DAG,
+        #      doubling peak RSS. Split => doc-gen runs on ready oleans, no overlap.
+        #  (2) Cap doc-gen parallelism to -j2 on CI. goodstein's doc closure is BIGGER than
+        #      Foundation's (it imports Foundation whole plus extra Mathlib), so at full -j
+        #      the tail-end doc-gen workers still spike together and OOM where Foundation
+        #      just fits. -j2 caps concurrent workers so peak fits in RAM. The compile phase
+        #      is fine at full speed; only doc-gen needs throttling. (Local: full -j.)
         run(["lake", "build", "GoodsteinPA"], cwd=DOCBUILD)
-        run(["lake", "build", "GoodsteinPA:docs"], cwd=DOCBUILD)
+        docs_cmd = ["lake", "build", "GoodsteinPA:docs"] + (["-j2"] if ci else [])
+        run(docs_cmd, cwd=DOCBUILD)
         run([sys.executable, str(DOCBUILD / "trim-docs.py"), str(DOC_OUT), "GoodsteinPA"], cwd=REPO)
     elif not DOC_OUT.is_dir():
         sys.exit("--skip-docs given but no existing docs build at " + str(DOC_OUT))
