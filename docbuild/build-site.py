@@ -54,20 +54,32 @@ def main() -> int:
     ci = "--ci" in sys.argv
     skip_docs = "--skip-docs" in sys.argv
 
+    docs_ok = False
     if not skip_docs:
         if ci:
             subprocess.run(["lake", "exe", "cache", "get"], cwd=DOCBUILD, check=False)
-        # Build the library FIRST, then doc-gen separately (Foundation's own recipe:
-        # `lake build Foundation` then `:docs`). Going straight to `:docs` interleaves Lean
-        # elaboration (Foundation compiled from source) with doc-gen4 in one parallel DAG,
-        # ~doubling peak RSS. Split => doc-gen runs on ready oleans, no overlap. That alone
-        # gets doc-gen to ~96% on the 16 GB runner; the CI job adds a swapfile (docs.yml) to
-        # carry the residual peak over the top. (Lake 5.0 dropped `-j`/`--jobs`, so capping
-        # the worker count isn't an option.)
+        # Build the library first, then doc-gen separately (Foundation's recipe) so lake
+        # doesn't interleave Lean elaboration with doc-gen4 in one DAG (~doubles peak RSS).
         run(["lake", "build", "GoodsteinPA"], cwd=DOCBUILD)
-        run(["lake", "build", "GoodsteinPA:docs"], cwd=DOCBUILD)
-        run([sys.executable, str(DOCBUILD / "trim-docs.py"), str(DOC_OUT), "GoodsteinPA"], cwd=REPO)
-    elif not DOC_OUT.is_dir():
+        # doc-gen4 renders the WHOLE Mathlib+Foundation closure and OOMs the 16 GB CI runner
+        # even split out: goodstein's closure exceeds Foundation's, and Lake 5.0 has no -j to
+        # cap workers, so it can't be squeezed under 16 GB. Treat doc-gen as BEST-EFFORT: on
+        # failure, ship the (correct) blueprint anyway and leave the last-good /docs in place
+        # (the deploy uses keep_files). Permanent fix = a larger runner, or doc-gen'ing only
+        # GoodsteinPA's own modules instead of the full closure. See docs.yml.
+        try:
+            run(["lake", "build", "GoodsteinPA:docs"], cwd=DOCBUILD)
+            run([sys.executable, str(DOCBUILD / "trim-docs.py"), str(DOC_OUT), "GoodsteinPA"], cwd=REPO)
+            docs_ok = True
+        except subprocess.CalledProcessError:
+            bar = "!" * 78
+            print(f"\n{bar}\nWARNING: doc-gen4 build FAILED (likely OOM). Shipping the blueprint "
+                  f"WITHOUT a\nfresh /docs; the previous /docs is preserved on deploy "
+                  f"(keep_files). The\nblueprint's own-decl Lean links may 404 until /docs is "
+                  f"rebuilt.\n{bar}\n", file=sys.stderr)
+    elif DOC_OUT.is_dir():
+        docs_ok = True
+    else:
         sys.exit("--skip-docs given but no existing docs build at " + str(DOC_OUT))
 
     run([sys.executable, str(REPO / "blueprint" / "annotate_depgraph.py"), "--web"], cwd=REPO)
@@ -75,7 +87,10 @@ def main() -> int:
     if SITE.exists():
         shutil.rmtree(SITE)
     SITE.mkdir()
-    shutil.copytree(DOC_OUT, SITE / "docs")
+    # Only ship /docs when it built. When it didn't, the deploy's keep_files preserves the
+    # previous /docs, so we deliberately leave it OUT of site/ rather than shipping a stub.
+    if docs_ok and DOC_OUT.is_dir():
+        shutil.copytree(DOC_OUT, SITE / "docs")
     shutil.copytree(REPO / "blueprint" / "web", SITE / "blueprint")
     (SITE / "index.html").write_text(INDEX_HTML)
 

@@ -78,17 +78,6 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4
-      # build-site.py splits compile from doc-gen (Foundation's recipe), which gets doc-gen
-      # to ~96% before the 16 GB runner OOMs (`resource exhausted`) — goodstein's doc closure
-      # is bigger than Foundation's. A big swapfile on the roomy /mnt disk carries that
-      # residual peak; Lake 5.0 has no `-j` flag to cap worker count, so swap is the lever.
-      - name: Add swap space (carry doc-gen's residual peak past 16 GB)
-        run: |
-          sudo fallocate -l 16G /mnt/swapfile
-          sudo chmod 600 /mnt/swapfile
-          sudo mkswap /mnt/swapfile
-          sudo swapon /mnt/swapfile
-          free -h && swapon --show
       # elan only; we drive the build ourselves inside docbuild/ (the parent lib is
       # compiled as a dependency of the `:docs` facet: cached Mathlib oleans via
       # `lake exe cache get`, Foundation rebuilt from source like the main CI).
@@ -116,3 +105,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: site
+          # doc-gen4 is best-effort (OOMs the runner); when build-site.py ships the
+          # blueprint WITHOUT a fresh site/docs, keep_files preserves the last-good
+          # /docs already on gh-pages so the blueprint's Lean links still resolve.
+          keep_files: true
