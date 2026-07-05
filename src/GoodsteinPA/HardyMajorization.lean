@@ -51,8 +51,6 @@ theorem norm_lt_of_Nlog_le {β : ONote} {K : ℕ} (h : Nlog β ≤ K) :
   lt_of_lt_of_le (norm_lt_two_pow_Nlog β)
     (Nat.pow_le_pow_right (by norm_num) (by omega))
 
-#print axioms GoodsteinPA.HardyMajorization.norm_lt_two_pow_Nlog
-#print axioms GoodsteinPA.HardyMajorization.norm_lt_of_Nlog_le
 
 /-! ## The single-step composition + raise (the master induction's engine)
 
@@ -133,8 +131,6 @@ theorem hardy_step {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hα' : α
   rw [hardy_chain_eq hβ' he' hβ0 hlt z]
   exact hardy_step_raise hβ' he' hα' hlt hβα hnorm
 
-#print axioms GoodsteinPA.HardyMajorization.hardy_chain_eq
-#print axioms GoodsteinPA.HardyMajorization.hardy_step
 
 /-! ## Argument super-additivity of `hardy` (lap 208)
 
@@ -223,8 +219,6 @@ theorem norm_add_le : ∀ (x y : ONote), norm (x + y) ≤ normSum x + norm y
       simp only [normSum]
       omega
 
-#print axioms GoodsteinPA.HardyMajorization.hardy_arg_add
-#print axioms GoodsteinPA.HardyMajorization.norm_add_le
 
 /-! ## The coefficient-3 chain (the master induction's actual branch shape)
 
@@ -261,8 +255,6 @@ theorem stepOrd3_lt_Wpow {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF)
         show ω ^ α'.repr ≤ ω ^ α'.repr * (1 : ℕ) + 0
         simp
 
-#print axioms GoodsteinPA.HardyMajorization.hardy_chain3_eq
-#print axioms GoodsteinPA.HardyMajorization.stepOrd3_lt_Wpow
 
 /-! ## THE MASTER MAJORIZATION (lap 208) — `ewIter f α m ≤ H_{ω^{e'+1+α}}(H_{ω^{e'}}(Nlog α + m + p))`
 
@@ -420,7 +412,6 @@ decreasing_by
   · exact hδlt
   · exact hδlt
 
-#print axioms GoodsteinPA.HardyMajorization.ewIter_hardy_le
 
 /-! ## Concrete engine instantiation — `e' := e₀ + 2` discharges `hEng`
 
@@ -1009,10 +1000,6 @@ theorem dom_pad_max {f g : ℕ → ℕ} {E₁ E₂ : ONote} {c₁ c₂ : ℕ}
       (hardy_le_of_lt (Wpow_NF hE₂) (Wpow_NF hE) (Wpow_lt hlt₂) hgate₂))
   exact max_le hb₁ hb₂
 
-#print axioms GoodsteinPA.HardyMajorization.hEng_of_dom
-#print axioms GoodsteinPA.HardyMajorization.ewIter_hardy_le_of_dom
-#print axioms GoodsteinPA.HardyMajorization.ewIterTower_dom_pad
-#print axioms GoodsteinPA.HardyMajorization.hardy_Wpow_iter_dom_pad
 /-- **THE `S*`-domination** (SERIES-4 S-2 capstone) — the concrete pipeline slot
 `S* z = max (ewIterTower (rel1 (ewRootSlot e m) K) d α z) (P z)` (`Sslot` unfolded; tower over
 the embedding's base root slot, `P` any `Gexp`-iterate-bounded value function — the
@@ -1405,20 +1392,5 @@ theorem master_conversion {S : ℕ → ℕ} {E_S γ : ONote} {c_S : ℕ}
     hardy_pad_lt_fastGrowing_osucc E₅ hE₅ c₅ m (by omega)
   omega
 
-#print axioms GoodsteinPA.HardyMajorization.dom_pad_max
-#print axioms GoodsteinPA.HardyMajorization.Sstar_dom_pad
-#print axioms GoodsteinPA.HardyMajorization.dom_pad_comp
-#print axioms GoodsteinPA.HardyMajorization.hardy_pad_lt_fastGrowing_osucc
-#print axioms GoodsteinPA.HardyMajorization.dom_pad_eventuallyLE
-#print axioms GoodsteinPA.HardyMajorization.Scirc_dom_pad
-#print axioms GoodsteinPA.HardyMajorization.master_conversion
-#print axioms GoodsteinPA.HardyMajorization.two_pow_le_hardy_Wpow2
-#print axioms GoodsteinPA.HardyMajorization.ewIter_dom_pad_levelcap
-#print axioms GoodsteinPA.HardyMajorization.hEng_of_dom_pad
-#print axioms GoodsteinPA.HardyMajorization.ewIter_hardy_le_of_dom_pad
-#print axioms GoodsteinPA.HardyMajorization.ewRootSlot_dom_pad
-#print axioms GoodsteinPA.HardyMajorization.rel1_dom_pad
-#print axioms GoodsteinPA.HardyMajorization.Wpow_add_lt_Wpow_succ
-#print axioms GoodsteinPA.HardyMajorization.hardy_double_collapse
 
 end GoodsteinPA.HardyMajorization

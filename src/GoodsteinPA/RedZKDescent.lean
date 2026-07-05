@@ -765,4 +765,3 @@ theorem iRcrit_descends_or_zInd_zK_premise {s r ds : V}
 end GoodsteinPA.InternalZ
 
 
-#print axioms GoodsteinPA.InternalZ.iRcrit_descends_or_zInd_zK_premise
