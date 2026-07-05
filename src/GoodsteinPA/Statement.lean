@@ -60,6 +60,8 @@ attribute [goodstein_blueprint 16 clean "pa_not_proves_goodstein" "0" 100 peano_
 
 end GoodsteinPA
 
-/- Ledger check: every build of this module prints the summit's axiom footprint.
-Expected (done): `[propext, Classical.choice, Quot.sound]` and nothing else. -/
-#print axioms GoodsteinPA.peano_not_proves_goodstein
+/- Axiom ledger: the summit's footprint (and every other headline's) is pinned by a GUARDED
+`#print axioms` in `scripts/AxiomCheck.lean` — the enforced point of truth. A bare `#print axioms`
+here would only *log* (a `sorryAx`/new-axiom regression would still build green) and spam every
+compile, so the audit lives in that one guarded file instead. Expected everywhere, enforced there:
+`[propext, Classical.choice, Quot.sound]`. -/

@@ -104,40 +104,19 @@ jobs:
       - name: Build GoodsteinPA
         run: lake build
 
-      # ── Axiom-clean gate (EXACT-MATCH) ─────────────────────────────────────────────────────────
-      # Prove the published claim's ledger: the headline `peano_not_proves_goodstein` is a REAL
-      # proof that NEVER depends on `sorryAx`, and rests on NOTHING but the 3 canonical axioms
-      # `[propext, Classical.choice, Quot.sound]`. The summit re-points (SERIES-5 Lane B) to the
-      # route-B growth headline `peano_not_proves_goodstein_growth`, which never routes through the
-      # `goodstein_implies_consistency` girder — so the allowlist has collapsed to exact-match.
-      # (The girder remains a declared axiom used only by the banked `peano_not_proves_goodstein_routeA`,
-      # which is NOT gated here.) See DIRECTION.md "ANTI-FRAUD guard" + the KB note `named-axiom-blueprint`.
-      # Host-local equivalent: `lean-axiom-gate . -t GoodsteinPA.peano_not_proves_goodstein`.
-      - name: Axiom-clean gate (exact-match)
-        run: |
-          set -euo pipefail
-          # Exact-match: the summit may rest on NOTHING but the 3 canonical axioms.
-          ALLOW='propext|Classical\.choice|Quot\.sound'
-          printf 'import GoodsteinPA.Statement\n#print axioms GoodsteinPA.peano_not_proves_goodstein\n' > axcheck.lean
-          lake env lean axcheck.lean 2>&1 | tee ax.out
-          # (1) Hard fail on any sorry on the headline.
-          if grep -q "sorryAx" ax.out; then
-            echo "::error::headline peano_not_proves_goodstein depends on sorryAx"; exit 1
-          fi
-          # (2) Flatten the wrapped `depends on axioms: [ a,\n b,\n c ]` block onto one line.
-          tr '\n' ' ' < ax.out | sed 's/]/]\n/g' > ax.norm
-          line=$(grep "peano_not_proves_goodstein" ax.norm || true)
-          if [ -z "$line" ]; then
-            echo "::error::could not find headline #print axioms output"; cat ax.out; exit 1
-          fi
-          # (3) Every axiom in the headline's set must be on the allowlist.
-          axset=$(echo "$line" | sed -E 's/.*depends on axioms: \[(.*)\].*/\1/')
-          leftover=$(echo "$axset" | tr ',' '\n' | sed 's/[[:space:]]//g' | grep -vE "^($ALLOW)$" || true)
-          if [ -n "$leftover" ]; then
-            echo "::error::headline has non-allowlisted axiom(s):"; echo "$leftover"; cat ax.out; exit 1
-          fi
-          echo "✓ headline axiom-clean: exactly {propext, Classical.choice, Quot.sound}"
-          rm -f axcheck.lean ax.out ax.norm
+      # ── Axiom-clean gate (guarded #print axioms — the point of truth) ──────────────────────────
+      # `scripts/AxiomCheck.lean` pins each headline theorem's EXACT axiom set with `#guard_msgs`:
+      # the 3 canonical axioms `[propext, Classical.choice, Quot.sound]` and nothing else (no
+      # `sorryAx`, no blueprint axiom, no `native_decide`/`ofReduceBool`). Any drift — a new axiom, a
+      # `sorry`, or a renamed/removed theorem — makes the file fail to elaborate; a clean run is
+      # SILENT (exit 0). This supersedes the old bash-allowlist gate: the check is now in-language,
+      # covers the full clean headline set (crown + consistency + ℕ-truth + faithfulness anchor), and
+      # has no count to bump. The banked route-A summit (`peano_not_proves_goodstein_routeA`) rests on
+      # the declared `goodstein_implies_consistency` girder and is intentionally NOT clean-gated here —
+      # that ledger is the blueprint gate below. See DIRECTION.md "ANTI-FRAUD guard".
+      # Host-local equivalent: `lake env lean scripts/AxiomCheck.lean` (silent + exit 0 == clean).
+      - name: Axiom-clean gate (guarded #print axioms)
+        run: lake env lean scripts/AxiomCheck.lean
 
       # ── Blueprint status gate (machine-verified, ANTI-DRIFT) ───────────────────────────────────
       # Reconcile every `@[goodstein_blueprint]` node's category CLAIM against its stage theorem's
