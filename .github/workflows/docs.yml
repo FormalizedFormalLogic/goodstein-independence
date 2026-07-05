@@ -105,3 +105,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: site
+          # doc-gen4 is best-effort (OOMs the runner); when build-site.py ships the
+          # blueprint WITHOUT a fresh site/docs, keep_files preserves the last-good
+          # /docs already on gh-pages so the blueprint's Lean links still resolve.
+          keep_files: true
