@@ -47,4 +47,10 @@ theorem wainer_splice_Zef2 :
         EventuallyLE GoodsteinPA.Dom.goodsteinLength (fun n => fastGrowing o n) :=
   GoodsteinPA.WainerRoute.wainer_bound_of_pa_proves_goodstein
 
+attribute [goodstein_blueprint 17 clean "wainer_splice" "0" 100 wainer_splice_Zef2
+  []
+  ["SERIES-5 Lane C: rung W discharged. wainer_splice_Zef2 := WainerRoute.wainer_bound_of_pa_proves_goodstein (the discharged girder) verbatim, so it is kernel-clean [propext,choice,Quot.sound] by re-point."]
+  "Rung W (the splice): embed -> rank-0 -> Delta_0 read-off -> Hardy brackets into the wainer_bound statement; realized as an alias of the now-discharged girder."]
+  wainer_splice_Zef2
+
 end GoodsteinPA.WainerLadder
