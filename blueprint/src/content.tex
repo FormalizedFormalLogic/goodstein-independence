@@ -250,8 +250,8 @@ exact contradiction target the Wainer bound must collide with; carries the same 
 
 \begin{theorem}\label{thm:wainer_axiom}
   \lean{GoodsteinPA.WainerRoute.wainer_bound_of_pa_proves_goodstein}
+  \leanok
   \uses{def:wainer_class, thm:wainer_splice}
-  \notready
 \textbf{Wainer bound (the one Route-B debt axiom).}  If \(\mathsf{PA}\vdash\gamma\), then
 \(\texttt{goodsteinLength}\) is eventually bounded by some fixed \(f_o\), \(o<\varepsilon_0\).  This is
 the Wainer classification (Def~\ref{def:wainer_class}) specialized to this route --- a named
@@ -267,8 +267,8 @@ lap-8 port erects them as named pins with ledger rows.
 
 \begin{theorem}\label{thm:routeB_headline}
   \lean{GoodsteinPA.WainerRoute.peano_not_proves_goodstein_growth}
+  \leanok
   \uses{thm:wainer_axiom, thm:no_fixed_bound, def:encoding, thm:bridge}
-  \notready
 \textbf{Kirby--Paris via Wainer/Cichoń/Caicedo.}  \(\mathsf{PA}\nvdash\gamma\): if PA proved
 \(\gamma\), the Wainer bound (Thm~\ref{thm:wainer_axiom}) would put \(\texttt{goodsteinLength}\) below a
 fixed \(f_o\), contradicting Thm~\ref{thm:no_fixed_bound}.  A \emph{real proof} whose only open
@@ -392,13 +392,19 @@ derivation of the translated sequent in the slot calculus --- tower \(e\), root 
 \(d\), and (post-trap-8) the per-node norm side conditions, sourced at the leaves via the
 f-relativization (E--W Lemmas~32--36).  The W3 spike ratified the statement shape
 (Towsner-\S16 K-hypothesis form); it re-bases onto the E--W-amended judgment at the lap-8 port.
-The long pole after the pass.  (\texttt{WAINER-LADDER-2026-07-02.md} rung E.)
+(\texttt{WAINER-LADDER-2026-07-02.md} rung E.)
+
+\emph{SERIES-5 status:} the embedding's work is complete and kernel-clean --- it is realized
+\emph{inside} the discharged girder (\texttt{E1EmbeddingGrind.wainer\_bound\_witness}), not exposed
+as a standalone faithful theorem.  So this node stays uncertified \emph{by design}: it is exposition
+debt (home an \texttt{embedding\_Zef2} of its own faithful type), NOT remaining proof debt --- the
+summit above is axiom-clean without it.
 \end{theorem}
 
 \begin{theorem}\label{thm:wainer_splice}
   \lean{GoodsteinPA.WainerLadder.wainer_splice_Zef2}
   \uses{thm:zeh_embedding, thm:zeh_rank_zero, thm:zeh_readoff_delta0, def:goodstein_length}
-  \notready
+  \leanok
 \textbf{The splice (ladder rung W): \(\texttt{wainer\_bound}\) as a theorem.}  Compose
 embedding \(\to\) rank-to-zero \(\to\) \(\Delta_0\) read-off, convert the exit bound into the
 axiom's hardy/fast-growing vocabulary via the banked Lemma-19 brackets (\texttt{Hardy.lean},
@@ -543,7 +549,7 @@ intended to discharge it; the lap-171 obstruction is why it remains an axiom (ba
 \end{theorem}
 
 \begin{theorem}\label{thm:routeA_headline}
-  \lean{GoodsteinPA.peano_not_proves_goodstein}
+  \lean{GoodsteinPA.peano_not_proves_goodstein_routeA}
   \uses{thm:crux2_axiom, thm:godel2_reduction, def:encoding, thm:bridge}
   \notready
 \textbf{Kirby--Paris via internalization + Gödel~II.}  \(\mathsf{PA}\nvdash\gamma\), proved as
@@ -557,10 +563,13 @@ Thm~\ref{thm:pa_not_proves_goodstein}.
 
 \chapter{Crown \& horizon}\label{chp:crown}
 
-The summit both routes require, and the ranges it opens.  Every node here is aspirational: no Lean
-declaration exists yet, so none carries a \texttt{\textbackslash lean} binding.  They are the honest map
-of what remains --- ``the entire remaining deliverable'' after the 2026-07-01 ``axiom-free or abandon''
-decision.
+The summit, and the ranges beyond it.  \textbf{The summit (Thm~\ref{thm:pa_not_proves_goodstein}) is
+reached} --- \(\mathsf{PA}\nvdash\gamma\), axiom-clean, via the Route-B growth path (SERIES-5).
+Crucially it was reached \emph{without} formalizing the \(\varepsilon_0\) ordinal analysis of PA: the
+monument nodes below (\(\mathsf{PA}_\omega\) cut-elimination, Gentzen's \(\mathrm{Con}(\mathsf{PA})\),
+the two-sided ordinal characterization) are the \emph{horizon}, not summit prerequisites --- Route~B's
+growth-rate contradiction sidesteps them.  Those nodes carry no \texttt{\textbackslash lean} binding
+because no declaration exists yet; they are the honest map of what a full ordinal analysis would add.
 
 \begin{theorem}\label{thm:infinitary_tower}
   \uses{thm:hauptsatz, def:veblen, def:wainer_class}
@@ -594,13 +603,16 @@ ordinal analysis, of which either Goodstein route is one corollary.
 \end{theorem}
 
 \begin{theorem}\label{thm:pa_not_proves_goodstein}
+  \lean{GoodsteinPA.peano_not_proves_goodstein}
   \uses{thm:routeA_headline, thm:routeB_headline}
-  \notready
-\textbf{Summit: \(\mathsf{PA}\nvdash\gamma\), axiom-free.}  The Kirby--Paris independence with a clean
-\(\texttt{\#print axioms}\) (\(\{\texttt{propext},\texttt{Classical.choice},\texttt{Quot.sound}\}\)
-only).  Reached the instant either route's debt axiom is discharged against the crown --- Route~B's
-Wainer bound or Route~A's internalized girder, both grounded in Thm~\ref{thm:gentzen_conpa}.  A first in any
-proof assistant.  \emph{Graph-reading note:} \(\backslash\texttt{uses}\) is conjunctive-only, so both
+  \leanok
+\textbf{Summit: \(\mathsf{PA}\nvdash\gamma\), axiom-free --- REACHED.}  The Kirby--Paris independence
+with a clean \(\texttt{\#print axioms}\) (\(\{\texttt{propext},\texttt{Classical.choice},
+\texttt{Quot.sound}\}\) only), machine-verified by the CI axiom gate.  Discharged via Route~B's Wainer
+bound (SERIES-5); the crown re-points its body onto \texttt{peano\_not\_proves\_goodstein\_growth}, the
+identical proposition.  \emph{Reached without the \(\varepsilon_0\) monument}
+(Thm~\ref{thm:gentzen_conpa}): Route~B trades the ordinal analysis for a growth-rate contradiction.
+A first in any proof assistant.  \emph{Graph-reading note:} \(\backslash\texttt{uses}\) is conjunctive-only, so both
 route in-edges are drawn; the summit needs exactly ONE.  Route~B is the live path (mainline); the
 banked Route~A edge is rendered faded/deprioritized, kept for provenance.
 Ledger row~16 (rung~C of \texttt{WAINER-LADDER-2026-07-02.md}) tracks the flip: the summit has

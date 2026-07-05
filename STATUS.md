@@ -1,5 +1,23 @@
 # STATUS — GoodsteinPA 📊
 
+> ## ✅ SUMMIT REACHED (SERIES-4/5, 2026-07-04)
+>
+> `GoodsteinPA.peano_not_proves_goodstein` is **sorry-free and axiom-clean** — `#print axioms` reports
+> exactly `[propext, Classical.choice, Quot.sound]`, machine-verified by the CI axiom gate
+> (`scripts/AxiomCheck.lean`, in-language `#guard_msgs`).
+>
+> - **SERIES-4** discharged the Route-B girder `wainer_bound_of_pa_proves_goodstein` (`axiom → theorem`)
+>   via `E1EmbeddingGrind.wainer_bound_witness` at the axiom's verbatim type; its three hypotheses
+>   (`gated_certificate_uniform`, `Scirc_dom_pad`, `master_conversion`) are each kernel-clean.
+> - **SERIES-5** re-pointed the crown onto the clean Route-B growth headline
+>   `peano_not_proves_goodstein_growth` (identical proposition) and burned down the W7 `native_decide`.
+> - The old Route-A consistency-girder body (resting on `goodstein_implies_consistency`) is **banked
+>   off-path** as `peano_not_proves_goodstein_routeA` in `Reduction.lean`.
+> - Repo is **PUBLIC on `main`**; the reviewer-facing blueprint is **published via GitHub Pages**.
+>
+> The dated status banner and the lap-by-lap log below **predate this** (newest = lap 209, pre-SERIES-5)
+> and are kept as historical record — read them as "how the summit was reached", not current state.
+
 **Prove `𝗣𝗔 ⊬ ↑goodsteinSentence` (Kirby–Paris 1982) genuinely axiom-free.** · **Build**: 🟢 green (bare `lake build`, 1342 jobs — the only valid gate; `lake build GoodsteinPA` skips Route B) · **Updated**: lap 209 (FRESH-MIND REVIEW) · 2026-07-03 · (headline `[propext, Classical.choice, goodstein_implies_consistency, Quot.sound]`, sorryAx OFF — re-verified this lap, no drift). **SERIES-3 in flight** (`REBUILD-Z-SERIES-3-ORDER-2026-07-03.md`): the post-ruling GRIND that discharges the (🟡) girder `wainer_bound_of_pa_proves_goodstein`. **⭐ Three of four hard rungs of the Wainer/`Zef2` ladder are REAL axiom-clean src theorems** (`[propext, Classical.choice, Quot.sound]`): **P** `cutElimPass_Zef2` (top-rank cut LANDED lap 198), **R** `rankToZero_Zef2`, **D** `readoff_delta0_Zef2` (R-4′, lap 199). **⭐ Rung E is REALIZED in wip** (`wip/E1EmbeddingGrind.lean`, re-verified this lap kernel-clean): `embedding_Zef2TC_V3` (the embedding), `budgetedEmbeddingV3` (V3 ladder **10/10**), and the ported cut-elim pass over `Zef2TC` — `passAuxTC`/`rankToZero_TC`/`sound0_TC` — all `[propext, Classical.choice, Quot.sound]`. The splice `wainer_splice_Zef2` (rung W, `WainerLadder.lean:45`) carries the **sole live `sorryAx`**, at the rung-E consumption point. **⭐ The two remaining E-seam obligations are BOTH kernel-clean in wip now**: (1) the **route-(c) value-budget read-off is CLOSED** (lap 207 — `readoffVTC_core`/`readoff_value_Zef2TC`/`readoff_value_pipeline`/`readoff_value_goodstein`/`goodsteinBodyE_semantic_link`, all `[propext, choice, Quot.sound]`; the `allω` trap DISSOLVED by the `Gated` value gate); (2) the **2b growth-conversion crux is CLOSED** (lap 208 — `ewIter_hardy_le` master majorization + `ewIter_hardy_le_of_dom` concrete engine, kernel-clean). **What's LEFT is the 2b composition** (glue, in wip): `S*`-domination (the ONE genuinely new obligation), the Sslot assembly, and the EventuallyLE-vs-`fastGrowing o` contradiction — then a judge pass ratifies the package + the splice goes sorry-free ⇒ the girder flips `axiom → theorem`.
 
 ## Where it stands
