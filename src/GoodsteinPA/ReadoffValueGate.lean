@@ -613,15 +613,5 @@ theorem gated_certificate_uniform {G : ℕ → ℕ} (hG_mono : Monotone G)
 
 end IterDom
 
-#print axioms GoodsteinPA.ReadoffValueGate.gated_certificate_uniform
-#print axioms GoodsteinPA.ReadoffValueGate.gvb_le_iter
-#print axioms GoodsteinPA.ReadoffValueGate.gated_root_of_sigma1
-#print axioms GoodsteinPA.ReadoffValueGate.gated_of_sigma1
-#print axioms GoodsteinPA.ReadoffValueGate.Gated_mono
-#print axioms GoodsteinPA.ReadoffValueGate.Gated_all_iff
-#print axioms GoodsteinPA.ReadoffValueGate.gvb_mono
-#print axioms GoodsteinPA.ReadoffValueGate.gvb_rew_le
-#print axioms GoodsteinPA.ReadoffValueGate.gvb_substs_le
-#print axioms GoodsteinPA.ReadoffValueGate.gvb_substs_q_le
 
 end GoodsteinPA.ReadoffValueGate

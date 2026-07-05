@@ -44,14 +44,14 @@ permissions:
 jobs:
   # Cheap (~seconds) gate: did this change touch a docs-breaking file?
   #
-  # VISIBILITY GATE: while the repo is PRIVATE, everything below is skipped —
+  # VISIBILITY GUARD: the `if:` below builds + deploys while the repo is public
+  # (Pages is live) and auto-skips everything if it's ever made private again —
   # no Pages on the free plan means a deploy would serve nothing, and private
-  # Actions minutes are capped. Build locally instead: docbuild/build-site.py.
-  # The workflow un-gates itself automatically when the repo goes public;
-  # `workflow_dispatch` stays available for a manual run either way.
+  # Actions minutes are capped (build locally via docbuild/build-site.py in that
+  # case). `workflow_dispatch` forces a manual run in either state.
   changes:
     if: github.event.repository.private == false || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       sensitive: ${{ steps.filter.outputs.sensitive }}
     steps:
@@ -75,7 +75,7 @@ jobs:
       || needs.changes.outputs.sensitive == 'true'
       || contains(github.event.pull_request.labels.*.name, 'force-docs')
       || endsWith(github.head_ref, '-force-docs')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4
       # elan only; we drive the build ourselves inside docbuild/ (the parent lib is

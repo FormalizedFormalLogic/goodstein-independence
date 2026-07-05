@@ -1076,11 +1076,6 @@ end GoodsteinPA.E1EmbeddingGrind
 -- Audit anchors.  The seven closed ladder cases are standard-triple
 -- (`[propext, Classical.choice, Quot.sound]`, no sorryAx); the assembled master carries
 -- `sorryAx` exactly through the three disclosed hard leaves (`axm`/`all`/`exs`).
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_closed
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_and
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_cut
-#print axioms GoodsteinPA.E1EmbeddingGrind.em_cong_Zef2TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsTC_exs
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
@@ -4825,56 +4820,4 @@ theorem wainer_bound_witness
 
 end GoodsteinPA.E1EmbeddingGrind
 
-#print axioms GoodsteinPA.E1EmbeddingGrind.wainer_bound_witness
-#print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_pipeline'
-#print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_goodstein'
-#print axioms GoodsteinPA.E1EmbeddingGrind.embedding_Zef2TC_V3_linearK
-#print axioms GoodsteinPA.E1EmbeddingGrind.goodsteinBodyE_semantic_link
-#print axioms GoodsteinPA.E1EmbeddingGrind.ewIter_mono_slot
-#print axioms GoodsteinPA.E1EmbeddingGrind.ewIterTower_rel1_le
-#print axioms GoodsteinPA.E1EmbeddingGrind.goodsteinBodyE_inst_shape
-#print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_goodstein
-#print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_pipeline
-#print axioms GoodsteinPA.E1EmbeddingGrind.readoffVTC_core
-#print axioms GoodsteinPA.E1EmbeddingGrind.readoff_value_Zef2TC
 
-#print axioms GoodsteinPA.E1EmbeddingGrind.term_val_le_Gexp_iter
-#print axioms GoodsteinPA.E1EmbeddingGrind.stdClosedVal_asg_le_Gexp_iter
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_closed
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_or
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_shift
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_all
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_and
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_cut
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_exs
-#print axioms GoodsteinPA.E1EmbeddingGrind.truth_exFree_Zef2TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_addEqOfLt
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_axm_PAminus
-#print axioms GoodsteinPA.E1EmbeddingGrind.allClosure_peel
-#print axioms GoodsteinPA.E1EmbeddingGrind.clog_tower_gate
-#print axioms GoodsteinPA.E1EmbeddingGrind.rew_succInd'
-#print axioms GoodsteinPA.E1EmbeddingGrind.metaInduction_Zef2TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.succInd_shape_Zef2TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_succInd
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbedsV3_axm
-#print axioms GoodsteinPA.E1EmbeddingGrind.budgetedEmbeddingV3
-#print axioms GoodsteinPA.E1EmbeddingGrind.allω_inversion
-#print axioms GoodsteinPA.E1EmbeddingGrind.embedding_Zef2TC_V3
-#print axioms GoodsteinPA.E1EmbeddingGrind.and_inversion_left
-#print axioms GoodsteinPA.E1EmbeddingGrind.and_inversion_right
-#print axioms GoodsteinPA.E1EmbeddingGrind.or_inversion
-#print axioms GoodsteinPA.E1EmbeddingGrind.stepAnd_Zef2TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.stepVerum_Zef2TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.false_nrel_erase
-#print axioms GoodsteinPA.E1EmbeddingGrind.false_rel_erase
-#print axioms GoodsteinPA.E1EmbeddingGrind.stepAtom_Zef2TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.cutReduceAllAuxRunning_TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.stepAllωTC_bnd
-#print axioms GoodsteinPA.E1EmbeddingGrind.osucc_lt_collapse
-#print axioms GoodsteinPA.E1EmbeddingGrind.passAuxTC
-#print axioms GoodsteinPA.E1EmbeddingGrind.rankToZero_TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.sound0_TC
-#print axioms GoodsteinPA.E1EmbeddingGrind.falsum_erase
-#print axioms GoodsteinPA.E1EmbeddingGrind.f0_le_ewIter
-#print axioms GoodsteinPA.E1EmbeddingGrind.three_le_rel1_rootSlot
-#print axioms GoodsteinPA.E1EmbeddingGrind.ewIterTower_infl
