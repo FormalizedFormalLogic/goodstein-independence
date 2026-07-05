@@ -57,19 +57,15 @@ def main() -> int:
     if not skip_docs:
         if ci:
             subprocess.run(["lake", "exe", "cache", "get"], cwd=DOCBUILD, check=False)
-        # Two levers keep the 16 GB CI runner from OOMing on the doc build:
-        #  (1) Build the library FIRST, then doc-gen separately (Foundation's own recipe:
-        #      `lake build Foundation` then `:docs`). Going straight to `:docs` interleaves
-        #      Lean elaboration (Foundation compiled from source) with doc-gen4 in one DAG,
-        #      doubling peak RSS. Split => doc-gen runs on ready oleans, no overlap.
-        #  (2) Cap doc-gen parallelism to -j2 on CI. goodstein's doc closure is BIGGER than
-        #      Foundation's (it imports Foundation whole plus extra Mathlib), so at full -j
-        #      the tail-end doc-gen workers still spike together and OOM where Foundation
-        #      just fits. -j2 caps concurrent workers so peak fits in RAM. The compile phase
-        #      is fine at full speed; only doc-gen needs throttling. (Local: full -j.)
+        # Build the library FIRST, then doc-gen separately (Foundation's own recipe:
+        # `lake build Foundation` then `:docs`). Going straight to `:docs` interleaves Lean
+        # elaboration (Foundation compiled from source) with doc-gen4 in one parallel DAG,
+        # ~doubling peak RSS. Split => doc-gen runs on ready oleans, no overlap. That alone
+        # gets doc-gen to ~96% on the 16 GB runner; the CI job adds a swapfile (docs.yml) to
+        # carry the residual peak over the top. (Lake 5.0 dropped `-j`/`--jobs`, so capping
+        # the worker count isn't an option.)
         run(["lake", "build", "GoodsteinPA"], cwd=DOCBUILD)
-        docs_cmd = ["lake", "build", "GoodsteinPA:docs"] + (["-j2"] if ci else [])
-        run(docs_cmd, cwd=DOCBUILD)
+        run(["lake", "build", "GoodsteinPA:docs"], cwd=DOCBUILD)
         run([sys.executable, str(DOCBUILD / "trim-docs.py"), str(DOC_OUT), "GoodsteinPA"], cwd=REPO)
     elif not DOC_OUT.is_dir():
         sys.exit("--skip-docs given but no existing docs build at " + str(DOC_OUT))
