@@ -8,28 +8,40 @@ GoodsteinPA.Statement.peano_not_proves_goodstein : 𝗣𝗔 ⊬ ↑goodsteinSent
 ```
 
 where `goodsteinSentence` is the faithful arithmetic sentence "every Goodstein
-sequence terminates."
+sequence terminates." The proof is
+[`src/GoodsteinPA/Statement.lean`](src/GoodsteinPA/Statement.lean) — the headline
+theorem and this repo's designated audit surface.
 
 ## How this came to be
 
-No grand plan:
+This is an AI-assisted formalization: Claude (via Claude Code) drove a Lean build
+loop against a hand-written [blueprint](#blueprint--docs). The full, honest account
+of how the project came about is in
+[`docs/how-this-came-to-be.md`](docs/how-this-came-to-be.md).
 
-1. I watched a YouTube video about Goodstein's theorem. Neat.
-2. "Let's formalize it." Mathlib's 1000-theorems list wanted it, so someone was
-   even asking.
-3. "Wait, PA isn't strong enough to prove this? That's weird."
-4. So formalize *that* too. The independence became the point, and the Goodstein
-   process became the setup.
-5. Having finished it, I am only very slightly wiser about *why* PA cannot prove
-   Goodstein.
+The axiom ledger ([Status](#status)) and the faithfulness anchor are machine-checked
+precisely because the work was AI-assisted: they are what let a reader trust the
+result without trusting the process that produced it.
 
-Step 5 is the honest one. Formalization gets sold as a route to understanding, and
-I can't claim much of that here. What is here instead is an artifact you do not have
-to take my word for: the axiom ledger below is machine-checked, and so is the bridge
-that keeps the statement from being vacuous.
+## Blueprint & docs
 
-The work was AI-assisted, with Claude driving a Lean build loop. The axiom ledger and
-the faithfulness anchor exist precisely because of that.
+The proof was guided by a **dependency blueprint** — a prose-plus-graph sketch of the
+argument, with each node linked to the Lean declaration that discharges it. It uses
+[`leanblueprint`](https://github.com/PatrickMassot/leanblueprint), the same tooling
+behind the [Fermat's Last Theorem](https://imperialcollegelondon.github.io/FLT/) and
+[Prime Number Theorem](https://alexkontorovich.github.io/PrimeNumberTheoremAnd/)
+projects.
+
+- **Rendered blueprint + API docs**: https://gotrevor.github.io/goodstein-independence/
+  — the dependency graph and prose at
+  [`/blueprint/`](https://gotrevor.github.io/goodstein-independence/blueprint/), and the
+  doc-gen4 Lean API reference at
+  [`/docs/`](https://gotrevor.github.io/goodstein-independence/docs/).
+- **Blueprint source**: [`blueprint/`](blueprint), rebuilt on push by
+  [`.github/workflows/docs.yml`](.github/workflows/docs.yml). Each node's status is
+  machine-synced from the `@[goodstein_blueprint]` attributes in the Lean source by
+  [`blueprint/annotate_depgraph.py`](blueprint/annotate_depgraph.py), so the graph
+  cannot silently drift from what actually compiles.
 
 ## Route: why growth-rate, not Gödel-II
 
@@ -109,8 +121,9 @@ Both halves of the growth route are in Lean and proved:
 Their contradiction is `GoodsteinPA.WainerRoute.peano_not_proves_goodstein_growth`,
 which the headline re-points to.
 
-Remaining work is infrastructure rather than mathematics. See
-`ROUTE-DECISION-2026-07-01-WAINER.md` and `DIRECTION.md`.
+The mathematics is complete. Route history and planning notes are archived under
+[`archive/`](archive) — the growth-rate pivot is recorded in
+[`archive/routes/ROUTE-DECISION-2026-07-01-WAINER.md`](archive/routes/ROUTE-DECISION-2026-07-01-WAINER.md).
 
 ## License
 

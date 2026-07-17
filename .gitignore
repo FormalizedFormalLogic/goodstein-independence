@@ -19,3 +19,6 @@ papers/**/*.ps
 
 # docbuild sub-project build dir
 docbuild/.lake/
+
+# junk
+f.txt
