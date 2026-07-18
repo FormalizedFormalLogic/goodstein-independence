@@ -9,7 +9,6 @@ public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.Embedding
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.EwIter
-public import GoodsteinPA.Hardy
 public import GoodsteinPA.HardyMajorization
 public import GoodsteinPA.InternalBridge
 public import GoodsteinPA.InternalBump
@@ -23,6 +22,13 @@ public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Reduction
 public import GoodsteinPA.Statement
+public import GoodsteinPA.ToMathlib.FastGrowing.Basic
+public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
+public import GoodsteinPA.ToMathlib.FastGrowing.Norm
+public import GoodsteinPA.ToMathlib.Hardy
+public import GoodsteinPA.ToMathlib.Hardy.Basic
+public import GoodsteinPA.ToMathlib.Hardy.Structure
+public import GoodsteinPA.ToMathlib.Hardy.VsFastGrowing
 public import GoodsteinPA.WainerBound
 public import GoodsteinPA.WainerRoute
 public import GoodsteinPA.Zinfty
