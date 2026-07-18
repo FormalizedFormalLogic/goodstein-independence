@@ -4712,8 +4712,8 @@ Hypothesis-passing across the sibling wip modules (they cannot import each other
 hypothesis is the VERBATIM statement of a theorem proven kernel-clean in its module):
 - `Hcert` = `GoodsteinPA.ReadoffValueGate.gated_certificate_uniform` (`Gated` is this file's
   duplicate of the same definition),
-- `HSdom` = `GoodsteinPA.HardyMajorization.Scirc_dom_pad`,
-- `Hconv` = `GoodsteinPA.HardyMajorization.master_conversion`.
+- `HSdom` = `ONote.Scirc_dom_pad`,
+- `Hconv` = `ONote.master_conversion`.
 The read-off (`readoff_value_goodstein'`), the m-uniformization, and the semantic link are
 discharged HERE.  The conclusion is the exact type of the sole route axiom
 `WainerRoute.wainer_bound_of_pa_proves_goodstein` (`src/GoodsteinPA/WainerRoute.lean:119`). -/

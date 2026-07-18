@@ -1,6 +1,7 @@
 module
 
-public import GoodsteinPA.EwIter
+public import GoodsteinPA.OperatorZeh
+public import GoodsteinPA.ToMathlib.FastGrowing.EwIter
 public import GoodsteinPA.Compat
 
 @[expose] public section
@@ -1112,27 +1113,6 @@ theorem cutElimPass_Zef2 {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq
     Zef2Prov (collapse α) e H (ewIter f α) c Γ :=
   passAux c heNF D rfl hf1.monotone hf1.infl hf1.2 hαNF hαH
 
-/-- The E–W root slot `2·(x + rel1 (hardy e) m x) + 3` — a concrete `EwF1`/`EwF2` witness slot
-(the `Zeh → Zef` root-slot analog, budgeted for the exit read-off). -/
-def ewRootSlot (e : ONote) (m : ℕ) : ℕ → ℕ :=
-  fun x => 2 * (x + rel1 (hardy e) m x) + 3
-
-theorem ewRootSlot_f1 (e : ONote) (m : ℕ) : EwF1 (ewRootSlot e m) := by
-  constructor
-  · intro a b hab
-    have hr : hardy e (max m a) ≤ hardy e (max m b) :=
-      hardy_monotone e (max_le_max (le_refl m) hab.le)
-    simp [ewRootSlot, rel1]
-    omega
-  · intro x
-    simp [ewRootSlot]
-    omega
-
-theorem ewRootSlot_f2 (e : ONote) (m : ℕ) : EwF2 (ewRootSlot e m) := by
-  intro x
-  simp [ewRootSlot]
-  omega
-
 /-- **§7b The C3 composed exit over `Zef2`** — the anti-vacuity test: ONE elimination pass
 (`cutElimPass_Zef2`, rank `1 → 0`) composed with `headline_readoff_Zef2`, at the concrete
 `ewRootSlot`.  The `ewIter (ewRootSlot e m) α 0` iterate is VISIBLE in the bound and is what the
@@ -1157,43 +1137,6 @@ The rungs decompose the `wainer_bound_of_pa_proves_goodstein` monolith
 footprint (an axiom is FORBIDDEN this lap), so the rungs live on the tex dep-graph
 (`thm:zeh_rank_zero`/`thm:zeh_embedding`/`thm:wainer_splice`, `\lean{}`-bound), not the machine
 ledger.  Ledger metadata is carried in each docstring. -/
-
-/-- The `d`-fold ordinal collapse (rung R's ordinal tower).  `collapse = expTower`. -/
-def collapseIter : ℕ → ONote → ONote
-  | 0, α => α
-  | (d + 1), α => collapse (collapseIter d α)
-
-/-- NF preservation for the collapse tower (real content, not a pin). -/
-theorem collapseIter_NF {α : ONote} (hα : α.NF) : ∀ d, (collapseIter d α).NF
-  | 0 => hα
-  | (d + 1) => expTower_NF (collapseIter_NF hα d)
-
-/-- The `d`-fold slot tower (rung R's iterate composite): each pass iterates the current slot at
-the current collapsed ordinal. -/
-noncomputable def ewIterTower : (ℕ → ℕ) → ℕ → ONote → (ℕ → ℕ)
-  | f, 0, _ => f
-  | f, (d + 1), α => ewIter (ewIterTower f d α) (collapseIter d α)
-
-/-- **Collapse-tower shift** — `collapseIter d (collapse α) = collapse (collapseIter d α)`
-(`= collapseIter (d+1) α`).  Lets the rung-R induction stay on EXACT ordinals: one pass promotes
-`α → collapse α`, and the remaining `d` passes commute the outer `collapse` through. -/
-theorem collapseIter_collapse (α : ONote) :
-    ∀ d, collapseIter d (collapse α) = collapse (collapseIter d α)
-  | 0 => rfl
-  | (d + 1) => by
-      show collapse (collapseIter d (collapse α)) = collapse (collapse (collapseIter d α))
-      rw [collapseIter_collapse α d]
-
-/-- **Slot-tower shift** — `ewIterTower (ewIter f α) d (collapse α) = ewIterTower f (d+1) α`.  The
-companion of `collapseIter_collapse` for the slot side: `d` passes starting from the once-passed
-`(ewIter f α, collapse α)` equal `d+1` passes from `(f, α)`. -/
-theorem ewIterTower_collapse (f : ℕ → ℕ) (α : ONote) :
-    ∀ d, ewIterTower (ewIter f α) d (collapse α) = ewIterTower f (d + 1) α
-  | 0 => rfl
-  | (d + 1) => by
-      show ewIter (ewIterTower (ewIter f α) d (collapse α)) (collapseIter d (collapse α))
-         = ewIter (ewIterTower f (d + 1) α) (collapse (collapseIter d α))
-      rw [ewIterTower_collapse f α d, collapseIter_collapse α d]
 
 /-- **`rankToZeroAux`** — the EwLow-threaded rung-R induction.  Threads
 `Monotone ∧ inflationary ∧ (2m+1 ≤ ·)` (NOT `EwF1`: `ewIter` does not inherit strict monotonicity,

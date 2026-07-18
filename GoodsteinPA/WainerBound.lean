@@ -8,7 +8,7 @@ module
 public import GoodsteinPA.WainerRoute
 public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.ReadoffValueGate
-public import GoodsteinPA.HardyMajorization
+public import GoodsteinPA.ToMathlib.Hardy.Majorization
 
 @[expose] public section
 
@@ -20,8 +20,8 @@ HERE into a theorem, by applying `E1EmbeddingGrind.wainer_bound_witness` to its 
 hypothesis-theorems:
 
 * `ReadoffValueGate.gated_certificate_uniform`  (`Hcert`)
-* `HardyMajorization.Scirc_dom_pad`             (`HSdom`)
-* `HardyMajorization.master_conversion`         (`Hconv`)
+* `Scirc_dom_pad`             (`HSdom`)
+* `master_conversion`         (`Hconv`)
 
 This is a verified **copy-not-compose** splice: each hypothesis type in `wainer_bound_witness` is
 the *verbatim* statement of the corresponding theorem (checked at the judge pass), so the four
@@ -51,7 +51,7 @@ theorem wainer_bound_of_pa_proves_goodstein :
   -- statements of the three theorems.
   fun h => E1EmbeddingGrind.wainer_bound_witness
     ReadoffValueGate.gated_certificate_uniform
-    HardyMajorization.Scirc_dom_pad HardyMajorization.master_conversion h
+    Scirc_dom_pad master_conversion h
 
 attribute [goodstein_blueprint 14 clean "wainer_axiom" "0" 100 wainer_bound_of_pa_proves_goodstein
   []

@@ -45,6 +45,7 @@ module
 public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.Compat
+public import GoodsteinPA.ToMathlib.FastGrowing.EwIter
 
 @[expose] public section
 
@@ -54,16 +55,6 @@ open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 /-! ## §0 The SPIKE-W4 transforms (LOCK §1 verbatim; `wip/` copies were re-derivations). -/
-
-/-- `ω^α` as an explicit `ONote` (`oadd α 1 0`) — SPIKE-W4's ordinal transform. -/
-def expTower (α : ONote) : ONote := oadd α 1 0
-
-theorem expTower_NF {α : ONote} (hα : α.NF) : (expTower α).NF :=
-  hα.oadd 1 NFBelow.zero
-
-theorem expTower_lt_expTower {β α : ONote} (hβ : β.NF) (h : β < α) :
-    expTower β < expTower α :=
-  oadd_lt_oadd_1 (expTower_NF hβ) h
 
 @[simp] theorem norm_expTower (α : ONote) : norm (expTower α) = max (norm α) 1 :=
   Zekd.norm_omegaPow
@@ -657,14 +648,6 @@ is paid by the pinned iterate — not by composition, not by a raised control.  
 DISCHARGED (§7, slot judgment `Zef`); pin 3 `cutElimPass_Zf` stays `sorry` (lap-5 entrance gate,
 discharge FORBIDDEN). -/
 
-/-- The Eguchi–Weiermann max-relativization of a number-theoretic operator (spike §6). -/
-def rel1 (f : ℕ → ℕ) (n : ℕ) : ℕ → ℕ := fun x => f (max n x)
-
-/-- **The reassembly algebra (E–W Lemma 25's commutation):** max-relativization commutes
-with composition definitionally — a composed (cut-reduced) slot re-enters the ω-rule's
-premise form with no residue. -/
-theorem rel1_comp (f g : ℕ → ℕ) (n : ℕ) : rel1 (f ∘ g) n = f ∘ rel1 g n := rfl
-
 /-- **Norm control** (the E–W "number-theoretic operator" bound, tied to the `(e, m)` axis):
 `f` dominates the Hardy witness bound at every relativization depth.  `hardy e` is the root
 instantiation (`normControlled_root`); the ω-node re-entry is `normControlled_rel1`. -/
@@ -699,10 +682,6 @@ premise at a lower stage than the conclusion. -/
 theorem NormControlled.stage_antitone {f : ℕ → ℕ} {e : ONote} {m m' : ℕ}
     (h : NormControlled f e m) (hm : m' ≤ m) : NormControlled f e m' :=
   fun x => le_trans (hardy_monotone e (by omega)) (h x)
-
-/-- `rel1` is monotone in the slot (feeds `NormControlled.mono` at ω-nodes). -/
-theorem rel1_mono {f f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) (n : ℕ) :
-    ∀ x, rel1 f n x ≤ rel1 f' n x := fun x => hff' (max n x)
 
 /-- **Composition preserves control at a FIXED control** (E–W Lemma 25's numeric update,
 `f ↦ f∘g`, at the *same* control — the faithful reduction shape per the lap-176 finding
@@ -835,10 +814,6 @@ branches — the diagonalization is forced.  (The box's lap-5 docstring mis-read
 it described branch slots as `rel1 (iterSlot f (β n)) n`, but the conclusion's slot parameter puts
 `iterSlot f α` — the branch ordinal never enters the branch slot.) -/
 
-/-- **`collapse`** — the single-rank predicative height map `α ↦ ω^α` (E–W Lemma 27's Ω-free
-shadow; iterated it is the rank-lowering tower). -/
-def collapse (α : ONote) : ONote := expTower α
-
 /-- **`iterSlot`** — the diagonalizing ordinal-indexed numeric-slot iterate (E–W Def 16's `f^α` /
 Lemma 19's `F^α(0)`): `iterSlot f 0 = f`; `iterSlot f (a+1) n = iterSlot f a (f n)`;
 `iterSlot f λ n = iterSlot f (λ[n]) n` (limit, via `ONote.fundamentalSequence`).  Same well-founded
@@ -881,14 +856,6 @@ theorem iterSlot_succ (f : ℕ → ℕ) (o) {a} (h : fundamentalSequence o = Sum
 theorem iterSlot_limit (f : ℕ → ℕ) (o) {fs} (h : fundamentalSequence o = Sum.inr fs) :
     iterSlot f o = fun n => iterSlot f (fs n) n := by
   rw [iterSlot_def f h]
-
-/-- **C5: `collapse` is NF-preserving** (so the assembly can splice at NF ordinals). -/
-theorem collapse_NF {α : ONote} (hα : α.NF) : (collapse α).NF := expTower_NF hα
-
-/-- **C5: `collapse` is strictly monotone** (`β < α → collapse β < collapse α`) — the descent the
-rank-lowering induction needs (the `Zekd.add_osucc_descent`-class compatibility). -/
-theorem collapse_strictMono {β α : ONote} (hβ : β.NF) (h : β < α) : collapse β < collapse α :=
-  expTower_lt_expTower hβ h
 
 /-- **C5: `iterSlot f α` is inflationary** if `f` is (slot stays inflationary through the pass).
 Mirrors `le_hardy`. -/
@@ -1494,23 +1461,6 @@ end ZefProv
 
 /-! ## The re-slot domination facts (lap-3 probe, restated for `rel1 · ·` slots) -/
 
-/-- `rel1 f n` inherits monotonicity from `f`. -/
-theorem rel1_monotone {f : ℕ → ℕ} (hf : Monotone f) (n : ℕ) : Monotone (rel1 f n) :=
-  fun _ _ h => hf (max_le_max (le_refl n) h)
-
-/-- `rel1 f n` inherits inflationarity from `f` (`x ≤ rel1 f n x`). -/
-theorem rel1_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) (n : ℕ) : ∀ x, x ≤ rel1 f n x :=
-  fun x => le_trans (le_max_right n x) (hf (max n x))
-
-/-- **`rel1` preserves the `2m+1` lower bound** (lap-10 SERIES-3 pass prep) — the property the
-pass's per-node gate (`ewN_collapse_le`) needs.  Unlike strict monotonicity (the `EwF1` first
-component, which `rel1`'s `max`-plateau destroys), the `EwF1` SECOND component `2m+1 ≤ f m` is
-inherited: `(rel1 f n) m = f (max n m) ≥ f m ≥ 2m+1`.  This is what lets the pass thread its
-invariants through `allω` branches (slot `rel1 f n`) with NO `EwF1`-of-relativized-slot demand. -/
-theorem rel1_low {f : ℕ → ℕ} (hmono : Monotone f) (hlow : ∀ m, 2 * m + 1 ≤ f m) (n : ℕ) :
-    ∀ m, 2 * m + 1 ≤ rel1 f n m :=
-  fun m => le_trans (hlow m) (hmono (le_max_right n m))
-
 /-- **The ∀-family member re-slots to `g∘f`** (lap-3 `reslot_gof_family`): for `g` monotone, `f`
 monotone + inflationary, and witness `n ≤ f 0`, `rel1 g n ≤ g∘f` pointwise. -/
 theorem reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
@@ -1910,13 +1860,6 @@ LOCK §4).  The `allω` branch threads by `rel1_rel1` (stage `max m n` ⤳ slot
 `n ≤ hardy e m = (rel1 (hardy e) m) 0` is definitional.  This is the kernel witness that the
 lap-184 amendment is a CONSERVATIVE generalization — every stage-`m` derivation is a slot
 derivation at the canonical slot — so nothing the stage calculus proved is lost. -/
-
-/-- `rel1 (rel1 f m) n = rel1 f (max m n)` — the max-associativity identity that threads the
-stage→slot embedding through `allω`. -/
-theorem rel1_rel1 (f : ℕ → ℕ) (m n : ℕ) : rel1 (rel1 f m) n = rel1 f (max m n) := by
-  funext x
-  simp only [rel1]
-  rw [max_assoc]
 
 /-- **Stage→slot embedding `Zeh → Zef`** at the root slot `rel1 (hardy e) m`.  Witnesses that the
 LOCK §1-A1/§3 amendment (ℕ-stage ⤳ function-slot) is a conservative generalization. -/

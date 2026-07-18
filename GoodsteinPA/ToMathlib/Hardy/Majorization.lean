@@ -1,6 +1,6 @@
 module
 
-public import GoodsteinPA.OperatorZef2
+public import GoodsteinPA.ToMathlib.FastGrowing.EwIter
 
 @[expose] public section
 
@@ -22,9 +22,9 @@ The route-(c) splice's LAST piece: dominate the read-off's master bound
 This file banks the majorization prerequisites, starting with THE bridge.
 -/
 
-namespace GoodsteinPA.HardyMajorization
+namespace ONote
 
-open ONote Ordinal GoodsteinPA.OperatorZeh
+open Ordinal
 
 /-- **The norm/Nlog bridge**: the linear norm is at most one binary order above the log-norm.
 (Sharp shape: `norm ≤ 2^Nlog` FAILS at coefficient 5 — `clog 5 = 2`, `2^2 = 4 < 5`.) -/
@@ -1397,4 +1397,4 @@ theorem master_conversion {S : ℕ → ℕ} {E_S γ : ONote} {c_S : ℕ}
   omega
 
 
-end GoodsteinPA.HardyMajorization
+end ONote

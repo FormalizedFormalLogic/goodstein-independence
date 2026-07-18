@@ -1,16 +1,83 @@
+/-
+# Eguchi–Weiermann iteration on `ONote`
+
+The max-relativization `rel1`, the exponential collapse `expTower`/`collapse`, the controlled
+iteration `ewIter`, and the `d`-fold collapse/slot towers (`collapseIter`/`ewIterTower`).
+-/
 module
 
-public import GoodsteinPA.OperatorZeh
-public import GoodsteinPA.ToMathlib.Goodstein.Domination
+public import Mathlib.SetTheory.Ordinal.Notation
+public import Mathlib.Data.Finset.Max
+public import Mathlib.Data.Set.Finite.Lattice
+public import Mathlib.Order.Interval.Finset.Nat
+public import Mathlib.Tactic.Ring
+public import GoodsteinPA.ToMathlib.Hardy
 
 @[expose] public section
 
+namespace ONote
+
+open Ordinal
+
 set_option linter.unnecessarySimpa false
 
-namespace GoodsteinPA.OperatorZeh
+/-- `ω^α` as an explicit `ONote` (`oadd α 1 0`) — SPIKE-W4's ordinal transform. -/
+def expTower (α : ONote) : ONote := oadd α 1 0
 
-open ONote
-open scoped Ordinal
+theorem expTower_NF {α : ONote} (hα : α.NF) : (expTower α).NF :=
+  hα.oadd 1 NFBelow.zero
+
+theorem expTower_lt_expTower {β α : ONote} (hβ : β.NF) (h : β < α) :
+    expTower β < expTower α :=
+  oadd_lt_oadd_1 (expTower_NF hβ) h
+
+/-- The Eguchi–Weiermann max-relativization of a number-theoretic operator (spike §6). -/
+def rel1 (f : ℕ → ℕ) (n : ℕ) : ℕ → ℕ := fun x => f (max n x)
+
+/-- **The reassembly algebra (E–W Lemma 25's commutation):** max-relativization commutes
+with composition definitionally — a composed (cut-reduced) slot re-enters the ω-rule's
+premise form with no residue. -/
+theorem rel1_comp (f g : ℕ → ℕ) (n : ℕ) : rel1 (f ∘ g) n = f ∘ rel1 g n := rfl
+
+/-- `rel1` is monotone in the slot (feeds `NormControlled.mono` at ω-nodes). -/
+theorem rel1_mono {f f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) (n : ℕ) :
+    ∀ x, rel1 f n x ≤ rel1 f' n x := fun x => hff' (max n x)
+
+/-- `rel1 f n` inherits monotonicity from `f`. -/
+theorem rel1_monotone {f : ℕ → ℕ} (hf : Monotone f) (n : ℕ) : Monotone (rel1 f n) :=
+  fun _ _ h => hf (max_le_max (le_refl n) h)
+
+/-- `rel1 f n` inherits inflationarity from `f` (`x ≤ rel1 f n x`). -/
+theorem rel1_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) (n : ℕ) : ∀ x, x ≤ rel1 f n x :=
+  fun x => le_trans (le_max_right n x) (hf (max n x))
+
+/-- **`rel1` preserves the `2m+1` lower bound** (lap-10 SERIES-3 pass prep) — the property the
+pass's per-node gate (`ewN_collapse_le`) needs.  Unlike strict monotonicity (the `EwF1` first
+component, which `rel1`'s `max`-plateau destroys), the `EwF1` SECOND component `2m+1 ≤ f m` is
+inherited: `(rel1 f n) m = f (max n m) ≥ f m ≥ 2m+1`.  This is what lets the pass thread its
+invariants through `allω` branches (slot `rel1 f n`) with NO `EwF1`-of-relativized-slot demand. -/
+theorem rel1_low {f : ℕ → ℕ} (hmono : Monotone f) (hlow : ∀ m, 2 * m + 1 ≤ f m) (n : ℕ) :
+    ∀ m, 2 * m + 1 ≤ rel1 f n m :=
+  fun m => le_trans (hlow m) (hmono (le_max_right n m))
+
+/-- `rel1 (rel1 f m) n = rel1 f (max m n)` — the max-associativity identity that threads the
+stage→slot embedding through `allω`. -/
+theorem rel1_rel1 (f : ℕ → ℕ) (m n : ℕ) : rel1 (rel1 f m) n = rel1 f (max m n) := by
+  funext x
+  simp only [rel1]
+  rw [max_assoc]
+
+/-- **`collapse`** — the single-rank predicative height map `α ↦ ω^α` (E–W Lemma 27's Ω-free
+shadow; iterated it is the rank-lowering tower). -/
+def collapse (α : ONote) : ONote := expTower α
+
+/-- **C5: `collapse` is NF-preserving** (so the assembly can splice at NF ordinals). -/
+theorem collapse_NF {α : ONote} (hα : α.NF) : (collapse α).NF := expTower_NF hα
+
+/-- **C5: `collapse` is strictly monotone** (`β < α → collapse β < collapse α`) — the descent the
+rank-lowering induction needs (the `Zekd.add_osucc_descent`-class compatibility). -/
+theorem collapse_strictMono {β α : ONote} (hβ : β.NF) (h : β < α) : collapse β < collapse α :=
+  expTower_lt_expTower hβ h
 
 /-!
 # The Eguchi–Weiermann controlled iterate (`ewIter`), ported to `src` (lap 8)
@@ -690,4 +757,62 @@ theorem hslack_kit_ge {s : ℕ → ℕ} (hmono : Monotone s) (hinfl : ∀ m, m �
     le_trans (hlow (ewIter s βφ 0)) (le_trans hswap (hgmono hs0f))
   omega
 
-end GoodsteinPA.OperatorZeh
+/-- The E–W root slot `2·(x + rel1 (hardy e) m x) + 3` — a concrete `EwF1`/`EwF2` witness slot
+(the `Zeh → Zef` root-slot analog, budgeted for the exit read-off). -/
+def ewRootSlot (e : ONote) (m : ℕ) : ℕ → ℕ :=
+  fun x => 2 * (x + rel1 (hardy e) m x) + 3
+
+theorem ewRootSlot_f1 (e : ONote) (m : ℕ) : EwF1 (ewRootSlot e m) := by
+  constructor
+  · intro a b hab
+    have hr : hardy e (max m a) ≤ hardy e (max m b) :=
+      hardy_monotone e (max_le_max (le_refl m) hab.le)
+    simp [ewRootSlot, rel1]
+    omega
+  · intro x
+    simp [ewRootSlot]
+    omega
+
+theorem ewRootSlot_f2 (e : ONote) (m : ℕ) : EwF2 (ewRootSlot e m) := by
+  intro x
+  simp [ewRootSlot]
+  omega
+
+/-- The `d`-fold ordinal collapse (rung R's ordinal tower).  `collapse = expTower`. -/
+def collapseIter : ℕ → ONote → ONote
+  | 0, α => α
+  | (d + 1), α => collapse (collapseIter d α)
+
+/-- NF preservation for the collapse tower (real content, not a pin). -/
+theorem collapseIter_NF {α : ONote} (hα : α.NF) : ∀ d, (collapseIter d α).NF
+  | 0 => hα
+  | (d + 1) => expTower_NF (collapseIter_NF hα d)
+
+/-- The `d`-fold slot tower (rung R's iterate composite): each pass iterates the current slot at
+the current collapsed ordinal. -/
+noncomputable def ewIterTower : (ℕ → ℕ) → ℕ → ONote → (ℕ → ℕ)
+  | f, 0, _ => f
+  | f, (d + 1), α => ewIter (ewIterTower f d α) (collapseIter d α)
+
+/-- **Collapse-tower shift** — `collapseIter d (collapse α) = collapse (collapseIter d α)`
+(`= collapseIter (d+1) α`).  Lets the rung-R induction stay on EXACT ordinals: one pass promotes
+`α → collapse α`, and the remaining `d` passes commute the outer `collapse` through. -/
+theorem collapseIter_collapse (α : ONote) :
+    ∀ d, collapseIter d (collapse α) = collapse (collapseIter d α)
+  | 0 => rfl
+  | (d + 1) => by
+      show collapse (collapseIter d (collapse α)) = collapse (collapse (collapseIter d α))
+      rw [collapseIter_collapse α d]
+
+/-- **Slot-tower shift** — `ewIterTower (ewIter f α) d (collapse α) = ewIterTower f (d+1) α`.  The
+companion of `collapseIter_collapse` for the slot side: `d` passes starting from the once-passed
+`(ewIter f α, collapse α)` equal `d+1` passes from `(f, α)`. -/
+theorem ewIterTower_collapse (f : ℕ → ℕ) (α : ONote) :
+    ∀ d, ewIterTower (ewIter f α) d (collapse α) = ewIterTower f (d + 1) α
+  | 0 => rfl
+  | (d + 1) => by
+      show ewIter (ewIterTower (ewIter f α) d (collapse α)) (collapseIter d (collapse α))
+         = ewIter (ewIterTower f (d + 1) α) (collapse (collapseIter d α))
+      rw [ewIterTower_collapse f α d, collapseIter_collapse α d]
+
+end ONote
