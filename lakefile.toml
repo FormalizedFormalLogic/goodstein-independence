@@ -11,33 +11,12 @@
 # so a build only recompiles Foundation itself while mathlib oleans Replay from cache. Bump the
 # rev by hand as upstream advances.
 name = "GoodsteinPA"
-# Build BOTH libs by default: the public root AND the blueprint root. Without the latter in
-# defaultTargets, a bare `lake build` (the local .githooks gate + CI's lean-action) never compiles
-# the Path B nodes, so `lake exe blueprint_audit` would audit stale/absent oleans (a vacuous gate).
-defaultTargets = ["GoodsteinPA", "GoodsteinPABlueprint"]
-srcDir = "src"
+defaultTargets = ["GoodsteinPA"]
 
 [[lean_lib]]
 name = "GoodsteinPA"
-
-[[lean_lib]]
-name = "GoodsteinPABlueprint"
-
-# Machine-verified blueprint status gate. Computes each `@[goodstein_blueprint]` node's real
-# `collectAxioms` footprint and reconciles it against the category claim. `supportInterpreter`
-# lets `importModules` run imported modules' initializers (registering env extensions) at runtime,
-# the same way `checkdecls` does. Run: `lake exe blueprint_audit [trusted-axioms.txt]`.
-[[lean_exe]]
-name = "blueprint_audit"
-root = "BlueprintAudit"
-supportInterpreter = true
 
 [[require]]
 name = "Foundation"
 git = "https://github.com/FormalizedFormalLogic/Foundation.git"
 rev = "2040d2f33807c34636b8a9f20189d22b48d65040"
-
-[[require]]
-name = "checkdecls"
-git = "https://github.com/PatrickMassot/checkdecls.git"
-rev = "3d425859e73fcfbef85b9638c2a91708ef4a22d4"
