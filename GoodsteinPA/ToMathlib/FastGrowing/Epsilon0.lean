@@ -6,10 +6,8 @@ Index domination of `fastGrowing` by the `ε₀`-diagonal `fastGrowingε₀`.
 module
 
 public import Mathlib.SetTheory.Ordinal.Notation
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Order.Iterate
 public import GoodsteinPA.ToMathlib.FastGrowing.Norm
-public meta import GoodsteinPA.ToMathlib.FastGrowing.Norm  -- shake: keep
 
 @[expose] public section
 
@@ -66,13 +64,5 @@ theorem fastGrowing_lt_fastGrowingε₀ (o : ONote) (ho : o.NF) :
   have hlt : o < tower n := lt_of_lt_of_le hk (tower_strictMono.monotone hkn)
   rw [fastGrowingε₀_eq]
   exact fastGrowing_lt_of_lt_tower ho n (by omega) h2n hlt
-
-/-! ### Anti-vacuity anchors for `fastGrowingε₀` (`native_decide`) -/
-
-example : fastGrowingε₀ 0 = 1 := by native_decide
-example : fastGrowingε₀ 1 = 2 := by native_decide
-example : fastGrowingε₀ 2 = 2048 := by native_decide
--- the tower really is `ω^ω` at level 3 (a genuine limit-of-limits index)
-example : tower 3 = oadd (oadd 1 1 0) 1 0 := by native_decide
 
 end ONote

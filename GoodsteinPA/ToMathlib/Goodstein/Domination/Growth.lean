@@ -6,14 +6,10 @@ module
 public import Mathlib.Algebra.Order.SuccPred
 public import Mathlib.SetTheory.Ordinal.Exponential
 public import Mathlib.SetTheory.Ordinal.Notation
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Tactic.Ring
 public import GoodsteinPA.ToMathlib.Goodstein.Defs
-public meta import GoodsteinPA.ToMathlib.Goodstein.Defs  -- shake: keep
 public import GoodsteinPA.ToMathlib.Hardy
-public meta import GoodsteinPA.ToMathlib.Hardy  -- shake: keep
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Sequence
-public meta import GoodsteinPA.ToMathlib.Goodstein.Domination.Sequence  -- shake: keep
 
 @[expose] public section
 
@@ -1022,22 +1018,5 @@ the starting ordinal notation. Since the Hardy/fast-growing hierarchy reaches `�
 the growth content of Kirby–Paris independence. -/
 theorem goodsteinLength_eq_hardy (m : ℕ) : goodsteinLength m = hardy (seqONote m 0) 2 - 2 := by
   rw [hardy_seqONote_zero]; omega
-
-/-! ### Anti-vacuity anchors (`native_decide`)
-
-The notations are computable; small values pin them (a wrong recursion would fail). -/
-
-example : toONote 2 1 = oadd 0 1 0 := by native_decide          -- `1 = ω^0`
-example : toONote 2 2 = oadd (oadd 0 1 0) 1 0 := by native_decide -- `2 = 2^1 ↦ ω^1 = ω`
-example : toONote 2 4 = oadd (oadd (oadd 0 1 0) 1 0) 1 0 := by native_decide -- `4 = 2^2 ↦ ω^ω`
-example : toONote 3 5 = oadd (oadd 0 1 0) 1 (oadd 0 2 0) := by native_decide  -- `5 = 1·3^1 + 2`
--- the descent: `goodsteinSeq 3` starts `3 ↦ 3 ↦ 3 ↦ 2 ↦ …`, notations strictly drop
-example : seqONote 3 0 = oadd (oadd 0 1 0) 1 (oadd 0 1 0) := by native_decide -- `G₀=3` in base 2 ↦ `ω+1`
--- the Cichoń step `hstep_toONote` (now FULLY PROVED) holds; here anchored on computable cases:
-example : hstep (toONote 2 3) 2 = toONote 3 (bump 2 3 - 1) := by native_decide
-example : hstep (toONote 3 5) 3 = toONote 4 (bump 3 5 - 1) := by native_decide
-example : hstep (seqONote 3 0) 2 = seqONote 3 1 := by native_decide
--- C3, witnessed on a computable case: `goodsteinLength 3 = H_{seqONote 3 0}(2) − 2 = 7 − 2 = 5`
-example : hardy (seqONote 3 0) 2 = goodsteinLength 3 + 2 := by native_decide
 
 end Goodstein.Dom

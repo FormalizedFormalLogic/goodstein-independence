@@ -6,10 +6,8 @@ Two-sided comparison of `hardy` at `ω`-powers against `fastGrowing`, up to the 
 module
 
 public import Mathlib.SetTheory.Ordinal.Notation
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Order.Iterate
 public import GoodsteinPA.ToMathlib.Hardy.Structure
-public meta import GoodsteinPA.ToMathlib.Hardy.Structure  -- shake: keep
 
 @[expose] public section
 
@@ -83,9 +81,6 @@ theorem hardy_omega_pow_ofNat (k x : ℕ) :
     rw [show (oadd 0 1 0 : ONote) = 1 from rfl, hardy_one, fastGrowing_zero]
   | succ k => exact hardy_omega_pow_ofNat_succ k x
 
--- anti-vacuity: B4 at `ω^2` — `H_{ω^2}(2) + 1 = 23 + 1 = 24 = f_2(3)`
-example : hardy (oadd (ofNat 2) 1 0) 2 + 1 = fastGrowing (ofNat 2) 3 := by native_decide
-
 /-- **B4 at the first LIMIT level `ω^ω`:** `H_{ω^ω}(n) + 1 = f_{n+1}(n+1)`. Unlike finite `α`, the
 clean `H_{ω^α}(n)+1 = f_α(n+1)` is FALSE at limit `α` (the `ω[n]=n+1` convention makes `H` and `f`
 pick different tower levels); the TRUE limit form reads off the fundamental sequence:
@@ -98,9 +93,6 @@ theorem hardy_omega_pow_omega (n : ℕ) :
   rw [hardy_limit _ (fundamentalSequence_omega_pow_limit hω)]
   show hardy (oadd (ofNat (n + 1)) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1)
   exact hardy_omega_pow_ofNat (n + 1) n
-
--- anti-vacuity: B4 at `ω^ω` — `H_{ω^ω}(1) + 1 = 7 + 1 = 8 = f_2(2)`
-example : hardy (oadd (oadd 1 1 0) 1 0) 1 + 1 = fastGrowing (ofNat 2) 2 := by native_decide
 
 /-- **Hardy is dominated by fast-growing at the same index.** For `n ≥ 2`,
 `hardy o n ≤ fastGrowing o n` (no `NF` needed). By well-founded recursion on the notation, mirroring
@@ -155,13 +147,6 @@ proven here for *every* `α : ONote` by well-founded recursion, is the **inequal
 `raise e α' = e + ω^{α'}` in the absorbing regime, the raised control is `≈ hardy (ω^{α'})`, so this
 bound reduces P1 to the fast-growing domination `fastGrowing α' ≤ (iterate of the input slot)`.
 Pure Hardy/`fastGrowing` growth theory about the stable defs — calculus-independent. -/
-
-/-! Faithfulness anchors — the exact `+1` shift and the falsity of the bare equality are kernel-checked. -/
-example : hardy (oadd 0 1 0) 3 + 1 = fastGrowing 0 (3 + 1) := by native_decide
-example : hardy (oadd 1 1 0) 3 + 1 = fastGrowing 1 (3 + 1) := by native_decide
-example : hardy (oadd 2 1 0) 2 + 1 = fastGrowing 2 (2 + 1) := by native_decide
--- and the EQUALITY `H_{ω^α} = f_α` is FALSE (off by ≥1), so no lap re-attempts it:
-example : hardy (oadd 1 1 0) 3 ≠ fastGrowing 1 3 := by native_decide
 
 /-- **Coefficient composition, unconditional in `β`** (the non-absorbing equal-exponent additive
 core): `H_{ω^β·(k+2)}(n) = H_{ω^β·(k+1)}(H_{ω^β}(n))`. For `β ≠ 0` this is the banked

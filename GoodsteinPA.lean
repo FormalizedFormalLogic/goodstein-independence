@@ -25,12 +25,14 @@ public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 public import GoodsteinPA.ToMathlib.Goodstein.Computability
 public import GoodsteinPA.ToMathlib.Goodstein.Defs
 public import GoodsteinPA.ToMathlib.Goodstein.Domination
+public import GoodsteinPA.ToMathlib.Goodstein.Domination.Anchors
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.BaseCases
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Diagonal
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Growth
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.LowerBound
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Sequence
 public import GoodsteinPA.ToMathlib.Hardy
+public import GoodsteinPA.ToMathlib.Hardy.Anchors
 public import GoodsteinPA.ToMathlib.Hardy.Basic
 public import GoodsteinPA.ToMathlib.Hardy.Structure
 public import GoodsteinPA.WainerBound

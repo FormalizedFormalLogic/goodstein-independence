@@ -6,14 +6,10 @@ module
 public import Mathlib.Algebra.Order.SuccPred
 public import Mathlib.SetTheory.Ordinal.Exponential
 public import Mathlib.SetTheory.Ordinal.Notation
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Tactic.Ring
 public import GoodsteinPA.ToMathlib.Goodstein.Defs
-public meta import GoodsteinPA.ToMathlib.Goodstein.Defs  -- shake: keep
 public import GoodsteinPA.ToMathlib.Hardy
-public meta import GoodsteinPA.ToMathlib.Hardy  -- shake: keep
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Growth
-public meta import GoodsteinPA.ToMathlib.Goodstein.Domination.Growth  -- shake: keep
 
 @[expose] public section
 

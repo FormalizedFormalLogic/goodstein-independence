@@ -6,7 +6,6 @@
 module
 
 public import Mathlib.SetTheory.Ordinal.Notation
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Order.Iterate
 
 @[expose] public section

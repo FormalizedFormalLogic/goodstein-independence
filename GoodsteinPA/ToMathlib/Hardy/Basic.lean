@@ -6,10 +6,8 @@
 module
 
 public import Mathlib.SetTheory.Ordinal.Notation
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Order.Iterate
 public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
-public meta import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0  -- shake: keep
 
 @[expose] public section
 

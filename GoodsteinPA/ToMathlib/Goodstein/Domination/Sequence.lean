@@ -6,12 +6,9 @@ module
 public import Mathlib.Algebra.Order.SuccPred
 public import Mathlib.SetTheory.Ordinal.Exponential
 public import Mathlib.SetTheory.Ordinal.Notation
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Tactic.Ring
 public import GoodsteinPA.ToMathlib.Goodstein.Defs
-public meta import GoodsteinPA.ToMathlib.Goodstein.Defs  -- shake: keep
 public import GoodsteinPA.ToMathlib.Hardy
-public meta import GoodsteinPA.ToMathlib.Hardy  -- shake: keep
 
 @[expose] public section
 
@@ -476,14 +473,5 @@ theorem goodsteinLength_le {m N : ℕ} (h : goodsteinSeq m N = 0) :
 theorem goodsteinSeq_ne_zero_of_lt {m N : ℕ} (h : N < goodsteinLength m) :
     goodsteinSeq m N ≠ 0 :=
   Nat.find_min (goodstein_terminates m) h
-
-/-! ## Anchors (anti-vacuity)
-
-Small computed values, off any headline axiom path. A wrong definition of
-`goodsteinSeq` could not satisfy these. -/
-
-example : goodsteinLength 0 = 0 := by native_decide
-example : goodsteinLength 2 = 3 := by native_decide
-example : goodsteinLength 3 = 5 := by native_decide
 
 end Goodstein.Dom

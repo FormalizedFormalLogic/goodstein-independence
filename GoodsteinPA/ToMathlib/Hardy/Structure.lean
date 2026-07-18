@@ -6,10 +6,8 @@
 module
 
 public import Mathlib.SetTheory.Ordinal.Notation
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Order.Iterate
 public import GoodsteinPA.ToMathlib.Hardy.Basic
-public meta import GoodsteinPA.ToMathlib.Hardy.Basic  -- shake: keep
 
 @[expose] public section
 
@@ -141,32 +139,6 @@ theorem hstep_oadd_tail (E : ONote) (C : ℕ+) (b : ℕ) :
       have hglt : g b < R := by
         have hp := fundamentalSequence_has_prop R; rw [e] at hp; exact (hp.2.1 b).2.1
       exact ih (g b) (lt_def.1 hglt) hgb
-
-/-! ### Anti-vacuity anchors (`native_decide`)
-
-Standalone witnesses, off any headline axiom path, that a *wrong* definition of
-`hardy` would fail to satisfy. They pin both the successor branch (`H_k(n) = n + k`)
-and the limit branch: mathlib's fundamental sequence for `ω` is `ω[n] = n + 1`, so
-`H_ω(n) = H_{n+1}(n) = n + (n+1) = 2n + 1`. -/
-
-example : hardy 0 5 = 5 := by native_decide
-example : hardy 1 5 = 6 := by native_decide
-example : hardy 2 5 = 7 := by native_decide
-example : hardy 3 5 = 8 := by native_decide
-example : hardy 4 5 = 9 := by native_decide
--- limit branch: `H_ω(n) = 2n + 1` (`ω = oadd 1 1 0`, `ω[n] = n + 1`)
-example : hardy (oadd 1 1 0) 2 = 5 := by native_decide
-example : hardy (oadd 1 1 0) 4 = 9 := by native_decide
-example : hardy (oadd 1 1 0) 6 = 13 := by native_decide
--- the new closed forms / lower bound, witnessed concretely (a wrong proof would mis-evaluate):
-example : hardy (ofNat 4) 5 = 5 + 4 := by native_decide       -- hardy_ofNat
-example : hardy (oadd 1 1 0) 6 = 2 * 6 + 1 := by native_decide -- hardy_omega
-example : 2 * 2 ≤ hardy (oadd (oadd 0 2 0) 1 0) 2 := by native_decide -- two_mul_le_hardy_pow at ω²: 4 ≤ 23
--- `hstep`: successor drops one level; `ω` at budget `3` descends to `ω[3]=4` then to `3`.
-example : hstep 5 0 = 4 := by native_decide
-example : hstep (oadd 1 1 0) 3 = 3 := by native_decide
--- the step invariant in action: `H_ω(3) = H_{hstep ω 3}(4) = H_3(4)`
-example : hardy (oadd 1 1 0) 3 = hardy (hstep (oadd 1 1 0) 3) 4 := by native_decide
 
 /-- **Hardy tail-peeling — the additive law, ONote-native form.** Splitting off the tail of an `oadd`
 composes the Hardy functions: `hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n)` (i.e.
