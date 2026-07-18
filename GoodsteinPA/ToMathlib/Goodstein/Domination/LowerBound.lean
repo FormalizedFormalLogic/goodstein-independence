@@ -1,5 +1,5 @@
 /-
-# Goodstein.Dom — Part3
+# Goodstein.Dom — LowerBound
 -/
 module
 
@@ -12,14 +12,156 @@ public import GoodsteinPA.ToMathlib.Goodstein.Defs
 public meta import GoodsteinPA.ToMathlib.Goodstein.Defs  -- shake: keep
 public import GoodsteinPA.ToMathlib.Hardy
 public meta import GoodsteinPA.ToMathlib.Hardy  -- shake: keep
-public import GoodsteinPA.ToMathlib.Goodstein.Domination.Part2
-public meta import GoodsteinPA.ToMathlib.Goodstein.Domination.Part2  -- shake: keep
+public import GoodsteinPA.ToMathlib.Goodstein.Domination.Growth
+public meta import GoodsteinPA.ToMathlib.Goodstein.Domination.Growth  -- shake: keep
 
 @[expose] public section
 
 namespace Goodstein.Dom
 
 open ONote Ordinal
+
+/-
+# The Hardy ↔ fast-growing bridge: `f_α ≤ H_{ω^α}`
+
+The Cichoń identity (`Logic/Goodstein/Growth.lean`) gives
+`goodsteinLength m = H_{toONote 2 m}(2) − 2`. To turn that into "Goodstein grows like the
+fast-growing hierarchy" we relate the Hardy hierarchy `H_α` to the fast-growing hierarchy
+`f_α`. The classical identity `H_{ω^α} = f_α` holds under the `ω[n]=n` convention; mathlib uses
+`ω[n] = n+1`, which makes `H_{ω^α}` strictly *bigger*, so we prove the robust one-sided bound
+
+  `fastGrowing α n ≤ hardy (oadd α 1 0) n`   (`fastGrowing_le_hardy_pow`).
+
+The linchpin is the **Hardy iteration law** `H_{ω^e·(k+1)} = (H_{ω^e})^[k+1]`
+(`hardy_oadd_iter`), whose engine is the **leading-term split**
+`H_{ω^e·c + R}(n) = H_{ω^e·c}(H_R(n))` (`hardy_split`) — valid because the `NF` condition
+`repr R < ω^(repr e)` is exactly the no-absorption side condition the Hardy additive law needs.
+-/
+
+
+
+/-- **Iterate domination.** If `f ≤ g` pointwise and `g` is monotone, then `f^[j] ≤ g^[j]`
+pointwise. -/
+theorem iterate_le_iterate {f g : ℕ → ℕ} (hfg : ∀ m, f m ≤ g m) (hg : Monotone g) :
+    ∀ j x, f^[j] x ≤ g^[j] x := by
+  intro j
+  induction j with
+  | zero => intro x; simp
+  | succ j ih =>
+    intro x
+    rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
+    exact (ih (f x)).trans ((hg.iterate j) (hfg x))
+
+/-- `(· + 1)^[j] n = n + j`. -/
+theorem succ_iterate (j n : ℕ) : (fun m => m + 1)^[j] n = n + j := by
+  induction j with
+  | zero => simp
+  | succ j ih => simp only [Function.iterate_succ_apply', ih]; omega
+
+/-- **Leading-term split for the Hardy hierarchy.** For a normal-form notation `oadd e c R`
+(so `repr R < ω^(repr e)`), the Hardy function splits its leading Cantor term off the tail:
+`H_{ω^e·c + R}(n) = H_{ω^e·c}(H_R(n))`. Well-founded recursion on `repr R`. The `NF` hypothesis
+is the no-absorption side condition that makes the Hardy additive law hold. -/
+theorem hardy_split (e : ONote) (c : ℕ+) (R : ONote) (hNF : (oadd e c R).NF) (n : ℕ) :
+    hardy (oadd e c R) n = hardy (oadd e c 0) (hardy R n) := by
+  suffices H : ∀ o : Ordinal, ∀ R : ONote, R.repr = o → (oadd e c R).NF → ∀ n,
+      hardy (oadd e c R) n = hardy (oadd e c 0) (hardy R n) by
+    exact H R.repr R rfl hNF n
+  intro o
+  induction o using WellFoundedLT.induction with
+  | _ o ih =>
+    intro R hrepr hNFR n
+    have hNFe : e.NF := hNFR.fst
+    have hbelowR : R.repr < ω ^ e.repr := hNFR.snd'.repr_lt
+    rcases hfs : fundamentalSequence R with (_ | R') | g
+    · -- R = 0
+      have hR0 : R = 0 :=
+        (fundamentalSequenceProp_inl_none R).1 (hfs ▸ fundamentalSequence_has_prop R)
+      subst hR0
+      simp
+    · -- R successor R'
+      have hsucc := (fundamentalSequenceProp_inl_some R R').1 (hfs ▸ fundamentalSequence_has_prop R)
+      have hNFR' : R'.NF := hsucc.2 hNFR.snd
+      have hltR' : R'.repr < o := by rw [← hrepr, hsucc.1]; exact Order.lt_succ _
+      have hbelowR' : R'.repr < ω ^ e.repr :=
+        lt_trans (by rw [hrepr]; exact hltR') hbelowR
+      have hNFnew : (oadd e c R').NF := NF.oadd hNFe c (NF.below_of_lt' hbelowR' hNFR')
+      have hfsnew : fundamentalSequence (oadd e c R) = Sum.inl (some (oadd e c R')) := by
+        rw [fundamentalSequence, hfs]
+      simp only [hardy_succ _ hfsnew, hardy_succ _ hfs]
+      exact ih R'.repr hltR' R' rfl hNFnew (n + 1)
+    · -- R limit g
+      have hprop := hfs ▸ fundamentalSequence_has_prop R
+      have hgnlt : (g n).repr < o := by rw [← hrepr]; exact repr_lt_repr (hprop.2.1 n).2.1
+      have hNFgn : (g n).NF := (hprop.2.1 n).2.2 hNFR.snd
+      have hbelowgn : (g n).repr < ω ^ e.repr :=
+        lt_trans (by rw [hrepr]; exact hgnlt) hbelowR
+      have hNFnew : (oadd e c (g n)).NF := NF.oadd hNFe c (NF.below_of_lt' hbelowgn hNFgn)
+      have hfsnew : fundamentalSequence (oadd e c R) = Sum.inr (fun i => oadd e c (g i)) := by
+        rw [fundamentalSequence, hfs]
+      simp only [hardy_limit _ hfsnew, hardy_limit _ hfs]
+      exact ih (g n).repr hgnlt (g n) rfl hNFnew n
+
+/-- Finite Hardy values: `H_{j+1}(n) = n + (j+1)` (the notation `oadd 0 ⟨j+1⟩ 0`). -/
+theorem hardy_finite : ∀ j n, hardy (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0) n = n + (j + 1) := by
+  intro j
+  induction j with
+  | zero =>
+    intro n
+    show hardy (oadd 0 1 0) n = n + 1
+    rw [show (oadd (0 : ONote) 1 0) = 1 from rfl, hardy_one]
+  | succ j ih =>
+    intro n
+    have hfs : fundamentalSequence (oadd 0 ⟨j + 2, Nat.succ_pos _⟩ 0)
+        = Sum.inl (some (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0)) := by
+      rw [fundamentalSequence_oadd_zero_zero]; rfl
+    simp only [hardy_succ _ hfs]
+    rw [ih (n + 1)]; omega
+
+/-- **Hardy coefficient step (nonzero exponent).** For `e ≠ 0`,
+`H_{ω^e·(k+2)}(n) = H_{ω^e·(k+1)}(H_{ω^e}(n))`. The descent peels one coefficient
+(`fundSeq_oadd_coeff`), then `hardy_split` separates the freshly-created lowest term, whose
+Hardy value is exactly `H_{ω^e}(n)` (it is the index-`n` fundamental term of `ω^e`). -/
+theorem hardy_oadd_coeff_step_ne (e : ONote) (he : e ≠ 0) (hNFe : e.NF) (k n : ℕ) :
+    hardy (oadd e ⟨k + 2, Nat.succ_pos _⟩ 0) n
+      = hardy (oadd e ⟨k + 1, Nat.succ_pos k⟩ 0) (hardy (oadd e 1 0) n) := by
+  obtain ⟨g, hg1, hgk⟩ := fundSeq_oadd_coeff e he k
+  have hNFe1 : (oadd e 1 0).NF := NF.oadd hNFe 1 NFBelow.zero
+  have hprop := hg1 ▸ fundamentalSequence_has_prop (oadd e 1 0)
+  have hgnlt : (g n).repr < (oadd e 1 0).repr := repr_lt_repr (hprop.2.1 n).2.1
+  have hNFgn : (g n).NF := (hprop.2.1 n).2.2 hNFe1
+  have hbelow : (g n).repr < ω ^ e.repr := by
+    have he1 : (oadd e 1 0).repr = ω ^ e.repr := by simp
+    rwa [he1] at hgnlt
+  have hNFsplit : (oadd e k.succPNat (g n)).NF :=
+    NF.oadd hNFe _ (NF.below_of_lt' hbelow hNFgn)
+  simp only [hardy_limit _ hgk]
+  show hardy (oadd e k.succPNat (g n)) n
+      = hardy (oadd e k.succPNat 0) (hardy (oadd e 1 0) n)
+  rw [hardy_split e k.succPNat (g n) hNFsplit n]
+  have heq : hardy (oadd e 1 0) n = hardy (g n) n := by simp only [hardy_limit _ hg1]
+  rw [heq]
+
+/-- **The Hardy iteration law.** `H_{ω^e·(k+1)} = (H_{ω^e})^[k+1]`. For `e = 0` this is
+`H_{k+1}(n) = n+(k+1) = (·+1)^[k+1] n`; for `e ≠ 0` it is induction on `k` via the coefficient
+step `hardy_oadd_coeff_step_ne`. The linchpin tying Hardy coefficients to iteration. -/
+theorem hardy_oadd_iter (e : ONote) (hNFe : e.NF) :
+    ∀ k n, hardy (oadd e ⟨k + 1, Nat.succ_pos k⟩ 0) n = (hardy (oadd e 1 0))^[k + 1] n := by
+  rcases eq_or_ne e 0 with rfl | he
+  · -- e = 0
+    have hg : hardy (oadd (0 : ONote) 1 0) = fun n => n + 1 := by
+      rw [show (oadd (0 : ONote) 1 0) = 1 from rfl]; exact hardy_one
+    intro k n
+    rw [hardy_finite k n, hg, succ_iterate]
+  · -- e ≠ 0: induction on k via the coefficient step
+    intro k
+    induction k with
+    | zero => intro n; simp
+    | succ k ih =>
+      intro n
+      have hcoeff := hardy_oadd_coeff_step_ne e he hNFe k n
+      have hk2 : (⟨k + 1 + 1, Nat.succ_pos (k + 1)⟩ : ℕ+) = ⟨k + 2, Nat.succ_pos _⟩ := rfl
+      rw [hk2, hcoeff, ih (hardy (oadd e 1 0) n), ← Function.iterate_succ_apply]
 
 /-- **The Hardy ↔ fast-growing bridge.** `fastGrowing α n ≤ hardy (oadd α 1 0) n`, i.e.
 `f_α ≤ H_{ω^α}`. Well-founded recursion on `repr α`: base/limit are direct; the successor case
@@ -716,130 +858,5 @@ theorem two_mul_sub_one_le_goodsteinLength (n : ℕ) :
     have hsub := goodsteinSeq_sub_le (n + 2) (n + 1) (k - (n + 1))
     rw [Nat.add_sub_cancel' (by omega : n + 1 ≤ k)] at hsub
     omega
-
-/-! ### The CNF norm of a Goodstein notation is bounded by its step index
-
-A Goodstein notation `seqONote m j = toONote (j+2) (goodsteinSeq m j)` is, by construction, a
-base-`(j+2)` hereditary numeral: *every* coefficient appearing anywhere in its Cantor normal
-form (digits and recursively the exponents) is a base-`(j+2)` digit, hence `< j+2`. So its CNF
-norm is `≤ j+1`. The structural consequence: **the Hardy budget `norm ≤ argument` is always met
-at the telescope step `j+2`** — the budget obstruction is automatic on the descent itself, and
-`hardy_le_of_lt` can be applied in either comparison direction at every telescope step. -/
-
-/-- Every coefficient of `toONote b n` is a base-`b` digit, so its CNF norm is `< b`
-(for `b ≥ 2`). Strong induction mirroring `toONote`'s peeling recursion: the leading digit
-`n / b^(log b n) < b`, and the exponent `toONote b (log b n)` and tail `toONote b (n % …)`
-recurse on strictly smaller arguments. -/
-theorem norm_toONote_lt (b : ℕ) (hb : 2 ≤ b) : ∀ n, norm (toONote b n) < b := by
-  intro n
-  induction n using Nat.strong_induction_on with
-  | _ n ih =>
-    rcases eq_or_ne n 0 with rfl | hn
-    · rw [toONote_zero, norm_zero]; omega
-    · have hb1 : 1 < b := by omega
-      have hlog : Nat.log b n < n := Nat.log_lt_self b hn
-      have hbe_pos : 0 < b ^ Nat.log b n := Nat.pow_pos (by omega)
-      have hbe_le : b ^ Nat.log b n ≤ n := Nat.pow_log_le_self b hn
-      have hr_lt : n % b ^ Nat.log b n < b ^ Nat.log b n := Nat.mod_lt _ hbe_pos
-      have hr_lt_n : n % b ^ Nat.log b n < n := lt_of_lt_of_le hr_lt hbe_le
-      have hc_pos : 0 < n / b ^ Nat.log b n := Nat.div_pos hbe_le hbe_pos
-      have hc_lt : n / b ^ Nat.log b n < b := by
-        rw [Nat.div_lt_iff_lt_mul hbe_pos, ← pow_succ']
-        exact Nat.lt_pow_succ_log_self hb1 n
-      rw [toONote, dif_neg hn, norm_oadd]
-      have hcoeff : ((n / b ^ Nat.log b n).toPNat' : ℕ) = n / b ^ Nat.log b n :=
-        PNat.toPNat'_coe hc_pos
-      rw [hcoeff]
-      have h1 := ih _ hlog
-      have h2 := ih _ hr_lt_n
-      omega
-
-/-- **The Goodstein descent always meets the Hardy budget.** `norm (seqONote m j) ≤ j + 1`,
-hence `≤ j + 2 =` the telescope argument. So `hardy_le_of_lt` is applicable at every telescope
-step `j+2` (against any notation the budget reaches), with no further budget hypothesis. -/
-theorem norm_seqONote_le (m j : ℕ) : norm (seqONote m j) ≤ j + 1 := by
-  have h := norm_toONote_lt (j + 2) (by omega) (goodsteinSeq m j)
-  show norm (toONote (j + 2) (goodsteinSeq m j)) ≤ j + 1
-  omega
-
-/-! ### The domination headline, reduced to the single index sub-fact (ii)
-
-The full chain of the growth headline — `fastGrowing o m ≤ goodsteinLength m + 2` — is here
-assembled and machine-checked, modulo exactly one deep input: that after `m` Goodstein steps the
-descent notation `seqONote m m` still exceeds `ω^o = oadd o 1 0` (sub-fact (ii), the
-"ordinal-stays-high" / super-exponential term bound). Everything else is banked:
-
-* the Cichoń telescope `hardy_seqONote_telescope` at `j = m` (valid by the linear length bound
-  `le_goodsteinLength`, sub-fact (i)) plus `hardy_seqONote_zero`, giving
-  `goodsteinLength m + 2 = H_{seqONote m m}(m+2)`;
-* the **budget-valid** index step `hardy_le_of_lt` (the norm budget `m+2 ≥ norm (oadd o 1 0)` now
-  holds — this is why we evaluate at the high-budget step `m+2`, not at the fixed argument `2`);
-* the Hardy↔fast-growing bridge `fastGrowing_le_hardy_pow` at matching argument `m+2`;
-* argument-monotonicity `fastGrowing_monotone` to descend `m+2 ↦ m`.
-
-This isolates the remaining mathematical content to `hidx` alone. -/
-
-/-- **Domination, reduced to the index sub-fact (ii).** Given that the Goodstein descent stays
-above `ω^o` for at least `m` steps (`hidx : oadd o 1 0 < seqONote m m`) and the budget is met
-(`norm o ≤ m`), the Goodstein length dominates the fast-growing level `o` at the diagonal:
-`fastGrowing o m ≤ goodsteinLength m + 2`. The whole Cichoń assembly is machine-checked here;
-the only open input is `hidx`. -/
-theorem goodstein_dominates_of_index {o : ONote} (ho : o.NF) {m : ℕ}
-    (hnorm : norm o ≤ m) (hidx : oadd o 1 0 < seqONote m m) :
-    fastGrowing o m ≤ goodsteinLength m + 2 := by
-  have hNFidx : (oadd o 1 0).NF := NF.oadd ho 1 NFBelow.zero
-  have hNFseq : (seqONote m m).NF := seqONote_NF m m
-  have hbudget : norm (oadd o 1 0) ≤ m + 2 := by
-    rw [norm_oadd, norm_zero]; simp only [PNat.one_coe]; omega
-  -- index step at the high-budget argument `m+2`
-  have hindex : hardy (oadd o 1 0) (m + 2) ≤ hardy (seqONote m m) (m + 2) :=
-    hardy_le_of_lt hNFidx hNFseq hidx hbudget
-  -- telescope: the Hardy value is invariant; at `j = m` it equals `goodsteinLength m + 2`
-  have htel : hardy (seqONote m 0) 2 = hardy (seqONote m m) (m + 2) :=
-    hardy_seqONote_telescope m m (le_goodsteinLength m)
-  have hz : hardy (seqONote m 0) 2 = goodsteinLength m + 2 := hardy_seqONote_zero m
-  calc fastGrowing o m
-      ≤ fastGrowing o (m + 2) := fastGrowing_monotone o (by omega)
-    _ ≤ hardy (oadd o 1 0) (m + 2) := fastGrowing_le_hardy_pow o ho (m + 2)
-    _ ≤ hardy (seqONote m m) (m + 2) := hindex
-    _ = hardy (seqONote m 0) 2 := htel.symm
-    _ = goodsteinLength m + 2 := hz
-
-/-- **The domination dichotomy (fully proved, unconditional).** For every fixed level `o`
-(with budget `norm o ≤ m`), at the diagonal `m` exactly one of two structural alternatives
-holds:
-
-* **(A)** Goodstein dominates: `fastGrowing o m ≤ goodsteinLength m + 2`; or
-* **(B)** the length is Hardy-bounded: `goodsteinLength m + 2 ≤ hardy (oadd o 1 0) (m + 2)`.
-
-The proof needs no index hypothesis: because `norm (seqONote m m) ≤ m + 1` (the budget is
-automatic on the descent, `norm_seqONote_le`), `hardy_le_of_lt` applies in *whichever*
-direction the trichotomy `seqONote m m` vs `oadd o 1 0` falls. The whole headline thus reduces
-to **ruling out branch (B) for large `m`** — i.e. to the deep fact that the descent stays above
-`ω^o` for at least `m` steps (sub-fact (ii)); branch (B) says the descent has already dropped
-below `ω^o` by step `m`, which is conjecturally impossible for large `m` but is exactly the
-Cichoń lower-bound content not yet formalized. -/
-theorem goodstein_dominates_or_hardy_bound {o : ONote} (ho : o.NF) {m : ℕ}
-    (hnorm : norm o ≤ m) :
-    fastGrowing o m ≤ goodsteinLength m + 2 ∨
-      goodsteinLength m + 2 ≤ hardy (oadd o 1 0) (m + 2) := by
-  have hNFidx : (oadd o 1 0).NF := NF.oadd ho 1 NFBelow.zero
-  have hNFseq : (seqONote m m).NF := seqONote_NF m m
-  have hval : hardy (seqONote m m) (m + 2) = goodsteinLength m + 2 := by
-    rw [← hardy_seqONote_telescope m m (le_goodsteinLength m), hardy_seqONote_zero]
-  have hbseq : norm (seqONote m m) ≤ m + 2 := le_trans (norm_seqONote_le m m) (by omega)
-  rcases lt_trichotomy (seqONote m m).repr (oadd o 1 0).repr with hlt | heq | hgt
-  · -- descent already below `ω^o` at step `m` (strict): branch (B)
-    right
-    have hcmp : seqONote m m < oadd o 1 0 := lt_def.2 hlt
-    have h := hardy_le_of_lt hNFseq hNFidx hcmp hbseq
-    rwa [hval] at h
-  · -- descent exactly at `ω^o`: branch (B), via equality
-    right
-    have heqo : seqONote m m = oadd o 1 0 := (@repr_inj (seqONote m m) (oadd o 1 0) hNFseq hNFidx).1 heq
-    exact le_of_eq (by rw [← hval, heqo])
-  · -- descent still above `ω^o`: branch (A), via the reduction lemma
-    left
-    exact goodstein_dominates_of_index ho hnorm (lt_def.2 hgt)
 
 end Goodstein.Dom
