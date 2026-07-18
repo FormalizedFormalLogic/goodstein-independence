@@ -1,3 +1,5 @@
+**DISCLAIMER**: This repository contains a large number of AI/LLM-generated proofs, and still under review by FFL. Whether this formalization is successful remains an open question within FFL.
+
 # Goodstein independence over PA
 
 **Goal.** Formalize **Kirby--Paris (1982)**: Peano Arithmetic does *not* prove
