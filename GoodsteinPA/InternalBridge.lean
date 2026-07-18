@@ -16,7 +16,7 @@ module
 
 public import GoodsteinPA.InternalGoodstein
 public import GoodsteinPA.ToMathlib.Goodstein.Defs
-public import GoodsteinPA.Domination
+public import GoodsteinPA.ToMathlib.Goodstein.Domination
 public import Mathlib.Data.Nat.Log
 public import GoodsteinPA.Compat
 

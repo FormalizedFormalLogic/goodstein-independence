@@ -2,12 +2,13 @@ module  -- shake: keep-all --deprecated_module: ignore
 
 public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.Compat
-public import GoodsteinPA.Domination
 public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.Embedding
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.EwIter
 public import GoodsteinPA.HardyMajorization
+public import GoodsteinPA.HardyMajorization.Part1
+public import GoodsteinPA.HardyMajorization.Part2
 public import GoodsteinPA.InternalBridge
 public import GoodsteinPA.InternalBump
 public import GoodsteinPA.InternalDigits
@@ -25,6 +26,12 @@ public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
 public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 public import GoodsteinPA.ToMathlib.Goodstein.Computability
 public import GoodsteinPA.ToMathlib.Goodstein.Defs
+public import GoodsteinPA.ToMathlib.Goodstein.Domination
+public import GoodsteinPA.ToMathlib.Goodstein.Domination.Part1
+public import GoodsteinPA.ToMathlib.Goodstein.Domination.Part2
+public import GoodsteinPA.ToMathlib.Goodstein.Domination.Part3
+public import GoodsteinPA.ToMathlib.Goodstein.Domination.Part4
+public import GoodsteinPA.ToMathlib.Goodstein.Domination.Part5
 public import GoodsteinPA.ToMathlib.Hardy
 public import GoodsteinPA.ToMathlib.Hardy.Basic
 public import GoodsteinPA.ToMathlib.Hardy.Structure

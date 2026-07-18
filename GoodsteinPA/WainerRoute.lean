@@ -25,7 +25,7 @@ named axiom is the Wainer PA-provably-total classification bridge.
 module
 
 public import GoodsteinPA.Reduction  -- (SERIES-5 Lane B) was: import GoodsteinPA.Statement, dropped to break the WainerRoute->Statement cycle
-public import GoodsteinPA.Domination
+public import GoodsteinPA.ToMathlib.Goodstein.Domination
 public import GoodsteinPA.BlueprintAttr
 
 @[expose] public section

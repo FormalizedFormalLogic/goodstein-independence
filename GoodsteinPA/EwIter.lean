@@ -1,7 +1,7 @@
 module
 
 public import GoodsteinPA.OperatorZeh
-public import GoodsteinPA.Domination
+public import GoodsteinPA.ToMathlib.Goodstein.Domination
 
 @[expose] public section
 
