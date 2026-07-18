@@ -11,7 +11,6 @@ namespace GoodsteinPA.OperatorZeh
 
 open ONote
 open scoped Ordinal
-open GoodsteinPA.FastGrowing
 
 /-!
 # The Eguchi–Weiermann controlled iterate (`ewIter`), ported to `src` (lap 8)

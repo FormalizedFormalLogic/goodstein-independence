@@ -13,7 +13,7 @@ public meta import GoodsteinPA.ToMathlib.FastGrowing.Basic  -- shake: keep
 
 @[expose] public section
 
-namespace GoodsteinPA.FastGrowing
+namespace ONote
 
 open ONote Ordinal
 
@@ -421,4 +421,4 @@ theorem tower_cofinal : ∀ (o : ONote), o.NF → ∃ k, o < tower k
         opow_le_opow_right omega0_pos (Order.succ_le_of_lt hej)
       exact lt_of_lt_of_le h1 h2
 
-end GoodsteinPA.FastGrowing
+end ONote

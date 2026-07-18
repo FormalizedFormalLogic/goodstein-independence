@@ -18,7 +18,7 @@ The growth route instead proves non-provability from rates of growth:
     -> contradiction.
 
 The existing repo already proves the main concrete growth asset:
-`GoodsteinPA.Dom.goodsteinLength_dominates_fastGrowing`.  This module now upgrades
+`Goodstein.Dom.goodsteinLength_dominates_fastGrowing`.  This module now upgrades
 that asset to the exact no-fixed-bound theorem needed by the route.  The remaining
 named axiom is the Wainer PA-provably-total classification bridge.
 -/
@@ -33,7 +33,7 @@ public import GoodsteinPA.BlueprintAttr
 namespace GoodsteinPA.WainerRoute
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.Entailment
-open ONote GoodsteinPA.FastGrowing
+open ONote
 
 /-- Eventual pointwise domination.  `EventuallyLE f g` means that, from some threshold
 onward, `f n <= g n`. -/
@@ -48,8 +48,8 @@ def EventuallyLEWithSlack (f g : ℕ -> ℕ) (c : ℕ) : Prop :=
 Wainer route needs first: every fixed fast-growing level below `epsilon_0` is eventually
 bounded by Goodstein length, up to the repo's documented additive slack `2`. -/
 theorem goodsteinLength_eventually_dominates_fixed_fastGrowing (o : ONote) (ho : o.NF) :
-    EventuallyLEWithSlack (fun n => fastGrowing o n) GoodsteinPA.Dom.goodsteinLength 2 :=
-  GoodsteinPA.Dom.goodsteinLength_dominates_fastGrowing ho
+    EventuallyLEWithSlack (fun n => fastGrowing o n) Goodstein.Dom.goodsteinLength 2 :=
+  Goodstein.Dom.goodsteinLength_dominates_fastGrowing ho
 
 /-- Iterating a strictly inflationary map adds at least the iteration count.
 
@@ -103,9 +103,9 @@ eventually.  The successor-gap lemma above gives `f_o(m) + 2 < f_{osucc o}(m)` f
 `f_o` can eventually bound the Goodstein length function from above. -/
 theorem goodsteinLength_eventually_strictly_dominates_fixed_fastGrowing (o : ONote)
     (ho : o.NF) :
-    ∃ N, ∀ m, N ≤ m -> fastGrowing o m < GoodsteinPA.Dom.goodsteinLength m := by
+    ∃ N, ∀ m, N ≤ m -> fastGrowing o m < Goodstein.Dom.goodsteinLength m := by
   obtain ⟨N, hN⟩ :=
-    GoodsteinPA.Dom.goodsteinLength_dominates_fastGrowing (osucc_NF ho)
+    Goodstein.Dom.goodsteinLength_dominates_fastGrowing (osucc_NF ho)
   refine ⟨max N 4, fun m hm => ?_⟩
   have hmN : N ≤ m := le_trans (le_max_left _ _) hm
   have hm4 : 4 ≤ m := le_trans (le_max_right _ _) hm
@@ -124,15 +124,15 @@ lemma above.  It is the exact growth-route contradiction against Wainer's fixed
 `f_o` upper bound. -/
 theorem cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing :
     ∀ o : ONote, o.NF ->
-      ¬ EventuallyLE GoodsteinPA.Dom.goodsteinLength (fun n => fastGrowing o n) := by
+      ¬ EventuallyLE Goodstein.Dom.goodsteinLength (fun n => fastGrowing o n) := by
   intro o ho hbound
   obtain ⟨N, hN⟩ := hbound
   obtain ⟨M, hM⟩ :=
     goodsteinLength_eventually_strictly_dominates_fixed_fastGrowing o ho
   let n := max N M
-  have hupper : GoodsteinPA.Dom.goodsteinLength n ≤ fastGrowing o n :=
+  have hupper : Goodstein.Dom.goodsteinLength n ≤ fastGrowing o n :=
     hN n (le_max_left _ _)
-  have hlower : fastGrowing o n < GoodsteinPA.Dom.goodsteinLength n :=
+  have hlower : fastGrowing o n < Goodstein.Dom.goodsteinLength n :=
     hM n (le_max_right _ _)
   omega
 

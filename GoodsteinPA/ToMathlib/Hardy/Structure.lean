@@ -13,7 +13,7 @@ public meta import GoodsteinPA.ToMathlib.Hardy.Basic  -- shake: keep
 
 @[expose] public section
 
-namespace GoodsteinPA.FastGrowing
+namespace ONote
 
 open ONote Ordinal
 
@@ -487,4 +487,4 @@ theorem hardy_add_omega_pow_le {e α : ONote} (he : e.NF) (hα : α.NF) (x : ℕ
     hardy (e + oadd α 1 0) x ≤ hardy e (hardy (oadd α 1 0) x) :=
   hardy_add_le_comp e he (oadd α 1 0) (NF.oadd hα 1 NFBelow.zero) x
 
-end GoodsteinPA.FastGrowing
+end ONote

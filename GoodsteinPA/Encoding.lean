@@ -51,6 +51,7 @@ public import GoodsteinPA.InternalGoodstein
 namespace GoodsteinPA
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open Goodstein
 
 /-- **Source predicate.** "The Goodstein sequence seeded at `m` reaches `0`." This is the genuine
 termination statement over the audited `goodsteinSeq` (`Defs.lean`); `∀ m, goodsteinTerminates m`

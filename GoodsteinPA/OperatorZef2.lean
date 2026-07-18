@@ -8,7 +8,6 @@ public import GoodsteinPA.Compat
 namespace GoodsteinPA.OperatorZeh
 
 open LO LO.FirstOrder ONote Ordinal
-open GoodsteinPA.FastGrowing
 open GoodsteinPA.OperatorZinfty
 
 /-!

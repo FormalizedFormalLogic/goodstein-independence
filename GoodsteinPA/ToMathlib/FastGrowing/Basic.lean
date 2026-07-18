@@ -11,7 +11,7 @@ public import Mathlib.Order.Iterate
 
 @[expose] public section
 
-namespace GoodsteinPA.FastGrowing
+namespace ONote
 
 open ONote Ordinal
 
@@ -601,4 +601,4 @@ Headline: `fastGrowing_lt_fastGrowingε₀` — every fixed `f_o` is eventually 
 dominated by `f_{ε₀}`. This is the unboundedness that *is* the Kirby–Paris growth gap.
 -/
 
-end GoodsteinPA.FastGrowing
+end ONote

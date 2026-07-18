@@ -24,7 +24,7 @@ This file banks the majorization prerequisites, starting with THE bridge.
 
 namespace GoodsteinPA.HardyMajorization
 
-open ONote Ordinal GoodsteinPA.FastGrowing GoodsteinPA.OperatorZeh
+open ONote Ordinal GoodsteinPA.OperatorZeh
 
 /-- **The norm/Nlog bridge**: the linear norm is at most one binary order above the log-norm.
 (Sharp shape: `norm ≤ 2^Nlog` FAILS at coefficient 5 — `clog 5 = 2`, `2^2 = 4 < 5`.) -/

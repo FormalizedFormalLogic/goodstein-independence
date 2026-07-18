@@ -13,7 +13,7 @@ public meta import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0  -- shake: keep
 
 @[expose] public section
 
-namespace GoodsteinPA.FastGrowing
+namespace ONote
 
 open ONote Ordinal
 
@@ -291,4 +291,4 @@ theorem hardy_omega (n : ℕ) : hardy (oadd 1 1 0) n = 2 * n + 1 := by
   rw [h1, hardy_ofNat (n + 1) n]
   omega
 
-end GoodsteinPA.FastGrowing
+end ONote

@@ -98,13 +98,13 @@ lemma fmod_nat (x d : ℕ) (hd : 0 < d) :
 /-! ### The internal `bump`/`goodsteinSeq` are the audited ones over `ℕ` -/
 
 /-- Over `ℕ` (base `2 ≤ b`), the internal hereditary base-change is `Defs.bump`. -/
-theorem ibump_nat (b : ℕ) (hb : 2 ≤ b) (n : ℕ) : ibump b n = GoodsteinPA.bump b n := by
+theorem ibump_nat (b : ℕ) (hb : 2 ≤ b) (n : ℕ) : ibump b n = Goodstein.bump b n := by
   induction n using Nat.strong_induction_on with
   | _ n ih =>
     rcases Nat.eq_zero_or_pos n with rfl | hn
     · simp
     · obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
-      show ibump b (m + 1) = GoodsteinPA.bump b (m + 1)
+      show ibump b (m + 1) = Goodstein.bump b (m + 1)
       have hbF : @LE.le ℕ (@LO.FirstOrder.Arithmetic.instLE_foundation ℕ _) 2 b :=
         LO.FirstOrder.Arithmetic.le_def.mpr (Or.symm hb.lt_or_eq)
       have hb0 : 0 < b := by omega
@@ -117,10 +117,10 @@ theorem ibump_nat (b : ℕ) (hb : 2 ≤ b) (n : ℕ) : ibump b n = GoodsteinPA.b
       simp only [ipow_nat, ilog_nat, ← he]
       rw [fdiv_nat (m + 1) (b ^ e) hpe, fmod_nat (m + 1) (b ^ e) hpe,
         ih e hen, ih ((m + 1) % b ^ e) hrn,
-        GoodsteinPA.Dom.bump_pos b (m + 1) (Nat.succ_ne_zero m), ← he]
+        Goodstein.Dom.bump_pos b (m + 1) (Nat.succ_ne_zero m), ← he]
 
 /-- Over `ℕ`, the internal Goodstein run is `Defs.goodsteinSeq`. -/
-theorem igoodstein_nat (m₀ : ℕ) (k : ℕ) : igoodstein m₀ k = GoodsteinPA.goodsteinSeq m₀ k := by
+theorem igoodstein_nat (m₀ : ℕ) (k : ℕ) : igoodstein m₀ k = Goodstein.goodsteinSeq m₀ k := by
   induction k with
   | zero => simp only [igoodstein_zero]; rfl
   | succ k ih =>
@@ -128,7 +128,7 @@ theorem igoodstein_nat (m₀ : ℕ) (k : ℕ) : igoodstein m₀ k = GoodsteinPA.
     -- truncated subtraction; `fsub_nat` Natifies the `- 1` and `show` re-casts `k+2` to `Nat`'s literal
     -- so `ibump_nat` matches syntactically.
     rw [igoodstein_succ, ih, fsub_nat]
-    show ibump (k + 2) (GoodsteinPA.goodsteinSeq m₀ k) - 1 = GoodsteinPA.goodsteinSeq m₀ (k + 1)
+    show ibump (k + 2) (Goodstein.goodsteinSeq m₀ k) - 1 = Goodstein.goodsteinSeq m₀ (k + 1)
     rw [ibump_nat (k + 2) (by omega)]
     rfl
 

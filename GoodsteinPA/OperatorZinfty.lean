@@ -37,7 +37,6 @@ public import GoodsteinPA.Compat
 namespace GoodsteinPA.OperatorZinfty
 
 open LO LO.FirstOrder ONote
-open GoodsteinPA.FastGrowing
 
 abbrev Form := SyntacticFormula ℒₒᵣ
 noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.numeral ℒₒᵣ n).const

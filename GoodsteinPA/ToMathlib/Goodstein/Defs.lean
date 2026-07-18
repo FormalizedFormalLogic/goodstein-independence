@@ -22,7 +22,7 @@ public import Mathlib.Data.Nat.Log
 
 @[expose] public section
 
-namespace GoodsteinPA
+namespace Goodstein
 
 /-- The base used to read `G k` at step `k`: `base k = k + 2` (so `G 0` is read in base 2,
 the first bump sends `2 ↦ 3`, and so on). -/
@@ -51,4 +51,4 @@ def goodsteinSeq (m : ℕ) : ℕ → ℕ
   | 0 => m
   | k + 1 => bump (base k) (goodsteinSeq m k) - 1
 
-end GoodsteinPA
+end Goodstein

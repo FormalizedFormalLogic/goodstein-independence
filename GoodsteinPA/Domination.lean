@@ -1,7 +1,7 @@
 /-
 # Goodstein dominates Hardy — PORTED from Track-1 (toward `Hdom`)
 Full Growth/Domination chain. Defs byte-identical to src/Defs.lean; Hardy = src/Hardy.lean.
-Namespace localized to `GoodsteinPA.Dom`. Carries documented native_decide base-case axioms.
+Namespace localized to `Goodstein.Dom`. Carries documented native_decide base-case axioms.
 WIP — not in build target.
 -/
 module
@@ -18,9 +18,9 @@ public meta import GoodsteinPA.ToMathlib.Hardy  -- shake: keep
 
 @[expose] public section
 
-namespace GoodsteinPA.Dom
+namespace Goodstein.Dom
 
-open ONote Ordinal GoodsteinPA.FastGrowing
+open ONote Ordinal
 
 -- ════════════════ ported: Engine.lean ════════════════
 /-
@@ -4170,4 +4170,4 @@ example : ONote.fastGrowingε₀ 2 = 2048 := ONote.fastGrowingε₀_two
 example : (towerO 1).repr = (ω : Ordinal) := by show (oadd 1 1 0 : ONote).repr = _; simp [ONote.repr]
 
 
-end GoodsteinPA.Dom
+end Goodstein.Dom

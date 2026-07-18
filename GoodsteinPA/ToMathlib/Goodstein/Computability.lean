@@ -22,7 +22,7 @@ public import GoodsteinPA.ToMathlib.Goodstein.Defs
 
 @[expose] public section
 
-namespace GoodsteinPA
+namespace Goodstein
 
 open Primrec
 
@@ -156,4 +156,4 @@ theorem primrec_goodsteinSeq : Primrec₂ goodsteinSeq := by
 /-- `goodsteinSeq` as a `Computable₂`. -/
 theorem computable_goodsteinSeq : Computable₂ goodsteinSeq := primrec_goodsteinSeq.to_comp
 
-end GoodsteinPA
+end Goodstein

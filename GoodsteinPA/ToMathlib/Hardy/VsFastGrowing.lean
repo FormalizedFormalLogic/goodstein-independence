@@ -13,7 +13,7 @@ public meta import GoodsteinPA.ToMathlib.Hardy.Structure  -- shake: keep
 
 @[expose] public section
 
-namespace GoodsteinPA.FastGrowing
+namespace ONote
 
 open ONote Ordinal
 
@@ -375,4 +375,4 @@ theorem hardy_tower_succ_lt_fastGrowing (i : ℕ) :
   rw [← tower_succ] at h
   exact h
 
-end GoodsteinPA.FastGrowing
+end ONote

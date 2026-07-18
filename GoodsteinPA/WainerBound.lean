@@ -34,7 +34,7 @@ byte-identical to the former axiom's type (the designated audit surface).
 -/
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.Entailment
-open ONote GoodsteinPA.FastGrowing
+open ONote
 
 namespace GoodsteinPA.WainerRoute
 
@@ -44,7 +44,7 @@ embedding → pass → rank-0 → Δ₀ value read-off → Hardy-majorization la
 verbatim former-axiom type. -/
 theorem wainer_bound_of_pa_proves_goodstein :
     (𝗣𝗔 ⊢ ↑goodsteinSentence) ->
-      ∃ o : ONote, o.NF ∧ EventuallyLE GoodsteinPA.Dom.goodsteinLength (fun n => fastGrowing o n) :=
+      ∃ o : ONote, o.NF ∧ EventuallyLE Goodstein.Dom.goodsteinLength (fun n => fastGrowing o n) :=
   -- SERIES-5 Lane A splice (Gated-duplication snag resolved: E1EmbeddingGrind now imports
   -- ReadoffValueGate and shares the single canonical `Gated`, so `Hcert` unifies with
   -- `gated_certificate_uniform`). Copy-not-compose: the three hypothesis types are the verbatim

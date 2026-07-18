@@ -33,7 +33,6 @@ amended DRAFT `embedding_Zef2TC_DRAFT` re-bases the E-0 draft verbatim onto `Zef
 namespace GoodsteinPA.E1EmbeddingGrind
 
 open LO LO.FirstOrder ONote Ordinal
-open GoodsteinPA.FastGrowing
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ## `Zef2TC` — the full-rule-set target calculus -/
@@ -1084,7 +1083,6 @@ end GoodsteinPA.E1EmbeddingGrind
 namespace GoodsteinPA.E1EmbeddingGrind
 
 open LO LO.FirstOrder ONote
-open GoodsteinPA.FastGrowing
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ## E-1 block 5 — the GROWTH KIT: `Gexp = hardy (ω²)` dominates ℒₒᵣ term values
@@ -4586,14 +4584,14 @@ length: `atomTrue (χ/[nm n]) → goodsteinLength m ≤ n`.  The matrix is extra
 
 theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : SyntacticSemiformula ℒₒᵣ 1}
     (hχ : goodsteinBodyE/[nm m] = (∃⁰ χ)) (h : atomTrue (χ/[nm n])) :
-    GoodsteinPA.Dom.goodsteinLength m ≤ n := by
+    Goodstein.Dom.goodsteinLength m ≤ n := by
   have hbody := Semiformula.exs.inj hχ
   rw [← hbody] at h
   have h' : atomTrue ((((Rew.subst (L := ℒₒᵣ) ![nm m]).q ▹
       ((Rew.emb : Rew ℒₒᵣ Empty 1 ℕ 1).q ▹
         (((↑(LO.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
           : Semisentence ℒₒᵣ 2))) : SyntacticSemiformula ℒₒᵣ 1)/[nm n]) := h
-  apply GoodsteinPA.Dom.goodsteinLength_le (m := m) (N := n)
+  apply Goodstein.Dom.goodsteinLength_le (m := m) (N := n)
   rw [← GoodsteinPA.InternalPow.igoodstein_nat]
   simp only [atomTrue, Semiformula.eval_rew, Function.comp_def] at h'
   have hcast : ∀ (E : Fin 3 → ℕ) (ε₁ ε₂ : Empty → ℕ),
@@ -4742,7 +4740,7 @@ theorem wainer_bound_witness
           n ≤ fastGrowing o m)
     (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) :
     ∃ o : ONote, o.NF ∧
-      GoodsteinPA.WainerRoute.EventuallyLE GoodsteinPA.Dom.goodsteinLength
+      GoodsteinPA.WainerRoute.EventuallyLE Goodstein.Dom.goodsteinLength
         (fun n => fastGrowing o n) := by
   obtain ⟨B, d, K₀, e, α, heNF, hαNF, hall⟩ := readoff_value_goodstein' h
   -- ONE iterate count k for the whole numeral family, at the FIXED matrix B₀
@@ -4773,7 +4771,7 @@ theorem wainer_bound_witness
     (Semiformula.exs.inj hχeq).symm
   obtain ⟨P, hPmono, hPgated, hPle⟩ := hk m 0 χ hχB hSig
   obtain ⟨α', hle, hα'NF, hNcert, n, hn, htrue⟩ := hmain P 0 hPmono hPgated
-  have hglen : GoodsteinPA.Dom.goodsteinLength m ≤ n :=
+  have hglen : Goodstein.Dom.goodsteinLength m ≤ n :=
     goodsteinBodyE_semantic_link hχeq htrue
   -- m-uniformization: fold the rel1-staged tower and the per-m P into the fixed slot
   have hT_m : ∀ x, ewIterTower (rel1 (ewRootSlot e B) (max K₀ m)) d α x

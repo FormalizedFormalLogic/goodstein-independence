@@ -51,7 +51,6 @@ public import GoodsteinPA.Compat
 namespace GoodsteinPA.OperatorZeh
 
 open LO LO.FirstOrder ONote Ordinal
-open GoodsteinPA.FastGrowing
 open GoodsteinPA.OperatorZinfty
 
 /-! ## §0 The SPIKE-W4 transforms (LOCK §1 verbatim; `wip/` copies were re-derivations). -/
