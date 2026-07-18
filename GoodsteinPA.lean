@@ -2,8 +2,6 @@ module  -- shake: keep-all --deprecated_module: ignore
 
 public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.Compat
-public import GoodsteinPA.Computability
-public import GoodsteinPA.Defs
 public import GoodsteinPA.Domination
 public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.Embedding
@@ -25,6 +23,8 @@ public import GoodsteinPA.Statement
 public import GoodsteinPA.ToMathlib.FastGrowing.Basic
 public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
 public import GoodsteinPA.ToMathlib.FastGrowing.Norm
+public import GoodsteinPA.ToMathlib.Goodstein.Computability
+public import GoodsteinPA.ToMathlib.Goodstein.Defs
 public import GoodsteinPA.ToMathlib.Hardy
 public import GoodsteinPA.ToMathlib.Hardy.Basic
 public import GoodsteinPA.ToMathlib.Hardy.Structure

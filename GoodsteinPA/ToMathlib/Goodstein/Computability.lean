@@ -18,7 +18,7 @@ module
 public import Mathlib.Computability.Partrec
 public import Mathlib.Computability.RE
 public import Mathlib.Data.Nat.Log
-public import GoodsteinPA.Defs
+public import GoodsteinPA.ToMathlib.Goodstein.Defs
 
 @[expose] public section
 

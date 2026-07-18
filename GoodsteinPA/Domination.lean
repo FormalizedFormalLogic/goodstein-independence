@@ -11,8 +11,8 @@ public import Mathlib.SetTheory.Ordinal.Exponential
 public import Mathlib.SetTheory.Ordinal.Notation
 public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
 public import Mathlib.Tactic.Ring
-public import GoodsteinPA.Defs
-public meta import GoodsteinPA.Defs  -- shake: keep
+public import GoodsteinPA.ToMathlib.Goodstein.Defs
+public meta import GoodsteinPA.ToMathlib.Goodstein.Defs  -- shake: keep
 public import GoodsteinPA.ToMathlib.Hardy
 public meta import GoodsteinPA.ToMathlib.Hardy  -- shake: keep
 

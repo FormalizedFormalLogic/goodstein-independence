@@ -15,7 +15,7 @@ so the `𝚺₁`-definable internal run is the genuine Goodstein process, not a 
 module
 
 public import GoodsteinPA.InternalGoodstein
-public import GoodsteinPA.Defs
+public import GoodsteinPA.ToMathlib.Goodstein.Defs
 public import GoodsteinPA.Domination
 public import Mathlib.Data.Nat.Log
 public import GoodsteinPA.Compat
