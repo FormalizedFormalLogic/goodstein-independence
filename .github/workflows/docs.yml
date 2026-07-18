@@ -51,7 +51,7 @@ jobs:
   # case). `workflow_dispatch` forces a manual run in either state.
   changes:
     if: github.event.repository.private == false || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     outputs:
       sensitive: ${{ steps.filter.outputs.sensitive }}
     steps:
@@ -75,7 +75,7 @@ jobs:
       || needs.changes.outputs.sensitive == 'true'
       || contains(github.event.pull_request.labels.*.name, 'force-docs')
       || endsWith(github.head_ref, '-force-docs')
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       # elan only; we drive the build ourselves inside docbuild/ (the parent lib is
@@ -88,6 +88,22 @@ jobs:
       # trim (keep GoodsteinPA; deps link out to hosted mathlib4_docs / Foundation
       # docs), blueprint with ledger estimates, assemble site/ (/docs + /blueprint).
       # --ci additionally pulls the Mathlib olean cache first.
+      # doc-gen4's peak sits right at the runner's 16 GB. lean-gallery OOM'd here
+      # deterministically on ubuntu-26.04 (a preview image) and was green on the byte-identical
+      # build under 24.04, whose swap absorbs the peak; tao-collatz renders green on the same
+      # 24.04 + explicit-swap config. goodstein had never been tried on it — the earlier "swap
+      # doesn't carry the peak" result was measured on 26.04, so it was confounded by the image.
+      # Provide our own headroom rather than inheriting the image's, and log the water line.
+      - name: Add 8 GB swap (doc-gen4 headroom)
+        run: |
+          SWAP=/mnt/swapfile-docs
+          sudo fallocate -l 8G "$SWAP" 2>/dev/null || { SWAP=/swapfile-docs; sudo fallocate -l 8G "$SWAP"; }
+          sudo chmod 600 "$SWAP"
+          sudo mkswap "$SWAP"
+          sudo swapon "$SWAP"
+          swapon --show
+          free -h
+
       - name: Build site (docs + blueprint)
         run: |
           pip install leanblueprint
