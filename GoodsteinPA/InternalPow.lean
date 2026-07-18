@@ -17,8 +17,12 @@ and the engine certifies `ipow` is a genuine **`𝚺₁`-function** of `(b, x)` 
 internal induction (`DescentArith.ineq6_internal`) consumes. This is brick 1 of the multi-lap wall;
 brick 2 will be base-`b` digit extraction, brick 3 the hereditary base-change `bump`.
 -/
-import Foundation.FirstOrder.Arithmetic.HFS
-import GoodsteinPA.Compat
+module
+
+public import Foundation.FirstOrder.Arithmetic.HFS
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.InternalPow
 

@@ -1,5 +1,9 @@
-import GoodsteinPA.EwIter
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.EwIter
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.OperatorZeh
 
@@ -1475,7 +1479,8 @@ Stage A, order R-5/R-6).
 - The old parametric `wainer_splice_Zef2 (e B α …) : … ewIter (ewRootSlot e B) α 0 ≤ …` was the
   lap-8-ruling L-W VOIDed-as-trivial shape; it is DELETED here and RESTATED at its ratified
   non-parametric shape (`(𝗣𝗔 ⊢ ↑goodsteinSentence) → ∃ o, …`) in `WainerLadder.lean`, which can
-  import the translation apparatus without the `OperatorZef2`-level cross-import obstruction.
+  public import the translation apparatus without the `OperatorZef2`-level cross-import obstruction.
+
 - The old parametric `embedding_Zef2 (Γ_G e …)` was the lap-8-ruling §4 VOIDed placeholder (R-6
   debt); its faithful, translation-bound restatement is the Stage-B rung-E statement lap and
   stays a `wip/Ax2AdequacyProbe.lean` draft until the judge ratifies it.  A `TODO` for it lives

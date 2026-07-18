@@ -11,8 +11,12 @@ predecessor), so it goes straight through `PR.Construction`:
 `m : V → V` that `DescentArith.ineq6_internal` abstracts over. Brick 6 will be the `b`-side bound
 `T̂^{k+2}∘β` and the internal `ineq6_step`.
 -/
-import GoodsteinPA.InternalBump
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.InternalBump
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.InternalPow
 

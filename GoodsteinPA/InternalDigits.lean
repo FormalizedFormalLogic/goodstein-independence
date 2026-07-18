@@ -11,8 +11,12 @@ file gives the digit accessor and its basic laws inside an arbitrary `V ⊧ₘ* 
 with `idigit b n i < b` (for `0 < b`) and the `𝚺₁`-definability needed for internal induction. Brick 3
 will assemble these into the base-`b` hereditary base-change.
 -/
-import GoodsteinPA.InternalPow
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.InternalPow
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.InternalPow
 

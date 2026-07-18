@@ -1,33 +1,28 @@
-/-
-# GoodsteinPA — Goodstein independence over PA (Kirby–Paris)
+module  -- shake: keep-all --deprecated_module: ignore
 
-The syntactic `𝗣𝗔 ⊬ γ`, built on Foundation's first-order + incompleteness apparatus. This root
-imports exactly the build closure of `GoodsteinPA.Statement`, the headline
-`peano_not_proves_goodstein`.
--/
-import GoodsteinPA.BlueprintAttr
-import GoodsteinPA.Compat
-import GoodsteinPA.Computability
-import GoodsteinPA.Defs
-import GoodsteinPA.Domination
-import GoodsteinPA.E1EmbeddingGrind
-import GoodsteinPA.Embedding
-import GoodsteinPA.Encoding
-import GoodsteinPA.EwIter
-import GoodsteinPA.Hardy
-import GoodsteinPA.HardyMajorization
-import GoodsteinPA.InternalBridge
-import GoodsteinPA.InternalBump
-import GoodsteinPA.InternalDigits
-import GoodsteinPA.InternalGoodstein
-import GoodsteinPA.InternalLog
-import GoodsteinPA.InternalPow
-import GoodsteinPA.OperatorZef2
-import GoodsteinPA.OperatorZeh
-import GoodsteinPA.OperatorZinfty
-import GoodsteinPA.ReadoffValueGate
-import GoodsteinPA.Reduction
-import GoodsteinPA.Statement
-import GoodsteinPA.WainerBound
-import GoodsteinPA.WainerRoute
-import GoodsteinPA.Zinfty
+public import GoodsteinPA.BlueprintAttr
+public import GoodsteinPA.Compat
+public import GoodsteinPA.Computability
+public import GoodsteinPA.Defs
+public import GoodsteinPA.Domination
+public import GoodsteinPA.E1EmbeddingGrind
+public import GoodsteinPA.Embedding
+public import GoodsteinPA.Encoding
+public import GoodsteinPA.EwIter
+public import GoodsteinPA.Hardy
+public import GoodsteinPA.HardyMajorization
+public import GoodsteinPA.InternalBridge
+public import GoodsteinPA.InternalBump
+public import GoodsteinPA.InternalDigits
+public import GoodsteinPA.InternalGoodstein
+public import GoodsteinPA.InternalLog
+public import GoodsteinPA.InternalPow
+public import GoodsteinPA.OperatorZef2
+public import GoodsteinPA.OperatorZeh
+public import GoodsteinPA.OperatorZinfty
+public import GoodsteinPA.ReadoffValueGate
+public import GoodsteinPA.Reduction
+public import GoodsteinPA.Statement
+public import GoodsteinPA.WainerBound
+public import GoodsteinPA.WainerRoute
+public import GoodsteinPA.Zinfty

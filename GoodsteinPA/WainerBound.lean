@@ -3,10 +3,14 @@ Copyright (c) 2026 Trevor Morris. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Trevor Morris
 -/
-import GoodsteinPA.WainerRoute
-import GoodsteinPA.E1EmbeddingGrind
-import GoodsteinPA.ReadoffValueGate
-import GoodsteinPA.HardyMajorization
+module
+
+public import GoodsteinPA.WainerRoute
+public import GoodsteinPA.E1EmbeddingGrind
+public import GoodsteinPA.ReadoffValueGate
+public import GoodsteinPA.HardyMajorization
+
+@[expose] public section
 
 /-!
 # Wainer bound — the discharged route-B growth axiom (SERIES-4, judge pass 2026-07-03)

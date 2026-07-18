@@ -12,11 +12,15 @@ on the standard model `ℕ` (itself a model of `𝗜𝚺₁`). This file establi
 
 so the `𝚺₁`-definable internal run is the genuine Goodstein process, not a look-alike.
 -/
-import GoodsteinPA.InternalGoodstein
-import GoodsteinPA.Defs
-import GoodsteinPA.Domination
-import Mathlib.Data.Nat.Log
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.InternalGoodstein
+public import GoodsteinPA.Defs
+public import GoodsteinPA.Domination
+public import Mathlib.Data.Nat.Log
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.InternalPow
 

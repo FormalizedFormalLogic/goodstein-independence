@@ -38,11 +38,15 @@ A `codeOfREPred`-built `γ` is faithful and citable (the Phase 0 deliverable), b
 transparent, hand-built Π₂ form; if so, that refactor is gated by *matching this bridge's spec*
 (`Bridge.lean`), so faithfulness can never silently regress.
 -/
-import Foundation.FirstOrder.Incompleteness.Second
-import Foundation.FirstOrder.Arithmetic.R0.Representation
-import GoodsteinPA.Defs
-import GoodsteinPA.Computability
-import GoodsteinPA.InternalGoodstein
+module
+
+public import Foundation.FirstOrder.Incompleteness.Second
+public import Foundation.FirstOrder.Arithmetic.R0.Representation
+public import GoodsteinPA.Defs
+public import GoodsteinPA.Computability
+public import GoodsteinPA.InternalGoodstein
+
+@[expose] public section
 
 namespace GoodsteinPA
 

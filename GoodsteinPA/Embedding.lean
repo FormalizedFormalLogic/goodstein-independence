@@ -34,10 +34,14 @@ image are CLOSED — which is what lets M5's numeral-only `exI`/ω-rule `allω` 
 - The naive (non-assignment) `embed`/`provable_rew` of laps 9–10 were superseded by `embedC` and
   removed on promotion; see `wip/Embedding.lean` (git history) for that scaffold.
 -/
-import GoodsteinPA.Zinfty
-import Foundation.FirstOrder.Basic.Calculus2
-import Foundation.FirstOrder.Arithmetic.Schemata
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.Zinfty
+public import Foundation.FirstOrder.Basic.Calculus2
+public import Foundation.FirstOrder.Arithmetic.Schemata
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.Embedding
 

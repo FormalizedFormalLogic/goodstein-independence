@@ -4,12 +4,19 @@ Full Growth/Domination chain. Defs byte-identical to src/Defs.lean; Hardy = src/
 Namespace localized to `GoodsteinPA.Dom`. Carries documented native_decide base-case axioms.
 WIP — not in build target.
 -/
-import Mathlib.Algebra.Order.SuccPred
-import Mathlib.SetTheory.Ordinal.Exponential
-import Mathlib.SetTheory.Ordinal.Notation
-import Mathlib.Tactic.Ring
-import GoodsteinPA.Defs
-import GoodsteinPA.Hardy
+module
+
+public import Mathlib.Algebra.Order.SuccPred
+public import Mathlib.SetTheory.Ordinal.Exponential
+public import Mathlib.SetTheory.Ordinal.Notation
+public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
+public import Mathlib.Tactic.Ring
+public import GoodsteinPA.Defs
+public meta import GoodsteinPA.Defs  -- shake: keep
+public import GoodsteinPA.Hardy
+public meta import GoodsteinPA.Hardy  -- shake: keep
+
+@[expose] public section
 
 namespace GoodsteinPA.Dom
 

@@ -28,9 +28,13 @@ vacuous restatement. See `DIRECTION.md` (ANTI-FRAUD guard) and the KB note `name
 (`Encoding.lean`) is the faithful encoding AND the bridge `(ℕ ⊨ goodsteinSentence) ↔
 Goodstein-terminates` is proved (`Bridge.lean`, axiom-clean). Those faithfulness anchors are LOCKED.
 -/
-import GoodsteinPA.Reduction
-import GoodsteinPA.BlueprintAttr
-import GoodsteinPA.WainerBound
+module
+
+public import GoodsteinPA.Reduction
+public import GoodsteinPA.BlueprintAttr
+public import GoodsteinPA.WainerBound
+
+@[expose] public section
 
 namespace GoodsteinPA
 

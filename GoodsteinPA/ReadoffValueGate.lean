@@ -1,5 +1,9 @@
-import GoodsteinPA.OperatorZef2
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.OperatorZef2
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 /-!
 # Route-(c) value gate — the hereditary `Gated` predicate (lap 206, step (2))

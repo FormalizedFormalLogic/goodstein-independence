@@ -4,8 +4,13 @@ Verbatim merge of FastGrowing/{Basic,Domination,Hardy}.lean (mathlib rev fabf563
 identical to this repo's pin). Provides `hardy`, `norm`, `hardy_le_of_lt` (= Hmono),
 `hardy_monotone` (= Hmono_n), `fastGrowing_*`. WIP — not in build target. Namespace localized.
 -/
-import Mathlib.SetTheory.Ordinal.Notation
-import Mathlib.Order.Iterate
+module
+
+public import Mathlib.SetTheory.Ordinal.Notation
+public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
+public import Mathlib.Order.Iterate
+
+@[expose] public section
 
 namespace GoodsteinPA.FastGrowing
 

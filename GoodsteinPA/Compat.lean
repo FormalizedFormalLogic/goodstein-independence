@@ -24,7 +24,11 @@ that is the designated audit surface and must be Foundation's.
 
 When upstream churns again, edit THIS file, not the call sites.
 -/
-import Foundation.FirstOrder.Arithmetic.HFS
+module
+
+public import Foundation.FirstOrder.Arithmetic.HFS
+
+@[expose] public section
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic
 

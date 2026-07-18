@@ -1,4 +1,8 @@
-import GoodsteinPA.OperatorZef2
+module
+
+public import GoodsteinPA.OperatorZef2
+
+@[expose] public section
 
 /-!
 # 2b growth conversion — `ewIter` → `hardy` majorization (lap 207 start)

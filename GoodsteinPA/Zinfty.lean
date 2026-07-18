@@ -42,15 +42,19 @@ measures (structural recursion on the infinitely-branching tree).
 Promoted from `wip/ZinftyF.lean` once cut-elimination closed (zero sorries). The superseded
 abstract-`AForm` prototype `wip/Zinfty.lean` is kept for history.
 -/
-import Foundation.FirstOrder.Incompleteness.Second
-import Foundation.FirstOrder.Arithmetic.R0.Representation
-import Mathlib.SetTheory.Ordinal.Arithmetic
-import Mathlib.SetTheory.Ordinal.Exponential
-import Mathlib.SetTheory.Ordinal.Principal
-import Mathlib.SetTheory.Ordinal.Veblen
-import Mathlib.SetTheory.Ordinal.Family
-import Mathlib.Data.ENat.Lattice
-import GoodsteinPA.Compat
+module
+
+public import Foundation.FirstOrder.Incompleteness.Second
+public import Foundation.FirstOrder.Arithmetic.R0.Representation
+public import Mathlib.SetTheory.Ordinal.Arithmetic
+public import Mathlib.SetTheory.Ordinal.Exponential
+public import Mathlib.SetTheory.Ordinal.Principal
+public import Mathlib.SetTheory.Ordinal.Veblen
+public import Mathlib.SetTheory.Ordinal.Family
+public import Mathlib.Data.ENat.Lattice
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.ZinftyF
 

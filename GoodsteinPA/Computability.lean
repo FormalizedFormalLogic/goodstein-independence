@@ -13,10 +13,14 @@ Pure computability: each lemma typechecks or it doesn't — zero faithfulness ri
 `nat_strong_rec` (course-of-values recursion): every recursive call lands at an index `< n`, so
 the value is recoverable from `(List.range n).map (f ·)`.
 -/
-import Mathlib.Computability.Partrec
-import Mathlib.Computability.RE
-import Mathlib.Data.Nat.Log
-import GoodsteinPA.Defs
+module
+
+public import Mathlib.Computability.Partrec
+public import Mathlib.Computability.RE
+public import Mathlib.Data.Nat.Log
+public import GoodsteinPA.Defs
+
+@[expose] public section
 
 namespace GoodsteinPA
 

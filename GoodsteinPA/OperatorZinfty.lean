@@ -22,13 +22,17 @@ This file: the inductive `Zekd` + structural layer (`mono_k`, `mono_d`, `mono_c`
 The inversion suite + §19.5/§19.6 cut reductions port the old `SplitZinfty` argument (mechanical:
 thread the inert `e`, plus the §19.6 witness-control step using the banked Hardy lemmas).
 -/
-import Foundation.FirstOrder.Incompleteness.Second
-import Foundation.FirstOrder.Arithmetic.R0.Representation
-import Foundation.FirstOrder.Arithmetic.Basic.Model
-import Mathlib.SetTheory.Ordinal.Notation
-import Mathlib.Order.Lattice.Nat
-import GoodsteinPA.Hardy
-import GoodsteinPA.Compat
+module
+
+public import Foundation.FirstOrder.Incompleteness.Second
+public import Foundation.FirstOrder.Arithmetic.R0.Representation
+public import Foundation.FirstOrder.Arithmetic.Basic.Model
+public import Mathlib.SetTheory.Ordinal.Notation
+public import Mathlib.Order.Lattice.Nat
+public import GoodsteinPA.Hardy
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.OperatorZinfty
 

@@ -1,5 +1,9 @@
-import GoodsteinPA.OperatorZeh
-import GoodsteinPA.Domination
+module
+
+public import GoodsteinPA.OperatorZeh
+public import GoodsteinPA.Domination
+
+@[expose] public section
 
 set_option linter.unnecessarySimpa false
 

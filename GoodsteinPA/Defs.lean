@@ -16,7 +16,11 @@ occurrence of the base `b` by `b + 1` (exponents bumped recursively, digits unch
 The **Goodstein sequence** seeded at `m` is `G 0 = m`, and `G (k+1)` = bump base
 `(k+2) ↦ (k+3)` in `G k`, then **subtract 1** (`0` absorbing). Base at step `k` is `k + 2`.
 -/
-import Mathlib.Data.Nat.Log
+module
+
+public import Mathlib.Data.Nat.Log
+
+@[expose] public section
 
 namespace GoodsteinPA
 

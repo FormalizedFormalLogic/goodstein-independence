@@ -12,8 +12,12 @@ This file establishes `bumpNext` and its `𝚺₁`-definability (the artifact th
 references). Brick 4b will assemble the table itself via `PR.Construction`, brick 4c will read off
 `ibump b n := (table b n).[n]` and prove it satisfies `Defs.bump`'s recursion.
 -/
-import GoodsteinPA.InternalLog
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.InternalLog
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.InternalPow
 

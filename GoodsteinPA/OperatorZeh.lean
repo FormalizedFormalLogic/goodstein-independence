@@ -40,9 +40,13 @@ existentials open at the root only (R2); `e` is constant through a derivation, c
 changes at statement level (R3); numeric budgets are function-valued (R4); no new `axiom`
 declarations (R5).
 -/
-import GoodsteinPA.OperatorZinfty
-import GoodsteinPA.BlueprintAttr
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.OperatorZinfty
+public import GoodsteinPA.BlueprintAttr
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.OperatorZeh
 

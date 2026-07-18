@@ -12,8 +12,12 @@ Built by the least-number principle exactly as Foundation builds base-2 `log` (l
 `n < b^e`, predecessor is the logarithm). This is the last numeric prerequisite before the
 hereditary base-change `bump` itself (brick 4).
 -/
-import GoodsteinPA.InternalDigits
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.InternalDigits
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 namespace GoodsteinPA.InternalPow
 

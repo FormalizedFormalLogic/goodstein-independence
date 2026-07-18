@@ -24,8 +24,12 @@ chaining through it are axiom-clean — `#print axioms peano_not_proves_consiste
 [propext, Classical.choice, Quot.sound]` (re-verified in-kernel lap 111). No Foundation-side
 residual remains; the only open obligation to a clean headline is crux-2 (the ordinal analysis).
 -/
-import Foundation.FirstOrder.Incompleteness.Examples
-import GoodsteinPA.Encoding
+module
+
+public import Foundation.FirstOrder.Incompleteness.Examples
+public import GoodsteinPA.Encoding
+
+@[expose] public section
 
 namespace GoodsteinPA
 

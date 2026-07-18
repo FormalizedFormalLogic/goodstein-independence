@@ -1,9 +1,13 @@
-import GoodsteinPA.OperatorZef2
-import GoodsteinPA.WainerRoute
-import GoodsteinPA.Embedding
-import GoodsteinPA.InternalBridge
-import GoodsteinPA.ReadoffValueGate
-import GoodsteinPA.Compat
+module
+
+public import GoodsteinPA.OperatorZef2
+public import GoodsteinPA.WainerRoute
+public import GoodsteinPA.Embedding
+public import GoodsteinPA.InternalBridge
+public import GoodsteinPA.ReadoffValueGate
+public import GoodsteinPA.Compat
+
+@[expose] public section
 
 /-!
 # E-1 grind (Series-3) — `Zef2TC` (full E–W Def-23 rule set) + the budgeted EM lemma
