@@ -75,14 +75,14 @@ inductive Zef2TC : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → �
       Zef2TC α e H f c (insert (φ ⋎ ψ) Γ)
   | allω {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
       (hαN : Nlog α ≤ f 0)
-      (φ : SyntacticSemiformula ℒₒᵣ 1) (β : ℕ → ONote)
+      (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
       (hβH : ∀ n, relOp H n (β n))
       (dd : ∀ n, Zef2TC (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
       Zef2TC α e H f c (insert (∀⁰ φ) Γ)
   | exI {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
       (hαN : Nlog α ≤ f 0)
-      (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ) (hβ : β < α)
+      (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ f 0)
       (dd : Zef2TC β e H f c (insert (φ/[nm n]) Γ)) : Zef2TC α e H f c (insert (∃⁰ φ) Γ)
   | cut {α βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
@@ -254,13 +254,13 @@ theorem em_Zef2TC' (φ : Form) {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ
 /-! ## The AMENDED rung-E statement DRAFT (block-6 amendment applied) -/
 
 /-- The goodstein Π₂ body (as in `wip/E0Ax2NeedProbe.lean`). -/
-noncomputable def goodsteinBody : Semisentence ℒₒᵣ 1 :=
+noncomputable def goodsteinBody : ArithmeticSemisentence 1 :=
   “∃ N, !LO.FirstOrder.Arithmetic.igoodsteinDef 0 #1 N”
 
 theorem goodsteinSentence_eq_all_body :
     GoodsteinPA.goodsteinSentence = ∀⁰ goodsteinBody := rfl
 
-noncomputable def goodsteinBodyE : SyntacticSemiformula ℒₒᵣ 1 :=
+noncomputable def goodsteinBodyE : ArithmeticSemiformula ℕ 1 :=
   Rewriting.emb goodsteinBody
 
 /- **DRAFT (E-1 amendment of the E-0 draft) — RETIRED (SERIES-5 Lane C).**  The fixed-root-slot
@@ -481,7 +481,7 @@ theorem le_relSlot_zero (e : ONote) (B K : ℕ) : B ≤ rel1 (ewRootSlot e B) K 
 relativization index `K` (the `SomeK` witness-budget discipline — see the block-3 discovery
 note) and a node ordinal `α`; operator fixed at the full closure `Cl (⊤)` (every `Cl`
 obligation is `Cl.base trivial`, and `∃ H, Cl H α ∧ …` follows). -/
-def BudgetedEmbedsTC (Γ : Finset (SyntacticFormula ℒₒᵣ)) : Prop :=
+def BudgetedEmbedsTC (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ B d : ℕ, ∃ e : ONote, e.NF ∧ ∀ env : ℕ → ℕ, ∃ K : ℕ, ∃ α : ONote, α.NF ∧
     Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) K) d
       (Γ.image (fun φ => Embedding.asg env ▹ φ))
@@ -491,8 +491,8 @@ theorem clT (β : ONote) : Cl (fun _ : ONote => True) β := Cl.base trivial
 
 /-- **`closed`** — consume `em_Zef2TC'`; the ordinal is the deterministic complexity rung
 (env-independent since rewriting preserves `complexity`), the budget is its `clog` gate. -/
-theorem budgetedEmbedsTC_closed {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (φ : SyntacticFormula ℒₒᵣ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+theorem budgetedEmbedsTC_closed {Γ : Finset (ArithmeticFormula ℕ)}
+    (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     BudgetedEmbedsTC Γ := by
   refine ⟨clog (2 * φ.complexity + 1), 0, 0, ONote.NF.zero, fun env => ?_⟩
   refine ⟨0, ONote.ofNat (2 * (Embedding.asg env ▹ φ).complexity + 1), ONote.nf_ofNat _, ?_⟩
@@ -510,17 +510,17 @@ theorem budgetedEmbedsTC_closed {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     (by simpa using Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) hn)
 
 /-- **`verum`** — `verumR` at ordinal `0`. -/
-theorem budgetedEmbedsTC_verum {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (h : (⊤ : SyntacticFormula ℒₒᵣ) ∈ Γ) :
+theorem budgetedEmbedsTC_verum {Γ : Finset (ArithmeticFormula ℕ)}
+    (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsTC Γ := by
   refine ⟨0, 0, 0, ONote.NF.zero, fun env => ⟨0, 0, ONote.NF.zero, ?_⟩⟩
-  have hmem : (⊤ : SyntacticFormula ℒₒᵣ) ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
+  have hmem : (⊤ : ArithmeticFormula ℕ) ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
     have := Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) h
     simpa using this
   exact Zef2TC.verumR (by simp) hmem
 
 /-- **`wk`** — image weakening; all budgets carried. -/
-theorem budgetedEmbedsTC_wk {Δ Γ : Finset (SyntacticFormula ℒₒᵣ)}
+theorem budgetedEmbedsTC_wk {Δ Γ : Finset (ArithmeticFormula ℕ)}
     (hsub : Δ ⊆ Γ) (ih : BudgetedEmbedsTC Δ) :
     BudgetedEmbedsTC Γ := by
   obtain ⟨B, d, e, he, ih⟩ := ih
@@ -530,14 +530,14 @@ theorem budgetedEmbedsTC_wk {Δ Γ : Finset (SyntacticFormula ℒₒᵣ)}
 
 /-- **`shift`** — the image collapses under the shifted assignment (`embedC`'s `hB`
 computation, verbatim); budgets and derivation carried unchanged. -/
-theorem budgetedEmbedsTC_shift {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+theorem budgetedEmbedsTC_shift {Γ : Finset (ArithmeticFormula ℕ)}
     (ih : BudgetedEmbedsTC Γ) :
     BudgetedEmbedsTC (Γ.image Rewriting.shift) := by
   obtain ⟨B, d, e, he, ih⟩ := ih
   refine ⟨B, d, e, he, fun env => ?_⟩
   obtain ⟨K, α, hαNF, D⟩ := ih (fun x => env (x + 1))
   refine ⟨K, α, hαNF, ?_⟩
-  have himg : (Γ.image (Rewriting.shift : SyntacticFormula ℒₒᵣ → SyntacticFormula ℒₒᵣ)).image
+  have himg : (Γ.image (Rewriting.shift : ArithmeticFormula ℕ → ArithmeticFormula ℕ)).image
         (fun φ => Embedding.asg env ▹ φ)
       = Γ.image (fun φ => Embedding.asg (fun x => env (x + 1)) ▹ φ) := by
     have hcompB : (Embedding.asg env).comp Rew.shift
@@ -552,8 +552,8 @@ theorem budgetedEmbedsTC_shift {Γ : Finset (SyntacticFormula ℒₒᵣ)}
   rwa [himg]
 
 /-- **`or`** — single premise; `osucc` root, one `K`-rung pays the `Nlog` gate. -/
-theorem budgetedEmbedsTC_or {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ ψ : SyntacticFormula ℒₒᵣ} (h : φ ⋎ ψ ∈ Γ)
+theorem budgetedEmbedsTC_or {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ ψ : ArithmeticFormula ℕ} (h : φ ⋎ ψ ∈ Γ)
     (ih : BudgetedEmbedsTC (insert φ (insert ψ Γ))) :
     BudgetedEmbedsTC Γ := by
   obtain ⟨B, d, e, he, ih⟩ := ih
@@ -579,8 +579,8 @@ theorem budgetedEmbedsTC_or {Γ : Finset (SyntacticFormula ℒₒᵣ)}
 /-- **`and`** — the two-premise join: control tower `osucc (e₁ + e₂)` (both strictly below,
 `hardy_le_of_lt` fed by `norm eᵢ` absorbed into the structural `B`), root `osucc (α₁ + α₂)`
 (`Nlog` absorbing + one `K`-rung of gate slack), budgets aligned by `max`/`mono`. -/
-theorem budgetedEmbedsTC_and {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ ψ : SyntacticFormula ℒₒᵣ} (h : φ ⋏ ψ ∈ Γ)
+theorem budgetedEmbedsTC_and {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ ψ : ArithmeticFormula ℕ} (h : φ ⋏ ψ ∈ Γ)
     (ihp : BudgetedEmbedsTC (insert φ Γ)) (ihq : BudgetedEmbedsTC (insert ψ Γ)) :
     BudgetedEmbedsTC Γ := by
   obtain ⟨B₁, d₁, e₁, he₁, ih₁⟩ := ihp
@@ -636,8 +636,8 @@ theorem budgetedEmbedsTC_and {Γ : Finset (SyntacticFormula ℒₒᵣ)}
 /-- **`cut`** — same two-premise join as `and`; the cut rank is `max`ed with
 `φ.complexity + 1` (env-independent: rewriting preserves `complexity`) and the read gate
 `complexity ≤ f 0` is paid by absorbing `φ.complexity` into the structural `B`. -/
-theorem budgetedEmbedsTC_cut {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ : SyntacticFormula ℒₒᵣ}
+theorem budgetedEmbedsTC_cut {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ : ArithmeticFormula ℕ}
     (ihp : BudgetedEmbedsTC (insert φ Γ)) (ihn : BudgetedEmbedsTC (insert (∼φ) Γ)) :
     BudgetedEmbedsTC Γ := by
   obtain ⟨B₁, d₁, e₁, he₁, ih₁⟩ := ihp
@@ -716,9 +716,9 @@ budget bookkeeping of `em_Zef2TC`; the atomic cases split on `atomTrue` and clos
 (`stdClosedVal`/`atomTrue_rel_congr`/`embedding_subst_q_cons_app`) is banked in
 `OperatorZinfty`. -/
 
-private theorem em_cong_atomic_rel {n : ℕ} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+private theorem em_cong_atomic_rel {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
-    {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → SyntacticSemiterm ℒₒᵣ n)
+    {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticSemiterm ℕ n)
     {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
     (hαN : Nlog α ≤ f 0)
     (hp : (Rew.subst w ▹ Semiformula.rel r v) ∈ Γ)
@@ -737,9 +737,9 @@ private theorem em_cong_atomic_rel {n : ℕ} (w w' : Fin n → SyntacticTerm ℒ
         (fun i => embedding_valm_subst_congr w w' hval (v i))).mp htn
     exact Zef2TC.trueNrel hαN r _ htn' hn'
 
-private theorem em_cong_atomic_nrel {n : ℕ} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+private theorem em_cong_atomic_nrel {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
-    {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → SyntacticSemiterm ℒₒᵣ n)
+    {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticSemiterm ℕ n)
     {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
     (hαN : Nlog α ≤ f 0)
     (hp : (Rew.subst w ▹ Semiformula.nrel r v) ∈ Γ)
@@ -766,7 +766,7 @@ value-equal closed substitutions `w, w'`, any sequent containing `Rew.subst w �
 atomic cases via `trueRel`/`trueNrel` + `stdClosedVal` congruence — the (Ax2)-load-bearing
 step. -/
 theorem em_cong_Zef2TC (k : ℕ) :
-    ∀ {n : ℕ} (w w' : Fin n → SyntacticTerm ℒₒᵣ) (ψ : SyntacticSemiformula ℒₒᵣ n),
+    ∀ {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
       ψ.complexity ≤ k →
       (∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) →
       ∀ {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq},
@@ -916,9 +916,9 @@ theorem em_cong_Zef2TC (k : ℕ) :
         rwa [Finset.insert_eq_self.mpr hn'] at hall
 
 /-- Single-term wrapper: closed terms `s, s'` of equal standard value. -/
-theorem em_cong1_Zef2TC (s s' : SyntacticTerm ℒₒᵣ)
+theorem em_cong1_Zef2TC (s s' : ArithmeticTerm ℕ)
     (hval : stdClosedVal s = stdClosedVal s')
-    (ψ : SyntacticSemiformula ℒₒᵣ 1) {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq}
+    (ψ : ArithmeticSemiformula ℕ 1) {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq}
     (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
     (hgate : clog (2 * ψ.complexity + 1) ≤ f 0)
     (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) :
@@ -940,8 +940,8 @@ value `m`; the value-congruent EM (`em_cong1_Zef2TC`, at pair `(nm m, asg env t)
 fires at witness `m` — env-dependent, absorbed into the relativization index
 `K := max K₁ m + 3` (the `∃ K` amendment's raison d'être; `n ≤ f 0` paid by
 `index_le_relSlot_zero`, the two ordinal-join gates by `relSlot_succ_gap` rungs). -/
-theorem budgetedEmbedsTC_exs {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ : SyntacticSemiformula ℒₒᵣ 1} (h : ∃⁰ φ ∈ Γ) (t : SyntacticTerm ℒₒᵣ)
+theorem budgetedEmbedsTC_exs {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
     (ih : BudgetedEmbedsTC (insert (φ/[t]) Γ)) :
     BudgetedEmbedsTC Γ := by
   obtain ⟨B₁, d₁, e₁, he₁, ih₁⟩ := ih
@@ -951,8 +951,8 @@ theorem budgetedEmbedsTC_exs {Γ : Finset (SyntacticFormula ℒₒᵣ)}
   set d : ℕ := max d₁ (φ.complexity + 1) with hd
   obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
   -- the closed witness and its standard value
-  set ψ' : SyntacticSemiformula ℒₒᵣ 1 := (Embedding.asg env).q ▹ φ with hψ'
-  set s : SyntacticTerm ℒₒᵣ := Embedding.asg env t with hs
+  set ψ' : ArithmeticSemiformula ℕ 1 := (Embedding.asg env).q ▹ φ with hψ'
+  set s : ArithmeticTerm ℕ := Embedding.asg env t with hs
   set m : ℕ := stdClosedVal s with hm
   set K : ℕ := max K₁ m + 3 with hK
   set F : ℕ → ℕ := rel1 (ewRootSlot e₁ B) K with hF
@@ -1179,7 +1179,7 @@ theorem envSup_cons_le (env : ℕ → ℕ) (n N : ℕ) :
 many `Gexp`-iterates of the env-sup over a structural fv bound.  Induction on the term; the
 `add`/`mul` closure facts pay the function cases.  This is the mechanism the `exs`/`all`
 witness budgets reduce to (E–W: the control tower pays for term growth). -/
-theorem term_val_le_Gexp_iter (t : SyntacticTerm ℒₒᵣ) :
+theorem term_val_le_Gexp_iter (t : ArithmeticTerm ℕ) :
     ∃ c N : ℕ, ∀ env : ℕ → ℕ,
       GoodsteinPA.Compat.gValm ℕ ![] env t ≤ Gexp^[c] (envSup env N) := by
   induction t with
@@ -1247,7 +1247,7 @@ theorem term_val_le_Gexp_iter (t : SyntacticTerm ℒₒᵣ) :
 
 /-- Bridge: the `atomTrue`-evaluator value of the `asg`-closed term is the direct
 `env`-valuation. -/
-theorem stdClosedVal_asg (env : ℕ → ℕ) (t : SyntacticTerm ℒₒᵣ) :
+theorem stdClosedVal_asg (env : ℕ → ℕ) (t : ArithmeticTerm ℕ) :
     stdClosedVal (Embedding.asg env t) = GoodsteinPA.Compat.gValm ℕ ![] env t := by
   show GoodsteinPA.Compat.gVal _ (fun _ => 0) (fun _ => 0) (Rew.rewrite (fun x => nm (env x)) t) = _
   -- unfold the `gVal`/`gValm` shims so `rw` sees `Semiterm.val`; upstream's `val_rewrite` now emits
@@ -1259,11 +1259,11 @@ theorem stdClosedVal_asg (env : ℕ → ℕ) (t : SyntacticTerm ℒₒᵣ) :
   rw [he]
   congr 1
   funext x
-  exact Embedding.valm_nm (env x) (fun _ => 0)
+  exact ZinftyF.valm_nm (env x) (fun _ => 0)
 
 /-- **The `exs`/V3 witness gate**: the closed witness's standard value is dominated by
 structurally many `Gexp`-iterates of the env-sup. -/
-theorem stdClosedVal_asg_le_Gexp_iter (t : SyntacticTerm ℒₒᵣ) :
+theorem stdClosedVal_asg_le_Gexp_iter (t : ArithmeticTerm ℕ) :
     ∃ c N : ℕ, ∀ env : ℕ → ℕ,
       stdClosedVal (Embedding.asg env t) ≤ Gexp^[c] (envSup env N) := by
   obtain ⟨c, N, h⟩ := term_val_le_Gexp_iter t
@@ -1284,7 +1284,7 @@ index, fixed as the canonical assignment sup `envSup env N`.  Then:
 The absorbing-norm gate `Nlog α ≤ f 0` is maintained by the structural invariant `Nlog α ≤ B`
 (`Nlog` absorbing under `osucc`/`+`), and the `Gexp`-domination field pays the `exs`/atomic witness
 budgets (control tower absorbs term growth). -/
-def BudgetedEmbedsV3 (Γ : Finset (SyntacticFormula ℒₒᵣ)) : Prop :=
+def BudgetedEmbedsV3 (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ B d N : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ Nlog α ≤ B ∧
     ∀ env : ℕ → ℕ,
       Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) (envSup env N)) d
@@ -1306,8 +1306,8 @@ theorem envSup_shift_le (env : ℕ → ℕ) (N : ℕ) :
 
 /-- **V3 `closed`** — the deterministic-complexity EM leaf (structural `α = ofNat (2·complexity+1)`,
 budget `clog`; `envSup env 0 = 0`). -/
-theorem budgetedEmbedsV3_closed {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (φ : SyntacticFormula ℒₒᵣ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+theorem budgetedEmbedsV3_closed {Γ : Finset (ArithmeticFormula ℕ)}
+    (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
   refine ⟨clog (2 * φ.complexity + 1), 0, 0, 0, ONote.ofNat (2 * φ.complexity + 1),
     ONote.NF.zero, ONote.nf_ofNat _, Nlog_ofNat_le _, fun env => ?_⟩
@@ -1329,23 +1329,23 @@ theorem budgetedEmbedsV3_closed {Γ : Finset (SyntacticFormula ℒₒᵣ)}
   rwa [show (Embedding.asg env ▹ φ).complexity = φ.complexity from by simp] at hem
 
 /-- **V3 `verum`** — `verumR` at `α = 0`. -/
-theorem budgetedEmbedsV3_verum {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (h : (⊤ : SyntacticFormula ℒₒᵣ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
+theorem budgetedEmbedsV3_verum {Γ : Finset (ArithmeticFormula ℕ)}
+    (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
   refine ⟨0, 0, 0, 0, 0, ONote.NF.zero, ONote.NF.zero, by simp, fun env => ?_⟩
-  have hmem : (⊤ : SyntacticFormula ℒₒᵣ) ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
+  have hmem : (⊤ : ArithmeticFormula ℕ) ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
     have := Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) h; simpa using this
   exact Zef2TC.verumR (by simp) hmem
 
 /-- **V3 `wk`** — image weakening; all structural budgets carried. -/
-theorem budgetedEmbedsV3_wk {Δ Γ : Finset (SyntacticFormula ℒₒᵣ)}
+theorem budgetedEmbedsV3_wk {Δ Γ : Finset (ArithmeticFormula ℕ)}
     (hsub : Δ ⊆ Γ) (ih : BudgetedEmbedsV3 Δ) : BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
   refine ⟨B, d, N, e, α, he, hαNF, hNlogB, fun env => ?_⟩
   exact (ih env).wk (ih env).gate (Finset.image_subset_image hsub)
 
 /-- **V3 `or`** — single premise; `osucc` root, `B+1` for the `Nlog`/gate slack. -/
-theorem budgetedEmbedsV3_or {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ ψ : SyntacticFormula ℒₒᵣ} (h : φ ⋎ ψ ∈ Γ)
+theorem budgetedEmbedsV3_or {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ ψ : ArithmeticFormula ℕ} (h : φ ⋎ ψ ∈ Γ)
     (ih : BudgetedEmbedsV3 (insert φ (insert ψ Γ))) : BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
   refine ⟨B + 1, d, N, e, osucc α, he, osucc_NF hαNF, ?_, fun env => ?_⟩
@@ -1367,12 +1367,12 @@ theorem budgetedEmbedsV3_or {Γ : Finset (SyntacticFormula ℒₒᵣ)}
 
 /-- **V3 `shift`** — the shifted assignment `fun x => env (x+1)`; the index absorbs into `N+1`
 (`envSup_shift_le`).  Budgets and derivation carried. -/
-theorem budgetedEmbedsV3_shift {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+theorem budgetedEmbedsV3_shift {Γ : Finset (ArithmeticFormula ℕ)}
     (ih : BudgetedEmbedsV3 Γ) : BudgetedEmbedsV3 (Γ.image Rewriting.shift) := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
   refine ⟨B, d, N + 1, e, α, he, hαNF, hNlogB, fun env => ?_⟩
   have D := ih (fun x => env (x + 1))
-  have himg : (Γ.image (Rewriting.shift : SyntacticFormula ℒₒᵣ → SyntacticFormula ℒₒᵣ)).image
+  have himg : (Γ.image (Rewriting.shift : ArithmeticFormula ℕ → ArithmeticFormula ℕ)).image
         (fun φ => Embedding.asg env ▹ φ)
       = Γ.image (fun φ => Embedding.asg (fun x => env (x + 1)) ▹ φ) := by
     have hcompB : (Embedding.asg env).comp Rew.shift = Embedding.asg (fun x => env (x + 1)) := by
@@ -1391,8 +1391,8 @@ predicate: the node ordinal is uniform (`β n := α`, root `osucc α`), and the 
 `envSup env N` is paid by the branch relativization `rel1 · n` via `envSup_cons_le`.  This validates
 the V3 design — the block-8 `all` obstruction (unbounded per-branch `K_n, α_n`) is a predicate-shape
 artifact, dissolved by moving `α`/budgets outside `∀ env`. -/
-theorem budgetedEmbedsV3_all {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ : SyntacticSemiformula ℒₒᵣ 1} (h : ∀⁰ φ ∈ Γ)
+theorem budgetedEmbedsV3_all {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ : ArithmeticSemiformula ℕ 1} (h : ∀⁰ φ ∈ Γ)
     (ih : BudgetedEmbedsV3 (insert (Rewriting.free φ) (Γ.image Rewriting.shift))) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
@@ -1461,8 +1461,8 @@ theorem budgetedEmbedsV3_all {Γ : Finset (SyntacticFormula ℒₒᵣ)}
 `osucc (α₁ + α₂)`, `B := max B₁ B₂ + norm e₁ + norm e₂ + 2` (covers the `Nlog` invariant AND
 the `relSlot_le` norm gates), `N := max N₁ N₂`, `d := max d₁ d₂`.  Unlike block-8, the root
 gate is FREE from the structural invariant (`Nlog root ≤ B ≤ slot 0`) — no succ-gap rung. -/
-theorem budgetedEmbedsV3_and {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ ψ : SyntacticFormula ℒₒᵣ} (h : φ ⋏ ψ ∈ Γ)
+theorem budgetedEmbedsV3_and {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ ψ : ArithmeticFormula ℕ} (h : φ ⋏ ψ ∈ Γ)
     (ihp : BudgetedEmbedsV3 (insert φ Γ)) (ihq : BudgetedEmbedsV3 (insert ψ Γ)) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B₁, d₁, N₁, e₁, α₁, he₁, hα₁NF, hN₁, ih₁⟩ := ihp
@@ -1513,8 +1513,8 @@ theorem budgetedEmbedsV3_and {Γ : Finset (SyntacticFormula ℒₒᵣ)}
 /-- **V3 `cut`** — the two-premise join of `and` with the cut rank `max`ed against
 `φ.complexity + 1` and the read gate paid by absorbing `φ.complexity` into `B`
 (rewriting preserves `complexity`, so this stays env-independent). -/
-theorem budgetedEmbedsV3_cut {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ : SyntacticFormula ℒₒᵣ}
+theorem budgetedEmbedsV3_cut {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ : ArithmeticFormula ℕ}
     (ihp : BudgetedEmbedsV3 (insert φ Γ)) (ihn : BudgetedEmbedsV3 (insert (∼φ) Γ)) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B₁, d₁, N₁, e₁, α₁, he₁, hα₁NF, hN₁, ih₁⟩ := ihp
@@ -1576,8 +1576,8 @@ by `Gexp^[c] (envSup env Nt)` with STRUCTURAL `(c, Nt)`; raising the control tow
 (`Gexp_iter_eq_hardy`) dominated by the root slot (`hardy_le_of_lt`, `norm` gate paid by `B`).
 The value-congruent EM + cut + `exI` assembly ports from block-8; the ordinal-join gates are
 free from the structural `Nlog ≤ B` invariant. -/
-theorem budgetedEmbedsV3_exs {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    {φ : SyntacticSemiformula ℒₒᵣ 1} (h : ∃⁰ φ ∈ Γ) (t : SyntacticTerm ℒₒᵣ)
+theorem budgetedEmbedsV3_exs {Γ : Finset (ArithmeticFormula ℕ)}
+    {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
     (ih : BudgetedEmbedsV3 (insert (φ/[t]) Γ)) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B₁, d₁, N₁, e₁, α₁, he₁, hα₁NF, hN₁, ih₁⟩ := ih
@@ -1610,8 +1610,8 @@ theorem budgetedEmbedsV3_exs {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     omega
   · set M : ℕ := envSup env N with hM
     set F : ℕ → ℕ := rel1 (ewRootSlot e B) M with hF
-    set ψ' : SyntacticSemiformula ℒₒᵣ 1 := (Embedding.asg env).q ▹ φ with hψ'
-    set s : SyntacticTerm ℒₒᵣ := Embedding.asg env t with hs
+    set ψ' : ArithmeticSemiformula ℕ 1 := (Embedding.asg env).q ▹ φ with hψ'
+    set s : ArithmeticTerm ℕ := Embedding.asg env t with hs
     set m : ℕ := stdClosedVal s with hm
     have hψc : ψ'.complexity = φ.complexity := by simp [hψ']
     have hf1 := ewRootSlot_f1 e B
@@ -1703,7 +1703,7 @@ residues. -/
 
 /-- No `∃⁰` anywhere (the Π-fragment over NNF).  Truth of such closed formulas needs no
 witness data, so the bounded-truth derivation avoids `exI`'s slot gate entirely. -/
-def ExFree : ∀ {n : ℕ}, SyntacticSemiformula ℒₒᵣ n → Prop
+def ExFree : ∀ {n : ℕ}, ArithmeticSemiformula ℕ n → Prop
   | _, Semiformula.verum => True
   | _, Semiformula.falsum => True
   | _, Semiformula.rel _ _ => True
@@ -1713,23 +1713,23 @@ def ExFree : ∀ {n : ℕ}, SyntacticSemiformula ℒₒᵣ n → Prop
   | _, Semiformula.all φ => ExFree φ
   | _, Semiformula.exs _ => False
 
-@[simp] theorem exFree_verum {n : ℕ} : ExFree (⊤ : SyntacticSemiformula ℒₒᵣ n) := trivial
-@[simp] theorem exFree_falsum {n : ℕ} : ExFree (⊥ : SyntacticSemiformula ℒₒᵣ n) := trivial
+@[simp] theorem exFree_verum {n : ℕ} : ExFree (⊤ : ArithmeticSemiformula ℕ n) := trivial
+@[simp] theorem exFree_falsum {n : ℕ} : ExFree (⊥ : ArithmeticSemiformula ℕ n) := trivial
 @[simp] theorem exFree_rel {n k : ℕ} (r : (ℒₒᵣ).Rel k) (v) :
     ExFree (Semiformula.rel (n := n) r v) := trivial
 @[simp] theorem exFree_nrel {n k : ℕ} (r : (ℒₒᵣ).Rel k) (v) :
     ExFree (Semiformula.nrel (n := n) r v) := trivial
-@[simp] theorem exFree_and {n : ℕ} {φ ψ : SyntacticSemiformula ℒₒᵣ n} :
+@[simp] theorem exFree_and {n : ℕ} {φ ψ : ArithmeticSemiformula ℕ n} :
     ExFree (φ ⋏ ψ) ↔ ExFree φ ∧ ExFree ψ := Iff.rfl
-@[simp] theorem exFree_or {n : ℕ} {φ ψ : SyntacticSemiformula ℒₒᵣ n} :
+@[simp] theorem exFree_or {n : ℕ} {φ ψ : ArithmeticSemiformula ℕ n} :
     ExFree (φ ⋎ ψ) ↔ ExFree φ ∧ ExFree ψ := Iff.rfl
-@[simp] theorem exFree_all {n : ℕ} {φ : SyntacticSemiformula ℒₒᵣ (n + 1)} :
+@[simp] theorem exFree_all {n : ℕ} {φ : ArithmeticSemiformula ℕ (n + 1)} :
     ExFree (∀⁰ φ) ↔ ExFree φ := Iff.rfl
-@[simp] theorem exFree_exs {n : ℕ} {φ : SyntacticSemiformula ℒₒᵣ (n + 1)} :
+@[simp] theorem exFree_exs {n : ℕ} {φ : ArithmeticSemiformula ℕ (n + 1)} :
     ExFree (∃⁰ φ) ↔ False := Iff.rfl
 
 /-- `ExFree` is stable under every rewriting (rewriting preserves the connective tree). -/
-theorem ExFree.rew : ∀ {n₁ : ℕ} (ψ : SyntacticSemiformula ℒₒᵣ n₁), ExFree ψ →
+theorem ExFree.rew : ∀ {n₁ : ℕ} (ψ : ArithmeticSemiformula ℕ n₁), ExFree ψ →
     ∀ {n₂ : ℕ} (ω : Rew ℒₒᵣ ℕ n₁ ℕ n₂), ExFree (ω ▹ ψ) := by
   intro n₁ ψ
   induction ψ using Semiformula.rec' with
@@ -1756,7 +1756,7 @@ theorem ExFree.rew : ∀ {n₁ : ℕ} (ψ : SyntacticSemiformula ℒₒᵣ n₁)
 Same budget discipline as `em_Zef2TC` — all hypotheses `rel1`-stable, the `all` branches
 relativize the slot, and no `exI` ever fires. -/
 theorem truth_exFree_Zef2TC (k : ℕ) :
-    ∀ (ψ : SyntacticFormula ℒₒᵣ), ψ.complexity ≤ k → ExFree ψ → atomTrue ψ →
+    ∀ (ψ : ArithmeticFormula ℕ), ψ.complexity ≤ k → ExFree ψ → atomTrue ψ →
     ∀ {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq},
       Monotone f → (∀ m, m ≤ f m) → clog (2 * k + 1) ≤ f 0 → ψ ∈ Γ →
       Zef2TC (ONote.ofNat (2 * k + 1)) e H f 0 Γ := by
@@ -1823,7 +1823,7 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
           have hstrue : atomTrue (a/[nm m]) := by
             have hall : ∀ x : ℕ, GoodsteinPA.Compat.gEvalm ℕ ![x] (fun _ => 0) a := by
               simpa [atomTrue, Matrix.constant_eq_singleton, Matrix.empty_eq] using htrue
-            simpa [atomTrue, Semiformula.eval_substs, Embedding.valm_nm,
+            simpa [atomTrue, Semiformula.eval_substs, ZinftyF.valm_nm,
               Matrix.constant_eq_singleton, Matrix.empty_eq] using hall m
           exact ih (a/[nm m]) hsk hsex hstrue
             (rel1_monotone hmono m) (rel1_infl hinfl m) (le_trans hg1 hf0m)
@@ -1834,7 +1834,7 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
         rwa [Finset.insert_eq_self.mpr hmem] at hall
     | hexs a => exact absurd hex (by simp)
 
-@[simp] theorem exFree_allClosure : ∀ {n : ℕ} {φ : SyntacticSemiformula ℒₒᵣ n},
+@[simp] theorem exFree_allClosure : ∀ {n : ℕ} {φ : ArithmeticSemiformula ℕ n},
     ExFree (∀⁰* φ) ↔ ExFree φ := by
   intro n
   induction n with
@@ -1842,8 +1842,8 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
   | succ n ih => intro φ; rw [show (∀⁰* φ) = (∀⁰* (∀⁰ φ)) from rfl, ih]; exact exFree_all
 
 /-- The closing assignment fixes embedded sentences (no fvars to rewrite). -/
-theorem asg_emb_fix (env : ℕ → ℕ) (σ : Sentence ℒₒᵣ) :
-    Embedding.asg env ▹ (↑σ : SyntacticFormula ℒₒᵣ) = ↑σ := by
+theorem asg_emb_fix (env : ℕ → ℕ) (σ : ArithmeticSentence) :
+    Embedding.asg env ▹ (↑σ : ArithmeticFormula ℕ) = ↑σ := by
   have hc : (Embedding.asg env).comp Rew.emb = (Rew.emb : Rew ℒₒᵣ Empty 0 ℕ 0) := by
     ext x
     · exact x.elim0
@@ -1853,18 +1853,18 @@ theorem asg_emb_fix (env : ℕ → ℕ) (σ : Sentence ℒₒᵣ) :
 
 /-- Truth transfer: a sentence true in `ℕ` stays `atomTrue` after embedding + any closing
 assignment (`asg env` fixes the fvar-free embed; mirrors `embedC`'s `axm` truth step). -/
-theorem atomTrue_asg_emb {σ : Sentence ℒₒᵣ} (h : ℕ ⊧ₘ σ) (env : ℕ → ℕ) :
-    atomTrue (Embedding.asg env ▹ (↑σ : SyntacticFormula ℒₒᵣ)) := by
+theorem atomTrue_asg_emb {σ : ArithmeticSentence} (h : ℕ ⊧ₘ σ) (env : ℕ → ℕ) :
+    atomTrue (Embedding.asg env ▹ (↑σ : ArithmeticFormula ℕ)) := by
   simp only [atomTrue, Embedding.asg, Semiformula.eval_rewrite, Semiformula.eval_emb]
   rw [models_iff] at h
   simpa [Matrix.empty_eq] using h
 
 /-- **The ∃-free `axm` wrapper**: a TRUE ∃-free PA-axiom sentence in `Γ` is budgeted-embeddable
 outright — `truth_exFree_Zef2TC` at the V3 structural budget of the `closed` case. -/
-theorem budgetedEmbedsV3_of_exFree_true {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (σ : Sentence ℒₒᵣ) (hex : ExFree (↑σ : SyntacticFormula ℒₒᵣ)) (htrue : ℕ ⊧ₘ σ)
-    (hΓ : (↑σ : SyntacticFormula ℒₒᵣ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
-  set k : ℕ := (↑σ : SyntacticFormula ℒₒᵣ).complexity with hk
+theorem budgetedEmbedsV3_of_exFree_true {Γ : Finset (ArithmeticFormula ℕ)}
+    (σ : ArithmeticSentence) (hex : ExFree (↑σ : ArithmeticFormula ℕ)) (htrue : ℕ ⊧ₘ σ)
+    (hΓ : (↑σ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
+  set k : ℕ := (↑σ : ArithmeticFormula ℕ).complexity with hk
   refine ⟨clog (2 * k + 1), 0, 0, 0, ONote.ofNat (2 * k + 1),
     ONote.NF.zero, ONote.nf_ofNat _, Nlog_ofNat_le _, fun env => ?_⟩
   have hf1 := ewRootSlot_f1 (0 : ONote) (clog (2 * k + 1))
@@ -1875,7 +1875,7 @@ theorem budgetedEmbedsV3_of_exFree_true {Γ : Finset (SyntacticFormula ℒₒᵣ
   have hgate : clog (2 * k + 1)
       ≤ rel1 (ewRootSlot 0 (clog (2 * k + 1))) (envSup env 0) 0 :=
     le_relSlot_zero 0 _ _
-  have hcompl : (Embedding.asg env ▹ (↑σ : SyntacticFormula ℒₒᵣ)).complexity ≤ k := by
+  have hcompl : (Embedding.asg env ▹ (↑σ : ArithmeticFormula ℕ)).complexity ≤ k := by
     simp [hk]
   exact truth_exFree_Zef2TC k _ hcompl (hex.rew _ _) (atomTrue_asg_emb htrue env)
     hmono hinfl hgate (Finset.mem_image_of_mem _ hΓ)
@@ -1887,8 +1887,8 @@ theorem budgetedEmbedsV3_of_exFree_true {Γ : Finset (SyntacticFormula ℒₒᵣ
 The witness `z = y - x ≤ y` is dominated by the second ω-branch numeral, hence by the branch
 slot's relativization (`rel1 · y`) — no structural tower needed.  Bespoke `exI` assembly;
 disclosed `sorry`, next E-1 block. -/
-theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (hΓ : (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt) : SyntacticFormula ℒₒᵣ) ∈ Γ) :
+theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (ArithmeticFormula ℕ)}
+    (hΓ : (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt) : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
   refine ⟨clog 11, 0, 0, 0, ONote.ofNat 5, ONote.NF.zero, ONote.nf_ofNat _,
     le_trans (Nlog_ofNat_le 5) (clog_mono (by omega)), fun env => ?_⟩
@@ -1901,7 +1901,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
   have hNF : ∀ m : ℕ, (ONote.ofNat m).NF := fun m => ONote.nf_ofNat m
   -- normalize the image formula to constructor form
   have himg : Embedding.asg env ▹ (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt)
-        : SyntacticFormula ℒₒᵣ)
+        : ArithmeticFormula ℕ)
       = ∀⁰ ∀⁰ ((∼(Semiformula.rel Language.LT.lt ![#1, #0]))
           ⋎ (∃⁰ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]))) := by
     rw [asg_emb_fix]
@@ -1911,7 +1911,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     constructor <;> simp [Matrix.comp_vecCons]
   have hmem := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) hΓ
   rw [himg] at hmem
-  set M : SyntacticSemiformula ℒₒᵣ 2 :=
+  set M : ArithmeticSemiformula ℕ 2 :=
     (∼(Semiformula.rel Language.LT.lt ![#1, #0]))
       ⋎ (∃⁰ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1])) with hM
   set Γ' : Seq := Γ.image (fun χ => Embedding.asg env ▹ χ) with hΓ'
@@ -1948,8 +1948,8 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
         simp [hM, Matrix.comp_vecCons,
           Function.comp_def, Matrix.constant_eq_singleton]
       rw [hsubB]
-      set A : SyntacticFormula ℒₒᵣ := ∼(Semiformula.rel Language.LT.lt ![nm a, nm b]) with hA
-      set Eb : SyntacticSemiformula ℒₒᵣ 1 := (Rew.subst (nm b :> ![nm a])).q
+      set A : ArithmeticFormula ℕ := ∼(Semiformula.rel Language.LT.lt ![nm a, nm b]) with hA
+      set Eb : ArithmeticSemiformula ℕ 1 := (Rew.subst (nm b :> ![nm a])).q
         ▹ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]) with hE
       set Δ : Seq := insert A (insert (∃⁰ Eb) Γ') with hΔ
       have hD : Zef2TC (ONote.ofNat 2) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
@@ -2007,8 +2007,8 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (SyntacticFormula ℒₒᵣ)}
 /-- **The PA⁻ `axm` dispatcher**: every PA⁻ axiom in `Γ` is budgeted-embeddable.  All cases
 except `addEqOfLt` are TRUE ∃-free sentences — `budgetedEmbedsV3_of_exFree_true` (bounded
 ω-truth), per-case `ExFree` by unfolding the concrete axiom.  -/
-theorem budgetedEmbedsV3_axm_PAminus {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (σ : Sentence ℒₒᵣ) (hσ : σ ∈ 𝗣𝗔⁻) (hΓ : (↑σ : SyntacticFormula ℒₒᵣ) ∈ Γ) :
+theorem budgetedEmbedsV3_axm_PAminus {Γ : Finset (ArithmeticFormula ℕ)}
+    (σ : ArithmeticSentence) (hσ : σ ∈ 𝗣𝗔⁻) (hΓ : (↑σ : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
   have hmod : ℕ ⊧ₘ σ := Semantics.modelsSet_iff.mp inferInstance hσ
   cases hσ with
@@ -2130,7 +2130,7 @@ derivable at `osuccs α ℓ`.  Instances feed through `embedding_subst_q_cons_ap
 `Cl`-in-every-operator hypothesis pays every `relOp` side condition. -/
 theorem allClosure_peel {e : ONote} {d : ℕ} {f₀ : ℕ → ℕ} :
     ∀ (ℓ : ℕ) (α : ONote), α.NF → (∀ S : ONote → Prop, Cl S α) →
-      ∀ (χ : SyntacticSemiformula ℒₒᵣ ℓ) (Γ : Seq),
+      ∀ (χ : ArithmeticSemiformula ℕ ℓ) (Γ : Seq),
       (∀ (w : Fin ℓ → ℕ) (H : ONote → Prop) (f : ℕ → ℕ), Monotone f → (∀ m, m ≤ f m) →
           f₀ 0 ≤ f 0 →
           Zef2TC α e H f d (insert (Rew.subst (fun i => nm (w i)) ▹ χ) Γ)) →
@@ -2263,7 +2263,7 @@ theorem subst1_comp_bShift' (t : Semiterm ℒₒᵣ ℕ 1) :
   · simp [Rew.comp_app]
 
 /-- `g.q` commutes with substituting a `g.q`-fixed term for the leading bvar. -/
-theorem rew_subst1_comm_q' (g : SyntacticRew ℒₒᵣ 0 0) (φ : SyntacticSemiformula ℒₒᵣ 1)
+theorem rew_subst1_comm_q' (g : SyntacticRew ℒₒᵣ 0 0) (φ : ArithmeticSemiformula ℕ 1)
     (t : Semiterm ℒₒᵣ ℕ 1) (ht : g.q t = t) :
     g.q ▹ (φ/[t]) = (g.q ▹ φ)/[t] := by
   show g.q ▹ (Rew.subst ![t] ▹ φ) = Rew.subst ![t] ▹ (g.q ▹ φ)
@@ -2308,8 +2308,8 @@ value-congruent EM at `(nm (k+1), succT k)`).  The branch ordinals are UNBOUNDED
 via `clog_tower_gate` (`max n C`-domination — log beats linear).  The `allω` root is `ω`. -/
 
 set_option maxHeartbeats 1000000 in
-theorem metaInduction_Zef2TC (ψ step : SyntacticSemiformula ℒₒᵣ 1)
-    (t0 : SyntacticTerm ℒₒᵣ) (succT : ℕ → SyntacticTerm ℒₒᵣ)
+theorem metaInduction_Zef2TC (ψ step : ArithmeticSemiformula ℕ 1)
+    (t0 : ArithmeticTerm ℕ) (succT : ℕ → ArithmeticTerm ℕ)
     (hval0 : stdClosedVal t0 = 0)
     (hsval : ∀ n, stdClosedVal (succT n) = n + 1)
     (hstep : ∀ n, (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT n]))
@@ -2345,7 +2345,7 @@ theorem metaInduction_Zef2TC (ψ step : SyntacticSemiformula ℒₒᵣ 1)
       have h1 := clog_tower_gate a (n := n) hk
       have h2 : 2 * clog a + 12 ≤ rel1 f n 0 := le_trans hg1 hf0n
       omega
-    have hcxk : ∀ (t : SyntacticTerm ℒₒᵣ), (ψ/[t]).complexity = ψ.complexity := by
+    have hcxk : ∀ (t : ArithmeticTerm ℕ), (ψ/[t]).complexity = ψ.complexity := by
       intro t; simp
     intro k
     induction k with
@@ -2420,7 +2420,7 @@ theorem metaInduction_Zef2TC (ψ step : SyntacticSemiformula ℒₒᵣ 1)
 /-! ### The induction-schema kit, part 5 — the per-instance succInd shape, and the V3 case -/
 
 /-- The successor term of the induction step, at numeral `n`. -/
-noncomputable def succTerm (n : ℕ) : SyntacticTerm ℒₒᵣ :=
+noncomputable def succTerm (n : ℕ) : ArithmeticTerm ℕ :=
   Rew.subst ![nm n] (‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1)
 
 theorem stdClosedVal_succTerm (n : ℕ) : stdClosedVal (succTerm n) = n + 1 := by
@@ -2429,7 +2429,7 @@ theorem stdClosedVal_succTerm (n : ℕ) : stdClosedVal (succTerm n) = n + 1 := b
 /-- **The succInd instance shape**: any (rewritten) induction-axiom instance
 `succInd ψw` is `Zef2TC`-derivable at the FIXED structural root `osucc² ω` — the ω-root
 cut-tower `metaInduction_Zef2TC` plus the two `orI` peels of the NNF. -/
-theorem succInd_shape_Zef2TC (ψw : SyntacticSemiformula ℒₒᵣ 1)
+theorem succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
     {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq}
     (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
     (hg1 : 2 * clog (2 * ψw.complexity + 4) + 12 ≤ f 0)
@@ -2437,8 +2437,8 @@ theorem succInd_shape_Zef2TC (ψw : SyntacticSemiformula ℒₒᵣ 1)
     Zef2TC (osucc (osucc ONote.omega)) e H f (ψw.complexity + 1)
       (insert (Arithmetic.succInd ψw) Γ) := by
   rw [succInd_nnf' ψw]
-  set t0 : SyntacticTerm ℒₒᵣ := (↑(0 : ℕ) : Semiterm ℒₒᵣ ℕ 0) with ht0
-  set stepw : SyntacticSemiformula ℒₒᵣ 1 :=
+  set t0 : ArithmeticTerm ℕ := (↑(0 : ℕ) : Semiterm ℒₒᵣ ℕ 0) with ht0
+  set stepw : ArithmeticSemiformula ℕ 1 :=
     (∼ψw/[(#0 : Semiterm ℒₒᵣ ℕ 1)]) ⋎ ψw/[(‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1)] with hstepw
   have hval0 : stdClosedVal t0 = 0 := by simp [ht0, stdClosedVal]
   have hstep : ∀ n, (∼stepw)/[nm n] = (ψw/[nm n]) ⋏ ∼(ψw/[succTerm n]) := by
@@ -2476,9 +2476,9 @@ theorem succInd_shape_Zef2TC (ψw : SyntacticSemiformula ℒₒᵣ 1)
 sentence is env-fixed (`asg_emb_fix`), coerces to `∀⁰* (fixitr ▹ succInd φ)`, and peels by
 `allClosure_peel` into numeral instances `succInd ψw` handled by `succInd_shape_Zef2TC` at the
 uniform root `osucc² ω` — total root `osuccs (osucc² ω) fvSup`, all budgets structural. -/
-theorem budgetedEmbedsV3_succInd {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+theorem budgetedEmbedsV3_succInd {Γ : Finset (ArithmeticFormula ℕ)}
     (φ : Semiformula ℒₒᵣ ℕ 1)
-    (hΓ : (↑(Semiformula.univCl (Arithmetic.succInd φ)) : SyntacticFormula ℒₒᵣ) ∈ Γ) :
+    (hΓ : (↑(Semiformula.univCl (Arithmetic.succInd φ)) : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
   set ℓ : ℕ := (Arithmetic.succInd φ).fvSup with hℓ
   set B : ℕ := 2 * clog (2 * φ.complexity + 4) + φ.complexity + ℓ + 20 with hB
@@ -2496,7 +2496,7 @@ theorem budgetedEmbedsV3_succInd {Γ : Finset (SyntacticFormula ℒₒᵣ)}
   · exact le_trans (Nlog_osuccs_le hα₀NF (0 + ℓ)) (by omega)
   · have hmem := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) hΓ
     rw [asg_emb_fix] at hmem
-    have hcoe : (↑(Semiformula.univCl (Arithmetic.succInd φ)) : SyntacticFormula ℒₒᵣ)
+    have hcoe : (↑(Semiformula.univCl (Arithmetic.succInd φ)) : ArithmeticFormula ℕ)
         = ∀⁰* (Rew.fixitr 0 ℓ ▹ (Arithmetic.succInd φ)) := by
       rw [Semiformula.coe_univCl_eq_univCl']; rfl
     rw [hcoe] at hmem
@@ -2513,7 +2513,7 @@ theorem budgetedEmbedsV3_succInd {Γ : Finset (SyntacticFormula ℒₒᵣ)}
             (Γ.image (fun χ => Embedding.asg env ▹ χ))) := by
       intro w H f hmono' hinfl' hf0'
       rw [← TransitiveRewriting.comp_app, rew_succInd']
-      set ψw : SyntacticSemiformula ℒₒᵣ 1 :=
+      set ψw : ArithmeticSemiformula ℕ 1 :=
         ((Rew.subst fun i => nm (w i)).comp (Rew.fixitr 0 ℓ)).q ▹ φ with hψw
       have hcx : ψw.complexity = φ.complexity := by simp [hψw]
       have hBle : B ≤ f 0 := hf0'
@@ -2539,10 +2539,10 @@ theorem budgetedEmbedsV3_succInd {Γ : Finset (SyntacticFormula ℒₒᵣ)}
 /-- **V3 `axm`, complete**: every 𝗣𝗔 axiom in `Γ` is budgeted-embeddable — 𝗣𝗔 splits as
 𝗣𝗔⁻ (`budgetedEmbedsV3_axm_PAminus`) + the universal induction scheme
 (`budgetedEmbedsV3_succInd`). -/
-theorem budgetedEmbedsV3_axm {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (σ : Sentence ℒₒᵣ) (hσ : σ ∈ (𝗣𝗔 : Theory ℒₒᵣ))
-    (hΓ : (↑σ : SyntacticFormula ℒₒᵣ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
-  have hsplit : σ ∈ (𝗣𝗔⁻ : Theory ℒₒᵣ) ∨ σ ∈ Arithmetic.InductionScheme ℒₒᵣ Set.univ := by
+theorem budgetedEmbedsV3_axm {Γ : Finset (ArithmeticFormula ℕ)}
+    (σ : ArithmeticSentence) (hσ : σ ∈ (𝗣𝗔 : ArithmeticTheory))
+    (hΓ : (↑σ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
+  have hsplit : σ ∈ (𝗣𝗔⁻ : ArithmeticTheory) ∨ σ ∈ Arithmetic.InductionScheme ℒₒᵣ Set.univ := by
     simpa [Arithmetic.Peano, Set.mem_union] using hσ
   rcases hsplit with h | h
   · exact budgetedEmbedsV3_axm_PAminus σ h hΓ
@@ -2553,8 +2553,8 @@ theorem budgetedEmbedsV3_axm {Γ : Finset (SyntacticFormula ℒₒᵣ)}
 from 𝗣𝗔 is budgeted-embeddable into `Zef2TC` under the structural-budget predicate
 `BudgetedEmbedsV3`.  This is the rung-E embedding content, complete (judge input;
 NOT self-ratified into src per the directive). -/
-theorem budgetedEmbeddingV3 {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (d : Derivation2 (𝗣𝗔 : Theory ℒₒᵣ) Γ) :
+theorem budgetedEmbeddingV3 {Γ : Finset (ArithmeticFormula ℕ)}
+    (d : Derivation2 (𝗣𝗔 : ArithmeticTheory) Γ) :
     BudgetedEmbedsV3 Γ := by
   induction d with
   | closed Γ φ hp hn => exact budgetedEmbedsV3_closed φ hp hn
@@ -2577,7 +2577,7 @@ replacing `∀⁰ φ` by its `m`-th numeral instance throughout.  Operators are 
 to `≤ rel1 f m 0` by monotonicity, and nested ω-branches commute via `rel1_rel1`+`max_comm`. -/
 
 set_option maxHeartbeats 1600000 in
-theorem allω_inversion {φ : SyntacticSemiformula ℒₒᵣ 1} (m : ℕ) :
+theorem allω_inversion {φ : ArithmeticSemiformula ℕ 1} (m : ℕ) :
     ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
       Zef2TC α e H f c Γ → Monotone f →
       Zef2TC α e H (rel1 f m) c (insert (φ/[nm m]) (Γ.erase (∀⁰ φ))) := by
@@ -2649,7 +2649,7 @@ theorem allω_inversion {φ : SyntacticSemiformula ℒₒᵣ 1} (m : ℕ) :
         -- slot: rel1 (rel1 F m) m = rel1 F m
         rw [rel1_rel1, max_self] at hbr
         -- context: insert inst ((insert inst Γ').erase ∀χ) = insert inst (Γ'.erase ∀χ)
-        have hctx : insert ((χ : SyntacticSemiformula ℒₒᵣ 1)/[nm m])
+        have hctx : insert ((χ : ArithmeticSemiformula ℕ 1)/[nm m])
               ((insert (χ/[nm m]) Γ').erase (∀⁰ χ))
             = insert (χ/[nm m]) (Γ'.erase (∀⁰ χ)) := by
           rw [Finset.erase_insert_of_ne (by
@@ -2698,7 +2698,7 @@ theorem allω_inversion {φ : SyntacticSemiformula ℒₒᵣ 1} (m : ℕ) :
 
 /-- The embedded goodstein sentence is the ∀-closure of the embedded body. -/
 theorem coe_goodsteinSentence_eq :
-    (↑GoodsteinPA.goodsteinSentence : SyntacticFormula ℒₒᵣ) = ∀⁰ goodsteinBodyE := by
+    (↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ) = ∀⁰ goodsteinBodyE := by
   rw [goodsteinSentence_eq_all_body]
   simp [goodsteinBodyE, Rewriting.emb]
 
@@ -2714,16 +2714,16 @@ theorem embedding_Zef2TC_V3 :
           Zef2TC α e H (rel1 (ewRootSlot e B) K) d {(goodsteinBodyE/[nm m])} := by
   intro h
   -- upstream `𝗣𝗔 ⊢ σ` repackages as a `Derivation2 𝗣𝗔 {↑σ}` via `provable_iff_derivable2`
-  have hV3 : BudgetedEmbedsV3 {(↑GoodsteinPA.goodsteinSentence : SyntacticFormula ℒₒᵣ)} := by
+  have hV3 : BudgetedEmbedsV3 {(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} := by
     obtain ⟨d2⟩ := (provable_iff_derivable2 (L := ℒₒᵣ)).mp h
     exact budgetedEmbeddingV3 d2
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, hD⟩ := hV3
   refine ⟨B, d, e, α, he, hαNF, fun m => ?_⟩
   have hD0 := hD (fun _ => 0)
-  have himg : ({(↑GoodsteinPA.goodsteinSentence : SyntacticFormula ℒₒᵣ)} :
-        Finset (SyntacticFormula ℒₒᵣ)).image
+  have himg : ({(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} :
+        Finset (ArithmeticFormula ℕ)).image
         (fun φ => Embedding.asg (fun _ => 0) ▹ φ)
-      = {(↑GoodsteinPA.goodsteinSentence : SyntacticFormula ℒₒᵣ)} := by
+      = {(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} := by
     rw [Finset.image_singleton, asg_emb_fix]
   rw [himg, coe_goodsteinSentence_eq] at hD0
   have hf1 := ewRootSlot_f1 e B
@@ -2733,8 +2733,8 @@ theorem embedding_Zef2TC_V3 :
   rw [rel1_rel1] at hinv
   refine ⟨max (envSup (fun _ => 0) N) m, fun _ => True, Cl_of_NF hαNF, ?_⟩
   have hctx : insert (goodsteinBodyE/[nm m])
-        (({(∀⁰ goodsteinBodyE : SyntacticFormula ℒₒᵣ)} :
-          Finset (SyntacticFormula ℒₒᵣ)).erase (∀⁰ goodsteinBodyE))
+        (({(∀⁰ goodsteinBodyE : ArithmeticFormula ℕ)} :
+          Finset (ArithmeticFormula ℕ)).erase (∀⁰ goodsteinBodyE))
       = {(goodsteinBodyE/[nm m])} := by
     rw [Finset.erase_singleton]
     rfl
@@ -3364,7 +3364,7 @@ end Zef2TCProv
 set_option maxHeartbeats 1000000 in
 /-- **`cutReduceAllAuxRunning_TC`** — the running-family ∀/∃ cut-reduction over `Zef2TC`
 (port of `cutReduceAllAuxRunning_Zf2`; fresh root `α + γ`, output slot `g ∘ f`). -/
-theorem cutReduceAllAuxRunning_TC {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α e : ONote}
+theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
     {Γ : Seq} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef2TC α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
@@ -3611,7 +3611,7 @@ theorem cutReduceAllAuxRunning_TC {φ : SyntacticSemiformula ℒₒᵣ 1} {c : �
 (mirror of `stepAllω_Zf2_bnd`): invert the ∀-side via `allω_inversion`, feed the running
 reduction; output witness ordinal bounded by `P₁ + P₂`. -/
 theorem stepAllωTC_bnd {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
-    {χ : SyntacticSemiformula ℒₒᵣ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
+    {χ : ArithmeticSemiformula ℕ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
     (hP₁ : P₁.NF) (hP₂ : P₂.NF)
     (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
@@ -4215,7 +4215,7 @@ tracked `∃⁰ φ` is a member, every member is `Gated P V`, every non-tracked 
 standard-false; slot frame `g = rel1 f₀ j`, `j ≤ V`.  Conclusion bound: the master
 `BND V α = ewIter S α (S V)`, `S = Sslot f₀ P`.  SORRY-FREE: the `allω` trap descends into the
 `Gated` false branch `k₀ ≤ P V`; `T3_descent'` absorbs every budget bump. -/
-theorem readoffVTC_core {φ : SyntacticSemiformula ℒₒᵣ 1} {f₀ P : ℕ → ℕ}
+theorem readoffVTC_core {φ : ArithmeticSemiformula ℕ 1} {f₀ P : ℕ → ℕ}
     (hf_mono : Monotone f₀) (hf_infl : ∀ m, m ≤ f₀ m) (hP_mono : Monotone P) :
     ∀ {α e : ONote} {H : ONote → Prop} {g : ℕ → ℕ} {c : ℕ} {Γ : Seq},
       Zef2TC α e H g c Γ → c = 0 →
@@ -4415,7 +4415,7 @@ theorem readoffVTC_core {φ : SyntacticSemiformula ℒₒᵣ 1} {f₀ P : ℕ �
 `Gated` certificate (discharged by `gated_of_sigma1`, `wip/ReadoffValueGate.lean`, from
 `Hierarchy 𝚺 1 φ` + the guard-value bound `gvb`), the read-off closes SORRY-FREE at the master
 bound `ewIter (Sslot f₀ P) α (Sslot f₀ P V)`. -/
-theorem readoff_value_Zef2TC {φ : SyntacticSemiformula ℒₒᵣ 1} {f₀ P : ℕ → ℕ}
+theorem readoff_value_Zef2TC {φ : ArithmeticSemiformula ℕ 1} {f₀ P : ℕ → ℕ}
     (hf_mono : Monotone f₀) (hf_infl : ∀ m, m ≤ f₀ m) (hP_mono : Monotone P)
     {α e : ONote} {H : ONote → Prop}
     (dd : Zef2TC α e H f₀ 0 {(∃⁰ φ)}) (V : ℕ) (hroot : Gated P V (∃⁰ φ)) :
@@ -4441,7 +4441,7 @@ derivation of a singleton `{∃⁰ φ}` at the embedding's root slot `rel1 (ewRo
 wrapper) with `readoff_value_Zef2TC`: a TRUE numeral instance under the concrete
 `ewIter (Sslot tower P)` bound at some NF ordinal `α' ≤ collapseIter d α`.  Step 2b converts
 this bound into the ratified splice target (`∃ o, o.NF ∧ …` has total ordinal freedom). -/
-theorem readoff_value_pipeline {φ : SyntacticSemiformula ℒₒᵣ 1} {P : ℕ → ℕ}
+theorem readoff_value_pipeline {φ : ArithmeticSemiformula ℕ 1} {P : ℕ → ℕ}
     (hP_mono : Monotone P)
     {α e : ONote} {H : ONote → Prop} {B K d : ℕ}
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
@@ -4467,7 +4467,7 @@ IS an `∃⁰ χ` (definitionally — the two rewrites push through the `∃`), 
 `Hierarchy 𝚺 1` (rew-invariance + `igoodsteinDef`'s own Σ₁-ness).  The `Gated` certificate
 follows from Σ₁-ness by `gated_root_of_sigma1` (`wip/ReadoffValueGate.lean`) at assembly. -/
 theorem goodsteinBodyE_inst_shape (m : ℕ) :
-    ∃ χ : SyntacticSemiformula ℒₒᵣ 1,
+    ∃ χ : ArithmeticSemiformula ℕ 1,
       goodsteinBodyE/[nm m] = (∃⁰ χ) ∧ Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) := by
   refine ⟨_, rfl, ?_⟩
   show Arithmetic.Hierarchy 𝚺 1 (goodsteinBodyE/[nm m])
@@ -4485,7 +4485,7 @@ certificate for `∃⁰ χ` yields a TRUE numeral instance under the concrete
 theorem readoff_value_goodstein
     (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) :
     ∃ B d : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ ∀ m : ℕ,
-      ∃ (χ : SyntacticSemiformula ℒₒᵣ 1) (K : ℕ),
+      ∃ (χ : ArithmeticSemiformula ℕ 1) (K : ℕ),
         goodsteinBodyE/[nm m] = (∃⁰ χ) ∧ Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) ∧
         ∀ (P : ℕ → ℕ) (V : ℕ), Monotone P → Gated P V (∃⁰ χ) →
           ∃ α', α' ≤ collapseIter d α ∧ α'.NF ∧
@@ -4565,7 +4565,7 @@ length: `atomTrue (χ/[nm n]) → goodsteinLength m ≤ n`.  The matrix is extra
 `∃⁰`-shape equality by constructor injectivity (whnf), then the Bridge-style eval recipe
 (`igoodstein_defined.iff` + `igoodstein_nat`) lands on `goodsteinSeq m n = 0`. -/
 
-theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : SyntacticSemiformula ℒₒᵣ 1}
+theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ 1}
     (hχ : goodsteinBodyE/[nm m] = (∃⁰ χ)) (h : atomTrue (χ/[nm n])) :
     Goodstein.Dom.goodsteinLength m ≤ n := by
   have hbody := Semiformula.exs.inj hχ
@@ -4573,7 +4573,7 @@ theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : SyntacticSemiformula ℒ�
   have h' : atomTrue ((((Rew.subst (L := ℒₒᵣ) ![nm m]).q ▹
       ((Rew.emb : Rew ℒₒᵣ Empty 1 ℕ 1).q ▹
         (((↑(LO.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
-          : Semisentence ℒₒᵣ 2))) : SyntacticSemiformula ℒₒᵣ 1)/[nm n]) := h
+          : ArithmeticSemisentence 2))) : ArithmeticSemiformula ℕ 1)/[nm n]) := h
   apply Goodstein.Dom.goodsteinLength_le (m := m) (N := n)
   rw [← GoodsteinPA.InternalPow.igoodstein_nat]
   simp only [atomTrue, Semiformula.eval_rew, Function.comp_def] at h'
@@ -4586,7 +4586,7 @@ theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : SyntacticSemiformula ℒ�
     rwa [show ε₂ = ε₁ from funext fun a => a.elim]
   have h'' := hcast _ _ Empty.elim h'
   have hkey := GoodsteinPA.InternalPow.igoodstein_defined.iff.mp h''
-  have hq1 : ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q #1 : SyntacticSemiterm ℒₒᵣ 1)
+  have hq1 : ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q #1 : ArithmeticSemiterm ℕ 1)
       = Rew.bShift (nm m) := by
     show (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q #(Fin.succ 0) = _
     rw [Rew.q_bvar_succ]
@@ -4609,7 +4609,7 @@ appears in the converted bound's ARGUMENT and must itself be bounded (it is: by 
 at `0`, which the `S°`-uniformization makes Hardy-in-`m`).  Same proofs, keeping the conjunct. -/
 
 /-- `readoff_value_pipeline` + the `Nlog α'` certificate. -/
-theorem readoff_value_pipeline' {φ : SyntacticSemiformula ℒₒᵣ 1} {P : ℕ → ℕ}
+theorem readoff_value_pipeline' {φ : ArithmeticSemiformula ℕ 1} {P : ℕ → ℕ}
     (hP_mono : Monotone P)
     {α e : ONote} {H : ONote → Prop} {B K d : ℕ}
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
@@ -4641,16 +4641,16 @@ theorem embedding_Zef2TC_V3_linearK :
           Zef2TC α e H (rel1 (ewRootSlot e B) (max K₀ m)) d {(goodsteinBodyE/[nm m])} := by
   intro h
   -- upstream `𝗣𝗔 ⊢ σ` repackages as a `Derivation2 𝗣𝗔 {↑σ}` via `provable_iff_derivable2`
-  have hV3 : BudgetedEmbedsV3 {(↑GoodsteinPA.goodsteinSentence : SyntacticFormula ℒₒᵣ)} := by
+  have hV3 : BudgetedEmbedsV3 {(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} := by
     obtain ⟨d2⟩ := (provable_iff_derivable2 (L := ℒₒᵣ)).mp h
     exact budgetedEmbeddingV3 d2
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, hD⟩ := hV3
   refine ⟨B, d, envSup (fun _ => 0) N, e, α, he, hαNF, fun m => ?_⟩
   have hD0 := hD (fun _ => 0)
-  have himg : ({(↑GoodsteinPA.goodsteinSentence : SyntacticFormula ℒₒᵣ)} :
-        Finset (SyntacticFormula ℒₒᵣ)).image
+  have himg : ({(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} :
+        Finset (ArithmeticFormula ℕ)).image
         (fun φ => Embedding.asg (fun _ => 0) ▹ φ)
-      = {(↑GoodsteinPA.goodsteinSentence : SyntacticFormula ℒₒᵣ)} := by
+      = {(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} := by
     rw [Finset.image_singleton, asg_emb_fix]
   rw [himg, coe_goodsteinSentence_eq] at hD0
   have hf1 := ewRootSlot_f1 e B
@@ -4660,8 +4660,8 @@ theorem embedding_Zef2TC_V3_linearK :
   rw [rel1_rel1] at hinv
   refine ⟨fun _ => True, Cl_of_NF hαNF, ?_⟩
   have hctx : insert (goodsteinBodyE/[nm m])
-        (({(∀⁰ goodsteinBodyE : SyntacticFormula ℒₒᵣ)} :
-          Finset (SyntacticFormula ℒₒᵣ)).erase (∀⁰ goodsteinBodyE))
+        (({(∀⁰ goodsteinBodyE : ArithmeticFormula ℕ)} :
+          Finset (ArithmeticFormula ℕ)).erase (∀⁰ goodsteinBodyE))
       = {(goodsteinBodyE/[nm m])} := by
     rw [Finset.erase_singleton]
     rfl
@@ -4673,7 +4673,7 @@ the m-uniformization-ready read-off. -/
 theorem readoff_value_goodstein'
     (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) :
     ∃ B d K₀ : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ ∀ m : ℕ,
-      ∃ χ : SyntacticSemiformula ℒₒᵣ 1,
+      ∃ χ : ArithmeticSemiformula ℕ 1,
         goodsteinBodyE/[nm m] = (∃⁰ χ) ∧ Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) ∧
         ∀ (P : ℕ → ℕ) (V : ℕ), Monotone P → Gated P V (∃⁰ χ) →
           ∃ α', α' ≤ collapseIter d α ∧ α'.NF ∧
@@ -4703,8 +4703,8 @@ discharged HERE.  The conclusion is the exact type of the sole route axiom
 theorem wainer_bound_witness
     (Hcert : ∀ {G : ℕ → ℕ}, Monotone G → (∀ x, x + 1 ≤ G x) →
       (∀ a b, a + b ≤ G (max a b)) → (∀ a b, a * b ≤ G (max a b)) →
-      ∀ (body : SyntacticSemiformula ℒₒᵣ 2), ∃ k : ℕ, ∀ (m V : ℕ)
-        (χ : SyntacticSemiformula ℒₒᵣ 1),
+      ∀ (body : ArithmeticSemiformula ℕ 2), ∃ k : ℕ, ∀ (m V : ℕ)
+        (χ : ArithmeticSemiformula ℕ 1),
         χ = (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q ▹ body →
         Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) →
         ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V (∃⁰ χ) ∧
@@ -4731,7 +4731,7 @@ theorem wainer_bound_witness
     mul_le_Gexp_max
     ((Rew.emb : Rew ℒₒᵣ Empty 1 ℕ 1).q ▹
       ((((↑(LO.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
-        : Semisentence ℒₒᵣ 2)))
+        : ArithmeticSemisentence 2)))
   -- the fixed slot S° and its domination
   obtain ⟨E_S, c_S, hES, hES0, hSdom⟩ := HSdom e heNF B d k α hαNF
   have hf1 := ewRootSlot_f1 e B
@@ -4750,7 +4750,7 @@ theorem wainer_bound_witness
   have hχB : χ = (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q ▹
       ((Rew.emb : Rew ℒₒᵣ Empty 1 ℕ 1).q ▹
         ((((↑(LO.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
-          : Semisentence ℒₒᵣ 2))) :=
+          : ArithmeticSemisentence 2))) :=
     (Semiformula.exs.inj hχeq).symm
   obtain ⟨P, hPmono, hPgated, hPle⟩ := hk m 0 χ hχB hSig
   obtain ⟨α', hle, hα'NF, hNcert, n, hn, htrue⟩ := hmain P 0 hPmono hPgated

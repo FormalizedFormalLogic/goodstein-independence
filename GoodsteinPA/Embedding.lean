@@ -1,15 +1,14 @@
 /-
-# M4 — the embedding `𝗣𝗔 ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}` (Towsner §16 / Buchholz §5.5)
+The embedding `𝗣𝗔 ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}` (Towsner §16 / Buchholz §5.5)
 
-**The universal bottleneck of the whole expedition — COMPLETE (lap 11).** The embedding is set up
-over Foundation's **`Derivation2`** (the Finset-sequent variant, `Calculus2.lean`), which lives over
-the *same* `Finset (SyntacticFormula ℒₒᵣ)` substrate as M5's `ZinftyF.Seq` — so it is a pure
-rule-by-rule map with **no language translation**.
+The embedding is set up over Foundation's **`Derivation2`** (the Finset-sequent variant, `Calculus2.lean`),
+which lives over the *same* `Finset (ArithmeticFormula ℕ)` substrate as `Finset (ArithmeticFormula ℕ)` — so it is
+a pure rule-by-rule map with **no language translation**.
 
 ## The headline result: `embedC` (assignment-carrying form)
 `embedC : Derivation2 (𝗣𝗔 : Schema) Γ → ∃ c, ∀ e : ℕ → ℕ, ∃ α, Provable α c (Γ.image (asg e ▹))`.
 The numeral assignment `asg e` (`&x ↦ nm (e x)`) closes every free variable, so all sequents in the
-image are CLOSED — which is what lets M5's numeral-only `exI`/ω-rule `allω` fire. Axiom-clean
+image are CLOSED — which is what lets the numeral-only `exI`/ω-rule `allω` fire. Axiom-clean
 (`#print axioms embedC = [propext, Classical.choice, Quot.sound]`).
 
 ## The two non-structural cases and how they close
@@ -22,152 +21,33 @@ image are CLOSED — which is what lets M5's numeral-only `exI`/ω-rule `allω` 
   discharges it directly. The ω-rule subsumes the Buchholz §5.5 meta-induction entirely.
 
 ## Supporting results (all axiom-clean, reusable)
-- `provable_em` — Z∞ law of excluded middle (atomic + ∀/∃ numeral ω-family).
+- `provable_em` and `provable_true` (the Z∞ law of excluded middle and ω-completeness for true
+  closed formulas) live in `GoodsteinPA.Zinfty.Examples`, since they are pure `Z_∞` facts with no
+  dependency on the `Rew`/`asg` embedding machinery.
 - `provable_em_cong_gen` / `provable_em_cong` — value-congruent EM (closed-term congruence).
 - `Provable.exI_closed` — ∃-intro with an arbitrary closed witness term.
-- `provable_true` — ω-completeness for true closed formulas.
 
 ## API anchors
-- `Schema ℒₒᵣ := Set (SyntacticFormula ℒₒᵣ)`; `(𝗣𝗔 : Theory) ↦ (𝗣𝗔 : Schema) = Rewriting.emb '' 𝗣𝗔`.
+- `Schema ℒₒᵣ := Set (ArithmeticFormula ℕ)`; `(𝗣𝗔 : Theory) ↦ (𝗣𝗔 : Schema) = Rewriting.emb '' 𝗣𝗔`.
 - `provable_def : T ⊢ σ ↔ (T : Schema) ⊢ ↑σ` (rfl) · `provable_iff_derivable2 : 𝓢 ⊢ φ ↔ 𝓢 ⊢!₂! φ`.
   ⟹ `𝗣𝗔 ⊢ goodsteinSentence` unfolds to `Nonempty (Derivation2 (𝗣𝗔:Schema) {↑goodsteinSentence})`.
-- The naive (non-assignment) `embed`/`provable_rew` of laps 9–10 were superseded by `embedC` and
-  removed on promotion; see `wip/Embedding.lean` (git history) for that scaffold.
+- The naive (non-assignment) `embed`/`provable_rew` were superseded by `embedC` and removed on promotion.
 -/
 module
 
-public import GoodsteinPA.Zinfty
+public import GoodsteinPA.Zinfty.Examples
 
 @[expose] public section
 
 namespace GoodsteinPA.Embedding
 
-open LO LO.FirstOrder GoodsteinPA.ZinftyF GoodsteinPA.ZinftyF.Deriv
-
-/-- A `Z_∞`-derivable sequent, existentially quantified over the ordinal bound and cut rank
-(Towsner states the whole embedding/cut-elim chain existentially in `(α, c)` — see
-`ANALYSIS-…-cutelim-k-threading.md`). -/
-def ZProvable (Γ : ZinftyF.Seq) : Prop := ∃ α c, Provable α c Γ
-
-namespace ZProvable
-
-theorem mono {Γ : ZinftyF.Seq} : ZProvable Γ → ZProvable Γ := id
-
-/-- Weaken the sequent (Foundation `wk`). -/
-theorem weakening {Γ Δ : ZinftyF.Seq} (h : Γ ⊆ Δ) : ZProvable Γ → ZProvable Δ := by
-  rintro ⟨α, c, hd⟩; exact ⟨α, c, hd.weakening h⟩
-
-/-- Drop a sequent element that already occurs (`insert X Γ = Γ` when `X ∈ Γ`). -/
-theorem of_insert_mem {Γ : ZinftyF.Seq} {X : ZinftyF.Form} (h : X ∈ Γ) :
-    ZProvable (insert X Γ) → ZProvable Γ := by
-  rw [Finset.insert_eq_self.mpr h]; exact id
-
-end ZProvable
-
-/-- **Identity / law of excluded middle for `Z_∞`** (the `closed` case). For any `φ`, a sequent
-containing both `φ` and `∼φ` is `Z_∞`-derivable cut-free. Proved by induction on a `complexity`
-bound (the standard Tait `em`, cf. Foundation `Derivation.em`, `Calculus.lean:164`). The atomic /
-propositional cases are discharged here; the **∀/∃ cases** need M5's numeral ω-family (`allω` over
-all `nm n`, each premise closed by `exI` + the IH at the substitution instance `φ/[nm n]`, whose
-`complexity` equals `φ`'s) — disclosed `sorry`, the next chip. -/
-theorem provable_em (φ : ZinftyF.Form) {Γ : ZinftyF.Seq} (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
-    ∃ a, Provable a 0 Γ := by
-  have key : ∀ (k : ℕ) (φ : ZinftyF.Form), φ.complexity ≤ k →
-      ∀ {Γ : ZinftyF.Seq}, φ ∈ Γ → ∼φ ∈ Γ → ∃ a, Provable a 0 Γ := by
-    intro k
-    induction k with
-    | zero =>
-      intro φ hk Γ hp hn
-      cases φ using Semiformula.cases' with
-      | hverum => exact ⟨0, Provable.verumR hp⟩
-      | hfalsum => exact ⟨0, Provable.verumR (by simpa using hn)⟩
-      | hrel r v => exact ⟨0, Provable.axL r v hp (by simpa using hn)⟩
-      | hnrel r v => exact ⟨0, Provable.axL r v (by simpa using hn) hp⟩
-      | hand φ ψ => simp at hk
-      | hor φ ψ => simp at hk
-      | hall φ => simp at hk
-      | hexs φ => simp at hk
-    | succ k ih =>
-      intro φ hk Γ hp hn
-      cases φ using Semiformula.cases' with
-      | hverum => exact ⟨0, Provable.verumR hp⟩
-      | hfalsum => exact ⟨0, Provable.verumR (by simpa using hn)⟩
-      | hrel r v => exact ⟨0, Provable.axL r v hp (by simpa using hn)⟩
-      | hnrel r v => exact ⟨0, Provable.axL r v (by simpa using hn) hp⟩
-      | hand φ ψ =>
-        have hφk : φ.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
-        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
-        obtain ⟨a1, h1⟩ := ih φ hφk (Γ := insert φ (insert (∼φ) (insert (∼ψ) Γ)))
-          (by simp) (by simp)
-        obtain ⟨a2, h2⟩ := ih ψ hψk (Γ := insert ψ (insert (∼φ) (insert (∼ψ) Γ)))
-          (by simp) (by simp)
-        have hand := Provable.andI φ ψ h1 h2
-        rw [Finset.insert_eq_self.mpr
-          (show (φ ⋏ ψ) ∈ insert (∼φ) (insert (∼ψ) Γ) by simp [hp])] at hand
-        have hor := Provable.orI (∼φ) (∼ψ) hand
-        rw [Finset.insert_eq_self.mpr (show (∼φ ⋎ ∼ψ) ∈ Γ by simpa using hn)] at hor
-        exact ⟨_, hor⟩
-      | hor φ ψ =>
-        have hn' : (∼φ ⋏ ∼ψ) ∈ Γ := by simpa using hn
-        have hφk : φ.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
-        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
-        obtain ⟨a1, h1⟩ := ih φ hφk (Γ := insert (∼φ) (insert φ (insert ψ Γ)))
-          (by simp) (by simp)
-        obtain ⟨a2, h2⟩ := ih ψ hψk (Γ := insert (∼ψ) (insert φ (insert ψ Γ)))
-          (by simp) (by simp)
-        have hand := Provable.andI (∼φ) (∼ψ) h1 h2
-        rw [Finset.insert_eq_self.mpr
-          (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hn'))] at hand
-        have hor := Provable.orI φ ψ hand
-        rw [Finset.insert_eq_self.mpr (show (φ ⋎ ψ) ∈ Γ by simp [hp])] at hor
-        exact ⟨_, hor⟩
-      | hall ψ =>
-        -- φ = ∀⁰ψ, ∼φ = ∃⁰∼ψ. Introduce ∀⁰ψ by the ω-rule; each premise closed by `exI (∼ψ) n`
-        -- over the IH at `ψ/[nm n]` (same complexity as ψ < (∀⁰ψ)'s).
-        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_all] at hk; omega
-        have hex : (∃⁰ ∼ψ) ∈ Γ := by simpa using hn
-        have fam : ∀ n, ∃ a, Provable a 0 (insert (ψ/[nm n]) Γ) := by
-          intro n
-          have hcomp : (ψ/[nm n]).complexity ≤ k := by
-            have he : (ψ/[nm n]).complexity = ψ.complexity := by simp
-            rw [he]; exact hψk
-          obtain ⟨a, ha⟩ := ih (ψ/[nm n]) hcomp
-            (Γ := insert (∼(ψ/[nm n])) (insert (ψ/[nm n]) Γ)) (by simp) (by simp)
-          have hexI := Provable.exI (∼ψ) n (Γ := insert (ψ/[nm n]) Γ)
-            (by have heq : (∼ψ)/[nm n] = ∼(ψ/[nm n]) := by simp
-                rw [heq]; exact ha)
-          rw [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hex)] at hexI
-          exact ⟨a + 1, hexI⟩
-        choose β hβ using fam
-        have hall := Provable.allω ψ (Γ := Γ) hβ
-        rw [Finset.insert_eq_self.mpr hp] at hall
-        exact ⟨_, hall⟩
-      | hexs ψ =>
-        -- φ = ∃⁰ψ, ∼φ = ∀⁰∼ψ. Dual: introduce ∀⁰∼ψ by the ω-rule; each premise closed by `exI ψ n`.
-        have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_exs] at hk; omega
-        have hall' : (∀⁰ ∼ψ) ∈ Γ := by simpa using hn
-        have fam : ∀ n, ∃ a, Provable a 0 (insert ((∼ψ)/[nm n]) Γ) := by
-          intro n
-          have hcomp : (ψ/[nm n]).complexity ≤ k := by
-            have he : (ψ/[nm n]).complexity = ψ.complexity := by simp
-            rw [he]; exact hψk
-          obtain ⟨a, ha⟩ := ih (ψ/[nm n]) hcomp
-            (Γ := insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) Γ)) (by simp) (by simp)
-          have hexI := Provable.exI ψ n (Γ := insert (∼(ψ/[nm n])) Γ) ha
-          rw [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hp)] at hexI
-          have heq : (∼ψ)/[nm n] = ∼(ψ/[nm n]) := by simp
-          rw [heq]; exact ⟨a + 1, hexI⟩
-        choose β hβ using fam
-        have hall := Provable.allω (∼ψ) (Γ := Γ) hβ
-        rw [Finset.insert_eq_self.mpr hall'] at hall
-        exact ⟨_, hall⟩
-  exact key φ.complexity φ le_rfl hp hn
+open LO LO.FirstOrder GoodsteinPA.ZinftyF GoodsteinPA.ZinftyF.Derivation
 
 /-- **General substitution–rewriting commutation** (the `exs`/`axm` version of `rew_subst_nm`, for an
 arbitrary witness term `t`): `ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t]`. In the assignment embedding `ω = asg e`
 closes `t`, so `ω t = asg e ▹ t` is a closed term whose numeral value feeds `Provable.exI`. -/
-lemma rew_subst_term (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : SyntacticSemiformula ℒₒᵣ 1)
-    (t : SyntacticTerm ℒₒᵣ) : ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t] := by
+lemma rew_subst_term (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : ArithmeticSemiformula ℕ 1)
+    (t : ArithmeticTerm ℕ) : ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t] := by
   show ω ▹ (Rew.subst ![t] ▹ φ) = Rew.subst ![ω t] ▹ (ω.q ▹ φ)
   have heq : ω.comp (Rew.subst ![t]) = (Rew.subst ![ω t]).comp ω.q := by
     ext x
@@ -178,13 +58,14 @@ lemma rew_subst_term (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : SyntacticSemiformula
   rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, heq]
 
 
-/-! ## Closed-term existential introduction (ported from wip/ScratchEmCong.lean, lap 11)
-    The shared chip for `embedC`'s `exs`/`axm`: a value-congruent law of excluded middle
-    (`provable_em_cong_gen`) ⟹ closed-term `∃`-intro `Provable.exI_closed`. -/
+/-! ## Closed-term existential introduction
+
+The shared infrastructure for `embedC`'s `exs`/`axm`: a value-congruent law of excluded middle
+(`provable_em_cong_gen`) ⟹ closed-term `∃`-intro `Provable.exI_closed`. -/
 
 /-- Substitution-composition: substituting the freed (q) variable by `nm m` after a renaming
 `Rew.subst w` is the same as substituting by the extended vector `nm m :> w`. -/
-lemma subst_q_cons (w : Fin n → SyntacticTerm ℒₒᵣ) (m : ℕ) :
+lemma subst_q_cons (w : Fin n → ArithmeticTerm ℕ) (m : ℕ) :
     (Rew.subst ![nm m]).comp (Rew.subst w).q = Rew.subst (nm m :> w) := by
   ext x
   · cases x using Fin.cases with
@@ -192,18 +73,18 @@ lemma subst_q_cons (w : Fin n → SyntacticTerm ℒₒᵣ) (m : ℕ) :
     | succ i => simp [Rew.comp_app]
   · simp [Rew.comp_app]
 
-/-- Formula form: `((Rew.subst w).q ▹ ψ)/[nm m] = Rew.subst (nm m :> w) ▹ ψ`. -/
-lemma subst_q_cons_app (w : Fin n → SyntacticTerm ℒₒᵣ) (m : ℕ)
-    (ψ : SyntacticSemiformula ℒₒᵣ (n + 1)) :
+/-- (ArithmeticFormula ℕ) form: `((Rew.subst w).q ▹ ψ)/[nm m] = Rew.subst (nm m :> w) ▹ ψ`. -/
+lemma subst_q_cons_app (w : Fin n → ArithmeticTerm ℕ) (m : ℕ)
+    (ψ : ArithmeticSemiformula ℕ (n + 1)) :
     ((Rew.subst w).q ▹ ψ)/[nm m] = Rew.subst (nm m :> w) ▹ ψ := by
   show Rew.subst ![nm m] ▹ ((Rew.subst w).q ▹ ψ) = Rew.subst (nm m :> w) ▹ ψ
   rw [← TransitiveRewriting.comp_app, subst_q_cons]
 
 /-- Value of a renamed term depends only on the values of the substituted terms. -/
-lemma valm_subst_congr {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+lemma valm_subst_congr {n} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
-    (t : SyntacticSemiterm ℒₒᵣ n) :
+    (t : ArithmeticSemiterm ℕ n) :
     GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (Rew.subst w t)
       = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (Rew.subst w' t) := by
   simp only [GoodsteinPA.Compat.gValm, Semiterm.val_substs]
@@ -211,10 +92,10 @@ lemma valm_subst_congr {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
   funext x; exact hval x
 
 /-- Literal-truth congruence under value-equal substitutions. -/
-lemma litTrue_subst_congr {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+lemma litTrue_subst_congr {n} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
-    (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → SyntacticSemiterm ℒₒᵣ n) :
+    (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → ArithmeticSemiterm ℕ n) :
     LitTrue (signedLit b r (fun i => Rew.subst w (v i)))
       ↔ LitTrue (signedLit b r (fun i => Rew.subst w' (v i))) := by
   have hv : (fun i => GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (Rew.subst w (v i)))
@@ -223,16 +104,12 @@ lemma litTrue_subst_congr {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
   cases b <;>
     simp only [signedLit, LitTrue, Semiformula.eval_rel, Semiformula.eval_nrel, hv, Function.comp_def]
 
-/-- The numeral `nm m` evaluates to `m` in the standard ℕ-model (any free assignment). -/
-lemma valm_nm (m : ℕ) (f : ℕ → ℕ) : GoodsteinPA.Compat.gValm ℕ ![] f (nm m) = m := by
-  simp [nm]
-
 /-- **Value-congruent excluded middle (arity-general).** -/
-theorem provable_em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
-    (ψ : SyntacticSemiformula ℒₒᵣ n), ψ.complexity ≤ k →
+theorem provable_em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+    (ψ : ArithmeticSemiformula ℕ n), ψ.complexity ≤ k →
     (∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
         = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i)) →
-    ∀ {Γ : Seq}, (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ → ∃ a, Provable a 0 Γ := by
+    ∀ {Γ : Finset (ArithmeticFormula ℕ)}, (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ → ∃ a, Provable a 0 Γ := by
   intro k
   induction k with
   | zero =>
@@ -350,11 +227,11 @@ theorem provable_em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → Syntact
       rw [Finset.insert_eq_self.mpr hn'] at hallω
       exact ⟨_, hallω⟩
 where
-  atomic_close {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+  atomic_close {n} (w w' : Fin n → ArithmeticTerm ℕ)
       (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
-      {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → SyntacticSemiterm ℒₒᵣ n)
-      {Γ : Seq} (hp : (Rew.subst w ▹ Semiformula.rel r v) ∈ Γ)
+      {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → ArithmeticSemiterm ℕ n)
+      {Γ : Finset (ArithmeticFormula ℕ)} (hp : (Rew.subst w ▹ Semiformula.rel r v) ∈ Γ)
       (hn : (∼(Rew.subst w' ▹ Semiformula.rel r v)) ∈ Γ) : ∃ a, Provable a 0 Γ := by
     have hp' : signedLit true r (fun i => Rew.subst w (v i)) ∈ Γ := by
       simpa [signedLit, Semiformula.rew_rel, Function.comp_def] using hp
@@ -366,11 +243,11 @@ where
       have htf' : LitTrue (signedLit false r (fun i => Rew.subst w' (v i))) :=
         (litTrue_subst_congr w w' hval false r v).mp htf
       exact ⟨0, Provable.axTrue false r _ htf' hn'⟩
-  atomic_close_neg {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+  atomic_close_neg {n} (w w' : Fin n → ArithmeticTerm ℕ)
       (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
-      {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → SyntacticSemiterm ℒₒᵣ n)
-      {Γ : Seq} (hp : (Rew.subst w ▹ Semiformula.nrel r v) ∈ Γ)
+      {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → ArithmeticSemiterm ℕ n)
+      {Γ : Finset (ArithmeticFormula ℕ)} (hp : (Rew.subst w ▹ Semiformula.nrel r v) ∈ Γ)
       (hn : (∼(Rew.subst w' ▹ Semiformula.nrel r v)) ∈ Γ) : ∃ a, Provable a 0 Γ := by
     have hp' : signedLit false r (fun i => Rew.subst w (v i)) ∈ Γ := by
       simpa [signedLit, Semiformula.rew_nrel, Function.comp_def] using hp
@@ -385,9 +262,9 @@ where
 
 /-- **Value-congruent excluded middle (single-term form).** For closed terms `s, s'` of equal
 standard value, a sequent containing `ψ/[s]` and `∼(ψ/[s'])` is `Z∞`-derivable cut-free. -/
-theorem provable_em_cong (s s' : SyntacticTerm ℒₒᵣ)
+theorem provable_em_cong (s s' : ArithmeticTerm ℕ)
     (hval : GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) s = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) s')
-    (ψ : SyntacticSemiformula ℒₒᵣ 1) {Γ : Seq}
+    (ψ : ArithmeticSemiformula ℕ 1) {Γ : Finset (ArithmeticFormula ℕ)}
     (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) : ∃ a, Provable a 0 Γ := by
   refine provable_em_cong_gen ψ.complexity ![s] ![s'] ψ le_rfl ?_ ?_ ?_
   · intro i; cases i using Fin.cases with
@@ -400,8 +277,8 @@ theorem provable_em_cong (s s' : SyntacticTerm ℒₒᵣ)
 (closed) witness term `s`, conclude `insert (∃⁰ψ) Γ`. The witness need not be a numeral: `s` is
 collapsed to its standard value `m` via `provable_em_cong` + `cut`, then the numeral-witness rule
 `Provable.exI` applies. (The cut raises the cut-rank bound to `max c (ψ.complexity + 1)`.) -/
-theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
-    (ψ : SyntacticSemiformula ℒₒᵣ 1) (s : SyntacticTerm ℒₒᵣ)
+theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (ψ : ArithmeticSemiformula ℕ 1) (s : ArithmeticTerm ℕ)
     (h : Provable α c (insert (ψ/[s]) Γ)) :
     ∃ β, Provable β (max c (ψ.complexity + 1)) (insert (∃⁰ ψ) Γ) := by
   set m : ℕ := GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) s with hm
@@ -423,108 +300,20 @@ theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
   -- hcut : Provable _ c' (insert (ψ/[nm m]) Γ); introduce ∃ by exI with numeral m
   exact ⟨_, Provable.exI ψ m hcut⟩
 
+/-! ## The assignment-carrying (all-closed) embedding `embedC`
 
+To handle open witnesses and ensure all sequents in the image are CLOSED, we carry a **numeral assignment**
+`e : ℕ → ℕ` of the free variables. The substitution `asg e` replaces every free variable `&x` by the numeral
+`nm (e x)`. The main theorem consumes `embedC d (fun _ => 0)` on the closed `↑goodsteinSentence`. -/
 
-/-- **ω-completeness for true closed formulas.** Any closed (`SyntacticFormula ℒₒᵣ`) formula that is
-TRUE in the standard model `ℕ` (`LitTrue`) is `Z∞`-derivable, cut-free. Proof by induction on
-`complexity`: atomic via `axTrue`, `∀` via the ω-rule `allω`, `∃` by choosing a true witness. -/
-theorem provable_true : ∀ (k : ℕ) (φ : Form), φ.complexity ≤ k → LitTrue φ →
-    ∀ {Γ : Seq}, φ ∈ Γ → ∃ a, Provable a 0 Γ := by
-  intro k
-  induction k with
-  | zero =>
-    intro φ hk htrue Γ hmem
-    cases φ using Semiformula.cases' with
-    | hverum => exact ⟨0, Provable.verumR hmem⟩
-    | hfalsum => simp [LitTrue] at htrue
-    | hrel r v => exact ⟨0, Provable.axTrue true r v htrue hmem⟩
-    | hnrel r v => exact ⟨0, Provable.axTrue false r v htrue hmem⟩
-    | hand φ ψ => simp at hk
-    | hor φ ψ => simp at hk
-    | hall φ => simp at hk
-    | hexs φ => simp at hk
-  | succ k ih =>
-    intro φ hk htrue Γ hmem
-    cases φ using Semiformula.cases' with
-    | hverum => exact ⟨0, Provable.verumR hmem⟩
-    | hfalsum => simp [LitTrue] at htrue
-    | hrel r v => exact ⟨0, Provable.axTrue true r v htrue hmem⟩
-    | hnrel r v => exact ⟨0, Provable.axTrue false r v htrue hmem⟩
-    | hand a b =>
-      have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
-      have hbk : b.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
-      have htab : LitTrue a ∧ LitTrue b := by simpa [LitTrue] using htrue
-      obtain ⟨hta, htb⟩ := htab
-      obtain ⟨a1, h1⟩ := ih a hak hta (Γ := insert a Γ) (by simp)
-      obtain ⟨a2, h2⟩ := ih b hbk htb (Γ := insert b Γ) (by simp)
-      have hand := Provable.andI a b h1 h2
-      rw [Finset.insert_eq_self.mpr hmem] at hand
-      exact ⟨_, hand⟩
-    | hor a b =>
-      have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
-      have hbk : b.complexity ≤ k := by simp only [Semiformula.complexity_or] at hk; omega
-      have htor : LitTrue a ∨ LitTrue b := by simpa [LitTrue] using htrue
-      rcases htor with hta | htb
-      · obtain ⟨a1, h1⟩ := ih a hak hta (Γ := insert a (insert b Γ)) (by simp)
-        have hor := Provable.orI a b h1
-        rw [Finset.insert_eq_self.mpr hmem] at hor
-        exact ⟨_, hor⟩
-      · obtain ⟨a1, h1⟩ := ih b hbk htb (Γ := insert a (insert b Γ)) (by simp)
-        have hor := Provable.orI a b h1
-        rw [Finset.insert_eq_self.mpr hmem] at hor
-        exact ⟨_, hor⟩
-    | hall a =>
-      have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_all] at hk; omega
-      have hfam : ∀ n, LitTrue (a/[nm n]) := by
-        intro n
-        have := htrue
-        simp only [LitTrue, Semiformula.eval_all] at this
-        simpa [LitTrue, Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton]
-          using this n
-      have fam : ∀ n, ∃ x, Provable x 0 (insert (a/[nm n]) Γ) := by
-        intro n
-        have hcomp : (a/[nm n]).complexity ≤ k := by
-          have : (a/[nm n]).complexity = a.complexity := by simp
-          rw [this]; exact hak
-        exact ih (a/[nm n]) hcomp (hfam n) (by simp)
-      choose β hβ using fam
-      have hallω := Provable.allω a hβ
-      rw [Finset.insert_eq_self.mpr hmem] at hallω
-      exact ⟨_, hallω⟩
-    | hexs a =>
-      have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_exs] at hk; omega
-      have hex : ∃ n, LitTrue (a/[nm n]) := by
-        have := htrue
-        simp only [LitTrue, Semiformula.eval_ex] at this
-        obtain ⟨x, hx⟩ := this
-        exact ⟨x, by simpa [LitTrue, Semiformula.eval_substs, valm_nm,
-          Matrix.constant_eq_singleton] using hx⟩
-      obtain ⟨n, hn⟩ := hex
-      have hcomp : (a/[nm n]).complexity ≤ k := by
-        have : (a/[nm n]).complexity = a.complexity := by simp
-        rw [this]; exact hak
-      obtain ⟨x, hx⟩ := ih (a/[nm n]) hcomp hn (Γ := insert (a/[nm n]) Γ) (by simp)
-      have hexI := Provable.exI a n hx
-      rw [Finset.insert_eq_self.mpr hmem] at hexI
-      exact ⟨_, hexI⟩
-
-
-
-/-! ## The assignment-carrying (all-closed) embedding `embedC` — the correct frame (lap 10)
-
-The naive `embed` above cannot finish (`exs` with an open witness; `provable_rew` invalid for the new
-`axTrue` leaf). The fix is to carry a **numeral assignment** `e : ℕ → ℕ` of the free variables, so
-every sequent in the image is CLOSED. `asg e` substitutes every free variable `&x` by the numeral
-`nm (e x)`. The headline consumes `embedC d (fun _ => 0)` on the closed `↑goodsteinSentence`. -/
-
-/-- The closing substitution: free variable `&x ↦ nm (e x)`. Sends every `SyntacticFormula` to a
+/-- The closing substitution: free variable `&x ↦ nm (e x)`. Sends every `ArithmeticFormula ℕ` to a
 closed formula (sentence image). -/
 noncomputable def asg (e : ℕ → ℕ) : Rew ℒₒᵣ ℕ 0 ℕ 0 := Rew.rewrite (fun x => nm (e x))
 
 /-- **The embedding, assignment-carrying form.** Every `Derivation2` from `𝗣𝗔` embeds into `Z_∞`
 *at every numeral assignment of its free variables* (all sequents closed). Structural cases done;
 `all`/`exs`/`axm` are the disclosed deep obligations (the latter two now unblocked by `axTrue`). -/
-theorem embedC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
+theorem embedC {Γ : Finset (ArithmeticFormula ℕ)}
     (d : Derivation2 (𝗣𝗔 : Theory ℒₒᵣ) Γ) :
     ∃ c : ℕ, ∀ e : ℕ → ℕ, ∃ α, Provable α c (Γ.image (fun φ => asg e ▹ φ)) := by
   induction d with
@@ -538,7 +327,7 @@ theorem embedC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     -- so (even after the closing substitution `asg e`, which fixes it) `provable_true`
     -- (ω-completeness) derives it directly — no Buchholz meta-induction needed; ω-rule subsumes it.
     refine ⟨0, fun e => ?_⟩
-    have htrue : LitTrue (asg e ▹ (↑φ : SyntacticFormula ℒₒᵣ)) := by
+    have htrue : LitTrue (asg e ▹ (↑φ : ArithmeticFormula ℕ)) := by
       have hmod : ℕ ⊧ₘ φ := Semantics.modelsSet_iff.mp inferInstance hφ
       simp only [LitTrue, asg, Semiformula.eval_rewrite, Semiformula.eval_emb]
       rw [models_iff] at hmod
@@ -607,10 +396,9 @@ theorem embedC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     exact ⟨_, hall⟩
   | @exs Γ φ h t _d ih =>
     -- `∃⁰φ ∈ Γ`, witness `t`. `rew_subst_term` turns the IH's `asg e ▹ (φ/[t])` into
-    -- `((asg e).q ▹ φ)/[asg e t]` with `asg e t` CLOSED. The remaining `sorry` is the **closed-term
-    -- collapse** `Provable (insert (ψ/[s]) Γ) → Provable (insert (∃⁰ψ) Γ)` for closed `s` (value `m`):
-    -- a `Provable.exI_closed` derived from `Provable.exI` + Z∞ equality-congruence (`s = nm m` via
-    -- `axTrue`, then Leibniz). The term-evaluation content — next chip.
+    -- `((asg e).q ▹ φ)/[asg e t]` with `asg e t` CLOSED. The key step is the **closed-term
+    -- collapse** via `Provable.exI_closed`, which derives from `Provable.exI` + value congruence
+    -- (`s = nm m` via `axTrue`, then Leibniz).
     obtain ⟨c, ih⟩ := ih
     refine ⟨max c (φ.complexity + 1), fun e => ?_⟩
     obtain ⟨a, hd⟩ := ih e

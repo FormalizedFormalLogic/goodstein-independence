@@ -40,17 +40,11 @@ notation:45 V:46 " ⊧ₘ* " T:46 => (V↓[ℒₒᵣ]) ⊧* T
 `Models` itself is unchanged — only the notation and the language coercion moved. -/
 notation:45 M:46 " ⊧ₘ " σ:46 => (M↓[ℒₒᵣ]) ⊧ σ
 
-/- Upstream #794 removed the `SyntacticSemiformula` / `SyntacticFormula` formula aliases.
-Restore them into their original `LO.FirstOrder` namespace so the old unqualified spelling
-(under `open LO.FirstOrder`) keeps resolving. -/
 namespace LO.FirstOrder
-
-abbrev SyntacticSemiformula (L : Language) (n : ℕ) := Semiformula L ℕ n
-abbrev SyntacticFormula (L : Language) := SyntacticSemiformula L 0
 
 /- NB: upstream also removed `Schema L`, but instead of shimming it we retarget goodstein's
 `Derivation2` args from `Schema` to `Theory` — upstream's `Derivation2` is now indexed by a
-`Theory L` (its sequents are `Finset (Proposition L)`, and `Proposition L = SyntacticFormula L`
+`Theory L` (its sequents are `Finset (Proposition L)`, and `Proposition L = Formula L ℕ`
 definitionally). See the `: Theory` retarget in the embedding files. -/
 
 /- Upstream removed the arity-specialised `Semiterm.val_operator₀/₁/₂` (+ `val_const`) simp lemmas
