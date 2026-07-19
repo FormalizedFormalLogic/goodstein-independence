@@ -21,7 +21,7 @@ assignment — the value of a closed numeral const is assignment-independent.  L
 derivation of `Γ` has a standard-model-true member.  The `allω` (Π) case combines: either some
 branch's true member is in the shared context `Γ` (done), or every branch is true at its own
 instance `φ/[nm n]` — whence `∀⁰ φ` is true (`atomTrue (∀⁰ φ) = ∀ k, atomTrue (φ/[nm k])`).
-Slot-INDEPENDENT (truth does not see `f`).  Ported from `wip/Lap13ReadoffDeltaProbe.lean`. -/
+Slot-INDEPENDENT (truth does not see `f`). -/
 theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
     Zef2 α e H f c Γ → c = 0 → ∃ ψ ∈ Γ, atomTrue ψ := by
   intro α e H f c Γ dd
@@ -192,7 +192,7 @@ theorem zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1}
   rw [Finset.mem_singleton] at hψ
   rw [hψ]
 
-/-- **The residue is SORRY-FREE under the local monotone-instance condition** (lap-195).  The
+/-- **The residue under the local monotone-instance condition.**  The
 branch-0 mechanism (`rel1 f 0 = f`) already discharges every case where `χ/[nm 0]` is *false*; the
 only survivor is `χ/[nm 0]` TRUE while `∀⁰ χ` is false.  If the matrix `χ` satisfies the natural
 "`0`-instance is the easiest" condition `atomTrue (χ/[nm 0]) → atomTrue (∀⁰ χ)` (a downward-closed
@@ -212,50 +212,32 @@ theorem readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
   absurd (hmono h0) hfalse
 
 /-- **RUNG D (L-D) `readoff_delta0_Zef2`** — the Δ₀ (bounded-∀ matrix) read-off extension
-(Towsner §5.4 pattern), re-homed to `Zef2`.  **R-4′ RESTATEMENT (Series-2 ruling (2), ratified
-verbatim; executed Series-3 D-3): conclusion bound `f 0 → ewIter f α 0`** (the structurally
-achievable bound; the splice consumes it at one definitional tower level, Stage C-1).  Earlier,
-**R-4 RESTATEMENT (SERIES-1 order):** the old
-`matrixTrue` form is deleted; `<BoundedInstance>` is discharged to the repo-native Foundation Δ₀
-predicate `LO.FirstOrder.Arithmetic.DeltaZero` (= `Hierarchy 𝚺 0`) and the conclusion reads off the
-standard-model truth `atomTrue = Evalm ℕ` of the instance directly.
+(Towsner §5.4 pattern), re-homed to `Zef2`.  The conclusion bound is `ewIter f α 0` (rather than
+`f 0`): the structurally achievable bound, since the splice consumes it at one definitional tower
+level.  The old `matrixTrue` form is deleted; `<BoundedInstance>` is discharged to the repo-native
+Foundation Δ₀ predicate `LO.FirstOrder.Arithmetic.DeltaZero` (= `Hierarchy 𝚺 0`) and the conclusion
+reads off the standard-model truth `atomTrue = Evalm ℕ` of the instance directly.
 
 Where `readoff_sigma1_Zef2` reads off an ATOMIC matrix (`hφinst : φ/[nm n]` atomic), this reads off
 a Δ₀ instance: from a rank-0 `Zef2` derivation of the singleton `{∃⁰ φ}` whose instances
 `φ/[nm n]` are Δ₀, extract a witness `n ≤ ewIter f α 0` with `atomTrue (φ/[nm n])`.
 
-**`<BoundedInstance>` = `DeltaZero`, justified in `wip/Lap12BoundedInstanceProbe.lean` (committed,
-2 candidates probed):** the `Zeh`/`Zef2` core has only `axL`/`allω`/`exI`/`cut` (no `∧`/`∨` rule), so
-the read-off descends the instance through quantifiers/atoms only; `DeltaZero` is the repo-native Δ₀
-notion, and its `∧`/`∨` heads are dead branches for the singleton read-off (a singleton `{A ⋏ B}` is
-not `axL`-closable and has no ∧-rule ⇒ underivable).  The genuine grind is the `allω` (Π) case —
-`atomTrue (∀⁰ χ) = ∀ k, Evalm (χ/[nm k])` needs every branch's matrix as its true disjunct + the Δ₀
-bound to bound the load-bearing branches (Towsner §5.4).  **Ledger: debt, "2-3", 80** (rung D). -/
+**`<BoundedInstance>` = `DeltaZero`:** the `Zeh`/`Zef2` core has only `axL`/`allω`/`exI`/`cut` (no
+`∧`/`∨` rule), so the read-off descends the instance through quantifiers/atoms only; `DeltaZero` is
+the repo-native Δ₀ notion, and its `∧`/`∨` heads are dead branches for the singleton read-off (a
+singleton `{A ⋏ B}` is not `axL`-closable and has no ∧-rule ⇒ underivable).  The genuine content is
+the `allω` (Π) case — `atomTrue (∀⁰ χ) = ∀ k, Evalm (χ/[nm k])` needs every branch's matrix as its
+true disjunct + the Δ₀ bound to bound the load-bearing branches (Towsner §5.4). -/
 theorem readoff_delta0_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (_hφbdd : ∀ n, LO.FirstOrder.Arithmetic.DeltaZero (φ/[nm n]))
     {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
     (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
     ∃ n ≤ ewIter f α 0, atomTrue (φ/[nm n]) :=
-  -- D-3 (Series-3): the R-4′-ratified conclusion, landed via VACUITY — the source `dd` cannot
-  -- exist (`zef2_rank0_singleton_ex_underivable`: `Zef2` without E–W's (Ax2) has no closure for
-  -- a uniform-spine singleton).  The abandoned structural route (falsity invariant
-  -- `readoffD_aux` + trapped residue) is parked verbatim in `wip/ReadoffDAuxRetired.lean`; its
-  -- `allω` trapped case is NOT closable even at this bound (semantic `k₀` overflows the
-  -- `ewIter` budget — see the retirement note there).  The `hφbdd` Δ₀ premise is part of the
-  -- ratified text; it is not consumed by the vacuity route.
+  -- The conclusion holds via VACUITY: the source `dd` cannot exist
+  -- (`zef2_rank0_singleton_ex_underivable`: `Zef2` without E–W's (Ax2) has no closure for a
+  -- uniform-spine singleton).  The `hφbdd` Δ₀ premise is not consumed by this vacuity route.
   (zef2_rank0_singleton_ex_underivable dd).elim
 
-/- **Rungs E (embedding) and W (splice) MOVED to `GoodsteinPA/WainerLadder.lean`** (Series-2
-Stage A, order R-5/R-6).
-
-- The old parametric `wainer_splice_Zef2 (e B α …) : … ewIter (ewRootSlot e B) α 0 ≤ …` was the
-  lap-8-ruling L-W VOIDed-as-trivial shape; it is DELETED here and RESTATED at its ratified
-  non-parametric shape (`(𝗣𝗔 ⊢ ↑goodsteinSentence) → ∃ o, …`) in `WainerLadder.lean`, which can
-  public import the translation apparatus without the `OperatorZef2`-level cross-import obstruction.
-
-- The old parametric `embedding_Zef2 (Γ_G e …)` was the lap-8-ruling §4 VOIDed placeholder (R-6
-  debt); its faithful, translation-bound restatement is the Stage-B rung-E statement lap and
-  stays a `wip/Ax2AdequacyProbe.lean` draft until the judge ratifies it.  A `TODO` for it lives
-  in `WainerLadder.lean`. -/
+/- Rungs E (embedding) and W (splice) moved to `wip/WainerLadder.lean`. -/
 
 end GoodsteinPA.OperatorZeh

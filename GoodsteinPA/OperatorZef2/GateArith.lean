@@ -67,11 +67,9 @@ theorem ewN_osucc_add_le {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) :
   have := ewN_add_le α γ
   omega
 
-/-- **The composed-slot base gate** (lap-10 SERIES-1 R-0(ii)) — the judge's `α + γ` output gate.
+/-- **The composed-slot base gate** — the `α + γ` output gate.
 `ewN α ≤ g 0`, `ewN γ ≤ f 0`, and the `∀`-side per-step floor `g 0 + k ≤ g k` close the fresh
-node's gate `ewN (α + γ) ≤ (g ∘ f) 0 = g (f 0)`.  Kernel-checked in `wip/Lap10SeamProbe.lean`
-(`seam_ewN_add_comp`, `#print axioms` clean); this REPLACES the refuted `osucc`-`+1` composite for
-Stage-2's node gates. -/
+node's gate `ewN (α + γ) ≤ (g ∘ f) 0 = g (f 0)`. -/
 theorem ewN_add_le_comp {α γ : ONote} {f g : ℕ → ℕ}
     (hα : ewN α ≤ g 0) (hγ : ewN γ ≤ f 0) (hg_base : ∀ k, g 0 + k ≤ g k) :
     ewN (α + γ) ≤ g (f 0) :=
@@ -83,11 +81,10 @@ theorem ewN_add_le_comp {α γ : ONote} {f g : ℕ → ℕ}
 theorem repr_collapse (x : ONote) : (collapse x).repr = ω ^ x.repr := by
   simp [collapse, expTower, ONote.repr]
 
-/-- **Ordinal-collapse containment** (lap-10 SERIES-3 pass prep) — the cut-elimination step feeds two
+/-- **Ordinal-collapse containment** — the cut-elimination step feeds two
 IH-reduced premises (at `collapse βφ`, `collapse βψ`, `βφ,βψ < α`) into the reduction pin, whose
 additive output `collapse βφ + collapse βψ` must fit strictly under the single collapse
-`collapse α = ω^α`.  This is the additive principality of `ω^α`.  Kernel-checked in
-`wip/Lap10PassProbe.lean`. -/
+`collapse α = ω^α`.  This is the additive principality of `ω^α`. -/
 theorem collapse_add_lt {βφ βψ α : ONote} (hβφ : βφ.NF) (hβψ : βψ.NF) (_hα : α.NF)
     (hφ : βφ < α) (hψ : βψ < α) : collapse βφ + collapse βψ < collapse α := by
   haveI := hβφ; haveI := hβψ; haveI := _hα
@@ -111,7 +108,7 @@ gate `ewN (collapse α) ≤ (ewIter f α) 0`.  From the derivation's base gate `
 2·f 0 + 1 ≥ ewN α + 1` (the `f(f 0)` floor via `ewIter_lower` at `0 < α`; `hlow` at the base for
 `α = 0`).  Crucially uses only `hlow`, NOT strict monotonicity — so it survives the pass's `allω`
 branches where the slot is `rel1 f n` (which preserves `hlow` via `rel1_low` but breaks
-strictness).  Kernel-checked in `wip/Lap10PassProbe.lean`. -/
+strictness). -/
 theorem ewN_collapse_le {f : ℕ → ℕ} (hlow : ∀ m, 2 * m + 1 ≤ f m) {α : ONote}
     (hgate : ewN α ≤ f 0) : ewN (collapse α) ≤ ewIter f α 0 := by
   rw [ewN_collapse]
@@ -129,7 +126,7 @@ theorem ewN_collapse_le {f : ℕ → ℕ} (hlow : ∀ m, 2 * m + 1 ≤ f m) {α 
     exact le_trans (by omega : ewN α + 1 ≤ f (f 0)) hff
 
 /-- `Nlog (collapse α) = Nlog α + 1` (`collapse α = oadd α 1 0`, `clog 1 = 1`) — the `Nlog`
-analog of `ewN_collapse` (N-1 promotion from `wip/NlogGateProbe.lean`). -/
+analog of `ewN_collapse`. -/
 theorem Nlog_collapse (α : ONote) : Nlog (collapse α) = Nlog α + 1 := by
   show Nlog (oadd α 1 0) = Nlog α + 1
   have hc : clog 1 = 1 := by decide

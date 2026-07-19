@@ -11,11 +11,11 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## Pins 1–2 over `Zef2` (P-d) — re-proven natively (disclosed sub-pins, laps-9+) -/
+/-! ## Pins 1–2 over `Zef2` (P-d) — re-proven natively -/
 
 /-- `β < γ → α < α + γ` (NF): the fresh `α + γ` root strictly dominates the `∀`-family base `α`
 whenever the `∃`-side ordinal `γ` is positive (which a strict descendant `β < γ` witnesses).  The
-`α + γ` analogue of the old `α < osucc (α + γ)`.  Kernel-checked in `wip/Lap10SeamProbe.lean`. -/
+`α + γ` analogue of the old `α < osucc (α + γ)`. -/
 private theorem lt_add_of_inner_lt {α β γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) (hβ : β < γ) :
     α < α + γ := by
   haveI := hαNF; haveI := hγNF
@@ -25,17 +25,15 @@ private theorem lt_add_of_inner_lt {α β γ : ONote} (hαNF : α.NF) (hγNF : �
   simpa using (add_lt_add_iff_left α.repr).mpr hγpos
 
 set_option maxHeartbeats 1000000 in
-/-- **PIN (disclosed sub-pin, P-d): the running-family cut-reduction over `Zef2`.**  Port of
+/-- **PIN (P-d): the running-family cut-reduction over `Zef2`.**  Port of
 `cutReduceAllAuxRunning_Zf` with the ewN/cut-read gate re-threaded at every rebuilt node.
 
-**SUPERSEDES the `osucc (α + γ)` form** per the judge ruling (§3, trap 9, E–W Lemma 25,
-`E-2026-07-02-JUDGE-rebuild-z-lap8-validation.md`): the reduction's fresh root is `α + γ` (NO
-successor `+1`) and the lap-9 refutation of the `osucc`-`+1` gate no longer applies.  The two
-Stage-1 additions to the signature — `hg_base : ∀ k, g 0 + k ≤ g k` (a per-step growth floor on the
-`∀`-side slot) and `φ.complexity ≤ f 0` (the fresh cut-read) — are exactly what the R-0 seam probe
-proved close the fresh node's gates: `ewN (α + γ) ≤ g (f 0)` via `ewN_add_le_comp` and
-`φ.complexity ≤ (g ∘ f) 0` via `hg_infl`.  Premises land strictly below `α + γ` by the R-0(i)
-covariance seams.  Body `sorry` until Stage 2 (grind UNLOCKED). -/
+The reduction's fresh root is `α + γ` (E–W Lemma 25): no successor `+1` is taken, unlike the
+old `osucc (α + γ)` form.  The two additions to the signature — `hg_base : ∀ k, g 0 + k ≤ g k`
+(a per-step growth floor on the `∀`-side slot) and `φ.complexity ≤ f 0` (the fresh cut-read) —
+close the fresh node's gates: `ewN (α + γ) ≤ g (f 0)` via `ewN_add_le_comp` and
+`φ.complexity ≤ (g ∘ f) 0` via `hg_infl`.  Premises land strictly below `α + γ` by the
+covariance of the reduction. -/
 theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
     {Γ : Seq} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
@@ -286,9 +284,9 @@ theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
         (by simp only [rel1]; exact hmono (Nat.zero_le _))) hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
-/-- **`stepAllω_Zf2`** (pin-2 over `Zef2`): the principal ∀/∃ cut-reduction step.  Disclosed
-sub-pin — invert the ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`.  Restated per the
-judge ruling with the `hg_base` floor + `hχRead : χ.complexity ≤ f 0` cut-read (Stage-1 R-2). -/
+/-- **`stepAllω_Zf2`** (pin-2 over `Zef2`): the principal ∀/∃ cut-reduction step — invert the
+∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`, with the `hg_base` floor and
+`hχRead : χ.complexity ≤ f 0` cut-read on the signature. -/
 theorem stepAllω_Zf2 {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
     {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
     (hENF : E.NF) (hχc : χ.complexity < c)

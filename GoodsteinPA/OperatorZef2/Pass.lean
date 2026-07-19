@@ -13,7 +13,7 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## The cut-elimination pass (P-e) — Stage-3 grind (UNLOCKED); `passAux` is the induction -/
+/-! ## The cut-elimination pass (P-e); `passAux` is the induction -/
 
 /-- **`passAux`** — the cut-elimination pass as a generalized induction, threading
 `Monotone f ∧ (∀x,x≤f x) ∧ (∀m,2m+1≤f m)` (NOT `EwF1`: the `2m+1` bound is what `ewN_collapse_le`
@@ -24,7 +24,7 @@ Structural cases (`axL`/`wk`/`weak`) DISCHARGED via the banked pass-prep engine:
 - `wk`: IH + `Zef2Prov.weakening`;
 - `weak`: IH at `β<α` + ordinal-lift (`collapse_strictMono`) + slot-lift (`ewIter_slot_le`).
 
-Three cases remain as disclosed sub-`sorry`s (the crux decomposition):
+The crux decomposition is in three cases:
 - `exI`: like `weak` + rebuild the `∃` node (bound `n ≤ ewIter f α 0`);
 - `allω`: the ω-branch reassembly (IH at `rel1 f n` branches, recombine via `ewIter_rel1_le`);
 - `cut`: sub-rank rebuild (χ.complexity < c) OR TOP-rank eliminate (χ.complexity = c, ∀/∃ →
@@ -229,20 +229,18 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
             exact ⟨w, le_trans hwle (le_of_lt hcollt'), hwNF, hwH,
               le_trans hwg (hcomp' 0), Dw.mono_f hcomp'⟩
 
-/-- **PIN → THEOREM (Stage-3, in grind): one cut-ELIMINATION pass over `Zef2`.**  E–W Lemma 26/27's
-single predicative rank step: the ordinal COLLAPSES (`collapse α`) and the numeric slot ITERATES
-(`ewIter f α`).  Now a real derivation from `passAux` (its three remaining sub-`sorry`s are the
-disclosed crux decomposition). -/
+/-- **One cut-ELIMINATION pass over `Zef2`** (E–W Lemma 26/27): a single predicative rank step —
+the ordinal COLLAPSES (`collapse α`) and the numeric slot ITERATES (`ewIter f α`). -/
 theorem cutElimPass_Zef2 {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f (c + 1) Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapse α) e H (ewIter f α) c Γ :=
   passAux c heNF D rfl hf1.monotone hf1.infl hf1.2 hαNF hαH
 
-/-- **§7b The C3 composed exit over `Zef2`** — the anti-vacuity test: ONE elimination pass
+/-- **The composed exit over `Zef2`** — the anti-vacuity test: ONE elimination pass
 (`cutElimPass_Zef2`, rank `1 → 0`) composed with `headline_readoff_Zef2`, at the concrete
 `ewRootSlot`.  The `ewIter (ewRootSlot e m) α 0` iterate is VISIBLE in the bound and is what the
-read-off reads.  Real derivation from the pin + the read-off. -/
+read-off reads. -/
 theorem cutElimPass_exit_root_Zef2 {α e : ONote} {H : ONote → Prop} {m : ℕ}
     {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
@@ -254,15 +252,10 @@ theorem cutElimPass_exit_root_Zef2 {α e : ONote} {H : ONote → Prop} {m : ℕ}
       (ewRootSlot_f1 e m) (ewRootSlot_f2 e m)
   exact headline_readoff_Zef2 hφinst D'
 
-/-! ## The wainer ladder (L-items) — the four rungs as named pins (lap-8 erection)
+/-! ## The wainer ladder (L-items) — the four rungs as named pins
 
-The rungs decompose the `wainer_bound_of_pa_proves_goodstein` monolith
-(blueprint node 14, now in `Statement.lean`) into the E–W pipeline order.  All are sorry-bearing `theorem`s
-(disclosed pins; raising the src sorry count IS the decomposition) — deliberately NOT
-`@[goodstein_blueprint]`-tagged, because `BlueprintAudit` computes `broken` for any sorryAx
-footprint (an axiom is FORBIDDEN this lap), so the rungs live on the tex dep-graph
-(`thm:zeh_rank_zero`/`thm:zeh_embedding`/`thm:wainer_splice`, `\lean{}`-bound), not the machine
-ledger.  Ledger metadata is carried in each docstring. -/
+The rungs decompose the `wainer_bound_of_pa_proves_goodstein` monolith (now in `Statement.lean`)
+into the E–W pipeline order. -/
 
 /-- **`rankToZeroAux`** — the EwLow-threaded rung-R induction.  Threads
 `Monotone ∧ inflationary ∧ (2m+1 ≤ ·)` (NOT `EwF1`: `ewIter` does not inherit strict monotonicity,
@@ -297,10 +290,9 @@ theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
       rw [collapseIter_collapse α d, ewIterTower_collapse f α d] at hrec
       exact hrec
 
-/-- **RUNG R (L-R) `rankToZero_Zef2`** — iterate `cutElimPass_Zef2` down the cut rank `d → 0`.
+/-- **`rankToZero_Zef2`** (rung L-R) — iterate `cutElimPass_Zef2` down the cut rank `d → 0`.
 A plain induction over the pass (`rankToZeroAux`): `d` applications collapse the ordinal to
-`collapseIter d α` and tower the slot to `ewIterTower f d α`, landing at rank 0.  Now a REAL
-derivation (reuses the pass; `EwF1 → EwLow` at the top).  **Ledger: debt, "1", 90** (rung R). -/
+`collapseIter d α` and tower the slot to `ewIterTower f d α`, landing at rank 0. -/
 theorem rankToZero_Zef2 {α e : ONote} {H : ONote → Prop} {d : ℕ} {Γ : Seq} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f d Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :

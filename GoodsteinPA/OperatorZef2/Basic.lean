@@ -11,20 +11,18 @@ open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 /-!
-# `Zef2` — the ewN-gated E–W controlled slot calculus (lap-8 src port)
+# `Zef2` — the ewN-gated E–W controlled slot calculus
 
-Port of the ratified lap-7 statement layer (`wip/Zef2Calculus.lean`, freeze reference).  `Zef2`
-is `Zef` with an ewN-size gate `ewN α ≤ f 0` carried on every node (and a cut-read gate
-`φ.complexity ≤ f 0` on `cut`).  The gate is what the trap-8 escalation demanded: the diagonal
-output slot's base-argument read is controlled by the ordinal's constructor norm.
+`Zef2` is `Zef` with an ewN-size gate `ewN α ≤ f 0` carried on every node (and a cut-read gate
+`φ.complexity ≤ f 0` on `cut`).  The gate controls the diagonal output slot's base-argument read
+by the ordinal's constructor norm.
 
 The forgetful map `Zef2.toZef` drops the gate — it is the conservativity witness, and discharges
 both read-off pins by reuse of the `Zef` read-off (§ read-off).  Pins 1–2 (§ reduction) and the
 inversion suite are re-proven natively over `Zef2` (the gate re-threads at each rebuilt node).
-The cut-elimination pass `cutElimPass_Zef2` stays the laps-9+ gate (`sorry`; grind FORBIDDEN).
 
-`OperatorZeh.lean`'s old `Zef` layer, `iterSlot` + §5b lemmas, and old pin 3 are SUPERSEDED by
-this module (frozen evidence; statement tokens there untouched).
+`OperatorZeh.lean`'s old `Zef` layer, `iterSlot` + §5b lemmas, and old pin 3 are superseded by
+this module.
 -/
 
 /-- **`Zef2`** — the ewN-gated function-slot cut-elimination calculus.  Identical to `Zef`
