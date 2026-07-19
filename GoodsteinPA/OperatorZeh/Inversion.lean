@@ -2,6 +2,7 @@ module
 
 public import GoodsteinPA.OperatorZeh.Zef
 public import GoodsteinPA.BlueprintAttr
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
