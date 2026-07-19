@@ -2,22 +2,11 @@ name: CI
 
 on:
   push:
-    # Only the default branch on push. A branch WITH an open PR would otherwise
-    # trigger BOTH `push` and `pull_request` for the same commit — two identical
-    # CI runs (the "CI / build (push)" + "CI / build (pull_request)" double).
-    # PRs are covered by the `pull_request` trigger below; direct main pushes
-    # (i.e. merges) are covered here.
     branches:
       - main
-    # blueprint/, docbuild/, and workflow edits don't change the Lean build;
-    # skipping them keeps CI runs to real Lean pushes.
-    paths-ignore:
-      - '**.md'
-      - 'blueprint/**'
-      - 'docbuild/**'
-      - '.github/workflows/**'
-      - '.gitignore'
   pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 # Supersede stale runs on the same ref.
