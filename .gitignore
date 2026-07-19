@@ -22,3 +22,15 @@ docbuild/.lake/
 
 # junk
 f.txt
+
+# env
+.envrc
+
+# import graph
+import_graph.dot
+import_graph.html
+import_graph.pdf
+import_graph.png
+
+# references
+.references

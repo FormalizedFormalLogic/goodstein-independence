@@ -1,15 +1,3 @@
-# GoodsteinPA — Track 2 of the Goodstein effort: the syntactic `𝗣𝗔 ⊬ γ` (Kirby–Paris).
-# Built on the `Foundation` monorepo (FormalizedFormalLogic), which supplies first-order logic,
-# PA (`𝗣𝗔 = Peano : ArithmeticTheory`), Σ₁ arithmetization, and Gödel II. Track 1 (the
-# mathlib-only growth theory) lives in ~/src/lean-formalizations.
-#
-# Foundation is the upstream FormalizedFormalLogic/Foundation monorepo, pinned by rev in the
-# [[require]] block below. This previously pointed at a personal v4.31 fork (gotrevor/Foundation)
-# that carried the forward-port plus the Δ₁-definability discharge; both have since landed upstream
-# (#830, #833), so the dependency is re-homed onto upstream master and there is no fork infra left
-# to track. The pin sits at the v4.31.0 mathlib commit (fabf563a), matching this repo's toolchain,
-# so a build only recompiles Foundation itself while mathlib oleans Replay from cache. Bump the
-# rev by hand as upstream advances.
 name = "GoodsteinPA"
 defaultTargets = ["GoodsteinPA"]
 
