@@ -25,12 +25,9 @@ zero-length pairing case). -/
 module
 
 public import Mathlib.Computability.RE
-public import Mathlib.Computability.Partrec
-public import Mathlib.Computability.Primrec.List
 public import Mathlib.Tactic.Cases
 public import Mathlib.Tactic.Linarith
 public import GoodsteinPA.ToMathlib.Ordinal.Epsilon0
-public meta import Mathlib.SetTheory.Ordinal.Notation -- shake: keep
 public meta import GoodsteinPA.ToMathlib.Ordinal.Epsilon0 -- shake: keep
 
 @[expose] public section
