@@ -7,6 +7,11 @@ public import GoodsteinPA.Embedding
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2
+public import GoodsteinPA.OperatorZef2.Basic
+public import GoodsteinPA.OperatorZef2.CutStep
+public import GoodsteinPA.OperatorZef2.GateArith
+public import GoodsteinPA.OperatorZef2.Pass
+public import GoodsteinPA.OperatorZef2.Rank0
 public import GoodsteinPA.OperatorZeh
 public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.ReadoffValueGate
