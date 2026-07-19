@@ -1,3 +1,31 @@
+/-
+# `OperatorZeh` substrate — `ONote`/`expTower` transforms for the `Zᵉ` calculus
+
+Shared operator-notation lemmas underlying the operator-controlled calculi `Zeh`
+(`GoodsteinPA.OperatorZeh.Zeh`) and its function-slot form `Zef` (`GoodsteinPA.OperatorZeh.Zef`):
+the family-uniform raise `raise e α := e + ω^α`, the two-level-configuration constant `wmul`,
+and the CNF/ordinal-splice bricks reused by the cut-elimination reductions in
+`GoodsteinPA.OperatorZeh.Cut`.
+
+**Provenance.** `Zeh`/`Zef` are built on Towsner's `Z∞` operator calculus [Tow20, §19]; the
+operator-controlled derivation methodology traces to Buchholz [Buc03]. Controlled cut-elimination
+itself is already present in `Z∞` — the numeric gate is raised via the Hardy function
+([Tow20, §19.6, §19.7, §19.9]). What is specific to Eguchi–Weiermann is the function-slot *form*:
+the judgment carries a number-theoretic operator `f : ℕ → ℕ` beside the ordinal operator, with
+cut-reduction composing the slots (`f ∘ g`) and a size-norm gating the running family `f^α`
+(`GoodsteinPA.OperatorZeh.Slot`'s `iterSlot`, `NormControlled`) — the device of
+Eguchi–Weiermann [EW12, Definition 16, Definition 23, Lemma 25], combining Buchholz's ordinal
+operators with Weiermann's number-theoretic operators. The bounding/read-off exit
+(`GoodsteinPA.OperatorZeh.Readoff`) originates with the Buchholz–Wainer Bounding Lemma
+[BW87, Lemma 5] and recurs as [EW12, Lemma 29, Lemma 31]. Towsner-specific material (the
+inversion suite mirroring `Zekd.allInv`, `GoodsteinPA.OperatorZeh.Inversion`) stays attributed to
+[Tow20] alone.
+
+- [Tow20, §19]
+- [Buc03]
+- [EW12, Definition 16, Definition 23, Lemma 25]
+- [BW87, Lemma 5]
+-/
 module
 
 public import GoodsteinPA.OperatorZinfty

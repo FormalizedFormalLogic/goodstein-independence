@@ -30,9 +30,10 @@ theorem reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) :
 /-! ## The running-family reduction, sorry-free -/
 
 set_option maxHeartbeats 400000 in
-/-- **`cutReduceAllAuxRunning_Zf`** — the full Towsner §19.6 running-family cut-reduction in the
-slot calculus, output slot `g∘f`: the reduction with the stage `m` replaced by the current slot
-`f'` (threaded monotone + inflationary) and the two axis-critical moves:
+/-- **`cutReduceAllAuxRunning_Zf`** — the Towsner §19.6 running-family cut-reduction shape, carried
+through in the Eguchi–Weiermann function-slot form [EW12, Lemma 25]: the stage `m` is replaced by
+the current slot `f'` (threaded monotone + inflationary), output slot `g∘f'`, via the two
+axis-critical moves:
 - **principal `exI`** — both cut premises re-slot to `g∘f'` (`reslot_family` / `reslot_exside`),
   cut lands at `g∘f'` (the conclusion slot) with NO leak — the gap the fixed `hardy e m` bound
   could not cross;

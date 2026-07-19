@@ -14,9 +14,13 @@ open GoodsteinPA.OperatorZinfty
 `Zef` is `Zeh` with the ℕ-stage `m` replaced by a function-slot `f : ℕ → ℕ` — the carrier the
 stage judgment could not provide (the stage-`m` reduction is kernel-refuted:
 `principal_witness_exceeds_stage`).  `exI` bound `n ≤ f 0`, `allω` branch slot `rel1 f n`,
-reduction output slot `g ∘ f`.  This block discharges the running-family reduction
+reduction output slot `g ∘ f`.  This is the Eguchi–Weiermann function-slot judgment
+[EW12, Definition 23].  This block discharges the running-family reduction
 (`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) and the read-off exit (`headline_readoff_Zef`) as
-real theorems. -/
+real theorems.
+
+- [EW12, Definition 23]
+-/
 /-! ## The slot calculus `Zef` (`Zeh` with stage `m` ⤳ slot `f : ℕ → ℕ`) -/
 
 inductive Zef : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ → Seq → Prop
