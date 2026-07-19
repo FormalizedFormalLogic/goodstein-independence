@@ -37,9 +37,6 @@ image are CLOSED — which is what lets M5's numeral-only `exI`/ω-rule `allω` 
 module
 
 public import GoodsteinPA.Zinfty
-public import Foundation.FirstOrder.Basic.Calculus2
-public import Foundation.FirstOrder.Arithmetic.Schemata
-public import GoodsteinPA.Compat
 
 @[expose] public section
 

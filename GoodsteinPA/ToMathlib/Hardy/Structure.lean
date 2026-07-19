@@ -5,8 +5,6 @@
 -/
 module
 
-public import Mathlib.SetTheory.Ordinal.Notation
-public import Mathlib.Order.Iterate
 public import GoodsteinPA.ToMathlib.Hardy.Basic
 
 @[expose] public section

@@ -9,11 +9,6 @@ to satisfy. Kept apart from the (Mathlib-bound) bodies in `Sequence.lean`, `Grow
 module
 
 public import GoodsteinPA.ToMathlib.Goodstein.Domination
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
-public meta import GoodsteinPA.ToMathlib.Goodstein.Defs  -- shake: keep
-public meta import GoodsteinPA.ToMathlib.Hardy  -- shake: keep
-public meta import GoodsteinPA.ToMathlib.Goodstein.Domination.Sequence  -- shake: keep
-public meta import GoodsteinPA.ToMathlib.Goodstein.Domination.Growth  -- shake: keep
 public meta import GoodsteinPA.ToMathlib.Goodstein.Domination.Diagonal  -- shake: keep
 
 @[expose] public section

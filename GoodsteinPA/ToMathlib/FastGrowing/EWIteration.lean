@@ -6,7 +6,6 @@ iteration `ewIter`, and the `d`-fold collapse/slot towers (`collapseIter`/`ewIte
 -/
 module
 
-public import Mathlib.SetTheory.Ordinal.Notation
 public import Mathlib.Data.Finset.Max
 public import Mathlib.Data.Set.Finite.Lattice
 public import Mathlib.Order.Interval.Finset.Nat

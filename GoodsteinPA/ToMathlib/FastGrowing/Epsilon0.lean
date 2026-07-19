@@ -5,8 +5,6 @@ Index domination of `fastGrowing` by the `ε₀`-diagonal `fastGrowingε₀`.
 -/
 module
 
-public import Mathlib.SetTheory.Ordinal.Notation
-public import Mathlib.Order.Iterate
 public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 
 @[expose] public section
