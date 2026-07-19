@@ -11,7 +11,7 @@ over `ℒₒᵣ`), Σ₁ arithmetization, and Gödel II.
 reaches 0"**. We do *not* hand-build the arithmetic formula for the (heavily recursive)
 Goodstein step. Foundation already did the hard representability work:
 
-* `LO.FirstOrder.Arithmetic.codeOfREPred (A : ℕ → Prop) : Semisentence ℒₒᵣ 1` turns any
+* `LO.FirstOrder.Arithmetic.codeOfREPred (A : ℕ → Prop) : ArithmeticSemisentence 1` turns any
   **r.e. predicate** `A` on ℕ into a Σ₁ semisentence with one free variable, and
 * `codeOfREPred_spec (hp : REPred A) : ℕ ⊧/![x] (codeOfREPred A) ↔ A x` certifies that the
   formula is true in the standard model at `x` **iff** `A x`.
@@ -84,7 +84,7 @@ caveat above and gated only on `goodsteinSentence_faithful` (below) keeping the 
 `∀ m, ∃ N, goodsteinSeq m N = 0` (which it does, via `igoodstein_nat`) — so faithfulness cannot regress.
 The win: inside any model `M ⊧ 𝗜𝚺₁`, `γ` is the *transparent* run, so the descent contradiction
 (`DescentSemantic`) needs no opaque-code↔run bridge (the old "wall B"). -/
-noncomputable def goodsteinSentence : Sentence ℒₒᵣ :=
+noncomputable def goodsteinSentence : ArithmeticSentence :=
   “∀ m, ∃ N, !igoodsteinDef 0 m N”
 
 /-- **Faithfulness bridge.** The standard model `ℕ` satisfies the encoded sentence

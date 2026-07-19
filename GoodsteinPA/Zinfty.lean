@@ -19,7 +19,7 @@ Natural (Hessenberg) sum is **absent from mathlib v4.31.0**; all reduction bound
 ordinal `+` with a `+1` slack, kept below `ω^(·+1)` by additive principality of `ω^c`.
 
 Per HANDOFF-2026-06-22 ⭐ KEY FINDING: build `Z_∞` directly on Foundation's
-`SyntacticFormula ℒₒᵣ` (full FO with total de-Morgan negation `∼`, finite `complexity : … → ℕ`,
+`ArithmeticFormula ℕ` (full FO with total de-Morgan negation `∼`, finite `complexity : … → ℕ`,
 genuine term substitution `φ/[t]`) instead of the standalone abstract `AForm` of
 `wip/Zinfty.lean`. This **removes the `ℕ∞`/`⊤` blocker** that stalled `cutElimStep`: Foundation's
 `complexity` is *always finite*, so `Provable α (c : ℕ)` (every cut formula has `complexity < c`)
@@ -27,7 +27,7 @@ is a non-vacuous predicate even for quantified cut formulas — the exact thing 
 abstract `AForm`, where `rk (all f)` could be `⊤`.
 
 ## Structural design decision (this lap) — set-based sequents ⭐
-Sequents are **`Finset (SyntacticFormula ℒₒᵣ)`**, matching Towsner (his `Γ` is a finite *set*).
+Sequents are **`Finset (ArithmeticFormula ℕ)`**, matching Towsner (his `Γ` is a finite *set*).
 Consequence: **contraction is free** (`insert` is idempotent), so there is **no `contr` rule**.
 This is not cosmetic: an explicit height-preserving `contr` rule makes the inversion lemmas
 (§19.2–19.4) intractable — the principal-contraction case needs to re-invert a *remaining* copy
@@ -59,7 +59,7 @@ open LO LO.FirstOrder
 
 /-- The closed formulas of `ℒₒᵣ` (full first-order syntax, with total de-Morgan negation `∼`
 and finite `complexity`). -/
-abbrev Form := SyntacticFormula ℒₒᵣ
+abbrev Form := ArithmeticFormula ℕ
 
 /-- The `n`-th numeral of `ℒₒᵣ` as a closed term, ready for substitution `φ/[nm n]`. -/
 noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.numeral ℒₒᵣ n).const
@@ -120,9 +120,9 @@ inductive Deriv : Seq → Type
   | andI {Γ : Seq} (φ ψ : Form) (dφ : Deriv (insert φ Γ)) (dψ : Deriv (insert ψ Γ)) :
       Deriv (insert (φ ⋏ ψ) Γ)
   | orI {Γ : Seq} (φ ψ : Form) (d : Deriv (insert φ (insert ψ Γ))) : Deriv (insert (φ ⋎ ψ) Γ)
-  | allω {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
+  | allω {Γ : Seq} (φ : ArithmeticSemiformula ℕ 1)
       (d : (n : ℕ) → Deriv (insert (φ/[nm n]) Γ)) : Deriv (insert (∀⁰ φ) Γ)
-  | exI {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ)
+  | exI {Γ : Seq} (φ : ArithmeticSemiformula ℕ 1) (n : ℕ)
       (d : Deriv (insert (φ/[nm n]) Γ)) : Deriv (insert (∃⁰ φ) Γ)
   | cut {Γ : Seq} (φ : Form) (d₁ : Deriv (insert φ Γ)) (d₂ : Deriv (insert (∼φ) Γ)) : Deriv Γ
 
@@ -162,7 +162,7 @@ def Provable (α : Ordinal.{0}) (c : ℕ) (Γ : Seq) : Prop :=
   ∃ d : Deriv Γ, o d ≤ α ∧ cr d ≤ (c : ℕ∞)
 
 /-- The ω-rule bound strictly dominates each premise bound. -/
-theorem o_allω_gt {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
+theorem o_allω_gt {Γ : Seq} (φ : ArithmeticSemiformula ℕ 1)
     (d : (n : ℕ) → Deriv (insert (φ/[nm n]) Γ)) (n : ℕ) : o (d n) < o (allω φ d) := by
   have h : o (d n) ≤ ⨆ m, o (d m) := Ordinal.le_iSup (fun m => o (d m)) n
   calc o (d n) ≤ ⨆ m, o (d m) := h
@@ -222,7 +222,7 @@ arithmetic term model every closed term denotes a numeral, and numeral witnesses
 ω-rule inversion (`allInv`) produces, so the ∀/∃ cut-reduction (§19.6) can match the witness
 against the inverted ∀-family. (The embedding §16 supplies a numeral by evaluating PA's witness
 term — deferred to M4.) -/
-theorem Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
+theorem Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : ArithmeticSemiformula ℕ 1)
     (n : ℕ) (h : Provable α c (insert (φ/[nm n]) Γ)) :
     Provable (α + 1) c (insert (∃⁰ φ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
@@ -232,7 +232,7 @@ theorem Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : SyntacticSemi
 /-- **Predicate-level ω-rule.** From a uniform-cut-rank family of premises with ordinal bounds
 `β n`, conclude `∀` at bound `(⨆ n, β n) + 1`. -/
 theorem Provable.allω {β : ℕ → Ordinal.{0}} {c : ℕ} {Γ : Seq}
-    (φ : SyntacticSemiformula ℒₒᵣ 1) (h : ∀ n, Provable (β n) c (insert (φ/[nm n]) Γ)) :
+    (φ : ArithmeticSemiformula ℕ 1) (h : ∀ n, Provable (β n) c (insert (φ/[nm n]) Γ)) :
     Provable ((⨆ n, β n) + 1) c (insert (∀⁰ φ) Γ) := by
   choose d ho hcr using h
   have hsup : (⨆ n, o (d n)) ≤ ⨆ n, β n :=
@@ -410,7 +410,7 @@ instance `χ/[nm n]`. The principal case `allω` supplies exactly the right inst
 
 section InversionAll
 
-variable {χ : SyntacticSemiformula ℒₒᵣ 1}
+variable {χ : ArithmeticSemiformula ℕ 1}
 
 /-- Reorder helper (single insert): invert under `insert a`, push it outside. -/
 private theorem invPush1 (b a : Form) (e : Form) (s : Seq) :
@@ -853,7 +853,7 @@ family available unchanged through the induction, it is a *fixed* hypothesis (ov
 
 /-- The induction core of the ∀/∃ reduction. `fam` is the ∀-inversion family; induct on the
 ∃-side derivation `d`. -/
-theorem Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α : Ordinal.{0}}
+theorem Provable.cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α : Ordinal.{0}}
     {Γ : Seq} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ)) :
     ∀ {Δ : Seq} (d : Deriv Δ), cr d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
@@ -1008,7 +1008,7 @@ theorem Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : �
 
 /-- **Cut reduction, ∀/∃ principal** (Towsner Thm 19.6). A cut on `∀⁰ φ` (complexity `≤ c`) is
 eliminated by inverting the ∀-side and inducting on the ∃-side. -/
-theorem Provable.cutReduceAll {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α β : Ordinal.{0}}
+theorem Provable.cutReduceAll {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α β : Ordinal.{0}}
     {Γ : Seq} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (∀⁰ φ) Γ)) (hNC : Provable β c (insert (∃⁰ ∼φ) Γ)) :
     Provable (α + β + 1) c Γ := by

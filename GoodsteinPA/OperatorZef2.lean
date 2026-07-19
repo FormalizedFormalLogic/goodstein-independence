@@ -44,14 +44,14 @@ inductive Zef2 : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ 
       (hsub : Δ ⊆ Γ) (dd : Zef2 β e H f c Δ) : Zef2 α e H f c Γ
   | allω {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
       (hαN : Nlog α ≤ f 0)
-      (φ : SyntacticSemiformula ℒₒᵣ 1) (β : ℕ → ONote)
+      (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
       (hβH : ∀ n, relOp H n (β n))
       (dd : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
       Zef2 α e H f c (insert (∀⁰ φ) Γ)
   | exI {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
       (hαN : Nlog α ≤ f 0)
-      (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ) (hβ : β < α)
+      (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ f 0)
       (dd : Zef2 β e H f c (insert (φ/[nm n]) Γ)) : Zef2 α e H f c (insert (∃⁰ φ) Γ)
   | cut {α βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
@@ -172,15 +172,15 @@ end Zef2Prov
 
 /-! ## The read-off exit, discharged by the forgetful map (P-c) -/
 
-def ReadoffShapeF2 (φ : SyntacticSemiformula ℒₒᵣ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=
+def ReadoffShapeF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=
   ReadoffShapeF φ f Γ
 
-def ReadoffGoalF2 (φ : SyntacticSemiformula ℒₒᵣ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=
+def ReadoffGoalF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=
   ReadoffGoalF φ f Γ
 
 /-- **`readoff_sigma1_Zef2`** — the ewN-gated read-off, discharged by reuse of the `Zef` read-off
 through `toZef` (zero re-proof; the gate is read-off-irrelevant). -/
-theorem readoff_sigma1_Zef2 {φ : SyntacticSemiformula ℒₒᵣ 1}
+theorem readoff_sigma1_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
     (dd : Zef2 α e H f c Γ) (hc : c = 0) (hshape : ReadoffShapeF2 φ f Γ) :
@@ -188,7 +188,7 @@ theorem readoff_sigma1_Zef2 {φ : SyntacticSemiformula ℒₒᵣ 1}
   readoff_sigma1_Zef hφinst dd.toZef hc hshape
 
 /-- **`headline_readoff_Zef2`** — the exit witness, discharged through `toZef`. -/
-theorem headline_readoff_Zef2 {φ : SyntacticSemiformula ℒₒᵣ 1}
+theorem headline_readoff_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
     (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
@@ -365,7 +365,7 @@ Stage-1 additions to the signature — `hg_base : ∀ k, g 0 + k ≤ g k` (a per
 proved close the fresh node's gates: `ewN (α + γ) ≤ g (f 0)` via `ewN_add_le_comp` and
 `φ.complexity ≤ (g ∘ f) 0` via `hg_infl`.  Premises land strictly below `α + γ` by the R-0(i)
 covariance seams.  Body `sorry` until Stage 2 (grind UNLOCKED). -/
-theorem cutReduceAllAuxRunning_Zf2 {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α e : ONote}
+theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
     {Γ : Seq} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef2 α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
@@ -539,7 +539,7 @@ private theorem gate_rel1 {f : ℕ → ℕ} (hmono : Monotone f) {α : ONote} (n
 /-- **`allInv_Zef2`** — ∀-inversion over `Zef2` (port of `allInv_Zef`).  Ordinals are unchanged by
 inversion, so every rebuilt node's gate re-threads from its input gate through the relativized
 slot `rel1 f n₀` (`gate_rel1`, `f` monotone). -/
-theorem allInv_Zef2 {φ₀ : SyntacticSemiformula ℒₒᵣ 1} (n₀ : ℕ) :
+theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
     ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
       Zef2 α e H f c Γ → Monotone f → (∀⁰ φ₀) ∈ Γ →
       Zef2 α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
@@ -619,7 +619,7 @@ theorem allInv_Zef2 {φ₀ : SyntacticSemiformula ℒₒᵣ 1} (n₀ : ℕ) :
 sub-pin — invert the ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`.  Restated per the
 judge ruling with the `hg_base` floor + `hχRead : χ.complexity ≤ f 0` cut-read (Stage-1 R-2). -/
 theorem stepAllω_Zf2 {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
-    {χ : SyntacticSemiformula ℒₒᵣ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
+    {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
     (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hg_slack : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k)
@@ -646,7 +646,7 @@ ordinals), which the cut-elimination pass needs to place the eliminated cut stri
 `collapse α` (via `collapse_add_lt`).  The generic `stepAllω_Zf2` hides `δ`; here we keep the two
 `≤`-bounds from the `Zef2Prov` witnesses and add-monotone them (`repr_add` + `add_le_add`). -/
 theorem stepAllω_Zf2_bnd {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
-    {χ : SyntacticSemiformula ℒₒᵣ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
+    {χ : ArithmeticSemiformula ℕ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
     (hP₁ : P₁.NF) (hP₂ : P₂.NF)
     (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
@@ -683,7 +683,7 @@ reduction).  The two quantifier shapes are `stepAllω_Zf2_bnd`. -/
 def InertForm (A : Form) : Prop :=
   (∀ (ar : ℕ) (r : (ℒₒᵣ).Rel ar) (v : Fin ar → Semiterm ℒₒᵣ ℕ 0),
       A ≠ Semiformula.rel r v ∧ A ≠ Semiformula.nrel r v) ∧
-  ∀ (χ : SyntacticSemiformula ℒₒᵣ 1), A ≠ (∀⁰ χ) ∧ A ≠ (∃⁰ χ)
+  ∀ (χ : ArithmeticSemiformula ℕ 1), A ≠ (∀⁰ χ) ∧ A ≠ (∃⁰ χ)
 
 theorem inertForm_verum : InertForm ⊤ :=
   ⟨fun _ _ _ => ⟨nofun, nofun⟩, fun _ => ⟨nofun, nofun⟩⟩
@@ -1117,7 +1117,7 @@ theorem cutElimPass_Zef2 {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq
 `ewRootSlot`.  The `ewIter (ewRootSlot e m) α 0` iterate is VISIBLE in the bound and is what the
 read-off reads.  Real derivation from the pin + the read-off. -/
 theorem cutElimPass_exit_root_Zef2 {α e : ONote} {H : ONote → Prop} {m : ℕ}
-    {φ : SyntacticSemiformula ℒₒᵣ 1}
+    {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H (ewRootSlot e m) (0 + 1) {(∃⁰ φ)}) :
@@ -1240,7 +1240,7 @@ theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : 
 
 /-- `atomTrue (∀⁰ χ) ↔ ∀ k, atomTrue (χ/[nm k])` — a standard ω-universal is standard-model-true
 iff every numeral instance is true.  (`∀⁰` at the top of a Δ₀ read-off descends to its instances.) -/
-theorem atomTrue_all_iff (χ : SyntacticSemiformula ℒₒᵣ 1) :
+theorem atomTrue_all_iff (χ : ArithmeticSemiformula ℕ 1) :
     atomTrue (∀⁰ χ) ↔ ∀ k, atomTrue (χ/[nm k]) := by
   simp only [atomTrue, Semiformula.eval_all]
   constructor
@@ -1252,7 +1252,7 @@ theorem atomTrue_all_iff (χ : SyntacticSemiformula ℒₒᵣ 1) :
     simpa [Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton] using hx
 
 /-- `atomTrue (∃⁰ χ) ↔ ∃ k, atomTrue (χ/[nm k])` — dual of `atomTrue_all_iff`. -/
-theorem atomTrue_ex_iff (χ : SyntacticSemiformula ℒₒᵣ 1) :
+theorem atomTrue_ex_iff (χ : ArithmeticSemiformula ℕ 1) :
     atomTrue (∃⁰ χ) ↔ ∃ k, atomTrue (χ/[nm k]) := by
   simp only [atomTrue, Semiformula.eval_ex]
   constructor
@@ -1264,7 +1264,7 @@ theorem atomTrue_ex_iff (χ : SyntacticSemiformula ℒₒᵣ 1) :
 /-- The **spine head** of a formula: strip the `∀/∃` quantifier spine; report the terminal's
 polarity + relation symbol (arity-packed, so comparisons never pay the dependent-`Rel` tax), or
 `none` for the `Zef2`-inert heads `⊤/⊥/⋏/⋎`. -/
-def spineHead : ∀ {n}, SyntacticSemiformula ℒₒᵣ n → Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))
+def spineHead : ∀ {n}, ArithmeticSemiformula ℕ n → Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))
   | _, Semiformula.rel r _ => some (true, ⟨_, r⟩)
   | _, Semiformula.nrel r _ => some (false, ⟨_, r⟩)
   | _, Semiformula.all φ => spineHead φ
@@ -1275,7 +1275,7 @@ def spineHead : ∀ {n}, SyntacticSemiformula ℒₒᵣ n → Option (Bool × ((
   | _, Semiformula.or _ _ => none
 
 /-- Rewriting (in particular substitution `φ/[nm n]`) preserves the spine head. -/
-theorem spineHead_rew : ∀ {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : SyntacticSemiformula ℒₒᵣ n₁),
+theorem spineHead_rew : ∀ {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : ArithmeticSemiformula ℕ n₁),
     spineHead (om ▹ φ) = spineHead φ
   | _, _, om, Semiformula.rel r v => by simp [spineHead, Function.comp_def]
   | _, _, om, Semiformula.nrel r v => by simp [spineHead, Function.comp_def]
@@ -1286,10 +1286,10 @@ theorem spineHead_rew : ∀ {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (
       rw [show (Semiformula.exs φ) = ∃⁰ φ from rfl, Rewriting.app_exs]
       simpa [spineHead] using spineHead_rew om.q φ
   | _, _, om, Semiformula.verum => by
-      rw [show (Semiformula.verum : SyntacticSemiformula ℒₒᵣ _) = ⊤ from rfl]
+      rw [show (Semiformula.verum : ArithmeticSemiformula ℕ _) = ⊤ from rfl]
       simp [spineHead]
   | _, _, om, Semiformula.falsum => by
-      rw [show (Semiformula.falsum : SyntacticSemiformula ℒₒᵣ _) = ⊥ from rfl]
+      rw [show (Semiformula.falsum : ArithmeticSemiformula ℕ _) = ⊥ from rfl]
       simp [spineHead]
   | _, _, om, Semiformula.and φ ψ => by
       rw [show (Semiformula.and φ ψ) = φ ⋏ ψ from rfl]
@@ -1298,13 +1298,13 @@ theorem spineHead_rew : ∀ {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (
       rw [show (Semiformula.or φ ψ) = φ ⋎ ψ from rfl]
       simp [spineHead]
 
-@[simp] theorem spineHead_all (φ : SyntacticSemiformula ℒₒᵣ 1) :
+@[simp] theorem spineHead_all (φ : ArithmeticSemiformula ℕ 1) :
     spineHead (∀⁰ φ) = spineHead φ := rfl
 
-@[simp] theorem spineHead_exs (φ : SyntacticSemiformula ℒₒᵣ 1) :
+@[simp] theorem spineHead_exs (φ : ArithmeticSemiformula ℕ 1) :
     spineHead (∃⁰ φ) = spineHead φ := rfl
 
-theorem spineHead_substs (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ) :
+theorem spineHead_substs (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) :
     spineHead (φ/[nm n]) = spineHead φ :=
   spineHead_rew _ φ
 
@@ -1352,7 +1352,7 @@ theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × 
       omega
 
 /-- **The R-4′ source is VACUOUS: `Zef2` cannot derive `{∃⁰ φ}` at rank 0, for any `φ`.** -/
-theorem zef2_rank0_singleton_ex_underivable {φ : SyntacticSemiformula ℒₒᵣ 1}
+theorem zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1}
     {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} :
     ¬ Zef2 α e H f 0 {(∃⁰ φ)} := by
   intro dd
@@ -1369,7 +1369,7 @@ guard, as for the Goodstein bounded-`∀` clauses), that survivor is contradicto
 `atomTrue (∀⁰ χ)`, contradicting `hfalse`.  So under `hmono` the trap NEVER fires — this is the exact
 fragment the structural read-off reaches without E–W's (Ax2).  A ready building block for a
 monotone-guarded specialization of `readoff_delta0_Zef2`. -/
-theorem readoffD_trapped_of_mono {φ χ : SyntacticSemiformula ℒₒᵣ 1}
+theorem readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
     {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ₀ : Seq} {β : ℕ → ONote}
     (_hbranch : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) 0 (insert (χ/[nm n]) Γ₀))
     (_htrap : (∃⁰ φ) ∈ Γ₀)
@@ -1400,7 +1400,7 @@ notion, and its `∧`/`∨` heads are dead branches for the singleton read-off (
 not `axL`-closable and has no ∧-rule ⇒ underivable).  The genuine grind is the `allω` (Π) case —
 `atomTrue (∀⁰ χ) = ∀ k, Evalm (χ/[nm k])` needs every branch's matrix as its true disjunct + the Δ₀
 bound to bound the load-bearing branches (Towsner §5.4).  **Ledger: debt, "2-3", 80** (rung D). -/
-theorem readoff_delta0_Zef2 {φ : SyntacticSemiformula ℒₒᵣ 1}
+theorem readoff_delta0_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (_hφbdd : ∀ n, LO.FirstOrder.Arithmetic.DeltaZero (φ/[nm n]))
     {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
     (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
