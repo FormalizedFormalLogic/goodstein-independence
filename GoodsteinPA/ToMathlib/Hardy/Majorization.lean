@@ -1,6 +1,6 @@
 module
 
-public import GoodsteinPA.ToMathlib.FastGrowing.EguchiWeiermannIteration
+public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 
 @[expose] public section
 

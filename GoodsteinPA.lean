@@ -12,7 +12,7 @@ public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Statement
 public import GoodsteinPA.ToMathlib.FastGrowing.Basic
-public import GoodsteinPA.ToMathlib.FastGrowing.EguchiWeiermannIteration
+public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
 public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo

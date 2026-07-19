@@ -118,22 +118,6 @@ theorem ofZef2 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : 
 
 end Zef2TC
 
-/-! ## Ordinal-ladder toolkit (`ofNat` rungs) -/
-
-theorem ofNat_lt_ofNat {a b : ℕ} (h : a < b) : ONote.ofNat a < ONote.ofNat b := by
-  rw [ONote.lt_def, ONote.repr_ofNat, ONote.repr_ofNat]
-  exact_mod_cast h
-
-theorem Nlog_ofNat_le (m : ℕ) : Nlog (ONote.ofNat m) ≤ clog m := by
-  cases m with
-  | zero => simp
-  | succ k =>
-      rw [show ONote.ofNat (k + 1) = ONote.oadd 0 k.succPNat 0 from rfl]
-      simp [Nat.succPNat]
-
-theorem clog_mono {a b : ℕ} (h : a ≤ b) : clog a ≤ clog b :=
-  Nat.log_mono_right (by omega)
-
 /-! ## The budgeted excluded middle (E–W Lemma 32 / the W3 `closed`-case engine) -/
 
 /-- **Budgeted EM**: a sequent containing `φ, ∼φ` is cut-free `Zef2TC`-derivable at the

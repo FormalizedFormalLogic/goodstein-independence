@@ -45,7 +45,7 @@ module
 public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.Compat
-public import GoodsteinPA.ToMathlib.FastGrowing.EguchiWeiermannIteration
+public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 
 @[expose] public section
 
