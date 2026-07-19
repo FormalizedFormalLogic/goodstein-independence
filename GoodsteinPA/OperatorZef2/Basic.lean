@@ -25,6 +25,20 @@ inversion suite are re-proven natively over `Zef2` (the gate re-threads at each 
 
 `OperatorZeh.lean`'s old `Zef` layer, `iterSlot` + §5b lemmas, and old pin 3 are superseded by
 this module.
+
+The underlying `Z_∞` operator calculus this module builds on is Towsner's, whose operator
+control method is itself Buchholz's; controlled cut-elimination against a numeric gate is
+already present there too (Towsner's own gate `k`). What is specific to Eguchi–Weiermann is the
+*function-slot form* of the gate: a running family `f^α` controlled by a size-norm, with the
+function-slot judgment and its cut-composition `f ∘ g`. `Zef2`'s `ewN` gate is this EW12
+running-family/norm device, reformulated over `OperatorZeh`'s `Zef` judgment. The read-off's
+bounding step is Buchholz–Wainer's Bounding Lemma, as implemented by Eguchi–Weiermann's
+witnessing lemmas.
+
+- [Tow20, Theorem 17.1]
+- [Buc03]
+- [EW12, Definition 16, Lemma 19, Definition 23, Lemma 25, Lemma 29, Lemma 31]
+- [BW87, Lemma 5]
 -/
 
 /-- **`Zef2`** — the ewN-gated function-slot cut-elimination calculus.  Identical to `Zef`
