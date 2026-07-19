@@ -4717,7 +4717,7 @@ hypothesis is the VERBATIM statement of a theorem proven kernel-clean in its mod
 - `Hconv` = `ONote.master_conversion`.
 The read-off (`readoff_value_goodstein'`), the m-uniformization, and the semantic link are
 discharged HERE.  The conclusion is the exact type of the sole route axiom
-`WainerRoute.wainer_bound_of_pa_proves_goodstein` (`GoodsteinPA/WainerBound.lean`). -/
+`wainer_bound_of_pa_proves_goodstein` (`GoodsteinPA/Statement.lean`). -/
 theorem wainer_bound_witness
     (Hcert : ∀ {G : ℕ → ℕ}, Monotone G → (∀ x, x + 1 ≤ G x) →
       (∀ a b, a + b ≤ G (max a b)) → (∀ a b, a * b ≤ G (max a b)) →

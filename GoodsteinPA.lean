@@ -31,5 +31,4 @@ public import GoodsteinPA.ToMathlib.Hardy.Anchors
 public import GoodsteinPA.ToMathlib.Hardy.Basic
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 public import GoodsteinPA.ToMathlib.Hardy.Structure
-public import GoodsteinPA.WainerBound
 public import GoodsteinPA.Zinfty

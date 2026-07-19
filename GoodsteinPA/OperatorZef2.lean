@@ -1131,7 +1131,7 @@ theorem cutElimPass_exit_root_Zef2 {α e : ONote} {H : ONote → Prop} {m : ℕ}
 /-! ## The wainer ladder (L-items) — the four rungs as named pins (lap-8 erection)
 
 The rungs decompose the `wainer_bound_of_pa_proves_goodstein` monolith
-(`WainerRoute.lean` ledger 14) into the E–W pipeline order.  All are sorry-bearing `theorem`s
+(blueprint node 14, now in `Statement.lean`) into the E–W pipeline order.  All are sorry-bearing `theorem`s
 (disclosed pins; raising the src sorry count IS the decomposition) — deliberately NOT
 `@[goodstein_blueprint]`-tagged, because `BlueprintAudit` computes `broken` for any sorryAx
 footprint (an axiom is FORBIDDEN this lap), so the rungs live on the tex dep-graph
