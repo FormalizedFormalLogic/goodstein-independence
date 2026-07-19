@@ -28,11 +28,11 @@ namespace ZProvable
 theorem mono : ZProvable Γ → ZProvable Γ := id
 
 /-- Weaken the sequent (Foundation `wk`). -/
-theorem weakening {Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) : ZProvable Γ → ZProvable Δ := by
+theorem weakening (h : Γ ⊆ Δ) : ZProvable Γ → ZProvable Δ := by
   rintro ⟨α, c, hd⟩; exact ⟨α, c, hd.weakening h⟩
 
 /-- Drop a sequent element that already occurs (`insert X Γ = Γ` when `X ∈ Γ`). -/
-theorem of_insert_mem {X : ArithmeticFormula ℕ} (h : X ∈ Γ) :
+theorem of_insert_mem (h : X ∈ Γ) :
     ZProvable (insert X Γ) → ZProvable Γ := by
   rw [Finset.insert_eq_self.mpr h]; exact id
 
@@ -45,9 +45,9 @@ propositional cases are discharged here; the **∀/∃ cases** use the numeral �
 all `nm n`, each premise closed by `exI` + the inductive hypothesis at the substitution instance `φ/[nm n]`,
 whose `complexity` equals `φ`'s).
 - [Tow20, §14] -/
-theorem provable_em (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+theorem provable_em (φ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     ∃ a, Provable a 0 Γ := by
-  have key : ∀ (k : ℕ) (φ : (ArithmeticFormula ℕ)), φ.complexity ≤ k →
+  have key : ∀ (k : ℕ) (φ : ArithmeticFormula ℕ), φ.complexity ≤ k →
       ∀ {Γ : Finset (ArithmeticFormula ℕ)}, φ ∈ Γ → ∼φ ∈ Γ → ∃ a, Provable a 0 Γ := by
     intro k
     induction k with
@@ -146,12 +146,10 @@ lemma valm_nm (m : ℕ) (f : ℕ → ℕ) : GoodsteinPA.Compat.gValm ℕ ![] f (
 TRUE in the standard model `ℕ` (`LitTrue`) is `Z∞`-derivable, cut-free. Proof by induction on
 `complexity`: atomic via `axTrue`, `∀` via the ω-rule `allω`, `∃` by choosing a true witness.
 - [Tow20, §14] -/
-theorem provable_true : ∀ (k : ℕ) (φ : ArithmeticFormula ℕ), φ.complexity ≤ k → LitTrue φ →
-    ∀ {Γ : Finset (ArithmeticFormula ℕ)}, φ ∈ Γ → ∃ a, Provable a 0 Γ := by
-  intro k
-  induction k with
+theorem provable_true (k : ℕ) (φ : ArithmeticFormula ℕ) (hk : φ.complexity ≤ k)
+    (htrue : LitTrue φ) (hmem : φ ∈ Γ) : ∃ a, Provable a 0 Γ := by
+  induction k generalizing φ Γ htrue hmem with
   | zero =>
-    intro φ hk htrue Γ hmem
     cases φ using Semiformula.cases' with
     | hverum => exact ⟨0, Provable.verumR hmem⟩
     | hfalsum => simp [LitTrue] at htrue
@@ -162,7 +160,6 @@ theorem provable_true : ∀ (k : ℕ) (φ : ArithmeticFormula ℕ), φ.complexit
     | hall φ => simp at hk
     | hexs φ => simp at hk
   | succ k ih =>
-    intro φ hk htrue Γ hmem
     cases φ using Semiformula.cases' with
     | hverum => exact ⟨0, Provable.verumR hmem⟩
     | hfalsum => simp [LitTrue] at htrue
