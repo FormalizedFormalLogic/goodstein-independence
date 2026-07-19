@@ -7,7 +7,6 @@ public import GoodsteinPA.Embedding
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2
-public import GoodsteinPA.OperatorZeh
 public import GoodsteinPA.OperatorZeh.Cut
 public import GoodsteinPA.OperatorZeh.Examples
 public import GoodsteinPA.OperatorZeh.Inversion

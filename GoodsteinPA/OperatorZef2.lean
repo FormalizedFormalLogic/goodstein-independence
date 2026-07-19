@@ -1,6 +1,8 @@
 module
 
-public import GoodsteinPA.OperatorZeh
+public import GoodsteinPA.OperatorZeh.Cut
+public import GoodsteinPA.OperatorZeh.Readoff
+public import GoodsteinPA.OperatorZeh.Examples
 import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
