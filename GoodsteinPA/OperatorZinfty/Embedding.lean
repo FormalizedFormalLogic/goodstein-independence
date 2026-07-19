@@ -35,7 +35,7 @@ theorem inductionLeaf_runningIndex_witnessBound (e : ONote) (k d n : ℕ) :
 
 /-- The actual `Zekd.exI` move needed in the induction-axiom leaf is legal at the running
 index.  This is the local replacement for the unbounded proof's free `PXFc.exI` step. -/
-theorem inductionLeaf_exI_runningIndex_probe {α β e : ONote} {k d c n : ℕ} {Γ : Seq}
+theorem inductionLeaf_exI_runningIndex_probe {α β e : ONote} {k d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {φ : ArithmeticSemiformula ℕ 1}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < max k n + d)
     (D : Zekd β e (max k n) d c (insert (φ/[nm n]) Γ)) :
@@ -118,7 +118,7 @@ lemma atomTrue_rel_iff_not_nrel {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
 
 section ValueCongruentAtoms
 
-variable {α e : ONote} {k d c : ℕ} {Γ : Seq}
+variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /--
 Bounded value-congruent atomic closure, relation-positive side.
@@ -238,7 +238,7 @@ end ValueCongruentAtoms
 
 section ValueCongruentChildren
 
-variable {e : ONote} {k d c : ℕ} {Γ : Seq}
+variable {e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /--
 Bounded closed-term existential introduction, reduced to the genuine remaining EM/congruence premise.
@@ -438,7 +438,7 @@ sequent containing `ψ[s]` and `¬ψ[s']` at height `ofNat (2*q)`, provided that
 current norm budget.
 -/
 theorem embedding_valueCongruentQFreeClosedTerm_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Seq}
+    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
       (s s' : ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ 1),
       ψ.complexity ≤ q → QFreeForm ψ → stdClosedVal s = stdClosedVal s' →
       2 * q < K + d → (ψ/[s]) ∈ Γ → (∼(ψ/[s'])) ∈ Γ →
@@ -555,7 +555,7 @@ cases are the decisive check: each `allω` premise runs at `max K m`, so the cor
 witness `m` is paid by `inductionLeaf_runningIndex_witnessBound`.
 -/
 theorem embedding_valueCongruentEM_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Seq} {n : ℕ}
+    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ}
       (w w' : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
       ψ.complexity ≤ q →
       (∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) →

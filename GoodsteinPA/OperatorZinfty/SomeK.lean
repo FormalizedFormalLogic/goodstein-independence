@@ -11,12 +11,12 @@ open LO LO.FirstOrder ONote
 
 /-- A derivability wrapper where the witness index `K` is allowed to be chosen later, extracting
 some finite witness budget rather than fixing it in advance. -/
-def ZekdSomeK (α e : ONote) (d c : ℕ) (Γ : Seq) : Prop :=
+def ZekdSomeK (α e : ONote) (d c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ K : ℕ, Zekd α e K d c Γ
 
 namespace ZekdSomeK
 
-variable {α e : ONote} {d c : ℕ} {Γ : Seq}
+variable {α e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Embed a concrete `Zekd` derivation into the existential-budget wrapper. -/
 theorem of {K : ℕ}
@@ -46,7 +46,7 @@ theorem axL {ar : ℕ}
 
 /-- Truth of `⊤` for the existential-budget wrapper. -/
 theorem verumR
-    (h : (⊤ : Form) ∈ Γ) : ZekdSomeK α e d c Γ :=
+    (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : ZekdSomeK α e d c Γ :=
   ⟨0, Zekd.verumR h⟩
 
 /-- True positive atomic leaf for the existential-budget wrapper; the finite index is
@@ -78,7 +78,7 @@ theorem ofBoundedTruth {n : ℕ}
   exact ⟨K, zekdOfBoundedTruth_probe q w ψ hψq hBT hbudget hmem⟩
 
 /-- Monotonicity in the sequent for the existential-budget wrapper. -/
-theorem wk {Δ : Seq}
+theorem wk {Δ : Finset (ArithmeticFormula ℕ)}
     (hsub : Δ ⊆ Γ) (dd : ZekdSomeK α e d c Δ) :
     ZekdSomeK α e d c Γ := by
   rcases dd with ⟨K, D⟩
@@ -112,7 +112,7 @@ theorem mono_e {e' : ONote}
 
 /-- Ordinal/sequent weakening for the existential-budget wrapper: choose a finite
 index large enough for the source ordinal norm side condition. -/
-theorem weak {β : ONote} {Δ : Seq}
+theorem weak {β : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (hsub : Δ ⊆ Γ) (dd : ZekdSomeK β e d c Δ) :
     ZekdSomeK α e d c Γ := by
@@ -130,7 +130,7 @@ theorem mono {d' c' : ℕ}
 
 /-- One-shot lift used by proof embeddings: raise the derivation ordinal, control ordinal,
 numeric side budgets, and sequent at the same time, choosing a larger finite `K` internally. -/
-theorem lift {β e' : ONote} {d' c' : ℕ} {Δ : Seq}
+theorem lift {β e' : ONote} {d' c' : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (heNF : e.NF) (he'NF : e'.NF) (he : e < e')
     (hd : d ≤ d') (hc : c ≤ c') (hsub : Δ ⊆ Γ)
@@ -141,7 +141,7 @@ theorem lift {β e' : ONote} {d' c' : ℕ} {Δ : Seq}
 /-- `andI` for the existential-budget wrapper: choose a finite index large enough for
 both premises and both norm side conditions. -/
 theorem andI {βφ βψ : ONote}
-    (φ ψ : Form) (hβφ : βφ < α) (hβψ : βψ < α)
+    (φ ψ : ArithmeticFormula ℕ) (hβφ : βφ < α) (hβψ : βψ < α)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
     (dφ : ZekdSomeK βφ e d c (insert φ Γ))
     (dψ : ZekdSomeK βψ e d c (insert ψ Γ)) :
@@ -157,7 +157,7 @@ theorem andI {βφ βψ : ONote}
 
 /-- `orI` for the existential-budget wrapper. -/
 theorem orI {β : ONote}
-    (φ ψ : Form) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
+    (φ ψ : ArithmeticFormula ℕ) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (dd : ZekdSomeK β e d c (insert φ (insert ψ Γ))) :
     ZekdSomeK α e d c (insert (φ ⋎ ψ) Γ) := by
   rcases dd with ⟨K0, D0⟩
@@ -193,7 +193,7 @@ theorem exI {β : ONote}
 
 /-- `cut` for the existential-budget wrapper. -/
 theorem cut {βφ βψ : ONote}
-    (φ : Form) (hcompl : φ.complexity < c)
+    (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c)
     (hβφ : βφ < α) (hβψ : βψ < α)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
     (d₁ : ZekdSomeK βφ e d c (insert φ Γ))
@@ -209,21 +209,21 @@ theorem cut {βφ βψ : ONote}
   · exact D₂.mono_k (by dsimp [K]; omega)
 
 /-- Disjunction inversion for the existential-budget wrapper. -/
-theorem orInv {φ ψ : Form}
+theorem orInv {φ ψ : ArithmeticFormula ℕ}
     (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
     ZekdSomeK α e d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.orInv hmem⟩
 
 /-- Left conjunction inversion for the existential-budget wrapper. -/
-theorem andInvL {φ ψ : Form}
+theorem andInvL {φ ψ : ArithmeticFormula ℕ}
     (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     ZekdSomeK α e d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.andInvL hmem⟩
 
 /-- Right conjunction inversion for the existential-budget wrapper. -/
-theorem andInvR {φ ψ : Form}
+theorem andInvR {φ ψ : ArithmeticFormula ℕ}
     (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     ZekdSomeK α e d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   rcases dd with ⟨K, D⟩
@@ -242,7 +242,7 @@ This is the `someK` surface of the fixed-index raw reduction, reused after choos
 `K` large enough for both premises and the reduction ordinal.
 
 - [Tow20, §19.5] -/
-theorem cutReduceConj {a b : Form} {β δ : ONote}
+theorem cutReduceConj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ)
     (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
@@ -262,7 +262,7 @@ theorem cutReduceConj {a b : Form} {β δ : ONote}
 
 /-- Principal disjunction/conjunction cut reduction for the existential-budget wrapper.
 Dual to `cutReduceConj`; again the wrapper absorbs the finite witness-index bookkeeping. -/
-theorem cutReduceDisj {a b : Form} {β δ : ONote}
+theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ)
     (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
@@ -286,7 +286,7 @@ This is intentionally still the *fixed-family* theorem: the ∀-side family is s
 finite index `k₀`. The wrapper absorbs the ∃-side finite index and converts the `ZekdProv`
 ordinal upper bound back to an exact `ZekdSomeK` derivation. -/
 theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
-    {γ : ONote} {Δ : Seq}
+    {γ : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF) (heNF : e.NF)
     (hd₀ : d₀ ≤ d)
     (fam : ∀ n, Zekd α e k₀ d₀ c (insert (φ/[nm n]) Γ))
@@ -307,7 +307,7 @@ This is the part of the full operator cut-elimination assembly where the norm-bu
 has already fired and the control ordinal is then raised to enlarge every existential witness
 bound.  The existential-budget wrapper chooses the finite index needed by `mono_e` internally. -/
 theorem cutReduceAllAux_control {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
-    {γ e' : ONote} {Δ : Seq}
+    {γ e' : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF)
     (heNF : e.NF) (he'NF : e'.NF) (helt : e < e')
     (hd₀ : d₀ ≤ d)

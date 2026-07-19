@@ -10,11 +10,11 @@ open LO LO.FirstOrder ONote
 
 namespace Zekd
 
-private theorem invPush (A b : Form) (s : Seq) {φ ψ : Form} :
+private theorem invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b s).erase A)) ⊆ insert b (insert φ (insert ψ (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem invPull (A : Form) {b : Form} (h : b ≠ A) (s : Seq) {φ ψ : Form} :
+private theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert b (insert φ (insert ψ (s.erase A))) ⊆ insert φ (insert ψ ((insert b s).erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | rfl | hx
@@ -23,17 +23,17 @@ private theorem invPull (A : Form) {b : Form} (h : b ≠ A) (s : Seq) {φ ψ : F
   · exact Or.inr (Or.inl rfl)
   · exact Or.inr (Or.inr ⟨hx.1, Or.inr hx.2⟩)
 
-private theorem invPush2 (A b₁ b₂ : Form) (s : Seq) {φ ψ : Form} :
+private theorem invPush2 (A b₁ b₂ : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b₁ (insert b₂ s)).erase A))
       ⊆ insert b₁ (insert b₂ (insert φ (insert ψ (s.erase A)))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem princOrSub {A : Form} (s : Seq) {φ ψ : Form} :
+private theorem princOrSub {A : ArithmeticFormula ℕ} (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert φ (insert ψ s)).erase A)) ⊆ insert φ (insert ψ (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- **∨-inversion.** Replace `φ ⋎ ψ` by `φ`, `ψ`, same `(α,k,d,c)`. -/
-theorem orInv {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋎ ψ) ∈ Γ →
+theorem orInv {φ ψ : ArithmeticFormula ℕ} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋎ ψ) ∈ Γ →
     Zekd α e k d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
@@ -117,11 +117,11 @@ theorem orInv {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ �
 
 /-! ### Single-insert reshuffle helpers (for ∧-inversion and the ∀-inversion). -/
 
-private theorem inv1Push (A e b : Form) (s : Seq) :
+private theorem inv1Push (A e b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert b s).erase A) ⊆ insert b (insert e (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem inv1Pull (A e : Form) {b : Form} (h : b ≠ A) (s : Seq) :
+private theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) :
     insert b (insert e (s.erase A)) ⊆ insert e ((insert b s).erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | hx
@@ -129,18 +129,18 @@ private theorem inv1Pull (A e : Form) {b : Form} (h : b ≠ A) (s : Seq) :
   · exact Or.inl rfl
   · exact Or.inr ⟨hx.1, Or.inr hx.2⟩
 
-private theorem inv1Push2 (A e b₁ b₂ : Form) (s : Seq) :
+private theorem inv1Push2 (A e b₁ b₂ : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert b₁ (insert b₂ s)).erase A) ⊆ insert b₁ (insert b₂ (insert e (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem princAllSub (A e : Form) (s : Seq) :
+private theorem princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert e s).erase A) ⊆ insert e (s.erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- **∧-inversion, left**: replace `φ ⋏ ψ` by `φ`, same `(α,k,d,c)`.
 
 - [Tow20, §19.3] -/
-theorem andInvL {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
+theorem andInvL {φ ψ : ArithmeticFormula ℕ} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
     Zekd α e k d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   intro α e k d c Γ dd
   induction dd with
@@ -220,7 +220,7 @@ theorem andInvL {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ
 /-- **∧-inversion, right**: replace `φ ⋏ ψ` by `ψ`, same `(α,k,d,c)`.
 
 - [Tow20, §19.3] -/
-theorem andInvR {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
+theorem andInvR {φ ψ : ArithmeticFormula ℕ} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
     Zekd α e k d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   intro α e k d c Γ dd
   induction dd with

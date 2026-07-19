@@ -37,7 +37,7 @@ indexed by `ZekdBoundedTruth`: universals run at `max K m`, and existential witn
 within the control-ordinal Hardy budget.
 -/
 theorem zekdOfBoundedTruth_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Seq} {n : ℕ}
+    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ}
       (w : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
       ψ.complexity ≤ q →
       ZekdBoundedTruth e K d w ψ →
@@ -195,7 +195,7 @@ closed by an assignment.  The only semantic side condition still exposed is the 
 `stdClosedVal s ≤ hardy e (K+d)`.
 -/
 theorem embedding_closedTermExI_probe
-    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Seq}
+    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)
@@ -239,7 +239,7 @@ is available at index `K`, then it can be used at `max K (stdClosedVal s)`, wher
 term is automatically within the Hardy witness budget.  No extra logical premise is introduced.
 -/
 theorem embedding_closedTermExI_raiseK_probe
-    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Seq}
+    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)

@@ -36,7 +36,7 @@ open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 `ψ`'s quantifier/connective structure, false `∀⁰`-heads admit a false branch of index `≤ P` of
 the running budget, where the budget starts at `V` and absorbs every instantiation index.
 Atoms/⊤/⊥ are vacuously gated (the read-off's leaf cases never descend). -/
-def Gated (P : ℕ → ℕ) : ℕ → Form → Prop
+def Gated (P : ℕ → ℕ) : ℕ → ArithmeticFormula ℕ → Prop
   | _, Semiformula.rel _ _ => True
   | _, Semiformula.nrel _ _ => True
   | _, Semiformula.verum => True
@@ -53,11 +53,11 @@ decreasing_by
 
 /-! ## Accessors — the shapes the read-off induction's cases consume -/
 
-theorem Gated_and_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : Form} :
+theorem Gated_and_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : ArithmeticFormula ℕ} :
     Gated P V (χ₁ ⋏ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
   rw [show (χ₁ ⋏ χ₂) = Semiformula.and χ₁ χ₂ from rfl, Gated]
 
-theorem Gated_or_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : Form} :
+theorem Gated_or_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : ArithmeticFormula ℕ} :
     Gated P V (χ₁ ⋎ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
   rw [show (χ₁ ⋎ χ₂) = Semiformula.or χ₁ χ₂ from rfl, Gated]
 
@@ -74,7 +74,7 @@ theorem Gated_exs_iff {P : ℕ → ℕ} {V : ℕ} {χ : ArithmeticSemiformula �
 /-! ## Budget monotonicity — old members stay gated when the budget bumps -/
 
 theorem Gated_mono {P : ℕ → ℕ} (hP : Monotone P) :
-    ∀ (φ : Form) (V V' : ℕ), V ≤ V' → Gated P V φ → Gated P V' φ
+    ∀ (φ : ArithmeticFormula ℕ) (V V' : ℕ), V ≤ V' → Gated P V φ → Gated P V' φ
   | Semiformula.rel _ _, _, _, _, _ => by rw [Gated]; trivial
   | Semiformula.nrel _ _, _, _, _, _ => by rw [Gated]; trivial
   | Semiformula.verum, _, _, _, _ => by rw [Gated]; trivial
@@ -387,7 +387,7 @@ theorem sigma1_all_inv {χ : ArithmeticSemiformula ℕ 1}
 At the pipeline root instantiate `P := fun B => gvb φ_root (max V_root B)` (monotone by
 `gvb_mono`, and the hypothesis is `gvb_mono` + max-algebra). -/
 theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
-    ∀ (ψ : Form), Arithmetic.Hierarchy 𝚺 1 ψ →
+    ∀ (ψ : ArithmeticFormula ℕ), Arithmetic.Hierarchy 𝚺 1 ψ →
       ∀ V : ℕ, (∀ B, gvb ψ B ≤ P (max V B)) → Gated P V ψ
   | Semiformula.rel _ _, _, _, _ => by rw [Gated]; trivial
   | Semiformula.nrel _ _, _, _, _ => by rw [Gated]; trivial
@@ -453,7 +453,7 @@ decreasing_by
 
 /-- **The certificate-exists form** — at the pipeline root the coupled hypothesis is
 self-discharging with `P := fun B => gvb ψ (max V B)`. -/
-theorem gated_root_of_sigma1 (ψ : Form) (h : Arithmetic.Hierarchy 𝚺 1 ψ) (V : ℕ) :
+theorem gated_root_of_sigma1 (ψ : ArithmeticFormula ℕ) (h : Arithmetic.Hierarchy 𝚺 1 ψ) (V : ℕ) :
     ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V ψ := by
   refine ⟨fun B => gvb ψ (max V B), fun _ _ hb => gvb_mono ψ (max_le_max le_rfl hb), ?_⟩
   refine gated_of_sigma1 (fun _ _ hb => gvb_mono ψ (max_le_max le_rfl hb)) ψ h V (fun B => ?_)

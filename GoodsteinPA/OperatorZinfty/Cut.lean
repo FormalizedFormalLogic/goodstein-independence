@@ -13,7 +13,7 @@ namespace Zekd
 /-- **∧/∨ cut reduction, conjunction case**.
 
 - [Tow20, §19.5] -/
-theorem cutReduceConj {a b : Form} {c k d : ℕ} {α β δ e : ONote} {Γ : Seq}
+theorem cutReduceConj {a b : ArithmeticFormula ℕ} {c k d : ℕ} {α β δ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
@@ -35,7 +35,7 @@ theorem cutReduceConj {a b : Form} {c k d : ℕ} {α β δ e : ONote} {Γ : Seq}
     hτα hτδ hB cutA
 
 /-- **∧/∨ cut reduction, disjunction case** (dual). -/
-theorem cutReduceDisj {a b : Form} {c k d : ℕ} {α β δ e : ONote} {Γ : Seq}
+theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {c k d : ℕ} {α β δ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
@@ -66,12 +66,12 @@ end Zekd
 bound + the source's `NF`, so the `≤`-slack absorbs the `osucc`/`+1` bookkeeping uniformly and
 `NF` is always available. This is the surface §19.6 `cutReduceAll` is stated over (matching the
 role of the unbounded `Provable` wrapper for the plain `Z_∞` calculus). -/
-def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Seq) : Prop :=
+def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ α', α' ≤ α ∧ α'.NF ∧ norm α' < k + d ∧ Zekd α' e k d c Γ
 
 namespace ZekdProv
 
-variable {α e : ONote} {k d c : ℕ} {Γ : Seq}
+variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Monotonicity in `α` (≤), `k`, `d`, `c` (the control `e` is raised separately by `mono_e`,
 which carries a budget side condition). The carried norm bound `norm α' < k+d` rides up to `k'+d'`. -/
@@ -89,13 +89,13 @@ theorem mono_e {e' : ONote}
   exact ⟨α', hα', hNF, hnorm, D.mono_e heNF he'NF hlt hbudget⟩
 
 /-- Sequent weakening. -/
-theorem weakening {Δ : Seq} (h : Γ ⊆ Δ) :
+theorem weakening {Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) :
     ZekdProv α e k d c Γ → ZekdProv α e k d c Δ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.wk h⟩
 
 /-- Respect set-equality of sequents. -/
-theorem cast {Δ : Seq} (e0 : Γ = Δ) :
+theorem cast {Δ : Finset (ArithmeticFormula ℕ)} (e0 : Γ = Δ) :
     ZekdProv α e k d c Γ → ZekdProv α e k d c Δ := fun h => e0 ▸ h
 
 /-- Lift a raw `Zekd` derivation (NF ordinal + norm bound) into the wrapper. -/
@@ -139,10 +139,10 @@ IH), keeping `α k₀ dd₀ Γ φ hαNF` fixed — the `allInv` precedent scaled
 - [Buc03]
 -/
 set_option maxHeartbeats 1600000 in
-theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Seq}
+theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (fam : ∀ n, Zekd α e k₀ dd₀ c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {k dd : ℕ} {Δ : Seq}, Zekd γ e k dd c Δ → γ.NF → norm γ < k + dd →
+    ∀ {γ : ONote} {k dd : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zekd γ e k dd c Δ → γ.NF → norm γ < k + dd →
       k₀ ≤ k → dd₀ ≤ dd → (∃⁰ ∼φ) ∈ Δ →
       ZekdProv (osucc (α + γ)) e k (dd + norm α + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   intro γ k dd Δ D

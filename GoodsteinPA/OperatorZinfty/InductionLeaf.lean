@@ -17,7 +17,7 @@ global finite-budget embedding pass: each rule may enlarge `K`, and the final th
 the resulting finite budget.
 -/
 theorem embedding_closedTermExI_someK_probe
-    {βSrc αCut αOut e : ONote} {d c q : ℕ} {Γ : Seq}
+    {βSrc αCut αOut e : ONote} {d c q : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)
@@ -53,7 +53,7 @@ The EM/value-substitution premises are still external to this probe.  The point 
 that the witness-bounded `andI`/`exI`/`cut` wiring itself is tractable at index `max k n`.
 -/
 theorem inductionLeaf_cutTowerStep_probe
-    {βIH βA βB βAnd βEx α e : ONote} {k d c n : ℕ} {Δ : Seq}
+    {βIH βA βB βAnd βEx α e : ONote} {k d c n : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[nm (n + 1)]))
     (hmemEx : (∃⁰ ∼step) ∈ Δ)
@@ -101,7 +101,7 @@ This is the `Zekd` analogue of the cut used by
 `EmbeddingBound.subst_value_subst_bdd`; the actual proof of the congruent EM premise is still
 outside this probe, but the cut interface and budgets are now checked. -/
 theorem inductionLeaf_valueSubst_cut_probe
-    {βSrc βCong α e : ONote} {k d c : ℕ} {Γ : Seq}
+    {βSrc βCong α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} {s t : ArithmeticTerm ℕ}
     (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < α) (hCongLt : βCong < α)
@@ -121,7 +121,7 @@ the numeral instance `ψ/[nm (n+1)]`.
 This mirrors the real `succInd` leaf more closely than `inductionLeaf_cutTowerStep_probe`.
 -/
 theorem inductionLeaf_cutTowerStepWithTerm_probe
-    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {k d c n : ℕ} {Δ : Seq}
+    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {k d c n : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1} (succT : ArithmeticTerm ℕ)
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
     (hmemEx : (∃⁰ ∼step) ∈ Δ)
@@ -179,7 +179,7 @@ This wrapper instead runs the same `andI`/`exI`/`cut` wiring in the `ZekdSomeK` 
 the existential-budget rules absorb the independently chosen finite premise budgets.
 -/
 theorem inductionLeaf_cutTowerStepWithTerm_someK_probe
-    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {d c n : ℕ} {Δ : Seq}
+    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {d c n : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1} (succT : ArithmeticTerm ℕ)
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
     (hmemEx : (∃⁰ ∼step) ∈ Δ)
@@ -235,7 +235,7 @@ This is the outer shape of `EmbeddingBound.metaInduction_cong_bdd` in the witnes
 then raises it to the next `allω` premise index `max k (n+1)`.
 -/
 theorem inductionLeaf_allOmegaFromStep_probe
-    {αAll e : ONote} {k d c : ℕ} {Δ : Seq}
+    {αAll e : ONote} {k d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (β : ℕ → ONote)
     (hβlt : ∀ n, β n < αAll) (hβNF : ∀ n, (β n).NF)
     (hαAllNF : αAll.NF) (hβτ : ∀ n, norm (β n) < max k n + d)
@@ -258,7 +258,7 @@ theorem inductionLeaf_allOmegaFromStep_probe
 This packages the `allω` outer layer used by the bounded PA-induction leaf: once the chain data
 has a single base index `k`, the exported conclusion only remembers that some finite index exists. -/
 theorem inductionLeaf_allOmegaFromStep_someK_probe
-    {αAll e : ONote} {d c : ℕ} {Δ : Seq}
+    {αAll e : ONote} {d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (β : ℕ → ONote)
     (hpack : ∃ k : ℕ,
       (∀ n, β n < αAll) ∧
@@ -280,7 +280,7 @@ This is the value-congruence-free core of the bounded PA-induction leaf: the loc
 `ψ(n+1)`, so the outer finite induction and `allω` rule do not need any extra congruent-value premise.
 -/
 theorem inductionLeaf_allOmegaCutTowerNumeral_probe
-    {αAll e : ONote} {k d c : ℕ} {Δ : Seq}
+    {αAll e : ONote} {k d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (β βA βB βAnd βEx : ℕ → ONote)
     (hβAllLt : ∀ n, β n < αAll)
@@ -320,7 +320,7 @@ interface: the local `andI`/`exI`/`cut`/value-substitution step composes through
 induction and then through `Zekd.allω` without losing the running witness index.
 -/
 theorem inductionLeaf_allOmegaCutTowerWithTerm_probe
-    {αAll e : ONote} {k d c : ℕ} {Δ : Seq}
+    {αAll e : ONote} {k d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (β βA βB βAnd βEx βStep βCong : ℕ → ONote)
     (succT : ℕ → ArithmeticTerm ℕ)

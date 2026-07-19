@@ -41,19 +41,18 @@ namespace GoodsteinPA.OperatorZinfty
 
 open LO LO.FirstOrder ONote
 
-abbrev Form := ArithmeticFormula ℕ
 noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.numeral ℒₒᵣ n).const
-abbrev Seq := Finset Form
-noncomputable def atomTrue (φ : Form) : Prop := GoodsteinPA.Compat.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
+noncomputable def atomTrue (φ : ArithmeticFormula ℕ) : Prop :=
+  GoodsteinPA.Compat.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
 
 /-- **The control-ordinal operator witness-bounded `Z_∞` calculus** `Zᵉᵏᵈ ⊢^{α,e}_{k,d,c} Γ`.
 Derivation ordinal `α`; **control ordinal `e`** (governs the witness bound, raised by cut-elim);
 effective norm budget `k + d`; ω-premise `n` at `(max k n, d)`; **witness bound `hardy e (k+d)`**
 (decoupled from `α`, and threaded inertly through every rule). -/
-inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Seq → Prop
+inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Finset (ArithmeticFormula ℕ) → Prop
   | axL {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
       (hn : Semiformula.nrel r v ∈ Γ) : Zekd α e k d c Γ
-  | verumR {α e k d c Γ} (h : (⊤ : Form) ∈ Γ) : Zekd α e k d c Γ
+  | verumR {α e k d c Γ} (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : Zekd α e k d c Γ
   | trueRel {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (htrue : atomTrue (Semiformula.rel r v))
       (hτ : norm α < k + d) (hαNF : α.NF) (hmem : Semiformula.rel r v ∈ Γ) : Zekd α e k d c Γ
   | trueNrel {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (htrue : atomTrue (Semiformula.nrel r v))
@@ -61,11 +60,11 @@ inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Seq → Prop
   | wk {α e k d c Δ Γ} (hsub : Δ ⊆ Γ) (dd : Zekd α e k d c Δ) : Zekd α e k d c Γ
   | weak {α β e k d c Δ Γ} (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d)
       (hsub : Δ ⊆ Γ) (dd : Zekd β e k d c Δ) : Zekd α e k d c Γ
-  | andI {α βφ βψ e k d c Γ} (φ ψ : Form) (hβφ : βφ < α) (hβψ : βψ < α)
+  | andI {α βφ βψ e k d c Γ} (φ ψ : ArithmeticFormula ℕ) (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF) (hτφ : norm βφ < k + d) (hτψ : norm βψ < k + d)
       (dφ : Zekd βφ e k d c (insert φ Γ)) (dψ : Zekd βψ e k d c (insert ψ Γ)) :
       Zekd α e k d c (insert (φ ⋏ ψ) Γ)
-  | orI {α β e k d c Γ} (φ ψ : Form) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d)
+  | orI {α β e k d c Γ} (φ ψ : ArithmeticFormula ℕ) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d)
       (dd : Zekd β e k d c (insert φ (insert ψ Γ))) : Zekd α e k d c (insert (φ ⋎ ψ) Γ)
   | allω {α e k d c Γ} (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF) (hτ : ∀ n, norm (β n) < max k n + d)
@@ -74,7 +73,7 @@ inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Seq → Prop
   | exI {α β e k d c Γ} (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d) (hbound : n ≤ hardy e (k + d))
       (dd : Zekd β e k d c (insert (φ/[nm n]) Γ)) : Zekd α e k d c (insert (∃⁰ φ) Γ)
-  | cut {α βφ βψ e k d c Γ} (φ : Form) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
+  | cut {α βφ βψ e k d c Γ} (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF) (hτφ : norm βφ < k + d) (hτψ : norm βψ < k + d)
       (d₁ : Zekd βφ e k d c (insert φ Γ)) (d₂ : Zekd βψ e k d c (insert (∼φ) Γ)) :
       Zekd α e k d c Γ
