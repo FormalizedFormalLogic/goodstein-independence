@@ -30,6 +30,7 @@ public import GoodsteinPA.ToMathlib.Hardy.Anchors
 public import GoodsteinPA.ToMathlib.Hardy.Basic
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 public import GoodsteinPA.ToMathlib.Hardy.Structure
+public import GoodsteinPA.ToMathlib.Ordinal
 public import GoodsteinPA.Zinfty
 public import GoodsteinPA.Zinfty.Basic
 public import GoodsteinPA.Zinfty.Cut
