@@ -4,6 +4,7 @@ public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Embedding
 public import GoodsteinPA.ReadoffValueGate
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 

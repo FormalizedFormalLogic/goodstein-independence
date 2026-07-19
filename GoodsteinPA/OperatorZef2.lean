@@ -1,6 +1,7 @@
 module
 
 public import GoodsteinPA.OperatorZeh
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
