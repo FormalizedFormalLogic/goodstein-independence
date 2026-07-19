@@ -55,26 +55,28 @@ lemma litTrue_neg (φ : Formula) : LitTrue (∼φ) ↔ ¬ LitTrue φ := by
 lemma litTrue_or_neg (φ : Formula) : LitTrue φ ∨ LitTrue (∼φ) := by
   rw [litTrue_neg]; exact em _
 
+variable {k : ℕ}
+
 /-- The negation of a signed literal flips its sign. -/
 @[simp, grind =]
-lemma neg_lit (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
+lemma neg_lit (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
     ∼(signedLit b r v) = signedLit (!b) r v := by cases b <;> simp [signedLit]
 
 /-- Flipping a signed literal's polarity flips its truth value: the opposite literal is true iff the
 literal is false. (The atomic-cut / false-literal-removal truth pivot.) -/
 @[grind =]
-lemma litTrue_flip (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
+lemma litTrue_flip (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
   LitTrue (signedLit (!b) r v) ↔ ¬ LitTrue (signedLit b r v) := by
   rw [← neg_lit]; exact litTrue_neg _
 
 /-- A signed literal is never `⊤`. -/
 @[simp, grind .]
-lemma lit_ne_verum (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
+lemma lit_ne_verum (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
     signedLit b r v ≠ (⊤ : Formula) := by cases b <;> simp [signedLit]
 
 /-- A signed literal is never `⊥`. -/
 @[simp, grind .]
-lemma lit_ne_falsum (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
+lemma lit_ne_falsum (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
     signedLit b r v ≠ (⊥ : Formula) := by cases b <;> simp [signedLit]
 
 /-- **The `Z_∞` calculus** over real `ℒₒᵣ` syntax. The `allω` (ω-rule) constructor stores one

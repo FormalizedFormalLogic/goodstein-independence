@@ -25,7 +25,7 @@ remove the explicit `contr` rule). The other inversions (∧, ω/∀) follow the
 
 section Inversion
 
-variable {φ ψ : Formula}
+variable {φ ψ : Formula} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
 
 /-- Reorder helper: inverting under an `insert a` lands inside `insert a` of the inversion. -/
 private theorem invPush (a : Formula) (s : Finset Formula) :
@@ -45,7 +45,7 @@ private theorem invPull {a : Formula} (h : a ≠ (φ ⋎ ψ)) (s : Finset Formul
 /-- **∨-inversion (Towsner §19.2 analog).** If `φ ⋎ ψ` occurs in a `Z_∞`-derivable sequent, then
 replacing it by `φ` and `ψ` is derivable at the *same* ordinal bound and cut rank. Proved by
 structural induction on the derivation. -/
-lemma orInvAux {c : ℕ} : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
+lemma orInvAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
@@ -154,7 +154,7 @@ lemma orInvAux {c : ℕ} : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRan
 
 /-- **∨-inversion at a relaxed bound** (the form used downstream). -/
 @[grind →]
-lemma Provable.orInv {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (hmem : (φ ⋎ ψ) ∈ Γ)
+lemma Provable.orInv (hmem : (φ ⋎ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (orInvAux d hcr hmem).mono ho le_rfl
@@ -169,7 +169,7 @@ instance `χ/[nm n]`. The principal case `allω` supplies exactly the right inst
 
 section InversionAll
 
-variable {χ : SyntacticSemiformula ℒₒᵣ 1}
+variable {χ : SyntacticSemiformula ℒₒᵣ 1} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
 
 /-- Reorder helper (single insert): invert under `insert a`, push it outside. -/
 private theorem invPush1 (b a : Formula) (e : Formula) (s : Finset Formula) :
@@ -187,7 +187,7 @@ private theorem invPull1 (b : Formula) {a e : Formula} (h : a ≠ e) (s : Finset
 /-- **ω/∀-inversion (Towsner §19.4).** If `∀⁰ χ` occurs in a `Z_∞`-derivable sequent, then for
 every numeral `n` the instance `χ/[nm n]` is derivable at the *same* ordinal bound and cut rank.
 Proved by structural induction on the derivation (`n` fixed). -/
-lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) →
+lemma allInvAux (n : ℕ) : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) →
     (∀⁰ χ) ∈ Γ → Provable (ordinalBound d) c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   have hb0 : (χ/[nm n]) ≠ (∀⁰ χ) := Semiformula.ne_of_ne_complexity (by simp)
   intro Γ d
@@ -293,7 +293,7 @@ lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Finset Formula} (d : Derivation 
     exact Provable.cut ξ hcξ P₁ P₂
 
 /-- **ω-inversion at a relaxed bound** (the form used downstream). -/
-lemma Provable.allInv {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
+lemma Provable.allInv (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
     (h : Provable α c Γ) : Provable α c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (allInvAux n d hcr hmem).mono ho le_rfl
@@ -308,11 +308,11 @@ in one induction (`andInvAux`) and expose each side as a corollary. -/
 
 section InversionAnd
 
-variable {φ ψ : Formula}
+variable {φ ψ : Formula} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
 
 /-- **∧-inversion (Towsner §19.3).** If `φ ⋏ ψ` occurs in a `Z_∞`-derivable sequent, then both
 `φ` and `ψ` (with the conjunction erased) are derivable at the same ordinal bound and cut rank. -/
-lemma andInvAux {c : ℕ} : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
+lemma andInvAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (Γ.erase (φ ⋏ ψ))) ∧
       Provable (ordinalBound d) c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   have hφ0 : φ ≠ (φ ⋏ ψ) := Semiformula.ne_of_ne_complexity (by simp)
@@ -465,14 +465,14 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRa
 
 /-- **∧-inversion, left conjunct, relaxed bound.** -/
 @[grind →]
-lemma Provable.andInvL {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (hmem : (φ ⋏ ψ) ∈ Γ)
+lemma Provable.andInvL (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).1.mono ho le_rfl
 
 /-- **∧-inversion, right conjunct, relaxed bound.** -/
 @[grind →]
-lemma Provable.andInvR {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (hmem : (φ ⋏ ψ) ∈ Γ)
+lemma Provable.andInvR (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).2.mono ho le_rfl
