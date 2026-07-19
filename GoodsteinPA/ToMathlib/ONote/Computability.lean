@@ -1,45 +1,46 @@
-import Mathlib.Computability.RE
-import Mathlib.Computability.Partrec
-import Mathlib.Computability.Primrec.List
-import Mathlib.Tactic.Linarith
-import GoodsteinPA.Epsilon0Complete
-
 /-
-# `ONoteComp.lean` — F-φ DISCHARGE: comparison of CNF notations is r.e. (`rePred_ltPull_natCode`)
+# Computability of `ONote` comparison
 
-Proves `rePred_ltPull_natCode : REPred fun v : List.Vector ℕ 2 ↦ natCode (v.get 0) < natCode (v.get 1)`
-for the repo's `Epsilon0Complete.natCode` — discharging the lone math axiom of `Thm56.peano_not_proves_TI`.
+Mathlib's `Mathlib/SetTheory/Ordinal/Notation.lean` proves that `ONote.cmp` computes the linear
+order on Cantor normal forms (`NONote.cmp_compares`), but supplies no `Primcodable`/`Computable`
+packaging of that fact. This file builds one, structurally, and uses it to show that the order
+pulled back to `ℕ` along the structural coding `ONote.natCode` (from `GoodsteinPA.ToMathlib.Ordinal.Epsilon0`)
+is not just well-founded but recursively enumerable — in fact computable:
 
-Provenance: the proof body was produced by Aristotle (Harmonic) on Lean `v4.28.0` (`aris_onotecmp`,
-lap 26) and ported to `v4.31.0` (lap 28, completed). The structural `encodeONote`/`decodeONote`/`natCode`
-and the `Encodable ONote`/`Denumerable NONote` instances are REUSED from `Epsilon0Complete` (they are
-definitionally identical to Aristotle's scaffolding), so `rePred_ltPull_natCode` is about the SAME
-`natCode` the seam (`SeamDefinability.seam`) uses — no re-basing of the order-type half.
+  `rePred_ltPull_natCode : REPred fun v : List.Vector ℕ 2 ↦ natCode (v.get 0) < natCode (v.get 1)`.
 
-Carries one `native_decide` per-site axiom (`cmpStep_spec`'s base case; 🟢 finite-computation trust
-base, acceptable per doctrine). `#print axioms rePred_ltPull_natCode` =
-`[propext, Classical.choice, Quot.sound, cmpStep_spec._native.native_decide.ax_1_5]`.
+The route is a structural strong recursion on the pairing codes used by `ONote.encodeONote`:
 
-Goal (Aristotle's note): comparison of mathlib's `ONote`/`NONote` Cantor normal forms is COMPUTABLE,
-packaged as a single `REPred` lemma. mathlib has `ONote.cmp` and the `LinearOrder NONote` it induces,
-but no `Computable`/`Primrec` proof; this file supplies it via a structural strong recursion.
--/
+* `Cnat` computes `ordCode ∘ ONote.cmp` on decoded pairs via `Computable.nat_strong_rec`, using
+  `cmpStep`/`cmpStep_spec` to unfold one `oadd` layer at a time (`computable_Cnat`).
+* `Nfb` computes the `ONote.NF` predicate the same way, via `nfStep`/`nfStep_spec`
+  (`computable_Nfb`), which is needed because `NONote` (the `enc`/`countNF`/`nthNF` maps below)
+  enumerates only the normal-form codes.
+* `enc` (equivalently `nthNF`, found by unbounded search) enumerates the normal-form codes in
+  increasing order (`computable_enc`), matching the actual `NONote` numbering induced by
+  `ONote.natCode`.
 
-open ONote
+Carries one `native_decide` (in `cmpStep_spec`'s base case: a finite, decidable computation on the
+zero-length pairing case). -/
+module
 
-namespace GoodsteinPA.ONoteComp
+public import Mathlib.Computability.RE
+public import Mathlib.Tactic.Cases
+public import Mathlib.Tactic.Linarith
+public import GoodsteinPA.ToMathlib.Ordinal.Epsilon0
+public meta import GoodsteinPA.ToMathlib.Ordinal.Epsilon0 -- shake: keep
 
-open GoodsteinPA.Epsilon0Complete
+@[expose] public section
+
+namespace ONote
 
 /-! ### Structural `Primcodable ONote` and computability of `ONote.cmp`
 
 `encodeONote`/`decodeONote`/`natCode` and the `Encodable ONote`/`Denumerable NONote` instances come
-from `Epsilon0Complete`. -/
+from `GoodsteinPA.ToMathlib.Ordinal.Epsilon0`. -/
 
-/-
-`encodeONote` and `decodeONote` are mutually inverse: `encode` is a bijection `ONote ≃ ℕ`.
--/
-theorem encodeONote_decodeONote : ∀ n : ℕ, encodeONote (decodeONote n) = n := by
+/-- `encodeONote` and `decodeONote` are mutually inverse: `encode` is a bijection `ONote ≃ ℕ`. -/
+lemma encodeONote_decodeONote : ∀ n : ℕ, encodeONote (decodeONote n) = n := by
   intro n
   induction' n using Nat.strongRecOn with n ih
   generalize_proofs at *;
@@ -48,24 +49,20 @@ theorem encodeONote_decodeONote : ∀ n : ℕ, encodeONote (decodeONote n) = n :
   · unfold decodeONote;
     simp +arith +decide [ encodeONote, ih _ ( Nat.lt_succ_of_le ( Nat.unpair_left_le _ ) ), ih _ ( Nat.lt_succ_of_le ( Nat.unpair_right_le _ |> le_trans <| Nat.unpair_right_le _ ) ) ]
 
-/-
-The structural `Encodable ONote` decodes via `decodeONote` (never failing).
--/
-theorem decode_eq (n : ℕ) : (Encodable.decode n : Option ONote) = some (decodeONote n) := by
+/-- The structural `Encodable ONote` decodes via `decodeONote` (never failing). -/
+lemma decode_eq (n : ℕ) : (Encodable.decode n : Option ONote) = some (decodeONote n) := by
   rfl
 
-/-
-The structural `Encodable ONote` encodes via `encodeONote`.
--/
-theorem encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
+/-- The structural `Encodable ONote` encodes via `encodeONote`. -/
+lemma encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
   rfl
 
-theorem encode_decode_eq (n : ℕ) :
+lemma encode_decode_eq (n : ℕ) :
     Encodable.encode (Encodable.decode n : Option ONote) = n + 1 := by
   rw [ decode_eq ];
   simp +decide [ Encodable.encode, encodeONote_decodeONote ]
 
-theorem primrec_encode_decode :
+lemma primrec_encode_decode :
     Nat.Primrec (fun n => Encodable.encode (Encodable.decode n : Option ONote)) := by
   -- Since `Nat.succ` is primitive recursive, and `encode` and `decode` are inverses, the function `n => encode (decode n)` is also primitive recursive.
   have h_succ : Nat.Primrec Nat.succ := by
@@ -78,7 +75,7 @@ instance instPrimcodableONote : Primcodable ONote :=
   { (inferInstance : Encodable ONote) with
     prim := primrec_encode_decode }
 
-theorem computable_decodeONote : Computable decodeONote := by
+lemma computable_decodeONote : Computable decodeONote := by
   have h_decodeONote_computable : Computable (fun n => (Encodable.decode n : Option ONote)) := by
     convert Computable.decode ( α := ONote ) using 1;
   exact Computable.option_getD ( h_decodeONote_computable ) ( Computable.const ONote.zero )
@@ -97,10 +94,10 @@ def thenNat (a b : ℕ) : ℕ := if a = 1 then b else a
 /-- `ℕ`-level version of `_root_.cmp` on `ℕ`, returning an `ordCode`. -/
 def cmpNat (a b : ℕ) : ℕ := if a < b then 0 else if a = b then 1 else 2
 
-theorem ordCode_then (o p : Ordering) : ordCode (o.then p) = thenNat (ordCode o) (ordCode p) := by
+lemma ordCode_then (o p : Ordering) : ordCode (o.then p) = thenNat (ordCode o) (ordCode p) := by
   cases o <;> cases p <;> rfl
 
-theorem ordCode_cmp (a b : ℕ) : ordCode (_root_.cmp a b) = cmpNat a b := by
+lemma ordCode_cmp (a b : ℕ) : ordCode (_root_.cmp a b) = cmpNat a b := by
   rcases lt_trichotomy a b with h | h | h
   · have hc : _root_.cmp a b = Ordering.lt := by simp [_root_.cmp, cmpUsing, h]
     rw [hc]; simp [ordCode, cmpNat, h]
@@ -127,7 +124,7 @@ def cmpNV (m : ℕ) : ℕ :=
   cmpNat ((Nat.unpair (Nat.unpair ((Nat.unpair m).1 - 1)).2).1 + 1)
          ((Nat.unpair (Nat.unpair ((Nat.unpair m).2 - 1)).2).1 + 1)
 
-theorem primrec_cmpIdxE : Primrec cmpIdxE := by
+lemma primrec_cmpIdxE : Primrec cmpIdxE := by
   have h_id : Primrec (fun x : ℕ => x) := by
     exact Primrec.id
   have h_fst : Primrec (fun x : ℕ => (Nat.unpair x).1) := by
@@ -139,7 +136,7 @@ theorem primrec_cmpIdxE : Primrec cmpIdxE := by
   have h_pair : Primrec₂ (fun x y : ℕ => Nat.pair x y) := Primrec₂.natPair
   exact h_pair.comp ( h_fst.comp ( h_sub.comp h_fst ) ) ( h_fst.comp ( h_sub.comp h_snd ) )
 
-theorem primrec_cmpIdxA : Primrec cmpIdxA := by
+lemma primrec_cmpIdxA : Primrec cmpIdxA := by
   have h_fst : Primrec (fun x : ℕ => (Nat.unpair x).1) := Primrec.fst.comp Primrec.unpair
   have h_snd : Primrec (fun x : ℕ => (Nat.unpair x).2) := Primrec.snd.comp Primrec.unpair
   have h_sub : Primrec (fun x : ℕ => x - 1) := Primrec.nat_sub.comp Primrec.id (Primrec.const 1)
@@ -147,16 +144,16 @@ theorem primrec_cmpIdxA : Primrec cmpIdxA := by
     (h_snd.comp (h_snd.comp (h_sub.comp h_fst)))
     (h_snd.comp (h_snd.comp (h_sub.comp h_snd)))
 
-theorem primrec_thenNat : Primrec₂ thenNat := by
+lemma primrec_thenNat : Primrec₂ thenNat := by
   unfold thenNat
   exact Primrec.ite (Primrec.eq.comp Primrec.fst (Primrec.const 1)) Primrec.snd Primrec.fst
 
-theorem primrec_cmpNat : Primrec₂ cmpNat := by
+lemma primrec_cmpNat : Primrec₂ cmpNat := by
   unfold cmpNat
   exact Primrec.ite (Primrec.nat_lt.comp Primrec.fst Primrec.snd) (Primrec.const 0)
     (Primrec.ite (Primrec.eq.comp Primrec.fst Primrec.snd) (Primrec.const 1) (Primrec.const 2))
 
-theorem primrec_cmpNV : Primrec cmpNV := by
+lemma primrec_cmpNV : Primrec cmpNV := by
   have hfst : Primrec (fun m : ℕ => (Nat.unpair m).1) := Primrec.fst.comp Primrec.unpair
   have hsnd : Primrec (fun m : ℕ => (Nat.unpair m).2) := Primrec.snd.comp Primrec.unpair
   have hsub : Primrec (fun x : ℕ => x - 1) := Primrec.nat_sub.comp Primrec.id (Primrec.const 1)
@@ -184,15 +181,15 @@ notations whose codes are the components of `m`. -/
 def Cnat (m : ℕ) : ℕ :=
   ordCode (ONote.cmp (decodeONote (Nat.unpair m).1) (decodeONote (Nat.unpair m).2))
 
-theorem Cnat_pair (cx cy : ℕ) :
+lemma Cnat_pair (cx cy : ℕ) :
     Cnat (Nat.pair cx cy) = ordCode (ONote.cmp (decodeONote cx) (decodeONote cy)) := by
   simp [Cnat, Nat.unpair_pair]
 
-theorem pair_lt_pair {a₁ a₂ b₁ b₂ : ℕ} (ha : a₁ < a₂) (hb : b₁ < b₂) :
+lemma pair_lt_pair {a₁ a₂ b₁ b₂ : ℕ} (ha : a₁ < a₂) (hb : b₁ < b₂) :
     Nat.pair a₁ b₁ < Nat.pair a₂ b₂ :=
   lt_trans (Nat.pair_lt_pair_left b₁ ha) (Nat.pair_lt_pair_right a₂ hb)
 
-theorem computable_cmpStep : Computable cmpStep := by
+lemma computable_cmpStep : Computable cmpStep := by
   apply Primrec.to_comp
   have c1 : PrimrecPred (fun L : List ℕ => (Nat.unpair L.length).1 = 0) :=
     Primrec.eq.comp (Primrec.fst.comp (Primrec.unpair.comp Primrec.list_length)) (Primrec.const 0)
@@ -220,7 +217,7 @@ theorem computable_cmpStep : Computable cmpStep := by
     (Primrec.ite c2 (Primrec.const (some 1)) (Primrec.const (some 0)))
     (Primrec.ite c2 (Primrec.const (some 2)) helse)
 
-theorem cmpStep_spec (m : ℕ) : cmpStep ((List.range m).map Cnat) = some (Cnat m) := by
+lemma cmpStep_spec (m : ℕ) : cmpStep ((List.range m).map Cnat) = some (Cnat m) := by
   unfold cmpStep;
   simp +decide [ cmpIdxE, cmpIdxA, cmpNV ];
   rcases n : Nat.unpair m with ⟨ x, y ⟩ ; rcases x with ( _ | x ) <;> rcases y with ( _ | y ) <;> simp +decide;
@@ -257,11 +254,11 @@ theorem computable_Cnat : Computable Cnat := by
 /-! ### Computability of the `NF` predicate (needed to enumerate `NONote`) -/
 
 /-- The `ordCode` is `0` exactly for `Ordering.lt`. -/
-theorem ordCode_eq_zero {o : Ordering} : ordCode o = 0 ↔ o = Ordering.lt := by
+lemma ordCode_eq_zero {o : Ordering} : ordCode o = 0 ↔ o = Ordering.lt := by
   cases o <;> simp [ordCode]
 
 /-- `Cnat (pair cx cy) = 0` iff `cmp (decode cx) (decode cy) = lt`. -/
-theorem Cnat_pair_eq_zero (cx cy : ℕ) :
+lemma Cnat_pair_eq_zero (cx cy : ℕ) :
     Cnat (Nat.pair cx cy) = 0 ↔ ONote.cmp (decodeONote cx) (decodeONote cy) = Ordering.lt := by
   rw [Cnat_pair, ordCode_eq_zero]
 
@@ -279,14 +276,14 @@ def nfTB (c : ℕ) : Bool :=
   if nfIdxA c = 0 then true
   else decide (Cnat (Nat.pair (Nat.unpair (nfIdxA c - 1)).1 (nfIdxE c)) = 0)
 
-theorem primrec_nfIdxE : Primrec nfIdxE :=
+lemma primrec_nfIdxE : Primrec nfIdxE :=
   Primrec.fst.comp (Primrec.unpair.comp (Primrec.nat_sub.comp Primrec.id (Primrec.const 1)))
 
-theorem primrec_nfIdxA : Primrec nfIdxA :=
+lemma primrec_nfIdxA : Primrec nfIdxA :=
   Primrec.snd.comp (Primrec.unpair.comp (Primrec.snd.comp
     (Primrec.unpair.comp (Primrec.nat_sub.comp Primrec.id (Primrec.const 1)))))
 
-theorem computable_nfTB : Computable nfTB := by
+lemma computable_nfTB : Computable nfTB := by
   have hidx : Primrec (fun c : ℕ => Nat.pair (Nat.unpair (nfIdxA c - 1)).1 (nfIdxE c)) :=
     Primrec₂.natPair.comp
       (Primrec.fst.comp (Primrec.unpair.comp
@@ -312,7 +309,7 @@ def nfStep (L : List Bool) : Option Bool :=
       (L[nfIdxA c]?).map fun ba =>
         be && ba && nfTB c
 
-theorem computable_nfStep : Computable nfStep := by
+lemma computable_nfStep : Computable nfStep := by
   refine' Computable.of_eq _ _;
   exact fun L => if L.length = 0 then some true else ( L[nfIdxE L.length]? ).bind fun be => ( L[nfIdxA L.length]? ).map fun ba => be && ba && nfTB L.length;
   · convert Computable.cond _ _ _ using 1;
@@ -340,10 +337,8 @@ theorem computable_nfStep : Computable nfStep := by
     · grind;
   · unfold nfStep; aesop;
 
-/-
-Characterization of `NF` on `oadd` (from mathlib's `decidableNF` argument).
--/
-theorem NF_oadd_iff {e : ONote} {n : ℕ+} {a : ONote} :
+/-- Characterization of `NF` on `oadd` (from mathlib's `decidableNF` argument). -/
+lemma NF_oadd_iff {e : ONote} {n : ℕ+} {a : ONote} :
     (ONote.oadd e n a).NF ↔ ONote.NF e ∧ ONote.NF a ∧ ONote.TopBelow e a := by
   by_cases h : e.NF <;> simp_all +decide;
   · convert ONote.nfBelow_iff_topBelow ( b := e ) |> Iff.trans <| ?_ using 1;
@@ -353,7 +348,7 @@ theorem NF_oadd_iff {e : ONote} {n : ℕ+} {a : ONote} :
     · exact ⟨ fun h' => h'.snd', fun h' => ONote.NF.oadd h n h' ⟩;
   · exact fun h' => h <| h'.fst
 
-theorem nfStep_spec (n : ℕ) : nfStep ((List.range n).map Nfb) = some (Nfb n) := by
+lemma nfStep_spec (n : ℕ) : nfStep ((List.range n).map Nfb) = some (Nfb n) := by
   unfold nfStep Nfb;
   by_cases hn : n = 0;
   · rw [ hn ] ; simp +decide [ decodeONote ] ;
@@ -379,13 +374,13 @@ theorem computable_Nfb : Computable Nfb :=
 /-- The structural NF-code of the `a`-th notation `natCode a`. -/
 def enc (a : ℕ) : ℕ := encodeONote (natCode a).1
 
-theorem decodeONote_enc (a : ℕ) : decodeONote (enc a) = (natCode a).1 := by
+lemma decodeONote_enc (a : ℕ) : decodeONote (enc a) = (natCode a).1 := by
   rw [enc, decodeONote_encodeONote]
 
-theorem nf_decode_enc (a : ℕ) : (decodeONote (enc a)).NF := by
+lemma nf_decode_enc (a : ℕ) : (decodeONote (enc a)).NF := by
   rw [decodeONote_enc]; exact (natCode a).2
 
-theorem enc_injective : Function.Injective enc := by
+lemma enc_injective : Function.Injective enc := by
   intro a b hab;
   apply_fun decodeONote at hab;
   -- Since `decodeONote (enc a) = (natCode a).1` and `decodeONote (enc b) = (natCode b).1`, we have `(natCode a).1 = (natCode b).1`.
@@ -393,7 +388,7 @@ theorem enc_injective : Function.Injective enc := by
     grind +suggestions;
   exact natCode.injective ( Subtype.ext h_eq )
 
-theorem enc_surjOn {n : ℕ} (h : (decodeONote n).NF) : ∃ a, enc a = n := by
+lemma enc_surjOn {n : ℕ} (h : (decodeONote n).NF) : ∃ a, enc a = n := by
   -- Since `natCode` is a bijection, there exists `a` such that `natCode a = ⟨decodeONote n, h⟩`.
   obtain ⟨a, ha⟩ : ∃ a, natCode a = ⟨decodeONote n, h⟩ := by
     exact natCode.surjective _;
@@ -401,7 +396,7 @@ theorem enc_surjOn {n : ℕ} (h : (decodeONote n).NF) : ∃ a, enc a = n := by
   unfold enc
   simp [ha, encodeONote_decodeONote]
 
-theorem enc_strictMono : StrictMono enc := by
+lemma enc_strictMono : StrictMono enc := by
   -- `enc a` is the underlying ℕ-value of the `a`-th element of `range encode`, enumerated by
   -- `Nat.Subtype.ofNat` in increasing order; hence strictly monotone.
   letI hdec : DecidablePred (· ∈ Set.range (Encodable.encode : NONote → ℕ)) :=
@@ -454,14 +449,14 @@ theorem computable_countNF : Computable countNF := by
     exact h_countNF_eq.comp ( Computable.snd );
   · rfl
 
-theorem Nfb_enc (a : ℕ) : Nfb (enc a) = true := by
+lemma Nfb_enc (a : ℕ) : Nfb (enc a) = true := by
   simp [Nfb, nf_decode_enc]
 
-theorem countNF_eq (n : ℕ) :
+lemma countNF_eq (n : ℕ) :
     countNF n = ((Finset.range n).filter (fun k => (decodeONote k).NF)).card := by
   congr
 
-theorem countNF_enc (a : ℕ) : countNF (enc a) = a := by
+lemma countNF_enc (a : ℕ) : countNF (enc a) = a := by
   have h_card : ((Finset.range (enc a)).filter (fun k => (decodeONote k).NF)).card = ((Finset.range a).image enc).card := by
     congr 1 with x ; simp +decide [ Finset.mem_image, Finset.mem_range ];
     constructor;
@@ -471,30 +466,30 @@ theorem countNF_enc (a : ℕ) : countNF (enc a) = a := by
     · rintro ⟨ b, hb, rfl ⟩ ; exact ⟨ enc_strictMono hb, nf_decode_enc _ ⟩;
   rw [ Finset.card_image_of_injective _ enc_injective ] at h_card ; aesop
 
-theorem countNF_succ (n : ℕ) : countNF (n + 1) = countNF n + (if Nfb n then 1 else 0) := by
+lemma countNF_succ (n : ℕ) : countNF (n + 1) = countNF n + (if Nfb n then 1 else 0) := by
   have h_filter : List.filter (fun k => Nfb k) (List.range (n + 1)) = List.filter (fun k => Nfb k) (List.range n) ++ if Nfb n then [n] else [] := by
     simp +decide [ List.range_succ ];
     grind;
   unfold countNF; aesop;
 
-theorem countNF_mono : Monotone countNF := by
+lemma countNF_mono : Monotone countNF := by
   refine' monotone_nat_of_le_succ _;
   simp +decide [ countNF_succ ]
 
-theorem lt_countNF_succ_enc (a : ℕ) : a < countNF (enc a + 1) := by
+lemma lt_countNF_succ_enc (a : ℕ) : a < countNF (enc a + 1) := by
   rw [ countNF_succ ];
   rw [ countNF_enc, if_pos ( Nfb_enc a ) ] ; linarith
 
-theorem exists_count (a : ℕ) : ∃ n, a < countNF (n + 1) := ⟨enc a, lt_countNF_succ_enc a⟩
+lemma exists_count (a : ℕ) : ∃ n, a < countNF (n + 1) := ⟨enc a, lt_countNF_succ_enc a⟩
 
 /-- The `a`-th NF-code, defined by an (always-terminating) search. -/
 noncomputable def nthNF (a : ℕ) : ℕ := Nat.find (exists_count a)
 
-theorem enc_eq_nthNF (a : ℕ) : enc a = nthNF a := by
+lemma enc_eq_nthNF (a : ℕ) : enc a = nthNF a := by
   refine' Eq.symm ( Nat.find_eq_iff _ |>.2 _ );
   exact ⟨ lt_countNF_succ_enc a, fun n hn => not_lt_of_ge <| by linarith [ countNF_mono <| Nat.succ_le_of_lt hn, countNF_enc a ] ⟩
 
-theorem rfind_nthNF (a : ℕ) :
+lemma rfind_nthNF (a : ℕ) :
     Nat.rfind (fun n => (Part.some (decide (a < countNF (n + 1))) : Part Bool)) =
       Part.some (nthNF a) := by
   convert Part.eq_some_iff.mpr _ using 1;
@@ -513,7 +508,7 @@ theorem computable_enc : Computable enc :=
 
 /-! ### Assembling the final result -/
 
-theorem lt_iff_Cnat (a b : ℕ) :
+lemma lt_iff_Cnat (a b : ℕ) :
     natCode a < natCode b ↔ Cnat (Nat.pair (enc a) (enc b)) = 0 := by
   rw [Cnat_pair_eq_zero];
   have h_dec : (natCode a).1.cmp (natCode b).1 = Ordering.lt ↔ natCode a < natCode b := by
@@ -525,8 +520,8 @@ theorem lt_iff_Cnat (a b : ℕ) :
     exact h_linear_order _ _;
   rw [ decodeONote_enc, decodeONote_enc, h_dec ]
 
-/-- **The F-φ target.** The order `natCode a < natCode b` on ℕ-codes is recursively enumerable
-(in fact computable). Discharges `SeamDefinability.rePred_ltPull_natCode`. -/
+/-- **Recursive enumerability (in fact computability) of the pulled-back CNF order.** The order
+`natCode a < natCode b` on ℕ-codes is `REPred`. -/
 theorem rePred_ltPull_natCode :
     REPred fun v : List.Vector ℕ 2 ↦ natCode (v.get 0) < natCode (v.get 1) := by
   apply ComputablePred.to_re
@@ -544,4 +539,4 @@ theorem rePred_ltPull_natCode :
       (computable_Cnat.comp hpair)
   exact hmain.of_eq (fun v => decide_eq_decide.mpr (lt_iff_Cnat (v.get 0) (v.get 1)).symm)
 
-end GoodsteinPA.ONoteComp
+end ONote
