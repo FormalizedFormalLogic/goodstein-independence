@@ -19,7 +19,8 @@ Footprint: `[propext, Classical.choice, Quot.sound]` (no `sorry`, no blueprint a
 
 ⚠️ Anti-vacuity: this headline is only meaningful because `goodsteinSentence` (`Encoding.lean`)
 is the faithful encoding AND the bridge `(ℕ ⊨ goodsteinSentence) ↔ Goodstein-terminates` is
-proved (`wip/Bridge.lean`, axiom-clean). Those faithfulness anchors are LOCKED.
+proved (`goodsteinSentence_faithful`, `Encoding.lean`, axiom-clean). Those faithfulness anchors
+are LOCKED.
 -/
 module
 
@@ -68,5 +69,21 @@ attribute [goodstein_blueprint 16 clean "pa_not_proves_goodstein" "0" 100 peano_
   ["Crown: PA ⊬ Goodstein assembled from the discharged Wainer bound vs the Cichon/Caicedo no-fixed-bound theorem."]
   "Crown: the PA ⊬ Goodstein summit, proved from wainer_bound_of_pa_proves_goodstein and Goodstein.cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing; footprint [propext, Classical.choice, Quot.sound]."]
   peano_not_proves_goodstein
+
+/-- PA cannot refute the Goodstein sentence either: `ℕ` satisfies `goodsteinSentence`
+(every genuine Goodstein sequence terminates) and PA is sound with respect to `ℕ`, so no
+proof of the negation exists. -/
+theorem peano_not_proves_not_goodstein : 𝗣𝗔 ⊬ ∼↑goodsteinSentence := by
+  apply unprovable_of_countermodel 𝗣𝗔 (M := ℕ);
+  simp only [Semantics.NotModels, Semantics.Not.models_not, not_not];
+  apply goodsteinSentence_faithful.mpr;
+  exact Dom.goodstein_terminates;
+
+/-- **Independence.** Goodstein's theorem is independent of Peano Arithmetic: PA proves
+neither `goodsteinSentence` nor its negation. -/
+theorem goodstein_independent : Independent 𝗣𝗔 goodsteinSentence := ⟨
+  peano_not_proves_goodstein,
+  peano_not_proves_not_goodstein
+⟩
 
 end GoodsteinPA
