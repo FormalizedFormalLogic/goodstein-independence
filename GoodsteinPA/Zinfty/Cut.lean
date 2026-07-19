@@ -56,7 +56,8 @@ and needs the §19.6 induction on the ∃-side; see `cutReduceAll` below.) -/
 
 /-- Reduce a cut on a **conjunction** `a ⋏ b` (its negation `∼a ⋎ ∼b` on the other side), with both
 conjuncts of complexity `< c`. Invert the ∧-side (`andInvL/R`) and the ∨-side (`orInv`), then cut
-`a` and `b` separately at cut-rank `≤ c`. Towsner **Thm 19.5** (∧/∨ principal reduction). -/
+`a` and `b` separately at cut-rank `≤ c`.
+- [Tow20, Theorem 19.5] -/
 lemma cutReduceConj {a b : ArithmeticFormula ℕ}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋏ b) Γ)) (hNC : Provable β c (insert (∼a ⋎ ∼b) Γ)) :
@@ -86,7 +87,8 @@ lemma cutReduceConj {a b : ArithmeticFormula ℕ}
 
 /-- Reduce a cut on a **disjunction** `a ⋎ b` (its negation `∼a ⋏ ∼b` on the other side), with both
 disjuncts of complexity `< c`. Dual to `cutReduceConj`: invert the ∨-side (`orInv`) and the ∧-side
-(`andInvL/R`), then cut `a` and `b`. Towsner **Thm 19.5**. -/
+(`andInvL/R`), then cut `a` and `b`.
+- [Tow20, Theorem 19.5] -/
 lemma cutReduceDisj {a b : ArithmeticFormula ℕ}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋎ b) Γ)) (hNC : Provable β c (insert (∼a ⋏ ∼b) Γ)) :
@@ -122,7 +124,8 @@ family available unchanged through the induction, it is a *fixed* hypothesis (ov
 `Γ`, weakened up at each use) and the running conclusion is framed over `Δ.erase (∃∼φ) ∪ Γ`. -/
 
 /-- The induction core of the ∀/∃ reduction. `fam` is the ∀-inversion family; induct on the
-∃-side derivation `d`. -/
+∃-side derivation `d`.
+- [Tow20, Theorem 19.6] -/
 lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1}
     (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ))
@@ -275,8 +278,9 @@ lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1}
     have P2 := (ih₂ hcr2 (Finset.mem_insert_of_mem hmem)).weakening (frame_in (∼ξ) (∃⁰ ∼φ) Γ₀ Γ)
     exact (Provable.cut ξ hcξ P1 P2).mono (Ordinal.max_add_add_one_add_one_le α (ordinalBound d₁) (ordinalBound d₂)) le_rfl
 
-/-- **Cut reduction, ∀/∃ principal** (Towsner Thm 19.6). A cut on `∀⁰ φ` (complexity `≤ c`) is
-eliminated by inverting the ∀-side and inducting on the ∃-side. -/
+/-- **Cut reduction, ∀/∃ principal.** A cut on `∀⁰ φ` (complexity `≤ c`) is
+eliminated by inverting the ∀-side and inducting on the ∃-side.
+- [Tow20, Theorem 19.6] -/
 lemma cutReduceAll {φ : ArithmeticSemiformula ℕ 1}
     (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (∀⁰ φ) Γ)) (hNC : Provable β c (insert (∃⁰ ∼φ) Γ)) :
@@ -301,7 +305,8 @@ derivation, bound-preserving — the *truth layer* the ω-logic atomic cut elimi
 Buchholz; the generalization of `removeFalsumAux` from `⊥` to any false literal). A literal is never
 principal in a logical rule, so it is incidental at every compound step; the only new content is at
 the leaves: an `axL` clash on `L` exposes its (TRUE) opposite polarity `∼L`, closed by `axTrue`; an
-`axTrue` leaf's true witness is `≠ L` (which is false), so it survives the erase. -/
+`axTrue` leaf's true witness is `≠ L` (which is false), so it survives the erase.
+- [Tow20, Theorem 19.2] -/
 lemma removeFalseLitAux (b₀ : Bool) (r₀ : (ℒₒᵣ).Rel k₀) (v₀)
     (hL : ¬ LitTrue (signedLit b₀ r₀ v₀))
     {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) : cutRank d ≤ (0 : ℕ∞) →
@@ -404,7 +409,8 @@ enters via `axL` or weakening. No truth layer is needed: set sequents dissolve t
 `axL` clashes exactly on the cut atom `(rel r v, nrel r v)`, then `nrel r v ∈ Γ`, so the *other*
 premise (`⊢ nrel r v, Γ`) already proves `Γ` (set idempotence). Every other case is incidental. -/
 
-/-- Induction core: cut a `rel r v` derivation (`d`) against a fixed `nrel r v` derivation (`hNC`). -/
+/-- Induction core: cut a `rel r v` derivation (`d`) against a fixed `nrel r v` derivation (`hNC`).
+- [Tow20, Theorem 19.2] -/
 lemma atomCutAux (r : (ℒₒᵣ).Rel k) (v)
     (hNC : Provable β 0 (insert (Semiformula.nrel r v) Γ))
     {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) : cutRank d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
@@ -532,7 +538,8 @@ lemma atomCutAux (r : (ℒₒᵣ).Rel k) (v)
     simp only [Derivation.cutRank] at hcr
     exact absurd ((le_max_left _ _).trans hcr) (by simp)
 
-/-- **Atomic cut elimination** (the Thm 19.2 content for the final cut-free step). -/
+/-- **Atomic cut elimination**: eliminate a cut whose cut formula is atomic, at cut rank `0`.
+- [Tow20, Theorem 19.2] -/
 lemma atomCut {k} (r : (ℒₒᵣ).Rel k) (v)
     (hC : Provable α 0 (insert (Semiformula.rel r v) Γ))
     (hNC : Provable β 0 (insert (Semiformula.nrel r v) Γ)) :
@@ -545,8 +552,8 @@ lemma atomCut {k} (r : (ℒₒᵣ).Rel k) (v)
   exact add_le_add_left ((add_le_add_iff_left β).mpr ho) 1
 
 /-- Removing `⊥` from a cut-free derivation, bound-preserving. `⊥` is never introduced by any rule
-and is never an `axL`/`verumR` witness, so it is incidental at every step (Towsner Thm 19.2 for the
-constant-`⊥` case). -/
+and is never an `axL`/`verumR` witness, so it is incidental at every step.
+- [Tow20, Theorem 19.2] -/
 lemma removeFalsumAux {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) : cutRank d ≤ (0 : ℕ∞) →
     ⊥ ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase ⊥) := by
   induction d with
@@ -623,16 +630,18 @@ lemma removeFalsumAux {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) 
     exact absurd ((le_max_left _ _).trans hcr) (by simp)
 
 
-/-- Remove a `⊥` from a cut-free sequent. -/
+/-- Remove a `⊥` from a cut-free sequent.
+- [Tow20, Theorem 19.2] -/
 lemma removeFalsum (h : Provable α 0 (insert ⊥ Γ)) : Provable α 0 Γ := by
   rcases h with ⟨d, ho, hcr⟩;
   refine (Provable.removeFalsumAux d hcr (Finset.mem_insert_self _ _)).weakening ?_ |>.mono ho le_rfl
   intro x hx; simp only [Finset.mem_erase, Finset.mem_insert] at hx; exact (hx.2).resolve_left hx.1
 
-/-- **Principal cut on a rank-`c` formula** — the heart of Thm 19.7. After both premises are
+/-- **Principal cut on a rank-`c` formula.** After both premises are
 cut-free-at-`c` (bound `ω^α`, `ω^β`), a cut on `ξ` with `complexity ξ = c` is eliminated by the
 matching reduction (∧/∨ → `cutReduceConj/Disj`; ∀/∃ → `cutReduceAll`; atomic → `atomCut`;
-`⊤`/`⊥` → `removeFalsum`), staying below `ω^(max α β+1)`. -/
+`⊤`/`⊥` → `removeFalsum`), staying below `ω^(max α β+1)`.
+- [Tow20, Theorem 19.7] -/
 lemma cutElimPrincipal {ξ : (ArithmeticFormula ℕ)}
     (hξeq : ξ.complexity = c)
     (hC : Provable (Ordinal.omega0 ^ α) c (insert ξ Γ))
@@ -687,9 +696,10 @@ lemma cutElimPrincipal {ξ : (ArithmeticFormula ℕ)}
       refine ((Provable.cutReduceAll (by exact_mod_cast hφn) hNC hC').mono ?_ le_rfl)
       rw [max_comm α β]; exact Ordinal.opow_add_opow_add_one_le β α
 
-/-- The transfinite induction underlying Thm 19.7: a derivation of cut rank `≤ c+1` becomes
+/-- The transfinite induction underlying the rank-lowering step: a derivation of cut rank `≤ c+1` becomes
 cut-free-at-`c` at bound `ω^(ordinalBound d)`. Non-principal rules are reapplied (each `ω^· + small ≤ ω^(·+1)`);
-a rank-`< c` cut is kept; a rank-`= c` cut is eliminated by `cutElimPrincipal`. -/
+a rank-`< c` cut is kept; a rank-`= c` cut is eliminated by `cutElimPrincipal`.
+- [Tow20, Theorem 19.7] -/
 lemma cutElimStepAux (d : Derivation Γ) : cutRank d ≤ (c + 1) →
   Provable (Ordinal.omega0 ^ (ordinalBound d)) c Γ := by
   induction d with
@@ -737,15 +747,17 @@ lemma cutElimStepAux (d : Derivation Γ) : cutRank d ≤ (c + 1) →
       have hξeq : ξ.complexity = c := le_antisymm hξle (not_lt.mp hkeep)
       exact Provable.cutElimPrincipal hξeq IH1 IH2
 
-/-- **One level of cut elimination** (Towsner Thm 19.7): reducing the cut rank by one raises the
-ordinal bound to `ω^α`. -/
+/-- **One level of cut elimination**: reducing the cut rank by one raises the
+ordinal bound to `ω^α`.
+- [Tow20, Theorem 19.7] -/
 theorem cutElimStep (h : Provable α (c + 1) Γ) : Provable (Ordinal.omega0 ^ α) c Γ := by
   rcases h with ⟨d, ho, hcr⟩
   exact (Provable.cutElimStepAux d hcr).mono
     (Ordinal.opow_le_opow_right Ordinal.omega0_pos ho) le_rfl
 
-/-- **Full cut elimination** (Towsner Thm 19.9): iterate `cutElimStep` `c` times, reaching a
-cut-free derivation at ordinal `ω_c^α`. -/
+/-- **Full cut elimination**: iterate `cutElimStep` `c` times, reaching a
+cut-free derivation at ordinal `ω_c^α`.
+- [Tow20, Theorem 19.9] -/
 theorem cutElim (h : Provable α c Γ) : Provable (Ordinal.omegaTower c α) 0 Γ := by
   induction c generalizing α with
   | zero => simpa [Ordinal.omegaTower] using h;

@@ -42,9 +42,10 @@ private theorem invPull {a : ArithmeticFormula ℕ} (h : a ≠ (φ ⋎ ψ)) (s :
   · tauto
   · tauto
 
-/-- **∨-inversion (Towsner §19.2 analog).** If `φ ⋎ ψ` occurs in a `Z_∞`-derivable sequent, then
+/-- **∨-inversion.** If `φ ⋎ ψ` occurs in a `Z_∞`-derivable sequent, then
 replacing it by `φ` and `ψ` is derivable at the *same* ordinal bound and cut rank. Proved by
-structural induction on the derivation. -/
+structural induction on the derivation.
+- [Tow20, §19.2] -/
 lemma orInvAux (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
@@ -153,7 +154,8 @@ lemma orInvAux (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) 
 
 namespace Provable
 
-/-- **∨-inversion at a relaxed bound** (the form used downstream). -/
+/-- **∨-inversion at a relaxed bound** (the form used downstream).
+- [Tow20, §19.2] -/
 @[grind →]
 lemma orInv (hmem : (φ ⋎ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
@@ -187,9 +189,10 @@ private theorem invPull1 (b : ArithmeticFormula ℕ) {a e : ArithmeticFormula �
   · tauto
   · tauto
 
-/-- **ω/∀-inversion (Towsner §19.4).** If `∀⁰ χ` occurs in a `Z_∞`-derivable sequent, then for
+/-- **ω/∀-inversion.** If `∀⁰ χ` occurs in a `Z_∞`-derivable sequent, then for
 every numeral `n` the instance `χ/[nm n]` is derivable at the *same* ordinal bound and cut rank.
-Proved by structural induction on the derivation (`n` fixed). -/
+Proved by structural induction on the derivation (`n` fixed).
+- [Tow20, §19.4] -/
 lemma allInvAux (n : ℕ) (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) →
     (∀⁰ χ) ∈ Γ → Provable (ordinalBound d) c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   have hb0 : (χ/[nm n]) ≠ (∀⁰ χ) := Semiformula.ne_of_ne_complexity (by simp)
@@ -296,7 +299,8 @@ lemma allInvAux (n : ℕ) (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) →
 
 namespace Provable
 
-/-- **ω-inversion at a relaxed bound** (the form used downstream). -/
+/-- **ω-inversion at a relaxed bound** (the form used downstream).
+- [Tow20, §19.4] -/
 lemma allInv (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
     (h : Provable α c Γ) : Provable α c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   rcases h with ⟨d, ho, hcr⟩
@@ -316,8 +320,9 @@ section InversionAnd
 
 variable {φ ψ : ArithmeticFormula ℕ} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
-/-- **∧-inversion (Towsner §19.3).** If `φ ⋏ ψ` occurs in a `Z_∞`-derivable sequent, then both
-`φ` and `ψ` (with the conjunction erased) are derivable at the same ordinal bound and cut rank. -/
+/-- **∧-inversion.** If `φ ⋏ ψ` occurs in a `Z_∞`-derivable sequent, then both
+`φ` and `ψ` (with the conjunction erased) are derivable at the same ordinal bound and cut rank.
+- [Tow20, §19.3] -/
 lemma andInvAux (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (Γ.erase (φ ⋏ ψ))) ∧
       Provable (ordinalBound d) c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
@@ -470,14 +475,16 @@ lemma andInvAux (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ)
 
 namespace Provable
 
-/-- **∧-inversion, left conjunct, relaxed bound.** -/
+/-- **∧-inversion, left conjunct, relaxed bound.**
+- [Tow20, §19.3] -/
 @[grind →]
 lemma andInvL (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).1.mono ho le_rfl
 
-/-- **∧-inversion, right conjunct, relaxed bound.** -/
+/-- **∧-inversion, right conjunct, relaxed bound.**
+- [Tow20, §19.3] -/
 @[grind →]
 lemma andInvR (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert ψ (Γ.erase (φ ⋏ ψ))) := by

@@ -19,7 +19,8 @@ open Derivation
 
 variable {Γ : Finset (ArithmeticFormula ℕ)}
 
-/-- A `Z_∞`-derivable sequent, existentially quantified over the ordinal bound and cut rank. -/
+/-- A `Z_∞`-derivable sequent, existentially quantified over the ordinal bound and cut rank.
+- [Tow20, §14] -/
 def ZProvable (Γ : Finset (ArithmeticFormula ℕ)) : Prop := ∃ α c, Provable α c Γ
 
 namespace ZProvable
@@ -42,7 +43,8 @@ containing both `φ` and `∼φ` is `Z_∞`-derivable cut-free. Proved by induct
 bound (the standard Tait `em`, cf. Foundation `Derivation.em`, `Calculus.lean:164`). The atomic /
 propositional cases are discharged here; the **∀/∃ cases** use the numeral ω-family (`allω` over
 all `nm n`, each premise closed by `exI` + the inductive hypothesis at the substitution instance `φ/[nm n]`,
-whose `complexity` equals `φ`'s). -/
+whose `complexity` equals `φ`'s).
+- [Tow20, §14] -/
 theorem provable_em (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     ∃ a, Provable a 0 Γ := by
   have key : ∀ (k : ℕ) (φ : (ArithmeticFormula ℕ)), φ.complexity ≤ k →
@@ -142,7 +144,8 @@ lemma valm_nm (m : ℕ) (f : ℕ → ℕ) : GoodsteinPA.Compat.gValm ℕ ![] f (
 
 /-- **ω-completeness for true closed formulas.** Any closed (`ArithmeticFormula ℕ`) formula that is
 TRUE in the standard model `ℕ` (`LitTrue`) is `Z∞`-derivable, cut-free. Proof by induction on
-`complexity`: atomic via `axTrue`, `∀` via the ω-rule `allω`, `∃` by choosing a true witness. -/
+`complexity`: atomic via `axTrue`, `∀` via the ω-rule `allω`, `∃` by choosing a true witness.
+- [Tow20, §14] -/
 theorem provable_true : ∀ (k : ℕ) (φ : ArithmeticFormula ℕ), φ.complexity ≤ k → LitTrue φ →
     ∀ {Γ : Finset (ArithmeticFormula ℕ)}, φ ∈ Γ → ∃ a, Provable a 0 Γ := by
   intro k
