@@ -4,8 +4,9 @@
 Local, self-contained copy of the audited Goodstein definition (verbatim from
 `lean-formalizations` `Logic/Goodstein/Defs.lean`, whose `goodstein_terminates` is
 kernel-clean: `#print axioms → [propext, Classical.choice, Quot.sound]`). Owned here
-so the independence repo's trust surface is local and complete — `Bridge.lean` ties the
-syntactic `goodsteinSentence` to *this* def. Drift-guarded by `native_decide` anchors
+so the independence repo's trust surface is local and complete — `goodsteinSentence_faithful`
+(`Encoding.lean`) ties the syntactic `goodsteinSentence` to *this* def. Drift-guarded by
+`native_decide` anchors
 (`Anchors.lean`). The verified termination *theorem* + `Engine` from `lean-formalizations`
 are reused later (Phases 3–4), where the dependency earns its keep.
 

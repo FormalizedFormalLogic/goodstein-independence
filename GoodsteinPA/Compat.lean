@@ -19,7 +19,7 @@ summit still reports exactly `[propext, Classical.choice, Quot.sound]`, which *m
 the shim is faithful.
 
 The one thing we deliberately keep hanging off upstream **directly** is the statement itself
-(`𝗣𝗔 ⊬ ↑goodsteinSentence` and its `⊨`-bridge, in `Statement.lean` / `Encoding.lean` / `Bridge.lean`):
+(`𝗣𝗔 ⊬ ↑goodsteinSentence` and its `⊨`-bridge, in `Statement.lean` / `Encoding.lean`):
 that is the designated audit surface and must be Foundation's.
 
 When upstream churns again, edit THIS file, not the call sites.

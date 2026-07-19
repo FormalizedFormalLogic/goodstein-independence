@@ -22,7 +22,7 @@ hereditary-base process of `Defs.lean`), the faithful sentence is just its unive
   `γ := ∀⁰ (codeOfREPred goodsteinTerminates)`.
 
 `codeOfREPred_spec` *is* the encoding-correctness half (E) of the faithfulness bridge
-(`Bridge.lean`); the universal-closure eval lemma is the mechanical half (S).
+(`goodsteinSentence_faithful`, below); the universal-closure eval lemma is the mechanical half (S).
 
 ## The one residual obligation
 `codeOfREPred` needs `goodsteinTerminates` to be **r.e.** (`REPred`). That predicate is
@@ -36,7 +36,7 @@ faithfulness risk: a computability proof either typechecks or it doesn't.
 A `codeOfREPred`-built `γ` is faithful and citable (the Phase 0 deliverable), but it is an
 *opaque* representability blob. The later reduction `γ ⟹ Con(𝗣𝗔)` (Phase 2–4) may want a more
 transparent, hand-built Π₂ form; if so, that refactor is gated by *matching this bridge's spec*
-(`Bridge.lean`), so faithfulness can never silently regress.
+(`goodsteinSentence_faithful`, below), so faithfulness can never silently regress.
 -/
 module
 
@@ -81,11 +81,26 @@ Goodstein sequence terminates", built from the repo's **own** `𝚺₁`-definabl
 
 This **replaces** the earlier opaque `∀⁰ (codeOfREPred goodsteinTerminates)` form (Foundation's
 `Classical.epsilon`-over-Kleene-normal-form r.e. blob). The refactor is **sanctioned** by the Phase-2+
-caveat above and gated only on `Bridge.goodsteinSentence_faithful` keeping the **identical** RHS
+caveat above and gated only on `goodsteinSentence_faithful` (below) keeping the **identical** RHS
 `∀ m, ∃ N, goodsteinSeq m N = 0` (which it does, via `igoodstein_nat`) — so faithfulness cannot regress.
 The win: inside any model `M ⊧ 𝗜𝚺₁`, `γ` is the *transparent* run, so the descent contradiction
 (`DescentSemantic`) needs no opaque-code↔run bridge (the old "wall B"). -/
 noncomputable def goodsteinSentence : Sentence ℒₒᵣ :=
   “∀ m, ∃ N, !igoodsteinDef 0 m N”
+
+/-- **Faithfulness bridge.** The standard model `ℕ` satisfies the encoded sentence
+`goodsteinSentence` iff every Goodstein sequence — the genuine hereditary-base process of
+`ToMathlib.Goodstein.Defs` — reaches `0`. -/
+theorem goodsteinSentence_faithful :
+    (ℕ ⊧ₘ goodsteinSentence) ↔ ∀ m, ∃ N, goodsteinSeq m N = 0 := by
+  unfold goodsteinSentence
+  rw [models_iff]
+  simp only [Nat.reduceAdd, Nat.succ_eq_add_one, Fin.isValue, Semiformula.eval_all,
+    Semiformula.eval_ex, Semiformula.eval_substs, InternalPow.igoodstein_defined.iff,
+    Matrix.cons_val_zero, Semiterm.val_operator₀, Structure.numeral_eq_numeral,
+    ORingStructure.zero_eq_zero, Fin.succ_zero_eq_one, Matrix.cons_val_one, Semiterm.val_bvar,
+    Fin.Fin1.eq_one, Matrix.cons_val_fin_one, Fin.succ_one_eq_two, Matrix.cons_app_two,
+    Function.comp_def]
+  simp only [InternalPow.igoodstein_nat, eq_comm]
 
 end GoodsteinPA
