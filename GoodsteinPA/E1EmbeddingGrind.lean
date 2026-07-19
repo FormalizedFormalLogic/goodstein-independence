@@ -1,12 +1,10 @@
 module
 
-public import GoodsteinPA.OperatorZef2
 public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Embedding
-public import GoodsteinPA.Internal
 public import GoodsteinPA.ReadoffValueGate
-public import GoodsteinPA.Compat
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -4806,5 +4804,3 @@ theorem wainer_bound_witness
   exact le_trans hglen (hN m hm α' hα'NF hle n hNcert' hfinal)
 
 end GoodsteinPA.E1EmbeddingGrind
-
-

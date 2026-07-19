@@ -5,8 +5,6 @@
 -/
 module
 
-public import Mathlib.SetTheory.Ordinal.Notation
-public import Mathlib.Order.Iterate
 public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
 
 @[expose] public section

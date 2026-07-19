@@ -3,12 +3,6 @@
 -/
 module
 
-public import Mathlib.Algebra.Order.SuccPred
-public import Mathlib.SetTheory.Ordinal.Exponential
-public import Mathlib.SetTheory.Ordinal.Notation
-public import Mathlib.Tactic.Ring
-public import GoodsteinPA.ToMathlib.Goodstein.Defs
-public import GoodsteinPA.ToMathlib.Hardy
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Sequence
 
 @[expose] public section

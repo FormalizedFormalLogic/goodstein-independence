@@ -44,8 +44,8 @@ module
 
 public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.BlueprintAttr
-public import GoodsteinPA.Compat
 public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 

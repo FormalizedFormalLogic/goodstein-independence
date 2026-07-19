@@ -78,60 +78,49 @@ jobs:
           print(f'cleared warning cache in {cleared} Foundation trace(s)')
           PY
 
-  # ── Job 2: build GoodsteinPA — the one we care about, on its own with clean output ─────────────
-  # Restores the hydrated+cleansed dependency layer from Job 1, then compiles ONLY our own modules
-  # (Foundation replays silent, mathlib replays silent), so this job's log is just OUR build output
-  # plus the two trust gates. This is the job to read.
+  # Build GoodsteinPA against the cleansed dependency layer from `deps`, run the shake gate on the
+  # freshly built oleans, and generate the import graph — all sharing the one build.
   build:
+    name: Build
     needs: deps
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4
-      # elan + `lake exe cache get` (materializes deps + downloads mathlib oleans); no lake build yet.
       - uses: leanprover/lean-action@v1
         with:
           build: false
           use-github-cache: false
-      # Restore Foundation built+cleansed by Job 1 (must exist — `needs: deps` guarantees it ran).
+      # Restore the Foundation build cleansed by `deps` (guaranteed present via `needs: deps`).
       - name: Restore Foundation build (warnings cleared)
         uses: actions/cache/restore@v4
         with:
           path: .lake/packages/Foundation/.lake/build
           key: foundation-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
           fail-on-cache-miss: true
-      # `lake build` = defaultTargets (GoodsteinPA + GoodsteinPABlueprint). Deps are up-to-date and
-      # silent, so the only diagnostics printed are ours.
       - name: Build GoodsteinPA
         run: lake build
 
-      # ── Axiom-clean gate (guarded #print axioms — the point of truth) ──────────────────────────
-      # `scripts/AxiomCheck.lean` pins each headline theorem's EXACT axiom set with `#guard_msgs`:
-      # the 3 canonical axioms `[propext, Classical.choice, Quot.sound]` and nothing else (no
-      # `sorryAx`, no blueprint axiom, no `native_decide`/`ofReduceBool`). Any drift — a new axiom, a
-      # `sorry`, or a renamed/removed theorem — makes the file fail to elaborate; a clean run is
-      # SILENT (exit 0). This supersedes the old bash-allowlist gate: the check is now in-language,
-      # covers the full clean headline set (crown + consistency + ℕ-truth + faithfulness anchor), and
-      # has no count to bump. The banked route-A summit (`peano_not_proves_goodstein_routeA`) rests on
-      # the declared `goodstein_implies_consistency` girder and is intentionally NOT clean-gated here —
-      # that ledger is the blueprint gate below. See DIRECTION.md "ANTI-FRAUD guard".
-      # Host-local equivalent: `lake env lean scripts/AxiomCheck.lean` (silent + exit 0 == clean).
+      # Axiom-clean gate: `#guard_msgs`-pinned axiom sets for the headline theorems (silent == clean).
       # - name: Axiom-clean gate (guarded #print axioms)
       #   run: lake env lean scripts/AxiomCheck.lean
 
-      # ── Blueprint status gate (machine-verified, ANTI-DRIFT) ───────────────────────────────────
-      # Reconcile every `@[goodstein_blueprint]` node's category CLAIM against its stage theorem's
-      # real `collectAxioms` footprint. Fails if a claim is overstated (e.g. claimed `clean`/`trusted`
-      # but really `debt`), if a `sorryAx` leaks, or if a stage theorem is missing. A node whose
-      # reality is BETTER than its claim warns (upgrade the claim) but does not fail. The allowlist
-      # is `blueprint/trusted-axioms.txt` (empty for g-i: Path B capstones are open `debt`). This is
-      # the human-facing blueprint companion to the headline axiom-clean gate above.
+      # Blueprint status gate: reconcile each `@[goodstein_blueprint]` claim against its real footprint.
       # - name: Blueprint status gate (collectAxioms vs claim)
       #   run: |
       #     set -euo pipefail
       #     lake build GoodsteinPABlueprint blueprint_audit
-      #     lake exe blueprint_audit blueprint/trusted-axioms.txt　
+      #     lake exe blueprint_audit blueprint/trusted-axioms.txt
 
       - uses: extractions/setup-just@v3
+
+      # shake reads the just-built oleans to find unused imports, so it must run after `lake build`.
+      - name: Check shake applied (no unused imports)
+        run: |
+          just shake
+          if [ -n "$(git diff)" ]; then
+            echo "Unused imports found. Please run 'just shake' and commit the changes."
+            exit 1
+          fi
 
       - uses: ts-graphviz/setup-graphviz@v2
       - name: Generate import graph
@@ -166,12 +155,33 @@ jobs:
             exit 1
           fi
 
+  # mk_all only scans the source tree (no build), so it runs as its own lightweight job.
+  mk-all-check:
+    name: Check mk_all executed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: extractions/setup-just@v3
+      - uses: leanprover/lean-action@v1
+        with:
+          build: false
+          use-github-cache: false
+      - name: Check mk_all executed
+        run: |
+          just mk-all
+          if [ -n "$(git diff)" ]; then
+            echo "Files were modified by mk_all. Please run 'just mk-all' and commit the changes."
+            exit 1
+          fi
+
   deploy:
     name: Generate page
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     needs:
       - build
+      - check-references
+      - mk-all-check
     permissions:
       pages: write
       id-token: write

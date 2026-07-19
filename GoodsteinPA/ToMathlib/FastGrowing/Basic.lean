@@ -6,7 +6,6 @@
 module
 
 public import Mathlib.SetTheory.Ordinal.Notation
-public import Mathlib.Order.Iterate
 
 @[expose] public section
 

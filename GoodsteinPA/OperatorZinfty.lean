@@ -26,9 +26,6 @@ module
 
 public import Foundation.FirstOrder.Incompleteness.Second
 public import Foundation.FirstOrder.Arithmetic.R0.Representation
-public import Foundation.FirstOrder.Arithmetic.Basic.Model
-public import Mathlib.SetTheory.Ordinal.Notation
-public import Mathlib.Order.Lattice.Nat
 public import GoodsteinPA.ToMathlib.Hardy
 public import GoodsteinPA.Compat
 

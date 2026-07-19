@@ -1,8 +1,7 @@
 module
 
 public import GoodsteinPA.OperatorZeh
-public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
-public import GoodsteinPA.Compat
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 

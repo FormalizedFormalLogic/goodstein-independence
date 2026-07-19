@@ -42,7 +42,6 @@ module
 
 public import Foundation.FirstOrder.Incompleteness.Second
 public import Foundation.FirstOrder.Arithmetic.R0.Representation
-public import GoodsteinPA.ToMathlib.Goodstein.Defs
 public import GoodsteinPA.ToMathlib.Goodstein.Computability
 public import GoodsteinPA.Internal
 

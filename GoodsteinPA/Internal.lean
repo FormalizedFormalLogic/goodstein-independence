@@ -12,10 +12,7 @@ file is one section below.
 -/
 module
 
-public import Foundation.FirstOrder.Arithmetic.HFS
-public import Mathlib.Data.Nat.Log
 public import GoodsteinPA.Compat
-public import GoodsteinPA.ToMathlib.Goodstein.Defs
 public import GoodsteinPA.ToMathlib.Goodstein.Domination
 
 @[expose] public section

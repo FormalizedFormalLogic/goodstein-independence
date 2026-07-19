@@ -5,8 +5,6 @@ Two-sided comparison of `hardy` at `ω`-powers against `fastGrowing`, up to the 
 -/
 module
 
-public import Mathlib.SetTheory.Ordinal.Notation
-public import Mathlib.Order.Iterate
 public import GoodsteinPA.ToMathlib.Hardy.Structure
 
 @[expose] public section
