@@ -938,6 +938,98 @@ theorem ewIterTower_collapse (f : ℕ → ℕ) (α : ONote) :
          = ewIter (ewIterTower f (d + 1) α) (collapse (collapseIter d α))
       rw [ewIterTower_collapse f α d, collapseIter_collapse α d]
 
+/-- The `d`-fold slot tower inherits inflationarity from its base slot (each pass is `ewIter`,
+inflationary by `ewIter_infl`). -/
+theorem ewIterTower_infl {f : ℕ → ℕ} (hinfl : ∀ m, m ≤ f m) (α : ONote) :
+    ∀ (d : ℕ) (m : ℕ), m ≤ ewIterTower f d α m
+  | 0, m => hinfl m
+  | (d + 1), m => ewIter_infl (ewIterTower_infl hinfl α d) (collapseIter d α) m
+
+/-- The tower slot `ewIterTower f d α` preserves monotonicity. -/
+theorem ewIterTower_monotone {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (α : ONote) : ∀ d, Monotone (ewIterTower f d α)
+  | 0 => hmono
+  | (d + 1) => ewIter_monotone (ewIterTower_monotone hmono hinfl α d)
+      (ewIterTower_infl hinfl α d) _
+
+/-- A pointwise-dominated slot yields a pointwise-dominated `ewIter`: if `f x ≤ g x` for all `x`
+(with `g` monotone and inflationary), then `ewIter f α m ≤ ewIter g α m`. -/
+theorem ewIter_mono_slot {f g : ℕ → ℕ} (hfg : ∀ x, f x ≤ g x)
+    (hg_mono : Monotone g) (hg_infl : ∀ m, m ≤ g m) :
+    ∀ (α : ONote) (m : ℕ), ewIter f α m ≤ ewIter g α m := by
+  intro α m
+  by_cases hα : α = 0
+  · subst hα
+    simpa [ewIter_zero] using hfg m
+  · conv_lhs => rw [ewIter_unfold f α m]
+    rw [ewStep]
+    simp only [dif_neg hα]
+    apply Finset.max'_le
+    intro y hy
+    rcases Finset.mem_image.mp hy with ⟨δ, hδmem, rfl⟩
+    have hδlt : (δ : ONote) < α := (Finset.mem_filter.mp δ.2).2.1
+    have hδNF : (δ : ONote).NF := (mem_NlogBall.mp (Finset.mem_filter.mp δ.2).1).1
+    have hδgate : Nlog (δ : ONote) ≤ f (Nlog α + m) := (Finset.mem_filter.mp δ.2).2.2
+    have hδgate' : Nlog (δ : ONote) ≤ g (Nlog α + m) := le_trans hδgate (hfg _)
+    have ih1 : ewIter f (δ : ONote) m ≤ ewIter g (δ : ONote) m :=
+      ewIter_mono_slot hfg hg_mono hg_infl δ m
+    have ih2 : ewIter f (δ : ONote) (ewIter f (δ : ONote) m)
+        ≤ ewIter g (δ : ONote) (ewIter g (δ : ONote) m) :=
+      le_trans (ewIter_mono_slot hfg hg_mono hg_infl δ _)
+        (ewIter_monotone hg_mono hg_infl (δ : ONote) ih1)
+    exact le_trans ih2 (ewIter_lower hδNF hδlt hδgate')
+termination_by α _ => α
+decreasing_by
+  all_goals exact hδlt
+
+/-- The slot-stage pre-max `K` commutes out of the whole `d`-fold tower into the argument: one
+fixed tower dominates all stages. -/
+theorem ewIterTower_rel1_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (K : ℕ) (α : ONote) : ∀ (d : ℕ) (x : ℕ),
+    ewIterTower (rel1 f K) d α x ≤ ewIterTower f d α (max K x)
+  | 0, x => le_of_eq (by simp [ewIterTower, rel1])
+  | (d + 1), x => by
+      have hTmono : Monotone (ewIterTower f d α) := ewIterTower_monotone hmono hinfl α d
+      have hTinfl : ∀ m, m ≤ ewIterTower f d α m := ewIterTower_infl hinfl α d
+      have hpt : ∀ x', ewIterTower (rel1 f K) d α x' ≤ rel1 (ewIterTower f d α) K x' :=
+        fun x' => ewIterTower_rel1_le hmono hinfl K α d x'
+      calc ewIter (ewIterTower (rel1 f K) d α) (collapseIter d α) x
+          ≤ ewIter (rel1 (ewIterTower f d α) K) (collapseIter d α) x :=
+            ewIter_mono_slot hpt (rel1_monotone hTmono K) (rel1_infl hTinfl K)
+              (collapseIter d α) x
+        _ ≤ ewIter (ewIterTower f d α) (collapseIter d α) (max K x) :=
+            ewIter_rel1_le hTmono hTinfl (collapseIter d α) K x
+
+/-- One-step absorption at a nonzero ordinal: `S (S x) ≤ ewIter S β x` for `β ≠ 0`. -/
+theorem SS_le_ewIter' {S : ℕ → ℕ} {β : ONote} (hβ : β ≠ 0) (x : ℕ) :
+    S (S x) ≤ ewIter S β x := by
+  have h0β : (0 : ONote) < β := by
+    cases β with
+    | zero => exact (hβ rfl).elim
+    | oadd e n a => exact oadd_pos e n a
+  have h := ewIter_lower (f := S) (β := 0) (α := β) (m := x) NF.zero h0β (Nat.zero_le _)
+  simpa [ewIter_zero] using h
+
+/-- **Descent inequality**: a premise at `β < α` with any bumped budget `V' ≤ S V` has its
+master bound absorbed by the node's `ewIter S α (S V)`. -/
+theorem T3_descent' {S : ℕ → ℕ} (hS_mono : Monotone S) (hS_infl : ∀ m, m ≤ S m)
+    {β α : ONote} (hβNF : β.NF) (hβα : β < α)
+    {V V' : ℕ} (hV' : V' ≤ S V)
+    (hgate : Nlog β ≤ S (S V)) :
+    ewIter S β (S V') ≤ ewIter S α (S V) := by
+  have ha : ewIter S β (S V') ≤ ewIter S β (S (S V)) :=
+    ewIter_monotone hS_mono hS_infl β (hS_mono hV')
+  have hb : S (S V) ≤ ewIter S β (S V) := by
+    by_cases hβ0 : β = 0
+    · subst hβ0
+      simp [ewIter_zero]
+    · exact le_trans (hS_infl (S (S V))) (SS_le_ewIter' hβ0 (S V))
+  have hc : ewIter S β (S (S V)) ≤ ewIter S β (ewIter S β (S V)) :=
+    ewIter_monotone hS_mono hS_infl β hb
+  have hd : ewIter S β (ewIter S β (S V)) ≤ ewIter S α (S V) :=
+    ewIter_lower hβNF hβα (le_trans hgate (hS_mono (by omega)))
+  exact le_trans ha (le_trans hc hd)
+
 /-! ## Ordinal-ladder toolkit (`ofNat` rungs) -/
 
 theorem ofNat_lt_ofNat {a b : ℕ} (h : a < b) : ONote.ofNat a < ONote.ofNat b := by
