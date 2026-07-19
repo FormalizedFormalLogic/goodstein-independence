@@ -6,7 +6,7 @@ The definition layer of the infinitary ω-rule calculus `Z_∞` over Foundation'
 `signedLit`/`LitTrue`, the calculus `Derivation`, and the derivation measures
 `ordinalBound` / `cutRank` together with the bounded-provability predicate `Provable`. Sequents
 are finite sets of closed formulas (`Finset (ArithmeticFormula ℕ)`). The cut-elimination lemmas
-built on top of these live in `GoodsteinPA.Zinfty`.
+built on top of these live in `GoodsteinPA.Zinfty.Cut`.
 
 - [Tow20, §13, §15, §18]
 -/

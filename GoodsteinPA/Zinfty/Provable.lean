@@ -1,26 +1,9 @@
 /-
-# `Z_∞` calculus — provability predicate API
+# `Z_∞` provability — the inference-rule API
 
-The provability layer over the core definitions in `GoodsteinPA.Zinfty.Basic`: the predicate
-`Provable α c Γ` (recording an ordinal bound `α` and cut rank `c` for a `Z_∞`-derivable sequent
-`Γ`) and its structural inference API — `mono`/`weakening`/`contr` (contraction free, via set
-sequents) and the predicate-level introduction rules matching each `Derivation` constructor
-(`axL`, `axTrue`, `verumR`, `andI`, `orI`, `exI`, `allω`, `cut`).
-
-Sequents are finite sets of closed formulas (`Finset (ArithmeticFormula ℕ)`), matching Towsner's
-finite-set `Γ`. Consequently contraction is free (`insert φ (insert φ Γ) = insert φ Γ`
-definitionally), so the calculus needs no `contr` rule — which is what keeps the inversion lemmas
-tractable, since an explicit height-preserving `contr` rule would force the principal-contraction
-case to re-invert a remaining copy of the principal formula, breaking both structural and
-ordinal-strong induction. The finitary eigenvariable `all` rule is replaced by the ω-rule `allω`
-(one premise per numeral `n`, `Ordinal` height), and `ordinalBound` / `cutRank` are computed
-measures by structural recursion on the infinitely-branching tree.
-
-Inversion lemmas (`orInv`, `andInvL/R`, `allInv`) live in `GoodsteinPA.Zinfty.Inversion`; the
-Gentzen-style cut-elimination built on top of them (`cutReduceConj/Disj`, `cutReduceAll`,
-`atomCut`, `removeFalsum`, `cutElimStep`, `cutElim`) lives in `GoodsteinPA.Zinfty.Cut`.
-
-- [Tow20, §16, §17, §18, §19]
+Predicate-level inference rules for the bounded provability judgement `Provable` (`Z_∞ ⊢`):
+weakening/monotonicity of the bounds, the axiom leaves, and the introduction rules for
+`∧`/`∨`/`∃`/`∀` (ω-rule), contraction, and cut.
 -/
 module
 

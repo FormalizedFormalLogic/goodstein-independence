@@ -8,7 +8,7 @@ or the cut rank.
 -/
 module
 
-public import GoodsteinPA.Zinfty
+public import GoodsteinPA.Zinfty.Provable
 
 @[expose] public section
 
