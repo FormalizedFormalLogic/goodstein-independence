@@ -5,12 +5,7 @@ public import GoodsteinPA.Compat
 public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.Embedding
 public import GoodsteinPA.Encoding
-public import GoodsteinPA.InternalBridge
-public import GoodsteinPA.InternalBump
-public import GoodsteinPA.InternalDigits
-public import GoodsteinPA.InternalGoodstein
-public import GoodsteinPA.InternalLog
-public import GoodsteinPA.InternalPow
+public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2
 public import GoodsteinPA.OperatorZeh
 public import GoodsteinPA.OperatorZinfty
@@ -21,6 +16,7 @@ public import GoodsteinPA.ToMathlib.FastGrowing.Basic
 public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
 public import GoodsteinPA.ToMathlib.FastGrowing.EwIter
 public import GoodsteinPA.ToMathlib.FastGrowing.Norm
+public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.ToMathlib.Goodstein.Computability
 public import GoodsteinPA.ToMathlib.Goodstein.Defs
 public import GoodsteinPA.ToMathlib.Goodstein.Domination
@@ -36,5 +32,4 @@ public import GoodsteinPA.ToMathlib.Hardy.Basic
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 public import GoodsteinPA.ToMathlib.Hardy.Structure
 public import GoodsteinPA.WainerBound
-public import GoodsteinPA.WainerRoute
 public import GoodsteinPA.Zinfty

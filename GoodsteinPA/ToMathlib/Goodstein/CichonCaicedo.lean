@@ -1,38 +1,26 @@
 /-
-# Wainer/Cichon/Caicedo growth-rate route
+# Cichon/Caicedo: no fixed fast-growing level bounds the Goodstein length
 
-This module is the new route spine after the 2026-07-01 route decision.  The old
-active route tried to derive `Con(PA)` from Goodstein inside PA and then use Godel II.
-That forced an IΣ₁-internalized cut-elimination bridge.  The lap-171 M2 probe found
-the decisive obstruction: the PA-induction leaf wants a free-variable forall-left /
-implication-left step that the finitary internal-Z calculus does not have.
+The Goodstein length function eventually *strictly* dominates every fixed
+fast-growing level `f_o`, `o < epsilon_0`.  Consequently no fixed `f_o` can
+eventually bound `Goodstein.Dom.goodsteinLength` from above — the exact
+no-fixed-bound form consumed by Wainer-style provably-total-function arguments
+(if PA proved Goodstein's theorem, its length function would be PA-provably
+total, hence eventually bounded by some fixed `f_o`; this module refutes any
+such bound).
 
-The growth route instead proves non-provability from rates of growth:
-
-  PA proves Goodstein
-    -> the Goodstein length function is PA-provably total
-    -> Wainer: every PA-provably-total recursive function is eventually bounded by
-       some fast-growing `f_o`, `o < epsilon_0`
-    -> Cichon/Caicedo: Goodstein length is not eventually bounded by any fixed
-       `f_o`, `o < epsilon_0`
-    -> contradiction.
-
-The existing repo already proves the main concrete growth asset:
-`Goodstein.Dom.goodsteinLength_dominates_fastGrowing`.  This module now upgrades
-that asset to the exact no-fixed-bound theorem needed by the route.  The remaining
-named axiom is the Wainer PA-provably-total classification bridge.
+Builds on `Goodstein.Dom.goodsteinLength_dominates_fastGrowing` (the Cichon/
+Caicedo lower bound with additive slack `2`) and a successor-gap lemma
+`f_o(m) + 2 < f_{o+1}(m)` absorbing the slack.
 -/
 module
 
-public import GoodsteinPA.Reduction  -- (SERIES-5 Lane B) was: import GoodsteinPA.Statement, dropped to break the WainerRoute->Statement cycle
 public import GoodsteinPA.ToMathlib.Goodstein.Domination
-public import GoodsteinPA.BlueprintAttr
 
 @[expose] public section
 
-namespace GoodsteinPA.WainerRoute
+namespace Goodstein
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.Entailment
 open ONote
 
 /-- Eventual pointwise domination.  `EventuallyLE f g` means that, from some threshold
@@ -113,10 +101,6 @@ theorem goodsteinLength_eventually_strictly_dominates_fixed_fastGrowing (o : ONo
   have hgap := fastGrowing_fixed_add_two_lt_successor ho hm4
   omega
 
-/- `wainer_bound_of_pa_proves_goodstein` (formerly the sole route-B axiom) is now a THEOREM,
-discharged in `GoodsteinPA.WainerBound` — downstream of the embedding chain, which imports THIS
-module, so it lives there to break the import cycle. SERIES-4 judge pass, 2026-07-03. -/
-
 /-- **Cichon/Caicedo exact no-fixed-bound theorem.**
 
 This is now proved from existing machine-checked growth assets plus the successor-gap
@@ -136,8 +120,4 @@ theorem cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing :
     hM n (le_max_right _ _)
   omega
 
-/- `peano_not_proves_goodstein_growth` and blueprint nodes 14 (`wainer_axiom`) / 15
-(`routeB_headline`) moved to `GoodsteinPA.WainerBound` with the axiom's discharge (they consume the
-now-proven bound; they cannot live here because `WainerBound` imports this module). -/
-
-end GoodsteinPA.WainerRoute
+end Goodstein

@@ -5,7 +5,7 @@ Authors: Trevor Morris
 -/
 module
 
-public import GoodsteinPA.WainerRoute
+public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
@@ -35,6 +35,7 @@ byte-identical to the former axiom's type (the designated audit surface).
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.Entailment
 open ONote
+open Goodstein
 
 namespace GoodsteinPA.WainerRoute
 

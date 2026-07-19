@@ -1,4 +1,335 @@
 /-
+# The IΣ₁-internal Goodstein apparatus
+
+Arithmetization of the Goodstein machinery inside models of `𝗜𝚺₁`: internal
+exponentiation/digits/log (`ipow`/`idigits`/`ilog`), the internal base-bump
+(`ibump`), the internal Goodstein step/sequence (`igoodstein`), and the bridge
+tying the internal sequence to the external `Goodstein.goodsteinSeq`.
+
+Formerly the file chain `InternalPow → InternalDigits → InternalLog →
+InternalBump → InternalGoodstein → InternalBridge`, consolidated; each former
+file is one section below.
+-/
+module
+
+public import Foundation.FirstOrder.Arithmetic.HFS
+public import Mathlib.Data.Nat.Log
+public import GoodsteinPA.Compat
+public import GoodsteinPA.ToMathlib.Goodstein.Defs
+public import GoodsteinPA.ToMathlib.Goodstein.Domination
+
+@[expose] public section
+
+namespace GoodsteinPA.InternalPow
+
+/-! ## InternalPow -/
+/-
+# `InternalPow.lean` — E-core(b) brick 1: internalized base-`b` power as a `𝚺₁`-function in `V`
+
+The deep wall of the descent **E** is **E-core(b)** (`DESCENT-PLAN.md §3`): re-expressing Rathjen §3
+*inside* PA. Its kernel — inequality (6) — is arithmetized over **base-`b` numerals** (the digit /
+hereditary-base-change view), so the very first prerequisite is a `𝚺₁`-definable variable-base power
+`b ^ x` inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁`.
+
+Foundation's `Exponential`/`exp`/`bexp` machinery is **base-2 only** (`Arithmetic/Exponential/`); there
+is no general variable-base power. We build one here from the generic primitive-recursion engine
+`PR.Blueprint`/`PR.Construction` (`HFS/PRF.lean`), exactly the way `repeatVec` (`HFS/Vec.lean`) is built:
+
+* `ipow b 0     = 1`
+* `ipow b (x+1) = ipow b x * b`
+
+and the engine certifies `ipow` is a genuine **`𝚺₁`-function** of `(b, x)` — the form the inequality-(6)
+internal induction (`DescentArith.ineq6_internal`) consumes. This is brick 1 of the multi-lap wall;
+brick 2 will be base-`b` digit extraction, brick 3 the hereditary base-change `bump`.
+-/
+section
+
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+
+variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+
+/-- Primitive-recursion blueprint for variable-base power: one parameter (the base `x = b`),
+`zero ↦ 1`, `succ : ih ↦ ih * b`. -/
+def pow.blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y x. y = 1”
+  succ := .mkSigma “y ih n x. y = ih * x”
+
+/-- The model-side construction realizing `pow.blueprint`: `zero v = 1`, `succ v i ih = ih * b`. Both
+component functions are `𝚺₀` (hence `𝚺₁`) so the engine yields a `𝚺₁`-definable result. -/
+noncomputable def pow.construction : PR.Construction V pow.blueprint where
+  zero := fun _ ↦ 1
+  succ := fun x _ ih ↦ ih * x 0
+  zero_defined := .mk fun v ↦ by simp [pow.blueprint]
+  succ_defined := .mk fun v ↦ by simp [pow.blueprint]
+
+/-- **Internalized variable-base power** `b ^ x` inside `V`, via primitive recursion on `x`. -/
+noncomputable def ipow (b x : V) : V := pow.construction.result ![b] x
+
+@[simp] lemma ipow_zero (b : V) : ipow b 0 = 1 := by simp [ipow, pow.construction]
+
+@[simp] lemma ipow_succ (b x : V) : ipow b (x + 1) = ipow b x * b := by simp [ipow, pow.construction]
+
+section
+
+/-- `𝚺₁`-definition of `ipow`, with the argument order `(output, b, x)`. -/
+def _root_.LO.FirstOrder.Arithmetic.ipowDef : 𝚺₁.Semisentence 3 :=
+  pow.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
+
+instance ipow_defined : 𝚺₁-Function₂ (ipow : V → V → V) via ipowDef := .mk
+  fun v ↦ by simp [pow.construction.result_defined_iff, ipowDef]; rfl
+
+instance ipow_definable : 𝚺₁-Function₂ (ipow : V → V → V) := ipow_defined.to_definable
+
+instance ipow_definable' (Γ) : Γ-[m + 1]-Function₂ (ipow : V → V → V) := ipow_definable.of_sigmaOne
+
+end
+
+/-! ### Power laws (internal induction in `𝗜𝚺₁`) -/
+
+@[simp] lemma ipow_one (b : V) : ipow b 1 = b := by
+  have : (1 : V) = 0 + 1 := by simp
+  rw [this, ipow_succ, ipow_zero, one_mul]
+
+lemma one_le_ipow {b : V} (hb : 1 ≤ b) (x : V) : 1 ≤ ipow b x := by
+  induction x using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ x ih =>
+    rw [ipow_succ]
+    calc (1 : V) = 1 * 1 := by simp
+      _ ≤ ipow b x * b := mul_le_mul' ih hb
+
+lemma ipow_pos {b : V} (hb : 0 < b) (x : V) : 0 < ipow b x := by
+  induction x using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ x ih => rw [ipow_succ]; exact mul_pos ih hb
+
+lemma ipow_add (b x y : V) : ipow b (x + y) = ipow b x * ipow b y := by
+  induction y using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ y ih =>
+    rw [show x + (y + 1) = (x + y) + 1 from (add_assoc x y 1).symm,
+      ipow_succ, ipow_succ, ih, mul_assoc]
+
+lemma ipow_le_ipow_right {b : V} (hb : 1 ≤ b) {x y : V} (h : x ≤ y) :
+    ipow b x ≤ ipow b y := by
+  obtain ⟨d, rfl⟩ := le_iff_exists_add.mp h
+  rw [ipow_add]
+  calc ipow b x = ipow b x * 1 := by simp
+    _ ≤ ipow b x * ipow b d := mul_le_mul_right (one_le_ipow hb d) _
+
+lemma ipow_lt_ipow_right {b : V} (hb : 1 < b) {x y : V} (h : x < y) :
+    ipow b x < ipow b y := by
+  have hb0 : (0 : V) < b := lt_trans (by simp) hb
+  have hb1 : (1 : V) ≤ b := le_of_lt hb
+  obtain ⟨d, rfl⟩ := le_iff_exists_add.mp (le_of_lt h)
+  have hd : 0 < d := by
+    by_contra hd0
+    have : d = 0 := by simpa using (nonpos_iff_eq_zero.mp (not_lt.mp hd0))
+    rw [this] at h; simp at h
+  rw [ipow_add]
+  calc ipow b x = ipow b x * 1 := by simp
+    _ < ipow b x * b := mul_lt_mul_of_pos_left hb (ipow_pos hb0 x)
+    _ ≤ ipow b x * ipow b d := by
+        apply _root_.mul_le_mul_right
+        calc b = ipow b 1 := (ipow_one b).symm
+          _ ≤ ipow b d := ipow_le_ipow_right hb1 (pos_iff_one_le.mp hd)
+
+/-- `ipow` is monotone in the **base**: `b ≤ c → ipow b x ≤ ipow c x`. -/
+lemma ipow_le_ipow_left {b c : V} (h : b ≤ c) (x : V) : ipow b x ≤ ipow c x := by
+  induction x using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simp
+  case succ x ih =>
+    rw [ipow_succ, ipow_succ]
+    exact mul_le_mul ih h (Arithmetic.zero_le b) (Arithmetic.zero_le (ipow c x))
+
+/-- `ipow` is **strictly** monotone in the base at a positive exponent:
+`b < c → 0 < x → ipow b x < ipow c x`. -/
+lemma ipow_lt_ipow_left {b c : V} (hbc : b < c) {x : V} (hx : 0 < x) :
+    ipow b x < ipow c x := by
+  have hc0 : 0 < c := lt_of_le_of_lt (Arithmetic.zero_le b) hbc
+  obtain ⟨m, rfl⟩ : ∃ m, x = m + 1 :=
+    ⟨x - 1, (sub_add_self_of_le (pos_iff_one_le.mp hx)).symm⟩
+  rw [ipow_succ, ipow_succ]
+  exact mul_lt_mul' (ipow_le_ipow_left (le_of_lt hbc) m) hbc (Arithmetic.zero_le b) (ipow_pos hc0 m)
+
+end
+
+/-! ## InternalDigits -/
+/-
+# `InternalDigits.lean` — E-core(b) brick 2: base-`b` digits inside `V`
+
+Brick 2 of the arithmetization wall (`DESCENT-PLAN.md §3`, after `InternalPow.ipow`). The PA-side
+proof of Rathjen's inequality (6) is phrased over **base-`b` numerals**: the order comparison and the
+hereditary base-change `bump` (`S^b_{b+1}`) are operations on the base-`b` digits of a number. This
+file gives the digit accessor and its basic laws inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁`:
+
+* `idigit b n i = (n / b^i) % b` — the `i`-th base-`b` digit of `n`.
+
+with `idigit b n i < b` (for `0 < b`) and the `𝚺₁`-definability needed for internal induction. Brick 3
+will assemble these into the base-`b` hereditary base-change.
+-/
+section
+
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+
+variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+
+/-- **`i`-th base-`b` digit of `n`**: `(n / b^i) % b`. -/
+noncomputable def idigit (b n i : V) : V := (n / ipow b i) % b
+
+/-- Every base-`b` digit is `< b` (for a positive base). -/
+@[simp] lemma idigit_lt {b : V} (hb : 0 < b) (n i : V) : idigit b n i < b :=
+  mod_lt _ hb
+
+lemma idigit_zero_exp (b n : V) : idigit b n 0 = n % b := by simp [idigit]
+
+/-- **Digit shift.** The `(i+1)`-th base-`b` digit of `n` is the `i`-th digit of `n / b`. This is the
+recursion that lets digit facts be proved by induction on the position. -/
+lemma idigit_succ_exp (b n i : V) : idigit b n (i + 1) = idigit b (n / b) i := by
+  unfold idigit
+  rw [ipow_succ, mul_comm, LO.FirstOrder.Arithmetic.div_mul]
+
+instance idigit_definable : 𝚺₁-Function₃ (idigit : V → V → V → V) := by
+  unfold idigit; definability
+
+end
+
+/-! ## InternalLog -/
+/-
+# `InternalLog.lean` — E-core(b) brick 3: base-`b` logarithm inside `V`
+
+Brick 3 of the arithmetization wall (`DESCENT-PLAN.md §3`). Rathjen's hereditary base-change `bump`
+(`Defs.bump`) peels the **top** base-`b` power off `n`, i.e. it needs the top exponent
+`e = log_b n` (`Nat.log b n`). Foundation ships base-2 `log` only, so we build the variable-base
+`ilog b n` inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁`, characterized (for `2 ≤ b`, `0 < n`) by
+
+  `b ^ (ilog b n) ≤ n < b ^ (ilog b n + 1)`.
+
+Built by the least-number principle exactly as Foundation builds base-2 `log` (least `e` with
+`n < b^e`, predecessor is the logarithm). This is the last numeric prerequisite before the
+hereditary base-change `bump` itself (brick 4).
+-/
+section
+
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+
+variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+
+/-- `x + 1 ≤ b ^ (x+1)` for `2 ≤ b`: the base bound that makes the log search terminate. -/
+lemma succ_le_ipow_succ {b : V} (hb : 2 ≤ b) (x : V) : x + 1 ≤ ipow b (x + 1) := by
+  have hb1 : (1 : V) ≤ b := le_trans (by simp) hb
+  induction x using ISigma1.sigma1_succ_induction
+  · definability
+  case zero => simpa [ipow_one] using hb1
+  case succ x ih =>
+    rw [ipow_succ]
+    have h1 : (1 : V) ≤ ipow b (x + 1) := one_le_ipow hb1 (x + 1)
+    calc x + 1 + 1 ≤ ipow b (x + 1) + ipow b (x + 1) := add_le_add ih h1
+      _ = ipow b (x + 1) * 2 := (mul_two _).symm
+      _ ≤ ipow b (x + 1) * b := mul_le_mul_right hb _
+
+lemma lt_ipow_succ {b : V} (hb : 2 ≤ b) (x : V) : x < ipow b (x + 1) :=
+  lt_of_lt_of_le (by simp) (succ_le_ipow_succ hb x)
+
+/-- The defining graph of `ilog`, stated unconditionally (so `ilog` is total): the characterizing
+inequality `b^e ≤ n < b^(e+1)` when `2 ≤ b ∧ 0 < n`, and `e = 0` otherwise. -/
+lemma ilog_exists_unique (b n : V) :
+    ∃! e, ((2 ≤ b ∧ 0 < n) → ipow b e ≤ n ∧ n < ipow b (e + 1))
+        ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0) := by
+  by_cases hmain : 2 ≤ b ∧ 0 < n
+  · obtain ⟨hb, hpos⟩ := hmain
+    have hb1 : (1 : V) ≤ b := le_trans (by simp) hb
+    -- least `y` with `n < b^y`; the logarithm is its predecessor.
+    have hP : 𝚺₁-Predicate (fun e => n < ipow b e) := by definability
+    have hex : n < ipow b (n + 1) := lt_ipow_succ hb n
+    obtain ⟨y, hy, hmin⟩ := InductionOnHierarchy.least_number 𝚺 1 hP hex
+    have hy0 : y ≠ 0 := by
+      rintro rfl; simp only [ipow_zero] at hy
+      exact absurd (lt_one_iff_eq_zero.mp hy) (pos_iff_ne_zero.mp hpos)
+    obtain ⟨e, rfl⟩ := (zero_or_succ y).resolve_left hy0
+    have hle : ipow b e ≤ n := not_lt.mp (hmin e (by simp))
+    refine ExistsUnique.intro e ⟨fun _ => ⟨hle, hy⟩, fun h => absurd ⟨hb, hpos⟩ h⟩ ?_
+    rintro e' ⟨he', _⟩
+    obtain ⟨hle', hlt'⟩ := he' ⟨hb, hpos⟩
+    -- both satisfy `b^· ≤ n < b^(·+1)`; strict monotonicity forces equality.
+    by_contra hne
+    rcases lt_or_gt_of_ne hne with h | h
+    · have : ipow b (e' + 1) ≤ ipow b e :=
+        ipow_le_ipow_right hb1 (by simpa [lt_iff_succ_le] using h)
+      exact absurd (lt_of_lt_of_le hlt' (le_trans this hle)) (by simp)
+    · have : ipow b (e + 1) ≤ ipow b e' :=
+        ipow_le_ipow_right hb1 (by simpa [lt_iff_succ_le] using h)
+      exact absurd (lt_of_lt_of_le hy (le_trans this hle')) (by simp)
+  · refine ExistsUnique.intro 0 ⟨fun h => absurd h hmain, fun _ => rfl⟩ ?_
+    rintro e ⟨_, he⟩; exact he hmain
+
+/-- **Base-`b` logarithm** in `V`: the top exponent of `n` in base `b` (`0` for `n = 0` or `b < 2`). -/
+noncomputable def ilog (b n : V) : V := Classical.choose! (ilog_exists_unique b n)
+
+/-- **Defining inequality of `ilog`**: for `2 ≤ b` and `0 < n`, `b^(ilog b n) ≤ n < b^(ilog b n + 1)`. -/
+lemma ilog_spec {b n : V} (hb : 2 ≤ b) (hn : 0 < n) :
+    ipow b (ilog b n) ≤ n ∧ n < ipow b (ilog b n + 1) :=
+  (Classical.choose!_spec (ilog_exists_unique b n)).1 ⟨hb, hn⟩
+
+lemma ipow_ilog_le {b n : V} (hb : 2 ≤ b) (hn : 0 < n) : ipow b (ilog b n) ≤ n :=
+  (ilog_spec hb hn).1
+
+lemma lt_ipow_ilog_succ {b n : V} (hb : 2 ≤ b) (hn : 0 < n) : n < ipow b (ilog b n + 1) :=
+  (ilog_spec hb hn).2
+
+/-- `1 ≤ ilog b n` once `b ≤ n` (the leading exponent is at least 1). If `ilog b n = 0` then
+`n < ipow b 1 = b`, contradicting `b ≤ n`. -/
+lemma ilog_pos {b n : V} (hb : 2 ≤ b) (hn : b ≤ n) : 1 ≤ ilog b n := by
+  have hnpos : 0 < n := lt_of_lt_of_le (lt_of_lt_of_le (by simp) hb) hn
+  by_contra h
+  have h0 : ilog b n = 0 := nonpos_iff_eq_zero.mp (le_iff_lt_succ.mpr (by simpa using not_le.mp h))
+  have hlt := lt_ipow_ilog_succ hb hnpos
+  rw [h0, zero_add, ipow_one] at hlt
+  exact absurd hlt (not_lt.mpr hn)
+
+/-- **Monotonicity of `ilog`.** For `2 ≤ b` and `0 < n ≤ n'`, the leading exponent does not decrease:
+`ilog b n ≤ ilog b n'`. (If it did, `b^(ilog b n) ≤ n ≤ n' < b^(ilog b n' + 1) ≤ b^(ilog b n)` — a
+strict contradiction.) -/
+lemma ilog_mono {b n n' : V} (hb : 2 ≤ b) (hn : 0 < n) (hle : n ≤ n') : ilog b n ≤ ilog b n' := by
+  have hb1 : (1 : V) ≤ b := le_trans (by simp) hb
+  have hn' : 0 < n' := lt_of_lt_of_le hn hle
+  by_contra h
+  -- `ilog b n' < ilog b n`, i.e. `ilog b n' + 1 ≤ ilog b n`.
+  have hstep : ilog b n' + 1 ≤ ilog b n := lt_iff_succ_le.mp (not_le.mp h)
+  have h1 : n' < ipow b (ilog b n' + 1) := lt_ipow_ilog_succ hb hn'
+  have h2 : ipow b (ilog b n' + 1) ≤ ipow b (ilog b n) := ipow_le_ipow_right hb1 hstep
+  have h3 : ipow b (ilog b n) ≤ n := ipow_ilog_le hb hn
+  exact absurd (lt_of_lt_of_le (lt_of_lt_of_le (lt_of_le_of_lt hle h1) h2) h3) (_root_.lt_irrefl n)
+
+/-- Graph of `ilog`, for the `𝚺₁`-definability instance below. -/
+lemma ilog_graph {e b n : V} :
+    e = ilog b n ↔ ((2 ≤ b ∧ 0 < n) → ipow b e ≤ n ∧ n < ipow b (e + 1))
+        ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0) :=
+  Classical.choose!_eq_iff_right _
+
+def _root_.LO.FirstOrder.Arithmetic.ilogDef : 𝚺₁.Semisentence 3 := .mkSigma
+  “e b n. (2 ≤ b ∧ 0 < n → (∃ pe, !ipowDef pe b e ∧ pe ≤ n) ∧ (∃ pf, !ipowDef pf b (e + 1) ∧ n < pf))
+        ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0)”
+
+instance ilog_defined : 𝚺₁-Function₂ (ilog : V → V → V) via ilogDef := .mk fun v ↦ by
+  simp [ilogDef, ilog_graph, ipow_defined.iff]
+  refine fun _ => ⟨fun h hyp => h ?_, fun h hyp => h (fun h2 => hyp.resolve_left (not_lt.mpr h2))⟩
+  by_cases h2 : 2 ≤ v 1
+  · exact Or.inr (hyp h2)
+  · exact Or.inl (not_le.mp h2)
+
+instance ilog_definable : 𝚺₁-Function₂ (ilog : V → V → V) := ilog_defined.to_definable
+
+instance ilog_definable' (Γ) : Γ-[m + 1]-Function₂ (ilog : V → V → V) := ilog_definable.of_sigmaOne
+
+end
+
+/-! ## InternalBump -/
+/-
 # `InternalBump.lean` — E-core(b) brick 4: the hereditary base-change `bump` inside `V`
 
 Brick 4 (`DESCENT-PLAN.md §3`). `Defs.bump b n` is course-of-values recursion (it recurses at
@@ -12,14 +343,7 @@ This file establishes `bumpNext` and its `𝚺₁`-definability (the artifact th
 references). Brick 4b will assemble the table itself via `PR.Construction`, brick 4c will read off
 `ibump b n := (table b n).[n]` and prove it satisfies `Defs.bump`'s recursion.
 -/
-module
-
-public import GoodsteinPA.InternalLog
-public import GoodsteinPA.Compat
-
-@[expose] public section
-
-namespace GoodsteinPA.InternalPow
+section
 
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.FirstOrder.Arithmetic.HierarchySymbol
 
@@ -462,5 +786,193 @@ theorem ibump_mono {b : V} (hb : 2 ≤ b) {n n' : V} (h : n ≤ n') :
   rcases eq_or_lt_of_le h with rfl | h
   · exact le_rfl
   · exact le_of_lt (ibump_strictMono hb h)
+
+end
+
+/-! ## InternalGoodstein -/
+/-
+# `InternalGoodstein.lean` — E-core(b) brick 5: the internal Goodstein sequence in `V`
+
+Brick 5 (`DESCENT-PLAN.md §3`). With the hereditary base-change `ibump` built and proven correct
+(`InternalBump`), the Goodstein run itself is **structural** recursion on the step index (single
+predecessor), so it goes straight through `PR.Construction`:
+
+  `Defs.goodsteinSeq m 0 = m`,   `Defs.goodsteinSeq m (k+1) = bump (k+2) (goodsteinSeq m k) - 1`.
+
+`igoodstein m₀ k` is the `𝚺₁`-definable run `k ↦ mₖ` inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁` — the concrete
+`m : V → V` that `DescentArith.ineq6_internal` abstracts over. Brick 6 will be the `b`-side bound
+`T̂^{k+2}∘β` and the internal `ineq6_step`.
+-/
+section
+
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+
+variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+
+/-- Blueprint for the Goodstein run: `zero ↦ m₀`, `succ : (k, v) ↦ ibump (k+2) v - 1`. -/
+def goodstein.blueprint : PR.Blueprint 1 where
+  zero := .mkSigma “y x. y = x”
+  succ := .mkSigma “y ih n x. ∃ w, !ibumpDef w (n + 2) ih ∧ !subDef y w 1”
+
+noncomputable def goodstein.construction : PR.Construction V goodstein.blueprint where
+  zero := fun x ↦ x 0
+  succ := fun _ n ih ↦ ibump (n + 2) ih - 1
+  zero_defined := .mk fun v ↦ by simp [goodstein.blueprint]
+  succ_defined := .mk fun v ↦ by
+    simp [goodstein.blueprint, ibump_defined.iff, sub_defined.iff]
+
+/-- **Internal Goodstein sequence** `igoodstein m₀ k = mₖ` in `V` (over the audited base `k+2`). -/
+noncomputable def igoodstein (m₀ k : V) : V := goodstein.construction.result ![m₀] k
+
+@[simp] lemma igoodstein_zero (m₀ : V) : igoodstein m₀ 0 = m₀ := by
+  simp [igoodstein, goodstein.construction]
+
+@[simp] lemma igoodstein_succ (m₀ k : V) :
+    igoodstein m₀ (k + 1) = ibump (k + 2) (igoodstein m₀ k) - 1 := by
+  simp [igoodstein, goodstein.construction]
+
+section
+
+def _root_.LO.FirstOrder.Arithmetic.igoodsteinDef : 𝚺₁.Semisentence 3 :=
+  goodstein.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
+
+instance igoodstein_defined : 𝚺₁-Function₂ (igoodstein : V → V → V) via igoodsteinDef := .mk
+  fun v ↦ by simp [goodstein.construction.result_defined_iff, igoodsteinDef]; rfl
+
+instance igoodstein_definable : 𝚺₁-Function₂ (igoodstein : V → V → V) := igoodstein_defined.to_definable
+
+instance igoodstein_definable' (Γ) : Γ-[m + 1]-Function₂ (igoodstein : V → V → V) :=
+  igoodstein_definable.of_sigmaOne
+
+end
+
+end
+
+/-! ## InternalBridge -/
+/-
+# `InternalBridge.lean` — E-core(b) brick 6: the standard-model bridge (faithfulness)
+
+The internal `ipow`/`ilog`/`ibump`/`igoodstein` were built inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁`. For the
+expedition's **anti-fraud** guarantee they must agree with the *audited* `Defs.bump`/`Defs.goodsteinSeq`
+on the standard model `ℕ` (itself a model of `𝗜𝚺₁`). This file establishes that absoluteness:
+
+* `ipow b n = b ^ n`              (over `ℕ`)
+* `ilog b n = Nat.log b n`        (over `ℕ`)
+* `ibump b n = Defs.bump b n`     (over `ℕ`, base `2 ≤ b` — the only case Goodstein uses)
+* `igoodstein m k = goodsteinSeq m k`
+
+so the `𝚺₁`-definable internal run is the genuine Goodstein process, not a look-alike.
+-/
+section
+
+open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+
+/-- Over `ℕ`, the internal power is `Nat.pow`. -/
+@[simp] lemma ipow_nat (b n : ℕ) : ipow b n = b ^ n := by
+  induction n with
+  | zero => simp
+  | succ n ih => rw [ipow_succ, ih, pow_succ]
+
+/-- Over `ℕ`, the internal logarithm is `Nat.log`. (Foundation's scoped `≤` on `ℕ` is `=∨<`, so we
+convert it to `Nat.le` via `LO.FirstOrder.Arithmetic.le_def`; the `<` underneath is already `Nat.lt`.) -/
+@[simp] lemma ilog_nat (b n : ℕ) : ilog b n = Nat.log b n := by
+  symm
+  rw [ilog_graph]
+  refine ⟨fun h => ?_, fun h => ?_⟩
+  · obtain ⟨hb, hn⟩ := h
+    rw [LO.FirstOrder.Arithmetic.le_def] at hb
+    rw [ipow_nat, ipow_nat, LO.FirstOrder.Arithmetic.le_def]
+    exact ⟨Nat.eq_or_lt_of_le (Nat.pow_log_le_self b hn.ne'),
+      Nat.lt_pow_succ_log_self (by omega) n⟩
+  · rcases not_and_or.mp h with h1 | h1
+    · rw [LO.FirstOrder.Arithmetic.le_def] at h1
+      push Not at h1
+      exact Nat.log_of_left_le_one (by omega) n
+    · have : n = 0 := by omega
+      subst this; simp
+
+/-! ### Foundation `/`,`%` over `ℕ` agree with `Nat.div`/`Nat.mod`
+
+Over `V = ℕ` the scoped Foundation `Div`/`Mod` instances are `Classical.choose!`-built and so are NOT
+defeq to `Nat.instDiv`/`Nat.instMod`; the `ibump` peel recursion (`ibump_succ`) exposes the raw
+Foundation `/`,`%`. These two bridges convert them to `Nat.div`/`Nat.mod` (`*`,`+`,`-` over `ℕ` ARE
+already defeq, so only `/`,`%` need bridging), feeding the standard-model `ibump_nat`. -/
+
+/-- Foundation division over `ℕ` is `Nat.div`. (Stated via `div_eq_of`, whose conclusion carries the
+Foundation `Div` instance; the RHS `x / d` is `Nat`'s.) -/
+lemma fdiv_nat (x d : ℕ) (hd : 0 < d) :
+    @HDiv.hDiv ℕ ℕ ℕ (@instHDiv ℕ (@LO.FirstOrder.Arithmetic.instDiv_foundation ℕ _ _)) x d
+      = x / d := by
+  have hdm := Nat.div_add_mod x d
+  have hml : x % d < d := Nat.mod_lt x hd
+  refine div_eq_of (b := d) (c := x / d) ?_ ?_
+  · rw [LO.FirstOrder.Arithmetic.le_def]
+    rcases (show d * (x / d) ≤ x from by omega).lt_or_eq with h | h
+    · exact Or.inr h
+    · exact Or.inl h
+  · show x < d * (x / d + 1)
+    rw [Nat.mul_succ]; omega
+
+/-- Foundation truncated subtraction over `ℕ` is `Nat.sub`. -/
+lemma fsub_nat (x y : ℕ) :
+    @HSub.hSub ℕ ℕ ℕ (@instHSub ℕ (@LO.FirstOrder.Arithmetic.instSub_foundation ℕ _ _)) x y
+      = x - y := by
+  by_cases h : y ≤ x
+  · have hle : @LE.le ℕ (@LO.FirstOrder.Arithmetic.instLE_foundation ℕ _) y x :=
+      LO.FirstOrder.Arithmetic.le_def.mpr (Or.symm h.lt_or_eq)
+    have hf := LO.FirstOrder.Arithmetic.sub_spec_of_ge hle
+    omega
+  · have h' : x ≤ y := le_of_lt (Nat.lt_of_not_le h)
+    have hle : @LE.le ℕ (@LO.FirstOrder.Arithmetic.instLE_foundation ℕ _) x y :=
+      LO.FirstOrder.Arithmetic.le_def.mpr (Or.symm h'.lt_or_eq)
+    rw [LO.FirstOrder.Arithmetic.sub_spec_of_le hle]
+    omega
+
+/-- Foundation remainder over `ℕ` is `Nat.mod`. -/
+lemma fmod_nat (x d : ℕ) (hd : 0 < d) :
+    @HMod.hMod ℕ ℕ ℕ (@instHMod ℕ (@LO.FirstOrder.Arithmetic.instMod_foundation ℕ _ _)) x d
+      = x % d := by
+  have hdm := Nat.div_add_mod x d
+  rw [LO.FirstOrder.Arithmetic.mod_def, fdiv_nat x d hd, fsub_nat]
+  omega
+
+/-! ### The internal `bump`/`goodsteinSeq` are the audited ones over `ℕ` -/
+
+/-- Over `ℕ` (base `2 ≤ b`), the internal hereditary base-change is `Defs.bump`. -/
+theorem ibump_nat (b : ℕ) (hb : 2 ≤ b) (n : ℕ) : ibump b n = Goodstein.bump b n := by
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    rcases Nat.eq_zero_or_pos n with rfl | hn
+    · simp
+    · obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
+      show ibump b (m + 1) = Goodstein.bump b (m + 1)
+      have hbF : @LE.le ℕ (@LO.FirstOrder.Arithmetic.instLE_foundation ℕ _) 2 b :=
+        LO.FirstOrder.Arithmetic.le_def.mpr (Or.symm hb.lt_or_eq)
+      have hb0 : 0 < b := by omega
+      set e := Nat.log b (m + 1) with he
+      have hpe : 0 < b ^ e := Nat.pow_pos hb0
+      have hen : e < m + 1 := Nat.log_lt_self b (Nat.succ_ne_zero m)
+      have hrn : (m + 1) % b ^ e < m + 1 :=
+        lt_of_lt_of_le (Nat.mod_lt (m + 1) hpe) (Nat.pow_log_le_self b (Nat.succ_ne_zero m))
+      rw [ibump_succ hbF m]
+      simp only [ipow_nat, ilog_nat, ← he]
+      rw [fdiv_nat (m + 1) (b ^ e) hpe, fmod_nat (m + 1) (b ^ e) hpe,
+        ih e hen, ih ((m + 1) % b ^ e) hrn,
+        Goodstein.Dom.bump_pos b (m + 1) (Nat.succ_ne_zero m), ← he]
+
+/-- Over `ℕ`, the internal Goodstein run is `Defs.goodsteinSeq`. -/
+theorem igoodstein_nat (m₀ : ℕ) (k : ℕ) : igoodstein m₀ k = Goodstein.goodsteinSeq m₀ k := by
+  induction k with
+  | zero => simp only [igoodstein_zero]; rfl
+  | succ k ih =>
+    -- `igoodstein_succ` produces `ibump (k+2) _` with the generic `AtLeastTwo` numeral and Foundation
+    -- truncated subtraction; `fsub_nat` Natifies the `- 1` and `show` re-casts `k+2` to `Nat`'s literal
+    -- so `ibump_nat` matches syntactically.
+    rw [igoodstein_succ, ih, fsub_nat]
+    show ibump (k + 2) (Goodstein.goodsteinSeq m₀ k) - 1 = Goodstein.goodsteinSeq m₀ (k + 1)
+    rw [ibump_nat (k + 2) (by omega)]
+    rfl
+
+end
 
 end GoodsteinPA.InternalPow

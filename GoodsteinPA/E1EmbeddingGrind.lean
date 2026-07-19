@@ -1,9 +1,10 @@
 module
 
 public import GoodsteinPA.OperatorZef2
-public import GoodsteinPA.WainerRoute
+public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
+public import GoodsteinPA.Encoding
 public import GoodsteinPA.Embedding
-public import GoodsteinPA.InternalBridge
+public import GoodsteinPA.Internal
 public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Compat
 
@@ -4716,7 +4717,7 @@ hypothesis is the VERBATIM statement of a theorem proven kernel-clean in its mod
 - `Hconv` = `ONote.master_conversion`.
 The read-off (`readoff_value_goodstein'`), the m-uniformization, and the semantic link are
 discharged HERE.  The conclusion is the exact type of the sole route axiom
-`WainerRoute.wainer_bound_of_pa_proves_goodstein` (`src/GoodsteinPA/WainerRoute.lean:119`). -/
+`WainerRoute.wainer_bound_of_pa_proves_goodstein` (`GoodsteinPA/WainerBound.lean`). -/
 theorem wainer_bound_witness
     (Hcert : ∀ {G : ℕ → ℕ}, Monotone G → (∀ x, x + 1 ≤ G x) →
       (∀ a b, a + b ≤ G (max a b)) → (∀ a b, a * b ≤ G (max a b)) →
@@ -4740,7 +4741,7 @@ theorem wainer_bound_witness
           n ≤ fastGrowing o m)
     (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) :
     ∃ o : ONote, o.NF ∧
-      GoodsteinPA.WainerRoute.EventuallyLE Goodstein.Dom.goodsteinLength
+      Goodstein.EventuallyLE Goodstein.Dom.goodsteinLength
         (fun n => fastGrowing o n) := by
   obtain ⟨B, d, K₀, e, α, heNF, hαNF, hall⟩ := readoff_value_goodstein' h
   -- ONE iterate count k for the whole numeral family, at the FIXED matrix B₀
