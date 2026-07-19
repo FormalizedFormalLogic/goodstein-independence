@@ -7,15 +7,14 @@ import Std.Tactic.BVDecide.Normalize.Prop
 @[expose] public section
 
 /-!
-# Route-(c) value gate — the hereditary `Gated` predicate (lap 206, step (2))
+# The hereditary value gate `Gated`
 
-Mandated by the DIRECTION lap-206 block, step (2), after the step-(1) gadget probe PASSED
-(`wip/ReadoffValueGadgetProbe.lean`).  Design (PENDING_WORK lap-206 top): instead of threading a
-SYNTACTIC subformula-closure through the read-off's derivation induction, the invariant tracks a
-SEMANTIC hereditary predicate `Gated P V ψ` —
+Instead of threading a syntactic subformula-closure through the read-off's derivation
+induction, the invariant tracks a semantic hereditary predicate `Gated P V ψ` —
 
 * at a false `∀⁰ χ` member the trap descent needs a **value-gated false branch**
-  `∃ k ≤ P V, ¬ atomTrue (χ/[nm k])` (E–W's rule-side branch gate, reconstructed semantically);
+  `∃ k ≤ P V, ¬ atomTrue (χ/[nm k])` (Eguchi–Weiermann's rule-side branch gate, reconstructed
+  semantically, `[EW12]`);
 * every quantifier instance stays `Gated` at the bumped budget `max V k` (so the invariant
   survives `allω`/vacuous-`exI` insertions), and connective constituents stay `Gated` at the
   same budget (`andI`/`orI` insertions).
@@ -25,7 +24,9 @@ discharges `Gated` ONCE, at the pipeline root, for the concrete `goodsteinBodyE`
 NOT inside the derivation induction.  This file defines `Gated` and banks its two derivation-side
 laws: budget monotonicity (`Gated_mono`) and the accessor lemmas the induction's cases consume.
 
-Wip-only ruling input; `Gated` is internal proof machinery (no ratified-statement contact).
+`Gated` is internal proof machinery, not a ratified statement.
+
+- [EW12]
 -/
 
 namespace GoodsteinPA.ReadoffValueGate
@@ -287,7 +288,7 @@ theorem gvb_substs_le {χ : ArithmeticSemiformula ℕ 1} (k B : ℕ) :
     intro x; simp
   exact gvb_rew_le (K := k) χ (Rew.subst ![nm k]) hb hf B
 
-/-- **The one-binder numeral-instance law** (lap 208, 2b item (b)) — the `.q`-lifted form:
+/-- **The one-binder numeral-instance law** — the `.q`-lifted form:
 substituting `nm k` for the OUTER variable under one residual binder still contracts `gvb`
 into the `max B k` frame.  This is what contracts the pipeline's per-`m` value budget
 `P_m = gvb (goodsteinBodyE/[nm m])` into ONE fixed `P* = gvb goodsteinBodyE` with a `max m`
@@ -305,7 +306,7 @@ theorem gvb_substs_q_le {χ : ArithmeticSemiformula ℕ 2} (k B : ℕ) :
   obtain ⟨hb', hf'⟩ := q_class (K := k) (Rew.subst ![nm k]) hb hf
   exact gvb_rew_le (K := k) χ (Rew.subst ![nm k]).q hb' hf' B
 
-/-! ## The root discharge `gated_of_sigma1` (lap 207, DIRECTION lap-206 block item 1)
+/-! ## The root discharge `gated_of_sigma1`
 
 `Hierarchy 𝚺 1 ψ` supplies the ball shape at every `∀`-head (the Foundation `Hierarchy`
 constructors `all`/`pi`/`dummy_sigma` are polarity/level-blocked at `𝚺 1`), and the coupled
@@ -460,12 +461,12 @@ theorem gated_root_of_sigma1 (ψ : Form) (h : Arithmetic.Hierarchy 𝚺 1 ψ) (V
   refine gated_of_sigma1 (fun _ _ hb => gvb_mono ψ (max_le_max le_rfl hb)) ψ h V (fun B => ?_)
   exact gvb_mono ψ (le_trans (le_max_right V B) (le_max_right V (max V B)))
 
-/-! ## `P*`-domination brick (lap 210, SERIES-4 S-2) — `gvb` of a FIXED formula is dominated by
-finitely many iterates of ANY engine closed under successor/add/mul.  Abstract in the engine `G`
-because the wip modules cannot import each other: instantiate at assembly with `Gexp = hardy ω²`
-(closure facts `succ_le_Gexp`/`add_le_Gexp_max`/`mul_le_Gexp_max`, `wip/E1EmbeddingGrind.lean`),
-whose iterates are padded-Hardy-dominated by `hardy_Wpow_iter_dom_pad`
-(`wip/HardyMajorization.lean`). -/
+/-! ## `P*`-domination brick — `gvb` of a FIXED formula is dominated by finitely many iterates of
+ANY engine closed under successor/add/mul.  Abstract in the engine `G` because this module and
+`E1EmbeddingGrind.lean` cannot import each other: instantiate at assembly with `Gexp = hardy ω²`
+(closure facts `succ_le_Gexp`/`add_le_Gexp_max`/`mul_le_Gexp_max`, `E1EmbeddingGrind.lean`), whose
+iterates are padded-Hardy-dominated by `hardy_Wpow_iter_dom_pad`
+(`ToMathlib.Hardy.Majorization`). -/
 
 section IterDom
 
@@ -587,7 +588,7 @@ theorem gvb_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
       exact ⟨c, fun B => by
         rw [show gvb (Semiformula.exs χ) B = gvb χ B from rfl]; exact h B⟩
 
-/-- **The uniform root certificate** (SERIES-4 S-3): for the numeral family
+/-- **The uniform root certificate**: for the numeral family
 `ψ_m = ∃⁰((subst ![nm m]).q ▹ body)` over a FIXED matrix `body`, ONE iterate count `k` serves
 every `m`: the canonical `P := gvb ψ_m (max V ·)` is monotone, `Gated`, and `G^[k]`-bounded at
 the `max (max V m)`-shifted argument (`gvb_substs_q_le` contracts the numeral out,
