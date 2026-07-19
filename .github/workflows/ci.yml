@@ -103,16 +103,15 @@ jobs:
       # `.lake/build` (GoodsteinPA's own oleans), never the dependency trees. Restoring + unpacking
       # it lets `lake build` reuse traces and rebuild only the modules that actually changed, instead
       # of recompiling all of GoodsteinPA every run. The key pins toolchain+manifest (so a Foundation
-      # bump busts it) and appends ref_name+sha to dodge cache-key reservation races; restore-keys
-      # fall back to the newest cache on the same branch, then any branch.
+      # bump busts it) and appends sha to dodge cache-key reservation races; restore-keys fall back to
+      # the newest cache with a matching toolchain+manifest.
       - name: Restore GoodsteinPA build cache
         id: project-cache
         uses: actions/cache/restore@v4
         with:
           path: .lake/GoodsteinPA-x86_64-unknown-linux-gnu.tar.gz
-          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.ref_name }}-${{ github.sha }}
+          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
           restore-keys: |
-            lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.ref_name }}
             lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}
       - name: Unpack GoodsteinPA build cache
         if: hashFiles('.lake/GoodsteinPA-x86_64-unknown-linux-gnu.tar.gz') != ''
