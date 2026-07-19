@@ -1,0 +1,226 @@
+module
+
+public import GoodsteinPA.OperatorZeh.Zeh
+
+@[expose] public section
+
+namespace GoodsteinPA.OperatorZeh
+
+open LO LO.FirstOrder ONote Ordinal
+open GoodsteinPA.OperatorZinfty
+
+/-! # §7 — The function-slot judgment `Zef` (LOCK §1-A1/§3 amendment, ratified lap 184)
+
+Ported verbatim from `wip/ZefSlotCalculus.lean` (kernel-verified sorry-free / axiom-clean).  `Zef`
+= `Zeh` with the ℕ-stage `m` replaced by a function-slot `f : ℕ → ℕ` — the R4-compliant carrier the
+stage judgment could not provide (the stage-`m` reduction is kernel-refuted:
+`principal_witness_exceeds_stage`; see `REBUILD-Z-LAP4-RATIFICATION-2026-07-02.md`).  `exI` bound
+`n ≤ f 0`, `allω` branch slot `rel1 f n`, reduction output slot **`g∘f`**.  This block discharges
+pins 1–2 (`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) and the read-off exit (`headline_readoff_Zef`) as REAL
+theorems; the §5 stage pins are rewired to consume them next (port step P3). -/
+/-! ## The slot calculus `Zef` (`Zeh` with stage `m` ⤳ slot `f : ℕ → ℕ`) -/
+
+inductive Zef : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ → Seq → Prop
+  | axL {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq} {ar : ℕ}
+      (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
+      (hn : Semiformula.nrel r v ∈ Γ) : Zef α e H f c Γ
+  | wk {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Seq}
+      (hsub : Δ ⊆ Γ) (dd : Zef α e H f c Δ) : Zef α e H f c Γ
+  | weak {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Seq}
+      (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β)
+      (hsub : Δ ⊆ Γ) (dd : Zef β e H f c Δ) : Zef α e H f c Γ
+  | allω {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+      (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
+      (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
+      (hβH : ∀ n, relOp H n (β n))
+      (dd : ∀ n, Zef (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
+      Zef α e H f c (insert (∀⁰ φ) Γ)
+  | exI {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+      (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
+      (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ f 0)
+      (dd : Zef β e H f c (insert (φ/[nm n]) Γ)) : Zef α e H f c (insert (∃⁰ φ) Γ)
+  | cut {α βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+      (φ : Form) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
+      (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
+      (hβφH : Cl H βφ) (hβψH : Cl H βψ)
+      (d₁ : Zef βφ e H f c (insert φ Γ)) (d₂ : Zef βψ e H f c (insert (∼φ) Γ)) :
+      Zef α e H f c Γ
+
+namespace Zef
+
+/-- Sequent weakening (height-preserving). -/
+theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Seq}
+    (hsub : Δ ⊆ Γ) (dd : Zef α e H f c Δ) : Zef α e H f c Γ :=
+  Zef.wk hsub dd
+
+/-- **Slot weakening** (`mono_f` — the slot analog of `Zeh.mono_H`'s stage-raise): a larger slot
+is more permissive.  `exI` rides `n ≤ f 0 ≤ f' 0`; `allω` rides `rel1_mono`. -/
+theorem mono_f : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    Zef α e H f c Γ → ∀ {f' : ℕ → ℕ}, (∀ x, f x ≤ f' x) → Zef α e H f' c Γ := by
+  intro α e H f c Γ dd
+  induction dd with
+  | axL r v hp hn => intro f' _; exact Zef.axL r v hp hn
+  | wk hsub _ ih => intro f' hff'; exact Zef.wk hsub (ih hff')
+  | weak hβ hβNF hαNF hβH hsub _ ih =>
+      intro f' hff'; exact Zef.weak hβ hβNF hαNF hβH hsub (ih hff')
+  | allω φ β hβ hβNF hαNF hβH _ ih =>
+      intro f' hff'
+      exact Zef.allω φ β hβ hβNF hαNF hβH (fun n => ih n (rel1_mono hff' n))
+  | exI φ n hβ hβNF hαNF hβH hbound _ ih =>
+      intro f' hff'
+      exact Zef.exI φ n hβ hβNF hαNF hβH (le_trans hbound (hff' 0)) (ih hff')
+  | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
+      intro f' hff'
+      exact Zef.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hff') (ih₂ hff')
+
+/-- **Operator irrelevance** (R1, slot form): the generator slot `H` carries no information
+(every `Cl H β` side condition is at an NF ordinal — `Cl_of_NF`), so a derivation at `H` is one
+at any `H'`, same `(α, e, f, c, Γ)`.  Mirrors `Zeh.change_H`. -/
+theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    Zef α e H f c Γ → ∀ {H' : ONote → Prop}, Zef α e H' f c Γ := by
+  intro α e H f c Γ dd
+  induction dd with
+  | axL r v hp hn => intro H'; exact Zef.axL r v hp hn
+  | wk hsub _ ih => intro H'; exact Zef.wk hsub ih
+  | weak hβ hβNF hαNF _ hsub _ ih => intro H'; exact Zef.weak hβ hβNF hαNF (Cl_of_NF hβNF) hsub ih
+  | allω φ β hβ hβNF hαNF _ _ ih =>
+      intro H'; exact Zef.allω φ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n)) (fun n => ih n)
+  | exI φ n hβ hβNF hαNF _ hbound _ ih =>
+      intro H'; exact Zef.exI φ n hβ hβNF hαNF (Cl_of_NF hβNF) hbound ih
+  | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF _ _ _ _ ih₁ ih₂ =>
+      intro H'; exact Zef.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF
+        (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
+
+/-- Combined operator+slot move (operator free via `change_H`, slot raised via `mono_f`) — the
+`mono_H` analog the inversion port needs. -/
+theorem mono_Hf {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (dd : Zef α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
+    Zef α e H' f' c Γ := (dd.change_H).mono_f hff'
+
+end Zef
+
+/-- The `≤`-slack wrapper (slot form of `ZehProv`). -/
+def ZefProv (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (Γ : Seq) : Prop :=
+  ∃ α', α' ≤ α ∧ α'.NF ∧ Cl H α' ∧ Zef α' e H f c Γ
+
+namespace ZefProv
+
+theorem of {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (hNF : α.NF) (hH : Cl H α) (D : Zef α e H f c Γ) : ZefProv α e H f c Γ :=
+  ⟨α, le_refl _, hNF, hH, D⟩
+
+theorem mono {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (hα : α ≤ β) : ZefProv α e H f c Γ → ZefProv β e H f c Γ := by
+  rintro ⟨α', hα', hNF, hH, D⟩
+  exact ⟨α', le_trans hα' hα, hNF, hH, D⟩
+
+theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Δ : Seq}
+    (h : Γ ⊆ Δ) : ZefProv α e H f c Γ → ZefProv α e H f c Δ := by
+  rintro ⟨α', hα', hNF, hH, D⟩
+  exact ⟨α', hα', hNF, hH, D.wk h⟩
+
+end ZefProv
+
+/-! ## §8 The stage→slot embedding `Zeh → Zef` (P4 consolidation; the LOCK §1-A1/§3 amendment
+made faithful — `Zef` conservatively generalizes `Zeh`)
+
+The ℕ-stage judgment `Zeh` embeds into the function-slot judgment `Zef` at the **root slot**
+`rel1 (hardy e) m` (so `f 0 = hardy e (max m 0) = hardy e m`: the read-off bound is preserved,
+LOCK §4).  The `allω` branch threads by `rel1_rel1` (stage `max m n` ⤳ slot
+`rel1 (rel1 (hardy e) m) n = rel1 (hardy e) (max m n)`); the `exI` bound
+`n ≤ hardy e m = (rel1 (hardy e) m) 0` is definitional.  This is the kernel witness that the
+lap-184 amendment is a CONSERVATIVE generalization — every stage-`m` derivation is a slot
+derivation at the canonical slot — so nothing the stage calculus proved is lost. -/
+
+/-- **Stage→slot embedding `Zeh → Zef`** at the root slot `rel1 (hardy e) m`.  Witnesses that the
+LOCK §1-A1/§3 amendment (ℕ-stage ⤳ function-slot) is a conservative generalization. -/
+theorem zeh_to_zef {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+    (d : Zeh α e H m c Γ) : Zef α e H (rel1 (hardy e) m) c Γ := by
+  induction d with
+  | axL r v hp hn => exact Zef.axL r v hp hn
+  | wk hsub _ ih => exact Zef.wk hsub ih
+  | weak hβ hβNF hαNF hβH hsub _ ih => exact Zef.weak hβ hβNF hαNF hβH hsub ih
+  | @allω α e H m c Γ φ β hβ hβNF hαNF hβH dd ih =>
+      refine Zef.allω φ β hβ hβNF hαNF hβH (fun n => ?_)
+      rw [rel1_rel1]
+      exact ih n
+  | @exI α β e H m c Γ φ n hβ hβNF hαNF hβH hbound dd ih =>
+      refine Zef.exI φ n hβ hβNF hαNF hβH ?_ ih
+      simpa [rel1] using hbound
+  | @cut α βφ βψ e H m c Γ φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH d₁ d₂ ih₁ ih₂ =>
+      exact Zef.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH ih₁ ih₂
+
+/-! ## §8d Assembly plumbing in the slot judgment `Zef` (safe pre-ratification infrastructure)
+
+Slot-form ports of `Zeh.mono_c` (cut-rank monotonicity) and the `ZehProv` wrapper combinators
+(`cut`/`exI`/`allω`) — the structural layer the cut-elimination assembly (laps 5–7) reuses to
+introduce cuts before eliminating them and to rebuild ω-nodes.  None consumes pin 3 or raises the
+control; all reuse the `Zeh`-agnostic ONote splice bricks (`osucc_add_NF`, `add_le_add_NF`, …). -/
+
+/-- **`c`-monotonicity** (cut rank): a derivation valid at rank `c` is valid at any `c' ≥ c`.
+Only the `cut` rule reads `c` (via `hcompl : φ.complexity < c`), so every other case threads. -/
+theorem Zef.mono_c : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    Zef α e H f c Γ → ∀ {c' : ℕ}, c ≤ c' → Zef α e H f c' Γ := by
+  intro α e H f c Γ dd
+  induction dd with
+  | axL r v hp hn => intro c' _; exact Zef.axL r v hp hn
+  | wk hsub _ ih => intro c' hc; exact Zef.wk hsub (ih hc)
+  | weak hβ hβNF hαNF hβH hsub _ ih => intro c' hc; exact Zef.weak hβ hβNF hαNF hβH hsub (ih hc)
+  | allω φ β hβ hβNF hαNF hβH _ ih =>
+      intro c' hc; exact Zef.allω φ β hβ hβNF hαNF hβH (fun n => ih n hc)
+  | exI φ n hβ hβNF hαNF hβH hbound _ ih =>
+      intro c' hc; exact Zef.exI φ n hβ hβNF hαNF hβH hbound (ih hc)
+  | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
+      intro c' hc
+      exact Zef.cut φ (lt_of_lt_of_le hcompl hc) hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH
+        (ih₁ hc) (ih₂ hc)
+
+/-- **`ZefProv`-level cut combinator** (assembly plumbing, NOT the gated reduction): package
+the cut RULE at the wrapper level — combine proofs of `φ` and `∼φ` (with `φ.complexity < c`)
+into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, SAME rank and control (no rank-lowering, no
+control-raise — those are the judge-gated `cutElimPass_Zf`/reduction).  The step/reduction
+assembly reuses this to introduce cuts before eliminating them. -/
+theorem ZefProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq} (φ : Form)
+    (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
+    (D₁ : ZefProv βφ e H f c (insert φ Γ)) (D₂ : ZefProv βψ e H f c (insert (∼φ) Γ)) :
+    ZefProv (osucc (βφ + βψ)) e H f c Γ := by
+  obtain ⟨α₁, hle₁, hNF₁, hH₁, d₁⟩ := D₁
+  obtain ⟨α₂, hle₂, hNF₂, hH₂, d₂⟩ := D₂
+  refine ⟨osucc (α₁ + α₂),
+    osucc_le_osucc (ONote.add_nf α₁ α₂) (ONote.add_nf βφ βψ)
+      (add_le_add_NF hNF₁ hβφNF hNF₂ hβψNF hle₁ hle₂),
+    osucc_add_NF hNF₁ hNF₂, osucc_add_mem hH₁ hH₂,
+    Zef.cut φ hcompl
+      (lt_of_le_of_lt (Zekd.le_add_right_NF hNF₁ hNF₂) (Zekd.lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (Zekd.le_add_left_NF hNF₁ hNF₂) (Zekd.lt_osucc (ONote.add_nf α₁ α₂)))
+      hNF₁ hNF₂ (osucc_add_NF hNF₁ hNF₂) hH₁ hH₂ d₁ d₂⟩
+
+/-- **`ZefProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
+wrapper level — the output ordinal `osucc β` is fully determined, no rank/control change.
+Reused by the assembly to introduce existentials at the prov level. -/
+theorem ZefProv.exI {β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβNF : β.NF) (hβH : Cl H β)
+    (hbound : n ≤ f 0) (D : ZefProv β e H f c (insert (φ/[nm n]) Γ)) :
+    ZefProv (osucc β) e H f c (insert (∃⁰ φ) Γ) := by
+  obtain ⟨β', hle, hNF', hH', d⟩ := D
+  exact ⟨osucc β, le_rfl, osucc_NF hβNF, Cl.osucc hβH,
+    Zef.exI φ n (lt_of_le_of_lt hle (Zekd.lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
+
+/-- **`ZefProv`-level `allω` combinator** (assembly plumbing): reassemble an ω-node at the
+wrapper level.  Each branch's `≤`-slack witness is threaded through (`< α` survives since
+`β' n ≤ β n < α`); the output witness is `α` itself (needs `Cl H α`).  Reused by the
+assembly to rebuild ω-nodes over the branch family. -/
+theorem ZefProv.allω {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
+    (hβ : ∀ n, β n < α) (hαNF : α.NF) (hαH : Cl H α)
+    (D : ∀ n, ZefProv (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
+    ZefProv α e H f c (insert (∀⁰ φ) Γ) :=
+  ⟨α, le_rfl, hαNF, hαH,
+    Zef.allω φ (fun n => (D n).choose)
+      (fun n => lt_of_le_of_lt (D n).choose_spec.1 (hβ n))
+      (fun n => (D n).choose_spec.2.1)
+      hαNF
+      (fun n => (D n).choose_spec.2.2.1)
+      (fun n => (D n).choose_spec.2.2.2)⟩
+
+end GoodsteinPA.OperatorZeh
