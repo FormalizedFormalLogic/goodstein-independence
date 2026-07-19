@@ -32,7 +32,7 @@ noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.
 atomic-truth axiom `axTrue` ranges over *true closed literals* of either polarity (the ω-logic
 leaf that lets `Z_∞` prove PA's equational/arithmetic axioms). -/
 @[grind =]
-def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Semiterm ℒₒᵣ ℕ 0) → (ArithmeticFormula ℕ)
+def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Semiterm ℒₒᵣ ℕ 0) → ArithmeticFormula ℕ
   | true, _, r, v => Semiformula.rel r v
   | false, _, r, v => Semiformula.nrel r v
 
@@ -40,15 +40,15 @@ def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Semiterm
 standard ℒₒᵣ-model evaluation with no bound variables. For a closed literal the free-variable
 assignment is immaterial (fixed to `id`). -/
 @[grind =]
-def LitTrue (φ : (ArithmeticFormula ℕ)) : Prop := GoodsteinPA.Compat.gEvalm ℕ ![] (id : ℕ → ℕ) φ
+def LitTrue (φ : ArithmeticFormula ℕ) : Prop := GoodsteinPA.Compat.gEvalm ℕ ![] (id : ℕ → ℕ) φ
 
 /-- `∼`-duality: a closed formula is true iff its negation is false. -/
 @[simp, grind =]
-lemma litTrue_neg (φ : (ArithmeticFormula ℕ)) : LitTrue (∼φ) ↔ ¬ LitTrue φ := by
+lemma litTrue_neg (φ : ArithmeticFormula ℕ) : LitTrue (∼φ) ↔ ¬ LitTrue φ := by
   unfold LitTrue; simp
 
 /-- Totality (classical): every closed formula is true or its negation is. -/
-lemma litTrue_or_neg (φ : (ArithmeticFormula ℕ)) : LitTrue φ ∨ LitTrue (∼φ) := by
+lemma litTrue_or_neg (φ : ArithmeticFormula ℕ) : LitTrue φ ∨ LitTrue (∼φ) := by
   rw [litTrue_neg]; exact em _
 
 variable {k : ℕ}
@@ -86,7 +86,7 @@ inductive Derivation : Finset (ArithmeticFormula ℕ) → Type
       (hmem : signedLit b r v ∈ Γ) : Derivation Γ
   | verumR {Γ : Finset (ArithmeticFormula ℕ)} (h : ⊤ ∈ Γ) : Derivation Γ
   | weak {Δ Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) (h : Δ ⊆ Γ) : Derivation Γ
-  | andI {Γ : Finset (ArithmeticFormula ℕ)} (φ ψ : (ArithmeticFormula ℕ)) (dφ : Derivation (insert φ Γ)) (dψ : Derivation (insert ψ Γ)) :
+  | andI {Γ : Finset (ArithmeticFormula ℕ)} (φ ψ) (dφ : Derivation (insert φ Γ)) (dψ : Derivation (insert ψ Γ)) :
       Derivation (insert (φ ⋏ ψ) Γ)
   | orI {Γ : Finset (ArithmeticFormula ℕ)} (φ ψ) (d : Derivation (insert φ (insert ψ Γ))) : Derivation (insert (φ ⋎ ψ) Γ)
   | allω {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticSemiformula ℕ 1)

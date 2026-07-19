@@ -25,16 +25,16 @@ remove the explicit `contr` rule). The other inversions (∧, ω/∀) follow the
 
 section Inversion
 
-variable {φ ψ : (ArithmeticFormula ℕ)} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+variable {φ ψ : ArithmeticFormula ℕ} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Reorder helper: inverting under an `insert a` lands inside `insert a` of the inversion. -/
-private theorem invPush (a : (ArithmeticFormula ℕ)) (s : Finset (ArithmeticFormula ℕ)) :
+private theorem invPush (a : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert φ (insert ψ ((insert a s).erase (φ ⋎ ψ)))
       ⊆ insert a (insert φ (insert ψ (s.erase (φ ⋎ ψ)))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- Reverse reorder helper, valid when the head `a` is not the inverted formula. -/
-private theorem invPull {a : (ArithmeticFormula ℕ)} (h : a ≠ (φ ⋎ ψ)) (s : Finset (ArithmeticFormula ℕ)) :
+private theorem invPull {a : ArithmeticFormula ℕ} (h : a ≠ (φ ⋎ ψ)) (s : Finset (ArithmeticFormula ℕ)) :
     insert a (insert φ (insert ψ (s.erase (φ ⋎ ψ))))
       ⊆ insert φ (insert ψ ((insert a s).erase (φ ⋎ ψ))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
@@ -45,11 +45,10 @@ private theorem invPull {a : (ArithmeticFormula ℕ)} (h : a ≠ (φ ⋎ ψ)) (s
 /-- **∨-inversion (Towsner §19.2 analog).** If `φ ⋎ ψ` occurs in a `Z_∞`-derivable sequent, then
 replacing it by `φ` and `ψ` is derivable at the *same* ordinal bound and cut rank. Proved by
 structural induction on the derivation. -/
-lemma orInvAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
+lemma orInvAux (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
-  intro Γ d
   induction d with
   | @axL Γ k r v hp hn =>
     intro _ _
@@ -176,12 +175,12 @@ section InversionAll
 variable {χ : ArithmeticSemiformula ℕ 1} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Reorder helper (single insert): invert under `insert a`, push it outside. -/
-private theorem invPush1 (b a : (ArithmeticFormula ℕ)) (e : (ArithmeticFormula ℕ)) (s : Finset (ArithmeticFormula ℕ)) :
+private theorem invPush1 (b a : ArithmeticFormula ℕ) (e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert b ((insert a s).erase e) ⊆ insert a (insert b (s.erase e)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- Reverse reorder helper (single insert), valid when the head `a` is not the erased formula. -/
-private theorem invPull1 (b : (ArithmeticFormula ℕ)) {a e : (ArithmeticFormula ℕ)} (h : a ≠ e) (s : Finset (ArithmeticFormula ℕ)) :
+private theorem invPull1 (b : ArithmeticFormula ℕ) {a e : ArithmeticFormula ℕ} (h : a ≠ e) (s : Finset (ArithmeticFormula ℕ)) :
     insert a (insert b (s.erase e)) ⊆ insert b ((insert a s).erase e) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | hx
@@ -191,10 +190,9 @@ private theorem invPull1 (b : (ArithmeticFormula ℕ)) {a e : (ArithmeticFormula
 /-- **ω/∀-inversion (Towsner §19.4).** If `∀⁰ χ` occurs in a `Z_∞`-derivable sequent, then for
 every numeral `n` the instance `χ/[nm n]` is derivable at the *same* ordinal bound and cut rank.
 Proved by structural induction on the derivation (`n` fixed). -/
-lemma allInvAux (n : ℕ) : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) →
+lemma allInvAux (n : ℕ) (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) →
     (∀⁰ χ) ∈ Γ → Provable (ordinalBound d) c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   have hb0 : (χ/[nm n]) ≠ (∀⁰ χ) := Semiformula.ne_of_ne_complexity (by simp)
-  intro Γ d
   induction d with
   | @axL Γ k r v hp hn =>
     intro _ _
@@ -316,16 +314,15 @@ in one induction (`andInvAux`) and expose each side as a corollary. -/
 
 section InversionAnd
 
-variable {φ ψ : (ArithmeticFormula ℕ)} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+variable {φ ψ : ArithmeticFormula ℕ} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- **∧-inversion (Towsner §19.3).** If `φ ⋏ ψ` occurs in a `Z_∞`-derivable sequent, then both
 `φ` and `ψ` (with the conjunction erased) are derivable at the same ordinal bound and cut rank. -/
-lemma andInvAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
+lemma andInvAux (d : Derivation Γ) : cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (Γ.erase (φ ⋏ ψ))) ∧
       Provable (ordinalBound d) c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   have hφ0 : φ ≠ (φ ⋏ ψ) := Semiformula.ne_of_ne_complexity (by simp)
   have hψ0 : ψ ≠ (φ ⋏ ψ) := Semiformula.ne_of_ne_complexity (by simp)
-  intro Γ d
   induction d with
   | @axL Γ k r v hp hn =>
     intro _ _

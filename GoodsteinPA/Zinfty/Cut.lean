@@ -22,7 +22,7 @@ variable {Γ : Finset (ArithmeticFormula ℕ)} {α β : Ordinal.{0}} {c : ℕ}
 
 /-- Frame subset: push an `insert` out of the `erase`/`∪`-framed context (`ih`-result → canonical).
 Explicit (not `tauto`) to avoid `whnf` blow-ups on negated atoms. -/
-private theorem frame_in (a e : (ArithmeticFormula ℕ)) (s t : Finset (ArithmeticFormula ℕ)) :
+private theorem frame_in (a e : ArithmeticFormula ℕ) (s t : Finset (ArithmeticFormula ℕ)) :
     (insert a s).erase e ∪ t ⊆ insert a (s.erase e ∪ t) := by
   intro x hx
   simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -33,7 +33,7 @@ private theorem frame_in (a e : (ArithmeticFormula ℕ)) (s t : Finset (Arithmet
 
 /-- Frame subset: pull an `insert` back into the `erase`/`∪`-framed context (canonical → goal),
 valid when the head `a` is not the erased formula. -/
-private theorem frame_out {a e : (ArithmeticFormula ℕ)} (hne : a ≠ e) (s t : Finset (ArithmeticFormula ℕ)) :
+private theorem frame_out {a e : ArithmeticFormula ℕ} (hne : a ≠ e) (s t : Finset (ArithmeticFormula ℕ)) :
     insert a (s.erase e ∪ t) ⊆ (insert a s).erase e ∪ t := by
   intro x hx
   simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -57,7 +57,7 @@ and needs the §19.6 induction on the ∃-side; see `cutReduceAll` below.) -/
 /-- Reduce a cut on a **conjunction** `a ⋏ b` (its negation `∼a ⋎ ∼b` on the other side), with both
 conjuncts of complexity `< c`. Invert the ∧-side (`andInvL/R`) and the ∨-side (`orInv`), then cut
 `a` and `b` separately at cut-rank `≤ c`. Towsner **Thm 19.5** (∧/∨ principal reduction). -/
-lemma cutReduceConj {a b : (ArithmeticFormula ℕ)}
+lemma cutReduceConj {a b : ArithmeticFormula ℕ}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋏ b) Γ)) (hNC : Provable β c (insert (∼a ⋎ ∼b) Γ)) :
     Provable (max α β + 1 + 1) c Γ := by
@@ -87,7 +87,7 @@ lemma cutReduceConj {a b : (ArithmeticFormula ℕ)}
 /-- Reduce a cut on a **disjunction** `a ⋎ b` (its negation `∼a ⋏ ∼b` on the other side), with both
 disjuncts of complexity `< c`. Dual to `cutReduceConj`: invert the ∨-side (`orInv`) and the ∧-side
 (`andInvL/R`), then cut `a` and `b`. Towsner **Thm 19.5**. -/
-lemma cutReduceDisj {a b : (ArithmeticFormula ℕ)}
+lemma cutReduceDisj {a b : ArithmeticFormula ℕ}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋎ b) Γ)) (hNC : Provable β c (insert (∼a ⋏ ∼b) Γ)) :
     Provable (max α β + 1 + 1) c Γ := by
@@ -125,10 +125,9 @@ family available unchanged through the induction, it is a *fixed* hypothesis (ov
 ∃-side derivation `d`. -/
 lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1}
     (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
-    (fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ)) :
-    ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ), cutRank d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
+    (fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ))
+    {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) : cutRank d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
       Provable (α + ordinalBound d + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
-  intro Δ d
   induction d with
   | @axL Δ k r v hp hn =>
     intro _ _
@@ -303,14 +302,13 @@ Buchholz; the generalization of `removeFalsumAux` from `⊥` to any false litera
 principal in a logical rule, so it is incidental at every compound step; the only new content is at
 the leaves: an `axL` clash on `L` exposes its (TRUE) opposite polarity `∼L`, closed by `axTrue`; an
 `axTrue` leaf's true witness is `≠ L` (which is false), so it survives the erase. -/
-lemma removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k₀) (v₀)
-    (hL : ¬ LitTrue (signedLit b₀ r₀ v₀)) :
-    ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) →
+lemma removeFalseLitAux (b₀ : Bool) (r₀ : (ℒₒᵣ).Rel k₀) (v₀)
+    (hL : ¬ LitTrue (signedLit b₀ r₀ v₀))
+    {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) : cutRank d ≤ (0 : ℕ∞) →
       signedLit b₀ r₀ v₀ ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase (signedLit b₀ r₀ v₀)) := by
-  set L : (ArithmeticFormula ℕ) := signedLit b₀ r₀ v₀ with hLdef
-  have hLne : ∀ (g : (ArithmeticFormula ℕ)), g.complexity ≠ 0 → g ≠ L := by
+  set L : ArithmeticFormula ℕ := signedLit b₀ r₀ v₀ with hLdef
+  have hLne : ∀ g : ArithmeticFormula ℕ, g.complexity ≠ 0 → g ≠ L := by
     intro g hg; rw [hLdef]; exact Semiformula.ne_of_ne_complexity (by cases b₀ <;> simp [signedLit, hg])
-  intro Δ d
   induction d with
   | @axL Δ k r v hp hn =>
     intro _ _; simp only [Derivation.ordinalBound]
@@ -407,11 +405,10 @@ enters via `axL` or weakening. No truth layer is needed: set sequents dissolve t
 premise (`⊢ nrel r v, Γ`) already proves `Γ` (set idempotence). Every other case is incidental. -/
 
 /-- Induction core: cut a `rel r v` derivation (`d`) against a fixed `nrel r v` derivation (`hNC`). -/
-lemma atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v)
-    (hNC : Provable β 0 (insert (Semiformula.nrel r v) Γ)) :
-    ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
+lemma atomCutAux (r : (ℒₒᵣ).Rel k) (v)
+    (hNC : Provable β 0 (insert (Semiformula.nrel r v) Γ))
+    {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) : cutRank d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
       Provable (β + ordinalBound d + 1) 0 (Δ.erase (Semiformula.rel r v) ∪ Γ) := by
-  intro Δ d
   induction d with
   | @axL Δ k' r' v' hp hn =>
     intro _ _
@@ -550,9 +547,8 @@ lemma atomCut {k} (r : (ℒₒᵣ).Rel k) (v)
 /-- Removing `⊥` from a cut-free derivation, bound-preserving. `⊥` is never introduced by any rule
 and is never an `axL`/`verumR` witness, so it is incidental at every step (Towsner Thm 19.2 for the
 constant-`⊥` case). -/
-lemma removeFalsumAux : ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) →
-    (⊥ : (ArithmeticFormula ℕ)) ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase ⊥) := by
-  intro Δ d
+lemma removeFalsumAux {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) : cutRank d ≤ (0 : ℕ∞) →
+    ⊥ ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase ⊥) := by
   induction d with
   | @axL Δ k r v hp hn =>
     intro _ _; simp only [Derivation.ordinalBound]
@@ -694,9 +690,8 @@ lemma cutElimPrincipal {ξ : (ArithmeticFormula ℕ)}
 /-- The transfinite induction underlying Thm 19.7: a derivation of cut rank `≤ c+1` becomes
 cut-free-at-`c` at bound `ω^(ordinalBound d)`. Non-principal rules are reapplied (each `ω^· + small ≤ ω^(·+1)`);
 a rank-`< c` cut is kept; a rank-`= c` cut is eliminated by `cutElimPrincipal`. -/
-lemma cutElimStepAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ (c + 1) →
+lemma cutElimStepAux (d : Derivation Γ) : cutRank d ≤ (c + 1) →
   Provable (Ordinal.omega0 ^ (ordinalBound d)) c Γ := by
-  intro Γ d
   induction d with
   | @axL Γ k r v hp hn =>
     intro _; simp only [Derivation.ordinalBound]

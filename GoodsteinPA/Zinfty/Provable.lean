@@ -53,25 +53,25 @@ lemma cast {Δ : Finset (ArithmeticFormula ℕ)} (e : Γ = Δ) :
 
 /-- Identity axiom: `rel r v` and `nrel r v` together close at bound `0`, cut rank `0`. -/
 @[grind →]
-lemma axL {k} (r : (ℒₒᵣ).Rel k) (v)
+lemma axL (r : (ℒₒᵣ).Rel k) (v)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) : Provable 0 0 Γ :=
   ⟨Derivation.axL r v hp hn, by simp [Derivation.ordinalBound], by simp [Derivation.cutRank]⟩
 
 /-- **Atomic-truth axiom** (the ω-logic leaf): a true closed literal closes any sequent containing
 it, at bound `0`, cut rank `0`. -/
 @[grind →]
-lemma axTrue {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v)
+lemma axTrue (b : Bool) (r : (ℒₒᵣ).Rel k) (v)
     (htrue : LitTrue (signedLit b r v)) (hmem : signedLit b r v ∈ Γ) : Provable 0 0 Γ :=
   ⟨Derivation.axTrue b r v htrue hmem, by simp [Derivation.ordinalBound], by simp [Derivation.cutRank]⟩
 
 /-- `⊤` closes a sequent at bound `0`, cut rank `0`. -/
 @[grind →]
-lemma verumR (h : (⊤ : (ArithmeticFormula ℕ)) ∈ Γ) : Provable 0 0 Γ :=
+lemma verumR (h : ⊤ ∈ Γ) : Provable 0 0 Γ :=
   ⟨Derivation.verumR h, by simp [Derivation.ordinalBound], by simp [Derivation.cutRank]⟩
 
 /-- Predicate-level `∧`-introduction. -/
 @[grind →]
-lemma andI (φ ψ : (ArithmeticFormula ℕ))
+lemma andI (φ ψ)
     (hφ : Provable α c (insert φ Γ)) (hψ : Provable β c (insert ψ Γ)) :
     Provable (max α β + 1) c (insert (φ ⋏ ψ) Γ) := by
   rcases hφ with ⟨dφ, hoφ, hcφ⟩
@@ -82,7 +82,7 @@ lemma andI (φ ψ : (ArithmeticFormula ℕ))
 
 /-- Predicate-level `∨`-introduction. -/
 @[grind →]
-lemma orI (φ ψ : (ArithmeticFormula ℕ))
+lemma orI (φ ψ)
     (h : Provable α c (insert φ (insert ψ Γ))) : Provable (α + 1) c (insert (φ ⋎ ψ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
   exact ⟨Derivation.orI φ ψ d, by simpa [Derivation.ordinalBound] using add_le_add_right ho 1,
@@ -114,14 +114,14 @@ lemma allω {β : ℕ → Ordinal.{0}}
 
 /-- **Contraction is free** (the payoff of set sequents): a duplicate insert collapses. -/
 @[grind →]
-lemma contr (φ : (ArithmeticFormula ℕ))
+lemma contr (φ)
     (h : Provable α c (insert φ (insert φ Γ))) : Provable α c (insert φ Γ) := by
   simpa [Finset.insert_idem] using h
 
 /-- **Predicate-level cut.** From `insert φ Γ` and `insert (∼φ) Γ` at cut rank `≤ c` with
 `complexity φ < c`, conclude `Γ` at the same cut rank. -/
 @[grind →]
-lemma cut (χ : (ArithmeticFormula ℕ))
+lemma cut (χ)
     (hc : (χ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞))
     (h₁ : Provable α c (insert χ Γ)) (h₂ : Provable β c (insert (∼χ) Γ)) :
     Provable (max α β + 1) c Γ := by
