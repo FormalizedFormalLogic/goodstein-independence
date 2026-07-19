@@ -1,6 +1,5 @@
 module
 
-public import GoodsteinPA.OperatorZeh
 public import GoodsteinPA.OperatorZef2.Basic
 import Std.Tactic.BVDecide.Normalize.Prop
 
