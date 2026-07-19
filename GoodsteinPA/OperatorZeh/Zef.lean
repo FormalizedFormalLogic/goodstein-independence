@@ -9,15 +9,14 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! # §7 — The function-slot judgment `Zef` (LOCK §1-A1/§3 amendment, ratified lap 184)
+/-! # The function-slot judgment `Zef`
 
-Ported verbatim from `wip/ZefSlotCalculus.lean` (kernel-verified sorry-free / axiom-clean).  `Zef`
-= `Zeh` with the ℕ-stage `m` replaced by a function-slot `f : ℕ → ℕ` — the R4-compliant carrier the
+`Zef` is `Zeh` with the ℕ-stage `m` replaced by a function-slot `f : ℕ → ℕ` — the carrier the
 stage judgment could not provide (the stage-`m` reduction is kernel-refuted:
-`principal_witness_exceeds_stage`; see `REBUILD-Z-LAP4-RATIFICATION-2026-07-02.md`).  `exI` bound
-`n ≤ f 0`, `allω` branch slot `rel1 f n`, reduction output slot **`g∘f`**.  This block discharges
-pins 1–2 (`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) and the read-off exit (`headline_readoff_Zef`) as REAL
-theorems; the §5 stage pins are rewired to consume them next (port step P3). -/
+`principal_witness_exceeds_stage`).  `exI` bound `n ≤ f 0`, `allω` branch slot `rel1 f n`,
+reduction output slot `g ∘ f`.  This block discharges the running-family reduction
+(`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) and the read-off exit (`headline_readoff_Zef`) as
+real theorems. -/
 /-! ## The slot calculus `Zef` (`Zeh` with stage `m` ⤳ slot `f : ℕ → ℕ`) -/
 
 inductive Zef : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ → Seq → Prop
@@ -121,19 +120,18 @@ theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ
 
 end ZefProv
 
-/-! ## §8 The stage→slot embedding `Zeh → Zef` (P4 consolidation; the LOCK §1-A1/§3 amendment
-made faithful — `Zef` conservatively generalizes `Zeh`)
+/-! ## The stage→slot embedding `Zeh → Zef` (`Zef` conservatively generalizes `Zeh`)
 
 The ℕ-stage judgment `Zeh` embeds into the function-slot judgment `Zef` at the **root slot**
-`rel1 (hardy e) m` (so `f 0 = hardy e (max m 0) = hardy e m`: the read-off bound is preserved,
-LOCK §4).  The `allω` branch threads by `rel1_rel1` (stage `max m n` ⤳ slot
+`rel1 (hardy e) m` (so `f 0 = hardy e (max m 0) = hardy e m`: the read-off bound is preserved).
+The `allω` branch threads by `rel1_rel1` (stage `max m n` ⤳ slot
 `rel1 (rel1 (hardy e) m) n = rel1 (hardy e) (max m n)`); the `exI` bound
-`n ≤ hardy e m = (rel1 (hardy e) m) 0` is definitional.  This is the kernel witness that the
-lap-184 amendment is a CONSERVATIVE generalization — every stage-`m` derivation is a slot
-derivation at the canonical slot — so nothing the stage calculus proved is lost. -/
+`n ≤ hardy e m = (rel1 (hardy e) m) 0` is definitional.  So `Zef` is a conservative
+generalization of `Zeh`: every stage-`m` derivation is a slot derivation at the canonical
+slot — nothing the stage calculus proved is lost. -/
 
 /-- **Stage→slot embedding `Zeh → Zef`** at the root slot `rel1 (hardy e) m`.  Witnesses that the
-LOCK §1-A1/§3 amendment (ℕ-stage ⤳ function-slot) is a conservative generalization. -/
+function-slot judgment is a conservative generalization of the ℕ-stage judgment. -/
 theorem zeh_to_zef {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
     (d : Zeh α e H m c Γ) : Zef α e H (rel1 (hardy e) m) c Γ := by
   induction d with
@@ -150,12 +148,12 @@ theorem zeh_to_zef {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
   | @cut α βφ βψ e H m c Γ φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH d₁ d₂ ih₁ ih₂ =>
       exact Zef.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH ih₁ ih₂
 
-/-! ## §8d Assembly plumbing in the slot judgment `Zef` (safe pre-ratification infrastructure)
+/-! ## Assembly plumbing in the slot judgment `Zef`
 
 Slot-form ports of `Zeh.mono_c` (cut-rank monotonicity) and the `ZehProv` wrapper combinators
-(`cut`/`exI`/`allω`) — the structural layer the cut-elimination assembly (laps 5–7) reuses to
-introduce cuts before eliminating them and to rebuild ω-nodes.  None consumes pin 3 or raises the
-control; all reuse the `Zeh`-agnostic ONote splice bricks (`osucc_add_NF`, `add_le_add_NF`, …). -/
+(`cut`/`exI`/`allω`) — the structural layer a cut-elimination assembly would reuse to introduce
+cuts before eliminating them and to rebuild ω-nodes.  None raises the control; all reuse the
+`Zeh`-agnostic `ONote` splice bricks (`osucc_add_NF`, `add_le_add_NF`, …). -/
 
 /-- **`c`-monotonicity** (cut rank): a derivation valid at rank `c` is valid at any `c' ≥ c`.
 Only the `cut` rule reads `c` (via `hcompl : φ.complexity < c`), so every other case threads. -/
@@ -175,11 +173,11 @@ theorem Zef.mono_c : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {
       exact Zef.cut φ (lt_of_lt_of_le hcompl hc) hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH
         (ih₁ hc) (ih₂ hc)
 
-/-- **`ZefProv`-level cut combinator** (assembly plumbing, NOT the gated reduction): package
-the cut RULE at the wrapper level — combine proofs of `φ` and `∼φ` (with `φ.complexity < c`)
-into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, SAME rank and control (no rank-lowering, no
-control-raise — those are the judge-gated `cutElimPass_Zf`/reduction).  The step/reduction
-assembly reuses this to introduce cuts before eliminating them. -/
+/-- **`ZefProv`-level cut combinator** (assembly plumbing, not the reduction itself): package
+the cut rule at the wrapper level — combine proofs of `φ` and `∼φ` (with `φ.complexity < c`)
+into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, same rank and control (no rank-lowering, no
+control-raise — those belong to `cutElimPass_Zf`/the reduction).  A step/reduction assembly
+would reuse this to introduce cuts before eliminating them. -/
 theorem ZefProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq} (φ : Form)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
     (D₁ : ZefProv βφ e H f c (insert φ Γ)) (D₂ : ZefProv βψ e H f c (insert (∼φ) Γ)) :

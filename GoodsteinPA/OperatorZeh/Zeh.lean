@@ -9,7 +9,7 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## §2 The minimal `Zeh` core (LOCK §1 verbatim, amendment A1 folded in). -/
+/-! ## The minimal `Zeh` core -/
 inductive Zeh : ONote → ONote → (ONote → Prop) → ℕ → ℕ → Seq → Prop
   | axL {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq} {ar : ℕ}
       (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
@@ -38,9 +38,9 @@ inductive Zeh : ONote → ONote → (ONote → Prop) → ℕ → ℕ → Seq →
 
 namespace Zeh
 
-/-- **`mono_H` — the pin's replacement for `mono_k`/`mono_d`** (a REAL proof): raise the
-generator set and the stage together.  The `exI` bound rides `hardy_monotone` (argument
-monotonicity — no ordinal-raise, hence no gate); memberships ride `Cl_mono`. -/
+/-- **`mono_H`** — the replacement for `Zekd.mono_k`/`Zekd.mono_d`: raise the generator set and
+the stage together.  The `exI` bound rides `hardy_monotone` (argument monotonicity — no
+ordinal-raise, hence no gate); memberships ride `Cl_mono`. -/
 theorem mono_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
     Zeh α e H m c Γ → ∀ {H' : ONote → Prop} {m' : ℕ},
     (∀ β, H β → H' β) → m ≤ m' → Zeh α e H' m' c Γ := by
@@ -76,8 +76,8 @@ information — every `Cl H β` side condition in a `Zeh` derivation is at an NF
 operator `H` is a derivation at any operator `H'`, SAME `(α, e, m, c, Γ)`.  This is the
 strong form of `mono_H` that `mono_H` (which needs `H ⊆ H'`) cannot express: the operator is
 freely replaceable in BOTH directions.  Discharges the operator-threading bookkeeping in the
-§5 reductions — the running relativization `adjoin H n` of the inversion family and the ambient
-`H` of the ∃-side are interchangeable at will (rail R1: membership is bookkeeping only). -/
+f-slot reductions — the running relativization `adjoin H n` of the inversion family and the
+ambient `H` of the ∃-side are interchangeable at will (membership is bookkeeping only). -/
 theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
     Zeh α e H m c Γ → ∀ {H' : ONote → Prop}, Zeh α e H' m c Γ := by
   intro α e H m c Γ dd
@@ -120,12 +120,11 @@ theorem weakening {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ Δ : Seq} 
 
 end ZehProv
 
-/-! ## §8 Structural monotonicity infrastructure (assembly plumbing, not judge-gated)
+/-! ## Structural monotonicity infrastructure (assembly plumbing)
 
-Cut-rank monotonicity — banked in the `Zekd` suite (`OperatorZinfty.lean:146`), reused by
-the rank-lowering elimination pass (`cutElimPass_Zf`, which relates rank-`c+1` and rank-`c`
-derivations).  Structural, does NOT consume the §5 f-slot statements; safe pre-ratification
-infrastructure. -/
+Cut-rank monotonicity, mirroring the `Zekd` suite (`OperatorZinfty.lean`), reused by the
+rank-lowering elimination pass `cutElimPass_Zf` (which relates rank-`c+1` and rank-`c`
+derivations).  Structural: does not consume the f-slot statements. -/
 
 namespace Zeh
 
@@ -149,11 +148,11 @@ theorem mono_c : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
 
 end Zeh
 
-/-- **`ZehProv`-level cut combinator** (assembly plumbing, NOT the gated reduction): package
-the cut RULE at the wrapper level — combine proofs of `φ` and `∼φ` (with `φ.complexity < c`)
-into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, SAME rank and control (no rank-lowering, no
-control-raise — those are the judge-gated `cutElimPass_Zf`/reduction).  The step/reduction
-assembly reuses this to introduce cuts before eliminating them. -/
+/-- **`ZehProv`-level cut combinator** (assembly plumbing, not the reduction itself): package
+the cut rule at the wrapper level — combine proofs of `φ` and `∼φ` (with `φ.complexity < c`)
+into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, same rank and control (no rank-lowering, no
+control-raise — those belong to `cutElimPass_Zf`/the reduction).  A step/reduction assembly
+would reuse this to introduce cuts before eliminating them. -/
 theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq} (φ : Form)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
     (D₁ : ZehProv βφ e H m c (insert φ Γ)) (D₂ : ZehProv βψ e H m c (insert (∼φ) Γ)) :

@@ -10,10 +10,10 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## The re-slot domination facts (lap-3 probe, restated for `rel1 · ·` slots) -/
+/-! ## The re-slot domination facts (restated for `rel1 · ·` slots) -/
 
-/-- **The ∀-family member re-slots to `g∘f`** (lap-3 `reslot_gof_family`): for `g` monotone, `f`
-monotone + inflationary, and witness `n ≤ f 0`, `rel1 g n ≤ g∘f` pointwise. -/
+/-- **The ∀-family member re-slots to `g∘f`**: for `g` monotone, `f` monotone + inflationary,
+and witness `n ≤ f 0`, `rel1 g n ≤ g∘f` pointwise. -/
 theorem reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
     (hf_infl : ∀ x, x ≤ f x) (hf_mono : Monotone f) {n : ℕ} (hn : n ≤ f 0) :
     ∀ x, rel1 g n x ≤ (g ∘ f) x := by
@@ -24,17 +24,16 @@ theorem reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
   · rw [max_eq_right h]; exact hf_infl x
   · rw [max_eq_left h]; exact le_trans hn (hf_mono (Nat.zero_le x))
 
-/-- **The ∃-side reduct re-slots to `g∘f`** (lap-3 `reslot_gof_exside`): `f ≤ g∘f` for `g`
-inflationary. -/
+/-- **The ∃-side reduct re-slots to `g∘f`**: `f ≤ g∘f` for `g` inflationary. -/
 theorem reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) :
     ∀ x, f x ≤ (g ∘ f) x := fun x => hg_infl (f x)
 
-/-! ## The running-family reduction, SORRY-FREE (the lap-2 gap, now closed) -/
+/-! ## The running-family reduction, sorry-free -/
 
 set_option maxHeartbeats 400000 in
-/-- **`cutReduceAllAuxRunning_Zf`** — the full Towsner §19.6 running-family cut-reduction in the slot
-calculus, output slot `g∘f`.  The lap-2 `redDeriv` port with the stage `m` replaced by the
-current slot `f'` (threaded monotone + inflationary) and the two axis-critical moves:
+/-- **`cutReduceAllAuxRunning_Zf`** — the full Towsner §19.6 running-family cut-reduction in the
+slot calculus, output slot `g∘f`: the reduction with the stage `m` replaced by the current slot
+`f'` (threaded monotone + inflationary) and the two axis-critical moves:
 - **principal `exI`** — both cut premises re-slot to `g∘f'` (`reslot_family` / `reslot_exside`),
   cut lands at `g∘f'` (the conclusion slot) with NO leak — the gap the fixed `hardy e m` bound
   could not cross;
@@ -192,10 +191,10 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
         (lt_of_le_of_lt ha₂le (Zekd.add_osucc_descent hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF hsuccNF ha₁H ha₂H D₁' D₂'
 
-/-- **`stepAllω_Zf`** (pin-2 analog in the slot calculus): the principal ∀/∃ cut-reduction step,
-IHs at ONE control `E` and stage-slots, output slot `g∘f`.  Invert the ∀-side `D₁` (slot `g`) to
-the running family via `allInv_Zef`, then apply `cutReduceAllAuxRunning_Zf` against the ∃-side `D₂` (slot `f`).
-Both premises are `ZefProv` wrappers; slots monotone + inflationary. -/
+/-- **`stepAllω_Zf`** — the principal ∀/∃ cut-reduction step in the slot calculus, IHs at one
+control `E` and stage-slots, output slot `g∘f`.  Invert the ∀-side `D₁` (slot `g`) to the
+running family via `allInv_Zef`, then apply `cutReduceAllAuxRunning_Zf` against the ∃-side `D₂`
+(slot `f`).  Both premises are `ZefProv` wrappers; slots monotone + inflationary. -/
 theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
     {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
     (hENF : E.NF) (hχc : χ.complexity < c)
@@ -216,11 +215,10 @@ theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
     Cl_of_NF (osucc_NF (ONote.add_nf α₁ γ₁)), ?_⟩
   exact hred.weakening (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))
 
-/-- **§6 seam-1 composition probe, slot form (a REAL corollary — the §5 reduction pins are now
-DISCHARGED).**  The ∀/∃ arm at an ω-branch: the two premises' slots `g` (∀-family) and `f`
-(∃-side) compose to `g ∘ f` on the output, at the FIXED control `E` (the raise/iteration live in
-`cutElimPass_Zf` alone).  Formerly the sorry-dependent `probe_cut_all_arm_Zf`; now a direct
-consequence of the discharged `stepAllω_Zf`.  Seam 1 reverses in the slot form. -/
+/-- **Seam-1 composition probe, slot form.**  The ∀/∃ arm at an ω-branch: the two premises'
+slots `g` (∀-family) and `f` (∃-side) compose to `g ∘ f` on the output, at the fixed control `E`
+(the raise/iteration live in `cutElimPass_Zf` alone).  A direct consequence of `stepAllω_Zf`;
+seam 1 reverses in the slot form. -/
 theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
     {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
     (hENF : E.NF) (hχc : χ.complexity < c)
@@ -231,26 +229,26 @@ theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Se
     ∃ δ : ONote, δ.NF ∧ Cl H δ ∧ ZefProv δ E H (g ∘ f) c Γ :=
   stepAllω_Zf hENF hχc hg_mono hg_infl hf_mono hf_infl IH1 IH2
 
-/-! ## Blueprint ledger — the DISCHARGED reduction pins (lap 184)
+/-! ## Blueprint ledger — the discharged reduction nodes
 
-Pins 1–2 are now `clean` nodes (real kernel footprint = trust base only); the audit reconciles
-their claimed status against `Lean.collectAxioms`.  Pin 3 (`cutElimPass_Zf`) stays `notready`
-(`sorryAx`-bearing) until its lap-5 restatement lands. -/
+Both nodes are `clean` (real kernel footprint = trust base only); the audit reconciles their
+claimed status against `Lean.collectAxioms`.  `cutElimPass_Zf` stays `notready`
+(`sorryAx`-bearing). -/
 
 attribute [goodstein_blueprint 12 clean "zeh_reduction_pin1" "0" 100 cutReduceAllAuxRunning_Zf
   []
   ["Eguchi–Weiermann arXiv:1205.2879 Lemma 25 (compose the slot at a principal cut)",
    "Towsner §19.6 running-family cut-reduction; output slot g∘f at FIXED control",
-   "REBUILD-Z-LAP4-RATIFICATION-2026-07-02.md: discharged in the Zef function-slot judgment; the ℕ-stage Zeh form was kernel-refuted (principal_witness_exceeds_stage), R4-noncompliant"]
-  "Pin 1: the running-family cut-reduction, function-slot form (fixed control, output slot g∘f). Discharged sorry-free lap 184."]
+   "Discharged in the Zef function-slot judgment; the ℕ-stage Zeh form was kernel-refuted (principal_witness_exceeds_stage)"]
+  "Pin 1: the running-family cut-reduction, function-slot form (fixed control, output slot g∘f)."]
   cutReduceAllAuxRunning_Zf
 
 attribute [goodstein_blueprint 13 clean "zeh_step_pin2" "0" 100 stepAllω_Zf
   []
   ["Eguchi–Weiermann arXiv:1205.2879 Lemma 25; the common-control ∀/∃ step",
    "Q3-unified (one ⋁-principal reduction; the ∀-side enters via allInv_Zef)",
-   "REBUILD-Z-LAP4-RATIFICATION-2026-07-02.md: discharged in the Zef function-slot judgment"]
-  "Pin 2: the common-control ∀/∃ step motive, function-slot form. Discharged sorry-free lap 184 (feeds pin 1 via allInv_Zef inversion)."]
+   "Discharged in the Zef function-slot judgment"]
+  "Pin 2: the common-control ∀/∃ step motive, function-slot form (feeds pin 1 via allInv_Zef inversion)."]
   stepAllω_Zf
 
 end GoodsteinPA.OperatorZeh

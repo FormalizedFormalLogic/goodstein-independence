@@ -10,17 +10,16 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## §4 The inversion suite (A3 — Z1 pin 1 DISCHARGED)
+/-! ## The inversion suite
 
-`allInv_Zeh` was the first disclosed Z1 statement pin; here it is a REAL proof, the
-six-case induction mirroring the banked `Zekd.allInv` (`OperatorZinfty.lean:484`) with the
-numeric `max k n₀`/`d`-inert bookkeeping re-keyed to the stage axis `max m n₀` and the
-relativization axis `adjoin H n₀`.  Since the minimal `Zeh` core has only the six mandated
-constructors (no `andI`/`orI`/`verumR`/`trueRel`/`trueNrel`), the induction is strictly
-shorter than `Zekd`'s — the only genuinely new bookkeeping is that inverting under an
-`allω`/`exI` sub-derivation adjoins `n₀` on TOP of the branch relativization, which the
-`adjoin` reassociation lemmas below absorb (they are the operator-side analog of `Zekd`'s
-`max`-reshuffle `max (max k n₀) n = max (max k n) n₀`). -/
+`allInv_Zeh` is the six-case induction mirroring `Zekd.allInv` (`OperatorZinfty.lean`), with the
+numeric `max k n₀` bookkeeping re-keyed to the stage axis `max m n₀` and the relativization axis
+`adjoin H n₀`.  Since the minimal `Zeh` core has only the six mandated constructors (no
+`andI`/`orI`/`verumR`/`trueRel`/`trueNrel`), the induction is strictly shorter than `Zekd`'s —
+the only genuinely new bookkeeping is that inverting under an `allω`/`exI` sub-derivation
+adjoins `n₀` on top of the branch relativization, which the `adjoin` reassociation lemmas below
+absorb (they are the operator-side analog of `Zekd`'s `max`-reshuffle
+`max (max k n₀) n = max (max k n) n₀`). -/
 
 /-! ### Finset push/pull helpers for the inversion (re-derivations of the `private`
 `OperatorZinfty` copies — calculus-independent). -/
@@ -112,32 +111,32 @@ theorem allInv_Zeh {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
       exact Zeh.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_mono (adjoin_le H n₀) hβφH) (Cl_mono (adjoin_le H n₀) hβψH) P₁ P₂
 
-/-! ## Blueprint ledger coverage (machine-synced status for the proven Zᵉ nodes)
+/-! ## Blueprint ledger coverage
 
-Only the PROVEN nodes carry ledger attributes.  Pins 1–2 (`cutReduceAllAuxRunning_Zf`,
-`stepAllω_Zf`) are now DISCHARGED (§7 slot judgment, lap 184) and eligible for attributes; pin 3
-(`cutElimPass_Zf`) is still `sorryAx`-bearing, and the audit treats a sorried footprint as
-`broken` = CI FAIL by design, so it stays a `notready` TeX node until its lap-5 discharge lands. -/
+Only nodes with a real (sorry-free) proof carry ledger attributes; `cutElimPass_Zf` is still
+`sorryAx`-bearing and is not eligible. -/
 
 attribute [goodstein_blueprint 10 clean "zeh_inversion_suite" "0" 100 allInv_Zeh
   []
   ["Towsner §19.4 ∀-inversion; mirrors the banked Zekd.allInv (OperatorZinfty.lean:484)",
    "GoodsteinPA.OperatorZeh.orInv_Zeh / andInvL_Zeh / andInvR_Zeh: complete propositional companions, axiom-clean",
-   "E-2026-07-02-JUDGE-rebuild-z-lap1-validation.md §2: suite completeness verified (the minimal core admits no fifth inversion)"]
+   "Suite completeness: the minimal core admits no fifth inversion"]
   "The Zeh inversion suite: control-preserving inversions (∀ at the relativization + running stage) feeding the fixed-control reduction and the cut-elimination assembly."]
   allInv_Zeh
 
-/-! ## §7 Companion inversions (A3 — mirroring the banked `Zekd` suite)
+/-! ## Companion inversions
 
-`orInv_Zeh`, `andInvL_Zeh`, `andInvR_Zeh` — the propositional inversions the banked `Zekd`
-suite carries (`OperatorZinfty.lean:221/326/404`).  They keep the SAME `(α, e, H, m, c)`
-(unlike `allInv_Zeh`, which raises the stage/relativization), so no `mono_H`/`Cl_mono`
-re-keying is needed — the side-condition memberships thread through unchanged.  Since the
-minimal `Zeh` core has NO `andI`/`orI` introduction rule, `φ ⋏ ψ` / `φ ⋎ ψ` is never
-principal: every case just threads the inversion past a passive side formula, so these ports
-are strictly SHORTER than `Zekd`'s (which each carry a principal `andI`/`orI` sub-case).
-They do not consume the §5 f-slot statements — safe grind, and reused by the cut-elimination
-assembly (laps 5–7) for cuts on propositional formulas. -/
+`orInv_Zeh`, `andInvL_Zeh`, `andInvR_Zeh` — the propositional inversions mirroring the `Zekd`
+suite (`OperatorZinfty.lean:221/326/404`).  They keep the same `(α, e, H, m, c)` (unlike
+`allInv_Zeh`, which raises the stage/relativization), so no `mono_H`/`Cl_mono` re-keying is
+needed — the side-condition memberships thread through unchanged.  Since the minimal `Zeh` core
+has no `andI`/`orI` introduction rule, `φ ⋏ ψ` / `φ ⋎ ψ` is never principal: every case just
+threads the inversion past a passive side formula, so these ports are strictly shorter than
+`Zekd`'s (which each carry a principal `andI`/`orI` sub-case).  They do not consume the f-slot
+statements — reused by a cut-elimination assembly for cuts on propositional formulas.
+
+- [Tow20, §19.3]
+-/
 
 /-- Double-insert reshuffle helpers (∨-inversion inserts both `φ` and `ψ`; re-derivations of
 the `private` `OperatorZinfty` copies). -/
@@ -371,13 +370,13 @@ theorem allInv_Zef {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
       exact Zef.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
-/-! ## §8c Propositional inversions in the slot judgment `Zef` (assembly prerequisite)
+/-! ## Propositional inversions in the slot judgment `Zef`
 
-Slot-form ports of `orInv_Zeh`/`andInvL_Zeh`/`andInvR_Zeh` — the propositional inversions the
-cut-elimination assembly (laps 5–7) reuses for cuts on `⋏`/`⋎` formulas.  Control-preserving (same
+Slot-form ports of `orInv_Zeh`/`andInvL_Zeh`/`andInvR_Zeh` — the propositional inversions a
+cut-elimination assembly would reuse for cuts on `⋏`/`⋎` formulas.  Control-preserving (same
 `(α, e, H, f, c)`); since the minimal core has no `andI`/`orI` intro rule, `φ ⋏ ψ` / `φ ⋎ ψ` is
 never principal, so every case threads the inversion past a passive side formula.  Completes the
-`Zef` inversion suite (`allInv_Zef` + these three), mirroring the banked `Zeh` suite. -/
+`Zef` inversion suite (`allInv_Zef` + these three), mirroring the `Zeh` suite. -/
 
 /-- **∨-inversion, `Zef` form** (Towsner §19.3): replace `φ ⋎ ψ` by `φ, ψ`, same
 `(α, e, H, f, c)`. -/

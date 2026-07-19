@@ -10,7 +10,7 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## §3 The bounding read-off — the exit (LOCK §4/§1 verbatim, PROVEN). -/
+/-! ## The bounding read-off — the exit -/
 
 /-- Sequent shape for the read-off: every member is the target `∃⁰ φ`, an already-bounded
 instance of `φ`, or a literal.  (BW87's "positive Σ₁(N)" restriction: ∀-free.) -/
@@ -25,7 +25,7 @@ def ReadoffGoal (φ : ArithmeticSemiformula ℕ 1) (e : ONote) (m : ℕ) (Γ : S
     (∃ ψ ∈ Γ, atomTrue ψ ∧
       ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, ψ = Semiformula.rel r v ∨ ψ = Semiformula.nrel r v)
 
-/-- **The bounding read-off (Q2), PROVEN — the Buchholz–Wainer Bounding-Lemma analog.**
+/-- **The bounding read-off — the Buchholz–Wainer Bounding-Lemma analog.**
 From a rank-0 (cut-free) `Zeh` derivation of a `ReadoffShape` sequent whose target matrix
 has atomic instances: a witness `n ≤ hardy e m` with `φ/[nm n]` true, or a true literal in
 the sequent.  The bound consumes ONLY the judgment's control `e` and stage `m`. -/
@@ -108,16 +108,19 @@ attribute [goodstein_blueprint 11 clean "zeh_readoff_exit" "0" 100 headline_read
   []
   ["Buchholz–Wainer 1987, Bounding Lemma (∀-free positive Σ₁ shape)",
    "Eguchi–Weiermann arXiv:1205.2879, Lemma 31 (witnessing bound f 0)",
-   "SPIKE-Z1-VERDICT.md Q2: proven per-instance, no evaluator, no truth predicate, no H-data (Σ₁-definability-of-H risk dissolved)"]
-  "The M2-exit read-off: a rank-0 Zeh derivation of the Σ₁ headline shape yields a witness ≤ hardy e m — the fixed exit every rebuild statement must compose toward (Δ₀-matrix extension is the scheduled laps-8–10 node)."]
+   "Proven per-instance: no evaluator, no truth predicate, no H-data (Σ₁-definability-of-H risk dissolved)"]
+  "The read-off exit: a rank-0 Zeh derivation of the Σ₁ headline shape yields a witness ≤ hardy e m."]
   headline_readoff
 
-/-! ## The read-off EXIT in the slot calculus (E–W Lemma 31 EXACTLY: witness ≤ `f 0`)
+/-! ## The read-off exit in the slot calculus (E–W Lemma 31 exactly: witness ≤ `f 0`)
 
-Closing the end-to-end viability loop: the slot calculus reaches the §3 exit, and — because the
-slot IS the witness budget — the read-off bound is `f 0`, matching E–W's Witnessing Lemma (Lemma
-31, `max{m_j} ≤ f(0)`) verbatim (vs the `Zeh` version's `hardy e m`, the canonical slot at 0).
-Independent of cut-elimination (operates on any rank-0 derivation). -/
+The slot calculus reaches the same read-off exit as `Zeh`, and — because the slot is the
+witness budget — the read-off bound is `f 0`, matching E–W's Witnessing Lemma (Lemma 31,
+`max{m_j} ≤ f(0)`) exactly (vs the `Zeh` version's `hardy e m`, the canonical slot at 0).
+Independent of cut-elimination (operates on any rank-0 derivation).
+
+- [EW12, Lemma 31]
+-/
 
 /-- Slot-form read-off sequent shape (`hardy e m ⤳ f 0`). -/
 def ReadoffShapeF (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=

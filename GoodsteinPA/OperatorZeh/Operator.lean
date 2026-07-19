@@ -10,12 +10,12 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## §0 The SPIKE-W4 transforms (LOCK §1 verbatim; `wip/` copies were re-derivations). -/
+/-! ## ONote/expTower transforms -/
 
 @[simp] theorem norm_expTower (α : ONote) : norm (expTower α) = max (norm α) 1 :=
   Zekd.norm_omegaPow
 
-/-- SPIKE-W4's family-uniform control raise `raise e α := e + ω^α`. -/
+/-- The family-uniform control raise `raise e α := e + ω^α`. -/
 def raise (e α : ONote) : ONote := e + expTower α
 
 theorem raise_NF {e α : ONote} (he : e.NF) (hα : α.NF) : (raise e α).NF := by
@@ -58,16 +58,16 @@ theorem osucc_omega_coeff_lt (K : ℕ+) : osucc (oadd 1 K 0) < expTower ONote.om
 theorem osucc_wmul_lt_expTower_omega (m : ℕ) : osucc (wmul m) < expTower ONote.omega :=
   osucc_omega_coeff_lt m.succPNat
 
-/-! ## §1 The operator layer (LOCK §1 verbatim). -/
+/-! ## The operator layer -/
 
-/-- The pin's closure conditions: closed under `+`, `ω^·` (`expTower`), `osucc`, `ofNat`. -/
+/-- The closure conditions: closed under `+`, `ω^·` (`expTower`), `osucc`, `ofNat`. -/
 structure IsOperator (H : ONote → Prop) : Prop where
   ofNat_mem : ∀ n : ℕ, H (ONote.ofNat n)
   add_mem : ∀ {α β : ONote}, H α → H β → H (α + β)
   expTower_mem : ∀ {α : ONote}, H α → H (expTower α)
   osucc_mem : ∀ {α : ONote}, H α → H (osucc α)
 
-/-- Inductive closure of a generator set under the pin's four operations.  Membership
+/-- Inductive closure of a generator set under the four operations.  Membership
 witnesses are finite trees — the "represented, countable" operator shape. -/
 inductive Cl (S : ONote → Prop) : ONote → Prop
   | base {β : ONote} : S β → Cl S β
@@ -76,7 +76,7 @@ inductive Cl (S : ONote → Prop) : ONote → Prop
   | expTower {α : ONote} : Cl S α → Cl S (expTower α)
   | osucc {α : ONote} : Cl S α → Cl S (osucc α)
 
-/-- The closure of ANY generator set is an operator (the pin's conditions, verbatim). -/
+/-- The closure of any generator set is an operator. -/
 theorem isOperator_Cl (S : ONote → Prop) : IsOperator (Cl S) where
   ofNat_mem := Cl.ofNat
   add_mem := Cl.add
@@ -94,9 +94,9 @@ theorem Cl_mono {S S' : ONote → Prop} (h : ∀ β, S β → S' β) :
   | expTower _ ih => exact Cl.expTower ih
   | osucc _ ih => exact Cl.osucc ih
 
-/-- `Cl` is the LEAST operator over its generators: closure membership maps into any
+/-- `Cl` is the least operator over its generators: closure membership maps into any
 `IsOperator` set containing the generators (the bridge between the abstract-`H` and
-generated-`H` formulations of the pin). -/
+generated-`H` formulations). -/
 theorem Cl_sub_of_isOperator {S H : ONote → Prop} (hop : IsOperator H)
     (hSH : ∀ β, S β → H β) : ∀ {β : ONote}, Cl S β → H β := by
   intro β hβ
@@ -145,9 +145,8 @@ theorem oaddZero_mem {S : ONote → Prop} {ε : ONote} (hε : ε.NF) (hεS : Cl 
 
 /-- **(K1) VACUITY.**  Every normal-form notation is in the closure of EVERY generator set:
 at the `ε₀` level, all of the notation system is hereditarily generated from numerals by
-`+` and `ω^·`.  Consequence: the pinned membership side conditions are uniformly
-dischargeable (good for the seams) and carry NO numeric information (fatal for any
-membership-based bound). -/
+`+` and `ω^·`.  Consequence: membership side conditions are uniformly dischargeable (good for
+the seams) and carry no numeric information (fatal for any membership-based bound). -/
 theorem Cl_of_NF {S : ONote → Prop} : ∀ {β : ONote}, β.NF → Cl S β := by
   intro β
   induction β with
@@ -205,12 +204,11 @@ theorem wmul_mem (S : ONote → Prop) (n : ℕ) : Cl S (wmul n) := by
       have h : wmul n + wmul 0 = wmul (n + 1) := rfl
       exact h ▸ Cl.add ih (Cl.expTower (Cl.ofNat 1))
 
-/-! ### Ordinal-splice descent bricks (assembly plumbing, not judge-gated)
+/-! ### Ordinal-splice descent bricks (assembly plumbing)
 
-The §19.6 reduction outputs ordinal `osucc (α + γ)`; its inner descent cites these pure
-`ONote` facts (no `Zeh` manipulation — reused by, but distinct from, the gated reduction).
-Each composes the banked `Zekd` ordinal lemmas.  Built ahead so the discharge lap is pure
-assembly. -/
+The Towsner §19.6 reduction outputs ordinal `osucc (α + γ)`; its inner descent cites these pure
+`ONote` facts (no `Zeh` manipulation — reused by, but distinct from, the reduction itself).
+Each composes the `Zekd` ordinal lemmas. -/
 
 /-- The reduction-output ordinal is NF whenever its components are. -/
 theorem osucc_add_NF {α γ : ONote} (hα : α.NF) (hγ : γ.NF) : (osucc (α + γ)).NF :=

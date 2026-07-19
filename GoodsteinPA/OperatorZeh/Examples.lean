@@ -10,22 +10,21 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-- **(K2a)** The finite part of every closure is ALL of ℕ — so the pin's original `exI`
-designation "some `m ∈ H ∩ ℕ`" designates nothing (amendment A1: the stage is
-judgment-carried). -/
+/-- **(K2a)** The finite part of every closure is ALL of ℕ — so an `exI` designation
+"some `m ∈ H ∩ ℕ`" would designate nothing (the stage is judgment-carried instead). -/
 theorem finite_part_unbounded (S : ONote → Prop) : ∀ m : ℕ, Cl S (ONote.ofNat m) :=
   Cl.ofNat
 
-/-- The pinned additive raise genuinely ABSORBS a numeral base (kernel-computed):
+/-- The additive raise genuinely absorbs a numeral base (kernel-computed):
 `raise (ofNat 5) 1 = ofNat 5 + ω = ω`. -/
 theorem raise_absorbs_base : raise (ONote.ofNat 5) 1 = ONote.omega := rfl
 
 /-- **(K2b) The membership-gated `mono_e` is kernel-refuted.**  There are `e < e'` (indeed
-`e' = raise e 1`, the pin's own raise shape), both normal-form, both in EVERY closure, with
+`e' = raise e 1`), both normal-form, both in EVERY closure, with
 `hardy e' m < hardy e m`: `hardy ω 0 = 1 < 5 = hardy (ofNat 5) 0`.  So no `Zeh`-rule
 package of (NF, `<`, membership) facts can re-establish the `exI` bound after a raise —
-`Zekd.mono_e`'s numeric gate `norm e ≤ k + d` does NOT "become `e ∈ H`"; the domination
-content must come from elsewhere (amendment A2 / the verdict's re-scoping). -/
+`Zekd.mono_e`'s numeric gate `norm e ≤ k + d` does not "become `e ∈ H`"; the domination
+content must come from elsewhere. -/
 theorem mono_e_membership_gate_refuted :
     ∃ (e e' : ONote) (m : ℕ), e.NF ∧ e'.NF ∧ e < e' ∧ e' = raise e 1 ∧
       (∀ S : ONote → Prop, Cl S e ∧ Cl S e') ∧ hardy e' m < hardy e m := by
@@ -41,8 +40,8 @@ theorem mono_e_membership_gate_refuted :
     omega
 
 /-- **(K3)** No norm-ball is `+`-closed (equal-exponent merges are additive in the head
-coefficient — W4B's rail).  So (K1) is not a representation artifact: no concrete `H` can
-satisfy the pinned closure conditions AND certify a norm bound. -/
+coefficient).  So (K1) is not a representation artifact: no concrete `H` can satisfy the
+closure conditions and certify a norm bound. -/
 theorem norm_ball_not_add_closed (R : ℕ) (hR : 1 ≤ R) :
     ∃ α β : ONote, norm α ≤ R ∧ norm β ≤ R ∧ R < norm (α + β) := by
   refine ⟨wmul (R - 1), wmul (R - 1), by rw [norm_wmul]; omega, by rw [norm_wmul]; omega, ?_⟩
@@ -70,37 +69,31 @@ theorem concrete_readoff_instance {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
 theorem concrete_bound_computes : hardy ONote.omega 1 = 3 := by
   rw [show ONote.omega = oadd 1 1 0 from rfl, hardy_omega]
 
-/-- **The bare `∃`-slot is VACUOUS** (kernel-backing for the lap-176 companion finding
-`REBUILD-Z-LAP1-FINDING-2026-07-02-fslot-control-raise.md`, Q2; banked lap 177 as permitted
-sibling infrastructure — the `NormControlled.comp` precedent: a fact about the stable
-`NormControlled` def, consuming no f-slot pin, touching no gated body).  For ANY control `e`
-and stage `m`, `∃ f, NormControlled f e m` holds trivially — the Hardy witness itself is a
-slot.  Consequence: the retired draft's conjunct `∃ f', NormControlled f' (raise e α') m` added
-NO quantitative content, so the read-off (E–W Lemma 31, `witness ≤ f(0)`) forces `f'` to be
-PINNED to the E–W iterate of the input `f`, not left existential.  This is why the lap-5 pin-3
-restatement (`cutElimPass_Zf`, §7b) outputs `iterSlot f α`, NOT `∃ f'`.  This LEMMA machine-checks
-the vacuity the Q2 ruling rests on. -/
+/-- **The bare `∃`-slot is vacuous.**  For any control `e` and stage `m`,
+`∃ f, NormControlled f e m` holds trivially — the Hardy witness itself is a slot.
+Consequence: a bare existential slot conjunct `∃ f', NormControlled f' (raise e α') m` adds no
+quantitative content, so the read-off (E–W Lemma 31, `witness ≤ f(0)`) forces `f'` to be pinned
+to the E–W iterate of the input `f`, not left existential — which is why `cutElimPass_Zf`'s
+restatement is expected to output `iterSlot f α`, not `∃ f'`. -/
 theorem normControlled_exists_trivial (e : ONote) (m : ℕ) :
     ∃ f : ℕ → ℕ, NormControlled f e m :=
   ⟨fun x => hardy e (max m x), fun _ => le_rfl⟩
 
-/-! ## §6 The two Z1 seams RE-EXPRESSED in the f-form (A2 — real proofs)
+/-! ## The two seams re-expressed in the f-form
 
-The Z1 seam probes re-run against the §5 f-slot statements.  If either seam failed to
-compose HERE it would be trigger T-R(i) (the E–W carrier failing where the ℕ-slots failed —
-no third carrier is pinned).  It does not: both close as real proofs. -/
+The seam probes re-run against the f-slot statements.  If either seam failed to compose here
+it would show the E–W carrier failing where the ℕ-slots failed — no third carrier pinned.  It
+does not: both close as real proofs. -/
 
-/-- **Seam 1 absorbed by composition** (spike §6, ported; contrast
-`SpikeW4B.seam1_uniform_slot_unpayable`, `¬(dd + x + 1 ≤ dd)` for every ℕ-slot): the
-reduction's `+ norm α + 1`-class output bump re-enters the COMPOSED slot, which pays any
-structural bump exactly. -/
+/-- **Seam 1 absorbed by composition**: a ℕ-slot `D` cannot pay `dd + x + 1 ≤ D` for every `dd`,
+but the composed function slot does — the reduction's `+ norm α + 1`-class output bump re-enters
+the composed slot, which pays any structural bump exactly. -/
 theorem seam1_bump_absorbed_by_composition (x : ℕ) :
     ∃ g : ℕ → ℕ, ∀ dd : ℕ, dd + x + 1 ≤ g dd :=
   ⟨fun dd => dd + x + 1, fun _ => le_rfl⟩
 
-/-- **Seam 2 absorbed by a function slot** (spike §6, ported; contrast
-`SpikeW4B.seam2_no_uniform_slot`, which refuted every ℕ-slot `D` against exactly this
-family): the two-level configuration's branch-`n` demand is paid by ONE function-valued
+/-- **Seam 2 absorbed by a function slot**: no ℕ-slot `D` pays this family's branch-`n` demand
+uniformly, but the two-level configuration's branch-`n` demand is paid by one function-valued
 slot evaluated through its own relativization. -/
 theorem seam2_function_slot_payable (dBase eNorm : ℕ) :
     ∃ f : ℕ → ℕ, ∀ n : ℕ, (dBase + eNorm + 1) + norm (expTower (wmul n)) + 1 ≤ rel1 f n 0 := by
@@ -111,7 +104,7 @@ theorem seam2_function_slot_payable (dBase eNorm : ℕ) :
   simp [rel1]
   omega
 
-/-- **Non-vacuity (W4B §3's two-level configuration, `Zeh` form; sorry-free).**  ONE `allω`
+/-- **Non-vacuity (the two-level configuration, `Zeh` form; sorry-free).**  ONE `allω`
 node at `ω^ω` whose EVERY branch `n` is a rank-`c` principal ∀/∃ cut with premise ordinals
 `ω·(n+1)` — the branch-unbounded configuration that killed the `(k,d)` calculus, realized as
 a legal `Zeh` derivation: every side condition is a membership, discharged by a REAL
@@ -138,8 +131,8 @@ theorem two_level_config_Zeh {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar →
 
 /-- **Seam-2 reversal probe, f-form (sorry-free):** the ω-node re-assembles over the
 reduction-output class, with each branch's control carried by the relativized f-slot
-`rel1 f n` (`normControlled_rel1`).  Mirrors the spike's `probe_allomega_reassembly_Zeh`
-membership form; here the numeric control rides the function slot the seam demands. -/
+`rel1 f n` (`normControlled_rel1`) — the numeric control rides the function slot the seam
+demands. -/
 theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
     {χ : ArithmeticSemiformula ℕ 1} {f : ℕ → ℕ} (hf : NormControlled f e m)
     (dd : ∀ n, Zeh (osucc (wmul n + wmul n)) e (adjoin H n) (max m n) c
@@ -155,12 +148,12 @@ theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ
   · rw [wmul_add_wmul]
     exact osucc_NF (nf_one.oadd _ NFBelow.zero)
 
-/-! ## §8b The two W4B seams, now in the SLOT judgment `Zef` (§6 migration complete)
+/-! ## The two seams, now in the slot judgment `Zef`
 
 The stage-form seam probes (`two_level_config_Zeh`, `probe_allomega_reassembly_Zf`) re-expressed
-natively in `Zef` — the calculus the cut-elimination assembly (laps 5–7) will operate in.  In the
-slot judgment the numeric control IS the slot, so the reassembly needs no separate `NormControlled`
-conjunct: each ω-branch simply runs at the relativized slot `rel1 f n`. -/
+natively in `Zef`.  In the slot judgment the numeric control is the slot, so the reassembly
+needs no separate `NormControlled` conjunct: each ω-branch simply runs at the relativized slot
+`rel1 f n`. -/
 
 /-- **Non-vacuity in the slot judgment (slot form of `two_level_config_Zeh`, sorry-free).**  ONE
 `allω` node at `ω^ω` whose every branch is a rank-`c` principal ∀/∃ cut with premise ordinals
