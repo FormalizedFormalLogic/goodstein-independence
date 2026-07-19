@@ -8,6 +8,7 @@ step `cutElimStep` (cut rank `c+1 → c`) and full cut elimination `cutElim` (cu
 module
 
 public import GoodsteinPA.ToMathlib.Ordinal
+public import GoodsteinPA.ToMathlib.OmegaTower
 public import GoodsteinPA.Zinfty.Inversion
 
 @[expose] public section
@@ -627,9 +628,8 @@ lemma removeFalsumAux : ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivatio
 
 
 /-- Remove a `⊥` from a cut-free sequent. -/
-lemma removeFalsum
-    (h : Provable β 0 (insert (⊥ : (ArithmeticFormula ℕ)) Γ)) : Provable β 0 Γ := by
-  rcases h with ⟨d, ho, hcr⟩
+lemma removeFalsum (h : Provable α 0 (insert ⊥ Γ)) : Provable α 0 Γ := by
+  rcases h with ⟨d, ho, hcr⟩;
   refine (Provable.removeFalsumAux d hcr (Finset.mem_insert_self _ _)).weakening ?_ |>.mono ho le_rfl
   intro x hx; simp only [Finset.mem_erase, Finset.mem_insert] at hx; exact (hx.2).resolve_left hx.1
 
@@ -694,8 +694,8 @@ lemma cutElimPrincipal {ξ : (ArithmeticFormula ℕ)}
 /-- The transfinite induction underlying Thm 19.7: a derivation of cut rank `≤ c+1` becomes
 cut-free-at-`c` at bound `ω^(ordinalBound d)`. Non-principal rules are reapplied (each `ω^· + small ≤ ω^(·+1)`);
 a rank-`< c` cut is kept; a rank-`= c` cut is eliminated by `cutElimPrincipal`. -/
-lemma cutElimStepAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ ((c + 1 : ℕ) : ℕ∞) →
-    Provable (Ordinal.omega0 ^ (ordinalBound d)) c Γ := by
+lemma cutElimStepAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ (c + 1) →
+  Provable (Ordinal.omega0 ^ (ordinalBound d)) c Γ := by
   intro Γ d
   induction d with
   | @axL Γ k r v hp hn =>
@@ -744,19 +744,17 @@ lemma cutElimStepAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation
 
 /-- **One level of cut elimination** (Towsner Thm 19.7): reducing the cut rank by one raises the
 ordinal bound to `ω^α`. -/
-theorem cutElimStep
-    (h : Provable α (c + 1) Γ) : Provable (Ordinal.omega0 ^ α) c Γ := by
+theorem cutElimStep (h : Provable α (c + 1) Γ) : Provable (Ordinal.omega0 ^ α) c Γ := by
   rcases h with ⟨d, ho, hcr⟩
   exact (Provable.cutElimStepAux d hcr).mono
     (Ordinal.opow_le_opow_right Ordinal.omega0_pos ho) le_rfl
 
 /-- **Full cut elimination** (Towsner Thm 19.9): iterate `cutElimStep` `c` times, reaching a
 cut-free derivation at ordinal `ω_c^α`. -/
-theorem cutElim
-    (h : Provable α c Γ) : Provable (Ordinal.omegaTower c α) 0 Γ := by
+theorem cutElim (h : Provable α c Γ) : Provable (Ordinal.omegaTower c α) 0 Γ := by
   induction c generalizing α with
-  | zero => simpa [Ordinal.omegaTower] using h
-  | succ c ih => exact ih (Provable.cutElimStep h)
+  | zero => simpa [Ordinal.omegaTower] using h;
+  | succ c ih => exact ih (Provable.cutElimStep h);
 
 end Provable
 

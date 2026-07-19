@@ -68,12 +68,12 @@ lemma litTrue_flip (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
 /-- A signed literal is never `⊤`. -/
 @[simp, grind .]
 lemma lit_ne_verum (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
-    signedLit b r v ≠ (⊤ : (ArithmeticFormula ℕ)) := by cases b <;> simp [signedLit]
+    signedLit b r v ≠ ⊤ := by cases b <;> simp [signedLit]
 
 /-- A signed literal is never `⊥`. -/
 @[simp, grind .]
 lemma lit_ne_falsum (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
-    signedLit b r v ≠ (⊥ : (ArithmeticFormula ℕ)) := by cases b <;> simp [signedLit]
+    signedLit b r v ≠ ⊥ := by cases b <;> simp [signedLit]
 
 /-- **The `Z_∞` calculus** over real `ℒₒᵣ` syntax. The `allω` (ω-rule) constructor stores one
 sub-derivation per numeral `n`: from `insert (φ/[nm n]) Γ` for every `n`, conclude
@@ -84,16 +84,16 @@ inductive Derivation : Finset (ArithmeticFormula ℕ) → Type
       (hn : Semiformula.nrel r v ∈ Γ) : Derivation Γ
   | axTrue {Γ : Finset (ArithmeticFormula ℕ)} {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v) (htrue : LitTrue (signedLit b r v))
       (hmem : signedLit b r v ∈ Γ) : Derivation Γ
-  | verumR {Γ : Finset (ArithmeticFormula ℕ)} (h : (⊤ : (ArithmeticFormula ℕ)) ∈ Γ) : Derivation Γ
+  | verumR {Γ : Finset (ArithmeticFormula ℕ)} (h : ⊤ ∈ Γ) : Derivation Γ
   | weak {Δ Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) (h : Δ ⊆ Γ) : Derivation Γ
   | andI {Γ : Finset (ArithmeticFormula ℕ)} (φ ψ : (ArithmeticFormula ℕ)) (dφ : Derivation (insert φ Γ)) (dψ : Derivation (insert ψ Γ)) :
       Derivation (insert (φ ⋏ ψ) Γ)
-  | orI {Γ : Finset (ArithmeticFormula ℕ)} (φ ψ : (ArithmeticFormula ℕ)) (d : Derivation (insert φ (insert ψ Γ))) : Derivation (insert (φ ⋎ ψ) Γ)
+  | orI {Γ : Finset (ArithmeticFormula ℕ)} (φ ψ) (d : Derivation (insert φ (insert ψ Γ))) : Derivation (insert (φ ⋎ ψ) Γ)
   | allω {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticSemiformula ℕ 1)
       (d : (n : ℕ) → Derivation (insert (φ/[nm n]) Γ)) : Derivation (insert (∀⁰ φ) Γ)
   | exI {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticSemiformula ℕ 1) (n : ℕ)
       (d : Derivation (insert (φ/[nm n]) Γ)) : Derivation (insert (∃⁰ φ) Γ)
-  | cut {Γ : Finset (ArithmeticFormula ℕ)} (φ : (ArithmeticFormula ℕ)) (d₁ : Derivation (insert φ Γ)) (d₂ : Derivation (insert (∼φ) Γ)) : Derivation Γ
+  | cut {Γ : Finset (ArithmeticFormula ℕ)} φ (d₁ : Derivation (insert φ Γ)) (d₂ : Derivation (insert (∼φ) Γ)) : Derivation Γ
 
 namespace Derivation
 
