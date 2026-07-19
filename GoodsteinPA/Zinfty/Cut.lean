@@ -17,7 +17,7 @@ namespace GoodsteinPA.ZinftyF
 open LO LO.FirstOrder
 open Derivation
 
-variable {Γ : Finset Formula} {α β : Ordinal.{0}} {c : ℕ}
+variable {Γ : Finset (ArithmeticFormula ℕ)} {α β : Ordinal.{0}} {c : ℕ}
 
 /-- Towsner **Def 19.8**: `ω`-tower over `α` of height `c` (`ω_c^α`), bottom-up:
 `ω_0^α = α`, `ω_{c+1}^α = ω_c^(ω^α)`. The cut-elimination ordinal blow-up. -/
@@ -46,7 +46,7 @@ private theorem cutAux_bnd1 (α a : Ordinal.{0}) : α + a + 1 + 1 ≤ α + (a + 
 
 /-- Frame subset: push an `insert` out of the `erase`/`∪`-framed context (`ih`-result → canonical).
 Explicit (not `tauto`) to avoid `whnf` blow-ups on negated atoms. -/
-private theorem frame_in (a e : Formula) (s t : Finset Formula) :
+private theorem frame_in (a e : (ArithmeticFormula ℕ)) (s t : Finset (ArithmeticFormula ℕ)) :
     (insert a s).erase e ∪ t ⊆ insert a (s.erase e ∪ t) := by
   intro x hx
   simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -57,7 +57,7 @@ private theorem frame_in (a e : Formula) (s t : Finset Formula) :
 
 /-- Frame subset: pull an `insert` back into the `erase`/`∪`-framed context (canonical → goal),
 valid when the head `a` is not the erased formula. -/
-private theorem frame_out {a e : Formula} (hne : a ≠ e) (s t : Finset Formula) :
+private theorem frame_out {a e : (ArithmeticFormula ℕ)} (hne : a ≠ e) (s t : Finset (ArithmeticFormula ℕ)) :
     insert a (s.erase e ∪ t) ⊆ (insert a s).erase e ∪ t := by
   intro x hx
   simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -88,7 +88,7 @@ and needs the §19.6 induction on the ∃-side; see `cutReduceAll` below.) -/
 /-- Reduce a cut on a **conjunction** `a ⋏ b` (its negation `∼a ⋎ ∼b` on the other side), with both
 conjuncts of complexity `< c`. Invert the ∧-side (`andInvL/R`) and the ∨-side (`orInv`), then cut
 `a` and `b` separately at cut-rank `≤ c`. Towsner **Thm 19.5** (∧/∨ principal reduction). -/
-lemma Provable.cutReduceConj {a b : Formula}
+lemma Provable.cutReduceConj {a b : (ArithmeticFormula ℕ)}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋏ b) Γ)) (hNC : Provable β c (insert (∼a ⋎ ∼b) Γ)) :
     Provable (max α β + 1 + 1) c Γ := by
@@ -118,7 +118,7 @@ lemma Provable.cutReduceConj {a b : Formula}
 /-- Reduce a cut on a **disjunction** `a ⋎ b` (its negation `∼a ⋏ ∼b` on the other side), with both
 disjuncts of complexity `< c`. Dual to `cutReduceConj`: invert the ∨-side (`orInv`) and the ∧-side
 (`andInvL/R`), then cut `a` and `b`. Towsner **Thm 19.5**. -/
-lemma Provable.cutReduceDisj {a b : Formula}
+lemma Provable.cutReduceDisj {a b : (ArithmeticFormula ℕ)}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋎ b) Γ)) (hNC : Provable β c (insert (∼a ⋏ ∼b) Γ)) :
     Provable (max α β + 1 + 1) c Γ := by
@@ -154,10 +154,10 @@ family available unchanged through the induction, it is a *fixed* hypothesis (ov
 
 /-- The induction core of the ∀/∃ reduction. `fam` is the ∀-inversion family; induct on the
 ∃-side derivation `d`. -/
-lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1}
+lemma Provable.cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1}
     (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ)) :
-    ∀ {Δ : Finset Formula} (d : Derivation Δ), cutRank d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
+    ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ), cutRank d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
       Provable (α + ordinalBound d + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   intro Δ d
   induction d with
@@ -309,7 +309,7 @@ lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1}
 
 /-- **Cut reduction, ∀/∃ principal** (Towsner Thm 19.6). A cut on `∀⁰ φ` (complexity `≤ c`) is
 eliminated by inverting the ∀-side and inducting on the ∃-side. -/
-lemma Provable.cutReduceAll {φ : SyntacticSemiformula ℒₒᵣ 1}
+lemma Provable.cutReduceAll {φ : ArithmeticSemiformula ℕ 1}
     (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (∀⁰ φ) Γ)) (hNC : Provable β c (insert (∃⁰ ∼φ) Γ)) :
     Provable (α + β + 1) c Γ := by
@@ -381,10 +381,10 @@ the leaves: an `axL` clash on `L` exposes its (TRUE) opposite polarity `∼L`, c
 `axTrue` leaf's true witness is `≠ L` (which is false), so it survives the erase. -/
 lemma Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k₀) (v₀)
     (hL : ¬ LitTrue (signedLit b₀ r₀ v₀)) :
-    ∀ {Δ : Finset Formula} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) →
+    ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) →
       signedLit b₀ r₀ v₀ ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase (signedLit b₀ r₀ v₀)) := by
-  set L : Formula := signedLit b₀ r₀ v₀ with hLdef
-  have hLne : ∀ (g : Formula), g.complexity ≠ 0 → g ≠ L := by
+  set L : (ArithmeticFormula ℕ) := signedLit b₀ r₀ v₀ with hLdef
+  have hLne : ∀ (g : (ArithmeticFormula ℕ)), g.complexity ≠ 0 → g ≠ L := by
     intro g hg; rw [hLdef]; exact Semiformula.ne_of_ne_complexity (by cases b₀ <;> simp [signedLit, hg])
   intro Δ d
   induction d with
@@ -485,18 +485,18 @@ premise (`⊢ nrel r v, Γ`) already proves `Γ` (set idempotence). Every other 
 /-- Induction core: cut a `rel r v` derivation (`d`) against a fixed `nrel r v` derivation (`hNC`). -/
 lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v)
     (hNC : Provable β 0 (insert (Semiformula.nrel r v) Γ)) :
-    ∀ {Δ : Finset Formula} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
+    ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
       Provable (β + ordinalBound d + 1) 0 (Δ.erase (Semiformula.rel r v) ∪ Γ) := by
   intro Δ d
   induction d with
   | @axL Δ k' r' v' hp hn =>
     intro _ _
     simp only [Derivation.ordinalBound]
-    have hnn : (Semiformula.nrel r' v' : Formula) ∈ Δ.erase (Semiformula.rel r v) :=
+    have hnn : (Semiformula.nrel r' v' : (ArithmeticFormula ℕ)) ∈ Δ.erase (Semiformula.rel r v) :=
       Finset.mem_erase.mpr ⟨by intro h; exact absurd h (by simp), hn⟩
-    by_cases hrel : (Semiformula.rel r' v' : Formula) = Semiformula.rel r v
+    by_cases hrel : (Semiformula.rel r' v' : (ArithmeticFormula ℕ)) = Semiformula.rel r v
     · -- the clash's positive member IS the cut atom ⇒ `nrel r v ∈ Γ`-part, use `hNC`
-      have hnrv : (Semiformula.nrel r' v' : Formula) = Semiformula.nrel r v := by
+      have hnrv : (Semiformula.nrel r' v' : (ArithmeticFormula ℕ)) = Semiformula.nrel r v := by
         rw [← Semiformula.neg_rel r' v', hrel, Semiformula.neg_rel]
       refine (hNC.weakening ?_).mono ?_ le_rfl
       · intro x hx
@@ -506,14 +506,14 @@ lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v)
         · exact Finset.mem_union_right _ hxΓ
       · exact le_trans le_self_add (le_of_lt (lt_add_of_pos_right _ one_pos))
     · -- clash avoids the cut atom ⇒ it survives the erase, close by `axL`
-      have hpp : (Semiformula.rel r' v' : Formula) ∈ Δ.erase (Semiformula.rel r v) :=
+      have hpp : (Semiformula.rel r' v' : (ArithmeticFormula ℕ)) ∈ Δ.erase (Semiformula.rel r v) :=
         Finset.mem_erase.mpr ⟨hrel, hp⟩
       exact (Provable.axL r' v' (Finset.mem_union_left _ hpp)
         (Finset.mem_union_left _ hnn)).mono zero_le le_rfl
   | @axTrue Δ k' b' r' v' htrue' hmem' =>
     intro _ _
     simp only [Derivation.ordinalBound]
-    by_cases heq : (signedLit b' r' v' : Formula) = Semiformula.rel r v
+    by_cases heq : (signedLit b' r' v' : (ArithmeticFormula ℕ)) = Semiformula.rel r v
     · -- the true literal IS the cut atom ⇒ `rel r v` is TRUE ⇒ `nrel r v` is a removable false
       -- literal on the `hNC` side. The TRUTH-LAYER key case.
       have htrue_rel : LitTrue (Semiformula.rel r v) := heq ▸ htrue'
@@ -528,18 +528,18 @@ lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v)
           have h1 := Finset.mem_of_mem_erase hx
           have h2 := Finset.ne_of_mem_erase hx
           rcases Finset.mem_insert.mp h1 with rfl | h3
-          · exact absurd (show (Semiformula.nrel r v : Formula) = signedLit false r v by simp [signedLit]) h2
+          · exact absurd (show (Semiformula.nrel r v : (ArithmeticFormula ℕ)) = signedLit false r v by simp [signedLit]) h2
           · exact h3
         exact Finset.mem_union_right _ hxΓ
       · exact le_trans hoN (le_trans le_self_add (le_of_lt (lt_add_of_pos_right _ one_pos)))
     · -- the true literal avoids the cut atom ⇒ survives the erase, close by `axTrue`
-      have hll : (signedLit b' r' v' : Formula) ∈ Δ.erase (Semiformula.rel r v) :=
+      have hll : (signedLit b' r' v' : (ArithmeticFormula ℕ)) ∈ Δ.erase (Semiformula.rel r v) :=
         Finset.mem_erase.mpr ⟨heq, hmem'⟩
       exact (Provable.axTrue b' r' v' htrue' (Finset.mem_union_left _ hll)).mono zero_le le_rfl
   | @verumR Δ h =>
     intro _ _
     simp only [Derivation.ordinalBound]
-    have ht : (⊤ : Formula) ∈ Δ.erase (Semiformula.rel r v) :=
+    have ht : (⊤ : (ArithmeticFormula ℕ)) ∈ Δ.erase (Semiformula.rel r v) :=
       Finset.mem_erase.mpr ⟨by simp, h⟩
     exact (Provable.verumR (Finset.mem_union_left _ ht)).mono zero_le le_rfl
   | @weak Δ' Δ d' hsub ih =>
@@ -626,8 +626,8 @@ lemma Provable.atomCut {k} (r : (ℒₒᵣ).Rel k) (v)
 /-- Removing `⊥` from a cut-free derivation, bound-preserving. `⊥` is never introduced by any rule
 and is never an `axL`/`verumR` witness, so it is incidental at every step (Towsner Thm 19.2 for the
 constant-`⊥` case). -/
-lemma Provable.removeFalsumAux : ∀ {Δ : Finset Formula} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) →
-    (⊥ : Formula) ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase ⊥) := by
+lemma Provable.removeFalsumAux : ∀ {Δ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) →
+    (⊥ : (ArithmeticFormula ℕ)) ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase ⊥) := by
   intro Δ d
   induction d with
   | @axL Δ k r v hp hn =>
@@ -642,14 +642,14 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Finset Formula} (d : Derivation Δ), 
     exact Provable.verumR (Finset.mem_erase.mpr ⟨by simp, h⟩)
   | @weak Δ' Δ d' hsub ih =>
     intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
-    by_cases hd : (⊥ : Formula) ∈ Δ'
+    by_cases hd : (⊥ : (ArithmeticFormula ℕ)) ∈ Δ'
     · exact (ih hcr hd).weakening (Finset.erase_subset_erase _ hsub)
     · refine (show Provable (ordinalBound d') 0 Δ' from ⟨d', le_rfl, hcr⟩).weakening ?_
       intro x hx; exact Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩
   | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
     intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
-    have hhead : (χ₀ ⋏ χ₁) ≠ (⊥ : Formula) := by simp [Wedge.wedge]
-    have hmem0 : (⊥ : Formula) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have hhead : (χ₀ ⋏ χ₁) ≠ (⊥ : (ArithmeticFormula ℕ)) := by simp [Wedge.wedge]
+    have hmem0 : (⊥ : (ArithmeticFormula ℕ)) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P0 : Provable (ordinalBound d₀) 0 (insert χ₀ (Γ₀.erase ⊥)) :=
       (ih₀ (le_trans (le_max_left _ _) hcr) (Finset.mem_insert_of_mem hmem0)).weakening (by
         intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
@@ -663,8 +663,8 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Finset Formula} (d : Derivation Δ), 
       · tauto)
   | @orI Γ₀ χ₀ χ₁ d' ih =>
     intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
-    have hhead : (χ₀ ⋎ χ₁) ≠ (⊥ : Formula) := by simp [Vee.vee]
-    have hmem0 : (⊥ : Formula) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have hhead : (χ₀ ⋎ χ₁) ≠ (⊥ : (ArithmeticFormula ℕ)) := by simp [Vee.vee]
+    have hmem0 : (⊥ : (ArithmeticFormula ℕ)) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P : Provable (ordinalBound d') 0 (insert χ₀ (insert χ₁ (Γ₀.erase ⊥))) :=
       (ih hcr (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))).weakening (by
         intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
@@ -675,8 +675,8 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Finset Formula} (d : Derivation Δ), 
       · tauto)
   | @allω Γ₀ χ' d' ih =>
     intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
-    have hhead : (∀⁰ χ') ≠ (⊥ : Formula) := by simp [UnivQuantifier.all]
-    have hmem0 : (⊥ : Formula) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have hhead : (∀⁰ χ') ≠ (⊥ : (ArithmeticFormula ℕ)) := by simp [UnivQuantifier.all]
+    have hmem0 : (⊥ : (ArithmeticFormula ℕ)) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have key : ∀ n, Provable (ordinalBound (d' n)) 0 (insert (χ'/[nm n]) (Γ₀.erase ⊥)) := fun n =>
       (ih n (le_trans (le_iSup (fun m => cutRank (d' m)) n) hcr)
         (Finset.mem_insert_of_mem hmem0)).weakening (by
@@ -688,8 +688,8 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Finset Formula} (d : Derivation Δ), 
       · tauto)
   | @exI Γ₀ χ' n d' ih =>
     intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
-    have hhead : (∃⁰ χ') ≠ (⊥ : Formula) := by simp [ExsQuantifier.exs]
-    have hmem0 : (⊥ : Formula) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    have hhead : (∃⁰ χ') ≠ (⊥ : (ArithmeticFormula ℕ)) := by simp [ExsQuantifier.exs]
+    have hmem0 : (⊥ : (ArithmeticFormula ℕ)) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P : Provable (ordinalBound d') 0 (insert (χ'/[nm n]) (Γ₀.erase ⊥)) :=
       (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (by
         intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
@@ -705,7 +705,7 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Finset Formula} (d : Derivation Δ), 
 
 /-- Remove a `⊥` from a cut-free sequent. -/
 lemma Provable.removeFalsum
-    (h : Provable β 0 (insert (⊥ : Formula) Γ)) : Provable β 0 Γ := by
+    (h : Provable β 0 (insert (⊥ : (ArithmeticFormula ℕ)) Γ)) : Provable β 0 Γ := by
   rcases h with ⟨d, ho, hcr⟩
   refine (Provable.removeFalsumAux d hcr (Finset.mem_insert_self _ _)).weakening ?_ |>.mono ho le_rfl
   intro x hx; simp only [Finset.mem_erase, Finset.mem_insert] at hx; exact (hx.2).resolve_left hx.1
@@ -714,7 +714,7 @@ lemma Provable.removeFalsum
 cut-free-at-`c` (bound `ω^α`, `ω^β`), a cut on `ξ` with `complexity ξ = c` is eliminated by the
 matching reduction (∧/∨ → `cutReduceConj/Disj`; ∀/∃ → `cutReduceAll`; atomic → `atomCut`;
 `⊤`/`⊥` → `removeFalsum`), staying below `ω^(max α β+1)`. -/
-lemma Provable.cutElimPrincipal {ξ : Formula}
+lemma Provable.cutElimPrincipal {ξ : (ArithmeticFormula ℕ)}
     (hξeq : ξ.complexity = c)
     (hC : Provable (Ordinal.omega0 ^ α) c (insert ξ Γ))
     (hNC : Provable (Ordinal.omega0 ^ β) c (insert (∼ξ) Γ)) :
@@ -723,7 +723,7 @@ lemma Provable.cutElimPrincipal {ξ : Formula}
   | verum =>
       have hc0 : c = 0 := hξeq.symm
       subst hc0
-      have hNC' : Provable (Ordinal.omega0 ^ β) 0 (insert (⊥ : Formula) Γ) := hNC
+      have hNC' : Provable (Ordinal.omega0 ^ β) 0 (insert (⊥ : (ArithmeticFormula ℕ)) Γ) := hNC
       refine (Provable.removeFalsum hNC').mono ?_ le_rfl
       exact Ordinal.opow_le_opow_right Ordinal.omega0_pos
         (le_trans (le_max_right α β) (le_of_lt (lt_add_of_pos_right _ one_pos)))
@@ -771,7 +771,7 @@ lemma Provable.cutElimPrincipal {ξ : Formula}
 /-- The transfinite induction underlying Thm 19.7: a derivation of cut rank `≤ c+1` becomes
 cut-free-at-`c` at bound `ω^(ordinalBound d)`. Non-principal rules are reapplied (each `ω^· + small ≤ ω^(·+1)`);
 a rank-`< c` cut is kept; a rank-`= c` cut is eliminated by `cutElimPrincipal`. -/
-lemma Provable.cutElimStepAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ ((c + 1 : ℕ) : ℕ∞) →
+lemma Provable.cutElimStepAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ ((c + 1 : ℕ) : ℕ∞) →
     Provable (Ordinal.omega0 ^ (ordinalBound d)) c Γ := by
   intro Γ d
   induction d with

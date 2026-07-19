@@ -25,16 +25,16 @@ remove the explicit `contr` rule). The other inversions (∧, ω/∀) follow the
 
 section Inversion
 
-variable {φ ψ : Formula} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
+variable {φ ψ : (ArithmeticFormula ℕ)} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Reorder helper: inverting under an `insert a` lands inside `insert a` of the inversion. -/
-private theorem invPush (a : Formula) (s : Finset Formula) :
+private theorem invPush (a : (ArithmeticFormula ℕ)) (s : Finset (ArithmeticFormula ℕ)) :
     insert φ (insert ψ ((insert a s).erase (φ ⋎ ψ)))
       ⊆ insert a (insert φ (insert ψ (s.erase (φ ⋎ ψ)))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- Reverse reorder helper, valid when the head `a` is not the inverted formula. -/
-private theorem invPull {a : Formula} (h : a ≠ (φ ⋎ ψ)) (s : Finset Formula) :
+private theorem invPull {a : (ArithmeticFormula ℕ)} (h : a ≠ (φ ⋎ ψ)) (s : Finset (ArithmeticFormula ℕ)) :
     insert a (insert φ (insert ψ (s.erase (φ ⋎ ψ))))
       ⊆ insert φ (insert ψ ((insert a s).erase (φ ⋎ ψ))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
@@ -45,7 +45,7 @@ private theorem invPull {a : Formula} (h : a ≠ (φ ⋎ ψ)) (s : Finset Formul
 /-- **∨-inversion (Towsner §19.2 analog).** If `φ ⋎ ψ` occurs in a `Z_∞`-derivable sequent, then
 replacing it by `φ` and `ψ` is derivable at the *same* ordinal bound and cut rank. Proved by
 structural induction on the derivation. -/
-lemma orInvAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
+lemma orInvAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
@@ -69,7 +69,7 @@ lemma orInvAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c
       (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hl))).mono le_rfl (Nat.zero_le c)
   | @verumR Γ h =>
     intro _ _
-    have ht : (⊤ : Formula) ∈ Γ.erase (φ ⋎ ψ) :=
+    have ht : (⊤ : (ArithmeticFormula ℕ)) ∈ Γ.erase (φ ⋎ ψ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩
     simp only [Derivation.ordinalBound]
     exact (Provable.verumR (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem ht))).mono
@@ -169,15 +169,15 @@ instance `χ/[nm n]`. The principal case `allω` supplies exactly the right inst
 
 section InversionAll
 
-variable {χ : SyntacticSemiformula ℒₒᵣ 1} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
+variable {χ : ArithmeticSemiformula ℕ 1} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Reorder helper (single insert): invert under `insert a`, push it outside. -/
-private theorem invPush1 (b a : Formula) (e : Formula) (s : Finset Formula) :
+private theorem invPush1 (b a : (ArithmeticFormula ℕ)) (e : (ArithmeticFormula ℕ)) (s : Finset (ArithmeticFormula ℕ)) :
     insert b ((insert a s).erase e) ⊆ insert a (insert b (s.erase e)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- Reverse reorder helper (single insert), valid when the head `a` is not the erased formula. -/
-private theorem invPull1 (b : Formula) {a e : Formula} (h : a ≠ e) (s : Finset Formula) :
+private theorem invPull1 (b : (ArithmeticFormula ℕ)) {a e : (ArithmeticFormula ℕ)} (h : a ≠ e) (s : Finset (ArithmeticFormula ℕ)) :
     insert a (insert b (s.erase e)) ⊆ insert b ((insert a s).erase e) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | hx
@@ -187,7 +187,7 @@ private theorem invPull1 (b : Formula) {a e : Formula} (h : a ≠ e) (s : Finset
 /-- **ω/∀-inversion (Towsner §19.4).** If `∀⁰ χ` occurs in a `Z_∞`-derivable sequent, then for
 every numeral `n` the instance `χ/[nm n]` is derivable at the *same* ordinal bound and cut rank.
 Proved by structural induction on the derivation (`n` fixed). -/
-lemma allInvAux (n : ℕ) : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) →
+lemma allInvAux (n : ℕ) : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) →
     (∀⁰ χ) ∈ Γ → Provable (ordinalBound d) c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   have hb0 : (χ/[nm n]) ≠ (∀⁰ χ) := Semiformula.ne_of_ne_complexity (by simp)
   intro Γ d
@@ -209,7 +209,7 @@ lemma allInvAux (n : ℕ) : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRa
     exact (Provable.axTrue b r v htrue (Finset.mem_insert_of_mem hl)).mono le_rfl (Nat.zero_le c)
   | @verumR Γ h =>
     intro _ _
-    have ht : (⊤ : Formula) ∈ Γ.erase (∀⁰ χ) :=
+    have ht : (⊤ : (ArithmeticFormula ℕ)) ∈ Γ.erase (∀⁰ χ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩
     simp only [Derivation.ordinalBound]
     exact (Provable.verumR (Finset.mem_insert_of_mem ht)).mono le_rfl (Nat.zero_le c)
@@ -308,11 +308,11 @@ in one induction (`andInvAux`) and expose each side as a corollary. -/
 
 section InversionAnd
 
-variable {φ ψ : Formula} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
+variable {φ ψ : (ArithmeticFormula ℕ)} {α : Ordinal.{0}} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- **∧-inversion (Towsner §19.3).** If `φ ⋏ ψ` occurs in a `Z_∞`-derivable sequent, then both
 `φ` and `ψ` (with the conjunction erased) are derivable at the same ordinal bound and cut rank. -/
-lemma andInvAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
+lemma andInvAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (Γ.erase (φ ⋏ ψ))) ∧
       Provable (ordinalBound d) c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   have hφ0 : φ ≠ (φ ⋏ ψ) := Semiformula.ne_of_ne_complexity (by simp)
@@ -339,7 +339,7 @@ lemma andInvAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (
       (Provable.axTrue b r v htrue (Finset.mem_insert_of_mem hl)).mono le_rfl (Nat.zero_le c)⟩
   | @verumR Γ h =>
     intro _ _
-    have ht : (⊤ : Formula) ∈ Γ.erase (φ ⋏ ψ) :=
+    have ht : (⊤ : (ArithmeticFormula ℕ)) ∈ Γ.erase (φ ⋏ ψ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩
     simp only [Derivation.ordinalBound]
     exact ⟨(Provable.verumR (Finset.mem_insert_of_mem ht)).mono le_rfl (Nat.zero_le c),
@@ -409,7 +409,7 @@ lemma andInvAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (
     simp only [Derivation.ordinalBound]
     have hhead : (φ' ⋎ ψ') ≠ (φ ⋏ ψ) := by intro h; simp [Vee.vee, Wedge.wedge] at h
     have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have mk : ∀ b : Formula,
+    have mk : ∀ b : (ArithmeticFormula ℕ),
         Provable (ordinalBound d') c (insert b ((insert φ' (insert ψ' Γ₀)).erase (φ ⋏ ψ))) →
         Provable (ordinalBound d' + 1) c (insert b ((insert (φ' ⋎ ψ') Γ₀).erase (φ ⋏ ψ))) := by
       intro b P
@@ -425,7 +425,7 @@ lemma andInvAux : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (
     simp only [Derivation.ordinalBound]
     have hhead : (∀⁰ χ') ≠ (φ ⋏ ψ) := by intro h; simp [Wedge.wedge] at h
     have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have mk : ∀ b : Formula,
+    have mk : ∀ b : (ArithmeticFormula ℕ),
         (∀ m, Provable (ordinalBound (d' m)) c (insert b ((insert (χ'/[nm m]) Γ₀).erase (φ ⋏ ψ)))) →
         Provable ((⨆ m, ordinalBound (d' m)) + 1) c (insert b ((insert (∀⁰ χ') Γ₀).erase (φ ⋏ ψ))) := by
       intro b P

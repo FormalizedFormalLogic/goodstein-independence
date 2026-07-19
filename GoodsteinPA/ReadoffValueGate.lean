@@ -61,13 +61,13 @@ theorem Gated_or_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : Form} :
     Gated P V (χ₁ ⋎ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
   rw [show (χ₁ ⋎ χ₂) = Semiformula.or χ₁ χ₂ from rfl, Gated]
 
-theorem Gated_all_iff {P : ℕ → ℕ} {V : ℕ} {χ : SyntacticSemiformula ℒₒᵣ 1} :
+theorem Gated_all_iff {P : ℕ → ℕ} {V : ℕ} {χ : ArithmeticSemiformula ℕ 1} :
     Gated P V (∀⁰ χ) ↔
       ((¬ atomTrue (∀⁰ χ) → ∃ k, k ≤ P V ∧ ¬ atomTrue (χ/[nm k])) ∧
         ∀ k, Gated P (max V k) (χ/[nm k])) := by
   rw [show (∀⁰ χ) = Semiformula.all χ from rfl, Gated]
 
-theorem Gated_exs_iff {P : ℕ → ℕ} {V : ℕ} {χ : SyntacticSemiformula ℒₒᵣ 1} :
+theorem Gated_exs_iff {P : ℕ → ℕ} {V : ℕ} {χ : ArithmeticSemiformula ℕ 1} :
     Gated P V (∃⁰ χ) ↔ ∀ n, Gated P (max V n) (χ/[nm n]) := by
   rw [show (∃⁰ χ) = Semiformula.exs χ from rfl, Gated]
 
@@ -159,7 +159,7 @@ with every bounded variable at `B` (names at `0`).  Ball guards `x < t` are atom
 dominates every guard value; it is monotone in `B` and contracts under numeral substitution
 (`gvb (χ/[nm k]) B ≤ gvb χ (max B k)`), which is exactly what the master induction threads. -/
 
-noncomputable def gvb : ∀ {m : ℕ}, SyntacticSemiformula ℒₒᵣ m → ℕ → ℕ
+noncomputable def gvb : ∀ {m : ℕ}, ArithmeticSemiformula ℕ m → ℕ → ℕ
   | _, Semiformula.rel _ v, B => Finset.univ.sup fun i => tvB (v i) B
   | _, Semiformula.nrel _ v, B => Finset.univ.sup fun i => tvB (v i) B
   | _, Semiformula.verum, _ => 0
@@ -169,7 +169,7 @@ noncomputable def gvb : ∀ {m : ℕ}, SyntacticSemiformula ℒₒᵣ m → ℕ 
   | _, Semiformula.all χ, B => gvb χ B
   | _, Semiformula.exs χ, B => gvb χ B
 
-theorem gvb_mono : ∀ {m : ℕ} (ψ : SyntacticSemiformula ℒₒᵣ m), Monotone (gvb ψ) := by
+theorem gvb_mono : ∀ {m : ℕ} (ψ : ArithmeticSemiformula ℕ m), Monotone (gvb ψ) := by
   intro m ψ
   induction ψ with
   | rel r v => exact fun B B' h => Finset.sup_mono_fun fun i _ => tvB_mono (v i) h
@@ -212,7 +212,7 @@ theorem q_class {K : ℕ} {n₁ n₂ : ℕ} (ω : Rew ℒₒᵣ ℕ n₁ ℕ n�
 
 /-- **The substitution law**: `gvb` contracts under a numeral-or-variable rewrite. -/
 theorem gvb_rew_le {K : ℕ} :
-    ∀ {n₁ : ℕ} (χ : SyntacticSemiformula ℒₒᵣ n₁) {n₂ : ℕ} (ω : Rew ℒₒᵣ ℕ n₁ ℕ n₂),
+    ∀ {n₁ : ℕ} (χ : ArithmeticSemiformula ℕ n₁) {n₂ : ℕ} (ω : Rew ℒₒᵣ ℕ n₁ ℕ n₂),
       (∀ i B, tvB (ω #i) B ≤ max B K) → (∀ x, ω &x = &x) →
       ∀ B, gvb (ω ▹ χ) B ≤ gvb χ (max B K) := by
   intro n₁ χ
@@ -233,12 +233,12 @@ theorem gvb_rew_le {K : ℕ} :
           (Finset.le_sup (f := fun i => tvB (v i) (max B K)) (Finset.mem_univ i))
   | verum =>
       intro n₂ ω _ _ B
-      rw [show (ω ▹ (Semiformula.verum : SyntacticSemiformula ℒₒᵣ _))
+      rw [show (ω ▹ (Semiformula.verum : ArithmeticSemiformula ℕ _))
         = Semiformula.verum from rfl]
       simp [gvb]
   | falsum =>
       intro n₂ ω _ _ B
-      rw [show (ω ▹ (Semiformula.falsum : SyntacticSemiformula ℒₒᵣ _))
+      rw [show (ω ▹ (Semiformula.falsum : ArithmeticSemiformula ℕ _))
         = Semiformula.falsum from rfl]
       simp [gvb]
   | and χ₁ χ₂ ih₁ ih₂ =>
@@ -274,7 +274,7 @@ theorem tvB_nm (k B : ℕ) : tvB (nm k) B = k := by
 
 /-- **The numeral-instance law** — the exact shape the master induction threads at `allω`/`exs`
 descents: instantiating the head variable by `nm k` contracts `gvb` into the `max B k` frame. -/
-theorem gvb_substs_le {χ : SyntacticSemiformula ℒₒᵣ 1} (k B : ℕ) :
+theorem gvb_substs_le {χ : ArithmeticSemiformula ℕ 1} (k B : ℕ) :
     gvb (χ/[nm k]) B ≤ gvb χ (max B k) := by
   have hb : ∀ (i : Fin 1) B', tvB ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]) #i) B' ≤ max B' k := by
     intro i B'
@@ -291,7 +291,7 @@ substituting `nm k` for the OUTER variable under one residual binder still contr
 into the `max B k` frame.  This is what contracts the pipeline's per-`m` value budget
 `P_m = gvb (goodsteinBodyE/[nm m])` into ONE fixed `P* = gvb goodsteinBodyE` with a `max m`
 argument shift — the m-uniformization of the read-off bound. -/
-theorem gvb_substs_q_le {χ : SyntacticSemiformula ℒₒᵣ 2} (k B : ℕ) :
+theorem gvb_substs_q_le {χ : ArithmeticSemiformula ℕ 2} (k B : ℕ) :
     gvb ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]).q ▹ χ) B ≤ gvb χ (max B k) := by
   have hb : ∀ (i : Fin 1) B', tvB ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]) #i) B' ≤ max B' k := by
     intro i B'
@@ -336,8 +336,8 @@ theorem valm_env_irrel_of_positive : ∀ (t : Semiterm ℒₒᵣ ℕ 1), t.Posit
 `“x. x < !!t” 🡒 φ` pins the instance index strictly below the guard value `tvB t 0`
 (env-independent by positivity) and falsifies the body instance. -/
 theorem gate_extract {t : Semiterm ℒₒᵣ ℕ 1} (hpos : t.Positive)
-    {φ : SyntacticSemiformula ℒₒᵣ 1} {k : ℕ}
-    (h : ¬ atomTrue (((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ)/[nm k])) :
+    {φ : ArithmeticSemiformula ℕ 1} {k : ℕ}
+    (h : ¬ atomTrue (((“x. x < !!t” : ArithmeticSemiformula ℕ 1) 🡒 φ)/[nm k])) :
     k < tvB t 0 ∧ ¬ atomTrue (φ/[nm k]) := by
   simp [atomTrue, Semiformula.imp_eq, Semiformula.Operator.lt_def] at h
   refine ⟨?_, by
@@ -359,24 +359,24 @@ theorem gate_extract {t : Semiterm ℒₒᵣ ℕ 1} (hpos : t.Positive)
 
 /-- The ball body's syntactic normal form (probe-verified): the guard is a genuine `<`-relation
 atom, the implication is `∼guard ⋎ φ`. -/
-theorem ball_body_eq (t : Semiterm ℒₒᵣ ℕ 1) (φ : SyntacticSemiformula ℒₒᵣ 1) :
-    ((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ)
+theorem ball_body_eq (t : Semiterm ℒₒᵣ ℕ 1) (φ : ArithmeticSemiformula ℕ 1) :
+    ((“x. x < !!t” : ArithmeticSemiformula ℕ 1) 🡒 φ)
       = (Semiformula.nrel Language.LT.lt ![#0, t] ⋎ φ) := by
   simp [Semiformula.imp_eq, Semiformula.Operator.lt_def]
 
 /-- The guard value sits inside the ball body's `gvb`. -/
-theorem tvB_le_gvb_ball (t : Semiterm ℒₒᵣ ℕ 1) (φ : SyntacticSemiformula ℒₒᵣ 1) (B : ℕ) :
-    tvB t B ≤ gvb ((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ) B := by
+theorem tvB_le_gvb_ball (t : Semiterm ℒₒᵣ ℕ 1) (φ : ArithmeticSemiformula ℕ 1) (B : ℕ) :
+    tvB t B ≤ gvb ((“x. x < !!t” : ArithmeticSemiformula ℕ 1) 🡒 φ) B := by
   rw [ball_body_eq]
   refine le_trans ?_ (le_max_left _ _)
   exact Finset.le_sup (f := fun i => tvB (![#0, t] i) B) (Finset.mem_univ 1)
 
 /-- **Σ₁ `all`-head inversion**: at `𝚺 1`, a `∀`-head can only be a ball
 (`all`/`pi` are 𝚷-constructors; `dummy_sigma` needs level ≥ 2). -/
-theorem sigma1_all_inv {χ : SyntacticSemiformula ℒₒᵣ 1}
+theorem sigma1_all_inv {χ : ArithmeticSemiformula ℕ 1}
     (H : Arithmetic.Hierarchy 𝚺 1 (Semiformula.all χ)) :
-    ∃ (t : Semiterm ℒₒᵣ ℕ 1) (φ : SyntacticSemiformula ℒₒᵣ 1),
-      t.Positive ∧ χ = ((“x. x < !!t” : SyntacticSemiformula ℒₒᵣ 1) 🡒 φ)
+    ∃ (t : Semiterm ℒₒᵣ ℕ 1) (φ : ArithmeticSemiformula ℕ 1),
+      t.Positive ∧ χ = ((“x. x < !!t” : ArithmeticSemiformula ℕ 1) 🡒 φ)
         ∧ Arithmetic.Hierarchy 𝚺 1 φ := by
   generalize hq : Semiformula.all χ = ψ at H
   cases H <;> try simp [LO.FirstOrder.ball, LO.FirstOrder.bexs] at hq
@@ -539,7 +539,7 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
 `∃ c, ∀ B, gvb ψ B ≤ G^[c] B`. -/
 theorem gvb_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
     (hG_add : ∀ a b, a + b ≤ G (max a b)) (hG_mul : ∀ a b, a * b ≤ G (max a b))
-    {m : ℕ} (ψ : SyntacticSemiformula ℒₒᵣ m) : ∃ c, ∀ B, gvb ψ B ≤ G^[c] B := by
+    {m : ℕ} (ψ : ArithmeticSemiformula ℕ m) : ∃ c, ∀ B, gvb ψ B ≤ G^[c] B := by
   induction ψ with
   | rel r v =>
       choose c hc using fun i => tvB_le_iter hG_mono hG_succ hG_add hG_mul (v i)
@@ -555,11 +555,11 @@ theorem gvb_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
         (iter_le_iter_of_succ hG_mono hG_succ (Finset.le_sup (Finset.mem_univ i)) B)
   | verum =>
       exact ⟨0, fun B => by
-        rw [show gvb (Semiformula.verum : SyntacticSemiformula ℒₒᵣ _) B = 0 from rfl]
+        rw [show gvb (Semiformula.verum : ArithmeticSemiformula ℕ _) B = 0 from rfl]
         exact Nat.zero_le B⟩
   | falsum =>
       exact ⟨0, fun B => by
-        rw [show gvb (Semiformula.falsum : SyntacticSemiformula ℒₒᵣ _) B = 0 from rfl]
+        rw [show gvb (Semiformula.falsum : ArithmeticSemiformula ℕ _) B = 0 from rfl]
         exact Nat.zero_le B⟩
   | and χ₁ χ₂ ih₁ ih₂ =>
       obtain ⟨c₁, h₁⟩ := ih₁
@@ -594,8 +594,8 @@ the `max (max V m)`-shifted argument (`gvb_substs_q_le` contracts the numeral ou
 theorem gated_certificate_uniform {G : ℕ → ℕ} (hG_mono : Monotone G)
     (hG_succ : ∀ x, x + 1 ≤ G x)
     (hG_add : ∀ a b, a + b ≤ G (max a b)) (hG_mul : ∀ a b, a * b ≤ G (max a b))
-    (body : SyntacticSemiformula ℒₒᵣ 2) :
-    ∃ k : ℕ, ∀ (m V : ℕ) (χ : SyntacticSemiformula ℒₒᵣ 1),
+    (body : ArithmeticSemiformula ℕ 2) :
+    ∃ k : ℕ, ∀ (m V : ℕ) (χ : ArithmeticSemiformula ℕ 1),
       χ = (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q ▹ body →
       Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) →
       ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V (∃⁰ χ) ∧

@@ -2,11 +2,11 @@
 # `Z_∞` calculus — core definitions
 
 The definition layer of the infinitary ω-rule calculus `Z_∞` over Foundation's real PA syntax
-(`SyntacticFormula ℒₒᵣ`): the closed formulas `Formula`, numerals `nm`, signed literals
+(`ArithmeticFormula ℕ`): the closed formulas, numerals `nm`, signed literals
 `signedLit`/`LitTrue`, the calculus `Derivation`, and the derivation measures
 `ordinalBound` / `cutRank` together with the bounded-provability predicate `Provable`. Sequents
-are finite sets of closed formulas (`Finset Formula`). The cut-elimination lemmas built on top of
-these live in `GoodsteinPA.Zinfty`.
+are finite sets of closed formulas (`Finset (ArithmeticFormula ℕ)`). The cut-elimination lemmas
+built on top of these live in `GoodsteinPA.Zinfty`.
 
 - [Tow20, §13, §15, §18]
 -/
@@ -25,10 +25,6 @@ namespace GoodsteinPA.ZinftyF
 
 open LO LO.FirstOrder
 
-/-- The closed formulas of `ℒₒᵣ` (full first-order syntax, with total de-Morgan negation `∼`
-and finite `complexity`). -/
-abbrev Formula := SyntacticFormula ℒₒᵣ
-
 /-- The `n`-th numeral of `ℒₒᵣ` as a closed term, ready for substitution `φ/[nm n]`. -/
 noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.numeral ℒₒᵣ n).const
 
@@ -36,7 +32,7 @@ noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.
 atomic-truth axiom `axTrue` ranges over *true closed literals* of either polarity (the ω-logic
 leaf that lets `Z_∞` prove PA's equational/arithmetic axioms). -/
 @[grind =]
-def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Semiterm ℒₒᵣ ℕ 0) → Formula
+def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Semiterm ℒₒᵣ ℕ 0) → (ArithmeticFormula ℕ)
   | true, _, r, v => Semiformula.rel r v
   | false, _, r, v => Semiformula.nrel r v
 
@@ -44,15 +40,15 @@ def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Semiterm
 standard ℒₒᵣ-model evaluation with no bound variables. For a closed literal the free-variable
 assignment is immaterial (fixed to `id`). -/
 @[grind =]
-def LitTrue (φ : Formula) : Prop := GoodsteinPA.Compat.gEvalm ℕ ![] (id : ℕ → ℕ) φ
+def LitTrue (φ : (ArithmeticFormula ℕ)) : Prop := GoodsteinPA.Compat.gEvalm ℕ ![] (id : ℕ → ℕ) φ
 
 /-- `∼`-duality: a closed formula is true iff its negation is false. -/
 @[simp, grind =]
-lemma litTrue_neg (φ : Formula) : LitTrue (∼φ) ↔ ¬ LitTrue φ := by
+lemma litTrue_neg (φ : (ArithmeticFormula ℕ)) : LitTrue (∼φ) ↔ ¬ LitTrue φ := by
   unfold LitTrue; simp
 
 /-- Totality (classical): every closed formula is true or its negation is. -/
-lemma litTrue_or_neg (φ : Formula) : LitTrue φ ∨ LitTrue (∼φ) := by
+lemma litTrue_or_neg (φ : (ArithmeticFormula ℕ)) : LitTrue φ ∨ LitTrue (∼φ) := by
   rw [litTrue_neg]; exact em _
 
 variable {k : ℕ}
@@ -72,32 +68,32 @@ lemma litTrue_flip (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
 /-- A signed literal is never `⊤`. -/
 @[simp, grind .]
 lemma lit_ne_verum (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
-    signedLit b r v ≠ (⊤ : Formula) := by cases b <;> simp [signedLit]
+    signedLit b r v ≠ (⊤ : (ArithmeticFormula ℕ)) := by cases b <;> simp [signedLit]
 
 /-- A signed literal is never `⊥`. -/
 @[simp, grind .]
 lemma lit_ne_falsum (b : Bool) (r : (ℒₒᵣ).Rel k) (v) :
-    signedLit b r v ≠ (⊥ : Formula) := by cases b <;> simp [signedLit]
+    signedLit b r v ≠ (⊥ : (ArithmeticFormula ℕ)) := by cases b <;> simp [signedLit]
 
 /-- **The `Z_∞` calculus** over real `ℒₒᵣ` syntax. The `allω` (ω-rule) constructor stores one
 sub-derivation per numeral `n`: from `insert (φ/[nm n]) Γ` for every `n`, conclude
 `insert (∀⁰ φ) Γ`.
 - [Tow20, §13] -/
-inductive Derivation : Finset Formula → Type
-  | axL {Γ : Finset Formula} {k} (r : (ℒₒᵣ).Rel k) (v) (hp : Semiformula.rel r v ∈ Γ)
+inductive Derivation : Finset (ArithmeticFormula ℕ) → Type
+  | axL {Γ : Finset (ArithmeticFormula ℕ)} {k} (r : (ℒₒᵣ).Rel k) (v) (hp : Semiformula.rel r v ∈ Γ)
       (hn : Semiformula.nrel r v ∈ Γ) : Derivation Γ
-  | axTrue {Γ : Finset Formula} {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v) (htrue : LitTrue (signedLit b r v))
+  | axTrue {Γ : Finset (ArithmeticFormula ℕ)} {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v) (htrue : LitTrue (signedLit b r v))
       (hmem : signedLit b r v ∈ Γ) : Derivation Γ
-  | verumR {Γ : Finset Formula} (h : (⊤ : Formula) ∈ Γ) : Derivation Γ
-  | weak {Δ Γ : Finset Formula} (d : Derivation Δ) (h : Δ ⊆ Γ) : Derivation Γ
-  | andI {Γ : Finset Formula} (φ ψ : Formula) (dφ : Derivation (insert φ Γ)) (dψ : Derivation (insert ψ Γ)) :
+  | verumR {Γ : Finset (ArithmeticFormula ℕ)} (h : (⊤ : (ArithmeticFormula ℕ)) ∈ Γ) : Derivation Γ
+  | weak {Δ Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Δ) (h : Δ ⊆ Γ) : Derivation Γ
+  | andI {Γ : Finset (ArithmeticFormula ℕ)} (φ ψ : (ArithmeticFormula ℕ)) (dφ : Derivation (insert φ Γ)) (dψ : Derivation (insert ψ Γ)) :
       Derivation (insert (φ ⋏ ψ) Γ)
-  | orI {Γ : Finset Formula} (φ ψ : Formula) (d : Derivation (insert φ (insert ψ Γ))) : Derivation (insert (φ ⋎ ψ) Γ)
-  | allω {Γ : Finset Formula} (φ : SyntacticSemiformula ℒₒᵣ 1)
+  | orI {Γ : Finset (ArithmeticFormula ℕ)} (φ ψ : (ArithmeticFormula ℕ)) (d : Derivation (insert φ (insert ψ Γ))) : Derivation (insert (φ ⋎ ψ) Γ)
+  | allω {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticSemiformula ℕ 1)
       (d : (n : ℕ) → Derivation (insert (φ/[nm n]) Γ)) : Derivation (insert (∀⁰ φ) Γ)
-  | exI {Γ : Finset Formula} (φ : SyntacticSemiformula ℒₒᵣ 1) (n : ℕ)
+  | exI {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticSemiformula ℕ 1) (n : ℕ)
       (d : Derivation (insert (φ/[nm n]) Γ)) : Derivation (insert (∃⁰ φ) Γ)
-  | cut {Γ : Finset Formula} (φ : Formula) (d₁ : Derivation (insert φ Γ)) (d₂ : Derivation (insert (∼φ) Γ)) : Derivation Γ
+  | cut {Γ : Finset (ArithmeticFormula ℕ)} (φ : (ArithmeticFormula ℕ)) (d₁ : Derivation (insert φ Γ)) (d₂ : Derivation (insert (∼φ) Γ)) : Derivation Γ
 
 namespace Derivation
 
@@ -108,7 +104,7 @@ computed by recursion on the unbounded `Derivation` tree — the ω-rule node ta
 `ℕ`-many premise bounds, then `+1`, and weakening is height-preserving.
 - [Tow20, §15] -/
 @[grind =]
-noncomputable def ordinalBound : {Γ : Finset Formula} → Derivation Γ → Ordinal.{0}
+noncomputable def ordinalBound : {Γ : Finset (ArithmeticFormula ℕ)} → Derivation Γ → Ordinal.{0}
   | _, axL _ _ _ _ => 0
   | _, axTrue _ _ _ _ _ => 0
   | _, verumR _ => 0
@@ -126,7 +122,7 @@ Foundation's `complexity` plays the role of Towsner's formula rank `rk`. *Crucia
 derivation has `cutRank = 0`.
 - [Tow20, §18, Definition 16.2] -/
 @[grind =]
-noncomputable def cutRank : {Γ : Finset Formula} → Derivation Γ → ℕ∞
+noncomputable def cutRank : {Γ : Finset (ArithmeticFormula ℕ)} → Derivation Γ → ℕ∞
   | _, axL _ _ _ _ => 0
   | _, axTrue _ _ _ _ _ => 0
   | _, verumR _ => 0
@@ -145,7 +141,7 @@ numeric side bound `k` (the `τ(α) < k` complexity condition), keeping only the
 and the cut rank `c`.
 - [Tow20, §18] -/
 @[grind =]
-def Provable (α : Ordinal.{0}) (c : ℕ) (Γ : Finset Formula) : Prop :=
+def Provable (α : Ordinal.{0}) (c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ d : Derivation Γ, d.ordinalBound ≤ α ∧ d.cutRank ≤ (c : ℕ∞)
 
 end GoodsteinPA.ZinftyF

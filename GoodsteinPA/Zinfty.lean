@@ -7,7 +7,7 @@ The provability layer over the core definitions in `GoodsteinPA.Zinfty.Basic`: t
 sequents) and the predicate-level introduction rules matching each `Derivation` constructor
 (`axL`, `axTrue`, `verumR`, `andI`, `orI`, `exI`, `allω`, `cut`).
 
-Sequents are finite sets of closed formulas (`Finset (SyntacticFormula ℒₒᵣ)`), matching Towsner's
+Sequents are finite sets of closed formulas (`Finset (ArithmeticFormula ℕ)`), matching Towsner's
 finite-set `Γ`. Consequently contraction is free (`insert φ (insert φ Γ) = insert φ Γ`
 definitionally), so the calculus needs no `contr` rule — which is what keeps the inversion lemmas
 tractable, since an explicit height-preserving `contr` rule would force the principal-contraction
@@ -32,12 +32,12 @@ namespace GoodsteinPA.ZinftyF
 
 open LO LO.FirstOrder
 
-variable {Γ : Finset Formula} {α β : Ordinal.{0}} {c : ℕ}
+variable {Γ : Finset (ArithmeticFormula ℕ)} {α β : Ordinal.{0}} {c : ℕ}
 
 namespace Derivation
 
 /-- The ω-rule bound strictly dominates each premise bound. -/
-lemma o_allω_gt (φ : SyntacticSemiformula ℒₒᵣ 1)
+lemma o_allω_gt (φ : ArithmeticSemiformula ℕ 1)
     (d : (n : ℕ) → Derivation (insert (φ/[nm n]) Γ)) (n : ℕ) : ordinalBound (d n) < ordinalBound (allω φ d) := by
   have h : ordinalBound (d n) ≤ ⨆ m, ordinalBound (d m) := Ordinal.le_iSup (fun m => ordinalBound (d m)) n
   calc ordinalBound (d n) ≤ ⨆ m, ordinalBound (d m) := h
@@ -50,20 +50,20 @@ open Derivation
 
 /-- **Bound monotonicity** (Towsner Lemma 16.4): relax either recorded bound. -/
 @[grind →]
-lemma Provable.mono {c' : ℕ} (hα : α ≤ β) (hc : c ≤ c') {Γ : Finset Formula} :
+lemma Provable.mono {c' : ℕ} (hα : α ≤ β) (hc : c ≤ c') {Γ : Finset (ArithmeticFormula ℕ)} :
     Provable α c Γ → Provable β c' Γ := by
   rintro ⟨d, ho, hcr⟩
   exact ⟨d, ho.trans hα, hcr.trans (by exact_mod_cast hc)⟩
 
 /-- **Sequent weakening** (Towsner Lemma 19.1): enlarge the sequent without raising bounds. -/
 @[grind →]
-lemma Provable.weakening {Δ : Finset Formula} (h : Γ ⊆ Δ) :
+lemma Provable.weakening {Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) :
     Provable α c Γ → Provable α c Δ := by
   rintro ⟨d, ho, hcr⟩
   exact ⟨Derivation.weak d h, by simpa [Derivation.ordinalBound] using ho, by simpa [Derivation.cutRank] using hcr⟩
 
 /-- Provability respects set equality of sequents. -/
-lemma Provable.cast {Δ : Finset Formula} (e : Γ = Δ) :
+lemma Provable.cast {Δ : Finset (ArithmeticFormula ℕ)} (e : Γ = Δ) :
     Provable α c Γ → Provable α c Δ := fun h => e ▸ h
 
 /-- Identity axiom: `rel r v` and `nrel r v` together close at bound `0`, cut rank `0`. -/
@@ -81,12 +81,12 @@ lemma Provable.axTrue {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v)
 
 /-- `⊤` closes a sequent at bound `0`, cut rank `0`. -/
 @[grind →]
-lemma Provable.verumR (h : (⊤ : Formula) ∈ Γ) : Provable 0 0 Γ :=
+lemma Provable.verumR (h : (⊤ : (ArithmeticFormula ℕ)) ∈ Γ) : Provable 0 0 Γ :=
   ⟨Derivation.verumR h, by simp [Derivation.ordinalBound], by simp [Derivation.cutRank]⟩
 
 /-- Predicate-level `∧`-introduction. -/
 @[grind →]
-lemma Provable.andI (φ ψ : Formula)
+lemma Provable.andI (φ ψ : (ArithmeticFormula ℕ))
     (hφ : Provable α c (insert φ Γ)) (hψ : Provable β c (insert ψ Γ)) :
     Provable (max α β + 1) c (insert (φ ⋏ ψ) Γ) := by
   rcases hφ with ⟨dφ, hoφ, hcφ⟩
@@ -97,7 +97,7 @@ lemma Provable.andI (φ ψ : Formula)
 
 /-- Predicate-level `∨`-introduction. -/
 @[grind →]
-lemma Provable.orI (φ ψ : Formula)
+lemma Provable.orI (φ ψ : (ArithmeticFormula ℕ))
     (h : Provable α c (insert φ (insert ψ Γ))) : Provable (α + 1) c (insert (φ ⋎ ψ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
   exact ⟨Derivation.orI φ ψ d, by simpa [Derivation.ordinalBound] using add_le_add_right ho 1,
@@ -108,7 +108,7 @@ arithmetic term model every closed term denotes a numeral, and numeral witnesses
 ω-rule inversion (`allInv`) produces, so the ∀/∃ cut-reduction (§19.6) can match the witness
 against the inverted ∀-family. -/
 @[grind →]
-lemma Provable.exI (φ : SyntacticSemiformula ℒₒᵣ 1)
+lemma Provable.exI (φ : ArithmeticSemiformula ℕ 1)
     (n : ℕ) (h : Provable α c (insert (φ/[nm n]) Γ)) :
     Provable (α + 1) c (insert (∃⁰ φ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
@@ -118,7 +118,7 @@ lemma Provable.exI (φ : SyntacticSemiformula ℒₒᵣ 1)
 /-- **Predicate-level ω-rule.** From a uniform-cut-rank family of premises with ordinal bounds
 `β n`, conclude `∀` at bound `(⨆ n, β n) + 1`. -/
 lemma Provable.allω {β : ℕ → Ordinal.{0}}
-    (φ : SyntacticSemiformula ℒₒᵣ 1) (h : ∀ n, Provable (β n) c (insert (φ/[nm n]) Γ)) :
+    (φ : ArithmeticSemiformula ℕ 1) (h : ∀ n, Provable (β n) c (insert (φ/[nm n]) Γ)) :
     Provable ((⨆ n, β n) + 1) c (insert (∀⁰ φ) Γ) := by
   choose d ho hcr using h
   have hsup : (⨆ n, ordinalBound (d n)) ≤ ⨆ n, β n :=
@@ -129,14 +129,14 @@ lemma Provable.allω {β : ℕ → Ordinal.{0}}
 
 /-- **Contraction is free** (the payoff of set sequents): a duplicate insert collapses. -/
 @[grind →]
-lemma Provable.contr (φ : Formula)
+lemma Provable.contr (φ : (ArithmeticFormula ℕ))
     (h : Provable α c (insert φ (insert φ Γ))) : Provable α c (insert φ Γ) := by
   simpa [Finset.insert_idem] using h
 
 /-- **Predicate-level cut.** From `insert φ Γ` and `insert (∼φ) Γ` at cut rank `≤ c` with
 `complexity φ < c`, conclude `Γ` at the same cut rank. -/
 @[grind →]
-lemma Provable.cut (χ : Formula)
+lemma Provable.cut (χ : (ArithmeticFormula ℕ))
     (hc : (χ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞))
     (h₁ : Provable α c (insert χ Γ)) (h₂ : Provable β c (insert (∼χ) Γ)) :
     Provable (max α β + 1) c Γ := by
