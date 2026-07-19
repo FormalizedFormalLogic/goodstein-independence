@@ -64,8 +64,8 @@ end Zekd
 `Zekd` carries an *exact* derivation ordinal, so every ordinal-raise (e.g. `wk`'s
 `γ ↦ osucc(α+γ)` in cut-elimination) needs `NF` of the source. The wrapper bundles an upper
 bound + the source's `NF`, so the `≤`-slack absorbs the `osucc`/`+1` bookkeeping uniformly and
-`NF` is always available. This is the surface §19.6 `cutReduceAll` is stated over (matching the
-role of the unbounded `Provable` wrapper for the plain `Z_∞` calculus). -/
+`NF` is always available. This is the surface the ∀/∃ cut reduction `cutReduceAllAux` is stated
+over (matching the role of the unbounded `Provable` wrapper for the plain `Z_∞` calculus). -/
 def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ α', α' ≤ α ∧ α'.NF ∧ norm α' < k + d ∧ Zekd α' e k d c Γ
 
@@ -118,7 +118,7 @@ the ∀-family at the *running* index `max k₀ n` (the n-th ω-premise lives hi
 with witnesses up to `hardy e (max k₀ n + dd₀)` does NOT exist at the smaller fixed index `k₀`.
 Closing the **witness-budget** half needs `fam` at `max k₀ n` AND the control `e` *raised* — the
 numeric single-index bound is provably FALSE (`h_{βₙ#ω}(max{k,n}) ≰ max{h_{β#ω}(k),n}` for large
-`n`). The literature-correct fix is Buchholz **operator-controlled** derivations. This proof is the
+`n`). The fix is operator-controlled derivations, cf. [EW12, §4, Definition 23]. This proof is the
 reusable **norm-machinery + structural port**: every case carries to the `H`-calculus verbatim
 except the `exI`/`allω` witness side-condition (`n ≤ hardy e (k+d)` ⤳ `n ∈ H`).
 
@@ -136,7 +136,8 @@ except the `exI`/`allω` witness side-condition (`n ≤ hardy e (k+d)` ⤳ `n �
 IH), keeping `α k₀ dd₀ Γ φ hαNF` fixed — the `allInv` precedent scaled to carry the external family.
 
 - [Tow20, §19.6]
-- [Buc03]
+- [EW12, §4, Definition 23]
+- [Buc03, §6]
 -/
 set_option maxHeartbeats 1600000 in
 theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}

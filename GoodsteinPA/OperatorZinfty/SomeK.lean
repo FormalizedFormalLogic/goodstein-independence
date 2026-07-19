@@ -280,7 +280,8 @@ theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
   · dsimp [K]; omega
   · dsimp [K]; omega
 
-/-- Existential-budget surface for the proved §19.6 norm-budget auxiliary.
+/-- Existential-budget surface for the proved ∀/∃ cut-reduction norm-budget auxiliary
+(cf. [Tow20, §19.6]).
 
 This is intentionally still the *fixed-family* theorem: the ∀-side family is supplied at one
 finite index `k₀`. The wrapper absorbs the ∃-side finite index and converts the `ZekdProv`
@@ -301,9 +302,9 @@ theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
       (by dsimp [K]; omega) hd₀ hmem
   exact ofProv (osucc_NF (ONote.add_nf α γ)) hprov
 
-/-- Control-raised surface for the fixed-family §19.6 forall/ex cut reduction.
+/-- Control-raised surface for the fixed-family ∀/∃ cut reduction (cf. [Tow20, §19.6]).
 
-This is the part of the full operator cut-elimination assembly where the norm-budget auxiliary
+This is the part of the full `Zekd` cut-elimination assembly where the norm-budget auxiliary
 has already fired and the control ordinal is then raised to enlarge every existential witness
 bound.  The existential-budget wrapper chooses the finite index needed by `mono_e` internally. -/
 theorem cutReduceAllAux_control {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}

@@ -1,32 +1,32 @@
 /-
-# `Zᵉᵏᵈ` — the control-ordinal operator witness-bounded `Z_∞` calculus
+# `Zᵉᵏᵈ` — a witness-bounded refinement of Towsner's `Z_∞` calculus
 
-The `Z_∞` calculus — derivations `⊢^{α,k}` bounded jointly by an ordinal `α` and a numeric gate
-`k`, together with the PA embedding and the numerically-controlled cut-elimination that raises
-`k` through the Hardy hierarchy at every cut — is Towsner's design. This file specializes that
-numeric gate to an **operator-controlled** form, replacing it with a control ordinal in the
-sense of Buchholz's operator-controlled derivations (see the citations at the end of this
-docstring).
+A witness-bounded refinement `Zᵉᵏᵈ ⊢^{α,e}_{k,d,c} Γ` of Towsner's restricted infinitary
+deduction `Z_∞ ⊢^{α,k}_c Γ`: derivations bounded jointly by a derivation ordinal `α` and a
+numeric gate `k`, together with the PA embedding and the numerically-controlled cut-elimination
+that raises `k` through the Hardy hierarchy at every cut. Base rules, ordinal/numeric bounds,
+and cut rank follow the literature design.
 
 A calculus whose `exI` witness bound is tied directly to the derivation ordinal `α` cannot absorb
 the witness growth under cut-elimination: the principal `exI` cut's witness `hardy γ(·)` grows
 super-linearly through commuting `ω`-rules, while cut-elimination only grows `α ↦ α + γ`. The
-`d`-bump `d ↦ d + norm α` alone closes the **norm-budget** obstruction of §19.6 but not this
-**witness-index** one.
+`d`-bump `d ↦ d + norm α` alone closes the norm-budget obstruction but not this witness-index one.
 
-**The fix: a control ordinal `e`.** Decouple the `exI` witness bound from the derivation ordinal
-`α` onto a separate **control ordinal** `e`: the witness bound becomes `n ≤ hardy e (k + d)`
-(instead of `hardy α (k + d)`). Cut-elimination then *raises `e`* to dominate the cut-formula
-bounds while `α` grows freely; the witness stays controlled by `hardy e`, a `hardy`-closed
-quantity (operator-controlled derivations, specialized to PA, numeric-`e` form).
+**Two formalization-specific extensions.** (i) The `k + d` budget split. (ii) A control ordinal
+`e` decoupling the `exI` witness bound from the derivation ordinal `α`: the witness bound becomes
+`n ≤ hardy e (k + d)` instead of `hardy α (k + d)` (the literature ties the witness bound directly
+to `α`, with no separate control axis). Cut-elimination then raises `e` to dominate the
+cut-formula bounds while `α` grows freely; the witness stays controlled by `hardy e`, a
+`hardy`-closed quantity.
 
 This file: the inductive `Zekd` calculus, its structural layer (`mono_k`, `mono_d`, `mono_c`,
 `mono_e`, `weakening`), and the ordinal/`norm` bookkeeping used throughout the cut-elimination
-suite. The inversion suite lives in `GoodsteinPA.OperatorZinfty.Inversion`, and the §19.5/§19.6
-cut reductions in `GoodsteinPA.OperatorZinfty.Cut`.
+suite. The inversion suite lives in `GoodsteinPA.OperatorZinfty.Inversion`, and the cut
+reductions in `GoodsteinPA.OperatorZinfty.Cut`.
 
 - [Tow20, §13, §15, §18, §19]
-- [Buc03]
+- [EW12, Definition 23]
+- [Buc03, §6]
 -/
 module
 
@@ -45,10 +45,18 @@ noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.
 noncomputable def atomTrue (φ : ArithmeticFormula ℕ) : Prop :=
   GoodsteinPA.Compat.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
 
-/-- **The control-ordinal operator witness-bounded `Z_∞` calculus** `Zᵉᵏᵈ ⊢^{α,e}_{k,d,c} Γ`.
+/-- **The witness-bounded `Z_∞` refinement** `Zᵉᵏᵈ ⊢^{α,e}_{k,d,c} Γ`.
 Derivation ordinal `α`; **control ordinal `e`** (governs the witness bound, raised by cut-elim);
 effective norm budget `k + d`; ω-premise `n` at `(max k n, d)`; **witness bound `hardy e (k+d)`**
-(decoupled from `α`, and threaded inertly through every rule). -/
+(decoupled from `α`, and threaded inertly through every rule).
+
+The base rules and ordinal/numeric bounds follow the `Z_∞` design; the `k + d` budget split and
+the control ordinal `e` are this formalization's own refinement.
+
+- [Tow20, §13, §15, §18]
+- [EW12, Definition 23]
+- [Buc03, §6]
+-/
 inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Finset (ArithmeticFormula ℕ) → Prop
   | axL {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
       (hn : Semiformula.nrel r v ∈ Γ) : Zekd α e k d c Γ
@@ -114,8 +122,9 @@ theorem mono_k : ∀ {α e k d c Γ}, Zekd α e k d c Γ → ∀ {k'}, k ≤ k' 
       exact Zekd.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
         (lt_of_lt_of_le hτψ (by omega)) (ih₁ hk) (ih₂ hk)
 
-/-- **`d`-monotonicity** (the additive cut-shift budget; the §19.6-commuting case raises this by
-`norm α`). The witness bound `hardy e (k+d)` rises with `d` via `hardy_monotone`. -/
+/-- **`d`-monotonicity** (the additive cut-shift budget; the ∀/∃ commuting cut-reduction case
+raises this by `norm α`, cf. [Tow20, §19.6]). The witness bound `hardy e (k+d)` rises with `d`
+via `hardy_monotone`. -/
 theorem mono_d : ∀ {α e k d c Γ}, Zekd α e k d c Γ → ∀ {d'}, d ≤ d' → Zekd α e k d' c Γ := by
   intro α e k d c Γ dd
   induction dd with
@@ -203,7 +212,8 @@ theorem mono_e : ∀ {α e k d c Γ}, Zekd α e k d c Γ → ∀ {e'}, e.NF → 
 theorem lt_osucc {o : ONote} (h : o.NF) : o < osucc o :=
   lt_def.mpr (by rw [repr_osucc h]; exact lt_add_one _)
 
-/-- **`osucc` strict monotonicity** (the §19.6 descent: `βᵢ < γ ⟹ osucc(α+βᵢ) < osucc(α+γ)`). -/
+/-- **`osucc` strict monotonicity** (the cut-reduction descent: `βᵢ < γ ⟹ osucc(α+βᵢ) < osucc(α+γ)`,
+cf. [Tow20, §19.6]). -/
 theorem osucc_lt_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x < y) : osucc x < osucc y := by
   refine lt_def.mpr ?_
   rw [repr_osucc hx, repr_osucc hy, ← Order.succ_eq_add_one, ← Order.succ_eq_add_one]
@@ -213,7 +223,7 @@ theorem osucc_lt_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x < y) : osucc
 theorem lt_osucc_of_lt {x y : ONote} (hy : y.NF) (h : x < y) : x < osucc y :=
   lt_trans h (lt_osucc hy)
 
-/-! #### Ordinal/`norm` bookkeeping for §19.6/§19.7. -/
+/-! #### Ordinal/`norm` bookkeeping for the cut-elimination reductions (cf. [Tow20, §19.6, §19.7]). -/
 
 theorem add_lt_add_left_NF {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
     (h : γ' < γ) : α + γ' < α + γ := by
@@ -228,7 +238,8 @@ theorem le_add_right_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : α ≤
   haveI := hαNF; haveI := hγNF
   exact le_def.mpr (by rw [repr_add]; exact le_self_add)
 
-/-- **The §19.6 descent step**, assembled: `γ' < γ ⟹ osucc (α + γ') < osucc (α + γ)`. -/
+/-- **The cut-reduction descent step**, assembled: `γ' < γ ⟹ osucc (α + γ') < osucc (α + γ)`
+(cf. [Tow20, §19.6]). -/
 theorem add_osucc_descent {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
     (h : γ' < γ) : osucc (α + γ') < osucc (α + γ) :=
   osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ) (add_lt_add_left_NF hαNF hγ'NF hγNF h)
