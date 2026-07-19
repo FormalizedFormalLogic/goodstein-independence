@@ -69,33 +69,35 @@ def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Seq) : Prop :=
 
 namespace ZekdProv
 
+variable {α e : ONote} {k d c : ℕ} {Γ : Seq}
+
 /-- Monotonicity in `α` (≤), `k`, `d`, `c` (the control `e` is raised separately by `mono_e`,
 which carries a budget side condition). The carried norm bound `norm α' < k+d` rides up to `k'+d'`. -/
-theorem mono {α β e : ONote} {k d c k' d' c' : ℕ} {Γ : Seq}
+theorem mono {β : ONote} {k' d' c' : ℕ}
     (hα : α ≤ β) (hk : k ≤ k') (hd : d ≤ d') (hc : c ≤ c') :
     ZekdProv α e k d c Γ → ZekdProv β e k' d' c' Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', le_trans hα' hα, hNF, by omega, ((D.mono_k hk).mono_d hd).mono_c hc⟩
 
 /-- Control-ordinal raising at the wrapper level. -/
-theorem mono_e {α e e' : ONote} {k d c : ℕ} {Γ : Seq}
+theorem mono_e {e' : ONote}
     (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e') (hbudget : norm e ≤ k + d) :
     ZekdProv α e k d c Γ → ZekdProv α e' k d c Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.mono_e heNF he'NF hlt hbudget⟩
 
 /-- Sequent weakening. -/
-theorem weakening {α e : ONote} {k d c : ℕ} {Γ Δ : Seq} (h : Γ ⊆ Δ) :
+theorem weakening {Δ : Seq} (h : Γ ⊆ Δ) :
     ZekdProv α e k d c Γ → ZekdProv α e k d c Δ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.wk h⟩
 
 /-- Respect set-equality of sequents. -/
-theorem cast {α e : ONote} {k d c : ℕ} {Γ Δ : Seq} (e0 : Γ = Δ) :
+theorem cast {Δ : Seq} (e0 : Γ = Δ) :
     ZekdProv α e k d c Γ → ZekdProv α e k d c Δ := fun h => e0 ▸ h
 
 /-- Lift a raw `Zekd` derivation (NF ordinal + norm bound) into the wrapper. -/
-theorem of {α e : ONote} {k d c : ℕ} {Γ : Seq} (hNF : α.NF) (hnorm : norm α < k + d)
+theorem of (hNF : α.NF) (hnorm : norm α < k + d)
     (D : Zekd α e k d c Γ) : ZekdProv α e k d c Γ := ⟨α, le_refl _, hNF, hnorm, D⟩
 
 end ZekdProv

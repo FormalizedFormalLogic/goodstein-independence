@@ -116,6 +116,10 @@ lemma atomTrue_rel_iff_not_nrel {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
     atomTrue (Semiformula.rel r v) ↔ ¬ atomTrue (Semiformula.nrel r v) := by
   simp [atomTrue, Semiformula.eval_rel, Semiformula.eval_nrel, Function.comp_def]
 
+section ValueCongruentAtoms
+
+variable {α e : ONote} {k d c : ℕ} {Γ : Seq}
+
 /--
 Bounded value-congruent atomic closure, relation-positive side.
 
@@ -123,7 +127,7 @@ This is the `Zekd` base leaf needed by assignment-carrying embedding: if the seq
 `R(v)` and `¬R(v')`, and the closed term vectors have equal standard values, a bounded truth leaf
 closes the sequent at any normal ordinal whose norm fits the current budget.
 -/
-theorem embedding_valueCongruentRelAtom_probe {α e : ONote} {k d c ar : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentRelAtom_probe {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
@@ -141,7 +145,7 @@ Bounded value-congruent atomic closure, negated-relation-positive side.
 
 This is the polarity twin of `embedding_valueCongruentRelAtom_probe`.
 -/
-theorem embedding_valueCongruentNrelAtom_probe {α e : ONote} {k d c ar : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentNrelAtom_probe {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
@@ -155,7 +159,7 @@ theorem embedding_valueCongruentNrelAtom_probe {α e : ONote} {k d c ar : ℕ} {
     exact Zekd.trueRel r v' ((atomTrue_rel_iff_not_nrel r v').mpr hnrel') hτ hαNF hn
 
 /-- Substituted-term form of the bounded value-congruent relation atom leaf. -/
-theorem embedding_valueCongruentRelSubstAtom_probe {α e : ONote} {k d c ar n : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentRelSubstAtom_probe {ar n : ℕ}
     (r : (ℒₒᵣ).Rel ar) (w w' : Fin n → ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ n)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
@@ -168,7 +172,7 @@ theorem embedding_valueCongruentRelSubstAtom_probe {α e : ONote} {k d c ar n : 
     (fun i => embedding_valm_subst_congr w w' hval (v i)) hαNF hτ hp hn
 
 /-- Substituted-term form of the bounded value-congruent negated-relation atom leaf. -/
-theorem embedding_valueCongruentNrelSubstAtom_probe {α e : ONote} {k d c ar n : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentNrelSubstAtom_probe {ar n : ℕ}
     (r : (ℒₒᵣ).Rel ar) (w w' : Fin n → ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ n)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
@@ -182,7 +186,7 @@ theorem embedding_valueCongruentNrelSubstAtom_probe {α e : ONote} {k d c ar n :
 
 /-- Closed-term specialization of the value-congruent relation atom leaf. -/
 theorem embedding_valueCongruentRelClosedTermAtom_probe
-    {α e : ONote} {k d c ar : ℕ} {Γ : Seq}
+    {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (s s' : ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ 1)
     (hval : stdClosedVal s = stdClosedVal s')
@@ -200,7 +204,7 @@ theorem embedding_valueCongruentRelClosedTermAtom_probe
 
 /-- Closed-term specialization of the value-congruent negated-relation atom leaf. -/
 theorem embedding_valueCongruentNrelClosedTermAtom_probe
-    {α e : ONote} {k d c ar : ℕ} {Γ : Seq}
+    {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (s s' : ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ 1)
     (hval : stdClosedVal s = stdClosedVal s')
@@ -217,18 +221,24 @@ theorem embedding_valueCongruentNrelClosedTermAtom_probe
   · simpa [Semiformula.rew_rel, Function.comp_def] using hn
 
 /-- Constant-true base case for the bounded value-congruent EM engine. -/
-theorem embedding_valueCongruentVerum_probe {α e : ONote} {k d c n : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentVerum_probe {n : ℕ}
     (w : Fin n → ArithmeticTerm ℕ)
     (hp : (Rew.subst w ▹ (⊤ : ArithmeticSemiformula ℕ n)) ∈ Γ) :
     Zekd α e k d c Γ :=
   Zekd.verumR (by simpa using hp)
 
 /-- Constant-false base case for the bounded value-congruent EM engine. -/
-theorem embedding_valueCongruentFalsum_probe {α e : ONote} {k d c n : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentFalsum_probe {n : ℕ}
     (w' : Fin n → ArithmeticTerm ℕ)
     (hn : (∼(Rew.subst w' ▹ (⊥ : ArithmeticSemiformula ℕ n))) ∈ Γ) :
     Zekd α e k d c Γ :=
   Zekd.verumR (by simpa using hn)
+
+end ValueCongruentAtoms
+
+section ValueCongruentChildren
+
+variable {e : ONote} {k d c : ℕ} {Γ : Seq}
 
 /--
 Bounded closed-term existential introduction, reduced to the genuine remaining EM/congruence premise.
@@ -238,7 +248,7 @@ has been closed by an assignment, its standard value `stdClosedVal s` is used as
 The only non-structural input is the value-congruent premise converting `ψ[s]` to `ψ[nm (stdClosedVal s)]`.
 -/
 theorem embedding_closedTermExI_of_valueCongruentEM_probe
-    {βSrc βCong αCut αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {βSrc βCong αCut αOut : ONote}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : βCong < αCut) (hCutLt : αCut < αOut)
@@ -268,7 +278,7 @@ ordinals: the future recursive engine can choose any ordinal schedule and discha
 side conditions separately.
 -/
 theorem embedding_valueCongruentAndFromChildren_probe
-    {n : ℕ} {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {n : ℕ} {βA βB αAnd αOut : ONote}
     (w w' : Fin n → ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ n)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
     (hANF : βA.NF) (hBNF : βB.NF) (hAndNF : αAnd.NF) (hOutNF : αOut.NF)
@@ -307,7 +317,7 @@ This is the polarity-dual parent constructor to
 `¬a[w'] ∧ ¬b[w']`, then `Zekd.orI` packages the positive `a[w] ∨ b[w]` parent.
 -/
 theorem embedding_valueCongruentOrFromChildren_probe
-    {n : ℕ} {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {n : ℕ} {βA βB αAnd αOut : ONote}
     (w w' : Fin n → ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ n)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
     (hANF : βA.NF) (hBNF : βB.NF) (hAndNF : αAnd.NF) (hOutNF : αOut.NF)
@@ -340,7 +350,7 @@ theorem embedding_valueCongruentOrFromChildren_probe
 
 /-- Closed-term specialization of the conjunction parent constructor. -/
 theorem embedding_valueCongruentAndClosedTermFromChildren_probe
-    {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {βA βB αAnd αOut : ONote}
     (s s' : ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ 1)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
     (hANF : βA.NF) (hBNF : βB.NF) (hAndNF : αAnd.NF) (hOutNF : αOut.NF)
@@ -361,7 +371,7 @@ theorem embedding_valueCongruentAndClosedTermFromChildren_probe
 
 /-- Closed-term specialization of the disjunction parent constructor. -/
 theorem embedding_valueCongruentOrClosedTermFromChildren_probe
-    {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {βA βB αAnd αOut : ONote}
     (s s' : ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ 1)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
     (hANF : βA.NF) (hBNF : βB.NF) (hAndNF : αAnd.NF) (hOutNF : αOut.NF)
@@ -379,6 +389,8 @@ theorem embedding_valueCongruentOrClosedTermFromChildren_probe
   · simpa using hn
   · simpa using dA
   · simpa using dB
+
+end ValueCongruentChildren
 
 /-! #### A first recursive bounded value-congruence shell -/
 
