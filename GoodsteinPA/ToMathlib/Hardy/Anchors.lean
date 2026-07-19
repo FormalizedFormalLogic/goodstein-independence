@@ -9,9 +9,6 @@ and `Hardy.lean` so that those files stay free of `meta` imports.
 module
 
 public import GoodsteinPA.ToMathlib.Hardy
-public meta import Mathlib.SetTheory.Ordinal.Notation  -- shake: keep
-public meta import GoodsteinPA.ToMathlib.FastGrowing.Norm  -- shake: keep
-public meta import GoodsteinPA.ToMathlib.Hardy.Basic  -- shake: keep
 public meta import GoodsteinPA.ToMathlib.Hardy.Structure  -- shake: keep
 
 @[expose] public section

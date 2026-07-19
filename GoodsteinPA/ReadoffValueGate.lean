@@ -1,7 +1,6 @@
 module
 
 public import GoodsteinPA.OperatorZef2
-public import GoodsteinPA.Compat
 
 @[expose] public section
 

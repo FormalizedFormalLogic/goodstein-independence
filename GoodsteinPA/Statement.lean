@@ -23,10 +23,7 @@ proved (`wip/Bridge.lean`, axiom-clean). Those faithfulness anchors are LOCKED.
 -/
 module
 
-public import GoodsteinPA.BlueprintAttr
-public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.E1EmbeddingGrind
-public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 
 @[expose] public section

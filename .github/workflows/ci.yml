@@ -33,19 +33,23 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4
-      # elan + `lake exe cache get` only (build: false); we drive `lake build Foundation` ourselves.
-      # Skip lean-action's own whole-.lake GitHub cache (use-github-cache: false) — we manage a
-      # tighter, Foundation-only cache below instead of shuttling the full 8GB tree.
-      - uses: leanprover/lean-action@v1
-        with:
-          build: false
-          use-github-cache: false
+      # Probe the Foundation cache FIRST. On a hit this job's product already exists, so every step
+      # below is skipped and the post-job save re-affirms the existing entry — no wasted mathlib
+      # `cache get` or Foundation build. Only on a MISS do we run lean-action and build from source.
       - name: Cache Foundation build (keyed on toolchain + manifest)
         id: foundation-cache
         uses: actions/cache@v4
         with:
           path: .lake/packages/Foundation/.lake/build
           key: foundation-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
+      # elan + `lake exe cache get` only (build: false); we drive `lake build Foundation` ourselves.
+      # Skip lean-action's own whole-.lake GitHub cache (use-github-cache: false) — we manage a
+      # tighter, Foundation-only cache above instead of shuttling the full 8GB tree.
+      - uses: leanprover/lean-action@v1
+        if: steps.foundation-cache.outputs.cache-hit != 'true'
+        with:
+          build: false
+          use-github-cache: false
       - name: Build Foundation from source (cache miss only)
         if: steps.foundation-cache.outputs.cache-hit != 'true'
         run: lake build Foundation
@@ -54,8 +58,9 @@ jobs:
       # RE-EMITS them (`⚠ Replayed`) on every downstream build. Emptying `"log"` drops the replay
       # WITHOUT touching the `.olean` (verified: no recompile, diagnostics vanish, build still green).
       # This only silences replayed *text* — it cannot change what the axiom/blueprint gates verify,
-      # which read the oleans. Idempotent, so it's a harmless no-op on a cache hit.
+      # which read the oleans. Runs on a cache miss only: a hit's saved cache is already cleared.
       - name: Clear Foundation's replayed-warning cache
+        if: steps.foundation-cache.outputs.cache-hit != 'true'
         run: |
           python3 - <<'PY'
           import json, pathlib
