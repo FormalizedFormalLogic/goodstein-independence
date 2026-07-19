@@ -8,7 +8,6 @@ public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2
 public import GoodsteinPA.OperatorZeh
-public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.OperatorZinfty.Basic
 public import GoodsteinPA.OperatorZinfty.BoundedTruth
 public import GoodsteinPA.OperatorZinfty.Cut

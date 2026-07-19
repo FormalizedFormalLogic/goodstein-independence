@@ -16,7 +16,7 @@ Beyond the verbatim seed this module carries the lap-1 statement work:
 
 * **§4 — the inversion suite (A3, PROVEN).**  `allInv_Zeh` (Z1 pin 1) is discharged as a
   real proof — the six-case induction mirroring the banked `Zekd.allInv`
-  (`OperatorZinfty.lean:484`) with the numeric `max k n₀`/`d`-inert bookkeeping re-keyed to
+  (`GoodsteinPA.OperatorZinfty.Zekd.allInv`) with the numeric `max k n₀`/`d`-inert bookkeeping re-keyed to
   the stage `max m n₀` and the relativization `adjoin H n₀`.  `#print axioms` clean.
 * **§5/§7 — the f-slot elimination suite (A2; pins 1–2 DISCHARGED lap 184, pin 3 `sorry`).**
   The Eguchi–Weiermann function-slot forms (LOCK §3): the running-family reduction
@@ -42,7 +42,7 @@ declarations (R5).
 -/
 module
 
-public import GoodsteinPA.OperatorZinfty
+public import GoodsteinPA.OperatorZinfty.InductionLeaf
 public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 import Std.Tactic.BVDecide.Normalize.Prop
@@ -478,7 +478,7 @@ theorem concrete_bound_computes : hardy ONote.omega 1 = 3 := by
 /-! ## §4 The inversion suite (A3 — Z1 pin 1 DISCHARGED)
 
 `allInv_Zeh` was the first disclosed Z1 statement pin; here it is a REAL proof, the
-six-case induction mirroring the banked `Zekd.allInv` (`OperatorZinfty.lean:484`) with the
+six-case induction mirroring the banked `Zekd.allInv` (`GoodsteinPA.OperatorZinfty.Inversion`) with the
 numeric `max k n₀`/`d`-inert bookkeeping re-keyed to the stage axis `max m n₀` and the
 relativization axis `adjoin H n₀`.  Since the minimal `Zeh` core has only the six mandated
 constructors (no `andI`/`orI`/`verumR`/`trueRel`/`trueNrel`), the induction is strictly
@@ -1035,7 +1035,7 @@ theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ
 /-! ## §7 Companion inversions (A3 — mirroring the banked `Zekd` suite)
 
 `orInv_Zeh`, `andInvL_Zeh`, `andInvR_Zeh` — the propositional inversions the banked `Zekd`
-suite carries (`OperatorZinfty.lean:221/326/404`).  They keep the SAME `(α, e, H, m, c)`
+suite carries (`GoodsteinPA.OperatorZinfty.Inversion`: `orInv`/`andInvL`/`andInvR`).  They keep the SAME `(α, e, H, m, c)`
 (unlike `allInv_Zeh`, which raises the stage/relativization), so no `mono_H`/`Cl_mono`
 re-keying is needed — the side-condition memberships thread through unchanged.  Since the
 minimal `Zeh` core has NO `andI`/`orI` introduction rule, `φ ⋏ ψ` / `φ ⋎ ψ` is never
@@ -1205,7 +1205,7 @@ theorem andInvR_Zeh {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {m 
 
 /-! ## §8 Structural monotonicity infrastructure (assembly plumbing, not judge-gated)
 
-Cut-rank monotonicity — banked in the `Zekd` suite (`OperatorZinfty.lean:146`), reused by
+Cut-rank monotonicity — banked in the `Zekd` suite (`GoodsteinPA.OperatorZinfty.Zekd.mono_c`), reused by
 the rank-lowering elimination pass (`cutElimPass_Zf`, which relates rank-`c+1` and rank-`c`
 derivations).  Structural, does NOT consume the §5 f-slot statements; safe pre-ratification
 infrastructure. -/
@@ -1332,7 +1332,7 @@ Only the PROVEN nodes carry ledger attributes.  Pins 1–2 (`cutReduceAllAuxRunn
 
 attribute [goodstein_blueprint 10 clean "zeh_inversion_suite" "0" 100 allInv_Zeh
   []
-  ["Towsner §19.4 ∀-inversion; mirrors the banked Zekd.allInv (OperatorZinfty.lean:484)",
+  ["Towsner §19.4 ∀-inversion; mirrors the banked Zekd.allInv (GoodsteinPA.OperatorZinfty.Inversion)",
    "GoodsteinPA.OperatorZeh.orInv_Zeh / andInvL_Zeh / andInvR_Zeh: complete propositional companions, axiom-clean",
    "E-2026-07-02-JUDGE-rebuild-z-lap1-validation.md §2: suite completeness verified (the minimal core admits no fifth inversion)"]
   "The Zeh inversion suite: control-preserving inversions (∀ at the relativization + running stage) feeding the fixed-control reduction and the cut-elimination assembly."]
