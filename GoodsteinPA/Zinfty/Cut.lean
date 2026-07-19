@@ -7,7 +7,6 @@ step `cutElimStep` (cut rank `c+1 → c`) and full cut elimination `cutElim` (cu
 -/
 module
 
-public import GoodsteinPA.ToMathlib.Ordinal
 public import GoodsteinPA.ToMathlib.OmegaTower
 public import GoodsteinPA.Zinfty.Inversion
 
