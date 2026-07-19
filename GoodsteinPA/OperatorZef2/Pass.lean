@@ -28,7 +28,7 @@ The crux decomposition is in three cases:
   `stepAllω_Zf2` + `collapse_add_lt` + `ewIter_comp_le`; the c=0 atomic case needs an atom-cut lemma).
 -/
 theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
-    ∀ {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq} {r : ℕ},
+    ∀ {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {r : ℕ},
       Zef2 α e H f r Γ → r = c + 1 → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
       α.NF → Cl H α →
       Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
@@ -193,7 +193,7 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
             exact ⟨w, le_trans hwle (le_trans hsum (le_of_lt hcollt)), hwNF, hwH,
               le_trans hwg (hcomp 0), Dw.mono_f hcomp⟩
         | all ψ =>
-            have h : (Semiformula.all ψ : Form).complexity = ψ.complexity + 1 := rfl
+            have h : (Semiformula.all ψ : ArithmeticFormula ℕ).complexity = ψ.complexity + 1 := rfl
             have hψc : ψ.complexity < c := by omega
             have hread : ψ.complexity ≤ ewIter f βψ 0 := by
               have h2 : ψ.complexity ≤ f 0 := by omega
@@ -206,7 +206,7 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
             exact ⟨w, le_trans hwle (le_of_lt hcollt), hwNF, hwH,
               le_trans hwg (hcomp 0), Dw.mono_f hcomp⟩
         | exs ψ =>
-            have h : (Semiformula.exs ψ : Form).complexity = ψ.complexity + 1 := rfl
+            have h : (Semiformula.exs ψ : ArithmeticFormula ℕ).complexity = ψ.complexity + 1 := rfl
             have h2 : (∼ψ).complexity = ψ.complexity := Semiformula.complexity_neg ψ
             have hψc : (∼ψ).complexity < c := by omega
             have hread : (∼ψ).complexity ≤ ewIter f βφ 0 := by
@@ -230,7 +230,7 @@ variable {α e : ONote} {H : ONote → Prop}
 
 /-- **One cut-ELIMINATION pass over `Zef2`** (E–W Lemma 26/27): a single predicative rank step —
 the ordinal COLLAPSES (`collapse α`) and the numeric slot ITERATES (`ewIter f α`). -/
-theorem cutElimPass_Zef2 {c : ℕ} {Γ : Seq} (f : ℕ → ℕ)
+theorem cutElimPass_Zef2 {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f (c + 1) Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapse α) e H (ewIter f α) c Γ :=
@@ -262,7 +262,7 @@ but it DOES inherit these three via `ewIter_monotone`/`_infl`/`_low`, so the pas
 step applies one `passAux`, promotes the reduced witness UP to `collapse α` exactly (`Zef2.weak`,
 gate `ewN_collapse_le`), recurses, and rewrites via the two tower-shift lemmas. -/
 theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
-    ∀ (d : ℕ) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq},
+    ∀ (d : ℕ) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f d Γ → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
       α.NF → Cl H α →
       Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ := by
@@ -292,7 +292,7 @@ theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
 /-- **`rankToZero_Zef2`** (rung L-R) — iterate `cutElimPass_Zef2` down the cut rank `d → 0`.
 A plain induction over the pass (`rankToZeroAux`): `d` applications collapse the ordinal to
 `collapseIter d α` and tower the slot to `ewIterTower f d α`, landing at rank 0. -/
-theorem rankToZero_Zef2 {d : ℕ} {Γ : Seq} (f : ℕ → ℕ)
+theorem rankToZero_Zef2 {d : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f d Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ :=

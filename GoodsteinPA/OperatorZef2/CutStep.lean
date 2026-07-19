@@ -34,10 +34,10 @@ close the fresh node's gates: `ewN (α + γ) ≤ g (f 0)` via `ewN_add_le_comp` 
 `φ.complexity ≤ (g ∘ f) 0` via `hg_infl`.  Premises land strictly below `α + γ` by the
 covariance of the reduction. -/
 theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
-    {Γ : Seq} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
+    {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef2 α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Seq}, Zef2 γ e H f c Δ → γ.NF →
+    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zef2 γ e H f c Δ → γ.NF →
       Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δ →
       Zef2Prov (α + γ) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
@@ -208,7 +208,7 @@ private theorem gate_rel1 {f : ℕ → ℕ} (hmono : Monotone f) {α : ONote} (n
 inversion, so every rebuilt node's gate re-threads from its input gate through the relativized
 slot `rel1 f n₀` (`gate_rel1`, `f` monotone). -/
 theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f c Γ → Monotone f → (∀⁰ φ₀) ∈ Γ →
       Zef2 α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   intro α e H f c Γ dd
@@ -283,7 +283,7 @@ theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
         (by simp only [rel1]; exact hmono (Nat.zero_le _))) hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
-variable {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq} {χ : ArithmeticSemiformula ℕ 1}
+variable {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {χ : ArithmeticSemiformula ℕ 1}
   {f g : ℕ → ℕ}
 
 /-- **`stepAllω_Zf2`** (pin-2 over `Zef2`): the principal ∀/∃ cut-reduction step — invert the
@@ -349,7 +349,7 @@ lemma (`atomCutRun_Zf2`, the axL-pair surgery — a fixed-premise mirror of the 
 reduction).  The two quantifier shapes are `stepAllω_Zf2_bnd`. -/
 
 /-- A formula shape never principal in any `Zef2` rule. -/
-def InertForm (A : Form) : Prop :=
+def InertForm (A : ArithmeticFormula ℕ) : Prop :=
   (∀ (ar : ℕ) (r : (ℒₒᵣ).Rel ar) (v : Fin ar → Semiterm ℒₒᵣ ℕ 0),
       A ≠ Semiformula.rel r v ∧ A ≠ Semiformula.nrel r v) ∧
   ∀ (χ : ArithmeticSemiformula ℕ 1), A ≠ (∀⁰ χ) ∧ A ≠ (∃⁰ χ)
@@ -360,17 +360,17 @@ theorem inertForm_verum : InertForm ⊤ :=
 theorem inertForm_falsum : InertForm ⊥ :=
   ⟨fun _ _ _ => ⟨nofun, nofun⟩, fun _ => ⟨nofun, nofun⟩⟩
 
-theorem inertForm_and (φ₁ φ₂ : Form) : InertForm (φ₁ ⋏ φ₂) :=
+theorem inertForm_and (φ₁ φ₂ : ArithmeticFormula ℕ) : InertForm (φ₁ ⋏ φ₂) :=
   ⟨fun _ _ _ => ⟨nofun, nofun⟩, fun _ => ⟨nofun, nofun⟩⟩
 
-theorem inertForm_or (φ₁ φ₂ : Form) : InertForm (φ₁ ⋎ φ₂) :=
+theorem inertForm_or (φ₁ φ₂ : ArithmeticFormula ℕ) : InertForm (φ₁ ⋎ φ₂) :=
   ⟨fun _ _ _ => ⟨nofun, nofun⟩, fun _ => ⟨nofun, nofun⟩⟩
 
 /-- **Inert erasure**: a formula of inert shape can be erased from any `Zef2` context (it is
 never principal, so every rule commutes; instance formulas `χ/[nm n]` that happen to EQUAL the
 inert formula are restored by plain `wk`).  All gates ride unchanged (same `α`, same `f`). -/
-theorem Zef2.erase_inert {A : Form} (hA : InertForm A) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem Zef2.erase_inert {A : ArithmeticFormula ℕ} (hA : InertForm A) :
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f c Γ → Zef2 α e H f c (Γ.erase A) := by
   intro α e H f c Γ dd
   induction dd with
@@ -430,11 +430,11 @@ replaced by `D₂` (weakened); all other nodes rebuild at the fresh root `βψ +
 absorbing gate (`Nlog_add_le_comp` + the slot-threaded slack, exactly as in the running
 reduction).  Output slot `g ∘ f`. -/
 theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {c : ℕ} {βψ e : ONote} {Γ : Seq} {g : ℕ → ℕ} {H₂ : ONote → Prop}
+    {c : ℕ} {βψ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} {H₂ : ONote → Prop}
     (hβψNF : βψ.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (D₂ : Zef2 βψ e H₂ g c (insert (Semiformula.nrel rr vv) Γ)) :
-    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Seq}, Zef2 γ e H f c Δ → γ.NF →
+    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zef2 γ e H f c Δ → γ.NF →
       Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       Zef2Prov (βψ + γ) e H (g ∘ f) c (Δ.erase (Semiformula.rel rr vv) ∪ Γ) := by
   have hg0 : Nlog βψ ≤ g 0 := Zef2.gate D₂

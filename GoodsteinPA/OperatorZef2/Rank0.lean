@@ -21,7 +21,7 @@ derivation of `Γ` has a standard-model-true member.  The `allω` (Π) case comb
 branch's true member is in the shared context `Γ` (done), or every branch is true at its own
 instance `φ/[nm n]` — whence `∀⁰ φ` is true (`atomTrue (∀⁰ φ) = ∀ k, atomTrue (φ/[nm k])`).
 Slot-INDEPENDENT (truth does not see `f`). -/
-theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef2 α e H f c Γ → c = 0 → ∃ ψ ∈ Γ, atomTrue ψ := by
   intro α e H f c Γ dd
   induction dd with
@@ -143,7 +143,7 @@ spine head `t`, no `Zef2` derivation at cut-rank 0 exists: `axL` would force
 `some (true, s) = t = some (false, s)`; `allω`/`exI` insert spine-head-preserving instances;
 `wk`/`weak` shrink; `cut` needs `complexity < 0`. -/
 theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f c Γ → c = 0 → (∀ ψ ∈ Γ, spineHead ψ = t) → False := by
   intro α e H f c Γ dd
   induction dd with
@@ -201,7 +201,7 @@ guard, as for the Goodstein bounded-`∀` clauses), that survivor is contradicto
 fragment the structural read-off reaches without E–W's (Ax2).  A ready building block for a
 monotone-guarded specialization of `readoff_delta0_Zef2`. -/
 theorem readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
-    {Γ₀ : Seq} {β : ℕ → ONote}
+    {Γ₀ : Finset (ArithmeticFormula ℕ)} {β : ℕ → ONote}
     (_hbranch : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) 0 (insert (χ/[nm n]) Γ₀))
     (_htrap : (∃⁰ φ) ∈ Γ₀)
     (hfalse : ¬ atomTrue (∀⁰ χ))

@@ -35,20 +35,19 @@ namespace GoodsteinPA.OperatorZinfty
 
 open LO LO.FirstOrder ONote
 
-abbrev Form := ArithmeticFormula ℕ
 noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.numeral ℒₒᵣ n).const
-abbrev Seq := Finset Form
-noncomputable def atomTrue (φ : Form) : Prop := GoodsteinPA.Compat.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
+noncomputable def atomTrue (φ : ArithmeticFormula ℕ) : Prop :=
+  GoodsteinPA.Compat.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
 
 /-- **The control-ordinal operator witness-bounded `Z_∞` calculus** `Zᵉᵏᵈ ⊢^{α,e}_{k,d,c} Γ`.
 Derivation ordinal `α`; **control ordinal `e`** (governs the witness bound, raised by cut-elim);
 effective norm budget `k + d`; ω-premise `n` at `(max k n, d)`; **witness bound `hardy e (k+d)`**
 (decoupled from `α`). Cf. `SplitZinfty.Zkd` — identical except the `exI` bound uses `e` not `α`, and
 every rule carries the inert `e`. -/
-inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Seq → Prop
+inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Finset (ArithmeticFormula ℕ) → Prop
   | axL {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
       (hn : Semiformula.nrel r v ∈ Γ) : Zekd α e k d c Γ
-  | verumR {α e k d c Γ} (h : (⊤ : Form) ∈ Γ) : Zekd α e k d c Γ
+  | verumR {α e k d c Γ} (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : Zekd α e k d c Γ
   | trueRel {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (htrue : atomTrue (Semiformula.rel r v))
       (hτ : norm α < k + d) (hαNF : α.NF) (hmem : Semiformula.rel r v ∈ Γ) : Zekd α e k d c Γ
   | trueNrel {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (htrue : atomTrue (Semiformula.nrel r v))
@@ -56,11 +55,11 @@ inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Seq → Prop
   | wk {α e k d c Δ Γ} (hsub : Δ ⊆ Γ) (dd : Zekd α e k d c Δ) : Zekd α e k d c Γ
   | weak {α β e k d c Δ Γ} (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d)
       (hsub : Δ ⊆ Γ) (dd : Zekd β e k d c Δ) : Zekd α e k d c Γ
-  | andI {α βφ βψ e k d c Γ} (φ ψ : Form) (hβφ : βφ < α) (hβψ : βψ < α)
+  | andI {α βφ βψ e k d c Γ} (φ ψ : ArithmeticFormula ℕ) (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF) (hτφ : norm βφ < k + d) (hτψ : norm βψ < k + d)
       (dφ : Zekd βφ e k d c (insert φ Γ)) (dψ : Zekd βψ e k d c (insert ψ Γ)) :
       Zekd α e k d c (insert (φ ⋏ ψ) Γ)
-  | orI {α β e k d c Γ} (φ ψ : Form) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d)
+  | orI {α β e k d c Γ} (φ ψ : ArithmeticFormula ℕ) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d)
       (dd : Zekd β e k d c (insert φ (insert ψ Γ))) : Zekd α e k d c (insert (φ ⋎ ψ) Γ)
   | allω {α e k d c Γ} (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF) (hτ : ∀ n, norm (β n) < max k n + d)
@@ -69,7 +68,7 @@ inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Seq → Prop
   | exI {α β e k d c Γ} (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d) (hbound : n ≤ hardy e (k + d))
       (dd : Zekd β e k d c (insert (φ/[nm n]) Γ)) : Zekd α e k d c (insert (∃⁰ φ) Γ)
-  | cut {α βφ βψ e k d c Γ} (φ : Form) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
+  | cut {α βφ βψ e k d c Γ} (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF) (hτφ : norm βφ < k + d) (hτψ : norm βψ < k + d)
       (d₁ : Zekd βφ e k d c (insert φ Γ)) (d₂ : Zekd βψ e k d c (insert (∼φ) Γ)) :
       Zekd α e k d c Γ
@@ -196,11 +195,13 @@ theorem mono_e : ∀ {α e k d c Γ}, Zekd α e k d c Γ → ∀ {e'}, e.NF → 
       intro e' he heN' hlt hnorm
       exact Zekd.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ih₁ he heN' hlt hnorm) (ih₂ he heN' hlt hnorm)
 
-private theorem invPush (A b : Form) (s : Seq) {φ ψ : Form} :
+private theorem invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ))
+    {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b s).erase A)) ⊆ insert b (insert φ (insert ψ (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem invPull (A : Form) {b : Form} (h : b ≠ A) (s : Seq) {φ ψ : Form} :
+private theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A)
+    (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert b (insert φ (insert ψ (s.erase A))) ⊆ insert φ (insert ψ ((insert b s).erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | rfl | hx
@@ -209,17 +210,19 @@ private theorem invPull (A : Form) {b : Form} (h : b ≠ A) (s : Seq) {φ ψ : F
   · exact Or.inr (Or.inl rfl)
   · exact Or.inr (Or.inr ⟨hx.1, Or.inr hx.2⟩)
 
-private theorem invPush2 (A b₁ b₂ : Form) (s : Seq) {φ ψ : Form} :
+private theorem invPush2 (A b₁ b₂ : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ))
+    {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b₁ (insert b₂ s)).erase A))
       ⊆ insert b₁ (insert b₂ (insert φ (insert ψ (s.erase A)))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem princOrSub {A : Form} (s : Seq) {φ ψ : Form} :
+private theorem princOrSub {A : ArithmeticFormula ℕ} (s : Finset (ArithmeticFormula ℕ))
+    {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert φ (insert ψ s)).erase A)) ⊆ insert φ (insert ψ (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- **∨-inversion.** Replace `φ ⋎ ψ` by `φ`, `ψ`, same `(α,k,d,c)`. -/
-theorem orInv {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋎ ψ) ∈ Γ →
+theorem orInv {φ ψ : ArithmeticFormula ℕ} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋎ ψ) ∈ Γ →
     Zekd α e k d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
@@ -303,11 +306,12 @@ theorem orInv {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ �
 
 /-! ### Single-insert reshuffle helpers (for ∧-inversion and the ∀-inversion). -/
 
-private theorem inv1Push (A e b : Form) (s : Seq) :
+private theorem inv1Push (A e b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert b s).erase A) ⊆ insert b (insert e (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem inv1Pull (A e : Form) {b : Form} (h : b ≠ A) (s : Seq) :
+private theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A)
+    (s : Finset (ArithmeticFormula ℕ)) :
     insert b (insert e (s.erase A)) ⊆ insert e ((insert b s).erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | hx
@@ -315,16 +319,16 @@ private theorem inv1Pull (A e : Form) {b : Form} (h : b ≠ A) (s : Seq) :
   · exact Or.inl rfl
   · exact Or.inr ⟨hx.1, Or.inr hx.2⟩
 
-private theorem inv1Push2 (A e b₁ b₂ : Form) (s : Seq) :
+private theorem inv1Push2 (A e b₁ b₂ : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert b₁ (insert b₂ s)).erase A) ⊆ insert b₁ (insert b₂ (insert e (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem princAllSub (A e : Form) (s : Seq) :
+private theorem princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert e s).erase A) ⊆ insert e (s.erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- **∧-inversion, left** (Towsner §19.3): replace `φ ⋏ ψ` by `φ`, same `(α,k,d,c)`. -/
-theorem andInvL {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
+theorem andInvL {φ ψ : ArithmeticFormula ℕ} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
     Zekd α e k d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   intro α e k d c Γ dd
   induction dd with
@@ -402,7 +406,7 @@ theorem andInvL {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ
       exact Zekd.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ P₁ P₂
 
 /-- **∧-inversion, right** (Towsner §19.3): replace `φ ⋏ ψ` by `ψ`, same `(α,k,d,c)`. -/
-theorem andInvR {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
+theorem andInvR {φ ψ : ArithmeticFormula ℕ} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
     Zekd α e k d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   intro α e k d c Γ dd
   induction dd with
@@ -662,7 +666,7 @@ theorem norm_add_le : ∀ {α : ONote}, α.NF → ∀ {γ : ONote}, γ.NF →
       · simp only [norm_oadd]; omega
 
 /-- **∧/∨ cut reduction, conjunction case** (Towsner §19.5). -/
-theorem cutReduceConj {a b : Form} {c k d : ℕ} {α β δ e : ONote} {Γ : Seq}
+theorem cutReduceConj {a b : ArithmeticFormula ℕ} {c k d : ℕ} {α β δ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
@@ -684,7 +688,7 @@ theorem cutReduceConj {a b : Form} {c k d : ℕ} {α β δ e : ONote} {Γ : Seq}
     hτα hτδ hB cutA
 
 /-- **∧/∨ cut reduction, disjunction case** (dual). -/
-theorem cutReduceDisj {a b : Form} {c k d : ℕ} {α β δ e : ONote} {Γ : Seq}
+theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {c k d : ℕ} {α β δ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
@@ -718,38 +722,38 @@ end Zekd
 bound + the source's `NF`, so the `≤`-slack absorbs the `osucc`/`+1` bookkeeping uniformly and
 `NF` is always available. This is the surface §19.6 `cutReduceAll` is stated over (matching the
 unbounded `Zinfty.lean Provable`). -/
-def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Seq) : Prop :=
+def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ α', α' ≤ α ∧ α'.NF ∧ norm α' < k + d ∧ Zekd α' e k d c Γ
 
 namespace ZekdProv
 
 /-- Monotonicity in `α` (≤), `k`, `d`, `c` (the control `e` is raised separately by `mono_e`,
 which carries a budget side condition). The carried norm bound `norm α' < k+d` rides up to `k'+d'`. -/
-theorem mono {α β e : ONote} {k d c k' d' c' : ℕ} {Γ : Seq}
+theorem mono {α β e : ONote} {k d c k' d' c' : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hα : α ≤ β) (hk : k ≤ k') (hd : d ≤ d') (hc : c ≤ c') :
     ZekdProv α e k d c Γ → ZekdProv β e k' d' c' Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', le_trans hα' hα, hNF, by omega, ((D.mono_k hk).mono_d hd).mono_c hc⟩
 
 /-- Control-ordinal raising at the wrapper level. -/
-theorem mono_e {α e e' : ONote} {k d c : ℕ} {Γ : Seq}
+theorem mono_e {α e e' : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e') (hbudget : norm e ≤ k + d) :
     ZekdProv α e k d c Γ → ZekdProv α e' k d c Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.mono_e heNF he'NF hlt hbudget⟩
 
 /-- Sequent weakening. -/
-theorem weakening {α e : ONote} {k d c : ℕ} {Γ Δ : Seq} (h : Γ ⊆ Δ) :
+theorem weakening {α e : ONote} {k d c : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) :
     ZekdProv α e k d c Γ → ZekdProv α e k d c Δ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.wk h⟩
 
 /-- Respect set-equality of sequents. -/
-theorem cast {α e : ONote} {k d c : ℕ} {Γ Δ : Seq} (e0 : Γ = Δ) :
+theorem cast {α e : ONote} {k d c : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)} (e0 : Γ = Δ) :
     ZekdProv α e k d c Γ → ZekdProv α e k d c Δ := fun h => e0 ▸ h
 
 /-- Lift a raw `Zekd` derivation (NF ordinal + norm bound) into the wrapper. -/
-theorem of {α e : ONote} {k d c : ℕ} {Γ : Seq} (hNF : α.NF) (hnorm : norm α < k + d)
+theorem of {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (hNF : α.NF) (hnorm : norm α < k + d)
     (D : Zekd α e k d c Γ) : ZekdProv α e k d c Γ := ⟨α, le_refl _, hNF, hnorm, D⟩
 
 end ZekdProv
@@ -787,10 +791,10 @@ commuting `allω` norm budget — is closed by THREE coupled moves:
 `induction D` generalizes `e k dd c Δ` (and reverts `fam`/`heNF`/`hφc`, re-supplied per-case via the
 IH), keeping `α k₀ dd₀ Γ φ hαNF` fixed — the `allInv` precedent scaled to carry the external family. -/
 set_option maxHeartbeats 1600000 in
-theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Seq}
-    (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
+theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote}
+    {Γ : Finset (ArithmeticFormula ℕ)} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (fam : ∀ n, Zekd α e k₀ dd₀ c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {k dd : ℕ} {Δ : Seq}, Zekd γ e k dd c Δ → γ.NF → norm γ < k + dd →
+    ∀ {γ : ONote} {k dd : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zekd γ e k dd c Δ → γ.NF → norm γ < k + dd →
       k₀ ≤ k → dd₀ ≤ dd → (∃⁰ ∼φ) ∈ Δ →
       ZekdProv (osucc (α + γ)) e k (dd + norm α + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   intro γ k dd Δ D
@@ -1037,7 +1041,7 @@ theorem inductionLeaf_runningIndex_witnessBound (e : ONote) (k d n : ℕ) :
 
 /-- The actual `Zekd.exI` move needed in the induction-axiom leaf is legal at the running
 index.  This is the local replacement for the unbounded proof's free `PXFc.exI` step. -/
-theorem inductionLeaf_exI_runningIndex_probe {α β e : ONote} {k d c n : ℕ} {Γ : Seq}
+theorem inductionLeaf_exI_runningIndex_probe {α β e : ONote} {k d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {φ : ArithmeticSemiformula ℕ 1}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < max k n + d)
     (D : Zekd β e (max k n) d c (insert (φ/[nm n]) Γ)) :
@@ -1125,7 +1129,7 @@ This is the `Zekd` base leaf needed by assignment-carrying embedding: if the seq
 `R(v)` and `¬R(v')`, and the closed term vectors have equal standard values, a bounded truth leaf
 closes the sequent at any normal ordinal whose norm fits the current budget.
 -/
-theorem embedding_valueCongruentRelAtom_probe {α e : ONote} {k d c ar : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentRelAtom_probe {α e : ONote} {k d c ar : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (r : (ℒₒᵣ).Rel ar) (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
@@ -1143,7 +1147,7 @@ Bounded value-congruent atomic closure, negated-relation-positive side.
 
 This is the polarity twin of `embedding_valueCongruentRelAtom_probe`.
 -/
-theorem embedding_valueCongruentNrelAtom_probe {α e : ONote} {k d c ar : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentNrelAtom_probe {α e : ONote} {k d c ar : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (r : (ℒₒᵣ).Rel ar) (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
@@ -1157,7 +1161,7 @@ theorem embedding_valueCongruentNrelAtom_probe {α e : ONote} {k d c ar : ℕ} {
     exact Zekd.trueRel r v' ((atomTrue_rel_iff_not_nrel r v').mpr hnrel') hτ hαNF hn
 
 /-- Substituted-term form of the bounded value-congruent relation atom leaf. -/
-theorem embedding_valueCongruentRelSubstAtom_probe {α e : ONote} {k d c ar n : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentRelSubstAtom_probe {α e : ONote} {k d c ar n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (r : (ℒₒᵣ).Rel ar) (w w' : Fin n → ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ n)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
@@ -1170,8 +1174,8 @@ theorem embedding_valueCongruentRelSubstAtom_probe {α e : ONote} {k d c ar n : 
     (fun i => embedding_valm_subst_congr w w' hval (v i)) hαNF hτ hp hn
 
 /-- Substituted-term form of the bounded value-congruent negated-relation atom leaf. -/
-theorem embedding_valueCongruentNrelSubstAtom_probe {α e : ONote} {k d c ar n : ℕ} {Γ : Seq}
-    (r : (ℒₒᵣ).Rel ar) (w w' : Fin n → ArithmeticTerm ℕ)
+theorem embedding_valueCongruentNrelSubstAtom_probe {α e : ONote} {k d c ar n : ℕ}
+    {Γ : Finset (ArithmeticFormula ℕ)} (r : (ℒₒᵣ).Rel ar) (w w' : Fin n → ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ n)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
@@ -1184,7 +1188,7 @@ theorem embedding_valueCongruentNrelSubstAtom_probe {α e : ONote} {k d c ar n :
 
 /-- Closed-term specialization of the value-congruent relation atom leaf. -/
 theorem embedding_valueCongruentRelClosedTermAtom_probe
-    {α e : ONote} {k d c ar : ℕ} {Γ : Seq}
+    {α e : ONote} {k d c ar : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (r : (ℒₒᵣ).Rel ar) (s s' : ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ 1)
     (hval : stdClosedVal s = stdClosedVal s')
@@ -1202,7 +1206,7 @@ theorem embedding_valueCongruentRelClosedTermAtom_probe
 
 /-- Closed-term specialization of the value-congruent negated-relation atom leaf. -/
 theorem embedding_valueCongruentNrelClosedTermAtom_probe
-    {α e : ONote} {k d c ar : ℕ} {Γ : Seq}
+    {α e : ONote} {k d c ar : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (r : (ℒₒᵣ).Rel ar) (s s' : ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ 1)
     (hval : stdClosedVal s = stdClosedVal s')
@@ -1219,14 +1223,14 @@ theorem embedding_valueCongruentNrelClosedTermAtom_probe
   · simpa [Semiformula.rew_rel, Function.comp_def] using hn
 
 /-- Constant-true base case for the bounded value-congruent EM engine. -/
-theorem embedding_valueCongruentVerum_probe {α e : ONote} {k d c n : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentVerum_probe {α e : ONote} {k d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (w : Fin n → ArithmeticTerm ℕ)
     (hp : (Rew.subst w ▹ (⊤ : ArithmeticSemiformula ℕ n)) ∈ Γ) :
     Zekd α e k d c Γ :=
   Zekd.verumR (by simpa using hp)
 
 /-- Constant-false base case for the bounded value-congruent EM engine. -/
-theorem embedding_valueCongruentFalsum_probe {α e : ONote} {k d c n : ℕ} {Γ : Seq}
+theorem embedding_valueCongruentFalsum_probe {α e : ONote} {k d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (w' : Fin n → ArithmeticTerm ℕ)
     (hn : (∼(Rew.subst w' ▹ (⊥ : ArithmeticSemiformula ℕ n))) ∈ Γ) :
     Zekd α e k d c Γ :=
@@ -1240,7 +1244,7 @@ has been closed by an assignment, its standard value `stdClosedVal s` is used as
 The only non-structural input is the value-congruent premise converting `ψ[s]` to `ψ[nm (stdClosedVal s)]`.
 -/
 theorem embedding_closedTermExI_of_valueCongruentEM_probe
-    {βSrc βCong αCut αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {βSrc βCong αCut αOut e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : βCong < αCut) (hCutLt : αCut < αOut)
@@ -1270,7 +1274,7 @@ ordinals: the future recursive engine can choose any ordinal schedule and discha
 side conditions separately.
 -/
 theorem embedding_valueCongruentAndFromChildren_probe
-    {n : ℕ} {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {n : ℕ} {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (w w' : Fin n → ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ n)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
     (hANF : βA.NF) (hBNF : βB.NF) (hAndNF : αAnd.NF) (hOutNF : αOut.NF)
@@ -1309,7 +1313,7 @@ This is the polarity-dual parent constructor to
 `¬a[w'] ∧ ¬b[w']`, then `Zekd.orI` packages the positive `a[w] ∨ b[w]` parent.
 -/
 theorem embedding_valueCongruentOrFromChildren_probe
-    {n : ℕ} {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {n : ℕ} {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (w w' : Fin n → ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ n)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
     (hANF : βA.NF) (hBNF : βB.NF) (hAndNF : αAnd.NF) (hOutNF : αOut.NF)
@@ -1342,7 +1346,7 @@ theorem embedding_valueCongruentOrFromChildren_probe
 
 /-- Closed-term specialization of the conjunction parent constructor. -/
 theorem embedding_valueCongruentAndClosedTermFromChildren_probe
-    {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (s s' : ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ 1)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
     (hANF : βA.NF) (hBNF : βB.NF) (hAndNF : αAnd.NF) (hOutNF : αOut.NF)
@@ -1363,7 +1367,7 @@ theorem embedding_valueCongruentAndClosedTermFromChildren_probe
 
 /-- Closed-term specialization of the disjunction parent constructor. -/
 theorem embedding_valueCongruentOrClosedTermFromChildren_probe
-    {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Seq}
+    {βA βB αAnd αOut e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (s s' : ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ 1)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
     (hANF : βA.NF) (hBNF : βB.NF) (hAndNF : αAnd.NF) (hOutNF : αOut.NF)
@@ -1428,7 +1432,7 @@ sequent containing `ψ[s]` and `¬ψ[s']` at height `ofNat (2*q)`, provided that
 current norm budget.
 -/
 theorem embedding_valueCongruentQFreeClosedTerm_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Seq}
+    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
       (s s' : ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ 1),
       ψ.complexity ≤ q → QFreeForm ψ → stdClosedVal s = stdClosedVal s' →
       2 * q < K + d → (ψ/[s]) ∈ Γ → (∼(ψ/[s'])) ∈ Γ →
@@ -1545,7 +1549,7 @@ cases are the decisive check: each `allω` premise runs at `max K m`, so the cor
 witness `m` is paid by `inductionLeaf_runningIndex_witnessBound`.
 -/
 theorem embedding_valueCongruentEM_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Seq} {n : ℕ}
+    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ}
       (w w' : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
       ψ.complexity ≤ q →
       (∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) →
@@ -1765,7 +1769,7 @@ indexed by `ZekdBoundedTruth`: universals run at `max K m`, and existential witn
 within the control-ordinal Hardy budget.
 -/
 theorem zekdOfBoundedTruth_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Seq} {n : ℕ}
+    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ}
       (w : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
       ψ.complexity ≤ q →
       ZekdBoundedTruth e K d w ψ →
@@ -1923,7 +1927,7 @@ closed by an assignment.  The only semantic side condition still exposed is the 
 `stdClosedVal s ≤ hardy e (K+d)`.
 -/
 theorem embedding_closedTermExI_probe
-    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Seq}
+    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)
@@ -1967,7 +1971,7 @@ is available at index `K`, then it can be used at `max K (stdClosedVal s)`, wher
 term is automatically within the Hardy witness budget.  No extra logical premise is introduced.
 -/
 theorem embedding_closedTermExI_raiseK_probe
-    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Seq}
+    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)
@@ -1989,19 +1993,19 @@ theorem embedding_closedTermExI_raiseK_probe
 
 /-- A derivability wrapper where the witness index `K` is allowed to be chosen later.
 This matches the Path-B terminal shape, which extracts some finite witness budget. -/
-def ZekdSomeK (α e : ONote) (d c : ℕ) (Γ : Seq) : Prop :=
+def ZekdSomeK (α e : ONote) (d c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ K : ℕ, Zekd α e K d c Γ
 
 namespace ZekdSomeK
 
 /-- Embed a concrete `Zekd` derivation into the existential-budget wrapper. -/
-theorem of {α e : ONote} {K d c : ℕ} {Γ : Seq}
+theorem of {α e : ONote} {K d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : Zekd α e K d c Γ) : ZekdSomeK α e d c Γ :=
   ⟨K, dd⟩
 
 /-- Convert the ordinal-upper-bound wrapper back to an exact-ordinal existential-budget
 derivation by raising the stored derivation ordinal when needed. -/
-theorem ofProv {α e : ONote} {K d c : ℕ} {Γ : Seq}
+theorem ofProv {α e : ONote} {K d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hαNF : α.NF) (dd : ZekdProv α e K d c Γ) : ZekdSomeK α e d c Γ := by
   rcases dd with ⟨α', hα', hα'NF, hnorm, D⟩
   by_cases hEq : α' = α
@@ -2014,20 +2018,20 @@ theorem ofProv {α e : ONote} {K d c : ℕ} {Γ : Seq}
     exact ⟨K, Zekd.weak hlt hα'NF hαNF hnorm (Finset.Subset.refl _) D⟩
 
 /-- Identity/complementary-literal axiom for the existential-budget wrapper. -/
-theorem axL {α e : ONote} {d c ar : ℕ} {Γ : Seq}
+theorem axL {α e : ONote} {d c ar : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
     ZekdSomeK α e d c Γ :=
   ⟨0, Zekd.axL r v hp hn⟩
 
 /-- Truth of `⊤` for the existential-budget wrapper. -/
-theorem verumR {α e : ONote} {d c : ℕ} {Γ : Seq}
-    (h : (⊤ : Form) ∈ Γ) : ZekdSomeK α e d c Γ :=
+theorem verumR {α e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : ZekdSomeK α e d c Γ :=
   ⟨0, Zekd.verumR h⟩
 
 /-- True positive atomic leaf for the existential-budget wrapper; the finite index is
 chosen large enough to pay the norm side condition. -/
-theorem trueRel {α e : ONote} {d c ar : ℕ} {Γ : Seq}
+theorem trueRel {α e : ONote} {d c ar : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (htrue : atomTrue (Semiformula.rel r v)) (hαNF : α.NF)
     (hmem : Semiformula.rel r v ∈ Γ) : ZekdSomeK α e d c Γ := by
@@ -2036,7 +2040,7 @@ theorem trueRel {α e : ONote} {d c ar : ℕ} {Γ : Seq}
 
 /-- True negative atomic leaf for the existential-budget wrapper; the finite index is
 chosen large enough to pay the norm side condition. -/
-theorem trueNrel {α e : ONote} {d c ar : ℕ} {Γ : Seq}
+theorem trueNrel {α e : ONote} {d c ar : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (htrue : atomTrue (Semiformula.nrel r v)) (hαNF : α.NF)
     (hmem : Semiformula.nrel r v ∈ Γ) : ZekdSomeK α e d c Γ := by
@@ -2044,7 +2048,7 @@ theorem trueNrel {α e : ONote} {d c ar : ℕ} {Γ : Seq}
   exact ⟨K, Zekd.trueNrel r v htrue (by dsimp [K]; omega) hαNF hmem⟩
 
 /-- Existential-budget surface for bounded true closed-substitution leaves. -/
-theorem ofBoundedTruth {e : ONote} {d c n : ℕ} {Γ : Seq}
+theorem ofBoundedTruth {e : ONote} {d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (q : ℕ) (w : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n)
     (hψq : ψ.complexity ≤ q)
     (hpack : ∃ K : ℕ, ZekdBoundedTruth e K d w ψ ∧ 2 * q < K + d)
@@ -2054,21 +2058,21 @@ theorem ofBoundedTruth {e : ONote} {d c n : ℕ} {Γ : Seq}
   exact ⟨K, zekdOfBoundedTruth_probe q w ψ hψq hBT hbudget hmem⟩
 
 /-- Monotonicity in the sequent for the existential-budget wrapper. -/
-theorem wk {α e : ONote} {d c : ℕ} {Δ Γ : Seq}
+theorem wk {α e : ONote} {d c : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
     (hsub : Δ ⊆ Γ) (dd : ZekdSomeK α e d c Δ) :
     ZekdSomeK α e d c Γ := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, Zekd.wk hsub D⟩
 
 /-- Monotonicity in the additive norm-budget component. -/
-theorem mono_d {α e : ONote} {d d' c : ℕ} {Γ : Seq}
+theorem mono_d {α e : ONote} {d d' c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hd : d ≤ d') (dd : ZekdSomeK α e d c Γ) :
     ZekdSomeK α e d' c Γ := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.mono_d hd⟩
 
 /-- Monotonicity in the cut-rank/complexity bound. -/
-theorem mono_c {α e : ONote} {d c c' : ℕ} {Γ : Seq}
+theorem mono_c {α e : ONote} {d c c' : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hc : c ≤ c') (dd : ZekdSomeK α e d c Γ) :
     ZekdSomeK α e d c' Γ := by
   rcases dd with ⟨K, D⟩
@@ -2076,7 +2080,7 @@ theorem mono_c {α e : ONote} {d c c' : ℕ} {Γ : Seq}
 
 /-- Control-ordinal monotonicity for the existential-budget wrapper.  The wrapper can
 raise `K`, so the `norm e ≤ K+d` side condition of `Zekd.mono_e` is paid locally. -/
-theorem mono_e {α e e' : ONote} {d c : ℕ} {Γ : Seq}
+theorem mono_e {α e e' : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e')
     (dd : ZekdSomeK α e d c Γ) :
     ZekdSomeK α e' d c Γ := by
@@ -2088,7 +2092,7 @@ theorem mono_e {α e e' : ONote} {d c : ℕ} {Γ : Seq}
 
 /-- Ordinal/sequent weakening for the existential-budget wrapper: choose a finite
 index large enough for the source ordinal norm side condition. -/
-theorem weak {α β e : ONote} {d c : ℕ} {Δ Γ : Seq}
+theorem weak {α β e : ONote} {d c : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (hsub : Δ ⊆ Γ) (dd : ZekdSomeK β e d c Δ) :
     ZekdSomeK α e d c Γ := by
@@ -2099,14 +2103,14 @@ theorem weak {α β e : ONote} {d c : ℕ} {Δ Γ : Seq}
   · dsimp [K]; omega
 
 /-- Combined monotonicity in the two numeric side budgets. -/
-theorem mono {α e : ONote} {d d' c c' : ℕ} {Γ : Seq}
+theorem mono {α e : ONote} {d d' c c' : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hd : d ≤ d') (hc : c ≤ c') (dd : ZekdSomeK α e d c Γ) :
     ZekdSomeK α e d' c' Γ :=
   mono_c hc (mono_d hd dd)
 
 /-- One-shot lift used by proof embeddings: raise the derivation ordinal, control ordinal,
 numeric side budgets, and sequent at the same time, choosing a larger finite `K` internally. -/
-theorem lift {α β e e' : ONote} {d d' c c' : ℕ} {Δ Γ : Seq}
+theorem lift {α β e e' : ONote} {d d' c c' : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (heNF : e.NF) (he'NF : e'.NF) (he : e < e')
     (hd : d ≤ d') (hc : c ≤ c') (hsub : Δ ⊆ Γ)
@@ -2116,8 +2120,8 @@ theorem lift {α β e e' : ONote} {d d' c c' : ℕ} {Δ Γ : Seq}
 
 /-- `andI` for the existential-budget wrapper: choose a finite index large enough for
 both premises and both norm side conditions. -/
-theorem andI {α βφ βψ e : ONote} {d c : ℕ} {Γ : Seq}
-    (φ ψ : Form) (hβφ : βφ < α) (hβψ : βψ < α)
+theorem andI {α βφ βψ e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (φ ψ : ArithmeticFormula ℕ) (hβφ : βφ < α) (hβψ : βψ < α)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
     (dφ : ZekdSomeK βφ e d c (insert φ Γ))
     (dψ : ZekdSomeK βψ e d c (insert ψ Γ)) :
@@ -2132,8 +2136,8 @@ theorem andI {α βφ βψ e : ONote} {d c : ℕ} {Γ : Seq}
   · exact Dψ.mono_k (by dsimp [K]; omega)
 
 /-- `orI` for the existential-budget wrapper. -/
-theorem orI {α β e : ONote} {d c : ℕ} {Γ : Seq}
-    (φ ψ : Form) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
+theorem orI {α β e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (φ ψ : ArithmeticFormula ℕ) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (dd : ZekdSomeK β e d c (insert φ (insert ψ Γ))) :
     ZekdSomeK α e d c (insert (φ ⋎ ψ) Γ) := by
   rcases dd with ⟨K0, D0⟩
@@ -2145,7 +2149,7 @@ theorem orI {α β e : ONote} {d c : ℕ} {Γ : Seq}
 /-- `allω` for the existential-budget wrapper when the premise family is already
 uniform at one finite base index `K`.  A fully existential premise family is not
 enough: the rule needs a single finite budget whose `max K n` handles every branch. -/
-theorem allω {α e : ONote} {K d c : ℕ} {Γ : Seq}
+theorem allω {α e : ONote} {K d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
     (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
     (hτ : ∀ n, norm (β n) < max K n + d)
@@ -2155,7 +2159,7 @@ theorem allω {α e : ONote} {K d c : ℕ} {Γ : Seq}
 
 /-- `exI` for the existential-budget wrapper.  The wrapper chooses a finite
 index large enough for both the premise derivation and the explicit witness. -/
-theorem exI {α β e : ONote} {d c : ℕ} {Γ : Seq}
+theorem exI {α β e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (φ : ArithmeticSemiformula ℕ 1) (n : ℕ)
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (dd : ZekdSomeK β e d c (insert (φ/[nm n]) Γ)) :
@@ -2168,8 +2172,8 @@ theorem exI {α β e : ONote} {d c : ℕ} {Γ : Seq}
   · dsimp [K]; omega
 
 /-- `cut` for the existential-budget wrapper. -/
-theorem cut {α βφ βψ e : ONote} {d c : ℕ} {Γ : Seq}
-    (φ : Form) (hcompl : φ.complexity < c)
+theorem cut {α βφ βψ e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c)
     (hβφ : βφ < α) (hβψ : βψ < α)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
     (d₁ : ZekdSomeK βφ e d c (insert φ Γ))
@@ -2185,21 +2189,21 @@ theorem cut {α βφ βψ e : ONote} {d c : ℕ} {Γ : Seq}
   · exact D₂.mono_k (by dsimp [K]; omega)
 
 /-- Disjunction inversion for the existential-budget wrapper. -/
-theorem orInv {φ ψ : Form} {α e : ONote} {d c : ℕ} {Γ : Seq}
+theorem orInv {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
     ZekdSomeK α e d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.orInv hmem⟩
 
 /-- Left conjunction inversion for the existential-budget wrapper. -/
-theorem andInvL {φ ψ : Form} {α e : ONote} {d c : ℕ} {Γ : Seq}
+theorem andInvL {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     ZekdSomeK α e d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.andInvL hmem⟩
 
 /-- Right conjunction inversion for the existential-budget wrapper. -/
-theorem andInvR {φ ψ : Form} {α e : ONote} {d c : ℕ} {Γ : Seq}
+theorem andInvR {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : ZekdSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     ZekdSomeK α e d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   rcases dd with ⟨K, D⟩
@@ -2208,7 +2212,7 @@ theorem andInvR {φ ψ : Form} {α e : ONote} {d c : ℕ} {Γ : Seq}
 /-- Universal inversion for the existential-budget wrapper.  The extracted witness
 index is the raw derivation index raised to `max K n₀`, matching `Zekd.allInv`. -/
 theorem allInv {φ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
-    {α e : ONote} {d c : ℕ} {Γ : Seq}
+    {α e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : ZekdSomeK α e d c Γ) (hmem : (∀⁰ φ) ∈ Γ) :
     ZekdSomeK α e d c (insert (φ/[nm n₀]) (Γ.erase (∀⁰ φ))) := by
   rcases dd with ⟨K, D⟩
@@ -2217,7 +2221,7 @@ theorem allInv {φ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
 /-- Principal conjunction/disjunction cut reduction for the existential-budget wrapper.
 This is the `someK` surface of Towsner §19.5: the fixed-index raw reduction is reused after
 choosing one finite `K` large enough for both premises and the reduction ordinal. -/
-theorem cutReduceConj {a b : Form} {d c : ℕ} {α β δ e : ONote} {Γ : Seq}
+theorem cutReduceConj {a b : ArithmeticFormula ℕ} {d c : ℕ} {α β δ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ)
     (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
@@ -2237,7 +2241,7 @@ theorem cutReduceConj {a b : Form} {d c : ℕ} {α β δ e : ONote} {Γ : Seq}
 
 /-- Principal disjunction/conjunction cut reduction for the existential-budget wrapper.
 Dual to `cutReduceConj`; again the wrapper absorbs the finite witness-index bookkeeping. -/
-theorem cutReduceDisj {a b : Form} {d c : ℕ} {α β δ e : ONote} {Γ : Seq}
+theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {d c : ℕ} {α β δ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ)
     (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
@@ -2261,7 +2265,7 @@ This is intentionally still the *fixed-family* theorem: the ∀-side family is s
 finite index `k₀`. The wrapper absorbs the ∃-side finite index and converts the `ZekdProv`
 ordinal upper bound back to an exact `ZekdSomeK` derivation. -/
 theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ d₀ d : ℕ}
-    {α γ e : ONote} {Γ Δ : Seq}
+    {α γ e : ONote} {Γ Δ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF) (heNF : e.NF)
     (hd₀ : d₀ ≤ d)
     (fam : ∀ n, Zekd α e k₀ d₀ c (insert (φ/[nm n]) Γ))
@@ -2282,7 +2286,7 @@ This is the part of the full operator cut-elimination assembly where the norm-bu
 has already fired and the control ordinal is then raised to enlarge every existential witness
 bound.  The existential-budget wrapper chooses the finite index needed by `mono_e` internally. -/
 theorem cutReduceAllAux_control {φ : ArithmeticSemiformula ℕ 1} {c k₀ d₀ d : ℕ}
-    {α γ e e' : ONote} {Γ Δ : Seq}
+    {α γ e e' : ONote} {Γ Δ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF)
     (heNF : e.NF) (he'NF : e'.NF) (helt : e < e')
     (hd₀ : d₀ ≤ d)
@@ -2304,7 +2308,7 @@ global finite-budget embedding pass: each rule may enlarge `K`, and the final th
 the resulting finite budget.
 -/
 theorem embedding_closedTermExI_someK_probe
-    {βSrc αCut αOut e : ONote} {d c q : ℕ} {Γ : Seq}
+    {βSrc αCut αOut e : ONote} {d c q : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)
@@ -2340,7 +2344,7 @@ The EM/value-substitution premises are still external to this probe.  The point 
 that the witness-bounded `andI`/`exI`/`cut` wiring itself is tractable at index `max k n`.
 -/
 theorem inductionLeaf_cutTowerStep_probe
-    {βIH βA βB βAnd βEx α e : ONote} {k d c n : ℕ} {Δ : Seq}
+    {βIH βA βB βAnd βEx α e : ONote} {k d c n : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[nm (n + 1)]))
     (hmemEx : (∃⁰ ∼step) ∈ Δ)
@@ -2388,7 +2392,7 @@ This is the `Zekd` analogue of the cut used by
 `EmbeddingBound.subst_value_subst_bdd`; the actual proof of the congruent EM premise is still
 outside this probe, but the cut interface and budgets are now checked. -/
 theorem inductionLeaf_valueSubst_cut_probe
-    {βSrc βCong α e : ONote} {k d c : ℕ} {Γ : Seq}
+    {βSrc βCong α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} {s t : ArithmeticTerm ℕ}
     (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < α) (hCongLt : βCong < α)
@@ -2408,7 +2412,7 @@ the numeral instance `ψ/[nm (n+1)]`.
 This mirrors the real `succInd` leaf more closely than `inductionLeaf_cutTowerStep_probe`.
 -/
 theorem inductionLeaf_cutTowerStepWithTerm_probe
-    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {k d c n : ℕ} {Δ : Seq}
+    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {k d c n : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1} (succT : ArithmeticTerm ℕ)
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
     (hmemEx : (∃⁰ ∼step) ∈ Δ)
@@ -2466,7 +2470,7 @@ This wrapper instead runs the same `andI`/`exI`/`cut` wiring in the `ZekdSomeK` 
 the existential-budget rules absorb the independently chosen finite premise budgets.
 -/
 theorem inductionLeaf_cutTowerStepWithTerm_someK_probe
-    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {d c n : ℕ} {Δ : Seq}
+    {βIH βA βB βAnd βEx βCong αStep α e : ONote} {d c n : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1} (succT : ArithmeticTerm ℕ)
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
     (hmemEx : (∃⁰ ∼step) ∈ Δ)
@@ -2522,7 +2526,7 @@ This is the outer shape of `EmbeddingBound.metaInduction_cong_bdd` in the witnes
 then raises it to the next `allω` premise index `max k (n+1)`.
 -/
 theorem inductionLeaf_allOmegaFromStep_probe
-    {αAll e : ONote} {k d c : ℕ} {Δ : Seq}
+    {αAll e : ONote} {k d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (β : ℕ → ONote)
     (hβlt : ∀ n, β n < αAll) (hβNF : ∀ n, (β n).NF)
     (hαAllNF : αAll.NF) (hβτ : ∀ n, norm (β n) < max k n + d)
@@ -2545,7 +2549,7 @@ theorem inductionLeaf_allOmegaFromStep_probe
 This packages the `allω` outer layer used by the bounded PA-induction leaf: once the chain data
 has a single base index `k`, the exported conclusion only remembers that some finite index exists. -/
 theorem inductionLeaf_allOmegaFromStep_someK_probe
-    {αAll e : ONote} {d c : ℕ} {Δ : Seq}
+    {αAll e : ONote} {d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ : ArithmeticSemiformula ℕ 1} (β : ℕ → ONote)
     (hpack : ∃ k : ℕ,
       (∀ n, β n < αAll) ∧
@@ -2567,7 +2571,7 @@ This is the value-congruence-free core of the bounded PA-induction leaf: the loc
 `ψ(n+1)`, so the outer finite induction and `allω` rule do not need any extra congruent-value premise.
 -/
 theorem inductionLeaf_allOmegaCutTowerNumeral_probe
-    {αAll e : ONote} {k d c : ℕ} {Δ : Seq}
+    {αAll e : ONote} {k d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (β βA βB βAnd βEx : ℕ → ONote)
     (hβAllLt : ∀ n, β n < αAll)
@@ -2607,7 +2611,7 @@ interface: the local `andI`/`exI`/`cut`/value-substitution step composes through
 induction and then through `Zekd.allω` without losing the running witness index.
 -/
 theorem inductionLeaf_allOmegaCutTowerWithTerm_probe
-    {αAll e : ONote} {k d c : ℕ} {Δ : Seq}
+    {αAll e : ONote} {k d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (β βA βB βAnd βEx βStep βCong : ℕ → ONote)
     (succT : ℕ → ArithmeticTerm ℕ)
