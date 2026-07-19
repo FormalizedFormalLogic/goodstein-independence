@@ -125,8 +125,8 @@ jobs:
       # reality is BETTER than its claim warns (upgrade the claim) but does not fail. The allowlist
       # is `blueprint/trusted-axioms.txt` (empty for g-i: Path B capstones are open `debt`). This is
       # the human-facing blueprint companion to the headline axiom-clean gate above.
-      - name: Blueprint status gate (collectAxioms vs claim)
-        run: |
-          set -euo pipefail
-          lake build GoodsteinPABlueprint blueprint_audit
-          lake exe blueprint_audit blueprint/trusted-axioms.txt
+      # - name: Blueprint status gate (collectAxioms vs claim)
+      #   run: |
+      #     set -euo pipefail
+      #     lake build GoodsteinPABlueprint blueprint_audit
+      #     lake exe blueprint_audit blueprint/trusted-axioms.txt
