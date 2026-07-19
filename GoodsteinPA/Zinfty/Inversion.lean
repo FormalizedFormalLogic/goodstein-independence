@@ -152,12 +152,16 @@ lemma orInvAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ), 
     have P₂ := (ih₂ hcr2 (Finset.mem_insert_of_mem hmem)).weakening (invPush (∼χ) Γ₀)
     exact Provable.cut χ hcχ P₁ P₂
 
+namespace Provable
+
 /-- **∨-inversion at a relaxed bound** (the form used downstream). -/
 @[grind →]
-lemma Provable.orInv (hmem : (φ ⋎ ψ) ∈ Γ)
+lemma orInv (hmem : (φ ⋎ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (orInvAux d hcr hmem).mono ho le_rfl
+
+end Provable
 
 end Inversion
 
@@ -292,11 +296,15 @@ lemma allInvAux (n : ℕ) : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Deriv
     have P₂ := (ih₂ hcr2 (Finset.mem_insert_of_mem hmem)).weakening (invPush1 _ (∼ξ) _ Γ₀)
     exact Provable.cut ξ hcξ P₁ P₂
 
+namespace Provable
+
 /-- **ω-inversion at a relaxed bound** (the form used downstream). -/
-lemma Provable.allInv (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
+lemma allInv (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
     (h : Provable α c Γ) : Provable α c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (allInvAux n d hcr hmem).mono ho le_rfl
+
+end Provable
 
 end InversionAll
 
@@ -463,19 +471,23 @@ lemma andInvAux : ∀ {Γ : Finset (ArithmeticFormula ℕ)} (d : Derivation Γ),
       have P₂ := ((ih₂ hcr2 (Finset.mem_insert_of_mem hmem)).2).weakening (invPush1 _ (∼ξ) _ Γ₀)
       exact Provable.cut ξ hcξ P₁ P₂
 
+namespace Provable
+
 /-- **∧-inversion, left conjunct, relaxed bound.** -/
 @[grind →]
-lemma Provable.andInvL (hmem : (φ ⋏ ψ) ∈ Γ)
+lemma andInvL (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).1.mono ho le_rfl
 
 /-- **∧-inversion, right conjunct, relaxed bound.** -/
 @[grind →]
-lemma Provable.andInvR (hmem : (φ ⋏ ψ) ∈ Γ)
+lemma andInvR (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).2.mono ho le_rfl
+
+end Provable
 
 end InversionAnd
 
