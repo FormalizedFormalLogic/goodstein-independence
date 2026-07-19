@@ -38,6 +38,7 @@ abbrev Seq := Finset Form
 atomic-truth axiom `axTrue` ranges over *true closed literals* of either polarity (the ω-logic
 leaf that lets `Z_∞` prove PA's equational/arithmetic axioms — see
 `ANALYSIS-2026-06-22-truth-layer-gap.md`). -/
+@[grind =]
 def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Semiterm ℒₒᵣ ℕ 0) → Form
   | true, _, r, v => Semiformula.rel r v
   | false, _, r, v => Semiformula.nrel r v
@@ -45,36 +46,38 @@ def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Semiterm
 /-- **ℕ-truth of a closed formula** (the side condition `axTrue` carries on its literal): the
 standard ℒₒᵣ-model evaluation with no bound variables. For a closed literal the free-variable
 assignment is immaterial (fixed to `id`). -/
+@[grind =]
 def LitTrue (φ : Form) : Prop := GoodsteinPA.Compat.gEvalm ℕ ![] (id : ℕ → ℕ) φ
 
 /-- `∼`-duality: a closed formula is true iff its negation is false. -/
-@[simp]
-theorem litTrue_neg (φ : Form) : LitTrue (∼φ) ↔ ¬ LitTrue φ := by
+@[simp, grind =]
+lemma litTrue_neg (φ : Form) : LitTrue (∼φ) ↔ ¬ LitTrue φ := by
   unfold LitTrue; simp
 
 /-- Totality (classical): every closed formula is true or its negation is. -/
-theorem litTrue_or_neg (φ : Form) : LitTrue φ ∨ LitTrue (∼φ) := by
+lemma litTrue_or_neg (φ : Form) : LitTrue φ ∨ LitTrue (∼φ) := by
   rw [litTrue_neg]; exact em _
 
 /-- The negation of a signed literal flips its sign. -/
-@[simp]
-theorem neg_lit (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
+@[simp, grind =]
+lemma neg_lit (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
     ∼(signedLit b r v) = signedLit (!b) r v := by cases b <;> simp [signedLit]
 
 /-- Flipping a signed literal's polarity flips its truth value: the opposite literal is true iff the
 literal is false. (The atomic-cut / false-literal-removal truth pivot.) -/
-theorem litTrue_flip (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
+@[grind =]
+lemma litTrue_flip (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
   LitTrue (signedLit (!b) r v) ↔ ¬ LitTrue (signedLit b r v) := by
   rw [← neg_lit]; exact litTrue_neg _
 
 /-- A signed literal is never `⊤`. -/
-@[simp]
-theorem lit_ne_verum (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
+@[simp, grind .]
+lemma lit_ne_verum (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
     signedLit b r v ≠ (⊤ : Form) := by cases b <;> simp [signedLit]
 
 /-- A signed literal is never `⊥`. -/
-@[simp]
-theorem lit_ne_falsum (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
+@[simp, grind .]
+lemma lit_ne_falsum (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v) :
     signedLit b r v ≠ (⊥ : Form) := by cases b <;> simp [signedLit]
 
 /-- **The `Z_∞` calculus** over real `ℒₒᵣ` syntax. The `allω` (ω-rule) constructor stores one
@@ -105,6 +108,7 @@ bound into the rules (every premise bounded by an ordinal `< α`); here it is in
 computed by recursion on the unbounded `Deriv` tree — the ω-rule node takes the supremum of its
 `ℕ`-many premise bounds, then `+1`, and weakening is height-preserving.
 - [Tow20, §15] -/
+@[grind =]
 noncomputable def ordinalBound : {Γ : Seq} → Deriv Γ → Ordinal.{0}
   | _, axL _ _ _ _ => 0
   | _, axTrue _ _ _ _ _ => 0
@@ -122,6 +126,7 @@ Foundation's `complexity` plays the role of Towsner's formula rank `rk`. *Crucia
 (`complexity φ : ℕ`), so `Provable α (c : ℕ)` meaningfully bounds quantified cut formulas. A cut-free
 derivation has `cutRank = 0`.
 - [Tow20, §18, Definition 16.2] -/
+@[grind =]
 noncomputable def cutRank : {Γ : Seq} → Deriv Γ → ℕ∞
   | _, axL _ _ _ _ => 0
   | _, axTrue _ _ _ _ _ => 0
@@ -138,6 +143,7 @@ noncomputable def cutRank : {Γ : Seq} → Deriv Γ → ℕ∞
 numeric side bound `k` (the `τ(α) < k` complexity condition), keeping only the ordinal bound `α`
 and the cut rank `c`.
 - [Tow20, §18] -/
+@[grind =]
 def Provable (α : Ordinal.{0}) (c : ℕ) (Γ : Seq) : Prop :=
   ∃ d : Deriv Γ, ordinalBound d ≤ α ∧ cutRank d ≤ (c : ℕ∞)
 

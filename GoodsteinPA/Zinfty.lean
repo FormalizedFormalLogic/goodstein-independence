@@ -61,7 +61,7 @@ open LO LO.FirstOrder
 namespace Deriv
 
 /-- The ω-rule bound strictly dominates each premise bound. -/
-theorem o_allω_gt {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
+lemma o_allω_gt {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
     (d : (n : ℕ) → Deriv (insert (φ/[nm n]) Γ)) (n : ℕ) : ordinalBound (d n) < ordinalBound (allω φ d) := by
   have h : ordinalBound (d n) ≤ ⨆ m, ordinalBound (d m) := Ordinal.le_iSup (fun m => ordinalBound (d m)) n
   calc ordinalBound (d n) ≤ ⨆ m, ordinalBound (d m) := h
@@ -69,38 +69,44 @@ theorem o_allω_gt {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
     _ = ordinalBound (allω φ d) := by simp only [ordinalBound]
 
 /-- **Bound monotonicity** (Towsner Lemma 16.4): relax either recorded bound. -/
-theorem Provable.mono {α β : Ordinal.{0}} {c c' : ℕ} (hα : α ≤ β) (hc : c ≤ c') {Γ : Seq} :
+@[grind →]
+lemma Provable.mono {α β : Ordinal.{0}} {c c' : ℕ} (hα : α ≤ β) (hc : c ≤ c') {Γ : Seq} :
     Provable α c Γ → Provable β c' Γ := by
   rintro ⟨d, ho, hcr⟩
   exact ⟨d, ho.trans hα, hcr.trans (by exact_mod_cast hc)⟩
 
 /-- **Sequent weakening** (Towsner Lemma 19.1): enlarge the sequent without raising bounds. -/
-theorem Provable.weakening {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Seq} (h : Γ ⊆ Δ) :
+@[grind →]
+lemma Provable.weakening {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Seq} (h : Γ ⊆ Δ) :
     Provable α c Γ → Provable α c Δ := by
   rintro ⟨d, ho, hcr⟩
   exact ⟨Deriv.weak d h, by simpa [Deriv.ordinalBound] using ho, by simpa [Deriv.cutRank] using hcr⟩
 
 /-- Provability respects set equality of sequents. -/
-theorem Provable.cast {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Seq} (e : Γ = Δ) :
+lemma Provable.cast {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Seq} (e : Γ = Δ) :
     Provable α c Γ → Provable α c Δ := fun h => e ▸ h
 
 /-- Identity axiom: `rel r v` and `nrel r v` together close at bound `0`, cut rank `0`. -/
-theorem Provable.axL {Γ : Seq} {k} (r : (ℒₒᵣ).Rel k) (v)
+@[grind →]
+lemma Provable.axL {Γ : Seq} {k} (r : (ℒₒᵣ).Rel k) (v)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) : Provable 0 0 Γ :=
   ⟨Deriv.axL r v hp hn, by simp [Deriv.ordinalBound], by simp [Deriv.cutRank]⟩
 
 /-- **Atomic-truth axiom** (the ω-logic leaf): a true closed literal closes any sequent containing
 it, at bound `0`, cut rank `0`. -/
-theorem Provable.axTrue {Γ : Seq} {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v)
+@[grind →]
+lemma Provable.axTrue {Γ : Seq} {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v)
     (htrue : LitTrue (signedLit b r v)) (hmem : signedLit b r v ∈ Γ) : Provable 0 0 Γ :=
   ⟨Deriv.axTrue b r v htrue hmem, by simp [Deriv.ordinalBound], by simp [Deriv.cutRank]⟩
 
 /-- `⊤` closes a sequent at bound `0`, cut rank `0`. -/
-theorem Provable.verumR {Γ : Seq} (h : (⊤ : Form) ∈ Γ) : Provable 0 0 Γ :=
+@[grind →]
+lemma Provable.verumR {Γ : Seq} (h : (⊤ : Form) ∈ Γ) : Provable 0 0 Γ :=
   ⟨Deriv.verumR h, by simp [Deriv.ordinalBound], by simp [Deriv.cutRank]⟩
 
 /-- Predicate-level `∧`-introduction. -/
-theorem Provable.andI {α β : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : Form)
+@[grind →]
+lemma Provable.andI {α β : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : Form)
     (hφ : Provable α c (insert φ Γ)) (hψ : Provable β c (insert ψ Γ)) :
     Provable (max α β + 1) c (insert (φ ⋏ ψ) Γ) := by
   rcases hφ with ⟨dφ, hoφ, hcφ⟩
@@ -110,7 +116,8 @@ theorem Provable.andI {α β : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : Form)
   · simp only [Deriv.cutRank]; exact max_le hcφ hcψ
 
 /-- Predicate-level `∨`-introduction. -/
-theorem Provable.orI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : Form)
+@[grind →]
+lemma Provable.orI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : Form)
     (h : Provable α c (insert φ (insert ψ Γ))) : Provable (α + 1) c (insert (φ ⋎ ψ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
   exact ⟨Deriv.orI φ ψ d, by simpa [Deriv.ordinalBound] using add_le_add_right ho 1,
@@ -121,7 +128,8 @@ arithmetic term model every closed term denotes a numeral, and numeral witnesses
 ω-rule inversion (`allInv`) produces, so the ∀/∃ cut-reduction (§19.6) can match the witness
 against the inverted ∀-family. (The embedding §16 supplies a numeral by evaluating PA's witness
 term — deferred to M4.) -/
-theorem Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
+@[grind →]
+lemma Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
     (n : ℕ) (h : Provable α c (insert (φ/[nm n]) Γ)) :
     Provable (α + 1) c (insert (∃⁰ φ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
@@ -130,7 +138,7 @@ theorem Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : SyntacticSemi
 
 /-- **Predicate-level ω-rule.** From a uniform-cut-rank family of premises with ordinal bounds
 `β n`, conclude `∀` at bound `(⨆ n, β n) + 1`. -/
-theorem Provable.allω {β : ℕ → Ordinal.{0}} {c : ℕ} {Γ : Seq}
+lemma Provable.allω {β : ℕ → Ordinal.{0}} {c : ℕ} {Γ : Seq}
     (φ : SyntacticSemiformula ℒₒᵣ 1) (h : ∀ n, Provable (β n) c (insert (φ/[nm n]) Γ)) :
     Provable ((⨆ n, β n) + 1) c (insert (∀⁰ φ) Γ) := by
   choose d ho hcr using h
@@ -141,13 +149,15 @@ theorem Provable.allω {β : ℕ → Ordinal.{0}} {c : ℕ} {Γ : Seq}
   · simp only [Deriv.cutRank]; exact iSup_le hcr
 
 /-- **Contraction is free** (the payoff of set sequents): a duplicate insert collapses. -/
-theorem Provable.contr {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : Form)
+@[grind →]
+lemma Provable.contr {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : Form)
     (h : Provable α c (insert φ (insert φ Γ))) : Provable α c (insert φ Γ) := by
   simpa [Finset.insert_idem] using h
 
 /-- **Predicate-level cut.** From `insert φ Γ` and `insert (∼φ) Γ` at cut rank `≤ c` with
 `complexity φ < c`, conclude `Γ` at the same cut rank. -/
-theorem Provable.cut {α β : Ordinal.{0}} {c : ℕ} {Γ : Seq} (χ : Form)
+@[grind →]
+lemma Provable.cut {α β : Ordinal.{0}} {c : ℕ} {Γ : Seq} (χ : Form)
     (hc : (χ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞))
     (h₁ : Provable α c (insert χ Γ)) (h₂ : Provable β c (insert (∼χ) Γ)) :
     Provable (max α β + 1) c Γ := by
@@ -186,7 +196,7 @@ private theorem invPull {a : Form} (h : a ≠ (φ ⋎ ψ)) (s : Seq) :
 /-- **∨-inversion (Towsner §19.2 analog).** If `φ ⋎ ψ` occurs in a `Z_∞`-derivable sequent, then
 replacing it by `φ` and `ψ` is derivable at the *same* ordinal bound and cut rank. Proved by
 structural induction on the derivation. -/
-theorem orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
+lemma orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
@@ -294,7 +304,8 @@ theorem orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
     exact Provable.cut χ hcχ P₁ P₂
 
 /-- **∨-inversion at a relaxed bound** (the form used downstream). -/
-theorem Provable.orInv {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋎ ψ) ∈ Γ)
+@[grind →]
+lemma Provable.orInv {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋎ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (orInvAux d hcr hmem).mono ho le_rfl
@@ -327,7 +338,7 @@ private theorem invPull1 (b : Form) {a e : Form} (h : a ≠ e) (s : Seq) :
 /-- **ω/∀-inversion (Towsner §19.4).** If `∀⁰ χ` occurs in a `Z_∞`-derivable sequent, then for
 every numeral `n` the instance `χ/[nm n]` is derivable at the *same* ordinal bound and cut rank.
 Proved by structural induction on the derivation (`n` fixed). -/
-theorem allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) →
+lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) →
     (∀⁰ χ) ∈ Γ → Provable (ordinalBound d) c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   have hb0 : (χ/[nm n]) ≠ (∀⁰ χ) := Semiformula.ne_of_ne_complexity (by simp)
   intro Γ d
@@ -433,7 +444,7 @@ theorem allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d
     exact Provable.cut ξ hcξ P₁ P₂
 
 /-- **ω-inversion at a relaxed bound** (the form used downstream). -/
-theorem Provable.allInv {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
+lemma Provable.allInv {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
     (h : Provable α c Γ) : Provable α c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (allInvAux n d hcr hmem).mono ho le_rfl
@@ -452,7 +463,7 @@ variable {φ ψ : Form}
 
 /-- **∧-inversion (Towsner §19.3).** If `φ ⋏ ψ` occurs in a `Z_∞`-derivable sequent, then both
 `φ` and `ψ` (with the conjunction erased) are derivable at the same ordinal bound and cut rank. -/
-theorem andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
+lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (Γ.erase (φ ⋏ ψ))) ∧
       Provable (ordinalBound d) c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   have hφ0 : φ ≠ (φ ⋏ ψ) := Semiformula.ne_of_ne_complexity (by simp)
@@ -604,13 +615,15 @@ theorem andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : 
       exact Provable.cut ξ hcξ P₁ P₂
 
 /-- **∧-inversion, left conjunct, relaxed bound.** -/
-theorem Provable.andInvL {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋏ ψ) ∈ Γ)
+@[grind →]
+lemma Provable.andInvL {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).1.mono ho le_rfl
 
 /-- **∧-inversion, right conjunct, relaxed bound.** -/
-theorem Provable.andInvR {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋏ ψ) ∈ Γ)
+@[grind →]
+lemma Provable.andInvR {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).2.mono ho le_rfl
@@ -619,13 +632,14 @@ end InversionAnd
 
 /-- Towsner **Def 19.8**: `ω`-tower over `α` of height `c` (`ω_c^α`), bottom-up:
 `ω_0^α = α`, `ω_{c+1}^α = ω_c^(ω^α)`. The cut-elimination ordinal blow-up. -/
+@[grind =]
 noncomputable def omegaTower : ℕ → Ordinal.{0} → Ordinal.{0}
   | 0, α => α
   | c + 1, α => omegaTower c (Ordinal.omega0 ^ α)
 
-@[simp] theorem omegaTower_zero (α : Ordinal.{0}) : omegaTower 0 α = α := rfl
+@[simp, grind =] lemma omegaTower_zero (α : Ordinal.{0}) : omegaTower 0 α = α := rfl
 
-@[simp] theorem omegaTower_one (α : Ordinal.{0}) : omegaTower 1 α = Ordinal.omega0 ^ α := rfl
+@[simp, grind =] lemma omegaTower_one (α : Ordinal.{0}) : omegaTower 1 α = Ordinal.omega0 ^ α := rfl
 
 /-- Bound bookkeeping for a binary commuting case: a rule reassembled at `max (α+a+1) (α+b+1) + 1`
 fits the target `α + (max a b + 1) + 1`. -/
@@ -686,7 +700,7 @@ invertible — and still needs the §19.6 induction on the ∃-side; tracked as 
 /-- Reduce a cut on a **conjunction** `a ⋏ b` (its negation `∼a ⋎ ∼b` on the other side), with both
 conjuncts of complexity `< c`. Invert the ∧-side (`andInvL/R`) and the ∨-side (`orInv`), then cut
 `a` and `b` separately at cut-rank `≤ c`. Towsner **Thm 19.5** (∧/∨ principal reduction). -/
-theorem Provable.cutReduceConj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ : Seq}
+lemma Provable.cutReduceConj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ : Seq}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋏ b) Γ)) (hNC : Provable β c (insert (∼a ⋎ ∼b) Γ)) :
     Provable (max α β + 1 + 1) c Γ := by
@@ -716,7 +730,7 @@ theorem Provable.cutReduceConj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ 
 /-- Reduce a cut on a **disjunction** `a ⋎ b` (its negation `∼a ⋏ ∼b` on the other side), with both
 disjuncts of complexity `< c`. Dual to `cutReduceConj`: invert the ∨-side (`orInv`) and the ∧-side
 (`andInvL/R`), then cut `a` and `b`. Towsner **Thm 19.5**. -/
-theorem Provable.cutReduceDisj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ : Seq}
+lemma Provable.cutReduceDisj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ : Seq}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋎ b) Γ)) (hNC : Provable β c (insert (∼a ⋏ ∼b) Γ)) :
     Provable (max α β + 1 + 1) c Γ := by
@@ -752,7 +766,7 @@ family available unchanged through the induction, it is a *fixed* hypothesis (ov
 
 /-- The induction core of the ∀/∃ reduction. `fam` is the ∀-inversion family; induct on the
 ∃-side derivation `d`. -/
-theorem Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α : Ordinal.{0}}
+lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α : Ordinal.{0}}
     {Γ : Seq} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ)) :
     ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
@@ -907,7 +921,7 @@ theorem Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : �
 
 /-- **Cut reduction, ∀/∃ principal** (Towsner Thm 19.6). A cut on `∀⁰ φ` (complexity `≤ c`) is
 eliminated by inverting the ∀-side and inducting on the ∃-side. -/
-theorem Provable.cutReduceAll {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α β : Ordinal.{0}}
+lemma Provable.cutReduceAll {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α β : Ordinal.{0}}
     {Γ : Seq} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (∀⁰ φ) Γ)) (hNC : Provable β c (insert (∃⁰ ∼φ) Γ)) :
     Provable (α + β + 1) c Γ := by
@@ -977,7 +991,7 @@ Buchholz; the generalization of `removeFalsumAux` from `⊥` to any false litera
 principal in a logical rule, so it is incidental at every compound step; the only new content is at
 the leaves: an `axL` clash on `L` exposes its (TRUE) opposite polarity `∼L`, closed by `axTrue`; an
 `axTrue` leaf's true witness is `≠ L` (which is false), so it survives the erase. -/
-theorem Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k₀) (v₀)
+lemma Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k₀) (v₀)
     (hL : ¬ LitTrue (signedLit b₀ r₀ v₀)) :
     ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0 : ℕ∞) →
       signedLit b₀ r₀ v₀ ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase (signedLit b₀ r₀ v₀)) := by
@@ -1081,7 +1095,7 @@ enters via `axL` or weakening. No truth layer is needed: set sequents dissolve t
 premise (`⊢ nrel r v, Γ`) already proves `Γ` (set idempotence). Every other case is incidental. -/
 
 /-- Induction core: cut a `rel r v` derivation (`d`) against a fixed `nrel r v` derivation (`hNC`). -/
-theorem Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {B : Ordinal.{0}} {Γ : Seq}
+lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {B : Ordinal.{0}} {Γ : Seq}
     (hNC : Provable B 0 (insert (Semiformula.nrel r v) Γ)) :
     ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
       Provable (B + ordinalBound d + 1) 0 (Δ.erase (Semiformula.rel r v) ∪ Γ) := by
@@ -1210,7 +1224,7 @@ theorem Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {B : Ordinal.{0}} {�
     exact absurd ((le_max_left _ _).trans hcr) (by simp)
 
 /-- **Atomic cut elimination** (the Thm 19.2 content for the final cut-free step). -/
-theorem Provable.atomCut {k} (r : (ℒₒᵣ).Rel k) (v) {A B : Ordinal.{0}} {Γ : Seq}
+lemma Provable.atomCut {k} (r : (ℒₒᵣ).Rel k) (v) {A B : Ordinal.{0}} {Γ : Seq}
     (hC : Provable A 0 (insert (Semiformula.rel r v) Γ))
     (hNC : Provable B 0 (insert (Semiformula.nrel r v) Γ)) :
     Provable (B + A + 1) 0 Γ := by
@@ -1224,7 +1238,7 @@ theorem Provable.atomCut {k} (r : (ℒₒᵣ).Rel k) (v) {A B : Ordinal.{0}} {Γ
 /-- Removing `⊥` from a cut-free derivation, bound-preserving. `⊥` is never introduced by any rule
 and is never an `axL`/`verumR` witness, so it is incidental at every step (Towsner Thm 19.2 for the
 constant-`⊥` case). -/
-theorem Provable.removeFalsumAux : ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0 : ℕ∞) →
+lemma Provable.removeFalsumAux : ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0 : ℕ∞) →
     (⊥ : Form) ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase ⊥) := by
   intro Δ d
   induction d with
@@ -1302,7 +1316,7 @@ theorem Provable.removeFalsumAux : ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ 
 
 
 /-- Remove a `⊥` from a cut-free sequent. -/
-theorem Provable.removeFalsum {B : Ordinal.{0}} {Γ : Seq}
+lemma Provable.removeFalsum {B : Ordinal.{0}} {Γ : Seq}
     (h : Provable B 0 (insert (⊥ : Form) Γ)) : Provable B 0 Γ := by
   rcases h with ⟨d, ho, hcr⟩
   refine (Provable.removeFalsumAux d hcr (Finset.mem_insert_self _ _)).weakening ?_ |>.mono ho le_rfl
@@ -1312,7 +1326,7 @@ theorem Provable.removeFalsum {B : Ordinal.{0}} {Γ : Seq}
 cut-free-at-`c` (bound `ω^A`, `ω^B`), a cut on `ξ` with `complexity ξ = c` is eliminated by the
 matching reduction (∧/∨ → `cutReduceConj/Disj`; ∀/∃ → `cutReduceAll`; atomic → `atomCut`;
 `⊤`/`⊥` → `removeFalsum`), staying below `ω^(max A B+1)`. -/
-theorem Provable.cutElimPrincipal {c : ℕ} {ξ : Form} {A B : Ordinal.{0}} {Γ : Seq}
+lemma Provable.cutElimPrincipal {c : ℕ} {ξ : Form} {A B : Ordinal.{0}} {Γ : Seq}
     (hξeq : ξ.complexity = c)
     (hC : Provable (Ordinal.omega0 ^ A) c (insert ξ Γ))
     (hNC : Provable (Ordinal.omega0 ^ B) c (insert (∼ξ) Γ)) :
@@ -1369,7 +1383,7 @@ theorem Provable.cutElimPrincipal {c : ℕ} {ξ : Form} {A B : Ordinal.{0}} {Γ 
 /-- The transfinite induction underlying Thm 19.7: a derivation of cut rank `≤ c+1` becomes
 cut-free-at-`c` at bound `ω^(ordinalBound d)`. Non-principal rules are reapplied (each `ω^· + small ≤ ω^(·+1)`);
 a rank-`< c` cut is kept; a rank-`= c` cut is eliminated by `cutElimPrincipal`. -/
-theorem Provable.cutElimStepAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ ((c + 1 : ℕ) : ℕ∞) →
+lemma Provable.cutElimStepAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ ((c + 1 : ℕ) : ℕ∞) →
     Provable (Ordinal.omega0 ^ (ordinalBound d)) c Γ := by
   intro Γ d
   induction d with
@@ -1442,7 +1456,8 @@ calculus dependence; recorded now so M7 can cite them. -/
 
 open scoped Ordinal in
 /-- `ε₀` is closed under `ω^·`. -/
-theorem omega0_opow_lt_epsilon0 {a : Ordinal.{0}} (h : a < ε₀) : Ordinal.omega0 ^ a < ε₀ := by
+@[grind →]
+lemma omega0_opow_lt_epsilon0 {a : Ordinal.{0}} (h : a < ε₀) : Ordinal.omega0 ^ a < ε₀ := by
   obtain ⟨n, hn⟩ := Ordinal.lt_epsilon_zero.mp h
   have hstep : Ordinal.omega0 ^ a < (fun b => Ordinal.omega0 ^ b)^[n + 1] 0 := by
     rw [Function.iterate_succ_apply']
@@ -1451,7 +1466,7 @@ theorem omega0_opow_lt_epsilon0 {a : Ordinal.{0}} (h : a < ε₀) : Ordinal.omeg
 
 open scoped Ordinal in
 /-- The full cut-elimination ordinal `ω_c^α` stays below `ε₀` whenever `α < ε₀`. -/
-theorem omegaTower_lt_epsilon0 : ∀ (c : ℕ) {α : Ordinal.{0}}, α < ε₀ → omegaTower c α < ε₀
+lemma omegaTower_lt_epsilon0 : ∀ (c : ℕ) {α : Ordinal.{0}}, α < ε₀ → omegaTower c α < ε₀
   | 0, _, h => by simpa [omegaTower] using h
   | c + 1, _, h => by
       simpa [omegaTower] using omegaTower_lt_epsilon0 c (omega0_opow_lt_epsilon0 h)
