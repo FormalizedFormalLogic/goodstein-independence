@@ -154,6 +154,24 @@ jobs:
           retention-days: 1
           include-hidden-files: true
 
+  check-references:
+    name: Check references.bib format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: extractions/setup-just@v3
+      - name: Install bibtool
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bibtool
+      - name: Check references.bib is formatted
+        run: |
+          just references
+          if [ -n "$(git diff)" ]; then
+            echo "references.bib is not formatted. Please run 'just references' and commit the changes."
+            exit 1
+          fi
+
   deploy:
     name: Generate page
     runs-on: ubuntu-latest
