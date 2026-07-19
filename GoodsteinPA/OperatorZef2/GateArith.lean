@@ -11,11 +11,10 @@ open GoodsteinPA.OperatorZinfty
 
 variable {α γ βφ βψ : ONote} {f g : ℕ → ℕ}
 
-/-! ## ewN arithmetic — the size norm is sub-additive under `+` and near-additive under `osucc`
+/-! ## `ewN` arithmetic — the size norm is sub-additive under `+` and near-additive under `osucc`
 
 These are the size-control facts the reduction's synthesized `osucc (α + γ)` roots need: the gate
-`ewN (osucc (α + γ)) ≤ ewN α + ewN γ + 1`.  Banked here (kernel-verified, unconditional for `+`,
-`NF` for `osucc`) toward the P-d discharge. -/
+`ewN (osucc (α + γ)) ≤ ewN α + ewN γ + 1`.  Unconditional for `+`, needs `NF` for `osucc`. -/
 
 /-- `ewN` is sub-additive over `addAux`. -/
 theorem ewN_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
@@ -76,16 +75,17 @@ theorem ewN_add_le_comp
     ewN (α + γ) ≤ g (f 0) :=
   le_trans (ewN_add_le α γ) (base_add_le_comp hg_base hα hγ)
 
-/-! ## The pass's ordinal-collapse containment (Stage-3 prep) -/
+/-! ## The pass's ordinal-collapse containment -/
 
 /-- `repr (collapse x) = ω ^ repr x` (`collapse = expTower = oadd · 1 0`). -/
 theorem repr_collapse (x : ONote) : (collapse x).repr = ω ^ x.repr := by
   simp [collapse, expTower, ONote.repr]
 
 /-- **Ordinal-collapse containment** — the cut-elimination step feeds two
-IH-reduced premises (at `collapse βφ`, `collapse βψ`, `βφ,βψ < α`) into the reduction pin, whose
-additive output `collapse βφ + collapse βψ` must fit strictly under the single collapse
-`collapse α = ω^α`.  This is the additive principality of `ω^α`. -/
+IH-reduced premises (at `collapse βφ`, `collapse βψ`, `βφ,βψ < α`) into the running-family
+cut-reduction (`cutReduceAllAuxRunning_Zf2`), whose additive output `collapse βφ + collapse βψ`
+must fit strictly under the single collapse `collapse α = ω^α`.  This is the additive principality
+of `ω^α`. -/
 theorem collapse_add_lt (hβφ : βφ.NF) (hβψ : βψ.NF) (_hα : α.NF)
     (hφ : βφ < α) (hψ : βψ < α) : collapse βφ + collapse βψ < collapse α := by
   haveI := hβφ; haveI := hβψ; haveI := _hα

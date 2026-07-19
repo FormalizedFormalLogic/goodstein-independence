@@ -12,36 +12,29 @@ open GoodsteinPA.OperatorZinfty
 variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-!
-# `Zef2` — the ewN-gated E–W controlled slot calculus
+# `Zef2` — the `Nlog`-gated E–W controlled slot calculus
 
-`Zef2` is `Zef` with an ewN-size gate `ewN α ≤ f 0` carried on every node (and a cut-read gate
+`Zef2` is `Zef` with a size gate `Nlog α ≤ f 0` carried on every node (and a cut-read gate
 `φ.complexity ≤ f 0` on `cut`).  The gate controls the diagonal output slot's base-argument read
-by the ordinal's constructor norm.
+by the ordinal's constructor norm `Nlog`.
 
 The forgetful map `Zef2.toZef` drops the gate — it is the conservativity witness, and discharges
-both read-off pins by reuse of the `Zef` read-off (§ read-off).  Pins 1–2 (§ reduction) and the
-inversion suite are re-proven natively over `Zef2` (the gate re-threads at each rebuilt node).
+the read-off exit by reuse of the `Zef` read-off.  The inversion suite is re-proven natively over
+`Zef2` (the gate re-threads at each rebuilt node).
 
-`OperatorZeh.lean`'s old `Zef` layer, `iterSlot` + §5b lemmas, and old pin 3 are superseded by
-this module.
+`Zef2` inherits `Zef`'s attribution.  The rule skeleton and the ordinal witness bound continue the
+restricted infinitary calculus underlying `Zeh`/`Zef`.  The operator-controlled reading of the
+derivation follows the `f, F ⊢^α_ρ Γ` judgment, whose side condition `N(α) ≤ f(0)` is the nearest
+precedent for the `Nlog α ≤ f 0` gate carried here.  The per-node placement of the gate, the
+concrete choice of norm (`Nlog`), and the additional cut-read gate `φ.complexity ≤ f 0` are
+specific to this formalization.
 
-The underlying `Z_∞` operator calculus this module builds on is Towsner's, whose operator
-control method is itself Buchholz's; controlled cut-elimination against a numeric gate is
-already present there too (Towsner's own gate `k`). What is specific to Eguchi–Weiermann is the
-*function-slot form* of the gate: a running family `f^α` controlled by a size-norm, with the
-function-slot judgment and its cut-composition `f ∘ g`. `Zef2`'s `ewN` gate is this EW12
-running-family/norm device, reformulated over `OperatorZeh`'s `Zef` judgment. The read-off's
-bounding step is Buchholz–Wainer's Bounding Lemma, as implemented by Eguchi–Weiermann's
-witnessing lemmas.
-
-- [Tow20, Theorem 17.1]
-- [Buc03]
-- [EW12, Definition 16, Lemma 19, Definition 23, Lemma 25, Lemma 29, Lemma 31]
-- [BW87, Lemma 5]
+- [Tow20, §13, §15]
+- [EW12, Definition 23]
 -/
 
-/-- **`Zef2`** — the ewN-gated function-slot cut-elimination calculus.  Identical to `Zef`
-(`OperatorZeh.lean`) up to the size gate `hαN : ewN α ≤ f 0` on every node and the cut-read gate
+/-- **`Zef2`** — the `Nlog`-gated function-slot cut-elimination calculus.  Identical to `Zef`
+(`OperatorZeh.lean`) up to the size gate `hαN : Nlog α ≤ f 0` on every node and the cut-read gate
 `hcutRead : φ.complexity ≤ f 0` on `cut`. -/
 inductive Zef2 : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ → Finset (ArithmeticFormula ℕ) → Prop
   | axL {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {ar : ℕ}
@@ -78,7 +71,7 @@ inductive Zef2 : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ 
 
 namespace Zef2
 
-/-- **Gate projection** — every `Zef2` constructor exposes its conclusion gate `ewN α ≤ f 0`, so
+/-- **Gate projection** — every `Zef2` constructor exposes its conclusion gate `Nlog α ≤ f 0`, so
 a derivation is its own certificate for the size bound.  The uniform lever for re-threading the
 gate through the reduction / inversion. -/
 theorem gate (dd : Zef2 α e H f c Γ) : Nlog α ≤ f 0 := by
@@ -136,7 +129,7 @@ theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c 
 theorem mono_Hf (dd : Zef2 α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
     Zef2 α e H' f' c Γ := (dd.change_H).mono_f hff'
 
-/-- **`toZef`** — the forgetful map dropping the ewN/cut-read gate (the mandated read-off route;
+/-- **`toZef`** — the forgetful map dropping the `Nlog`/cut-read gate (the mandated read-off route;
 doubles as the conservativity witness `Zef2 ⤳ Zef`). -/
 theorem toZef : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef2 α e H f c Γ → Zef α e H f c Γ := by
@@ -152,7 +145,7 @@ theorem toZef : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : �
 
 end Zef2
 
-/-- The `≤`-slack wrapper (slot form of `ZehProv`), carrying the ewN gate on the witness. -/
+/-- The `≤`-slack wrapper (slot form of `ZehProv`), carrying the `Nlog` gate on the witness. -/
 def Zef2Prov (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ α', α' ≤ α ∧ α'.NF ∧ Cl H α' ∧ Nlog α' ≤ f 0 ∧ Zef2 α' e H f c Γ
 
@@ -180,15 +173,25 @@ theorem toZefProv :
 
 end Zef2Prov
 
-/-! ## The read-off exit, discharged by the forgetful map (P-c) -/
+/-! ## The read-off exit, discharged by the forgetful map -/
 
+/-- Mirrors `ReadoffShapeF` (`OperatorZeh.lean`) for `Zef2`; the witness-read-off shape follows
+the restricted infinitary calculus's cut-elimination read-off.
+
+- [Tow20, §17, Theorem 17.1]
+-/
 def ReadoffShapeF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ReadoffShapeF φ f Γ
 
+/-- Mirrors `ReadoffGoalF` (`OperatorZeh.lean`) for `Zef2`; the witness-read-off goal follows
+the restricted infinitary calculus's cut-elimination read-off.
+
+- [Tow20, §17, Theorem 17.1]
+-/
 def ReadoffGoalF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ReadoffGoalF φ f Γ
 
-/-- **`readoff_sigma1_Zef2`** — the ewN-gated read-off, discharged by reuse of the `Zef` read-off
+/-- **`readoff_sigma1_Zef2`** — the `Nlog`-gated read-off, discharged by reuse of the `Zef` read-off
 through `toZef` (zero re-proof; the gate is read-off-irrelevant). -/
 theorem readoff_sigma1_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)

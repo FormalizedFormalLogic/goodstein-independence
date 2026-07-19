@@ -183,7 +183,7 @@ theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × 
 
 variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
 
-/-- **The R-4′ source is VACUOUS: `Zef2` cannot derive `{∃⁰ φ}` at rank 0, for any `φ`.** -/
+/-- **`Zef2` cannot derive `{∃⁰ φ}` at rank 0, for any `φ`.** -/
 theorem zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1} :
     ¬ Zef2 α e H f 0 {(∃⁰ φ)} := by
   intro dd
@@ -197,9 +197,8 @@ branch-0 mechanism (`rel1 f 0 = f`) already discharges every case where `χ/[nm 
 only survivor is `χ/[nm 0]` TRUE while `∀⁰ χ` is false.  If the matrix `χ` satisfies the natural
 "`0`-instance is the easiest" condition `atomTrue (χ/[nm 0]) → atomTrue (∀⁰ χ)` (a downward-closed
 guard, as for the Goodstein bounded-`∀` clauses), that survivor is contradictory: `h0` forces
-`atomTrue (∀⁰ χ)`, contradicting `hfalse`.  So under `hmono` the trap NEVER fires — this is the exact
-fragment the structural read-off reaches without E–W's (Ax2).  A ready building block for a
-monotone-guarded specialization of `readoff_delta0_Zef2`. -/
+`atomTrue (∀⁰ χ)`, contradicting `hfalse`.  So under `hmono` the trap never fires.  A ready
+building block for a monotone-guarded specialization of `readoff_delta0_Zef2`. -/
 theorem readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
     {Γ₀ : Finset (ArithmeticFormula ℕ)} {β : ℕ → ONote}
     (_hbranch : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) 0 (insert (χ/[nm n]) Γ₀))
@@ -211,14 +210,14 @@ theorem readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
     ∃ n ≤ f 0, atomTrue (φ/[nm n]) :=
   absurd (hmono h0) hfalse
 
-/-- **RUNG D (L-D) `readoff_delta0_Zef2`** — the Δ₀ (bounded-∀ matrix) read-off extension
-(Towsner §5.4 pattern), re-homed to `Zef2`.  The conclusion bound is `ewIter f α 0` (rather than
-`f 0`): the structurally achievable bound, since the splice consumes it at one definitional tower
-level.  The old `matrixTrue` form is deleted; `<BoundedInstance>` is discharged to the repo-native
-Foundation Δ₀ predicate `LO.FirstOrder.Arithmetic.DeltaZero` (= `Hierarchy 𝚺 0`) and the conclusion
-reads off the standard-model truth `atomTrue = Evalm ℕ` of the instance directly.
+/-- **`readoff_delta0_Zef2`** — the Δ₀ (bounded-∀ matrix) read-off extension, re-homed to `Zef2`.
+The conclusion bound is `ewIter f α 0` (rather than `f 0`): the structurally achievable bound,
+since the splice consumes it at one definitional tower level.  The old `matrixTrue` form is
+deleted; `<BoundedInstance>` is discharged to the repo-native Foundation Δ₀ predicate
+`LO.FirstOrder.Arithmetic.DeltaZero` (= `Hierarchy 𝚺 0`) and the conclusion reads off the
+standard-model truth `atomTrue = Evalm ℕ` of the instance directly.
 
-Where `readoff_sigma1_Zef2` reads off an ATOMIC matrix (`hφinst : φ/[nm n]` atomic), this reads off
+Where `readoff_sigma1_Zef2` reads off an atomic matrix (`hφinst : φ/[nm n]` atomic), this reads off
 a Δ₀ instance: from a rank-0 `Zef2` derivation of the singleton `{∃⁰ φ}` whose instances
 `φ/[nm n]` are Δ₀, extract a witness `n ≤ ewIter f α 0` with `atomTrue (φ/[nm n])`.
 
@@ -227,16 +226,19 @@ a Δ₀ instance: from a rank-0 `Zef2` derivation of the singleton `{∃⁰ φ}`
 the repo-native Δ₀ notion, and its `∧`/`∨` heads are dead branches for the singleton read-off (a
 singleton `{A ⋏ B}` is not `axL`-closable and has no ∧-rule ⇒ underivable).  The genuine content is
 the `allω` (Π) case — `atomTrue (∀⁰ χ) = ∀ k, Evalm (χ/[nm k])` needs every branch's matrix as its
-true disjunct + the Δ₀ bound to bound the load-bearing branches (Towsner §5.4). -/
+true disjunct plus the Δ₀ bound to bound the load-bearing branches.
+
+- [Tow20, §17, Theorem 17.1]
+-/
 theorem readoff_delta0_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (_hφbdd : ∀ n, LO.FirstOrder.Arithmetic.DeltaZero (φ/[nm n]))
     (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
     ∃ n ≤ ewIter f α 0, atomTrue (φ/[nm n]) :=
-  -- The conclusion holds via VACUITY: the source `dd` cannot exist
-  -- (`zef2_rank0_singleton_ex_underivable`: `Zef2` without E–W's (Ax2) has no closure for a
-  -- uniform-spine singleton).  The `hφbdd` Δ₀ premise is not consumed by this vacuity route.
+  -- The conclusion holds via vacuity: the source `dd` cannot exist
+  -- (`zef2_rank0_singleton_ex_underivable`: `Zef2` has no closure for a uniform-spine singleton).
+  -- The `hφbdd` Δ₀ premise is not consumed by this vacuity route.
   (zef2_rank0_singleton_ex_underivable dd).elim
 
-/- Rungs E (embedding) and W (splice) moved to `wip/WainerLadder.lean`. -/
+/- The embedding and splice steps of the Wainer-bound derivation are developed separately. -/
 
 end GoodsteinPA.OperatorZeh

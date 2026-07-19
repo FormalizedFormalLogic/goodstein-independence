@@ -10,14 +10,14 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## The cut-elimination pass (P-e); `passAux` is the induction -/
+/-! ## The cut-elimination pass; `passAux` is the induction -/
 
 /-- **`passAux`** — the cut-elimination pass as a generalized induction, threading
-`Monotone f ∧ (∀x,x≤f x) ∧ (∀m,2m+1≤f m)` (NOT `EwF1`: the `2m+1` bound is what `ewN_collapse_le`
+`Monotone f ∧ (∀x,x≤f x) ∧ (∀m,2m+1≤f m)` (NOT `EwF1`: the `2m+1` bound is what `Nlog_collapse_le`
 needs and it, unlike strict monotonicity, is PRESERVED by the `allω`-branch relativization `rel1 f n`
 via `rel1_low`).  The rank is generalized to a variable `r` (with `r = c+1`) so `induction` can fire.
 Structural cases (`axL`/`wk`/`weak`) DISCHARGED via the banked pass-prep engine:
-- `axL`: build at `collapse α` with node gate `ewN_collapse_le`;
+- `axL`: build at `collapse α` with node gate `Nlog_collapse_le`;
 - `wk`: IH + `Zef2Prov.weakening`;
 - `weak`: IH at `β<α` + ordinal-lift (`collapse_strictMono`) + slot-lift (`ewIter_slot_le`).
 
@@ -117,7 +117,7 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
         refine Zef2Prov.of (collapse_NF hαNF) (Cl_of_NF (collapse_NF hαNF)) hg ?_
         exact Zef2.cut hg χ hc (le_trans hcutRead hf0) haφcol haψcol
           haφNF haψNF (collapse_NF hαNF) haφH haψH (Dφ.mono_f hsφ) (Dψ.mono_f hsψ)
-      · -- TOP-RANK cut: `χ.complexity = c`.  ELIMINATE the cut (E–W Lemma 26 principal step),
+      · -- TOP-RANK cut: `χ.complexity = c`.  ELIMINATE the cut (principal-cut step, cf. [EW12, Lemma 26]),
         -- by the shape of `χ`: quantifier shapes → `stepAllω_Zf2_bnd` (slack = `hslack_kit_ge`)
         -- + `collapse_add_lt` + `ewIter_comp_le`; atomic shapes → `atomCutRun_Zf2` (the axL-pair
         -- surgery); inert shapes (`⊤/⊥/⋏/⋎`, never principal) → `Zef2.erase_inert`.
@@ -228,8 +228,11 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
 
 variable {α e : ONote} {H : ONote → Prop}
 
-/-- **One cut-ELIMINATION pass over `Zef2`** (E–W Lemma 26/27): a single predicative rank step —
-the ordinal COLLAPSES (`collapse α`) and the numeric slot ITERATES (`ewIter f α`). -/
+/-- **One cut-elimination pass over `Zef2`**: a single predicative rank step — the ordinal
+collapses (`collapse α`) and the numeric slot iterates (`ewIter f α`).
+
+- [EW12, Lemma 26, Lemma 27]
+-/
 theorem cutElimPass_Zef2 {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f (c + 1) Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
@@ -251,16 +254,19 @@ theorem cutElimPass_exit_root_Zef2 {m : ℕ}
       (ewRootSlot_f1 e m) (ewRootSlot_f2 e m)
   exact headline_readoff_Zef2 hφinst D'
 
-/-! ## The wainer ladder (L-items) — the four rungs as named pins
+/-! ## The Wainer-bound derivation, iterated down to cut rank 0
 
-The rungs decompose the `wainer_bound_of_pa_proves_goodstein` monolith (now in `Statement.lean`)
-into the E–W pipeline order. -/
+Decomposes the `wainer_bound_of_pa_proves_goodstein` monolith (in `Statement.lean`) into an
+operator-controlled cut-elimination pipeline.
 
-/-- **`rankToZeroAux`** — the EwLow-threaded rung-R induction.  Threads
+- [EW12, §4]
+-/
+
+/-- **`rankToZeroAux`** — the `hlow`-threaded induction iterating `passAux`.  Threads
 `Monotone ∧ inflationary ∧ (2m+1 ≤ ·)` (NOT `EwF1`: `ewIter` does not inherit strict monotonicity,
 but it DOES inherit these three via `ewIter_monotone`/`_infl`/`_low`, so the pass ITERATES).  Each
 step applies one `passAux`, promotes the reduced witness UP to `collapse α` exactly (`Zef2.weak`,
-gate `ewN_collapse_le`), recurses, and rewrites via the two tower-shift lemmas. -/
+gate `Nlog_collapse_le`), recurses, and rewrites via the two tower-shift lemmas. -/
 theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
     ∀ (d : ℕ) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f d Γ → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
@@ -289,7 +295,7 @@ theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
       rw [collapseIter_collapse α d, ewIterTower_collapse f α d] at hrec
       exact hrec
 
-/-- **`rankToZero_Zef2`** (rung L-R) — iterate `cutElimPass_Zef2` down the cut rank `d → 0`.
+/-- **`rankToZero_Zef2`** — iterate `cutElimPass_Zef2` down the cut rank `d → 0`.
 A plain induction over the pass (`rankToZeroAux`): `d` applications collapse the ordinal to
 `collapseIter d α` and tower the slot to `ewIterTower f d α`, landing at rank 0. -/
 theorem rankToZero_Zef2 {d : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)

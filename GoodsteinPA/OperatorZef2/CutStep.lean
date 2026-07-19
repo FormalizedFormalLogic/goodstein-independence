@@ -10,7 +10,7 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## Pins 1–2 over `Zef2` (P-d) — re-proven natively -/
+/-! ## The reduction and inversion lemmas over `Zef2` — re-proven natively -/
 
 /-- `β < γ → α < α + γ` (NF): the fresh `α + γ` root strictly dominates the `∀`-family base `α`
 whenever the `∃`-side ordinal `γ` is positive (which a strict descendant `β < γ` witnesses).  The
@@ -24,15 +24,18 @@ private theorem lt_add_of_inner_lt {α β γ : ONote} (hαNF : α.NF) (hγNF : �
   simpa using (add_lt_add_iff_left α.repr).mpr hγpos
 
 set_option maxHeartbeats 1000000 in
-/-- **PIN (P-d): the running-family cut-reduction over `Zef2`.**  Port of
-`cutReduceAllAuxRunning_Zf` with the ewN/cut-read gate re-threaded at every rebuilt node.
+/-- **The running-family cut-reduction over `Zef2`.**  Port of
+`cutReduceAllAuxRunning_Zf` with the `Nlog`/cut-read gate re-threaded at every rebuilt node.
 
-The reduction's fresh root is `α + γ` (E–W Lemma 25): no successor `+1` is taken, unlike the
+The reduction's fresh root is `α + γ`: no successor `+1` is taken, unlike the
 old `osucc (α + γ)` form.  The two additions to the signature — `hg_base : ∀ k, g 0 + k ≤ g k`
 (a per-step growth floor on the `∀`-side slot) and `φ.complexity ≤ f 0` (the fresh cut-read) —
-close the fresh node's gates: `ewN (α + γ) ≤ g (f 0)` via `ewN_add_le_comp` and
+close the fresh node's gates: `Nlog (α + γ) ≤ g (f 0)` via `Nlog_add_le_comp` and
 `φ.complexity ≤ (g ∘ f) 0` via `hg_infl`.  Premises land strictly below `α + γ` by the
-covariance of the reduction. -/
+covariance of the reduction.
+
+- [EW12, Lemma 25]
+-/
 theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
     {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
@@ -197,7 +200,7 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
 private theorem f_le_rel1_2 {f : ℕ → ℕ} (hf : Monotone f) (n₀ : ℕ) :
     ∀ x, f x ≤ rel1 f n₀ x := fun x => hf (le_max_right n₀ x)
 
-/-- Transport a gate `ewN α ≤ f 0` to the relativized slot `rel1 f n₀`. -/
+/-- Transport a gate `Nlog α ≤ f 0` to the relativized slot `rel1 f n₀`. -/
 private theorem gate_rel1 {f : ℕ → ℕ} (hmono : Monotone f) {α : ONote} (n₀ : ℕ)
     (h : Nlog α ≤ f 0) : Nlog α ≤ rel1 f n₀ 0 := by
   refine le_trans h ?_
@@ -286,7 +289,7 @@ theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
 variable {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {χ : ArithmeticSemiformula ℕ 1}
   {f g : ℕ → ℕ}
 
-/-- **`stepAllω_Zf2`** (pin-2 over `Zef2`): the principal ∀/∃ cut-reduction step — invert the
+/-- **`stepAllω_Zf2`** — the principal ∀/∃ cut-reduction step over `Zef2` — invert the
 ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`, with the `hg_base` floor and
 `hχRead : χ.complexity ≤ f 0` cut-read on the signature. -/
 theorem stepAllω_Zf2 {βφ βψ : ONote}
@@ -340,7 +343,7 @@ theorem stepAllω_Zf2_bnd {P₁ P₂ : ONote}
   exact ((hred.weakening
     (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))).mono hbnd)
 
-/-! ## N-2 helpers: inert-shape erasure + the atomic-cut splice
+/-! ## Inert-shape erasure and the atomic-cut splice
 
 `Zef2` has NO `⊤/⊥/⋏/⋎` rules, so formulas of those shapes are never principal — they can be
 erased from any context (`Zef2.erase_inert`).  This closes the top-rank cut for the four inert
