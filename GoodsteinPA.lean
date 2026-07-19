@@ -8,6 +8,14 @@ public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2
 public import GoodsteinPA.OperatorZeh
+public import GoodsteinPA.OperatorZeh.Cut
+public import GoodsteinPA.OperatorZeh.Examples
+public import GoodsteinPA.OperatorZeh.Inversion
+public import GoodsteinPA.OperatorZeh.Operator
+public import GoodsteinPA.OperatorZeh.Readoff
+public import GoodsteinPA.OperatorZeh.Slot
+public import GoodsteinPA.OperatorZeh.Zef
+public import GoodsteinPA.OperatorZeh.Zeh
 public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Statement
