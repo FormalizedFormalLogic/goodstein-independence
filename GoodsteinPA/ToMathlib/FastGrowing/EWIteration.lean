@@ -11,6 +11,7 @@ public import Mathlib.Data.Set.Finite.Lattice
 public import Mathlib.Order.Interval.Finset.Nat
 public import Mathlib.Tactic.Ring
 public import GoodsteinPA.ToMathlib.Hardy
+public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 
 @[expose] public section
 
@@ -186,6 +187,40 @@ theorem coe_lt_of_clog_le {n : ℕ+} {K : ℕ} (h : clog (n : ℕ) ≤ K) : (n :
     Nat.lt_pow_succ_log_self Nat.one_lt_two _
   have h2 : 2 ^ (Nat.log 2 ((n : ℕ) + 1) + 1) ≤ 2 ^ (K + 1) :=
     Nat.pow_le_pow_right (by norm_num) (by unfold clog at h; omega)
+  omega
+
+/-- `2·⌈log⌉` is dominated by the argument (+3): `2·log₂(m+1) ≤ m+3`. -/
+theorem two_mul_clog_le (m : ℕ) : 2 * clog m ≤ m + 3 := by
+  have hkey : ∀ k : ℕ, 2 * k ≤ 2 ^ k + 2 := by
+    intro k
+    induction k with
+    | zero => omega
+    | succ k ih =>
+        have h2 : 2 ^ k ≥ 1 := Nat.one_le_two_pow
+        have : 2 ^ (k + 1) = 2 ^ k + 2 ^ k := by ring
+        omega
+  have hpow : 2 ^ Nat.log 2 (m + 1) ≤ m + 1 := Nat.pow_log_le_self 2 (by omega)
+  have := hkey (Nat.log 2 (m + 1))
+  simp only [clog]
+  omega
+
+/-- `clog` submultiplicativity: `clog (a·b) ≤ clog a + clog b + 1`. -/
+theorem clog_mul_le (a b : ℕ) : clog (a * b) ≤ clog a + clog b + 1 := by
+  rcases Nat.eq_zero_or_pos a with ha | ha
+  · subst ha; simp
+  rcases Nat.eq_zero_or_pos b with hb | hb
+  · subst hb; simp
+  have h1 : a + 1 < 2 ^ (clog a + 1) := by
+    simpa [clog] using Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) (a + 1)
+  have h2 : b + 1 < 2 ^ (clog b + 1) := by
+    simpa [clog] using Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) (b + 1)
+  have hle : a * b + 1 < 2 ^ (clog a + 1) * 2 ^ (clog b + 1) := by
+    have hexp : (a + 1) * (b + 1) = a * b + a + b + 1 := by ring
+    have : a * b + 1 ≤ (a + 1) * (b + 1) := by omega
+    exact lt_of_le_of_lt this (Nat.mul_lt_mul'' h1 h2)
+  rw [← pow_add] at hle
+  have hfin : clog (a * b) < clog a + 1 + (clog b + 1) := by
+    simpa [clog] using Nat.log_lt_of_lt_pow (by omega : a * b + 1 ≠ 0) hle
   omega
 
 /-- **The absorbing norm**: max-over-terms with logarithmic coefficient charge.  Contrast
@@ -412,6 +447,95 @@ theorem Nlog_add_le_comp {α γ : ONote} {f g : ℕ → ℕ}
   have habs := Nlog_add_le_max_succ α hαNF γ hγNF
   have hmm : max (Nlog α) (Nlog γ) ≤ max (g 0) (f 0) := max_le_max hα hγ
   omega
+
+/-! ## `ω` as an `ONote` -/
+
+/-- `ω` (`ONote.omega`) is the closure element `expTower (ofNat 1)`. -/
+theorem omega_eq_expTower : (ONote.omega : ONote) = expTower (ONote.ofNat 1) := rfl
+
+theorem omega_NF : (ONote.omega : ONote).NF := by
+  rw [omega_eq_expTower]; exact expTower_NF (ONote.nf_ofNat 1)
+
+/-- Every numeral `ONote.ofNat m` lies strictly below `ω`. -/
+theorem ofNat_lt_omega (m : ℕ) : ONote.ofNat m < ONote.omega := by
+  rw [ONote.lt_def, ONote.repr_ofNat,
+    show ONote.omega.repr = Ordinal.omega0 from by simp [ONote.omega]]
+  exact Ordinal.natCast_lt_omega0 m
+
+theorem Nlog_omega : Nlog ONote.omega = 2 := by
+  show Nlog (ONote.oadd 1 1 0) = 2
+  have h2 : Nat.log 2 2 = 1 := by decide
+  show max (Nlog (1 : ONote) + clog 1) (Nlog 0) = 2
+  have h1 : Nlog (1 : ONote) = 1 := by
+    show max (Nlog 0 + clog 1) (Nlog 0) = 1
+    simp [clog, h2]
+  simp [h1, clog, h2]
+
+/-! ## `osucc` interaction with `Nlog` and `collapse` -/
+
+/-- `Nlog` is near-stable under `osucc` (mirror of `ewN_osucc_le`). -/
+theorem Nlog_osucc_le : ∀ {o : ONote}, o.NF → Nlog (osucc o) ≤ Nlog o + 1
+  | 0, _ => by
+      show Nlog (oadd 0 1 0) ≤ Nlog 0 + 1
+      simp only [Nlog_oadd, Nlog_zero, PNat.one_coe]
+      have : clog 1 = 1 := by decide
+      omega
+  | oadd 0 n a, h => by
+      have ha0 : a = 0 := by
+        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
+        rw [ONote.repr_zero, Ordinal.opow_zero] at hlt
+        exact (@ONote.repr_inj a 0 h.snd ONote.NF.zero).1
+          (by rw [ONote.repr_zero]; exact Order.lt_one_iff.1 hlt)
+      subst ha0
+      show Nlog (oadd 0 (n + 1) 0) ≤ Nlog (oadd 0 n 0) + 1
+      have hadd := clog_add_le (n : ℕ) 1
+      have hpos := clog_pos n
+      have h1 : clog 1 = 1 := by decide
+      simp only [Nlog_oadd, Nlog_zero, PNat.add_coe, PNat.one_coe, Nat.zero_add]
+      omega
+  | oadd (oadd e' n' a') m b, h => by
+      show Nlog (oadd (oadd e' n' a') m (osucc b)) ≤ Nlog (oadd (oadd e' n' a') m b) + 1
+      have hIH := Nlog_osucc_le h.snd
+      simp only [Nlog_oadd] at hIH ⊢
+      omega
+
+/-- `osuccs α n` is the `n`-fold iterate of `osucc` applied to `α`. -/
+def osuccs (α : ONote) : ℕ → ONote
+  | 0 => α
+  | n + 1 => osucc (osuccs α n)
+
+theorem osuccs_NF {α : ONote} (h : α.NF) : ∀ n, (osuccs α n).NF
+  | 0 => h
+  | n + 1 => osucc_NF (osuccs_NF h n)
+
+theorem osuccs_succ_shift (α : ONote) : ∀ n, osuccs (osucc α) n = osucc (osuccs α n)
+  | 0 => rfl
+  | n + 1 => by simp only [osuccs, osuccs_succ_shift α n]
+
+theorem Nlog_osuccs_le {α : ONote} (h : α.NF) : ∀ n, Nlog (osuccs α n) ≤ Nlog α + n
+  | 0 => le_refl _
+  | n + 1 => by
+      have h1 := Nlog_osucc_le (osuccs_NF h n)
+      have h2 := Nlog_osuccs_le h n
+      simp only [osuccs]
+      omega
+
+/-- Successor headroom under the collapse: `collapse α = ω^α` is a limit for `α > 0`, so
+`σ < collapse α → osucc σ < collapse α` (additive principality with `1 < ω^α`). -/
+theorem osucc_lt_collapse {σ α : ONote} (hσNF : σ.NF) (_hαNF : α.NF)
+    (hαpos : (0 : ONote) < α) (h : σ < collapse α) : osucc σ < collapse α := by
+  haveI := hσNF; haveI := _hαNF
+  have hrepr_collapse : ∀ x : ONote, (collapse x).repr = ω ^ x.repr := fun x => by
+    simp [collapse, expTower, ONote.repr]
+  refine ONote.lt_def.mpr ?_
+  rw [repr_osucc hσNF, hrepr_collapse]
+  have h1 : σ.repr < Ordinal.omega0 ^ α.repr := by
+    have := ONote.lt_def.mp h
+    rwa [hrepr_collapse] at this
+  have h0 : (0 : Ordinal) < α.repr := by simpa using ONote.lt_def.mp hαpos
+  have h2 : (1 : Ordinal) < Ordinal.omega0 ^ α.repr :=
+    lt_of_lt_of_le Ordinal.one_lt_omega0 (Ordinal.left_le_opow _ h0)
+  exact Ordinal.isPrincipal_add_omega0_opow α.repr h1 h2
 
 def EwF1 (f : ℕ → ℕ) : Prop :=
   StrictMono f ∧ ∀ m, 2 * m + 1 ≤ f m

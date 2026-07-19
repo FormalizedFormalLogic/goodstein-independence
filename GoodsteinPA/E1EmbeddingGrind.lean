@@ -407,32 +407,6 @@ end Zef2TC
 
 /-! ### `Nlog`/slot toolkit for the ordinal joins -/
 
-/-- `Nlog` is near-stable under `osucc` (mirror of `ewN_osucc_le`). -/
-theorem Nlog_osucc_le : ∀ {o : ONote}, o.NF → Nlog (osucc o) ≤ Nlog o + 1
-  | 0, _ => by
-      show Nlog (oadd 0 1 0) ≤ Nlog 0 + 1
-      simp only [Nlog_oadd, Nlog_zero, PNat.one_coe]
-      have : clog 1 = 1 := by decide
-      omega
-  | oadd 0 n a, h => by
-      have ha0 : a = 0 := by
-        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
-        rw [ONote.repr_zero, Ordinal.opow_zero] at hlt
-        exact (@ONote.repr_inj a 0 h.snd ONote.NF.zero).1
-          (by rw [ONote.repr_zero]; exact Order.lt_one_iff.1 hlt)
-      subst ha0
-      show Nlog (oadd 0 (n + 1) 0) ≤ Nlog (oadd 0 n 0) + 1
-      have hadd := clog_add_le (n : ℕ) 1
-      have hpos := clog_pos n
-      have h1 : clog 1 = 1 := by decide
-      simp only [Nlog_oadd, Nlog_zero, PNat.add_coe, PNat.one_coe, Nat.zero_add]
-      omega
-  | oadd (oadd e' n' a') m b, h => by
-      show Nlog (oadd (oadd e' n' a') m (osucc b)) ≤ Nlog (oadd (oadd e' n' a') m b) + 1
-      have hIH := Nlog_osucc_le h.snd
-      simp only [Nlog_oadd] at hIH ⊢
-      omega
-
 /-- The `K`-relativized root slot dominates a smaller-budget one: `e₁ < e` (with
 `norm e₁ ≤ B`), `B₁ ≤ B`, `K₁ ≤ K` give pointwise domination.  The `norm e₁ ≤ B`
 side condition is exactly `hardy_le_of_lt`'s budget gate, absorbed into the structural `B`. -/
@@ -2099,30 +2073,9 @@ theorem budgetedEmbedsV3_axm_PAminus {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-! ### The induction-schema kit, part 1 — `osuccs` + the ∀-closure peel -/
 
-/-- Iterated successor (the closure-peel ordinal ladder). -/
-def osuccs (α : ONote) : ℕ → ONote
-  | 0 => α
-  | n + 1 => osucc (osuccs α n)
-
-theorem osuccs_NF {α : ONote} (h : α.NF) : ∀ n, (osuccs α n).NF
-  | 0 => h
-  | n + 1 => osucc_NF (osuccs_NF h n)
-
-theorem osuccs_succ_shift (α : ONote) : ∀ n, osuccs (osucc α) n = osucc (osuccs α n)
-  | 0 => rfl
-  | n + 1 => by simp only [osuccs, osuccs_succ_shift α n]
-
 theorem Cl_osuccs {S : ONote → Prop} {α : ONote} (h : Cl S α) : ∀ n, Cl S (osuccs α n)
   | 0 => h
   | n + 1 => Cl.osucc (Cl_osuccs h n)
-
-theorem Nlog_osuccs_le {α : ONote} (h : α.NF) : ∀ n, Nlog (osuccs α n) ≤ Nlog α + n
-  | 0 => le_refl _
-  | n + 1 => by
-      have h1 := Nlog_osucc_le (osuccs_NF h n)
-      have h2 := Nlog_osuccs_le h n
-      simp only [osuccs]
-      omega
 
 /-- **∀-closure peel**: if every numeral instance of the `ℓ`-ary matrix is derivable at `α`
 (uniformly in the operator/slot, `em_cong`-style stability), the universal closure is
@@ -2184,40 +2137,6 @@ theorem allClosure_peel {e : ONote} {d : ℕ} {f₀ : ℕ → ℕ} :
 
 /-! ### The induction-schema kit, part 2 — `clog` gate arithmetic + the ω-root -/
 
-/-- `2·⌈log⌉` is dominated by the argument (+3): `2·log₂(m+1) ≤ m+3`. -/
-theorem two_mul_clog_le (m : ℕ) : 2 * clog m ≤ m + 3 := by
-  have hkey : ∀ k : ℕ, 2 * k ≤ 2 ^ k + 2 := by
-    intro k
-    induction k with
-    | zero => omega
-    | succ k ih =>
-        have h2 : 2 ^ k ≥ 1 := Nat.one_le_two_pow
-        have : 2 ^ (k + 1) = 2 ^ k + 2 ^ k := by ring
-        omega
-  have hpow : 2 ^ Nat.log 2 (m + 1) ≤ m + 1 := Nat.pow_log_le_self 2 (by omega)
-  have := hkey (Nat.log 2 (m + 1))
-  simp only [clog]
-  omega
-
-/-- `clog` submultiplicativity: `clog (a·b) ≤ clog a + clog b + 1`. -/
-theorem clog_mul_le (a b : ℕ) : clog (a * b) ≤ clog a + clog b + 1 := by
-  rcases Nat.eq_zero_or_pos a with ha | ha
-  · subst ha; simp
-  rcases Nat.eq_zero_or_pos b with hb | hb
-  · subst hb; simp
-  have h1 : a + 1 < 2 ^ (clog a + 1) := by
-    simpa [clog] using Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) (a + 1)
-  have h2 : b + 1 < 2 ^ (clog b + 1) := by
-    simpa [clog] using Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) (b + 1)
-  have hle : a * b + 1 < 2 ^ (clog a + 1) * 2 ^ (clog b + 1) := by
-    have hexp : (a + 1) * (b + 1) = a * b + a + b + 1 := by ring
-    have : a * b + 1 ≤ (a + 1) * (b + 1) := by omega
-    exact lt_of_le_of_lt this (Nat.mul_lt_mul'' h1 h2)
-  rw [← pow_add] at hle
-  have hfin : clog (a * b) < clog a + 1 + (clog b + 1) := by
-    simpa [clog] using Nat.log_lt_of_lt_pow (by omega : a * b + 1 ≠ 0) hle
-  omega
-
 /-- **The tower-gate bound**: linear-in-`k` `ofNat` towers have `clog`-gates dominated by
 `max n C` for the constant `C = 2·clog a + 12` — exactly what an arbitrary
 monotone+inflationary slot pays at branch `n`. -/
@@ -2228,28 +2147,9 @@ theorem clog_tower_gate (a : ℕ) {k n : ℕ} (hk : k ≤ n) :
   have h3 := two_mul_clog_le (n + 1)
   omega
 
-/-- The `ONote` `ω` is the closure element `expTower (ofNat 1)` — in every `Cl S`. -/
-theorem omega_eq_expTower : (ONote.omega : ONote) = expTower (ONote.ofNat 1) := rfl
-
-theorem omega_NF : (ONote.omega : ONote).NF := by
-  rw [omega_eq_expTower]; exact expTower_NF (ONote.nf_ofNat 1)
-
+/-- `ω` is in the closure of any generating set `S`. -/
 theorem Cl_omega (S : ONote → Prop) : Cl S ONote.omega := by
   rw [omega_eq_expTower]; exact Cl.expTower (Cl.ofNat 1)
-
-theorem ofNat_lt_omega (m : ℕ) : ONote.ofNat m < ONote.omega := by
-  rw [ONote.lt_def, ONote.repr_ofNat,
-    show ONote.omega.repr = Ordinal.omega0 from by simp [ONote.omega]]
-  exact Ordinal.natCast_lt_omega0 m
-
-theorem Nlog_omega : Nlog ONote.omega = 2 := by
-  show Nlog (ONote.oadd 1 1 0) = 2
-  have h2 : Nat.log 2 2 = 1 := by decide
-  show max (Nlog (1 : ONote) + clog 1) (Nlog 0) = 2
-  have h1 : Nlog (1 : ONote) = 1 := by
-    show max (Nlog 0 + clog 1) (Nlog 0) = 1
-    simp [clog, h2]
-  simp [h1, clog, h2]
 
 /-! ### The induction-schema kit, part 3 — `succInd` rewriting naturality over `ℒₒᵣ`
 (ports of `EmbeddingX.subst1_comp_bShift` / `rew_subst1_comm_q` / `rew_succInd` /
@@ -3647,21 +3547,6 @@ The top-rank cut dispatches by cut-formula shape to the four banked reductions:
 principality + limit headroom (`osucc_lt_collapse`), and their `Nlog … + 2` gates are paid by
 one extra threaded base-slack conjunct `3 ≤ f 0` (preserved by `rel1`, satisfied by every real
 root slot: `ewRootSlot … 0 ≥ 3`). -/
-
-/-- Successor headroom under the collapse: `collapse α = ω^α` is a limit for `α > 0`, so
-`σ < collapse α → osucc σ < collapse α` (additive principality with `1 < ω^α`). -/
-theorem osucc_lt_collapse {σ α : ONote} (hσNF : σ.NF) (_hαNF : α.NF)
-    (hαpos : (0 : ONote) < α) (h : σ < collapse α) : osucc σ < collapse α := by
-  haveI := hσNF; haveI := _hαNF
-  refine ONote.lt_def.mpr ?_
-  rw [repr_osucc hσNF, repr_collapse]
-  have h1 : σ.repr < Ordinal.omega0 ^ α.repr := by
-    have := ONote.lt_def.mp h
-    rwa [repr_collapse] at this
-  have h0 : (0 : Ordinal) < α.repr := by simpa using ONote.lt_def.mp hαpos
-  have h2 : (1 : Ordinal) < Ordinal.omega0 ^ α.repr :=
-    lt_of_lt_of_le Ordinal.one_lt_omega0 (Ordinal.left_le_opow _ h0)
-  exact Ordinal.isPrincipal_add_omega0_opow α.repr h1 h2
 
 set_option maxHeartbeats 3200000 in
 /-- **`passAuxTC`** — one cut-elimination pass over `Zef2TC` (port of `passAux`): the ordinal
