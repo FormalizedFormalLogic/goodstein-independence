@@ -2,8 +2,7 @@
 # Cut elimination for the `Z_∞` calculus
 
 Cut reductions (`∧`/`∨`- and `∀`/`∃`-principal), atomic and `⊥` cut removal, the rank-lowering
-step `cutElimStep` (cut rank `c+1 → c`) and full cut elimination `cutElim` (cut-free), together
-with the `ε₀`-closure of the resulting ordinal bound.
+step `cutElimStep` (cut rank `c+1 → c`) and full cut elimination `cutElim` (cut-free).
 - [Tow20, §19.5, §19.6, §19.7, §19.9]
 -/
 module
@@ -19,17 +18,6 @@ open LO LO.FirstOrder
 open Derivation
 
 variable {Γ : Finset (ArithmeticFormula ℕ)} {α β : Ordinal.{0}} {c : ℕ}
-
-/-- Towsner **Def 19.8**: `ω`-tower over `α` of height `c` (`ω_c^α`), bottom-up:
-`ω_0^α = α`, `ω_{c+1}^α = ω_c^(ω^α)`. The cut-elimination ordinal blow-up. -/
-@[grind =]
-noncomputable def omegaTower : ℕ → Ordinal.{0} → Ordinal.{0}
-  | 0, α => α
-  | c + 1, α => omegaTower c (Ordinal.omega0 ^ α)
-
-@[simp, grind =] lemma omegaTower_zero (α : Ordinal.{0}) : omegaTower 0 α = α := rfl
-
-@[simp, grind =] lemma omegaTower_one (α : Ordinal.{0}) : omegaTower 1 α = Ordinal.omega0 ^ α := rfl
 
 /-- Frame subset: push an `insert` out of the `erase`/`∪`-framed context (`ih`-result → canonical).
 Explicit (not `tauto`) to avoid `whnf` blow-ups on negated atoms. -/
@@ -763,32 +751,9 @@ theorem Provable.cutElimStep
 /-- **Full cut elimination** (Towsner Thm 19.9): iterate `cutElimStep` `c` times, reaching a
 cut-free derivation at ordinal `ω_c^α`. -/
 theorem Provable.cutElim
-    (h : Provable α c Γ) : Provable (omegaTower c α) 0 Γ := by
+    (h : Provable α c Γ) : Provable (Ordinal.omegaTower c α) 0 Γ := by
   induction c generalizing α with
-  | zero => simpa [omegaTower] using h
+  | zero => simpa [Ordinal.omegaTower] using h
   | succ c ih => exact ih (Provable.cutElimStep h)
-
-/-! ### `ε₀`-closure of the cut-elimination ordinal
-
-`cutElim` lands at `omegaTower c α = ω_c^α`. The cut-free bound must stay **below `ε₀`** when the
-input does — this is exactly what makes Towsner's argument work (`ε₀` is the first fixed point of
-`ω ↦ ω^ω`, hence closed under the `c`-fold tower). Pure ordinal facts, no calculus dependence. -/
-
-open scoped Ordinal in
-/-- `ε₀` is closed under `ω^·`. -/
-@[grind →]
-lemma omega0_opow_lt_epsilon0 {a : Ordinal.{0}} (h : a < ε₀) : Ordinal.omega0 ^ a < ε₀ := by
-  obtain ⟨n, hn⟩ := Ordinal.lt_epsilon_zero.mp h
-  have hstep : Ordinal.omega0 ^ a < (fun b => Ordinal.omega0 ^ b)^[n + 1] 0 := by
-    rw [Function.iterate_succ_apply']
-    exact (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr hn
-  exact hstep.trans (Ordinal.iterate_omega0_opow_lt_epsilon_zero (n + 1))
-
-open scoped Ordinal in
-/-- The full cut-elimination ordinal `ω_c^α` stays below `ε₀` whenever `α < ε₀`. -/
-lemma omegaTower_lt_epsilon0 : ∀ (c : ℕ) {α : Ordinal.{0}}, α < ε₀ → omegaTower c α < ε₀
-  | 0, _, h => by simpa [omegaTower] using h
-  | c + 1, _, h => by
-      simpa [omegaTower] using omegaTower_lt_epsilon0 c (omega0_opow_lt_epsilon0 h)
 
 end GoodsteinPA.ZinftyF

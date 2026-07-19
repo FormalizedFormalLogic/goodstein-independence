@@ -7,6 +7,7 @@ cut-elimination bounds but independent of that development.
 module
 
 public import Mathlib.SetTheory.Ordinal.Principal
+public import Mathlib.SetTheory.Ordinal.Veblen
 
 @[expose] public section
 
@@ -79,5 +80,33 @@ theorem sup_opow_add_one_le (f : ℕ → Ordinal.{0}) :
   have hlt : Ordinal.omega0 ^ (⨆ n, f n) < Ordinal.omega0 ^ ((⨆ n, f n) + 1) :=
     (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr (lt_add_of_pos_right _ one_pos)
   exact le_of_lt (Ordinal.isPrincipal_add_omega0_opow _ (lt_of_le_of_lt hsup hlt) (one_lt_opow_succ _))
+
+/-- Towsner **Def 19.8**: `ω`-tower over `α` of height `c` (`ω_c^α`), bottom-up:
+`ω_0^α = α`, `ω_{c+1}^α = ω_c^(ω^α)`. The cut-elimination ordinal blow-up. -/
+@[grind =]
+noncomputable def omegaTower : ℕ → Ordinal.{0} → Ordinal.{0}
+  | 0, α => α
+  | c + 1, α => omegaTower c (Ordinal.omega0 ^ α)
+
+@[simp, grind =] lemma omegaTower_zero (α : Ordinal.{0}) : omegaTower 0 α = α := rfl
+
+@[simp, grind =] lemma omegaTower_one (α : Ordinal.{0}) : omegaTower 1 α = Ordinal.omega0 ^ α := rfl
+
+open scoped Ordinal in
+/-- `ε₀` is closed under `ω^·`. -/
+@[grind →]
+lemma omega0_opow_lt_epsilon0 {a : Ordinal.{0}} (h : a < ε₀) : Ordinal.omega0 ^ a < ε₀ := by
+  obtain ⟨n, hn⟩ := Ordinal.lt_epsilon_zero.mp h
+  have hstep : Ordinal.omega0 ^ a < (fun b => Ordinal.omega0 ^ b)^[n + 1] 0 := by
+    rw [Function.iterate_succ_apply']
+    exact (Ordinal.opow_lt_opow_iff_right Ordinal.one_lt_omega0).mpr hn
+  exact hstep.trans (Ordinal.iterate_omega0_opow_lt_epsilon_zero (n + 1))
+
+open scoped Ordinal in
+/-- The full cut-elimination ordinal `ω_c^α` stays below `ε₀` whenever `α < ε₀`. -/
+lemma omegaTower_lt_epsilon0 : ∀ (c : ℕ) {α : Ordinal.{0}}, α < ε₀ → omegaTower c α < ε₀
+  | 0, _, h => by simpa [omegaTower] using h
+  | c + 1, _, h => by
+      simpa [omegaTower] using omegaTower_lt_epsilon0 c (omega0_opow_lt_epsilon0 h)
 
 end Ordinal
