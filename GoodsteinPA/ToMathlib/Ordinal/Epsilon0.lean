@@ -32,12 +32,12 @@ public import GoodsteinPA.ToMathlib.Ordinal.WellFoundedRank
 
 namespace ONote
 
-open Ordinal ONote GoodsteinPA.WellFoundedRank
+open Ordinal ONote WellFoundedRank
 open scoped Ordinal
 
 /-- For `0 ≠ o < ε₀`, the leading CNF exponent `log ω o` is strictly below `o`.
 Equality would force `ω ^ o ≤ o`, i.e. `o` to be an ε-number, contradicting `o < ε₀`. -/
-theorem log_omega0_lt_self {o : Ordinal} (ho : o ≠ 0) (hε : o < ε₀) :
+lemma log_omega0_lt_self {o : Ordinal} (ho : o ≠ 0) (hε : o < ε₀) :
     Ordinal.log ω o < o := by
   have h1 : ω ^ Ordinal.log ω o ≤ o := opow_log_le_self ω ho
   have h2 : Ordinal.log ω o ≤ ω ^ Ordinal.log ω o :=
@@ -84,13 +84,13 @@ theorem exists_NF_repr_eq :
         exact div_add_mod o (ω ^ e)
 
 /-- `ε₀` is a limit ordinal: it is `ω ^ ε₀`, a nonzero power of the limit `ω`. -/
-theorem isSuccLimit_epsilon0 : Order.IsSuccLimit ε₀ := by
+lemma isSuccLimit_epsilon0 : Order.IsSuccLimit ε₀ := by
   have h := isSuccLimit_opow_left isSuccLimit_omega0 (epsilon_pos 0).ne'
   rwa [omega0_opow_epsilon] at h
 
 /-- Every normal-form `ONote` represents an ordinal `< ε₀` (the embedding direction; mathlib states
 the type's purpose informally but provides no `repr < ε₀` lemma). -/
-theorem repr_lt_epsilon0 : ∀ x : ONote, x.NF → ONote.repr x < ε₀ := by
+lemma repr_lt_epsilon0 : ∀ x : ONote, x.NF → ONote.repr x < ε₀ := by
   intro x
   induction x with
   | zero => intro _; exact epsilon_pos 0
@@ -140,7 +140,7 @@ instance ltPull_wf (e : ℕ ≃ NONote) : IsWellFounded ℕ (ltPull e) :=
 
 /-- The `≺`-rank of `n` in the pullback order is the ordinal `NONote.repr (e n)`, true precisely
 because `repr ∘ e` is *onto* `[0, ε₀)`. -/
-theorem rk_ltPull_eq_repr (e : ℕ ≃ NONote) (n : ℕ) :
+lemma rk_ltPull_eq_repr (e : ℕ ≃ NONote) (n : ℕ) :
     rk (ltPull e) n = NONote.repr (e n) := by
   refine IsWellFounded.induction
     (motive := fun k => rk (ltPull e) k = NONote.repr (e k)) (ltPull e) n ?_
@@ -207,7 +207,7 @@ def decodeONote : ℕ → ONote
     · exact Nat.lt_succ_of_le (Nat.unpair_left_le m)
     · exact Nat.lt_succ_of_le ((Nat.unpair_right_le _).trans (Nat.unpair_right_le m))
 
-theorem decodeONote_encodeONote : ∀ x : ONote, decodeONote (encodeONote x) = x
+lemma decodeONote_encodeONote : ∀ x : ONote, decodeONote (encodeONote x) = x
   | ONote.zero => by simp only [encodeONote, decodeONote]
   | ONote.oadd e n a => by
       rw [encodeONote, decodeONote]
