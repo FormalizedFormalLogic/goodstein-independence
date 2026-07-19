@@ -1259,7 +1259,7 @@ theorem stdClosedVal_asg (env : ℕ → ℕ) (t : ArithmeticTerm ℕ) :
   rw [he]
   congr 1
   funext x
-  exact Embedding.valm_nm (env x) (fun _ => 0)
+  exact ZinftyF.valm_nm (env x) (fun _ => 0)
 
 /-- **The `exs`/V3 witness gate**: the closed witness's standard value is dominated by
 structurally many `Gexp`-iterates of the env-sup. -/
@@ -1823,7 +1823,7 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
           have hstrue : atomTrue (a/[nm m]) := by
             have hall : ∀ x : ℕ, GoodsteinPA.Compat.gEvalm ℕ ![x] (fun _ => 0) a := by
               simpa [atomTrue, Matrix.constant_eq_singleton, Matrix.empty_eq] using htrue
-            simpa [atomTrue, Semiformula.eval_substs, Embedding.valm_nm,
+            simpa [atomTrue, Semiformula.eval_substs, ZinftyF.valm_nm,
               Matrix.constant_eq_singleton, Matrix.empty_eq] using hall m
           exact ih (a/[nm m]) hsk hsex hstrue
             (rel1_monotone hmono m) (rel1_infl hinfl m) (le_trans hg1 hf0m)
