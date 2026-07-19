@@ -31,10 +31,10 @@ theorem reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) :
 /-! ## The running-family reduction, sorry-free -/
 
 set_option maxHeartbeats 400000 in
-/-- **`cutReduceAllAuxRunning_Zf`** — the Towsner §19.6 running-family cut-reduction shape, carried
-through in the Eguchi–Weiermann function-slot form [EW12, Lemma 25]: the stage `m` is replaced by
-the current slot `f'` (threaded monotone + inflationary), output slot `g∘f'`, via the two
-axis-critical moves:
+/-- **`cutReduceAllAuxRunning_Zf`** — the running-family cut-reduction shape of [Tow20,
+Theorem 19.6], carried through in the function-slot form [EW12, Lemma 25]: the stage `m` is
+replaced by the current slot `f'` (threaded monotone + inflationary), output slot `g∘f'`, via
+the two axis-critical moves:
 - **principal `exI`** — both cut premises re-slot to `g∘f'` (`reslot_family` / `reslot_exside`),
   cut lands at `g∘f'` (the conclusion slot) with NO leak — the gap the fixed `hardy e m` bound
   could not cross;
@@ -230,11 +230,10 @@ theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Fi
     ∃ δ : ONote, δ.NF ∧ Cl H δ ∧ ZefProv δ E H (g ∘ f) c Γ :=
   stepAllω_Zf hENF hχc hg_mono hg_infl hf_mono hf_infl IH1 IH2
 
-/-! ## Blueprint ledger — the discharged reduction nodes
+/-! ## Kernel-footprint attributes for the discharged reduction nodes
 
-Both nodes are `clean` (real kernel footprint = trust base only); the audit reconciles their
-claimed status against `Lean.collectAxioms`.  `cutElimPass_Zf` stays `notready`
-(`sorryAx`-bearing). -/
+Both nodes are `clean` (real kernel footprint = trust base only), checked against
+`Lean.collectAxioms`.  `cutElimPass_Zf` stays `notready` (`sorryAx`-bearing). -/
 
 attribute [goodstein_blueprint 12 clean "zeh_reduction_pin1" "0" 100 cutReduceAllAuxRunning_Zf
   []

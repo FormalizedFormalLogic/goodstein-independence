@@ -11,15 +11,18 @@ open GoodsteinPA.OperatorZinfty
 
 /-! # The function-slot judgment `Zef`
 
-`Zef` is `Zeh` with the ℕ-stage `m` replaced by a function-slot `f : ℕ → ℕ` — the carrier the
-stage judgment could not provide (the stage-`m` reduction is kernel-refuted:
+`Zef` is `Zeh` with the ℕ-stage `m` replaced by a number-theoretic operator slot `f : ℕ → ℕ` —
+the carrier the stage judgment could not provide (the stage-`m` reduction is kernel-refuted:
 `principal_witness_exceeds_stage`).  `exI` bound `n ≤ f 0`, `allω` branch slot `rel1 f n`,
-reduction output slot `g ∘ f`.  This is the Eguchi–Weiermann function-slot judgment
-[EW12, Definition 23].  This block discharges the running-family reduction
+reduction output slot `g ∘ f`.  This block discharges the running-family reduction
 (`cutReduceAllAuxRunning_Zf`, `stepAllω_Zf`) and the read-off exit (`headline_readoff_Zef`) as
-real theorems.
+real theorems.  The rule skeleton and witness bound follow [Tow20, §13, §15]; the
+number-theoretic operator slot follows the Buchholz-style operator-controlled methodology
+[EW12, Definition 23].  `rel1 f n = fun x => f (max n x)` is a formalization variant of
+[EW12]'s shift relativization `f[n](m) = f(n+m)` (`max` rather than shift).
 
-- [EW12, Definition 23]
+- [Tow20, §13, §15]
+- [EW12, Definition 23, Lemma 25]
 -/
 /-! ## The slot calculus `Zef` (`Zeh` with stage `m` ⤳ slot `f : ℕ → ℕ`) -/
 

@@ -9,7 +9,19 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
-/-! ## The minimal `Zeh` core -/
+/-! ## The minimal `Zeh` core
+
+`Zeh α e H m c Γ` is an operator-controlled deduction of `Γ`, at ordinal `α` and cut rank `c`,
+carrying a numeric stage `m` and an ordinal operator `H : ONote → Prop`.  The rule skeleton and
+the `exI` witness bound (`n ≤ hardy e m`) follow the restricted infinitary calculus `Z∞`; the
+ordinal operator `H` and its ω-node relativization (`adjoin`, `relOp`) follow the Buchholz-style
+operator-controlled derivation methodology.  In this PA/`ε₀` setting `H` turns out to carry no
+information (`Zeh.change_H`): it is inert, and only the function-slot form `Zef` (below) makes
+operator control load-bearing.
+
+- [Tow20, §13, §15]
+- [EW12, §4, Definition 23]
+-/
 inductive Zeh : ONote → ONote → (ONote → Prop) → ℕ → ℕ → Finset (ArithmeticFormula ℕ) → Prop
   | axL {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {ar : ℕ}
       (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)

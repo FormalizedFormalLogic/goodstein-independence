@@ -12,8 +12,8 @@ open GoodsteinPA.OperatorZinfty
 
 /-! ## The f-slot elimination suite
 
-The Eguchi–Weiermann number-theoretic operator slot `f : ℕ → ℕ` is what a plain numeric stage
-counter cannot be: the ℕ-stage judgment `Zeh` cannot carry the running-family reduction
+The number-theoretic operator slot `f : ℕ → ℕ` is what a plain numeric stage counter cannot be:
+the ℕ-stage judgment `Zeh` cannot carry the running-family reduction
 (`principal_witness_exceeds_stage`: the `exI` witness `n ≤ hardy e m > m` cannot be lowered to
 the output stage).  The fix is the function-slot judgment `Zef`: the ℕ-stage `m` is replaced by
 the slot `f`, and the running-family reduction (`cutReduceAllAuxRunning_Zf`) and step motive
@@ -24,17 +24,21 @@ lemmas as:
 * **max-relativization at ω-nodes** — `rel1 f n = fun x => f (max n x)`;
 * **`hardy e` at the root** — `NormControlled` collapses to `hardy e` when `m = 0`.
 
-The reduction/step statements stay at FIXED control with the composed slot (E–W Lemma 25); ALL
-ordinal collapse and numeric iteration is confined to the (unfinished) rank-lowering pass
-`cutElimPass_Zf` (E–W Lemma 27/30), where the control `e` is untouched — the ordinal collapses
-(`collapse α`) and the slot iterates (`iterSlot f α`).
+The reduction/step statements stay at FIXED control with the composed slot; ALL ordinal collapse
+and numeric iteration is confined to the (unfinished) rank-lowering pass `cutElimPass_Zf`, where
+the control `e` is untouched — the ordinal collapses (`collapse α`) and the slot iterates
+(`iterSlot f α`).
 
 - [EW12, Definition 23, Lemma 25, Lemma 27]
 -/
 
-/-- **Norm control** (the E–W "number-theoretic operator" bound, tied to the `(e, m)` axis):
+/-- **Norm control** (the number-theoretic operator bound, tied to the `(e, m)` axis):
 `f` dominates the Hardy witness bound at every relativization depth.  `hardy e` is the root
-instantiation (`normControlled_root`); the ω-node re-entry is `normControlled_rel1`. -/
+instantiation (`normControlled_root`); the ω-node re-entry is `normControlled_rel1`.
+
+- [EW12, Definition 23]
+- [BW87, p. 181]
+-/
 def NormControlled (f : ℕ → ℕ) (e : ONote) (m : ℕ) : Prop :=
   ∀ x, hardy e (max m x) ≤ f x
 
@@ -67,9 +71,9 @@ theorem NormControlled.stage_antitone {f : ℕ → ℕ} {e : ONote} {m m' : ℕ}
     (h : NormControlled f e m) (hm : m' ≤ m) : NormControlled f e m' :=
   fun x => le_trans (hardy_monotone e (by omega)) (h x)
 
-/-- **Composition preserves control at a fixed control** (E–W Lemma 25's numeric update,
-`f ↦ f∘g`, at the *same* control).  If `g` controls `e` at `m` and `f` is inflationary (E–W
-condition `(f.1)`: `2y+1 ≤ f y ⟹ y ≤ f y`), then the composed slot `f ∘ g` still controls `e`
+/-- **Composition preserves control at a fixed control** (the numeric update `f ↦ f∘g` at the
+*same* control, [EW12, Lemma 25]).  If `g` controls `e` at `m` and `f` is inflationary
+(condition `(f.1)`: `2y+1 ≤ f y ⟹ y ≤ f y`), then the composed slot `f ∘ g` still controls `e`
 at `m`.  Note: this is the *fixed*-control fact; the *raised*-control demand belongs to
 `cutElimPass_Zf`'s pinned iterate, not here. -/
 theorem NormControlled.comp {f g : ℕ → ℕ} {e : ONote} {m : ℕ}
@@ -97,7 +101,7 @@ output stage `m` (`Zeh` has no stage-lowering rule). -/
 theorem principal_witness_exceeds_stage (m : ℕ) : m < hardy ONote.omega m := by
   rw [show ONote.omega = oadd 1 1 0 from rfl, hardy_omega]; omega
 
-/-! ## The numeric-slot iterate bricks (E–W Definition 16 carriers)
+/-! ## The numeric-slot iterate bricks ([EW12, Definition 16] carriers)
 
 `Function.iterate` (`f^[k]`) is the `k`-fold composition; it preserves exactly the operator
 conditions the reduction threads (monotone, inflationary, `NormControlled`) and composes to
@@ -148,18 +152,18 @@ theorem iter_comp (f : ℕ → ℕ) (j k : ℕ) : f^[j] ∘ f^[k] = f^[j + k] :=
 Relating a rank-`c+1` derivation to a rank-`c` one needs collapsing the ordinal and iterating
 the slot.  Two explicit `ONote`-grounded definitions:
 
-- `collapse α := ω^α` (`expTower`) — E–W Lemma 27's Ω-free predicative shadow `φ 0 β = ω^β` for
-  one rank step; iterated `c` times it is the rank-lowering tower `Ω_c(α) = Ω^{Ω_{c-1}(α)}`.
-  NF-preserving + strictly monotone (the descent the collapse induction needs) — both proven
-  below, reusing `expTower_NF`/`expTower_lt_expTower`.
-- `iterSlot f α` — the **diagonalizing** ordinal-indexed iterate (E–W Definition 16's `f^α`;
-  Lemma 19's `F^α(0)` is a transfinite iterate, not a syntactic count).  Defined by the same
-  fundamental-sequence recursion as the repo's `hardy` (which is exactly the successor's
-  `iterSlot`): base `iterSlot f 0 = f`, successor `iterSlot f (a+1) n = iterSlot f a (f n)`,
-  limit `iterSlot f λ n = iterSlot f (λ[n]) n`.  On finite ordinals it agrees with the fixed-count
-  form (`iterSlot f (ofNat k) = f^[k+1]`); at limits it diagonalizes — the branch index rides the
-  numeric argument, which `rel1` raises (`rel1 (iterSlot f α) n` evaluates the ordinal index at
-  `α[max n x]`-stages, absorbing branch-growing budgets).
+- `collapse α := ω^α` (`expTower`) — one rank-collapsing step; iterated `c` times it is the
+  rank-lowering tower `Ω_c(α) = Ω^{Ω_{c-1}(α)}`.  NF-preserving + strictly monotone (the descent
+  the collapse induction needs) — both proven below, reusing `expTower_NF`/`expTower_lt_expTower`.
+- `iterSlot f α` — the **diagonalizing** ordinal-indexed iterate.  Its ROLE matches
+  [EW12, Definition 16]'s `f^α`, but its IMPLEMENTATION differs: [EW12]'s `f^α` is a norm-bounded
+  transfinite recursion, whereas `iterSlot` is defined by the same fundamental-sequence recursion
+  as this repo's `hardy` — a Hardy-style variant [BW87, p. 181]: base `iterSlot f 0 = f`,
+  successor `iterSlot f (a+1) n = iterSlot f a (f n)`, limit `iterSlot f λ n = iterSlot f (λ[n]) n`.
+  On finite ordinals it agrees with the fixed-count form (`iterSlot f (ofNat k) = f^[k+1]`); at
+  limits it diagonalizes — the branch index rides the numeric argument, which `rel1` raises
+  (`rel1 (iterSlot f α) n` evaluates the ordinal index at `α[max n x]`-stages, absorbing
+  branch-growing budgets).
 
 **Why `iterSlot` must diagonalize.**  A fixed-count definition `iterSlot f α := f^[norm α + 1]`
 is refuted at the `allω` reassembly: the branch `n` needs output slot `(rel1 f n)^[norm (β n) + 1]`
@@ -170,11 +174,13 @@ Root cause: `norm` is not monotone along `<` (`norm (ofNat n) = n` grows along �
 sequence while `norm ω = 1`), so no fixed ℕ-count read off the parent ordinal dominates the
 branches — the diagonalization is forced.
 
-- [EW12, Definition 16, Lemma 19, Lemma 27]
+- [EW12, Definition 16]
+- [BW87, p. 181]
 -/
 
-/-- **`iterSlot`** — the diagonalizing ordinal-indexed numeric-slot iterate (E–W Def 16's `f^α` /
-Lemma 19's `F^α(0)`): `iterSlot f 0 = f`; `iterSlot f (a+1) n = iterSlot f a (f n)`;
+/-- **`iterSlot`** — the diagonalizing ordinal-indexed numeric-slot iterate.  Its role matches
+[EW12, Definition 16]'s `f^α`, but its implementation is a Hardy-style fundamental-sequence
+variant [BW87, p. 181]: `iterSlot f 0 = f`; `iterSlot f (a+1) n = iterSlot f a (f n)`;
 `iterSlot f λ n = iterSlot f (λ[n]) n` (limit, via `ONote.fundamentalSequence`).  Same well-founded
 recursion as `hardy`; `hardy` is `iterSlot` of the successor, up to the base case. -/
 def iterSlot (f : ℕ → ℕ) : ONote → ℕ → ℕ

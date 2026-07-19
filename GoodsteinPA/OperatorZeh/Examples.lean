@@ -72,9 +72,9 @@ theorem concrete_bound_computes : hardy ONote.omega 1 = 3 := by
 /-- **The bare `∃`-slot is vacuous.**  For any control `e` and stage `m`,
 `∃ f, NormControlled f e m` holds trivially — the Hardy witness itself is a slot.
 Consequence: a bare existential slot conjunct `∃ f', NormControlled f' (raise e α') m` adds no
-quantitative content, so the read-off (E–W Lemma 31, `witness ≤ f(0)`) forces `f'` to be pinned
-to the E–W iterate of the input `f`, not left existential — which is why `cutElimPass_Zf`'s
-restatement is expected to output `iterSlot f α`, not `∃ f'`. -/
+quantitative content, so the read-off (witness `≤ f 0`, [Tow20, §17, Theorem 17.1]) forces `f'`
+to be pinned to the `iterSlot` iterate of the input `f`, not left existential — which is why
+`cutElimPass_Zf`'s restatement is expected to output `iterSlot f α`, not `∃ f'`. -/
 theorem normControlled_exists_trivial (e : ONote) (m : ℕ) :
     ∃ f : ℕ → ℕ, NormControlled f e m :=
   ⟨fun x => hardy e (max m x), fun _ => le_rfl⟩

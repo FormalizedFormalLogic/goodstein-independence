@@ -7,24 +7,20 @@ the family-uniform raise `raise e α := e + ω^α`, the two-level-configuration 
 and the CNF/ordinal-splice bricks reused by the cut-elimination reductions in
 `GoodsteinPA.OperatorZeh.Cut`.
 
-**Provenance.** `Zeh`/`Zef` are built on Towsner's `Z∞` operator calculus [Tow20, §19]; the
-operator-controlled derivation methodology traces to Buchholz [Buc03]. Controlled cut-elimination
-itself is already present in `Z∞` — the numeric gate is raised via the Hardy function
-([Tow20, §19.6, §19.7, §19.9]). What is specific to Eguchi–Weiermann is the function-slot *form*:
-the judgment carries a number-theoretic operator `f : ℕ → ℕ` beside the ordinal operator, with
-cut-reduction composing the slots (`f ∘ g`) and a size-norm gating the running family `f^α`
-(`GoodsteinPA.OperatorZeh.Slot`'s `iterSlot`, `NormControlled`) — the device of
-Eguchi–Weiermann [EW12, Definition 16, Definition 23, Lemma 25], combining Buchholz's ordinal
-operators with Weiermann's number-theoretic operators. The bounding/read-off exit
-(`GoodsteinPA.OperatorZeh.Readoff`) originates with the Buchholz–Wainer Bounding Lemma
-[BW87, Lemma 5] and recurs as [EW12, Lemma 29, Lemma 31]. Towsner-specific material (the
-inversion suite mirroring `Zekd.allInv`, `GoodsteinPA.OperatorZeh.Inversion`) stays attributed to
-[Tow20] alone.
+**Provenance.** The rule skeleton and the Hardy witness bound follow the restricted infinitary
+calculus `Z∞` [Tow20, §13, §15], where controlled cut-elimination is already present via a
+Hardy-function gate ([Tow20, §19.6, §19.7, §19.9]). Carrying that control through an explicit
+operator — an ordinal-valued `H` for `Zeh`, or a number-theoretic slot `f : ℕ → ℕ` for `Zef` — is
+the Buchholz-style operator-controlled derivation methodology in its number-theoretic form
+[EW12, §4]: `Zef`'s cut-reduction composes the slots (`f ∘ g`) and a size-norm gates the running
+family `f^α` (`GoodsteinPA.OperatorZeh.Slot`'s `iterSlot`, `NormControlled`)
+[EW12, Definition 16, Definition 23, Lemma 25]. In this PA/`ε₀` setting `Zeh`'s ordinal operator
+`H` turns out to carry no information (`Zeh.change_H`); only `Zef`'s numeric slot `f` is
+load-bearing. The inversion suite (`GoodsteinPA.OperatorZeh.Inversion`, mirroring `Zekd.allInv`)
+follows [Tow20] alone.
 
-- [Tow20, §19]
-- [Buc03]
-- [EW12, Definition 16, Definition 23, Lemma 25]
-- [BW87, Lemma 5]
+- [Tow20, §13, §15, §19]
+- [EW12, §4, Definition 16, Definition 23, Lemma 25]
 -/
 module
 
@@ -88,7 +84,12 @@ theorem osucc_wmul_lt_expTower_omega (m : ℕ) : osucc (wmul m) < expTower ONote
 
 /-! ## The operator layer -/
 
-/-- The closure conditions: closed under `+`, `ω^·` (`expTower`), `osucc`, `ofNat`. -/
+/-- **Operator.** The closure conditions an `H : ONote → Prop` must satisfy to serve as a
+Buchholz-style operator: closed under `+`, `ω^·` (`expTower`), `osucc`, `ofNat`. The concrete
+closure conditions are specific to this formalization.
+
+- [EW12, §4]
+-/
 structure IsOperator (H : ONote → Prop) : Prop where
   ofNat_mem : ∀ n : ℕ, H (ONote.ofNat n)
   add_mem : ∀ {α β : ONote}, H α → H β → H (α + β)
@@ -135,11 +136,17 @@ theorem Cl_sub_of_isOperator {S H : ONote → Prop} (hop : IsOperator H)
   | expTower _ ih => exact hop.expTower_mem ih
   | osucc _ ih => exact hop.osucc_mem ih
 
-/-- The relativization generator set: adjoin the branch numeral (the work order's
-"`H[n]` is generation from `gen ∪ {ofNat n}`").  `Zeh.allω` runs premise `n` over it. -/
+/-- The relativization generator set: adjoin the branch numeral `ofNat n` to the generators.
+`Zeh.allω` runs premise `n` over it.
+
+- [EW12, §4]
+-/
 def adjoin (H : ONote → Prop) (n : ℕ) : ONote → Prop := fun β => H β ∨ β = ONote.ofNat n
 
-/-- The relativized operator `H[n]`. -/
+/-- The relativized operator `H[n]` — the closure of `H` adjoined with `ofNat n`.
+
+- [EW12, §4]
+-/
 def relOp (H : ONote → Prop) (n : ℕ) : ONote → Prop := Cl (adjoin H n)
 
 /-! ### The kernel findings (K1)–(K3): what set-membership can and cannot carry at `ε₀`. -/
@@ -234,9 +241,9 @@ theorem wmul_mem (S : ONote → Prop) (n : ℕ) : Cl S (wmul n) := by
 
 /-! ### Ordinal-splice descent bricks (assembly plumbing)
 
-The Towsner §19.6 reduction outputs ordinal `osucc (α + γ)`; its inner descent cites these pure
-`ONote` facts (no `Zeh` manipulation — reused by, but distinct from, the reduction itself).
-Each composes the `Zekd` ordinal lemmas. -/
+The [Tow20, Theorem 19.6] reduction outputs ordinal `osucc (α + γ)`; its inner descent cites
+these pure `ONote` facts (no `Zeh` manipulation — reused by, but distinct from, the reduction
+itself). Each composes the `Zekd` ordinal lemmas. -/
 
 /-- The reduction-output ordinal is NF whenever its components are. -/
 theorem osucc_add_NF {α γ : ONote} (hα : α.NF) (hγ : γ.NF) : (osucc (α + γ)).NF :=
