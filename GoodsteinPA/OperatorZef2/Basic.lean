@@ -10,6 +10,8 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
+variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+
 /-!
 # `Zef2` — the ewN-gated E–W controlled slot calculus
 
@@ -66,11 +68,10 @@ namespace Zef2
 /-- **Gate projection** — every `Zef2` constructor exposes its conclusion gate `ewN α ≤ f 0`, so
 a derivation is its own certificate for the size bound.  The uniform lever for re-threading the
 gate through the reduction / inversion. -/
-theorem gate {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
-    (dd : Zef2 α e H f c Γ) : Nlog α ≤ f 0 := by
+theorem gate (dd : Zef2 α e H f c Γ) : Nlog α ≤ f 0 := by
   cases dd <;> assumption
 
-theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Seq}
+theorem weakening {Δ : Seq}
     (hαN : Nlog α ≤ f 0) (hsub : Δ ⊆ Γ) (dd : Zef2 α e H f c Δ) :
     Zef2 α e H f c Γ :=
   Zef2.wk hαN hsub dd
@@ -119,8 +120,7 @@ theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c 
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
 
 /-- Combined operator+slot move. -/
-theorem mono_Hf {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
-    (dd : Zef2 α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
+theorem mono_Hf (dd : Zef2 α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
     Zef2 α e H' f' c Γ := (dd.change_H).mono_f hff'
 
 /-- **`toZef`** — the forgetful map dropping the ewN/cut-read gate (the mandated read-off route;
@@ -145,23 +145,22 @@ def Zef2Prov (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (Γ
 
 namespace Zef2Prov
 
-theorem of {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
-    (hNF : α.NF) (hH : Cl H α) (hN : Nlog α ≤ f 0) (D : Zef2 α e H f c Γ) :
+theorem of (hNF : α.NF) (hH : Cl H α) (hN : Nlog α ≤ f 0) (D : Zef2 α e H f c Γ) :
     Zef2Prov α e H f c Γ :=
   ⟨α, le_refl _, hNF, hH, hN, D⟩
 
-theorem mono {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+theorem mono {β : ONote}
     (hα : α ≤ β) : Zef2Prov α e H f c Γ → Zef2Prov β e H f c Γ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', le_trans hα' hα, hNF, hH, hN, D⟩
 
-theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Δ : Seq}
+theorem weakening {Δ : Seq}
     (h : Γ ⊆ Δ) : Zef2Prov α e H f c Γ → Zef2Prov α e H f c Δ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', hα', hNF, hH, hN, D.wk hN h⟩
 
 /-- Forget the gate: `Zef2Prov ⤳ ZefProv`. -/
-theorem toZefProv {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq} :
+theorem toZefProv :
     Zef2Prov α e H f c Γ → ZefProv α e H f c Γ := by
   rintro ⟨α', hα', hNF, hH, _, D⟩
   exact ⟨α', hα', hNF, hH, D.toZef⟩
@@ -180,7 +179,6 @@ def ReadoffGoalF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Seq
 through `toZef` (zero re-proof; the gate is read-off-irrelevant). -/
 theorem readoff_sigma1_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
     (dd : Zef2 α e H f c Γ) (hc : c = 0) (hshape : ReadoffShapeF2 φ f Γ) :
     ReadoffGoalF2 φ f Γ :=
   readoff_sigma1_Zef hφinst dd.toZef hc hshape
@@ -188,7 +186,6 @@ theorem readoff_sigma1_Zef2 {φ : ArithmeticSemiformula ℕ 1}
 /-- **`headline_readoff_Zef2`** — the exit witness, discharged through `toZef`. -/
 theorem headline_readoff_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
     (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
     ∃ n ≤ f 0, atomTrue (φ/[nm n]) :=
   headline_readoff_Zef hφinst dd.toZef

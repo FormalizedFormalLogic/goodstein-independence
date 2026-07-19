@@ -182,9 +182,10 @@ theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × 
       intro hc _
       omega
 
+variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
+
 /-- **The R-4′ source is VACUOUS: `Zef2` cannot derive `{∃⁰ φ}` at rank 0, for any `φ`.** -/
-theorem zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1}
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} :
+theorem zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1} :
     ¬ Zef2 α e H f 0 {(∃⁰ φ)} := by
   intro dd
   refine zef2_rank0_uniform_spine_underivable (t := spineHead (∃⁰ φ)) dd rfl ?_
@@ -201,7 +202,7 @@ guard, as for the Goodstein bounded-`∀` clauses), that survivor is contradicto
 fragment the structural read-off reaches without E–W's (Ax2).  A ready building block for a
 monotone-guarded specialization of `readoff_delta0_Zef2`. -/
 theorem readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
-    {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ₀ : Seq} {β : ℕ → ONote}
+    {Γ₀ : Seq} {β : ℕ → ONote}
     (_hbranch : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) 0 (insert (χ/[nm n]) Γ₀))
     (_htrap : (∃⁰ φ) ∈ Γ₀)
     (hfalse : ¬ atomTrue (∀⁰ χ))
@@ -230,7 +231,6 @@ the `allω` (Π) case — `atomTrue (∀⁰ χ) = ∀ k, Evalm (χ/[nm k])` need
 true disjunct + the Δ₀ bound to bound the load-bearing branches (Towsner §5.4). -/
 theorem readoff_delta0_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (_hφbdd : ∀ n, LO.FirstOrder.Arithmetic.DeltaZero (φ/[nm n]))
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
     (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
     ∃ n ≤ ewIter f α 0, atomTrue (φ/[nm n]) :=
   -- The conclusion holds via VACUITY: the source `dd` cannot exist

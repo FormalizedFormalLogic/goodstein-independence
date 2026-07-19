@@ -229,9 +229,11 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
             exact ⟨w, le_trans hwle (le_of_lt hcollt'), hwNF, hwH,
               le_trans hwg (hcomp' 0), Dw.mono_f hcomp'⟩
 
+variable {α e : ONote} {H : ONote → Prop}
+
 /-- **One cut-ELIMINATION pass over `Zef2`** (E–W Lemma 26/27): a single predicative rank step —
 the ordinal COLLAPSES (`collapse α`) and the numeric slot ITERATES (`ewIter f α`). -/
-theorem cutElimPass_Zef2 {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq} (f : ℕ → ℕ)
+theorem cutElimPass_Zef2 {c : ℕ} {Γ : Seq} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f (c + 1) Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapse α) e H (ewIter f α) c Γ :=
@@ -241,7 +243,7 @@ theorem cutElimPass_Zef2 {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq
 (`cutElimPass_Zef2`, rank `1 → 0`) composed with `headline_readoff_Zef2`, at the concrete
 `ewRootSlot`.  The `ewIter (ewRootSlot e m) α 0` iterate is VISIBLE in the bound and is what the
 read-off reads. -/
-theorem cutElimPass_exit_root_Zef2 {α e : ONote} {H : ONote → Prop} {m : ℕ}
+theorem cutElimPass_exit_root_Zef2 {m : ℕ}
     {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
@@ -293,7 +295,7 @@ theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
 /-- **`rankToZero_Zef2`** (rung L-R) — iterate `cutElimPass_Zef2` down the cut rank `d → 0`.
 A plain induction over the pass (`rankToZeroAux`): `d` applications collapse the ordinal to
 `collapseIter d α` and tower the slot to `ewIterTower f d α`, landing at rank 0. -/
-theorem rankToZero_Zef2 {α e : ONote} {H : ONote → Prop} {d : ℕ} {Γ : Seq} (f : ℕ → ℕ)
+theorem rankToZero_Zef2 {d : ℕ} {Γ : Seq} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f d Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ :=

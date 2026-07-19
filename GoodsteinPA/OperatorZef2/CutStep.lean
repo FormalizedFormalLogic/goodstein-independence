@@ -284,11 +284,13 @@ theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
         (by simp only [rel1]; exact hmono (Nat.zero_le _))) hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
+variable {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq} {χ : ArithmeticSemiformula ℕ 1}
+  {f g : ℕ → ℕ}
+
 /-- **`stepAllω_Zf2`** (pin-2 over `Zef2`): the principal ∀/∃ cut-reduction step — invert the
 ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`, with the `hg_base` floor and
 `hχRead : χ.complexity ≤ f 0` cut-read on the signature. -/
-theorem stepAllω_Zf2 {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
-    {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
+theorem stepAllω_Zf2 {βφ βψ : ONote}
     (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hg_slack : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k)
@@ -314,8 +316,7 @@ cut-reduction, but the output witness ordinal is bounded by `P₁ + P₂` (the s
 ordinals), which the cut-elimination pass needs to place the eliminated cut strictly under
 `collapse α` (via `collapse_add_lt`).  The generic `stepAllω_Zf2` hides `δ`; here we keep the two
 `≤`-bounds from the `Zef2Prov` witnesses and add-monotone them (`repr_add` + `add_le_add`). -/
-theorem stepAllω_Zf2_bnd {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
-    {χ : ArithmeticSemiformula ℕ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
+theorem stepAllω_Zf2_bnd {P₁ P₂ : ONote}
     (hP₁ : P₁.NF) (hP₂ : P₂.NF)
     (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
