@@ -7,17 +7,23 @@ on:
     # CI runs (the "CI / build (push)" + "CI / build (pull_request)" double).
     # PRs are covered by the `pull_request` trigger below; direct main pushes
     # (i.e. merges) are covered here.
-    branches: [main]
+    branches:
+      - main
     # blueprint/, docbuild/, and workflow edits don't change the Lean build;
     # skipping them keeps CI runs to real Lean pushes.
-    paths-ignore: ['**.md', 'blueprint/**', 'docbuild/**', '.github/workflows/**', '.gitignore']
+    paths-ignore:
+      - '**.md'
+      - 'blueprint/**'
+      - 'docbuild/**'
+      - '.github/workflows/**'
+      - '.gitignore'
   pull_request:
   workflow_dispatch:
 
 # Supersede stale runs on the same ref.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 # Runners are pinned to ubuntu-26.04 (NOT `ubuntu-latest`): a floating image is a
 # silent explosion waiting for GitHub's next bump. 26.04 is the newest LTS — if it
@@ -129,4 +135,52 @@ jobs:
       #   run: |
       #     set -euo pipefail
       #     lake build GoodsteinPABlueprint blueprint_audit
-      #     lake exe blueprint_audit blueprint/trusted-axioms.txt
+      #     lake exe blueprint_audit blueprint/trusted-axioms.txt　
+
+      - uses: extractions/setup-just@v3
+
+      - uses: ts-graphviz/setup-graphviz@v2
+      - name: Generate import graph
+        run: just import-graph
+
+      - name: Upload lean artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: lean-artifacts
+          path: |
+            import_graph.png
+            import_graph.pdf
+            import_graph.html
+          retention-days: 1
+          include-hidden-files: true
+
+  deploy:
+    name: Generate page
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download lean artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: lean-artifacts
+      - name: Copy from artifacts to pages
+        run: |
+          mkdir -p pages
+          cp "$GITHUB_WORKSPACE/import_graph.png" \
+             "$GITHUB_WORKSPACE/import_graph.pdf" \
+             "$GITHUB_WORKSPACE/import_graph.html" \
+             pages/
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: pages
+      - uses: actions/deploy-pages@v5
+        id: deployment
