@@ -32,33 +32,33 @@ this module (frozen evidence; statement tokens there untouched).
 /-- **`Zef2`** — the ewN-gated function-slot cut-elimination calculus.  Identical to `Zef`
 (`OperatorZeh.lean`) up to the size gate `hαN : ewN α ≤ f 0` on every node and the cut-read gate
 `hcutRead : φ.complexity ≤ f 0` on `cut`. -/
-inductive Zef2 : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ → Seq → Prop
-  | axL {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq} {ar : ℕ}
+inductive Zef2 : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ → Finset (ArithmeticFormula ℕ) → Prop
+  | axL {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {ar : ℕ}
       (hαN : Nlog α ≤ f 0)
       (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
       (hn : Semiformula.nrel r v ∈ Γ) : Zef2 α e H f c Γ
-  | wk {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Seq}
+  | wk {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0) (hsub : Δ ⊆ Γ) (dd : Zef2 α e H f c Δ) :
       Zef2 α e H f c Γ
-  | weak {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Seq}
+  | weak {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0)
       (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β)
       (hsub : Δ ⊆ Γ) (dd : Zef2 β e H f c Δ) : Zef2 α e H f c Γ
-  | allω {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+  | allω {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0)
       (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
       (hβH : ∀ n, relOp H n (β n))
       (dd : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
       Zef2 α e H f c (insert (∀⁰ φ) Γ)
-  | exI {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+  | exI {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0)
       (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ f 0)
       (dd : Zef2 β e H f c (insert (φ/[nm n]) Γ)) : Zef2 α e H f c (insert (∃⁰ φ) Γ)
-  | cut {α βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+  | cut {α βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0)
-      (φ : Form) (hcompl : φ.complexity < c) (hcutRead : φ.complexity ≤ f 0)
+      (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hcutRead : φ.complexity ≤ f 0)
       (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
       (hβφH : Cl H βφ) (hβψH : Cl H βψ)
@@ -70,18 +70,18 @@ namespace Zef2
 /-- **Gate projection** — every `Zef2` constructor exposes its conclusion gate `ewN α ≤ f 0`, so
 a derivation is its own certificate for the size bound.  The uniform lever for re-threading the
 gate through the reduction / inversion. -/
-theorem gate {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+theorem gate {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : Zef2 α e H f c Γ) : Nlog α ≤ f 0 := by
   cases dd <;> assumption
 
-theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Seq}
+theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
     (hαN : Nlog α ≤ f 0) (hsub : Δ ⊆ Γ) (dd : Zef2 α e H f c Δ) :
     Zef2 α e H f c Γ :=
   Zef2.wk hαN hsub dd
 
 /-- **Slot weakening** (`mono_f`): a larger slot is more permissive (all gates ride `f 0 ≤ f' 0`;
 `exI` bound rides it too; `allω` rides `rel1_mono`). -/
-theorem mono_f : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem mono_f : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef2 α e H f c Γ → ∀ {f' : ℕ → ℕ}, (∀ x, f x ≤ f' x) → Zef2 α e H f' c Γ := by
   intro α e H f c Γ dd
   induction dd with
@@ -105,7 +105,7 @@ theorem mono_f : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : 
         hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hff') (ih₂ hff')
 
 /-- **Operator irrelevance** (R1): the generator slot `H` carries no information. -/
-theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef2 α e H f c Γ → ∀ {H' : ONote → Prop}, Zef2 α e H' f c Γ := by
   intro α e H f c Γ dd
   induction dd with
@@ -123,13 +123,13 @@ theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c 
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
 
 /-- Combined operator+slot move. -/
-theorem mono_Hf {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+theorem mono_Hf {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : Zef2 α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
     Zef2 α e H' f' c Γ := (dd.change_H).mono_f hff'
 
 /-- **`toZef`** — the forgetful map dropping the ewN/cut-read gate (the mandated read-off route;
 doubles as the conservativity witness `Zef2 ⤳ Zef`). -/
-theorem toZef : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem toZef : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef2 α e H f c Γ → Zef α e H f c Γ := by
   intro α e H f c Γ dd
   induction dd with
@@ -144,28 +144,28 @@ theorem toZef : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : �
 end Zef2
 
 /-- The `≤`-slack wrapper (slot form of `ZehProv`), carrying the ewN gate on the witness. -/
-def Zef2Prov (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (Γ : Seq) : Prop :=
+def Zef2Prov (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ α', α' ≤ α ∧ α'.NF ∧ Cl H α' ∧ Nlog α' ≤ f 0 ∧ Zef2 α' e H f c Γ
 
 namespace Zef2Prov
 
-theorem of {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+theorem of {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hNF : α.NF) (hH : Cl H α) (hN : Nlog α ≤ f 0) (D : Zef2 α e H f c Γ) :
     Zef2Prov α e H f c Γ :=
   ⟨α, le_refl _, hNF, hH, hN, D⟩
 
-theorem mono {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+theorem mono {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hα : α ≤ β) : Zef2Prov α e H f c Γ → Zef2Prov β e H f c Γ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', le_trans hα' hα, hNF, hH, hN, D⟩
 
-theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Δ : Seq}
+theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)}
     (h : Γ ⊆ Δ) : Zef2Prov α e H f c Γ → Zef2Prov α e H f c Δ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', hα', hNF, hH, hN, D.wk hN h⟩
 
 /-- Forget the gate: `Zef2Prov ⤳ ZefProv`. -/
-theorem toZefProv {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq} :
+theorem toZefProv {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} :
     Zef2Prov α e H f c Γ → ZefProv α e H f c Γ := by
   rintro ⟨α', hα', hNF, hH, _, D⟩
   exact ⟨α', hα', hNF, hH, D.toZef⟩
@@ -174,17 +174,17 @@ end Zef2Prov
 
 /-! ## The read-off exit, discharged by the forgetful map (P-c) -/
 
-def ReadoffShapeF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=
+def ReadoffShapeF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ReadoffShapeF φ f Γ
 
-def ReadoffGoalF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=
+def ReadoffGoalF2 (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ReadoffGoalF φ f Γ
 
 /-- **`readoff_sigma1_Zef2`** — the ewN-gated read-off, discharged by reuse of the `Zef` read-off
 through `toZef` (zero re-proof; the gate is read-off-irrelevant). -/
 theorem readoff_sigma1_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq}
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : Zef2 α e H f c Γ) (hc : c = 0) (hshape : ReadoffShapeF2 φ f Γ) :
     ReadoffGoalF2 φ f Γ :=
   readoff_sigma1_Zef hφinst dd.toZef hc hshape
@@ -368,10 +368,10 @@ proved close the fresh node's gates: `ewN (α + γ) ≤ g (f 0)` via `ewN_add_le
 `φ.complexity ≤ (g ∘ f) 0` via `hg_infl`.  Premises land strictly below `α + γ` by the R-0(i)
 covariance seams.  Body `sorry` until Stage 2 (grind UNLOCKED). -/
 theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
-    {Γ : Seq} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
+    {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef2 α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Seq}, Zef2 γ e H f c Δ → γ.NF →
+    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zef2 γ e H f c Δ → γ.NF →
       Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δ →
       Zef2Prov (α + γ) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
@@ -542,7 +542,7 @@ private theorem gate_rel1 {f : ℕ → ℕ} (hmono : Monotone f) {α : ONote} (n
 inversion, so every rebuilt node's gate re-threads from its input gate through the relativized
 slot `rel1 f n₀` (`gate_rel1`, `f` monotone). -/
 theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f c Γ → Monotone f → (∀⁰ φ₀) ∈ Γ →
       Zef2 α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   intro α e H f c Γ dd
@@ -620,7 +620,7 @@ theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
 /-- **`stepAllω_Zf2`** (pin-2 over `Zef2`): the principal ∀/∃ cut-reduction step.  Disclosed
 sub-pin — invert the ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`.  Restated per the
 judge ruling with the `hg_base` floor + `hχRead : χ.complexity ≤ f 0` cut-read (Stage-1 R-2). -/
-theorem stepAllω_Zf2 {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
+theorem stepAllω_Zf2 {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
     (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
@@ -647,7 +647,7 @@ cut-reduction, but the output witness ordinal is bounded by `P₁ + P₂` (the s
 ordinals), which the cut-elimination pass needs to place the eliminated cut strictly under
 `collapse α` (via `collapse_add_lt`).  The generic `stepAllω_Zf2` hides `δ`; here we keep the two
 `≤`-bounds from the `Zef2Prov` witnesses and add-monotone them (`repr_add` + `add_le_add`). -/
-theorem stepAllω_Zf2_bnd {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
+theorem stepAllω_Zf2_bnd {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {χ : ArithmeticSemiformula ℕ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
     (hP₁ : P₁.NF) (hP₂ : P₂.NF)
     (hENF : E.NF) (hχc : χ.complexity < c)
@@ -682,7 +682,7 @@ lemma (`atomCutRun_Zf2`, the axL-pair surgery — a fixed-premise mirror of the 
 reduction).  The two quantifier shapes are `stepAllω_Zf2_bnd`. -/
 
 /-- A formula shape never principal in any `Zef2` rule. -/
-def InertForm (A : Form) : Prop :=
+def InertForm (A : ArithmeticFormula ℕ) : Prop :=
   (∀ (ar : ℕ) (r : (ℒₒᵣ).Rel ar) (v : Fin ar → Semiterm ℒₒᵣ ℕ 0),
       A ≠ Semiformula.rel r v ∧ A ≠ Semiformula.nrel r v) ∧
   ∀ (χ : ArithmeticSemiformula ℕ 1), A ≠ (∀⁰ χ) ∧ A ≠ (∃⁰ χ)
@@ -693,17 +693,17 @@ theorem inertForm_verum : InertForm ⊤ :=
 theorem inertForm_falsum : InertForm ⊥ :=
   ⟨fun _ _ _ => ⟨nofun, nofun⟩, fun _ => ⟨nofun, nofun⟩⟩
 
-theorem inertForm_and (φ₁ φ₂ : Form) : InertForm (φ₁ ⋏ φ₂) :=
+theorem inertForm_and (φ₁ φ₂ : ArithmeticFormula ℕ) : InertForm (φ₁ ⋏ φ₂) :=
   ⟨fun _ _ _ => ⟨nofun, nofun⟩, fun _ => ⟨nofun, nofun⟩⟩
 
-theorem inertForm_or (φ₁ φ₂ : Form) : InertForm (φ₁ ⋎ φ₂) :=
+theorem inertForm_or (φ₁ φ₂ : ArithmeticFormula ℕ) : InertForm (φ₁ ⋎ φ₂) :=
   ⟨fun _ _ _ => ⟨nofun, nofun⟩, fun _ => ⟨nofun, nofun⟩⟩
 
 /-- **Inert erasure**: a formula of inert shape can be erased from any `Zef2` context (it is
 never principal, so every rule commutes; instance formulas `χ/[nm n]` that happen to EQUAL the
 inert formula are restored by plain `wk`).  All gates ride unchanged (same `α`, same `f`). -/
-theorem Zef2.erase_inert {A : Form} (hA : InertForm A) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem Zef2.erase_inert {A : ArithmeticFormula ℕ} (hA : InertForm A) :
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f c Γ → Zef2 α e H f c (Γ.erase A) := by
   intro α e H f c Γ dd
   induction dd with
@@ -763,11 +763,11 @@ replaced by `D₂` (weakened); all other nodes rebuild at the fresh root `βψ +
 absorbing gate (`Nlog_add_le_comp` + the slot-threaded slack, exactly as in the running
 reduction).  Output slot `g ∘ f`. -/
 theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {c : ℕ} {βψ e : ONote} {Γ : Seq} {g : ℕ → ℕ} {H₂ : ONote → Prop}
+    {c : ℕ} {βψ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} {H₂ : ONote → Prop}
     (hβψNF : βψ.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (D₂ : Zef2 βψ e H₂ g c (insert (Semiformula.nrel rr vv) Γ)) :
-    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Seq}, Zef2 γ e H f c Δ → γ.NF →
+    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zef2 γ e H f c Δ → γ.NF →
       Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       Zef2Prov (βψ + γ) e H (g ∘ f) c (Δ.erase (Semiformula.rel rr vv) ∪ Γ) := by
   have hg0 : Nlog βψ ≤ g 0 := Zef2.gate D₂
@@ -906,7 +906,7 @@ Three cases remain as disclosed sub-`sorry`s (the crux decomposition):
   `stepAllω_Zf2` + `collapse_add_lt` + `ewIter_comp_le`; the c=0 atomic case needs an atom-cut lemma).
 -/
 theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
-    ∀ {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq} {r : ℕ},
+    ∀ {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {r : ℕ},
       Zef2 α e H f r Γ → r = c + 1 → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
       α.NF → Cl H α →
       Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
@@ -1071,7 +1071,7 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
             exact ⟨w, le_trans hwle (le_trans hsum (le_of_lt hcollt)), hwNF, hwH,
               le_trans hwg (hcomp 0), Dw.mono_f hcomp⟩
         | all ψ =>
-            have h : (Semiformula.all ψ : Form).complexity = ψ.complexity + 1 := rfl
+            have h : (Semiformula.all ψ : ArithmeticFormula ℕ).complexity = ψ.complexity + 1 := rfl
             have hψc : ψ.complexity < c := by omega
             have hread : ψ.complexity ≤ ewIter f βψ 0 := by
               have h2 : ψ.complexity ≤ f 0 := by omega
@@ -1084,7 +1084,7 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
             exact ⟨w, le_trans hwle (le_of_lt hcollt), hwNF, hwH,
               le_trans hwg (hcomp 0), Dw.mono_f hcomp⟩
         | exs ψ =>
-            have h : (Semiformula.exs ψ : Form).complexity = ψ.complexity + 1 := rfl
+            have h : (Semiformula.exs ψ : ArithmeticFormula ℕ).complexity = ψ.complexity + 1 := rfl
             have h2 : (∼ψ).complexity = ψ.complexity := Semiformula.complexity_neg ψ
             have hψc : (∼ψ).complexity < c := by omega
             have hread : (∼ψ).complexity ≤ ewIter f βφ 0 := by
@@ -1108,7 +1108,7 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
 single predicative rank step: the ordinal COLLAPSES (`collapse α`) and the numeric slot ITERATES
 (`ewIter f α`).  Now a real derivation from `passAux` (its three remaining sub-`sorry`s are the
 disclosed crux decomposition). -/
-theorem cutElimPass_Zef2 {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq} (f : ℕ → ℕ)
+theorem cutElimPass_Zef2 {α e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f (c + 1) Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapse α) e H (ewIter f α) c Γ :=
@@ -1145,7 +1145,7 @@ but it DOES inherit these three via `ewIter_monotone`/`_infl`/`_low`, so the pas
 step applies one `passAux`, promotes the reduced witness UP to `collapse α` exactly (`Zef2.weak`,
 gate `ewN_collapse_le`), recurses, and rewrites via the two tower-shift lemmas. -/
 theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
-    ∀ (d : ℕ) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq},
+    ∀ (d : ℕ) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f d Γ → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
       α.NF → Cl H α →
       Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ := by
@@ -1176,7 +1176,7 @@ theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
 A plain induction over the pass (`rankToZeroAux`): `d` applications collapse the ordinal to
 `collapseIter d α` and tower the slot to `ewIterTower f d α`, landing at rank 0.  Now a REAL
 derivation (reuses the pass; `EwF1 → EwLow` at the top).  **Ledger: debt, "1", 90** (rung R). -/
-theorem rankToZero_Zef2 {α e : ONote} {H : ONote → Prop} {d : ℕ} {Γ : Seq} (f : ℕ → ℕ)
+theorem rankToZero_Zef2 {α e : ONote} {H : ONote → Prop} {d : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f d Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ :=
@@ -1193,7 +1193,7 @@ derivation of `Γ` has a standard-model-true member.  The `allω` (Π) case comb
 branch's true member is in the shared context `Γ` (done), or every branch is true at its own
 instance `φ/[nm n]` — whence `∀⁰ φ` is true (`atomTrue (∀⁰ φ) = ∀ k, atomTrue (φ/[nm k])`).
 Slot-INDEPENDENT (truth does not see `f`).  Ported from `wip/Lap13ReadoffDeltaProbe.lean`. -/
-theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef2 α e H f c Γ → c = 0 → ∃ ψ ∈ Γ, atomTrue ψ := by
   intro α e H f c Γ dd
   induction dd with
@@ -1315,7 +1315,7 @@ spine head `t`, no `Zef2` derivation at cut-rank 0 exists: `axL` would force
 `some (true, s) = t = some (false, s)`; `allω`/`exI` insert spine-head-preserving instances;
 `wk`/`weak` shrink; `cut` needs `complexity < 0`. -/
 theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef2 α e H f c Γ → c = 0 → (∀ ψ ∈ Γ, spineHead ψ = t) → False := by
   intro α e H f c Γ dd
   induction dd with
@@ -1372,7 +1372,7 @@ guard, as for the Goodstein bounded-`∀` clauses), that survivor is contradicto
 fragment the structural read-off reaches without E–W's (Ax2).  A ready building block for a
 monotone-guarded specialization of `readoff_delta0_Zef2`. -/
 theorem readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
-    {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ₀ : Seq} {β : ℕ → ONote}
+    {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ₀ : Finset (ArithmeticFormula ℕ)} {β : ℕ → ONote}
     (_hbranch : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) 0 (insert (χ/[nm n]) Γ₀))
     (_htrap : (∃⁰ φ) ∈ Γ₀)
     (hfalse : ¬ atomTrue (∀⁰ χ))

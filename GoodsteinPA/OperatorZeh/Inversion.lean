@@ -25,11 +25,11 @@ absorb (they are the operator-side analog of `Zekd`'s `max`-reshuffle
 /-! ### Finset push/pull helpers for the inversion (re-derivations of the `private`
 `OperatorZinfty` copies — calculus-independent). -/
 
-theorem inv1Push (A e b : Form) (s : Seq) :
+theorem inv1Push (A e b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert b s).erase A) ⊆ insert b (insert e (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-theorem inv1Pull (A e : Form) {b : Form} (h : b ≠ A) (s : Seq) :
+theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) :
     insert b (insert e (s.erase A)) ⊆ insert e ((insert b s).erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | hx
@@ -37,7 +37,7 @@ theorem inv1Pull (A e : Form) {b : Form} (h : b ≠ A) (s : Seq) :
   · exact Or.inl rfl
   · exact Or.inr ⟨hx.1, Or.inr hx.2⟩
 
-theorem princAllSub (A e : Form) (s : Seq) :
+theorem princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert e s).erase A) ⊆ insert e (s.erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
@@ -45,7 +45,7 @@ theorem princAllSub (A e : Form) (s : Seq) :
 now a real proof).  The extracted instance runs at the relativization `adjoin H n₀` and the
 raised stage `max m n₀`. -/
 theorem allInv_Zeh {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
-    ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
+    ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zeh α e H m c Γ → (∀⁰ φ₀) ∈ Γ →
       Zeh α e (adjoin H n₀) (max m n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   intro α e H m c Γ dd
@@ -141,11 +141,11 @@ statements — reused by a cut-elimination assembly for cuts on propositional fo
 
 /-- Double-insert reshuffle helpers (∨-inversion inserts both `φ` and `ψ`; re-derivations of
 the `private` `OperatorZinfty` copies). -/
-theorem invPush (A b : Form) (s : Seq) {φ ψ : Form} :
+theorem invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b s).erase A)) ⊆ insert b (insert φ (insert ψ (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-theorem invPull (A : Form) {b : Form} (h : b ≠ A) (s : Seq) {φ ψ : Form} :
+theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert b (insert φ (insert ψ (s.erase A))) ⊆ insert φ (insert ψ ((insert b s).erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | rfl | hx
@@ -156,7 +156,7 @@ theorem invPull (A : Form) {b : Form} (h : b ≠ A) (s : Seq) {φ ψ : Form} :
 
 /-- **∨-inversion, `Zeh` form** (Towsner §19.3): replace `φ ⋎ ψ` by `φ, ψ`, same
 `(α, e, H, m, c)`. -/
-theorem orInv_Zeh {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
+theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → (φ ⋎ ψ) ∈ Γ →
     Zeh α e H m c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   intro α e H m c Γ dd
@@ -206,7 +206,7 @@ theorem orInv_Zeh {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {m c 
 
 /-- **∧-inversion, left, `Zeh` form** (Towsner §19.3): replace `φ ⋏ ψ` by `φ`, same
 `(α, e, H, m, c)`. -/
-theorem andInvL_Zeh {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
+theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → (φ ⋏ ψ) ∈ Γ →
     Zeh α e H m c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   intro α e H m c Γ dd
@@ -253,7 +253,7 @@ theorem andInvL_Zeh {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {m 
 
 /-- **∧-inversion, right, `Zeh` form** (Towsner §19.3): replace `φ ⋏ ψ` by `ψ`, same
 `(α, e, H, m, c)`. -/
-theorem andInvR_Zeh {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
+theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → (φ ⋏ ψ) ∈ Γ →
     Zeh α e H m c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   intro α e H m c Γ dd
@@ -309,7 +309,7 @@ The extracted instance runs at the relativization `adjoin H n₀` and the relati
 `rel1 f n₀`.  Needs `f` monotone (to raise `exI` bounds `n ≤ f 0 ≤ (rel1 f n₀) 0 = f n₀`).  The
 operator threading is FREE (`mono_Hf`/`change_H`, R1). -/
 theorem allInv_Zef {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef α e H f c Γ → Monotone f → (∀⁰ φ₀) ∈ Γ →
       Zef α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   intro α e H f c Γ dd
@@ -381,7 +381,7 @@ never principal, so every case threads the inversion past a passive side formula
 
 /-- **∨-inversion, `Zef` form** (Towsner §19.3): replace `φ ⋎ ψ` by `φ, ψ`, same
 `(α, e, H, f, c)`. -/
-theorem orInv_Zef {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef α e H f c Γ → (φ ⋎ ψ) ∈ Γ →
     Zef α e H f c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   intro α e H f c Γ dd
@@ -431,7 +431,7 @@ theorem orInv_Zef {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {f : 
 
 /-- **∧-inversion, left, `Zef` form** (Towsner §19.3): replace `φ ⋏ ψ` by `φ`, same
 `(α, e, H, f, c)`. -/
-theorem andInvL_Zef {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef α e H f c Γ → (φ ⋏ ψ) ∈ Γ →
     Zef α e H f c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   intro α e H f c Γ dd
@@ -478,7 +478,7 @@ theorem andInvL_Zef {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {f 
 
 /-- **∧-inversion, right, `Zef` form** (Towsner §19.3): replace `φ ⋏ ψ` by `ψ`, same
 `(α, e, H, f, c)`. -/
-theorem andInvR_Zef {φ ψ : Form} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+theorem andInvR_Zef {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef α e H f c Γ → (φ ⋏ ψ) ∈ Γ →
     Zef α e H f c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   intro α e H f c Γ dd

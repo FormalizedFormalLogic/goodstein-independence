@@ -111,7 +111,7 @@ a legal `Zeh` derivation: every side condition is a membership, discharged by a 
 per-branch closure tree.  This is the inhabitedness witness the seam-2 reversal rests on
 (the reassembly probe would be vacuous without it). -/
 theorem two_level_config_Zeh {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
-    (χ ψ : ArithmeticSemiformula ℕ 1) {e : ONote} {H : ONote → Prop} {m : ℕ} {Γ : Seq}
+    (χ ψ : ArithmeticSemiformula ℕ 1) {e : ONote} {H : ONote → Prop} {m : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
     Zeh (expTower ONote.omega) e H m ((∀⁰ χ).complexity + 1) (insert (∀⁰ ψ) Γ) := by
   refine Zeh.allω ψ (fun n => osucc (wmul n))
@@ -133,7 +133,7 @@ theorem two_level_config_Zeh {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar →
 reduction-output class, with each branch's control carried by the relativized f-slot
 `rel1 f n` (`normControlled_rel1`) — the numeric control rides the function slot the seam
 demands. -/
-theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {χ : ArithmeticSemiformula ℕ 1} {f : ℕ → ℕ} (hf : NormControlled f e m)
     (dd : ∀ n, Zeh (osucc (wmul n + wmul n)) e (adjoin H n) (max m n) c
       (insert (χ/[nm n]) Γ)) :
@@ -160,7 +160,7 @@ needs no separate `NormControlled` conjunct: each ω-branch simply runs at the r
 `ω·(n+1)` — the branch-unbounded configuration that killed the `(k,d)` calculus, a legal `Zef`
 derivation at an arbitrary slot `f`. -/
 theorem two_level_config_Zef {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
-    (χ ψ : ArithmeticSemiformula ℕ 1) {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Seq}
+    (χ ψ : ArithmeticSemiformula ℕ 1) {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
     Zef (expTower ONote.omega) e H f ((∀⁰ χ).complexity + 1) (insert (∀⁰ ψ) Γ) := by
   refine Zef.allω ψ (fun n => osucc (wmul n))
@@ -182,7 +182,7 @@ theorem two_level_config_Zef {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar →
 sorry-free).**  The ω-node re-assembles over the reduction-output class, each branch's control
 carried by the relativized slot `rel1 f n` — the branch-unbounded demand that overflowed the
 `(k,d)` counter, now paid by the function slot inside the judgment (no separate control conjunct). -/
-theorem probe_allomega_reassembly_Zef {e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Seq}
+theorem probe_allomega_reassembly_Zef {e : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {χ : ArithmeticSemiformula ℕ 1} {f : ℕ → ℕ}
     (dd : ∀ n, Zef (osucc (wmul n + wmul n)) e (adjoin H n) (rel1 f n) c
       (insert (χ/[nm n]) Γ)) :

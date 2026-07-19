@@ -10,27 +10,27 @@ open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 /-! ## The minimal `Zeh` core -/
-inductive Zeh : ONote → ONote → (ONote → Prop) → ℕ → ℕ → Seq → Prop
-  | axL {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq} {ar : ℕ}
+inductive Zeh : ONote → ONote → (ONote → Prop) → ℕ → ℕ → Finset (ArithmeticFormula ℕ) → Prop
+  | axL {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {ar : ℕ}
       (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
       (hn : Semiformula.nrel r v ∈ Γ) : Zeh α e H m c Γ
-  | wk {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Δ Γ : Seq}
+  | wk {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
       (hsub : Δ ⊆ Γ) (dd : Zeh α e H m c Δ) : Zeh α e H m c Γ
-  | weak {α β e : ONote} {H : ONote → Prop} {m c : ℕ} {Δ Γ : Seq}
+  | weak {α β e : ONote} {H : ONote → Prop} {m c : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
       (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β)
       (hsub : Δ ⊆ Γ) (dd : Zeh β e H m c Δ) : Zeh α e H m c Γ
-  | allω {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+  | allω {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
       (hβH : ∀ n, relOp H n (β n))
       (dd : ∀ n, Zeh (β n) e (adjoin H n) (max m n) c (insert (φ/[nm n]) Γ)) :
       Zeh α e H m c (insert (∀⁰ φ) Γ)
-  | exI {α β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+  | exI {α β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ hardy e m)
       (dd : Zeh β e H m c (insert (φ/[nm n]) Γ)) : Zeh α e H m c (insert (∃⁰ φ) Γ)
-  | cut {α βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
-      (φ : Form) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
+  | cut {α βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+      (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
       (hβφH : Cl H βφ) (hβψH : Cl H βψ)
       (d₁ : Zeh βφ e H m c (insert φ Γ)) (d₂ : Zeh βψ e H m c (insert (∼φ) Γ)) :
@@ -41,7 +41,7 @@ namespace Zeh
 /-- **`mono_H`** — the replacement for `Zekd.mono_k`/`Zekd.mono_d`: raise the generator set and
 the stage together.  The `exI` bound rides `hardy_monotone` (argument monotonicity — no
 ordinal-raise, hence no gate); memberships ride `Cl_mono`. -/
-theorem mono_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
+theorem mono_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → ∀ {H' : ONote → Prop} {m' : ℕ},
     (∀ β, H β → H' β) → m ≤ m' → Zeh α e H' m' c Γ := by
   intro α e H m c Γ dd
@@ -66,7 +66,7 @@ theorem mono_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
         (ih₁ hH hm) (ih₂ hH hm)
 
 /-- Sequent weakening (height-preserving). -/
-theorem weakening {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Δ Γ : Seq}
+theorem weakening {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Δ Γ : Finset (ArithmeticFormula ℕ)}
     (hsub : Δ ⊆ Γ) (dd : Zeh α e H m c Δ) : Zeh α e H m c Γ :=
   Zeh.wk hsub dd
 
@@ -78,7 +78,7 @@ strong form of `mono_H` that `mono_H` (which needs `H ⊆ H'`) cannot express: t
 freely replaceable in BOTH directions.  Discharges the operator-threading bookkeeping in the
 f-slot reductions — the running relativization `adjoin H n` of the inversion family and the
 ambient `H` of the ∃-side are interchangeable at will (membership is bookkeeping only). -/
-theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
+theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → ∀ {H' : ONote → Prop}, Zeh α e H' m c Γ := by
   intro α e H m c Γ dd
   induction dd with
@@ -99,21 +99,21 @@ end Zeh
 /-- The `≤`-slack bookkeeping wrapper (`ZekdProv`'s twin with the NORM clause deleted —
 the simplification the fork buys — and the ordinal's `Cl H`-membership carried instead:
 "the judgment carries `α ∈ H` directly"). -/
-def ZehProv (α e : ONote) (H : ONote → Prop) (m c : ℕ) (Γ : Seq) : Prop :=
+def ZehProv (α e : ONote) (H : ONote → Prop) (m c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ α', α' ≤ α ∧ α'.NF ∧ Cl H α' ∧ Zeh α' e H m c Γ
 
 namespace ZehProv
 
-theorem of {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+theorem of {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hNF : α.NF) (hH : Cl H α) (D : Zeh α e H m c Γ) : ZehProv α e H m c Γ :=
   ⟨α, le_refl _, hNF, hH, D⟩
 
-theorem mono {α β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+theorem mono {α β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hα : α ≤ β) : ZehProv α e H m c Γ → ZehProv β e H m c Γ := by
   rintro ⟨α', hα', hNF, hH, D⟩
   exact ⟨α', le_trans hα' hα, hNF, hH, D⟩
 
-theorem weakening {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ Δ : Seq} (h : Γ ⊆ Δ) :
+theorem weakening {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) :
     ZehProv α e H m c Γ → ZehProv α e H m c Δ := by
   rintro ⟨α', hα', hNF, hH, D⟩
   exact ⟨α', hα', hNF, hH, D.wk h⟩
@@ -130,7 +130,7 @@ namespace Zeh
 
 /-- **`c`-monotonicity** (cut rank): a derivation valid at rank `c` is valid at any `c' ≥ c`.
 Only the `cut` rule reads `c` (via `hcompl : φ.complexity < c`), so every other case threads. -/
-theorem mono_c : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
+theorem mono_c : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → ∀ {c' : ℕ}, c ≤ c' → Zeh α e H m c' Γ := by
   intro α e H m c Γ dd
   induction dd with
@@ -153,7 +153,7 @@ the cut rule at the wrapper level — combine proofs of `φ` and `∼φ` (with `
 into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, same rank and control (no rank-lowering, no
 control-raise — those belong to `cutElimPass_Zf`/the reduction).  A step/reduction assembly
 would reuse this to introduce cuts before eliminating them. -/
-theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq} (φ : Form)
+theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticFormula ℕ)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
     (D₁ : ZehProv βφ e H m c (insert φ Γ)) (D₂ : ZehProv βψ e H m c (insert (∼φ) Γ)) :
     ZehProv (osucc (βφ + βψ)) e H m c Γ := by
@@ -171,7 +171,7 @@ theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ :
 /-- **`ZehProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
 wrapper level — the output ordinal `osucc β` is fully determined, no rank/control change.
 Reused by the assembly to introduce existentials at the prov level. -/
-theorem ZehProv.exI {β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+theorem ZehProv.exI {β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβNF : β.NF) (hβH : Cl H β)
     (hbound : n ≤ hardy e m) (D : ZehProv β e H m c (insert (φ/[nm n]) Γ)) :
     ZehProv (osucc β) e H m c (insert (∃⁰ φ) Γ) := by
@@ -183,7 +183,7 @@ theorem ZehProv.exI {β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
 wrapper level.  Each branch's `≤`-slack witness is threaded through (`< α` survives since
 `β' n ≤ β n < α`); the output witness is `α` itself (needs `Cl H α`).  Reused by the
 assembly to rebuild ω-nodes over the branch family. -/
-theorem ZehProv.allω {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq}
+theorem ZehProv.allω {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
     (hβ : ∀ n, β n < α) (hαNF : α.NF) (hαH : Cl H α)
     (D : ∀ n, ZehProv (β n) e (adjoin H n) (max m n) c (insert (φ/[nm n]) Γ)) :

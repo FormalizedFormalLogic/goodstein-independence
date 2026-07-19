@@ -14,13 +14,13 @@ open GoodsteinPA.OperatorZinfty
 
 /-- Sequent shape for the read-off: every member is the target `∃⁰ φ`, an already-bounded
 instance of `φ`, or a literal.  (BW87's "positive Σ₁(N)" restriction: ∀-free.) -/
-def ReadoffShape (φ : ArithmeticSemiformula ℕ 1) (e : ONote) (m : ℕ) (Γ : Seq) : Prop :=
+def ReadoffShape (φ : ArithmeticSemiformula ℕ 1) (e : ONote) (m : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∀ ψ ∈ Γ, ψ = (∃⁰ φ) ∨ (∃ n ≤ hardy e m, ψ = φ/[nm n]) ∨
     (∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, ψ = Semiformula.rel r v ∨ ψ = Semiformula.nrel r v)
 
 /-- Read-off conclusion: a bounded true instance of the target, or a true literal
 somewhere in the sequent (the escape BW87's Bounding Lemma also carries). -/
-def ReadoffGoal (φ : ArithmeticSemiformula ℕ 1) (e : ONote) (m : ℕ) (Γ : Seq) : Prop :=
+def ReadoffGoal (φ : ArithmeticSemiformula ℕ 1) (e : ONote) (m : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   (∃ n ≤ hardy e m, atomTrue (φ/[nm n])) ∨
     (∃ ψ ∈ Γ, atomTrue ψ ∧
       ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, ψ = Semiformula.rel r v ∨ ψ = Semiformula.nrel r v)
@@ -31,7 +31,7 @@ has atomic instances: a witness `n ≤ hardy e m` with `φ/[nm n]` true, or a tr
 the sequent.  The bound consumes ONLY the judgment's control `e` and stage `m`. -/
 theorem readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v) :
-    ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Seq},
+    ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zeh α e H m c Γ → c = 0 → ReadoffShape φ e m Γ → ReadoffGoal φ e m Γ := by
   intro α e H m c Γ dd
   induction dd with
@@ -123,12 +123,12 @@ Independent of cut-elimination (operates on any rank-0 derivation).
 -/
 
 /-- Slot-form read-off sequent shape (`hardy e m ⤳ f 0`). -/
-def ReadoffShapeF (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=
+def ReadoffShapeF (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∀ ψ ∈ Γ, ψ = (∃⁰ φ) ∨ (∃ n ≤ f 0, ψ = φ/[nm n]) ∨
     (∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, ψ = Semiformula.rel r v ∨ ψ = Semiformula.nrel r v)
 
 /-- Slot-form read-off conclusion. -/
-def ReadoffGoalF (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Seq) : Prop :=
+def ReadoffGoalF (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   (∃ n ≤ f 0, atomTrue (φ/[nm n])) ∨
     (∃ ψ ∈ Γ, atomTrue ψ ∧
       ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, ψ = Semiformula.rel r v ∨ ψ = Semiformula.nrel r v)
@@ -139,7 +139,7 @@ sequent: a witness `n ≤ f 0` with `φ/[nm n]` true, or a true literal.  The bo
 slot at 0 — E–W Lemma 31. -/
 theorem readoff_sigma1_Zef {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Seq},
+    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
       Zef α e H f c Γ → c = 0 → ReadoffShapeF φ f Γ → ReadoffGoalF φ f Γ := by
   intro α e H f c Γ dd
   induction dd with
