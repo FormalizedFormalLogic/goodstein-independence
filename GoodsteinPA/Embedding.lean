@@ -3,7 +3,7 @@
 
 **The universal bottleneck of the whole expedition — COMPLETE (lap 11).** The embedding is set up
 over Foundation's **`Derivation2`** (the Finset-sequent variant, `Calculus2.lean`), which lives over
-the *same* `Finset (SyntacticFormula ℒₒᵣ)` substrate as M5's `ZinftyF.Seq` — so it is a pure
+the *same* `Finset (ArithmeticFormula ℕ)` substrate as M5's `ZinftyF.Seq` — so it is a pure
 rule-by-rule map with **no language translation**.
 
 ## The headline result: `embedC` (assignment-carrying form)
@@ -28,7 +28,7 @@ image are CLOSED — which is what lets M5's numeral-only `exI`/ω-rule `allω` 
 - `provable_true` — ω-completeness for true closed formulas.
 
 ## API anchors
-- `Schema ℒₒᵣ := Set (SyntacticFormula ℒₒᵣ)`; `(𝗣𝗔 : Theory) ↦ (𝗣𝗔 : Schema) = Rewriting.emb '' 𝗣𝗔`.
+- `Schema ℒₒᵣ := Set (ArithmeticFormula ℕ)`; `(𝗣𝗔 : Theory) ↦ (𝗣𝗔 : Schema) = Rewriting.emb '' 𝗣𝗔`.
 - `provable_def : T ⊢ σ ↔ (T : Schema) ⊢ ↑σ` (rfl) · `provable_iff_derivable2 : 𝓢 ⊢ φ ↔ 𝓢 ⊢!₂! φ`.
   ⟹ `𝗣𝗔 ⊢ goodsteinSentence` unfolds to `Nonempty (Derivation2 (𝗣𝗔:Schema) {↑goodsteinSentence})`.
 - The naive (non-assignment) `embed`/`provable_rew` of laps 9–10 were superseded by `embedC` and
@@ -166,8 +166,8 @@ theorem provable_em (φ : ZinftyF.Form) {Γ : ZinftyF.Seq} (hp : φ ∈ Γ) (hn 
 /-- **General substitution–rewriting commutation** (the `exs`/`axm` version of `rew_subst_nm`, for an
 arbitrary witness term `t`): `ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t]`. In the assignment embedding `ω = asg e`
 closes `t`, so `ω t = asg e ▹ t` is a closed term whose numeral value feeds `Provable.exI`. -/
-lemma rew_subst_term (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : SyntacticSemiformula ℒₒᵣ 1)
-    (t : SyntacticTerm ℒₒᵣ) : ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t] := by
+lemma rew_subst_term (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : ArithmeticSemiformula ℕ 1)
+    (t : ArithmeticTerm ℕ) : ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t] := by
   show ω ▹ (Rew.subst ![t] ▹ φ) = Rew.subst ![ω t] ▹ (ω.q ▹ φ)
   have heq : ω.comp (Rew.subst ![t]) = (Rew.subst ![ω t]).comp ω.q := by
     ext x
@@ -184,7 +184,7 @@ lemma rew_subst_term (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : SyntacticSemiformula
 
 /-- Substitution-composition: substituting the freed (q) variable by `nm m` after a renaming
 `Rew.subst w` is the same as substituting by the extended vector `nm m :> w`. -/
-lemma subst_q_cons (w : Fin n → SyntacticTerm ℒₒᵣ) (m : ℕ) :
+lemma subst_q_cons (w : Fin n → ArithmeticTerm ℕ) (m : ℕ) :
     (Rew.subst ![nm m]).comp (Rew.subst w).q = Rew.subst (nm m :> w) := by
   ext x
   · cases x using Fin.cases with
@@ -193,17 +193,17 @@ lemma subst_q_cons (w : Fin n → SyntacticTerm ℒₒᵣ) (m : ℕ) :
   · simp [Rew.comp_app]
 
 /-- Formula form: `((Rew.subst w).q ▹ ψ)/[nm m] = Rew.subst (nm m :> w) ▹ ψ`. -/
-lemma subst_q_cons_app (w : Fin n → SyntacticTerm ℒₒᵣ) (m : ℕ)
-    (ψ : SyntacticSemiformula ℒₒᵣ (n + 1)) :
+lemma subst_q_cons_app (w : Fin n → ArithmeticTerm ℕ) (m : ℕ)
+    (ψ : ArithmeticSemiformula ℕ (n + 1)) :
     ((Rew.subst w).q ▹ ψ)/[nm m] = Rew.subst (nm m :> w) ▹ ψ := by
   show Rew.subst ![nm m] ▹ ((Rew.subst w).q ▹ ψ) = Rew.subst (nm m :> w) ▹ ψ
   rw [← TransitiveRewriting.comp_app, subst_q_cons]
 
 /-- Value of a renamed term depends only on the values of the substituted terms. -/
-lemma valm_subst_congr {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+lemma valm_subst_congr {n} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
-    (t : SyntacticSemiterm ℒₒᵣ n) :
+    (t : ArithmeticSemiterm ℕ n) :
     GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (Rew.subst w t)
       = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (Rew.subst w' t) := by
   simp only [GoodsteinPA.Compat.gValm, Semiterm.val_substs]
@@ -211,10 +211,10 @@ lemma valm_subst_congr {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
   funext x; exact hval x
 
 /-- Literal-truth congruence under value-equal substitutions. -/
-lemma litTrue_subst_congr {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+lemma litTrue_subst_congr {n} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
-    (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → SyntacticSemiterm ℒₒᵣ n) :
+    (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → ArithmeticSemiterm ℕ n) :
     LitTrue (signedLit b r (fun i => Rew.subst w (v i)))
       ↔ LitTrue (signedLit b r (fun i => Rew.subst w' (v i))) := by
   have hv : (fun i => GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (Rew.subst w (v i)))
@@ -228,8 +228,8 @@ lemma valm_nm (m : ℕ) (f : ℕ → ℕ) : GoodsteinPA.Compat.gValm ℕ ![] f (
   simp [nm]
 
 /-- **Value-congruent excluded middle (arity-general).** -/
-theorem provable_em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
-    (ψ : SyntacticSemiformula ℒₒᵣ n), ψ.complexity ≤ k →
+theorem provable_em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+    (ψ : ArithmeticSemiformula ℕ n), ψ.complexity ≤ k →
     (∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
         = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i)) →
     ∀ {Γ : Seq}, (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ → ∃ a, Provable a 0 Γ := by
@@ -350,10 +350,10 @@ theorem provable_em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → Syntact
       rw [Finset.insert_eq_self.mpr hn'] at hallω
       exact ⟨_, hallω⟩
 where
-  atomic_close {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+  atomic_close {n} (w w' : Fin n → ArithmeticTerm ℕ)
       (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
-      {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → SyntacticSemiterm ℒₒᵣ n)
+      {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → ArithmeticSemiterm ℕ n)
       {Γ : Seq} (hp : (Rew.subst w ▹ Semiformula.rel r v) ∈ Γ)
       (hn : (∼(Rew.subst w' ▹ Semiformula.rel r v)) ∈ Γ) : ∃ a, Provable a 0 Γ := by
     have hp' : signedLit true r (fun i => Rew.subst w (v i)) ∈ Γ := by
@@ -366,10 +366,10 @@ where
       have htf' : LitTrue (signedLit false r (fun i => Rew.subst w' (v i))) :=
         (litTrue_subst_congr w w' hval false r v).mp htf
       exact ⟨0, Provable.axTrue false r _ htf' hn'⟩
-  atomic_close_neg {n} (w w' : Fin n → SyntacticTerm ℒₒᵣ)
+  atomic_close_neg {n} (w w' : Fin n → ArithmeticTerm ℕ)
       (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
-      {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → SyntacticSemiterm ℒₒᵣ n)
+      {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → ArithmeticSemiterm ℕ n)
       {Γ : Seq} (hp : (Rew.subst w ▹ Semiformula.nrel r v) ∈ Γ)
       (hn : (∼(Rew.subst w' ▹ Semiformula.nrel r v)) ∈ Γ) : ∃ a, Provable a 0 Γ := by
     have hp' : signedLit false r (fun i => Rew.subst w (v i)) ∈ Γ := by
@@ -385,9 +385,9 @@ where
 
 /-- **Value-congruent excluded middle (single-term form).** For closed terms `s, s'` of equal
 standard value, a sequent containing `ψ/[s]` and `∼(ψ/[s'])` is `Z∞`-derivable cut-free. -/
-theorem provable_em_cong (s s' : SyntacticTerm ℒₒᵣ)
+theorem provable_em_cong (s s' : ArithmeticTerm ℕ)
     (hval : GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) s = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) s')
-    (ψ : SyntacticSemiformula ℒₒᵣ 1) {Γ : Seq}
+    (ψ : ArithmeticSemiformula ℕ 1) {Γ : Seq}
     (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) : ∃ a, Provable a 0 Γ := by
   refine provable_em_cong_gen ψ.complexity ![s] ![s'] ψ le_rfl ?_ ?_ ?_
   · intro i; cases i using Fin.cases with
@@ -401,7 +401,7 @@ theorem provable_em_cong (s s' : SyntacticTerm ℒₒᵣ)
 collapsed to its standard value `m` via `provable_em_cong` + `cut`, then the numeral-witness rule
 `Provable.exI` applies. (The cut raises the cut-rank bound to `max c (ψ.complexity + 1)`.) -/
 theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
-    (ψ : SyntacticSemiformula ℒₒᵣ 1) (s : SyntacticTerm ℒₒᵣ)
+    (ψ : ArithmeticSemiformula ℕ 1) (s : ArithmeticTerm ℕ)
     (h : Provable α c (insert (ψ/[s]) Γ)) :
     ∃ β, Provable β (max c (ψ.complexity + 1)) (insert (∃⁰ ψ) Γ) := by
   set m : ℕ := GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) s with hm
@@ -425,7 +425,7 @@ theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
 
 
 
-/-- **ω-completeness for true closed formulas.** Any closed (`SyntacticFormula ℒₒᵣ`) formula that is
+/-- **ω-completeness for true closed formulas.** Any closed (`ArithmeticFormula ℕ`) formula that is
 TRUE in the standard model `ℕ` (`LitTrue`) is `Z∞`-derivable, cut-free. Proof by induction on
 `complexity`: atomic via `axTrue`, `∀` via the ω-rule `allω`, `∃` by choosing a true witness. -/
 theorem provable_true : ∀ (k : ℕ) (φ : Form), φ.complexity ≤ k → LitTrue φ →
@@ -524,21 +524,21 @@ noncomputable def asg (e : ℕ → ℕ) : Rew ℒₒᵣ ℕ 0 ℕ 0 := Rew.rewri
 /-- **The embedding, assignment-carrying form.** Every `Derivation2` from `𝗣𝗔` embeds into `Z_∞`
 *at every numeral assignment of its free variables* (all sequents closed). Structural cases done;
 `all`/`exs`/`axm` are the disclosed deep obligations (the latter two now unblocked by `axTrue`). -/
-theorem embedC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
-    (d : Derivation2 (𝗣𝗔 : Theory ℒₒᵣ) Γ) :
+theorem embedC {Γ : Finset (ArithmeticFormula ℕ)}
+    (d : Derivation2 (𝗣𝗔 : ArithmeticTheory) Γ) :
     ∃ c : ℕ, ∀ e : ℕ → ℕ, ∃ α, Provable α c (Γ.image (fun φ => asg e ▹ φ)) := by
   induction d with
   | closed Γ φ hp hn =>
     exact ⟨0, fun e => provable_em (asg e ▹ φ) (Finset.mem_image_of_mem _ hp)
       (by have := Finset.mem_image_of_mem (fun φ => asg e ▹ φ) hn; simpa using this)⟩
   | axm φ hφ hΓ =>
-    -- closed PA axiom: `φ : Sentence ℒₒᵣ`, `φ ∈ 𝗣𝗔`, and `↑φ ∈ Γ` (upstream's `Derivation2` is
+    -- closed PA axiom: `φ : ArithmeticSentence`, `φ ∈ 𝗣𝗔`, and `↑φ ∈ Γ` (upstream's `Derivation2` is
     -- `Theory`-indexed, so `axm` hands back the sentence `φ` and its coercion `↑φ : Proposition`
     -- directly — no `Rewriting.emb ''` unwrap). Since `ℕ ⊧ₘ* 𝗣𝗔`, `↑φ` is a TRUE closed formula,
     -- so (even after the closing substitution `asg e`, which fixes it) `provable_true`
     -- (ω-completeness) derives it directly — no Buchholz meta-induction needed; ω-rule subsumes it.
     refine ⟨0, fun e => ?_⟩
-    have htrue : LitTrue (asg e ▹ (↑φ : SyntacticFormula ℒₒᵣ)) := by
+    have htrue : LitTrue (asg e ▹ (↑φ : ArithmeticFormula ℕ)) := by
       have hmod : ℕ ⊧ₘ φ := Semantics.modelsSet_iff.mp inferInstance hφ
       simp only [LitTrue, asg, Semiformula.eval_rewrite, Semiformula.eval_emb]
       rw [models_iff] at hmod
