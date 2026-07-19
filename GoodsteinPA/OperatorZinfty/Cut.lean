@@ -63,7 +63,7 @@ end Zekd
 `γ ↦ osucc(α+γ)` in cut-elimination) needs `NF` of the source. The wrapper bundles an upper
 bound + the source's `NF`, so the `≤`-slack absorbs the `osucc`/`+1` bookkeeping uniformly and
 `NF` is always available. This is the surface §19.6 `cutReduceAll` is stated over (matching the
-unbounded `Zinfty.lean Provable`). -/
+role of the unbounded `Provable` wrapper for the plain `Z_∞` calculus). -/
 def ZekdProv (α e : ONote) (k d c : ℕ) (Γ : Seq) : Prop :=
   ∃ α', α' ≤ α ∧ α'.NF ∧ norm α' < k + d ∧ Zekd α' e k d c Γ
 
@@ -100,30 +100,28 @@ theorem of {α e : ONote} {k d c : ℕ} {Γ : Seq} (hNF : α.NF) (hnorm : norm �
 
 end ZekdProv
 
-/-! ### §19.6 ∀/∃ cut reduction `cutReduceAllAux` — **norm-budget half PROVED** (lap 12, axiom-clean)
+/-! ### ∀/∃ cut reduction `cutReduceAllAux` — norm-budget half
 
-The induction core of Towsner §19.6, ported from `src/Zinfty.lean:854 cutReduceAllAux` to the
-control-ordinal witness-bounded calculus over the **norm-carrying** `ZekdProv` wrapper. Cut the
-∀-inversion family `fam` (over `φ`, control `e`, index `(k₀,dd₀)`) against an ∃-side derivation
-`D : Zekd γ e k dd c Δ` containing `∃∼φ`, producing a `Zekd`-derivation of `Δ.erase(∃∼φ) ∪ Γ` at
-ordinal `osucc(α+γ)`, control `e` (inert), index `(k, dd+norm α+1)`.
+The induction core of the ∀/∃ cut reduction, for the control-ordinal witness-bounded calculus over
+the **norm-carrying** `ZekdProv` wrapper. Cut the ∀-inversion family `fam` (over `φ`, control `e`,
+index `(k₀,dd₀)`) against an ∃-side derivation `D : Zekd γ e k dd c Δ` containing `∃∼φ`, producing
+a `Zekd`-derivation of `Δ.erase(∃∼φ) ∪ Γ` at ordinal `osucc(α+γ)`, control `e` (inert), index
+`(k, dd+norm α+1)`.
 
-⚠️ **SCOPE (lap-12, see `ANALYSIS-…-cutelim-k-threading.md` ADDENDUM 7).** This statement takes `fam`
-at the **FIXED** index `k₀` and keeps `e` inert — proving the NORM-budget half cleanly (the lap-6→11
-friction), but it is **NOT yet feedable by `cutReduceAll`**: `allInv` produces the ∀-family at the
-*running* index `max k₀ n` (the n-th ω-premise lives higher), and a derivation with witnesses up to
-`hardy e (max k₀ n + dd₀)` does NOT exist at the smaller fixed index `k₀`. Closing the **witness-budget**
-half needs `fam` at `max k₀ n` AND the control `e` *raised* — the numeric single-index bound is provably
-FALSE (`h_{βₙ#ω}(max{k,n}) ≰ max{h_{β#ω}(k),n}` for large `n`). The literature-correct fix is Buchholz
-**operator-controlled** derivations (on disk: `papers/buchholz-beweistheorie-skriptum.pdf`). This proof
-is the reusable **norm-machinery + structural port**: every case carries to the `H`-calculus verbatim
-except the `exI`/`allω` witness side-condition (`n ≤ hardy e (k+d)` ⤳ `n ∈ H`). Banked, off the live chain.
+⚠️ **SCOPE.** This statement takes `fam` at the **FIXED** index `k₀` and keeps `e` inert — proving
+the NORM-budget half cleanly, but it is **NOT yet feedable by `cutReduceAll`**: `allInv` produces
+the ∀-family at the *running* index `max k₀ n` (the n-th ω-premise lives higher), and a derivation
+with witnesses up to `hardy e (max k₀ n + dd₀)` does NOT exist at the smaller fixed index `k₀`.
+Closing the **witness-budget** half needs `fam` at `max k₀ n` AND the control `e` *raised* — the
+numeric single-index bound is provably FALSE (`h_{βₙ#ω}(max{k,n}) ≰ max{h_{β#ω}(k),n}` for large
+`n`). The literature-correct fix is Buchholz **operator-controlled** derivations. This proof is the
+reusable **norm-machinery + structural port**: every case carries to the `H`-calculus verbatim
+except the `exI`/`allω` witness side-condition (`n ≤ hardy e (k+d)` ⤳ `n ∈ H`).
 
-**Norm-budget resolution (the lap-6→11 friction; see ADDENDUM 6).** The historical blocker — the
-commuting `allω` norm budget — is closed by THREE coupled moves:
+**Norm-budget resolution.** The commuting `allω` norm budget is closed by THREE coupled moves:
 1. **norm-carrying wrapper** `ZekdProv α e k d c Γ := ∃ α', α'≤α ∧ α'.NF ∧ norm α'<k+d ∧ Zekd α' …`,
    so the IH EXPOSES `norm α' < (its k)+(its d)` — exactly the `allω` premise's norm budget (a plain
-   `α'≤α` wrapper threw this away, since `norm` is not `≤`-monotone — the 5-lap wall);
+   `α'≤α` wrapper threw this away, since `norm` is not `≤`-monotone);
 2. **thread `norm γ < k+dd`** through the induction (each case's child budget is supplied by that rule's
    own `hτ` side-condition; used only to bound `norm(osucc(α+γ))` at the result);
 3. **d-bump `dd ↦ dd+norm α+1`** — the `+1` absorbs the `osucc`, giving STRICT budgets everywhere
@@ -131,7 +129,10 @@ commuting `allω` norm budget — is closed by THREE coupled moves:
    raised only at the top-level cut in `cutReduceAll` via `mono_e`.
 
 `induction D` generalizes `e k dd c Δ` (and reverts `fam`/`heNF`/`hφc`, re-supplied per-case via the
-IH), keeping `α k₀ dd₀ Γ φ hαNF` fixed — the `allInv` precedent scaled to carry the external family. -/
+IH), keeping `α k₀ dd₀ Γ φ hαNF` fixed — the `allInv` precedent scaled to carry the external family.
+
+- [Tow20, §19.6]
+-/
 set_option maxHeartbeats 1600000 in
 theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Seq}
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)

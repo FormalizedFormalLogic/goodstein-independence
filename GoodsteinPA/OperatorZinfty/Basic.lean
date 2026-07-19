@@ -1,26 +1,24 @@
 /-
-# `Zᵉᵏᵈ` — the control-ordinal operator witness-bounded `Z_∞` calculus (Towsner §15 + §19, lap-8)
+# `Zᵉᵏᵈ` — the control-ordinal operator witness-bounded `Z_∞` calculus
 
-The lap-7 ADDENDUM 4 finding: the historical split-index `(k,d)` spike (`SplitZinfty`) closes the
-§19.6 **norm-budget** obstruction (the `d`-bump `d ↦ d + norm α`) but NOT the **witness-index** one —
-the principal `exI` cut's witness `hardy γ(·)` makes the witness bound grow super-linearly through
-commuting ω-rules, and a witness bound tied to the *derivation* ordinal `α` cannot absorb that under
-cut-elim (which grows `α ↦ α + γ`).
+A calculus whose `exI` witness bound is tied directly to the derivation ordinal `α` cannot absorb
+the witness growth under cut-elimination: the principal `exI` cut's witness `hardy γ(·)` grows
+super-linearly through commuting `ω`-rules, while cut-elimination only grows `α ↦ α + γ`. The
+`d`-bump `d ↦ d + norm α` alone closes the **norm-budget** obstruction of §19.6 but not this
+**witness-index** one.
 
-**The fix (lap-8 design): a control ordinal `e`.** Decouple the `exI` witness bound from the
-derivation ordinal `α` onto a separate **control ordinal** `e`: the witness bound becomes
-`n ≤ hardy e (k + d)` (was `hardy α (k + d)`). Cut-elimination then *raises `e`* to dominate the
-cut-formula bounds while `α` grows freely; the witness stays controlled by `hardy e`, a `hardy`-closed
+**The fix: a control ordinal `e`.** Decouple the `exI` witness bound from the derivation ordinal
+`α` onto a separate **control ordinal** `e`: the witness bound becomes `n ≤ hardy e (k + d)`
+(instead of `hardy α (k + d)`). Cut-elimination then *raises `e`* to dominate the cut-formula
+bounds while `α` grows freely; the witness stays controlled by `hardy e`, a `hardy`-closed
 quantity (Buchholz operator-controlled derivations, specialized to PA, numeric-`e` form).
 
-The Hardy infrastructure this needs is **banked** (lap 8, `src/Hardy.lean` + `src/LowerBound.lean`):
-- `hardy_add_collapse` : `H_{e+α} = H_e ∘ H_α` (control-side: collapse nested control under cut-elim).
-- `hardy_comp_lt_goodsteinLength` : `H_α(H_e(m)) < G(m)` eventually (lower-bound side: a nested
-  control index is still Goodstein-dominated, so the witness-bounded lower bound survives).
+This file: the inductive `Zekd` calculus, its structural layer (`mono_k`, `mono_d`, `mono_c`,
+`mono_e`, `weakening`), and the ordinal/`norm` bookkeeping used throughout the cut-elimination
+suite. The inversion suite lives in `GoodsteinPA.OperatorZinfty.Inversion`, and the §19.5/§19.6
+cut reductions in `GoodsteinPA.OperatorZinfty.Cut`.
 
-This file: the inductive `Zekd` + structural layer (`mono_k`, `mono_d`, `mono_c`, `mono_e`, `weakening`).
-The inversion suite + §19.5/§19.6 cut reductions port the old `SplitZinfty` argument (mechanical:
-thread the inert `e`, plus the §19.6 witness-control step using the banked Hardy lemmas).
+- [Tow20, §15, §19]
 -/
 module
 
@@ -43,8 +41,7 @@ noncomputable def atomTrue (φ : Form) : Prop := GoodsteinPA.Compat.gEvalm ℕ (
 /-- **The control-ordinal operator witness-bounded `Z_∞` calculus** `Zᵉᵏᵈ ⊢^{α,e}_{k,d,c} Γ`.
 Derivation ordinal `α`; **control ordinal `e`** (governs the witness bound, raised by cut-elim);
 effective norm budget `k + d`; ω-premise `n` at `(max k n, d)`; **witness bound `hardy e (k+d)`**
-(decoupled from `α`). Cf. `SplitZinfty.Zkd` — identical except the `exI` bound uses `e` not `α`, and
-every rule carries the inert `e`. -/
+(decoupled from `α`, and threaded inertly through every rule). -/
 inductive Zekd : ONote → ONote → ℕ → ℕ → ℕ → Seq → Prop
   | axL {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
       (hn : Semiformula.nrel r v ∈ Γ) : Zekd α e k d c Γ
@@ -209,7 +206,7 @@ theorem osucc_lt_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x < y) : osucc
 theorem lt_osucc_of_lt {x y : ONote} (hy : y.NF) (h : x < y) : x < osucc y :=
   lt_trans h (lt_osucc hy)
 
-/-! #### Ordinal/`norm` bookkeeping for §19.6/§19.7 (copied from `BoundedZinfty`; all axiom-clean). -/
+/-! #### Ordinal/`norm` bookkeeping for §19.6/§19.7. -/
 
 theorem add_lt_add_left_NF {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
     (h : γ' < γ) : α + γ' < α + γ := by

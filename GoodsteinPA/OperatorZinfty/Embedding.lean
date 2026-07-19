@@ -8,7 +8,7 @@ namespace GoodsteinPA.OperatorZinfty
 
 open LO LO.FirstOrder ONote
 
-/-! ### Path-B hard probe: the PA-induction leaf's witness side condition
+/-! ### The PA-induction leaf's witness side condition
 
 The unbounded `PXFc` induction-axiom construction in `EmbeddingBound.metaInduction_cong_bdd`
 uses an `∃`-introduction with witness `n` at the `n`-th step of the cut tower.  In `Zekd` that
