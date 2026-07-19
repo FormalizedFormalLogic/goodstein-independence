@@ -1,6 +1,7 @@
 module
 
-public import GoodsteinPA.OperatorZef2
+public import GoodsteinPA.OperatorZef2.GateArith
+public import GoodsteinPA.OperatorZef2.Rank0
 import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section

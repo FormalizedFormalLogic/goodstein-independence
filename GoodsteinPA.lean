@@ -6,7 +6,6 @@ public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.Embedding
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
-public import GoodsteinPA.OperatorZef2
 public import GoodsteinPA.OperatorZef2.Basic
 public import GoodsteinPA.OperatorZef2.CutStep
 public import GoodsteinPA.OperatorZef2.GateArith
