@@ -1,6 +1,13 @@
 /-
 # `Zᵉᵏᵈ` — the control-ordinal operator witness-bounded `Z_∞` calculus
 
+The `Z_∞` calculus — derivations `⊢^{α,k}` bounded jointly by an ordinal `α` and a numeric gate
+`k`, together with the PA embedding and the numerically-controlled cut-elimination that raises
+`k` through the Hardy hierarchy at every cut — is Towsner's design. This file specializes that
+numeric gate to an **operator-controlled** form, replacing it with a control ordinal in the
+sense of Buchholz's operator-controlled derivations (see the citations at the end of this
+docstring).
+
 A calculus whose `exI` witness bound is tied directly to the derivation ordinal `α` cannot absorb
 the witness growth under cut-elimination: the principal `exI` cut's witness `hardy γ(·)` grows
 super-linearly through commuting `ω`-rules, while cut-elimination only grows `α ↦ α + γ`. The
@@ -11,14 +18,15 @@ super-linearly through commuting `ω`-rules, while cut-elimination only grows `�
 `α` onto a separate **control ordinal** `e`: the witness bound becomes `n ≤ hardy e (k + d)`
 (instead of `hardy α (k + d)`). Cut-elimination then *raises `e`* to dominate the cut-formula
 bounds while `α` grows freely; the witness stays controlled by `hardy e`, a `hardy`-closed
-quantity (Buchholz operator-controlled derivations, specialized to PA, numeric-`e` form).
+quantity (operator-controlled derivations, specialized to PA, numeric-`e` form).
 
 This file: the inductive `Zekd` calculus, its structural layer (`mono_k`, `mono_d`, `mono_c`,
 `mono_e`, `weakening`), and the ordinal/`norm` bookkeeping used throughout the cut-elimination
 suite. The inversion suite lives in `GoodsteinPA.OperatorZinfty.Inversion`, and the §19.5/§19.6
 cut reductions in `GoodsteinPA.OperatorZinfty.Cut`.
 
-- [Tow20, §15, §19]
+- [Tow20, §13, §15, §18, §19]
+- [Buc03]
 -/
 module
 

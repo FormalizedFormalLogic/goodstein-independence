@@ -137,7 +137,9 @@ private theorem princAllSub (A e : Form) (s : Seq) :
     insert e ((insert e s).erase A) ⊆ insert e (s.erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-/-- **∧-inversion, left** (Towsner §19.3): replace `φ ⋏ ψ` by `φ`, same `(α,k,d,c)`. -/
+/-- **∧-inversion, left**: replace `φ ⋏ ψ` by `φ`, same `(α,k,d,c)`.
+
+- [Tow20, §19.3] -/
 theorem andInvL {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
     Zekd α e k d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   intro α e k d c Γ dd
@@ -215,7 +217,9 @@ theorem andInvL {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ
       have P₂ := Zekd.wk (inv1Push (φ ⋏ ψ) _ (∼χ) Γ₀) (ih₂ (Finset.mem_insert_of_mem hmem))
       exact Zekd.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ P₁ P₂
 
-/-- **∧-inversion, right** (Towsner §19.3): replace `φ ⋏ ψ` by `ψ`, same `(α,k,d,c)`. -/
+/-- **∧-inversion, right**: replace `φ ⋏ ψ` by `ψ`, same `(α,k,d,c)`.
+
+- [Tow20, §19.3] -/
 theorem andInvR {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ ⋏ ψ) ∈ Γ →
     Zekd α e k d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   intro α e k d c Γ dd
@@ -293,9 +297,11 @@ theorem andInvR {φ ψ : Form} : ∀ {α e k d c Γ}, Zekd α e k d c Γ → (φ
       have P₂ := Zekd.wk (inv1Push (φ ⋏ ψ) _ (∼χ) Γ₀) (ih₂ (Finset.mem_insert_of_mem hmem))
       exact Zekd.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ P₁ P₂
 
-/-- **∀-inversion** (Towsner §19.4) — the bound-critical one (the subformula bridge to `B` consumes it).
+/-- **∀-inversion** — the bound-critical one (the subformula bridge to `B` consumes it).
 Result raises the **`k`-part** to `max k n₀` (`d` inert): the principal case's idempotent collapse
-`max (max k n₀) n₀ = max k n₀` is exactly why the split index keeps `allInv` working. -/
+`max (max k n₀) n₀ = max k n₀` is exactly why the split index keeps `allInv` working.
+
+- [Tow20, §19.4] -/
 theorem allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) :
     ∀ {α e k d c Γ}, Zekd α e k d c Γ → (∀⁰ φ₀) ∈ Γ →
       Zekd α e (max k n₀) d c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by

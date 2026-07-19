@@ -238,8 +238,10 @@ theorem allInv {φ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
   exact ⟨max K n₀, D.allInv n₀ hmem⟩
 
 /-- Principal conjunction/disjunction cut reduction for the existential-budget wrapper.
-This is the `someK` surface of Towsner §19.5: the fixed-index raw reduction is reused after
-choosing one finite `K` large enough for both premises and the reduction ordinal. -/
+This is the `someK` surface of the fixed-index raw reduction, reused after choosing one finite
+`K` large enough for both premises and the reduction ordinal.
+
+- [Tow20, §19.5] -/
 theorem cutReduceConj {a b : Form} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ)

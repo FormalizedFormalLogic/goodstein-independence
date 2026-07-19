@@ -10,7 +10,9 @@ open LO LO.FirstOrder ONote
 
 namespace Zekd
 
-/-- **∧/∨ cut reduction, conjunction case** (Towsner §19.5). -/
+/-- **∧/∨ cut reduction, conjunction case**.
+
+- [Tow20, §19.5] -/
 theorem cutReduceConj {a b : Form} {c k d : ℕ} {α β δ e : ONote} {Γ : Seq}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
@@ -134,6 +136,7 @@ except the `exI`/`allω` witness side-condition (`n ≤ hardy e (k+d)` ⤳ `n �
 IH), keeping `α k₀ dd₀ Γ φ hαNF` fixed — the `allInv` precedent scaled to carry the external family.
 
 - [Tow20, §19.6]
+- [Buc03]
 -/
 set_option maxHeartbeats 1600000 in
 theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Seq}
