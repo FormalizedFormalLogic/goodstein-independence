@@ -97,8 +97,40 @@ jobs:
           path: .lake/packages/Foundation/.lake/build
           key: foundation-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
           fail-on-cache-miss: true
+
+      # ── GoodsteinPA's own build cache (`lake pack`/`unpack`) ───────────────────────────────────────
+      # Orthogonal to the Foundation cache above: `lake pack` archives ONLY the root package's
+      # `.lake/build` (GoodsteinPA's own oleans), never the dependency trees. Restoring + unpacking
+      # it lets `lake build` reuse traces and rebuild only the modules that actually changed, instead
+      # of recompiling all of GoodsteinPA every run. The key pins toolchain+manifest (so a Foundation
+      # bump busts it) and appends ref_name+sha to dodge cache-key reservation races; restore-keys
+      # fall back to the newest cache on the same branch, then any branch.
+      - name: Restore GoodsteinPA build cache
+        id: project-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .lake/GoodsteinPA-x86_64-unknown-linux-gnu.tar.gz
+          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.ref_name }}
+            lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}
+      - name: Unpack GoodsteinPA build cache
+        if: hashFiles('.lake/GoodsteinPA-x86_64-unknown-linux-gnu.tar.gz') != ''
+        run: lake unpack
+
       - name: Build GoodsteinPA
         run: lake build
+
+      # Re-pack the freshly built oleans and save under the exact primary key. Skipped for PRs from
+      # forks (no write access to the base repo's cache); pushes and same-repo PRs refresh the entry.
+      - name: Pack GoodsteinPA build cache
+        run: lake pack
+      - name: Save GoodsteinPA build cache
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/cache/save@v4
+        with:
+          path: .lake/GoodsteinPA-x86_64-unknown-linux-gnu.tar.gz
+          key: ${{ steps.project-cache.outputs.cache-primary-key }}
 
       # Axiom-clean gate: `#guard_msgs`-pinned axiom sets for the headline theorems (silent == clean).
       # - name: Axiom-clean gate (guarded #print axioms)
