@@ -1,15 +1,14 @@
 /-
-# M4 — the embedding `𝗣𝗔 ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}` (Towsner §16 / Buchholz §5.5)
+The embedding `𝗣𝗔 ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}` (Towsner §16 / Buchholz §5.5)
 
-**The universal bottleneck of the whole expedition — COMPLETE (lap 11).** The embedding is set up
-over Foundation's **`Derivation2`** (the Finset-sequent variant, `Calculus2.lean`), which lives over
-the *same* `Finset (SyntacticFormula ℒₒᵣ)` substrate as M5's `ZinftyF.Seq` — so it is a pure
-rule-by-rule map with **no language translation**.
+The embedding is set up over Foundation's **`Derivation2`** (the Finset-sequent variant, `Calculus2.lean`),
+which lives over the *same* `Finset (SyntacticFormula ℒₒᵣ)` substrate as `Finset ZinftyF.Formula` — so it is
+a pure rule-by-rule map with **no language translation**.
 
 ## The headline result: `embedC` (assignment-carrying form)
 `embedC : Derivation2 (𝗣𝗔 : Schema) Γ → ∃ c, ∀ e : ℕ → ℕ, ∃ α, Provable α c (Γ.image (asg e ▹))`.
 The numeral assignment `asg e` (`&x ↦ nm (e x)`) closes every free variable, so all sequents in the
-image are CLOSED — which is what lets M5's numeral-only `exI`/ω-rule `allω` fire. Axiom-clean
+image are CLOSED — which is what lets the numeral-only `exI`/ω-rule `allω` fire. Axiom-clean
 (`#print axioms embedC = [propext, Classical.choice, Quot.sound]`).
 
 ## The two non-structural cases and how they close
@@ -31,8 +30,7 @@ image are CLOSED — which is what lets M5's numeral-only `exI`/ω-rule `allω` 
 - `Schema ℒₒᵣ := Set (SyntacticFormula ℒₒᵣ)`; `(𝗣𝗔 : Theory) ↦ (𝗣𝗔 : Schema) = Rewriting.emb '' 𝗣𝗔`.
 - `provable_def : T ⊢ σ ↔ (T : Schema) ⊢ ↑σ` (rfl) · `provable_iff_derivable2 : 𝓢 ⊢ φ ↔ 𝓢 ⊢!₂! φ`.
   ⟹ `𝗣𝗔 ⊢ goodsteinSentence` unfolds to `Nonempty (Derivation2 (𝗣𝗔:Schema) {↑goodsteinSentence})`.
-- The naive (non-assignment) `embed`/`provable_rew` of laps 9–10 were superseded by `embedC` and
-  removed on promotion; see `wip/Embedding.lean` (git history) for that scaffold.
+- The naive (non-assignment) `embed`/`provable_rew` were superseded by `embedC` and removed on promotion.
 -/
 module
 
@@ -42,23 +40,21 @@ public import GoodsteinPA.Zinfty
 
 namespace GoodsteinPA.Embedding
 
-open LO LO.FirstOrder GoodsteinPA.ZinftyF GoodsteinPA.ZinftyF.Deriv
+open LO LO.FirstOrder GoodsteinPA.ZinftyF GoodsteinPA.ZinftyF.Derivation
 
-/-- A `Z_∞`-derivable sequent, existentially quantified over the ordinal bound and cut rank
-(Towsner states the whole embedding/cut-elim chain existentially in `(α, c)` — see
-`ANALYSIS-…-cutelim-k-threading.md`). -/
-def ZProvable (Γ : ZinftyF.Seq) : Prop := ∃ α c, Provable α c Γ
+/-- A `Z_∞`-derivable sequent, existentially quantified over the ordinal bound and cut rank. -/
+def ZProvable (Γ : Finset ZinftyF.Formula) : Prop := ∃ α c, Provable α c Γ
 
 namespace ZProvable
 
-theorem mono {Γ : ZinftyF.Seq} : ZProvable Γ → ZProvable Γ := id
+theorem mono {Γ : Finset ZinftyF.Formula} : ZProvable Γ → ZProvable Γ := id
 
 /-- Weaken the sequent (Foundation `wk`). -/
-theorem weakening {Γ Δ : ZinftyF.Seq} (h : Γ ⊆ Δ) : ZProvable Γ → ZProvable Δ := by
+theorem weakening {Γ Δ : Finset ZinftyF.Formula} (h : Γ ⊆ Δ) : ZProvable Γ → ZProvable Δ := by
   rintro ⟨α, c, hd⟩; exact ⟨α, c, hd.weakening h⟩
 
 /-- Drop a sequent element that already occurs (`insert X Γ = Γ` when `X ∈ Γ`). -/
-theorem of_insert_mem {Γ : ZinftyF.Seq} {X : ZinftyF.Form} (h : X ∈ Γ) :
+theorem of_insert_mem {Γ : Finset ZinftyF.Formula} {X : ZinftyF.Formula} (h : X ∈ Γ) :
     ZProvable (insert X Γ) → ZProvable Γ := by
   rw [Finset.insert_eq_self.mpr h]; exact id
 
@@ -67,13 +63,13 @@ end ZProvable
 /-- **Identity / law of excluded middle for `Z_∞`** (the `closed` case). For any `φ`, a sequent
 containing both `φ` and `∼φ` is `Z_∞`-derivable cut-free. Proved by induction on a `complexity`
 bound (the standard Tait `em`, cf. Foundation `Derivation.em`, `Calculus.lean:164`). The atomic /
-propositional cases are discharged here; the **∀/∃ cases** need M5's numeral ω-family (`allω` over
-all `nm n`, each premise closed by `exI` + the IH at the substitution instance `φ/[nm n]`, whose
-`complexity` equals `φ`'s) — disclosed `sorry`, the next chip. -/
-theorem provable_em (φ : ZinftyF.Form) {Γ : ZinftyF.Seq} (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+propositional cases are discharged here; the **∀/∃ cases** use the numeral ω-family (`allω` over
+all `nm n`, each premise closed by `exI` + the inductive hypothesis at the substitution instance `φ/[nm n]`,
+whose `complexity` equals `φ`'s). -/
+theorem provable_em (φ : ZinftyF.Formula) {Γ : Finset ZinftyF.Formula} (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     ∃ a, Provable a 0 Γ := by
-  have key : ∀ (k : ℕ) (φ : ZinftyF.Form), φ.complexity ≤ k →
-      ∀ {Γ : ZinftyF.Seq}, φ ∈ Γ → ∼φ ∈ Γ → ∃ a, Provable a 0 Γ := by
+  have key : ∀ (k : ℕ) (φ : ZinftyF.Formula), φ.complexity ≤ k →
+      ∀ {Γ : Finset ZinftyF.Formula}, φ ∈ Γ → ∼φ ∈ Γ → ∃ a, Provable a 0 Γ := by
     intro k
     induction k with
     | zero =>
@@ -178,9 +174,10 @@ lemma rew_subst_term (ω : Rew ℒₒᵣ ℕ 0 ℕ 0) (φ : SyntacticSemiformula
   rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, heq]
 
 
-/-! ## Closed-term existential introduction (ported from wip/ScratchEmCong.lean, lap 11)
-    The shared chip for `embedC`'s `exs`/`axm`: a value-congruent law of excluded middle
-    (`provable_em_cong_gen`) ⟹ closed-term `∃`-intro `Provable.exI_closed`. -/
+/-! ## Closed-term existential introduction
+
+The shared infrastructure for `embedC`'s `exs`/`axm`: a value-congruent law of excluded middle
+(`provable_em_cong_gen`) ⟹ closed-term `∃`-intro `Provable.exI_closed`. -/
 
 /-- Substitution-composition: substituting the freed (q) variable by `nm m` after a renaming
 `Rew.subst w` is the same as substituting by the extended vector `nm m :> w`. -/
@@ -232,7 +229,7 @@ theorem provable_em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → Syntact
     (ψ : SyntacticSemiformula ℒₒᵣ n), ψ.complexity ≤ k →
     (∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
         = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i)) →
-    ∀ {Γ : Seq}, (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ → ∃ a, Provable a 0 Γ := by
+    ∀ {Γ : Finset Formula}, (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ → ∃ a, Provable a 0 Γ := by
   intro k
   induction k with
   | zero =>
@@ -354,7 +351,7 @@ where
       (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
       {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → SyntacticSemiterm ℒₒᵣ n)
-      {Γ : Seq} (hp : (Rew.subst w ▹ Semiformula.rel r v) ∈ Γ)
+      {Γ : Finset Formula} (hp : (Rew.subst w ▹ Semiformula.rel r v) ∈ Γ)
       (hn : (∼(Rew.subst w' ▹ Semiformula.rel r v)) ∈ Γ) : ∃ a, Provable a 0 Γ := by
     have hp' : signedLit true r (fun i => Rew.subst w (v i)) ∈ Γ := by
       simpa [signedLit, Semiformula.rew_rel, Function.comp_def] using hp
@@ -370,7 +367,7 @@ where
       (hval : ∀ i, GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w i)
                 = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) (w' i))
       {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → SyntacticSemiterm ℒₒᵣ n)
-      {Γ : Seq} (hp : (Rew.subst w ▹ Semiformula.nrel r v) ∈ Γ)
+      {Γ : Finset Formula} (hp : (Rew.subst w ▹ Semiformula.nrel r v) ∈ Γ)
       (hn : (∼(Rew.subst w' ▹ Semiformula.nrel r v)) ∈ Γ) : ∃ a, Provable a 0 Γ := by
     have hp' : signedLit false r (fun i => Rew.subst w (v i)) ∈ Γ := by
       simpa [signedLit, Semiformula.rew_nrel, Function.comp_def] using hp
@@ -387,7 +384,7 @@ where
 standard value, a sequent containing `ψ/[s]` and `∼(ψ/[s'])` is `Z∞`-derivable cut-free. -/
 theorem provable_em_cong (s s' : SyntacticTerm ℒₒᵣ)
     (hval : GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) s = GoodsteinPA.Compat.gValm ℕ ![] (id : ℕ → ℕ) s')
-    (ψ : SyntacticSemiformula ℒₒᵣ 1) {Γ : Seq}
+    (ψ : SyntacticSemiformula ℒₒᵣ 1) {Γ : Finset Formula}
     (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) : ∃ a, Provable a 0 Γ := by
   refine provable_em_cong_gen ψ.complexity ![s] ![s'] ψ le_rfl ?_ ?_ ?_
   · intro i; cases i using Fin.cases with
@@ -400,7 +397,7 @@ theorem provable_em_cong (s s' : SyntacticTerm ℒₒᵣ)
 (closed) witness term `s`, conclude `insert (∃⁰ψ) Γ`. The witness need not be a numeral: `s` is
 collapsed to its standard value `m` via `provable_em_cong` + `cut`, then the numeral-witness rule
 `Provable.exI` applies. (The cut raises the cut-rank bound to `max c (ψ.complexity + 1)`.) -/
-theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
+theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
     (ψ : SyntacticSemiformula ℒₒᵣ 1) (s : SyntacticTerm ℒₒᵣ)
     (h : Provable α c (insert (ψ/[s]) Γ)) :
     ∃ β, Provable β (max c (ψ.complexity + 1)) (insert (∃⁰ ψ) Γ) := by
@@ -428,8 +425,8 @@ theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
 /-- **ω-completeness for true closed formulas.** Any closed (`SyntacticFormula ℒₒᵣ`) formula that is
 TRUE in the standard model `ℕ` (`LitTrue`) is `Z∞`-derivable, cut-free. Proof by induction on
 `complexity`: atomic via `axTrue`, `∀` via the ω-rule `allω`, `∃` by choosing a true witness. -/
-theorem provable_true : ∀ (k : ℕ) (φ : Form), φ.complexity ≤ k → LitTrue φ →
-    ∀ {Γ : Seq}, φ ∈ Γ → ∃ a, Provable a 0 Γ := by
+theorem provable_true : ∀ (k : ℕ) (φ : Formula), φ.complexity ≤ k → LitTrue φ →
+    ∀ {Γ : Finset Formula}, φ ∈ Γ → ∃ a, Provable a 0 Γ := by
   intro k
   induction k with
   | zero =>
@@ -510,12 +507,11 @@ theorem provable_true : ∀ (k : ℕ) (φ : Form), φ.complexity ≤ k → LitTr
 
 
 
-/-! ## The assignment-carrying (all-closed) embedding `embedC` — the correct frame (lap 10)
+/-! ## The assignment-carrying (all-closed) embedding `embedC`
 
-The naive `embed` above cannot finish (`exs` with an open witness; `provable_rew` invalid for the new
-`axTrue` leaf). The fix is to carry a **numeral assignment** `e : ℕ → ℕ` of the free variables, so
-every sequent in the image is CLOSED. `asg e` substitutes every free variable `&x` by the numeral
-`nm (e x)`. The headline consumes `embedC d (fun _ => 0)` on the closed `↑goodsteinSentence`. -/
+To handle open witnesses and ensure all sequents in the image are CLOSED, we carry a **numeral assignment**
+`e : ℕ → ℕ` of the free variables. The substitution `asg e` replaces every free variable `&x` by the numeral
+`nm (e x)`. The main theorem consumes `embedC d (fun _ => 0)` on the closed `↑goodsteinSentence`. -/
 
 /-- The closing substitution: free variable `&x ↦ nm (e x)`. Sends every `SyntacticFormula` to a
 closed formula (sentence image). -/
@@ -607,10 +603,9 @@ theorem embedC {Γ : Finset (SyntacticFormula ℒₒᵣ)}
     exact ⟨_, hall⟩
   | @exs Γ φ h t _d ih =>
     -- `∃⁰φ ∈ Γ`, witness `t`. `rew_subst_term` turns the IH's `asg e ▹ (φ/[t])` into
-    -- `((asg e).q ▹ φ)/[asg e t]` with `asg e t` CLOSED. The remaining `sorry` is the **closed-term
-    -- collapse** `Provable (insert (ψ/[s]) Γ) → Provable (insert (∃⁰ψ) Γ)` for closed `s` (value `m`):
-    -- a `Provable.exI_closed` derived from `Provable.exI` + Z∞ equality-congruence (`s = nm m` via
-    -- `axTrue`, then Leibniz). The term-evaluation content — next chip.
+    -- `((asg e).q ▹ φ)/[asg e t]` with `asg e t` CLOSED. The key step is the **closed-term
+    -- collapse** via `Provable.exI_closed`, which derives from `Provable.exI` + value congruence
+    -- (`s = nm m` via `axTrue`, then Leibniz).
     obtain ⟨c, ih⟩ := ih
     refine ⟨max c (φ.complexity + 1), fun e => ?_⟩
     obtain ⟨a, hd⟩ := ih e

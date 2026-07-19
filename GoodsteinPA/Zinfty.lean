@@ -1,46 +1,29 @@
 /-
-# Phase 2 crux — the `Z_∞` ω-rule calculus + cut-elimination over Foundation's real PA syntax
+# `Z_∞` calculus — provability API and cut-elimination
 
-**Status: COMPLETE and `#print axioms`-clean** (`[propext, Classical.choice, Quot.sound]`).
-This file machine-checks the full Gentzen-style cut-elimination for the infinitary ω-rule
-calculus `Z_∞`, the deep core (milestone **M5**) of Route B (Towsner, *Goodstein's Theorem, ε₀,
-and Unprovability*, §16–§19). It does **not** yet connect to the headline `peano_not_proves_goodstein`
-— that needs the embedding `PA⁺ ↪ Z_∞` (M4, §16/§18), the cut-free lower bound (M6, §17), and the
-assembly (M7, §20). The core definitions — the `Z_∞` calculus `Deriv` (ω-rule `allω`,
-numeral-witness `exI`) + measures `ordinalBound` / `cutRank`, and the predicate
-`Provable α c Γ` — live in `GoodsteinPA.Zinfty.Basic`. Contents of this file:
-  • the predicate-level inference API + `mono`/`weakening`/`contr` (free, via set sequents);
-  • inversions **§19.2–19.4** (`orInv`, `andInvL/R`, `allInv`);
-  • cut reductions **§19.5** (`cutReduceConj/Disj`) and **§19.6** (`cutReduceAll`);
-  • atomic + `⊥` cut elimination (`atomCut`, `removeFalsum`) — *no truth layer needed*;
-  • **§19.7** `cutElimStep` (rank `c+1 → c`, bound `ω^α`) and **§19.9** `cutElim` (cut-free).
+The provability layer over the core definitions in `GoodsteinPA.Zinfty.Basic`: the full
+Gentzen-style cut-elimination for the infinitary ω-rule calculus `Z_∞`, built on the predicate
+`Provable α c Γ`. Contents of this file:
+  • the predicate-level inference API + `mono`/`weakening`/`contr` (contraction free, via set
+    sequents);
+  • inversions (`orInv`, `andInvL/R`, `allInv`);
+  • cut reductions (`cutReduceConj/Disj`, `cutReduceAll`);
+  • atomic and `⊥` cut elimination (`atomCut`, `removeFalsum`);
+  • `cutElimStep` (rank `c+1 → c`, bound `ω^α`) and `cutElim` (cut-free).
 
-Natural (Hessenberg) sum is **absent from mathlib v4.31.0**; all reduction bounds use ordinary
-ordinal `+` with a `+1` slack, kept below `ω^(·+1)` by additive principality of `ω^c`.
+Sequents are finite sets of closed formulas (`Finset (SyntacticFormula ℒₒᵣ)`), matching Towsner's
+finite-set `Γ`. Consequently contraction is free (`insert φ (insert φ Γ) = insert φ Γ`
+definitionally), so the calculus needs no `contr` rule — which is what keeps the inversion lemmas
+tractable, since an explicit height-preserving `contr` rule would force the principal-contraction
+case to re-invert a remaining copy of the principal formula, breaking both structural and
+ordinal-strong induction. The finitary eigenvariable `all` rule is replaced by the ω-rule `allω`
+(one premise per numeral `n`, `Ordinal` height), and `ordinalBound` / `cutRank` are computed
+measures by structural recursion on the infinitely-branching tree.
 
-Per HANDOFF-2026-06-22 ⭐ KEY FINDING: build `Z_∞` directly on Foundation's
-`SyntacticFormula ℒₒᵣ` (full FO with total de-Morgan negation `∼`, finite `complexity : … → ℕ`,
-genuine term substitution `φ/[t]`) instead of the standalone abstract `AForm` of
-`wip/Zinfty.lean`. This **removes the `ℕ∞`/`⊤` blocker** that stalled `cutElimStep`: Foundation's
-`complexity` is *always finite*, so `Provable α (c : ℕ)` (every cut formula has `complexity < c`)
-is a non-vacuous predicate even for quantified cut formulas — the exact thing impossible on
-abstract `AForm`, where `rk (all f)` could be `⊤`.
+Natural (Hessenberg) sum is unavailable, so all reduction bounds use ordinary ordinal `+` with a
+`+1` slack, kept below `ω^(·+1)` by additive principality of `ω^c`.
 
-## Structural design decision (this lap) — set-based sequents ⭐
-Sequents are **`Finset (SyntacticFormula ℒₒᵣ)`**, matching Towsner (his `Γ` is a finite *set*).
-Consequence: **contraction is free** (`insert` is idempotent), so there is **no `contr` rule**.
-This is not cosmetic: an explicit height-preserving `contr` rule makes the inversion lemmas
-(§19.2–19.4) intractable — the principal-contraction case needs to re-invert a *remaining* copy
-of the principal formula, which breaks both structural and ordinal-strong induction (the second
-inversion is neither a structural subterm nor at a strictly smaller ordinal). Set sequents dissolve
-that case entirely: `insert φ (insert φ Γ) = insert φ Γ` definitionally.
-
-The calculus replaces Foundation's finitary eigenvariable `all` rule with the **ω-rule** `allω`
-(one premise per numeral `n`, `Ordinal` height). `ordinalBound` and `cutRank` are computed
-measures (structural recursion on the infinitely-branching tree).
-
-Promoted from `wip/ZinftyF.lean` once cut-elimination closed (zero sorries). The superseded
-abstract-`AForm` prototype `wip/Zinfty.lean` is kept for history.
+- [Tow20, §16, §17, §18, §19]
 -/
 module
 
@@ -58,134 +41,136 @@ namespace GoodsteinPA.ZinftyF
 
 open LO LO.FirstOrder
 
-namespace Deriv
+namespace Derivation
 
 /-- The ω-rule bound strictly dominates each premise bound. -/
-lemma o_allω_gt {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
-    (d : (n : ℕ) → Deriv (insert (φ/[nm n]) Γ)) (n : ℕ) : ordinalBound (d n) < ordinalBound (allω φ d) := by
+lemma o_allω_gt {Γ : Finset Formula} (φ : SyntacticSemiformula ℒₒᵣ 1)
+    (d : (n : ℕ) → Derivation (insert (φ/[nm n]) Γ)) (n : ℕ) : ordinalBound (d n) < ordinalBound (allω φ d) := by
   have h : ordinalBound (d n) ≤ ⨆ m, ordinalBound (d m) := Ordinal.le_iSup (fun m => ordinalBound (d m)) n
   calc ordinalBound (d n) ≤ ⨆ m, ordinalBound (d m) := h
     _ < (⨆ m, ordinalBound (d m)) + 1 := lt_add_of_pos_right _ one_pos
     _ = ordinalBound (allω φ d) := by simp only [ordinalBound]
 
+end Derivation
+
+open Derivation
+
 /-- **Bound monotonicity** (Towsner Lemma 16.4): relax either recorded bound. -/
 @[grind →]
-lemma Provable.mono {α β : Ordinal.{0}} {c c' : ℕ} (hα : α ≤ β) (hc : c ≤ c') {Γ : Seq} :
+lemma Provable.mono {α β : Ordinal.{0}} {c c' : ℕ} (hα : α ≤ β) (hc : c ≤ c') {Γ : Finset Formula} :
     Provable α c Γ → Provable β c' Γ := by
   rintro ⟨d, ho, hcr⟩
   exact ⟨d, ho.trans hα, hcr.trans (by exact_mod_cast hc)⟩
 
 /-- **Sequent weakening** (Towsner Lemma 19.1): enlarge the sequent without raising bounds. -/
 @[grind →]
-lemma Provable.weakening {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Seq} (h : Γ ⊆ Δ) :
+lemma Provable.weakening {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Finset Formula} (h : Γ ⊆ Δ) :
     Provable α c Γ → Provable α c Δ := by
   rintro ⟨d, ho, hcr⟩
-  exact ⟨Deriv.weak d h, by simpa [Deriv.ordinalBound] using ho, by simpa [Deriv.cutRank] using hcr⟩
+  exact ⟨Derivation.weak d h, by simpa [Derivation.ordinalBound] using ho, by simpa [Derivation.cutRank] using hcr⟩
 
 /-- Provability respects set equality of sequents. -/
-lemma Provable.cast {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Seq} (e : Γ = Δ) :
+lemma Provable.cast {α : Ordinal.{0}} {c : ℕ} {Γ Δ : Finset Formula} (e : Γ = Δ) :
     Provable α c Γ → Provable α c Δ := fun h => e ▸ h
 
 /-- Identity axiom: `rel r v` and `nrel r v` together close at bound `0`, cut rank `0`. -/
 @[grind →]
-lemma Provable.axL {Γ : Seq} {k} (r : (ℒₒᵣ).Rel k) (v)
+lemma Provable.axL {Γ : Finset Formula} {k} (r : (ℒₒᵣ).Rel k) (v)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) : Provable 0 0 Γ :=
-  ⟨Deriv.axL r v hp hn, by simp [Deriv.ordinalBound], by simp [Deriv.cutRank]⟩
+  ⟨Derivation.axL r v hp hn, by simp [Derivation.ordinalBound], by simp [Derivation.cutRank]⟩
 
 /-- **Atomic-truth axiom** (the ω-logic leaf): a true closed literal closes any sequent containing
 it, at bound `0`, cut rank `0`. -/
 @[grind →]
-lemma Provable.axTrue {Γ : Seq} {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v)
+lemma Provable.axTrue {Γ : Finset Formula} {k} (b : Bool) (r : (ℒₒᵣ).Rel k) (v)
     (htrue : LitTrue (signedLit b r v)) (hmem : signedLit b r v ∈ Γ) : Provable 0 0 Γ :=
-  ⟨Deriv.axTrue b r v htrue hmem, by simp [Deriv.ordinalBound], by simp [Deriv.cutRank]⟩
+  ⟨Derivation.axTrue b r v htrue hmem, by simp [Derivation.ordinalBound], by simp [Derivation.cutRank]⟩
 
 /-- `⊤` closes a sequent at bound `0`, cut rank `0`. -/
 @[grind →]
-lemma Provable.verumR {Γ : Seq} (h : (⊤ : Form) ∈ Γ) : Provable 0 0 Γ :=
-  ⟨Deriv.verumR h, by simp [Deriv.ordinalBound], by simp [Deriv.cutRank]⟩
+lemma Provable.verumR {Γ : Finset Formula} (h : (⊤ : Formula) ∈ Γ) : Provable 0 0 Γ :=
+  ⟨Derivation.verumR h, by simp [Derivation.ordinalBound], by simp [Derivation.cutRank]⟩
 
 /-- Predicate-level `∧`-introduction. -/
 @[grind →]
-lemma Provable.andI {α β : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : Form)
+lemma Provable.andI {α β : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (φ ψ : Formula)
     (hφ : Provable α c (insert φ Γ)) (hψ : Provable β c (insert ψ Γ)) :
     Provable (max α β + 1) c (insert (φ ⋏ ψ) Γ) := by
   rcases hφ with ⟨dφ, hoφ, hcφ⟩
   rcases hψ with ⟨dψ, hoψ, hcψ⟩
-  refine ⟨Deriv.andI φ ψ dφ dψ, ?_, ?_⟩
-  · simp only [Deriv.ordinalBound]; exact add_le_add (max_le_max hoφ hoψ) le_rfl
-  · simp only [Deriv.cutRank]; exact max_le hcφ hcψ
+  refine ⟨Derivation.andI φ ψ dφ dψ, ?_, ?_⟩
+  · simp only [Derivation.ordinalBound]; exact add_le_add (max_le_max hoφ hoψ) le_rfl
+  · simp only [Derivation.cutRank]; exact max_le hcφ hcψ
 
 /-- Predicate-level `∨`-introduction. -/
 @[grind →]
-lemma Provable.orI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ ψ : Form)
+lemma Provable.orI {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (φ ψ : Formula)
     (h : Provable α c (insert φ (insert ψ Γ))) : Provable (α + 1) c (insert (φ ⋎ ψ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
-  exact ⟨Deriv.orI φ ψ d, by simpa [Deriv.ordinalBound] using add_le_add_right ho 1,
-    by simpa [Deriv.cutRank] using hcr⟩
+  exact ⟨Derivation.orI φ ψ d, by simpa [Derivation.ordinalBound] using add_le_add_right ho 1,
+    by simpa [Derivation.cutRank] using hcr⟩
 
 /-- Predicate-level `∃`-introduction (witness rule). The witness is a **numeral** `nm n`: in the
 arithmetic term model every closed term denotes a numeral, and numeral witnesses are what the
 ω-rule inversion (`allInv`) produces, so the ∀/∃ cut-reduction (§19.6) can match the witness
-against the inverted ∀-family. (The embedding §16 supplies a numeral by evaluating PA's witness
-term — deferred to M4.) -/
+against the inverted ∀-family. -/
 @[grind →]
-lemma Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : SyntacticSemiformula ℒₒᵣ 1)
+lemma Provable.exI {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (φ : SyntacticSemiformula ℒₒᵣ 1)
     (n : ℕ) (h : Provable α c (insert (φ/[nm n]) Γ)) :
     Provable (α + 1) c (insert (∃⁰ φ) Γ) := by
   rcases h with ⟨d, ho, hcr⟩
-  exact ⟨Deriv.exI φ n d, by simpa [Deriv.ordinalBound] using add_le_add_right ho 1,
-    by simpa [Deriv.cutRank] using hcr⟩
+  exact ⟨Derivation.exI φ n d, by simpa [Derivation.ordinalBound] using add_le_add_right ho 1,
+    by simpa [Derivation.cutRank] using hcr⟩
 
 /-- **Predicate-level ω-rule.** From a uniform-cut-rank family of premises with ordinal bounds
 `β n`, conclude `∀` at bound `(⨆ n, β n) + 1`. -/
-lemma Provable.allω {β : ℕ → Ordinal.{0}} {c : ℕ} {Γ : Seq}
+lemma Provable.allω {β : ℕ → Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
     (φ : SyntacticSemiformula ℒₒᵣ 1) (h : ∀ n, Provable (β n) c (insert (φ/[nm n]) Γ)) :
     Provable ((⨆ n, β n) + 1) c (insert (∀⁰ φ) Γ) := by
   choose d ho hcr using h
   have hsup : (⨆ n, ordinalBound (d n)) ≤ ⨆ n, β n :=
     Ordinal.iSup_le fun n => (ho n).trans (Ordinal.le_iSup β n)
-  refine ⟨Deriv.allω φ d, ?_, ?_⟩
-  · simp only [Deriv.ordinalBound]; exact add_le_add hsup le_rfl
-  · simp only [Deriv.cutRank]; exact iSup_le hcr
+  refine ⟨Derivation.allω φ d, ?_, ?_⟩
+  · simp only [Derivation.ordinalBound]; exact add_le_add hsup le_rfl
+  · simp only [Derivation.cutRank]; exact iSup_le hcr
 
 /-- **Contraction is free** (the payoff of set sequents): a duplicate insert collapses. -/
 @[grind →]
-lemma Provable.contr {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (φ : Form)
+lemma Provable.contr {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (φ : Formula)
     (h : Provable α c (insert φ (insert φ Γ))) : Provable α c (insert φ Γ) := by
   simpa [Finset.insert_idem] using h
 
 /-- **Predicate-level cut.** From `insert φ Γ` and `insert (∼φ) Γ` at cut rank `≤ c` with
 `complexity φ < c`, conclude `Γ` at the same cut rank. -/
 @[grind →]
-lemma Provable.cut {α β : Ordinal.{0}} {c : ℕ} {Γ : Seq} (χ : Form)
+lemma Provable.cut {α β : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (χ : Formula)
     (hc : (χ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞))
     (h₁ : Provable α c (insert χ Γ)) (h₂ : Provable β c (insert (∼χ) Γ)) :
     Provable (max α β + 1) c Γ := by
   rcases h₁ with ⟨d₁, ho₁, hcr₁⟩
   rcases h₂ with ⟨d₂, ho₂, hcr₂⟩
-  refine ⟨Deriv.cut χ d₁ d₂, ?_, ?_⟩
-  · simp only [Deriv.ordinalBound]; exact add_le_add (max_le_max ho₁ ho₂) le_rfl
-  · simp only [Deriv.cutRank]; exact max_le hc (max_le hcr₁ hcr₂)
+  refine ⟨Derivation.cut χ d₁ d₂, ?_, ?_⟩
+  · simp only [Derivation.ordinalBound]; exact add_le_add (max_le_max ho₁ ho₂) le_rfl
+  · simp only [Derivation.cutRank]; exact max_le hc (max_le hcr₁ hcr₂)
 
 /-! ### Inversion lemmas (Towsner §19.2–19.4)
 
 The genuine syntactic content feeding `cutElimStep`. `orInv` (∨-inversion) is the template:
 proved by **structural induction on the derivation** (tractable precisely because set sequents
-removed the explicit `contr` rule — see the design note above). The other inversions (∧, ω/∀)
-follow the same pattern and are next. -/
+remove the explicit `contr` rule). The other inversions (∧, ω/∀) follow the same pattern. -/
 
 section Inversion
 
-variable {φ ψ : Form}
+variable {φ ψ : Formula}
 
 /-- Reorder helper: inverting under an `insert a` lands inside `insert a` of the inversion. -/
-private theorem invPush (a : Form) (s : Seq) :
+private theorem invPush (a : Formula) (s : Finset Formula) :
     insert φ (insert ψ ((insert a s).erase (φ ⋎ ψ)))
       ⊆ insert a (insert φ (insert ψ (s.erase (φ ⋎ ψ)))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- Reverse reorder helper, valid when the head `a` is not the inverted formula. -/
-private theorem invPull {a : Form} (h : a ≠ (φ ⋎ ψ)) (s : Seq) :
+private theorem invPull {a : Formula} (h : a ≠ (φ ⋎ ψ)) (s : Finset Formula) :
     insert a (insert φ (insert ψ (s.erase (φ ⋎ ψ))))
       ⊆ insert φ (insert ψ ((insert a s).erase (φ ⋎ ψ))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
@@ -196,7 +181,7 @@ private theorem invPull {a : Form} (h : a ≠ (φ ⋎ ψ)) (s : Seq) :
 /-- **∨-inversion (Towsner §19.2 analog).** If `φ ⋎ ψ` occurs in a `Z_∞`-derivable sequent, then
 replacing it by `φ` and `ψ` is derivable at the *same* ordinal bound and cut rank. Proved by
 structural induction on the derivation. -/
-lemma orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
+lemma orInvAux {c : ℕ} : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋎ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
@@ -208,27 +193,27 @@ lemma orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ
       Finset.mem_erase.mpr ⟨by intro h; simp [Vee.vee] at h, hp⟩
     have hn' : Semiformula.nrel r v ∈ Γ.erase (φ ⋎ ψ) :=
       Finset.mem_erase.mpr ⟨by intro h; simp [Vee.vee] at h, hn⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact (Provable.axL r v (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hr))
       (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hn'))).mono le_rfl (Nat.zero_le c)
   | @axTrue Γ k b r v htrue hmem =>
     intro _ _
     have hl : signedLit b r v ∈ Γ.erase (φ ⋎ ψ) :=
       Finset.mem_erase.mpr ⟨by cases b <;> simp [signedLit, Vee.vee], hmem⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact (Provable.axTrue b r v htrue
       (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hl))).mono le_rfl (Nat.zero_le c)
   | @verumR Γ h =>
     intro _ _
-    have ht : (⊤ : Form) ∈ Γ.erase (φ ⋎ ψ) :=
+    have ht : (⊤ : Formula) ∈ Γ.erase (φ ⋎ ψ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact (Provable.verumR (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem ht))).mono
       le_rfl (Nat.zero_le c)
   | @weak Δ Γ d' hsub ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     by_cases hd : (φ ⋎ ψ) ∈ Δ
     · exact (ih hcr hd).weakening
         (Finset.insert_subset_insert _ (Finset.insert_subset_insert _
@@ -240,8 +225,8 @@ lemma orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ
         (Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩))
   | @andI Γ₀ φ' ψ' dφ dψ ihφ ihψ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (φ' ⋏ ψ') ≠ (φ ⋎ ψ) := by intro h; simp [Wedge.wedge, Vee.vee] at h
     have hmem0 : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have hcrφ : cutRank dφ ≤ (c : ℕ∞) := le_trans (le_max_left _ _) hcr
@@ -251,8 +236,8 @@ lemma orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ
     exact (Provable.andI φ' ψ' Pφ Pψ).weakening (invPull hhead Γ₀)
   | @orI Γ₀ φ' ψ' d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     by_cases hhd : (φ' ⋎ ψ') = (φ ⋎ ψ)
     · -- principal: φ' ⋎ ψ' = φ ⋎ ψ
       obtain ⟨rfl, rfl⟩ := (Semiformula.or_inj _ _ _ _).mp hhd.symm
@@ -276,8 +261,8 @@ lemma orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ
       exact (Provable.orI φ' ψ' P).weakening (invPull hhd Γ₀)
   | @allω Γ₀ χ d ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (∀⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [Vee.vee] at h
     have hmem0 : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have key : ∀ n, Provable (ordinalBound (d n)) c (insert (χ/[nm n]) (insert φ (insert ψ (Γ₀.erase (φ ⋎ ψ))))) :=
@@ -286,16 +271,16 @@ lemma orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ
     exact (Provable.allω χ key).weakening (invPull hhead Γ₀)
   | @exI Γ₀ χ n d ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (∃⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [Vee.vee] at h
     have hmem0 : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P := (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (invPush (χ/[nm n]) Γ₀)
     exact (Provable.exI χ n P).weakening (invPull hhead Γ₀)
   | @cut Γ₀ χ d₁ d₂ ih₁ ih₂ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hcχ : (χ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞) := (le_max_left _ _).trans hcr
     have hcr1 : cutRank d₁ ≤ (c : ℕ∞) := (le_max_left (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
     have hcr2 : cutRank d₂ ≤ (c : ℕ∞) := (le_max_right (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
@@ -305,7 +290,7 @@ lemma orInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ
 
 /-- **∨-inversion at a relaxed bound** (the form used downstream). -/
 @[grind →]
-lemma Provable.orInv {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋎ ψ) ∈ Γ)
+lemma Provable.orInv {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (hmem : (φ ⋎ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (orInvAux d hcr hmem).mono ho le_rfl
@@ -323,12 +308,12 @@ section InversionAll
 variable {χ : SyntacticSemiformula ℒₒᵣ 1}
 
 /-- Reorder helper (single insert): invert under `insert a`, push it outside. -/
-private theorem invPush1 (b a : Form) (e : Form) (s : Seq) :
+private theorem invPush1 (b a : Formula) (e : Formula) (s : Finset Formula) :
     insert b ((insert a s).erase e) ⊆ insert a (insert b (s.erase e)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- Reverse reorder helper (single insert), valid when the head `a` is not the erased formula. -/
-private theorem invPull1 (b : Form) {a e : Form} (h : a ≠ e) (s : Seq) :
+private theorem invPull1 (b : Formula) {a e : Formula} (h : a ≠ e) (s : Finset Formula) :
     insert a (insert b (s.erase e)) ⊆ insert b ((insert a s).erase e) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | hx
@@ -338,7 +323,7 @@ private theorem invPull1 (b : Form) {a e : Form} (h : a ≠ e) (s : Seq) :
 /-- **ω/∀-inversion (Towsner §19.4).** If `∀⁰ χ` occurs in a `Z_∞`-derivable sequent, then for
 every numeral `n` the instance `χ/[nm n]` is derivable at the *same* ordinal bound and cut rank.
 Proved by structural induction on the derivation (`n` fixed). -/
-lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) →
+lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) →
     (∀⁰ χ) ∈ Γ → Provable (ordinalBound d) c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   have hb0 : (χ/[nm n]) ≠ (∀⁰ χ) := Semiformula.ne_of_ne_complexity (by simp)
   intro Γ d
@@ -349,25 +334,25 @@ lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d �
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩
     have hn' : Semiformula.nrel r v ∈ Γ.erase (∀⁰ χ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact (Provable.axL r v (Finset.mem_insert_of_mem hr)
       (Finset.mem_insert_of_mem hn')).mono le_rfl (Nat.zero_le c)
   | @axTrue Γ k b r v htrue hmem =>
     intro _ _
     have hl : signedLit b r v ∈ Γ.erase (∀⁰ χ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by cases b <;> simp [signedLit]), hmem⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact (Provable.axTrue b r v htrue (Finset.mem_insert_of_mem hl)).mono le_rfl (Nat.zero_le c)
   | @verumR Γ h =>
     intro _ _
-    have ht : (⊤ : Form) ∈ Γ.erase (∀⁰ χ) :=
+    have ht : (⊤ : Formula) ∈ Γ.erase (∀⁰ χ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact (Provable.verumR (Finset.mem_insert_of_mem ht)).mono le_rfl (Nat.zero_le c)
   | @weak Δ Γ d' hsub ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     by_cases hd : (∀⁰ χ) ∈ Δ
     · exact (ih hcr hd).weakening
         (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub))
@@ -377,8 +362,8 @@ lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d �
       exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩)
   | @andI Γ₀ φ' ψ' dφ dψ ihφ ihψ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (φ' ⋏ ψ') ≠ (∀⁰ χ) := by intro h; simp [Wedge.wedge] at h
     have hmem0 : (∀⁰ χ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have hcrφ : cutRank dφ ≤ (c : ℕ∞) := le_trans (le_max_left _ _) hcr
@@ -388,8 +373,8 @@ lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d �
     exact (Provable.andI φ' ψ' Pφ Pψ).weakening (invPull1 _ hhead Γ₀)
   | @orI Γ₀ φ' ψ' d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (φ' ⋎ ψ') ≠ (∀⁰ χ) := by intro h; simp [Vee.vee] at h
     have hmem0 : (∀⁰ χ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have hsub : insert (χ/[nm n]) ((insert φ' (insert ψ' Γ₀)).erase (∀⁰ χ))
@@ -399,8 +384,8 @@ lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d �
     exact (Provable.orI φ' ψ' P).weakening (invPull1 _ hhead Γ₀)
   | @allω Γ₀ χ' d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     by_cases hhd : (∀⁰ χ') = (∀⁰ χ)
     · -- principal: χ' = χ (obtain rfl eliminates χ, keeping χ')
       obtain rfl := (Semiformula.all_inj _ _).mp hhd
@@ -426,16 +411,16 @@ lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d �
       exact (Provable.allω χ' key).weakening (invPull1 _ hhd Γ₀)
   | @exI Γ₀ χ' n d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (∃⁰ χ') ≠ (∀⁰ χ) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
     have hmem0 : (∀⁰ χ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P := (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (invPush1 _ (χ'/[nm n]) _ Γ₀)
     exact (Provable.exI χ' n P).weakening (invPull1 _ hhead Γ₀)
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hcξ : (ξ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞) := (le_max_left _ _).trans hcr
     have hcr1 : cutRank d₁ ≤ (c : ℕ∞) := (le_max_left (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
     have hcr2 : cutRank d₂ ≤ (c : ℕ∞) := (le_max_right (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
@@ -444,7 +429,7 @@ lemma allInvAux {c : ℕ} (n : ℕ) : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d �
     exact Provable.cut ξ hcξ P₁ P₂
 
 /-- **ω-inversion at a relaxed bound** (the form used downstream). -/
-lemma Provable.allInv {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
+lemma Provable.allInv {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (hmem : (∀⁰ χ) ∈ Γ) (n : ℕ)
     (h : Provable α c Γ) : Provable α c (insert (χ/[nm n]) (Γ.erase (∀⁰ χ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (allInvAux n d hcr hmem).mono ho le_rfl
@@ -459,11 +444,11 @@ in one induction (`andInvAux`) and expose each side as a corollary. -/
 
 section InversionAnd
 
-variable {φ ψ : Form}
+variable {φ ψ : Formula}
 
 /-- **∧-inversion (Towsner §19.3).** If `φ ⋏ ψ` occurs in a `Z_∞`-derivable sequent, then both
 `φ` and `ψ` (with the conjunction erased) are derivable at the same ordinal bound and cut rank. -/
-lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
+lemma andInvAux {c : ℕ} : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ (c : ℕ∞) → (φ ⋏ ψ) ∈ Γ →
     Provable (ordinalBound d) c (insert φ (Γ.erase (φ ⋏ ψ))) ∧
       Provable (ordinalBound d) c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   have hφ0 : φ ≠ (φ ⋏ ψ) := Semiformula.ne_of_ne_complexity (by simp)
@@ -476,7 +461,7 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩
     have hn' : Semiformula.nrel r v ∈ Γ.erase (φ ⋏ ψ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact ⟨(Provable.axL r v (Finset.mem_insert_of_mem hr) (Finset.mem_insert_of_mem hn')).mono
         le_rfl (Nat.zero_le c),
       (Provable.axL r v (Finset.mem_insert_of_mem hr) (Finset.mem_insert_of_mem hn')).mono
@@ -485,20 +470,20 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
     intro _ _
     have hl : signedLit b r v ∈ Γ.erase (φ ⋏ ψ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by cases b <;> simp [signedLit]), hmem⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact ⟨(Provable.axTrue b r v htrue (Finset.mem_insert_of_mem hl)).mono le_rfl (Nat.zero_le c),
       (Provable.axTrue b r v htrue (Finset.mem_insert_of_mem hl)).mono le_rfl (Nat.zero_le c)⟩
   | @verumR Γ h =>
     intro _ _
-    have ht : (⊤ : Form) ∈ Γ.erase (φ ⋏ ψ) :=
+    have ht : (⊤ : Formula) ∈ Γ.erase (φ ⋏ ψ) :=
       Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     exact ⟨(Provable.verumR (Finset.mem_insert_of_mem ht)).mono le_rfl (Nat.zero_le c),
       (Provable.verumR (Finset.mem_insert_of_mem ht)).mono le_rfl (Nat.zero_le c)⟩
   | @weak Δ Γ d' hsub ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     by_cases hd : (φ ⋏ ψ) ∈ Δ
     · exact ⟨(ih hcr hd).1.weakening
           (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)),
@@ -513,8 +498,8 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
         base.weakening (fun x hx => Finset.mem_insert_of_mem (hΔ hx))⟩
   | @andI Γ₀ φ' ψ' dφ dψ ihφ ihψ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hcrφ : cutRank dφ ≤ (c : ℕ∞) := le_trans (le_max_left _ _) hcr
     have hcrψ : cutRank dψ ≤ (c : ℕ∞) := le_trans (le_max_right _ _) hcr
     have hbφ : ordinalBound dφ ≤ max (ordinalBound dφ) (ordinalBound dψ) + 1 :=
@@ -556,11 +541,11 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
         exact (Provable.andI φ' ψ' Pφ Pψ).weakening (invPull1 _ hhd Γ₀)
   | @orI Γ₀ φ' ψ' d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (φ' ⋎ ψ') ≠ (φ ⋏ ψ) := by intro h; simp [Vee.vee, Wedge.wedge] at h
     have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have mk : ∀ b : Form,
+    have mk : ∀ b : Formula,
         Provable (ordinalBound d') c (insert b ((insert φ' (insert ψ' Γ₀)).erase (φ ⋏ ψ))) →
         Provable (ordinalBound d' + 1) c (insert b ((insert (φ' ⋎ ψ') Γ₀).erase (φ ⋏ ψ))) := by
       intro b P
@@ -572,11 +557,11 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
       mk ψ ((ih hcr (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))).2)⟩
   | @allω Γ₀ χ' d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (∀⁰ χ') ≠ (φ ⋏ ψ) := by intro h; simp [Wedge.wedge] at h
     have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have mk : ∀ b : Form,
+    have mk : ∀ b : Formula,
         (∀ m, Provable (ordinalBound (d' m)) c (insert b ((insert (χ'/[nm m]) Γ₀).erase (φ ⋏ ψ)))) →
         Provable ((⨆ m, ordinalBound (d' m)) + 1) c (insert b ((insert (∀⁰ χ') Γ₀).erase (φ ⋏ ψ))) := by
       intro b P
@@ -590,8 +575,8 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
         (Finset.mem_insert_of_mem hmem0)).2
   | @exI Γ₀ χ' n d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (∃⁰ χ') ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
     have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     refine ⟨?_, ?_⟩
@@ -601,8 +586,8 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
       exact (Provable.exI χ' n P).weakening (invPull1 _ hhead Γ₀)
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hcξ : (ξ.complexity + 1 : ℕ∞) ≤ (c : ℕ∞) := (le_max_left _ _).trans hcr
     have hcr1 : cutRank d₁ ≤ (c : ℕ∞) := (le_max_left (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
     have hcr2 : cutRank d₂ ≤ (c : ℕ∞) := (le_max_right (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
@@ -616,14 +601,14 @@ lemma andInvAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ (c : �
 
 /-- **∧-inversion, left conjunct, relaxed bound.** -/
 @[grind →]
-lemma Provable.andInvL {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋏ ψ) ∈ Γ)
+lemma Provable.andInvL {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).1.mono ho le_rfl
 
 /-- **∧-inversion, right conjunct, relaxed bound.** -/
 @[grind →]
-lemma Provable.andInvR {α : Ordinal.{0}} {c : ℕ} {Γ : Seq} (hmem : (φ ⋏ ψ) ∈ Γ)
+lemma Provable.andInvR {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula} (hmem : (φ ⋏ ψ) ∈ Γ)
     (h : Provable α c Γ) : Provable α c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   rcases h with ⟨d, ho, hcr⟩
   exact (andInvAux d hcr hmem).2.mono ho le_rfl
@@ -657,7 +642,7 @@ private theorem cutAux_bnd1 (α a : Ordinal.{0}) : α + a + 1 + 1 ≤ α + (a + 
 
 /-- Frame subset: push an `insert` out of the `erase`/`∪`-framed context (`ih`-result → canonical).
 Explicit (not `tauto`) to avoid `whnf` blow-ups on negated atoms. -/
-private theorem frame_in (a e : Form) (s t : Seq) :
+private theorem frame_in (a e : Formula) (s t : Finset Formula) :
     (insert a s).erase e ∪ t ⊆ insert a (s.erase e ∪ t) := by
   intro x hx
   simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -668,7 +653,7 @@ private theorem frame_in (a e : Form) (s t : Seq) :
 
 /-- Frame subset: pull an `insert` back into the `erase`/`∪`-framed context (canonical → goal),
 valid when the head `a` is not the erased formula. -/
-private theorem frame_out {a e : Form} (hne : a ≠ e) (s t : Seq) :
+private theorem frame_out {a e : Formula} (hne : a ≠ e) (s t : Finset Formula) :
     insert a (s.erase e ∪ t) ⊆ (insert a s).erase e ∪ t := by
   intro x hx
   simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -688,19 +673,18 @@ private theorem cutAux_bnd_sup (α : Ordinal.{0}) (f : ℕ → Ordinal.{0}) :
 
 /-! ### Cut reduction, ∧/∨ principal (Towsner §19.5)
 
-⭐ **Design note (this lap).** Natural (Hessenberg) sum `α ♯ β` is **absent from mathlib v4.31.0**
-(no `NaturalOps.lean`/`Ordinal.nadd`). The classic reduction-lemma bound `α ♯ β` is therefore
-unavailable. But for the **∧/∨** case there is a route that needs no natural sum *and no fresh
-induction at all*: both connectives are **invertible** (`andInvL/R`, `orInv`, all proved), so we
-invert *both* premises and close with **two ordinary cuts** at the strictly smaller subformulas.
-The resulting bound is `max α β + 1 + 1`, and `max(ω^a, ω^b) + 2 < ω^{max a b + 1}` keeps
-`cutElimStep` below `ω^α` with room to spare. (The ∀/∃ case is genuinely different — `∃` is *not*
-invertible — and still needs the §19.6 induction on the ∃-side; tracked as `cutReduceAll` below.) -/
+**Design note.** Natural (Hessenberg) sum `α ♯ β` is unavailable, so the classic reduction-lemma
+bound `α ♯ β` cannot be used. For the **∧/∨** case there is a route that needs no natural sum and
+no fresh induction: both connectives are **invertible** (`andInvL/R`, `orInv`), so we invert
+*both* premises and close with **two ordinary cuts** at the strictly smaller subformulas. The
+resulting bound is `max α β + 1 + 1`, and `max(ω^a, ω^b) + 2 < ω^{max a b + 1}` keeps `cutElimStep`
+below `ω^α` with room to spare. (The ∀/∃ case is genuinely different — `∃` is *not* invertible —
+and needs the §19.6 induction on the ∃-side; see `cutReduceAll` below.) -/
 
 /-- Reduce a cut on a **conjunction** `a ⋏ b` (its negation `∼a ⋎ ∼b` on the other side), with both
 conjuncts of complexity `< c`. Invert the ∧-side (`andInvL/R`) and the ∨-side (`orInv`), then cut
 `a` and `b` separately at cut-rank `≤ c`. Towsner **Thm 19.5** (∧/∨ principal reduction). -/
-lemma Provable.cutReduceConj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ : Seq}
+lemma Provable.cutReduceConj {a b : Formula} {c : ℕ} {α β : Ordinal.{0}} {Γ : Finset Formula}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋏ b) Γ)) (hNC : Provable β c (insert (∼a ⋎ ∼b) Γ)) :
     Provable (max α β + 1 + 1) c Γ := by
@@ -730,7 +714,7 @@ lemma Provable.cutReduceConj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ : 
 /-- Reduce a cut on a **disjunction** `a ⋎ b` (its negation `∼a ⋏ ∼b` on the other side), with both
 disjuncts of complexity `< c`. Dual to `cutReduceConj`: invert the ∨-side (`orInv`) and the ∧-side
 (`andInvL/R`), then cut `a` and `b`. Towsner **Thm 19.5**. -/
-lemma Provable.cutReduceDisj {a b : Form} {c : ℕ} {α β : Ordinal.{0}} {Γ : Seq}
+lemma Provable.cutReduceDisj {a b : Formula} {c : ℕ} {α β : Ordinal.{0}} {Γ : Finset Formula}
     (ha : (a.complexity + 1 : ℕ∞) ≤ c) (hb : (b.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (a ⋎ b) Γ)) (hNC : Provable β c (insert (∼a ⋏ ∼b) Γ)) :
     Provable (max α β + 1 + 1) c Γ := by
@@ -767,33 +751,33 @@ family available unchanged through the induction, it is a *fixed* hypothesis (ov
 /-- The induction core of the ∀/∃ reduction. `fam` is the ∀-inversion family; induct on the
 ∃-side derivation `d`. -/
 lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α : Ordinal.{0}}
-    {Γ : Seq} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
+    {Γ : Finset Formula} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (fam : ∀ n, Provable α c (insert (φ/[nm n]) Γ)) :
-    ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
+    ∀ {Δ : Finset Formula} (d : Derivation Δ), cutRank d ≤ (c : ℕ∞) → (∃⁰ ∼φ) ∈ Δ →
       Provable (α + ordinalBound d + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   intro Δ d
   induction d with
   | @axL Δ k r v hp hn =>
     intro _ _
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     refine (Provable.axL r v ?_ ?_).mono zero_le (Nat.zero_le c)
     · exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩)
     · exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩)
   | @axTrue Δ k b r v htrue hmem =>
     intro _ _
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     refine (Provable.axTrue b r v htrue ?_).mono zero_le (Nat.zero_le c)
     exact Finset.mem_union_left _ (Finset.mem_erase.mpr
       ⟨Semiformula.ne_of_ne_complexity (by cases b <;> simp [signedLit]), hmem⟩)
   | @verumR Δ h =>
     intro _ _
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     refine (Provable.verumR ?_).mono zero_le (Nat.zero_le c)
     exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩)
   | @weak Δ' Δ d' hsub ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     by_cases hd : (∃⁰ ∼φ) ∈ Δ'
     · exact (ih hcr hd).weakening (by
         intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
@@ -807,8 +791,8 @@ lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ}
           (le_of_lt (lt_add_of_pos_right _ one_pos))
   | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (χ₀ ⋏ χ₁) ≠ (∃⁰ ∼φ) := by intro h; simp [Wedge.wedge, ExsQuantifier.exs] at h
     have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have hcr0 : cutRank d₀ ≤ (c : ℕ∞) := le_trans (le_max_left _ _) hcr
@@ -827,8 +811,8 @@ lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ}
       · tauto)).mono (cutAux_bnd α (ordinalBound d₀) (ordinalBound d₁)) le_rfl
   | @orI Γ₀ χ₀ χ₁ d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (χ₀ ⋎ χ₁) ≠ (∃⁰ ∼φ) := by intro h; simp [Vee.vee, ExsQuantifier.exs] at h
     have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P : Provable (α + ordinalBound d' + 1) c (insert χ₀ (insert χ₁ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ))) :=
@@ -842,8 +826,8 @@ lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ}
       · tauto)).mono (cutAux_bnd1 α (ordinalBound d')) le_rfl
   | @allω Γ₀ χ' d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (∀⁰ χ') ≠ (∃⁰ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
     have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have key : ∀ n, Provable (α + ordinalBound (d' n) + 1) c (insert (χ'/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
@@ -858,8 +842,8 @@ lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ}
       · tauto)).mono (cutAux_bnd_sup α (fun n => ordinalBound (d' n))) le_rfl
   | @exI Γ₀ χ' n d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     by_cases hhd : (∃⁰ χ') = (∃⁰ ∼φ)
     · -- principal: χ' = ∼φ, cut at witness numeral `n`.
       have hχ : χ' = ∼φ := by
@@ -910,8 +894,8 @@ lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ}
         · tauto)).mono (cutAux_bnd1 α (ordinalBound d')) le_rfl
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hcξ : (ξ.complexity + 1 : ℕ∞) ≤ c := (le_max_left _ _).trans hcr
     have hcr1 : cutRank d₁ ≤ (c : ℕ∞) := (le_max_left (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
     have hcr2 : cutRank d₂ ≤ (c : ℕ∞) := (le_max_right (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
@@ -922,7 +906,7 @@ lemma Provable.cutReduceAllAux {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ}
 /-- **Cut reduction, ∀/∃ principal** (Towsner Thm 19.6). A cut on `∀⁰ φ` (complexity `≤ c`) is
 eliminated by inverting the ∀-side and inducting on the ∃-side. -/
 lemma Provable.cutReduceAll {φ : SyntacticSemiformula ℒₒᵣ 1} {c : ℕ} {α β : Ordinal.{0}}
-    {Γ : Seq} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
+    {Γ : Finset Formula} (hφc : (φ.complexity + 1 : ℕ∞) ≤ c)
     (hC : Provable α c (insert (∀⁰ φ) Γ)) (hNC : Provable β c (insert (∃⁰ ∼φ) Γ)) :
     Provable (α + β + 1) c Γ := by
   -- ∀-inversion → the numeral family.
@@ -993,15 +977,15 @@ the leaves: an `axL` clash on `L` exposes its (TRUE) opposite polarity `∼L`, c
 `axTrue` leaf's true witness is `≠ L` (which is false), so it survives the erase. -/
 lemma Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k₀) (v₀)
     (hL : ¬ LitTrue (signedLit b₀ r₀ v₀)) :
-    ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0 : ℕ∞) →
+    ∀ {Δ : Finset Formula} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) →
       signedLit b₀ r₀ v₀ ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase (signedLit b₀ r₀ v₀)) := by
-  set L : Form := signedLit b₀ r₀ v₀ with hLdef
-  have hLne : ∀ (g : Form), g.complexity ≠ 0 → g ≠ L := by
+  set L : Formula := signedLit b₀ r₀ v₀ with hLdef
+  have hLne : ∀ (g : Formula), g.complexity ≠ 0 → g ≠ L := by
     intro g hg; rw [hLdef]; exact Semiformula.ne_of_ne_complexity (by cases b₀ <;> simp [signedLit, hg])
   intro Δ d
   induction d with
   | @axL Δ k r v hp hn =>
-    intro _ _; simp only [Deriv.ordinalBound]
+    intro _ _; simp only [Derivation.ordinalBound]
     by_cases h1 : L = Semiformula.rel r v
     · -- `L = rel r v` (false) ⟹ `nrel r v = ∼(rel r v)` is true ⟹ close by `axTrue false`.
       have htn : LitTrue (signedLit false r v) := by
@@ -1018,21 +1002,21 @@ lemma Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k�
       · exact Provable.axL r v (Finset.mem_erase.mpr ⟨fun e => h1 e.symm, hp⟩)
           (Finset.mem_erase.mpr ⟨fun e => h2 e.symm, hn⟩)
   | @axTrue Δ k b r v htrue hmem =>
-    intro _ _; simp only [Deriv.ordinalBound]
+    intro _ _; simp only [Derivation.ordinalBound]
     -- the true witness `signedLit b r v ≠ L` (false), so it survives the erase.
     have hne : signedLit b r v ≠ L := fun e => hL (e ▸ htrue)
     exact Provable.axTrue b r v htrue (Finset.mem_erase.mpr ⟨hne, hmem⟩)
   | @verumR Δ h =>
-    intro _ _; simp only [Deriv.ordinalBound]
+    intro _ _; simp only [Derivation.ordinalBound]
     exact Provable.verumR (Finset.mem_erase.mpr ⟨by rw [hLdef]; exact (lit_ne_verum b₀ r₀ v₀).symm, h⟩)
   | @weak Δ' Δ d' hsub ih =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     by_cases hd : L ∈ Δ'
     · exact (ih hcr hd).weakening (Finset.erase_subset_erase _ hsub)
     · refine (show Provable (ordinalBound d') 0 Δ' from ⟨d', le_rfl, hcr⟩).weakening ?_
       intro x hx; exact Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩
   | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     have hhead : (χ₀ ⋏ χ₁) ≠ L := hLne _ (by simp)
     have hmem0 : L ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P0 : Provable (ordinalBound d₀) 0 (insert χ₀ (Γ₀.erase L)) :=
@@ -1047,7 +1031,7 @@ lemma Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k�
       · exact ⟨hhead, Or.inl rfl⟩
       · tauto)
   | @orI Γ₀ χ₀ χ₁ d' ih =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     have hhead : (χ₀ ⋎ χ₁) ≠ L := hLne _ (by simp)
     have hmem0 : L ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P : Provable (ordinalBound d') 0 (insert χ₀ (insert χ₁ (Γ₀.erase L))) :=
@@ -1059,7 +1043,7 @@ lemma Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k�
       · exact ⟨hhead, Or.inl rfl⟩
       · tauto)
   | @allω Γ₀ χ' d' ih =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     have hhead : (∀⁰ χ') ≠ L := hLne _ (by simp)
     have hmem0 : L ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have key : ∀ n, Provable (ordinalBound (d' n)) 0 (insert (χ'/[nm n]) (Γ₀.erase L)) := fun n =>
@@ -1072,7 +1056,7 @@ lemma Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k�
       · exact ⟨hhead, Or.inl rfl⟩
       · tauto)
   | @exI Γ₀ χ' n d' ih =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     have hhead : (∃⁰ χ') ≠ L := hLne _ (by simp)
     have hmem0 : L ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P : Provable (ordinalBound d') 0 (insert (χ'/[nm n]) (Γ₀.erase L)) :=
@@ -1084,7 +1068,7 @@ lemma Provable.removeFalseLitAux (b₀ : Bool) {k₀} (r₀ : (ℒₒᵣ).Rel k�
       · exact ⟨hhead, Or.inl rfl⟩
       · tauto)
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
-    intro hcr _; simp only [Deriv.cutRank] at hcr
+    intro hcr _; simp only [Derivation.cutRank] at hcr
     exact absurd ((le_max_left _ _).trans hcr) (by simp)
 
 /-! ### Atomic cut elimination (Towsner Thm 19.2, the false-atomic inversion content)
@@ -1095,20 +1079,20 @@ enters via `axL` or weakening. No truth layer is needed: set sequents dissolve t
 premise (`⊢ nrel r v, Γ`) already proves `Γ` (set idempotence). Every other case is incidental. -/
 
 /-- Induction core: cut a `rel r v` derivation (`d`) against a fixed `nrel r v` derivation (`hNC`). -/
-lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {B : Ordinal.{0}} {Γ : Seq}
-    (hNC : Provable B 0 (insert (Semiformula.nrel r v) Γ)) :
-    ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
-      Provable (B + ordinalBound d + 1) 0 (Δ.erase (Semiformula.rel r v) ∪ Γ) := by
+lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {β : Ordinal.{0}} {Γ : Finset Formula}
+    (hNC : Provable β 0 (insert (Semiformula.nrel r v) Γ)) :
+    ∀ {Δ : Finset Formula} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) → (Semiformula.rel r v) ∈ Δ →
+      Provable (β + ordinalBound d + 1) 0 (Δ.erase (Semiformula.rel r v) ∪ Γ) := by
   intro Δ d
   induction d with
   | @axL Δ k' r' v' hp hn =>
     intro _ _
-    simp only [Deriv.ordinalBound]
-    have hnn : (Semiformula.nrel r' v' : Form) ∈ Δ.erase (Semiformula.rel r v) :=
+    simp only [Derivation.ordinalBound]
+    have hnn : (Semiformula.nrel r' v' : Formula) ∈ Δ.erase (Semiformula.rel r v) :=
       Finset.mem_erase.mpr ⟨by intro h; exact absurd h (by simp), hn⟩
-    by_cases hrel : (Semiformula.rel r' v' : Form) = Semiformula.rel r v
+    by_cases hrel : (Semiformula.rel r' v' : Formula) = Semiformula.rel r v
     · -- the clash's positive member IS the cut atom ⇒ `nrel r v ∈ Γ`-part, use `hNC`
-      have hnrv : (Semiformula.nrel r' v' : Form) = Semiformula.nrel r v := by
+      have hnrv : (Semiformula.nrel r' v' : Formula) = Semiformula.nrel r v := by
         rw [← Semiformula.neg_rel r' v', hrel, Semiformula.neg_rel]
       refine (hNC.weakening ?_).mono ?_ le_rfl
       · intro x hx
@@ -1118,14 +1102,14 @@ lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {B : Ordinal.{0}} {Γ 
         · exact Finset.mem_union_right _ hxΓ
       · exact le_trans le_self_add (le_of_lt (lt_add_of_pos_right _ one_pos))
     · -- clash avoids the cut atom ⇒ it survives the erase, close by `axL`
-      have hpp : (Semiformula.rel r' v' : Form) ∈ Δ.erase (Semiformula.rel r v) :=
+      have hpp : (Semiformula.rel r' v' : Formula) ∈ Δ.erase (Semiformula.rel r v) :=
         Finset.mem_erase.mpr ⟨hrel, hp⟩
       exact (Provable.axL r' v' (Finset.mem_union_left _ hpp)
         (Finset.mem_union_left _ hnn)).mono zero_le le_rfl
   | @axTrue Δ k' b' r' v' htrue' hmem' =>
     intro _ _
-    simp only [Deriv.ordinalBound]
-    by_cases heq : (signedLit b' r' v' : Form) = Semiformula.rel r v
+    simp only [Derivation.ordinalBound]
+    by_cases heq : (signedLit b' r' v' : Formula) = Semiformula.rel r v
     · -- the true literal IS the cut atom ⇒ `rel r v` is TRUE ⇒ `nrel r v` is a removable false
       -- literal on the `hNC` side. The TRUTH-LAYER key case.
       have htrue_rel : LitTrue (Semiformula.rel r v) := heq ▸ htrue'
@@ -1140,24 +1124,24 @@ lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {B : Ordinal.{0}} {Γ 
           have h1 := Finset.mem_of_mem_erase hx
           have h2 := Finset.ne_of_mem_erase hx
           rcases Finset.mem_insert.mp h1 with rfl | h3
-          · exact absurd (show (Semiformula.nrel r v : Form) = signedLit false r v by simp [signedLit]) h2
+          · exact absurd (show (Semiformula.nrel r v : Formula) = signedLit false r v by simp [signedLit]) h2
           · exact h3
         exact Finset.mem_union_right _ hxΓ
       · exact le_trans hoN (le_trans le_self_add (le_of_lt (lt_add_of_pos_right _ one_pos)))
     · -- the true literal avoids the cut atom ⇒ survives the erase, close by `axTrue`
-      have hll : (signedLit b' r' v' : Form) ∈ Δ.erase (Semiformula.rel r v) :=
+      have hll : (signedLit b' r' v' : Formula) ∈ Δ.erase (Semiformula.rel r v) :=
         Finset.mem_erase.mpr ⟨heq, hmem'⟩
       exact (Provable.axTrue b' r' v' htrue' (Finset.mem_union_left _ hll)).mono zero_le le_rfl
   | @verumR Δ h =>
     intro _ _
-    simp only [Deriv.ordinalBound]
-    have ht : (⊤ : Form) ∈ Δ.erase (Semiformula.rel r v) :=
+    simp only [Derivation.ordinalBound]
+    have ht : (⊤ : Formula) ∈ Δ.erase (Semiformula.rel r v) :=
       Finset.mem_erase.mpr ⟨by simp, h⟩
     exact (Provable.verumR (Finset.mem_union_left _ ht)).mono zero_le le_rfl
   | @weak Δ' Δ d' hsub ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     by_cases hd : (Semiformula.rel r v) ∈ Δ'
     · exact (ih hcr hd).weakening (by
         intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
@@ -1167,101 +1151,101 @@ lemma Provable.atomCutAux {k} (r : (ℒₒᵣ).Rel k) (v) {B : Ordinal.{0}} {Γ 
     · refine (show Provable (ordinalBound d') 0 Δ' from ⟨d', le_rfl, hcr⟩).weakening ?_ |>.mono ?_ le_rfl
       · intro x hx
         exact Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩)
-      · exact le_trans (CanonicallyOrderedAdd.le_add_self (ordinalBound d') B)
+      · exact le_trans (CanonicallyOrderedAdd.le_add_self (ordinalBound d') β)
           (le_of_lt (lt_add_of_pos_right _ one_pos))
   | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (χ₀ ⋏ χ₁) ≠ (Semiformula.rel r v) := by intro h; simp [Wedge.wedge] at h
     have hmem0 : (Semiformula.rel r v) ∈ Γ₀ :=
       (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have hcr0 : cutRank d₀ ≤ (0 : ℕ∞) := le_trans (le_max_left _ _) hcr
     have hcr1 : cutRank d₁ ≤ (0 : ℕ∞) := le_trans (le_max_right _ _) hcr
-    have P0 : Provable (B + ordinalBound d₀ + 1) 0 (insert χ₀ (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
+    have P0 : Provable (β + ordinalBound d₀ + 1) 0 (insert χ₀ (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
       (ih₀ hcr0 (Finset.mem_insert_of_mem hmem0)).weakening (frame_in χ₀ _ Γ₀ Γ)
-    have P1 : Provable (B + ordinalBound d₁ + 1) 0 (insert χ₁ (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
+    have P1 : Provable (β + ordinalBound d₁ + 1) 0 (insert χ₁ (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
       (ih₁ hcr1 (Finset.mem_insert_of_mem hmem0)).weakening (frame_in χ₁ _ Γ₀ Γ)
     exact ((Provable.andI χ₀ χ₁ P0 P1).weakening (frame_out hhead Γ₀ Γ)).mono
-      (cutAux_bnd B (ordinalBound d₀) (ordinalBound d₁)) le_rfl
+      (cutAux_bnd β (ordinalBound d₀) (ordinalBound d₁)) le_rfl
   | @orI Γ₀ χ₀ χ₁ d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (χ₀ ⋎ χ₁) ≠ (Semiformula.rel r v) := by intro h; simp [Vee.vee] at h
     have hmem0 : (Semiformula.rel r v) ∈ Γ₀ :=
       (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have P : Provable (B + ordinalBound d' + 1) 0 (insert χ₀ (insert χ₁ (Γ₀.erase (Semiformula.rel r v) ∪ Γ))) :=
+    have P : Provable (β + ordinalBound d' + 1) 0 (insert χ₀ (insert χ₁ (Γ₀.erase (Semiformula.rel r v) ∪ Γ))) :=
       (ih hcr (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))).weakening (by
         intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-    exact ((Provable.orI χ₀ χ₁ P).weakening (frame_out hhead Γ₀ Γ)).mono (cutAux_bnd1 B (ordinalBound d')) le_rfl
+    exact ((Provable.orI χ₀ χ₁ P).weakening (frame_out hhead Γ₀ Γ)).mono (cutAux_bnd1 β (ordinalBound d')) le_rfl
   | @allω Γ₀ χ' d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (∀⁰ χ') ≠ (Semiformula.rel r v) := by intro h; simp [UnivQuantifier.all] at h
     have hmem0 : (Semiformula.rel r v) ∈ Γ₀ :=
       (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have key : ∀ n, Provable (B + ordinalBound (d' n) + 1) 0
+    have key : ∀ n, Provable (β + ordinalBound (d' n) + 1) 0
         (insert (χ'/[nm n]) (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) := fun n =>
       (ih n (le_trans (le_iSup (fun m => cutRank (d' m)) n) hcr)
         (Finset.mem_insert_of_mem hmem0)).weakening (frame_in (χ'/[nm n]) _ Γ₀ Γ)
     exact ((Provable.allω χ' key).weakening (frame_out hhead Γ₀ Γ)).mono
-      (cutAux_bnd_sup B (fun n => ordinalBound (d' n))) le_rfl
+      (cutAux_bnd_sup β (fun n => ordinalBound (d' n))) le_rfl
   | @exI Γ₀ χ' n d' ih =>
     intro hcr hmem
-    simp only [Deriv.cutRank] at hcr
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.cutRank] at hcr
+    simp only [Derivation.ordinalBound]
     have hhead : (∃⁰ χ') ≠ (Semiformula.rel r v) := by intro h; simp [ExsQuantifier.exs] at h
     have hmem0 : (Semiformula.rel r v) ∈ Γ₀ :=
       (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-    have P : Provable (B + ordinalBound d' + 1) 0 (insert (χ'/[nm n]) (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
+    have P : Provable (β + ordinalBound d' + 1) 0 (insert (χ'/[nm n]) (Γ₀.erase (Semiformula.rel r v) ∪ Γ)) :=
       (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (frame_in (χ'/[nm n]) _ Γ₀ Γ)
-    exact ((Provable.exI χ' n P).weakening (frame_out hhead Γ₀ Γ)).mono (cutAux_bnd1 B (ordinalBound d')) le_rfl
+    exact ((Provable.exI χ' n P).weakening (frame_out hhead Γ₀ Γ)).mono (cutAux_bnd1 β (ordinalBound d')) le_rfl
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
     intro hcr _
-    simp only [Deriv.cutRank] at hcr
+    simp only [Derivation.cutRank] at hcr
     exact absurd ((le_max_left _ _).trans hcr) (by simp)
 
 /-- **Atomic cut elimination** (the Thm 19.2 content for the final cut-free step). -/
-lemma Provable.atomCut {k} (r : (ℒₒᵣ).Rel k) (v) {A B : Ordinal.{0}} {Γ : Seq}
-    (hC : Provable A 0 (insert (Semiformula.rel r v) Γ))
-    (hNC : Provable B 0 (insert (Semiformula.nrel r v) Γ)) :
-    Provable (B + A + 1) 0 Γ := by
+lemma Provable.atomCut {k} (r : (ℒₒᵣ).Rel k) (v) {α β : Ordinal.{0}} {Γ : Finset Formula}
+    (hC : Provable α 0 (insert (Semiformula.rel r v) Γ))
+    (hNC : Provable β 0 (insert (Semiformula.nrel r v) Γ)) :
+    Provable (β + α + 1) 0 Γ := by
   rcases hC with ⟨d, ho, hcr⟩
   refine ((Provable.atomCutAux r v hNC d hcr (Finset.mem_insert_self _ _)).weakening
     (show (insert (Semiformula.rel r v) Γ).erase (Semiformula.rel r v) ∪ Γ ⊆ Γ from by
       intro x hx; simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢;
       tauto)).mono ?_ le_rfl
-  exact add_le_add_left ((add_le_add_iff_left B).mpr ho) 1
+  exact add_le_add_left ((add_le_add_iff_left β).mpr ho) 1
 
 /-- Removing `⊥` from a cut-free derivation, bound-preserving. `⊥` is never introduced by any rule
 and is never an `axL`/`verumR` witness, so it is incidental at every step (Towsner Thm 19.2 for the
 constant-`⊥` case). -/
-lemma Provable.removeFalsumAux : ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0 : ℕ∞) →
-    (⊥ : Form) ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase ⊥) := by
+lemma Provable.removeFalsumAux : ∀ {Δ : Finset Formula} (d : Derivation Δ), cutRank d ≤ (0 : ℕ∞) →
+    (⊥ : Formula) ∈ Δ → Provable (ordinalBound d) 0 (Δ.erase ⊥) := by
   intro Δ d
   induction d with
   | @axL Δ k r v hp hn =>
-    intro _ _; simp only [Deriv.ordinalBound]
+    intro _ _; simp only [Derivation.ordinalBound]
     exact Provable.axL r v (Finset.mem_erase.mpr ⟨by simp, hp⟩)
       (Finset.mem_erase.mpr ⟨by simp, hn⟩)
   | @axTrue Δ k b r v htrue hmem =>
-    intro _ _; simp only [Deriv.ordinalBound]
+    intro _ _; simp only [Derivation.ordinalBound]
     exact Provable.axTrue b r v htrue (Finset.mem_erase.mpr ⟨by cases b <;> simp [signedLit], hmem⟩)
   | @verumR Δ h =>
-    intro _ _; simp only [Deriv.ordinalBound]
+    intro _ _; simp only [Derivation.ordinalBound]
     exact Provable.verumR (Finset.mem_erase.mpr ⟨by simp, h⟩)
   | @weak Δ' Δ d' hsub ih =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
-    by_cases hd : (⊥ : Form) ∈ Δ'
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
+    by_cases hd : (⊥ : Formula) ∈ Δ'
     · exact (ih hcr hd).weakening (Finset.erase_subset_erase _ hsub)
     · refine (show Provable (ordinalBound d') 0 Δ' from ⟨d', le_rfl, hcr⟩).weakening ?_
       intro x hx; exact Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩
   | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
-    have hhead : (χ₀ ⋏ χ₁) ≠ (⊥ : Form) := by simp [Wedge.wedge]
-    have hmem0 : (⊥ : Form) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
+    have hhead : (χ₀ ⋏ χ₁) ≠ (⊥ : Formula) := by simp [Wedge.wedge]
+    have hmem0 : (⊥ : Formula) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P0 : Provable (ordinalBound d₀) 0 (insert χ₀ (Γ₀.erase ⊥)) :=
       (ih₀ (le_trans (le_max_left _ _) hcr) (Finset.mem_insert_of_mem hmem0)).weakening (by
         intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
@@ -1274,9 +1258,9 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0
       · exact ⟨hhead, Or.inl rfl⟩
       · tauto)
   | @orI Γ₀ χ₀ χ₁ d' ih =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
-    have hhead : (χ₀ ⋎ χ₁) ≠ (⊥ : Form) := by simp [Vee.vee]
-    have hmem0 : (⊥ : Form) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
+    have hhead : (χ₀ ⋎ χ₁) ≠ (⊥ : Formula) := by simp [Vee.vee]
+    have hmem0 : (⊥ : Formula) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P : Provable (ordinalBound d') 0 (insert χ₀ (insert χ₁ (Γ₀.erase ⊥))) :=
       (ih hcr (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))).weakening (by
         intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
@@ -1286,9 +1270,9 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0
       · exact ⟨hhead, Or.inl rfl⟩
       · tauto)
   | @allω Γ₀ χ' d' ih =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
-    have hhead : (∀⁰ χ') ≠ (⊥ : Form) := by simp [UnivQuantifier.all]
-    have hmem0 : (⊥ : Form) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
+    have hhead : (∀⁰ χ') ≠ (⊥ : Formula) := by simp [UnivQuantifier.all]
+    have hmem0 : (⊥ : Formula) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have key : ∀ n, Provable (ordinalBound (d' n)) 0 (insert (χ'/[nm n]) (Γ₀.erase ⊥)) := fun n =>
       (ih n (le_trans (le_iSup (fun m => cutRank (d' m)) n) hcr)
         (Finset.mem_insert_of_mem hmem0)).weakening (by
@@ -1299,9 +1283,9 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0
       · exact ⟨hhead, Or.inl rfl⟩
       · tauto)
   | @exI Γ₀ χ' n d' ih =>
-    intro hcr hmem; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
-    have hhead : (∃⁰ χ') ≠ (⊥ : Form) := by simp [ExsQuantifier.exs]
-    have hmem0 : (⊥ : Form) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    intro hcr hmem; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
+    have hhead : (∃⁰ χ') ≠ (⊥ : Formula) := by simp [ExsQuantifier.exs]
+    have hmem0 : (⊥ : Formula) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
     have P : Provable (ordinalBound d') 0 (insert (χ'/[nm n]) (Γ₀.erase ⊥)) :=
       (ih hcr (Finset.mem_insert_of_mem hmem0)).weakening (by
         intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
@@ -1311,111 +1295,111 @@ lemma Provable.removeFalsumAux : ∀ {Δ : Seq} (d : Deriv Δ), cutRank d ≤ (0
       · exact ⟨hhead, Or.inl rfl⟩
       · tauto)
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
-    intro hcr _; simp only [Deriv.cutRank] at hcr
+    intro hcr _; simp only [Derivation.cutRank] at hcr
     exact absurd ((le_max_left _ _).trans hcr) (by simp)
 
 
 /-- Remove a `⊥` from a cut-free sequent. -/
-lemma Provable.removeFalsum {B : Ordinal.{0}} {Γ : Seq}
-    (h : Provable B 0 (insert (⊥ : Form) Γ)) : Provable B 0 Γ := by
+lemma Provable.removeFalsum {β : Ordinal.{0}} {Γ : Finset Formula}
+    (h : Provable β 0 (insert (⊥ : Formula) Γ)) : Provable β 0 Γ := by
   rcases h with ⟨d, ho, hcr⟩
   refine (Provable.removeFalsumAux d hcr (Finset.mem_insert_self _ _)).weakening ?_ |>.mono ho le_rfl
   intro x hx; simp only [Finset.mem_erase, Finset.mem_insert] at hx; exact (hx.2).resolve_left hx.1
 
 /-- **Principal cut on a rank-`c` formula** — the heart of Thm 19.7. After both premises are
-cut-free-at-`c` (bound `ω^A`, `ω^B`), a cut on `ξ` with `complexity ξ = c` is eliminated by the
+cut-free-at-`c` (bound `ω^α`, `ω^β`), a cut on `ξ` with `complexity ξ = c` is eliminated by the
 matching reduction (∧/∨ → `cutReduceConj/Disj`; ∀/∃ → `cutReduceAll`; atomic → `atomCut`;
-`⊤`/`⊥` → `removeFalsum`), staying below `ω^(max A B+1)`. -/
-lemma Provable.cutElimPrincipal {c : ℕ} {ξ : Form} {A B : Ordinal.{0}} {Γ : Seq}
+`⊤`/`⊥` → `removeFalsum`), staying below `ω^(max α β+1)`. -/
+lemma Provable.cutElimPrincipal {c : ℕ} {ξ : Formula} {α β : Ordinal.{0}} {Γ : Finset Formula}
     (hξeq : ξ.complexity = c)
-    (hC : Provable (Ordinal.omega0 ^ A) c (insert ξ Γ))
-    (hNC : Provable (Ordinal.omega0 ^ B) c (insert (∼ξ) Γ)) :
-    Provable (Ordinal.omega0 ^ (max A B + 1)) c Γ := by
+    (hC : Provable (Ordinal.omega0 ^ α) c (insert ξ Γ))
+    (hNC : Provable (Ordinal.omega0 ^ β) c (insert (∼ξ) Γ)) :
+    Provable (Ordinal.omega0 ^ (max α β + 1)) c Γ := by
   cases ξ with
   | verum =>
       have hc0 : c = 0 := hξeq.symm
       subst hc0
-      have hNC' : Provable (Ordinal.omega0 ^ B) 0 (insert (⊥ : Form) Γ) := hNC
+      have hNC' : Provable (Ordinal.omega0 ^ β) 0 (insert (⊥ : Formula) Γ) := hNC
       refine (Provable.removeFalsum hNC').mono ?_ le_rfl
       exact Ordinal.opow_le_opow_right Ordinal.omega0_pos
-        (le_trans (le_max_right A B) (le_of_lt (lt_add_of_pos_right _ one_pos)))
+        (le_trans (le_max_right α β) (le_of_lt (lt_add_of_pos_right _ one_pos)))
   | falsum =>
       have hc0 : c = 0 := hξeq.symm
       subst hc0
       refine (Provable.removeFalsum hC).mono ?_ le_rfl
       exact Ordinal.opow_le_opow_right Ordinal.omega0_pos
-        (le_trans (le_max_left A B) (le_of_lt (lt_add_of_pos_right _ one_pos)))
+        (le_trans (le_max_left α β) (le_of_lt (lt_add_of_pos_right _ one_pos)))
   | rel r v =>
       have hc0 : c = 0 := hξeq.symm
       subst hc0
       refine (Provable.atomCut r v hC hNC).mono ?_ le_rfl
-      rw [max_comm A B]; exact opow_add_opow_add_one_le B A
+      rw [max_comm α β]; exact opow_add_opow_add_one_le β α
   | nrel r v =>
       have hc0 : c = 0 := hξeq.symm
       subst hc0
-      have hNC' : Provable (Ordinal.omega0 ^ B) 0 (insert (Semiformula.rel r v) Γ) := hNC
-      exact (Provable.atomCut r v hNC' hC).mono (opow_add_opow_add_one_le A B) le_rfl
+      have hNC' : Provable (Ordinal.omega0 ^ β) 0 (insert (Semiformula.rel r v) Γ) := hNC
+      exact (Provable.atomCut r v hNC' hC).mono (opow_add_opow_add_one_le α β) le_rfl
   | and a b =>
       have hM : max a.complexity b.complexity + 1 = c := hξeq
       have han : a.complexity + 1 ≤ c := by have := le_max_left a.complexity b.complexity; omega
       have hbn : b.complexity + 1 ≤ c := by have := le_max_right a.complexity b.complexity; omega
       exact (Provable.cutReduceConj (by exact_mod_cast han) (by exact_mod_cast hbn) hC hNC).mono
-        (max_opow_add_two_le A B) le_rfl
+        (max_opow_add_two_le α β) le_rfl
   | or a b =>
       have hM : max a.complexity b.complexity + 1 = c := hξeq
       have han : a.complexity + 1 ≤ c := by have := le_max_left a.complexity b.complexity; omega
       have hbn : b.complexity + 1 ≤ c := by have := le_max_right a.complexity b.complexity; omega
       exact (Provable.cutReduceDisj (by exact_mod_cast han) (by exact_mod_cast hbn) hC hNC).mono
-        (max_opow_add_two_le A B) le_rfl
+        (max_opow_add_two_le α β) le_rfl
   | all φ' =>
       have hφn : φ'.complexity + 1 ≤ c := le_of_eq hξeq
       exact (Provable.cutReduceAll (by exact_mod_cast hφn) hC hNC).mono
-        (opow_add_opow_add_one_le A B) le_rfl
+        (opow_add_opow_add_one_le α β) le_rfl
   | exs φ' =>
       -- ξ = ∃φ', ∼ξ = ∀∼φ'.  Use `cutReduceAll` with ∀-side = hNC, ∃-side = hC.
       have hφn : (∼φ').complexity + 1 ≤ c := by
         rw [Semiformula.complexity_neg]; exact le_of_eq hξeq
-      have hC' : Provable (Ordinal.omega0 ^ A) c (insert (∃⁰ ∼(∼φ')) Γ) := by
+      have hC' : Provable (Ordinal.omega0 ^ α) c (insert (∃⁰ ∼(∼φ')) Γ) := by
         rw [DeMorgan.neg]; exact hC
       refine ((Provable.cutReduceAll (by exact_mod_cast hφn) hNC hC').mono ?_ le_rfl)
-      rw [max_comm A B]; exact opow_add_opow_add_one_le B A
+      rw [max_comm α β]; exact opow_add_opow_add_one_le β α
 
 /-- The transfinite induction underlying Thm 19.7: a derivation of cut rank `≤ c+1` becomes
 cut-free-at-`c` at bound `ω^(ordinalBound d)`. Non-principal rules are reapplied (each `ω^· + small ≤ ω^(·+1)`);
 a rank-`< c` cut is kept; a rank-`= c` cut is eliminated by `cutElimPrincipal`. -/
-lemma Provable.cutElimStepAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank d ≤ ((c + 1 : ℕ) : ℕ∞) →
+lemma Provable.cutElimStepAux {c : ℕ} : ∀ {Γ : Finset Formula} (d : Derivation Γ), cutRank d ≤ ((c + 1 : ℕ) : ℕ∞) →
     Provable (Ordinal.omega0 ^ (ordinalBound d)) c Γ := by
   intro Γ d
   induction d with
   | @axL Γ k r v hp hn =>
-    intro _; simp only [Deriv.ordinalBound]
+    intro _; simp only [Derivation.ordinalBound]
     exact (Provable.axL r v hp hn).mono zero_le (Nat.zero_le c)
   | @axTrue Γ k b r v htrue hmem =>
-    intro _; simp only [Deriv.ordinalBound]
+    intro _; simp only [Derivation.ordinalBound]
     exact (Provable.axTrue b r v htrue hmem).mono zero_le (Nat.zero_le c)
   | @verumR Γ h =>
-    intro _; simp only [Deriv.ordinalBound]
+    intro _; simp only [Derivation.ordinalBound]
     exact (Provable.verumR h).mono zero_le (Nat.zero_le c)
   | @weak Δ Γ d' hsub ih =>
-    intro hcr; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     exact (ih hcr).weakening hsub
   | @andI Γ₀ χ₀ χ₁ d₀ d₁ ih₀ ih₁ =>
-    intro hcr; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     exact (Provable.andI χ₀ χ₁ (ih₀ ((le_max_left _ _).trans hcr))
       (ih₁ ((le_max_right _ _).trans hcr))).mono (max_opow_add_one_le (ordinalBound d₀) (ordinalBound d₁)) le_rfl
   | @orI Γ₀ χ₀ χ₁ d' ih =>
-    intro hcr; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     exact (Provable.orI χ₀ χ₁ (ih hcr)).mono (opow_add_one_le' (ordinalBound d')) le_rfl
   | @allω Γ₀ χ' d' ih =>
-    intro hcr; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     have IH : ∀ n, Provable (Ordinal.omega0 ^ (ordinalBound (d' n))) c (insert (χ'/[nm n]) Γ₀) :=
       fun n => ih n ((le_iSup (fun m => cutRank (d' m)) n).trans hcr)
     exact (Provable.allω χ' IH).mono (sup_opow_add_one_le (fun n => ordinalBound (d' n))) le_rfl
   | @exI Γ₀ χ' n d' ih =>
-    intro hcr; simp only [Deriv.cutRank] at hcr; simp only [Deriv.ordinalBound]
+    intro hcr; simp only [Derivation.cutRank] at hcr; simp only [Derivation.ordinalBound]
     exact (Provable.exI χ' n (ih hcr)).mono (opow_add_one_le' (ordinalBound d')) le_rfl
   | @cut Γ₀ ξ d₁ d₂ ih₁ ih₂ =>
-    intro hcr; simp only [Deriv.cutRank] at hcr
+    intro hcr; simp only [Derivation.cutRank] at hcr
     have hcr1 : cutRank d₁ ≤ ((c + 1 : ℕ) : ℕ∞) :=
       (le_max_left (cutRank d₁) (cutRank d₂)).trans ((le_max_right _ _).trans hcr)
     have hcr2 : cutRank d₂ ≤ ((c + 1 : ℕ) : ℕ∞) :=
@@ -1423,7 +1407,7 @@ lemma Provable.cutElimStepAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank
     have hξc : (ξ.complexity + 1 : ℕ∞) ≤ ((c + 1 : ℕ) : ℕ∞) := (le_max_left _ _).trans hcr
     have IH1 := ih₁ hcr1
     have IH2 := ih₂ hcr2
-    simp only [Deriv.ordinalBound]
+    simp only [Derivation.ordinalBound]
     by_cases hkeep : ξ.complexity < c
     · exact (Provable.cut ξ (by exact_mod_cast Nat.succ_le_of_lt hkeep) IH1 IH2).mono
         (max_opow_add_one_le (ordinalBound d₁) (ordinalBound d₂)) le_rfl
@@ -1433,7 +1417,7 @@ lemma Provable.cutElimStepAux {c : ℕ} : ∀ {Γ : Seq} (d : Deriv Γ), cutRank
 
 /-- **One level of cut elimination** (Towsner Thm 19.7): reducing the cut rank by one raises the
 ordinal bound to `ω^α`. -/
-theorem Provable.cutElimStep {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
+theorem Provable.cutElimStep {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
     (h : Provable α (c + 1) Γ) : Provable (Ordinal.omega0 ^ α) c Γ := by
   rcases h with ⟨d, ho, hcr⟩
   exact (Provable.cutElimStepAux d hcr).mono
@@ -1441,7 +1425,7 @@ theorem Provable.cutElimStep {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
 
 /-- **Full cut elimination** (Towsner Thm 19.9): iterate `cutElimStep` `c` times, reaching a
 cut-free derivation at ordinal `ω_c^α`. -/
-theorem Provable.cutElim {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
+theorem Provable.cutElim {α : Ordinal.{0}} {c : ℕ} {Γ : Finset Formula}
     (h : Provable α c Γ) : Provable (omegaTower c α) 0 Γ := by
   induction c generalizing α with
   | zero => simpa [omegaTower] using h
@@ -1449,10 +1433,9 @@ theorem Provable.cutElim {α : Ordinal.{0}} {c : ℕ} {Γ : Seq}
 
 /-! ### `ε₀`-closure of the cut-elimination ordinal
 
-`cutElim` lands at `omegaTower c α = ω_c^α`. For the headline (M7) the cut-free bound must stay
-**below `ε₀`** when the input does — this is exactly what makes Towsner's argument work (`ε₀` is the
-first fixed point of `ω ↦ ω^ω`, hence closed under the `c`-fold tower). Pure ordinal facts, no
-calculus dependence; recorded now so M7 can cite them. -/
+`cutElim` lands at `omegaTower c α = ω_c^α`. The cut-free bound must stay **below `ε₀`** when the
+input does — this is exactly what makes Towsner's argument work (`ε₀` is the first fixed point of
+`ω ↦ ω^ω`, hence closed under the `c`-fold tower). Pure ordinal facts, no calculus dependence. -/
 
 open scoped Ordinal in
 /-- `ε₀` is closed under `ω^·`. -/
@@ -1470,7 +1453,5 @@ lemma omegaTower_lt_epsilon0 : ∀ (c : ℕ) {α : Ordinal.{0}}, α < ε₀ → 
   | 0, _, h => by simpa [omegaTower] using h
   | c + 1, _, h => by
       simpa [omegaTower] using omegaTower_lt_epsilon0 c (omega0_opow_lt_epsilon0 h)
-
-end Deriv
 
 end GoodsteinPA.ZinftyF
