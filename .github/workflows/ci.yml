@@ -82,7 +82,9 @@ jobs:
   # freshly built oleans, and generate the import graph — all sharing the one build.
   build:
     name: Build
-    needs: deps
+    needs:
+      - mk-all-check
+      - deps
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4
@@ -181,7 +183,6 @@ jobs:
     needs:
       - build
       - check-references
-      - mk-all-check
     permissions:
       pages: write
       id-token: write
