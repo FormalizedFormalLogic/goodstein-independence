@@ -34,8 +34,11 @@ public import GoodsteinPA.ToMathlib.Hardy.Anchors
 public import GoodsteinPA.ToMathlib.Hardy.Basic
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 public import GoodsteinPA.ToMathlib.Hardy.Structure
+public import GoodsteinPA.ToMathlib.ONote.Computability
 public import GoodsteinPA.ToMathlib.OmegaTower
 public import GoodsteinPA.ToMathlib.Ordinal
+public import GoodsteinPA.ToMathlib.Ordinal.Epsilon0
+public import GoodsteinPA.ToMathlib.Ordinal.WellFoundedRank
 public import GoodsteinPA.Zinfty.Basic
 public import GoodsteinPA.Zinfty.Cut
 public import GoodsteinPA.Zinfty.Examples

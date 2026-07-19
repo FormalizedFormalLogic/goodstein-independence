@@ -1,13 +1,12 @@
 /-
-# `src/GoodsteinPA/Epsilon0Complete.lean` — ε₀-completeness of CNF notations
+# ε₀-completeness of CNF notations
 
-mathlib's `Mathlib/SetTheory/Ordinal/Notation.lean` proves that `ONote.repr` is order-preserving and
-injective on normal forms — an *embedding* `NONote ↪ ε₀` — but it does NOT prove surjectivity onto the
-ordinals `< ε₀`. That surjectivity is the real F-girder of this project (`PENDING_WORK.md`, lap-18
-reflection): the lower bound `ε₀ ≤ orderType lt` for the seam order `lt` ultimately needs every ordinal
-below ε₀ to be *named* by a CNF notation.
+Mathlib's `Mathlib/SetTheory/Ordinal/Notation.lean` proves that `ONote.repr` is order-preserving
+and injective on normal forms — an *embedding* `NONote ↪ ε₀` — but it does NOT prove surjectivity
+onto the ordinals `< ε₀`.
 
-This file fills that gap with a pure-mathlib proof (zero Foundation dependency):
+This file fills that gap with a pure-mathlib proof (zero project-specific dependency beyond the
+generic well-founded rank machinery):
 
   `exists_NF_repr_eq : ∀ o < ε₀, ∃ x : ONote, x.NF ∧ x.repr = o`.
 
@@ -16,19 +15,29 @@ The proof is the standard Cantor-normal-form recursion. For `o ≠ 0` write `o =
 Both `e` and `r` are `< o` (the key fact `log ω o < o` for `o < ε₀` is `log_omega0_lt_self`, which
 uses that `ω^·` has no fixed point below ε₀), so well-founded recursion on `o` supplies CNF notations
 `ē, r̄` for them, and `ONote.oadd ē c r̄` is the notation for `o`.
+
+The second half of the file transfers this surjectivity to any `ℕ`-order obtained by pulling the
+`NONote` order back along a bijection `e : ℕ ≃ NONote`: the well-founded rank of `n` in the pullback
+order equals `NONote.repr (e n)`, and since `repr ∘ e` is onto `[0, ε₀)`, the order type of the
+pullback is at least `ε₀`. A concrete computable such bijection (`natCode`) is built at the end from
+a structural `Encodable ONote` instance.
 -/
-import Mathlib.SetTheory.Ordinal.Notation
-import Mathlib.SetTheory.Ordinal.Veblen
-import GoodsteinPA.TruthSem
+module
 
-namespace GoodsteinPA.Epsilon0Complete
+public import Mathlib.SetTheory.Ordinal.Notation
+public import Mathlib.SetTheory.Ordinal.Veblen
+public import GoodsteinPA.ToMathlib.Ordinal.WellFoundedRank
 
-open Ordinal ONote
+@[expose] public section
+
+namespace ONote
+
+open Ordinal ONote WellFoundedRank
 open scoped Ordinal
 
 /-- For `0 ≠ o < ε₀`, the leading CNF exponent `log ω o` is strictly below `o`.
 Equality would force `ω ^ o ≤ o`, i.e. `o` to be an ε-number, contradicting `o < ε₀`. -/
-theorem log_omega0_lt_self {o : Ordinal} (ho : o ≠ 0) (hε : o < ε₀) :
+lemma log_omega0_lt_self {o : Ordinal} (ho : o ≠ 0) (hε : o < ε₀) :
     Ordinal.log ω o < o := by
   have h1 : ω ^ Ordinal.log ω o ≤ o := opow_log_le_self ω ho
   have h2 : Ordinal.log ω o ≤ ω ^ Ordinal.log ω o :=
@@ -75,13 +84,13 @@ theorem exists_NF_repr_eq :
         exact div_add_mod o (ω ^ e)
 
 /-- `ε₀` is a limit ordinal: it is `ω ^ ε₀`, a nonzero power of the limit `ω`. -/
-theorem isSuccLimit_epsilon0 : Order.IsSuccLimit ε₀ := by
+lemma isSuccLimit_epsilon0 : Order.IsSuccLimit ε₀ := by
   have h := isSuccLimit_opow_left isSuccLimit_omega0 (epsilon_pos 0).ne'
   rwa [omega0_opow_epsilon] at h
 
 /-- Every normal-form `ONote` represents an ordinal `< ε₀` (the embedding direction; mathlib states
 the type's purpose informally but provides no `repr < ε₀` lemma). -/
-theorem repr_lt_epsilon0 : ∀ x : ONote, x.NF → ONote.repr x < ε₀ := by
+lemma repr_lt_epsilon0 : ∀ x : ONote, x.NF → ONote.repr x < ε₀ := by
   intro x
   induction x with
   | zero => intro _; exact epsilon_pos 0
@@ -119,14 +128,9 @@ theorem range_NONote_repr : Set.range NONote.repr = Set.Iio ε₀ := by
 
 /-! ## Transfer to an `ℕ`-order: `ε₀ ≤ orderType` of any pullback of the `NONote` order
 
-The Boundedness/Seam machinery needs a well-order `lt : ℕ → ℕ → Prop` with `ε₀ ≤ orderType lt`.
-Pulling the `NONote` order back along *any* bijection `e : ℕ ≃ NONote` works: the project's rank
-`rk (ltPull e) n` equals `NONote.repr (e n)`, and since `repr ∘ e` is onto `[0, ε₀)` (the girder),
-no ordinal `< ε₀` can bound all the ranks, forcing `ε₀ ≤ orderType (ltPull e)`. This decouples the
-order-type half of F from the concrete *computable* coding (which Worker B/D will pin for the
-`ℒₒᵣ`-definability `φ`): the lemma holds for any equiv, so the eventual coding instantiates it. -/
-
-open GoodsteinPA.TruthSem
+Pulling the `NONote` order back along *any* bijection `e : ℕ ≃ NONote` yields a well-founded order
+on `ℕ` of order type at least `ε₀`: the rank `rk (ltPull e) n` equals `NONote.repr (e n)`, and since
+`repr ∘ e` is onto `[0, ε₀)`, no ordinal `< ε₀` can bound all the ranks. -/
 
 /-- The `NONote` order pulled back to `ℕ` along a coding `e`. -/
 def ltPull (e : ℕ ≃ NONote) (a b : ℕ) : Prop := e a < e b
@@ -134,9 +138,9 @@ def ltPull (e : ℕ ≃ NONote) (a b : ℕ) : Prop := e a < e b
 instance ltPull_wf (e : ℕ ≃ NONote) : IsWellFounded ℕ (ltPull e) :=
   ⟨InvImage.wf e NONote.lt_wf⟩
 
-/-- The ≺-rank of `n` in the pullback order is the ordinal `NONote.repr (e n)`. This is the
-`note_rank_eq_repr` of the seam advice — true precisely because `repr ∘ e` is *onto* `[0, ε₀)`. -/
-theorem rk_ltPull_eq_repr (e : ℕ ≃ NONote) (n : ℕ) :
+/-- The `≺`-rank of `n` in the pullback order is the ordinal `NONote.repr (e n)`, true precisely
+because `repr ∘ e` is *onto* `[0, ε₀)`. -/
+lemma rk_ltPull_eq_repr (e : ℕ ≃ NONote) (n : ℕ) :
     rk (ltPull e) n = NONote.repr (e n) := by
   refine IsWellFounded.induction
     (motive := fun k => rk (ltPull e) k = NONote.repr (e k)) (ltPull e) n ?_
@@ -162,8 +166,8 @@ theorem rk_ltPull_eq_repr (e : ℕ ≃ NONote) (n : ℕ) :
     rw [IH m₀ hrel, he] at this
     exact lt_irrefl _ this
 
-/-- **The order-type half of F.** For any coding `e : ℕ ≃ NONote`, the pullback order on `ℕ` has
-order type at least `ε₀` — exactly the `Seam.ge` obligation. -/
+/-- **Order type of a `NONote`-pullback.** For any coding `e : ℕ ≃ NONote`, the pullback order on `ℕ`
+has order type at least `ε₀`. -/
 theorem epsilon0_le_orderType_ltPull (e : ℕ ≃ NONote) :
     ε₀ ≤ orderType (ltPull e) := by
   by_contra hlt
@@ -203,7 +207,7 @@ def decodeONote : ℕ → ONote
     · exact Nat.lt_succ_of_le (Nat.unpair_left_le m)
     · exact Nat.lt_succ_of_le ((Nat.unpair_right_le _).trans (Nat.unpair_right_le m))
 
-theorem decodeONote_encodeONote : ∀ x : ONote, decodeONote (encodeONote x) = x
+lemma decodeONote_encodeONote : ∀ x : ONote, decodeONote (encodeONote x) = x
   | ONote.zero => by simp only [encodeONote, decodeONote]
   | ONote.oadd e n a => by
       rw [encodeONote, decodeONote]
@@ -227,14 +231,14 @@ instance : Encodable NONote :=
 instance : Denumerable NONote :=
   Denumerable.ofEncodableOfInfinite NONote
 
-/-- A concrete **computable** coding of `ℕ` by CNF notations (= `Denumerable.ofNat NONote`). Worker B
-must build `φ` defining `ltPull natCode` over THIS decode so the two codings are identical by
-construction; computability (not `ofCountable`) is what keeps `ltPull natCode` an `REPred`. -/
+/-- A concrete **computable** coding of `ℕ` by CNF notations (= `Denumerable.ofNat NONote`). Being
+built from the structural `Encodable ONote` instance above (rather than the classical
+`Encodable.ofCountable`) keeps `natCode` — and hence `ltPull natCode` — computable. -/
 def natCode : ℕ ≃ NONote := (Denumerable.eqv NONote).symm
 
-/-- **A concrete `ℕ`-order of order type ≥ ε₀** (the standalone `Seam.ge` witness). -/
+/-- **A concrete `ℕ`-order of order type ≥ ε₀.** -/
 theorem epsilon0_le_orderType_natCode :
     ε₀ ≤ orderType (ltPull natCode) :=
   epsilon0_le_orderType_ltPull natCode
 
-end GoodsteinPA.Epsilon0Complete
+end ONote
