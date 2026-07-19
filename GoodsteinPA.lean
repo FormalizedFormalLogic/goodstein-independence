@@ -13,8 +13,8 @@ public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Reduction
 public import GoodsteinPA.Statement
 public import GoodsteinPA.ToMathlib.FastGrowing.Basic
+public import GoodsteinPA.ToMathlib.FastGrowing.EguchiWeiermannIteration
 public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
-public import GoodsteinPA.ToMathlib.FastGrowing.EwIter
 public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.ToMathlib.Goodstein.Computability

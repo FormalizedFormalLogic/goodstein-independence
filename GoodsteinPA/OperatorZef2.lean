@@ -1,7 +1,7 @@
 module
 
 public import GoodsteinPA.OperatorZeh
-public import GoodsteinPA.ToMathlib.FastGrowing.EwIter
+public import GoodsteinPA.ToMathlib.FastGrowing.EguchiWeiermannIteration
 public import GoodsteinPA.Compat
 
 @[expose] public section
