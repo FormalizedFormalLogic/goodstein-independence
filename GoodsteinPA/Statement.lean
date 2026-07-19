@@ -15,9 +15,7 @@ via the growth route:
 
 Footprint: `[propext, Classical.choice, Quot.sound]` (no `sorry`, no blueprint axiom, no
 `native_decide`/`ofReduceBool`) — pinned by the guarded `#print axioms` in
-`scripts/AxiomCheck.lean`, the enforced point of truth. (An earlier, still-incomplete
-Con(𝗣𝗔)/Gödel-II route — resting on the open `goodstein_implies_consistency` girder — is
-banked in `Reduction.lean` as `peano_not_proves_goodstein_routeA`, off the clean summit.)
+`scripts/AxiomCheck.lean`, the enforced point of truth.
 
 ⚠️ Anti-vacuity: this headline is only meaningful because `goodsteinSentence` (`Encoding.lean`)
 is the faithful encoding AND the bridge `(ℕ ⊨ goodsteinSentence) ↔ Goodstein-terminates` is
@@ -25,7 +23,6 @@ proved (`wip/Bridge.lean`, axiom-clean). Those faithfulness anchors are LOCKED.
 -/
 module
 
-public import GoodsteinPA.Reduction
 public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.E1EmbeddingGrind
@@ -62,9 +59,8 @@ attribute [goodstein_blueprint 14 clean "wainer_axiom" "0" 100 wainer_bound_of_p
 /-- **Kirby–Paris (1982).** Peano Arithmetic does not prove that every Goodstein sequence
 terminates. If PA proved Goodstein, Wainer would put the Goodstein length below a fixed `f_o`
 (`wainer_bound_of_pa_proves_goodstein`); Cichon/Caicedo says no fixed `f_o` bounds it
-(`Goodstein.cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing`). The earlier Route-A
-consistency-girder body is banked in `Reduction.lean`. Ledger: `#print axioms` ⇒
-`[propext, Classical.choice, Quot.sound]`. -/
+(`Goodstein.cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing`). Ledger:
+`#print axioms` ⇒ `[propext, Classical.choice, Quot.sound]`. -/
 theorem peano_not_proves_goodstein : 𝗣𝗔 ⊬ ↑goodsteinSentence := by
   intro hpa
   obtain ⟨o, ho, hbound⟩ := wainer_bound_of_pa_proves_goodstein hpa
@@ -73,7 +69,7 @@ theorem peano_not_proves_goodstein : 𝗣𝗔 ⊬ ↑goodsteinSentence := by
 attribute [goodstein_blueprint 16 clean "pa_not_proves_goodstein" "0" 100 peano_not_proves_goodstein
   []
   ["Crown: PA ⊬ Goodstein assembled from the discharged Wainer bound vs the Cichon/Caicedo no-fixed-bound theorem."]
-  "Crown: the PA ⊬ Goodstein summit, proved from wainer_bound_of_pa_proves_goodstein and Goodstein.cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing; footprint [propext, Classical.choice, Quot.sound]. The Route-A consistency-girder body is banked in Reduction.lean as peano_not_proves_goodstein_routeA."]
+  "Crown: the PA ⊬ Goodstein summit, proved from wainer_bound_of_pa_proves_goodstein and Goodstein.cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing; footprint [propext, Classical.choice, Quot.sound]."]
   peano_not_proves_goodstein
 
 end GoodsteinPA

@@ -10,7 +10,6 @@ public import GoodsteinPA.OperatorZef2
 public import GoodsteinPA.OperatorZeh
 public import GoodsteinPA.OperatorZinfty
 public import GoodsteinPA.ReadoffValueGate
-public import GoodsteinPA.Reduction
 public import GoodsteinPA.Statement
 public import GoodsteinPA.ToMathlib.FastGrowing.Basic
 public import GoodsteinPA.ToMathlib.FastGrowing.EguchiWeiermannIteration
