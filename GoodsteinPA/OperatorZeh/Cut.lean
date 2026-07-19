@@ -1,7 +1,6 @@
 module
 
 public import GoodsteinPA.OperatorZeh.Inversion
-public import GoodsteinPA.BlueprintAttr
 
 @[expose] public section
 
