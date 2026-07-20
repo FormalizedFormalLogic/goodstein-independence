@@ -53,27 +53,22 @@ namespace Zeh
 /-- **`mono_H`** — the replacement for `Zekd.mono_k`/`Zekd.mono_d`: raise the generator set and
 the stage together.  The `exI` bound rides `hardy_monotone` (argument monotonicity — no
 ordinal-raise, hence no gate); memberships ride `Cl_mono`. -/
-theorem mono_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zeh α e H m c Γ → ∀ {H' : ONote → Prop} {m' : ℕ},
-    (∀ β, H β → H' β) → m ≤ m' → Zeh α e H' m' c Γ := by
-  intro α e H m c Γ dd
-  induction dd with
-  | axL r v hp hn => intro H' m' _ _; exact Zeh.axL r v hp hn
-  | wk hsub _ ih => intro H' m' hH hm; exact Zeh.wk hsub (ih hH hm)
+theorem mono_H {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zeh α e H m c Γ) {H' : ONote → Prop} {m' : ℕ}
+    (hH : ∀ β, H β → H' β) (hm : m ≤ m') : Zeh α e H' m' c Γ := by
+  induction dd generalizing H' m' with
+  | axL r v hp hn => exact Zeh.axL r v hp hn
+  | wk hsub _ ih => exact Zeh.wk hsub (ih hH hm)
   | weak hβ hβNF hαNF hβH hsub _ ih =>
-      intro H' m' hH hm
       exact Zeh.weak hβ hβNF hαNF (Cl_mono hH hβH) hsub (ih hH hm)
   | allω φ β hβ hβNF hαNF hβH _ ih =>
-      intro H' m' hH hm
       refine Zeh.allω φ β hβ hβNF hαNF
         (fun n => Cl_mono (fun γ hγ => hγ.imp_left (hH γ)) (hβH n))
         (fun n => ih n (fun γ hγ => hγ.imp_left (hH γ)) (max_le_max hm (le_refl n)))
   | exI φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro H' m' hH hm
       exact Zeh.exI φ n hβ hβNF hαNF (Cl_mono hH hβH)
         (le_trans hbound (hardy_monotone _ (by omega))) (ih hH hm)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro H' m' hH hm
       exact Zeh.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF (Cl_mono hH hβφH) (Cl_mono hH hβψH)
         (ih₁ hH hm) (ih₂ hH hm)
 
@@ -90,20 +85,18 @@ strong form of `mono_H` that `mono_H` (which needs `H ⊆ H'`) cannot express: t
 freely replaceable in BOTH directions.  Discharges the operator-threading bookkeeping in the
 f-slot reductions — the running relativization `adjoin H n` of the inversion family and the
 ambient `H` of the ∃-side are interchangeable at will (membership is bookkeeping only). -/
-theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zeh α e H m c Γ → ∀ {H' : ONote → Prop}, Zeh α e H' m c Γ := by
-  intro α e H m c Γ dd
-  induction dd with
-  | axL r v hp hn => intro H'; exact Zeh.axL r v hp hn
-  | wk hsub _ ih => intro H'; exact Zeh.wk hsub (ih)
-  | weak hβ hβNF hαNF _ hsub _ ih => intro H'; exact Zeh.weak hβ hβNF hαNF (Cl_of_NF hβNF) hsub ih
+theorem change_H {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zeh α e H m c Γ) {H' : ONote → Prop} : Zeh α e H' m c Γ := by
+  induction dd generalizing H' with
+  | axL r v hp hn => exact Zeh.axL r v hp hn
+  | wk hsub _ ih => exact Zeh.wk hsub ih
+  | weak hβ hβNF hαNF _ hsub _ ih => exact Zeh.weak hβ hβNF hαNF (Cl_of_NF hβNF) hsub ih
   | allω φ β hβ hβNF hαNF _ _ ih =>
-      intro H'
       exact Zeh.allω φ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n)) (fun n => ih n)
   | exI φ n hβ hβNF hαNF _ hbound _ ih =>
-      intro H'; exact Zeh.exI φ n hβ hβNF hαNF (Cl_of_NF hβNF) hbound ih
+      exact Zeh.exI φ n hβ hβNF hαNF (Cl_of_NF hβNF) hbound ih
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF _ _ _ _ ih₁ ih₂ =>
-      intro H'; exact Zeh.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF
+      exact Zeh.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
 
 end Zeh
@@ -142,19 +135,17 @@ namespace Zeh
 
 /-- **`c`-monotonicity** (cut rank): a derivation valid at rank `c` is valid at any `c' ≥ c`.
 Only the `cut` rule reads `c` (via `hcompl : φ.complexity < c`), so every other case threads. -/
-theorem mono_c : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zeh α e H m c Γ → ∀ {c' : ℕ}, c ≤ c' → Zeh α e H m c' Γ := by
-  intro α e H m c Γ dd
-  induction dd with
-  | axL r v hp hn => intro c' _; exact Zeh.axL r v hp hn
-  | wk hsub _ ih => intro c' hc; exact Zeh.wk hsub (ih hc)
-  | weak hβ hβNF hαNF hβH hsub _ ih => intro c' hc; exact Zeh.weak hβ hβNF hαNF hβH hsub (ih hc)
+theorem mono_c {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zeh α e H m c Γ) {c' : ℕ} (hc : c ≤ c') : Zeh α e H m c' Γ := by
+  induction dd generalizing c' with
+  | axL r v hp hn => exact Zeh.axL r v hp hn
+  | wk hsub _ ih => exact Zeh.wk hsub (ih hc)
+  | weak hβ hβNF hαNF hβH hsub _ ih => exact Zeh.weak hβ hβNF hαNF hβH hsub (ih hc)
   | allω φ β hβ hβNF hαNF hβH _ ih =>
-      intro c' hc; exact Zeh.allω φ β hβ hβNF hαNF hβH (fun n => ih n hc)
+      exact Zeh.allω φ β hβ hβNF hαNF hβH (fun n => ih n hc)
   | exI φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro c' hc; exact Zeh.exI φ n hβ hβNF hαNF hβH hbound (ih hc)
+      exact Zeh.exI φ n hβ hβNF hαNF hβH hbound (ih hc)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro c' hc
       exact Zeh.cut φ (lt_of_lt_of_le hcompl hc) hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH
         (ih₁ hc) (ih₂ hc)
 

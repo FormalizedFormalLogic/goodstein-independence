@@ -113,9 +113,8 @@ theorem isOperator_Cl (S : ONote → Prop) : IsOperator (Cl S) where
   osucc_mem := Cl.osucc
 
 /-- Closure is monotone in the generators (feeds `Zeh.mono_H`). -/
-theorem Cl_mono {S S' : ONote → Prop} (h : ∀ β, S β → S' β) :
-    ∀ {β : ONote}, Cl S β → Cl S' β := by
-  intro β hβ
+theorem Cl_mono {S S' : ONote → Prop} (h : ∀ β, S β → S' β) {β : ONote} (hβ : Cl S β) :
+    Cl S' β := by
   induction hβ with
   | base hb => exact Cl.base (h _ hb)
   | ofNat n => exact Cl.ofNat n
@@ -127,8 +126,7 @@ theorem Cl_mono {S S' : ONote → Prop} (h : ∀ β, S β → S' β) :
 `IsOperator` set containing the generators (the bridge between the abstract-`H` and
 generated-`H` formulations). -/
 theorem Cl_sub_of_isOperator {S H : ONote → Prop} (hop : IsOperator H)
-    (hSH : ∀ β, S β → H β) : ∀ {β : ONote}, Cl S β → H β := by
-  intro β hβ
+    (hSH : ∀ β, S β → H β) {β : ONote} (hβ : Cl S β) : H β := by
   induction hβ with
   | base hb => exact hSH _ hb
   | ofNat n => exact hop.ofNat_mem n
@@ -182,14 +180,11 @@ theorem oaddZero_mem {S : ONote → Prop} {ε : ONote} (hε : ε.NF) (hεS : Cl 
 at the `ε₀` level, all of the notation system is hereditarily generated from numerals by
 `+` and `ω^·`.  Consequence: membership side conditions are uniformly dischargeable (good for
 the seams) and carry no numeric information (fatal for any membership-based bound). -/
-theorem Cl_of_NF {S : ONote → Prop} : ∀ {β : ONote}, β.NF → Cl S β := by
-  intro β
+theorem Cl_of_NF {S : ONote → Prop} {β : ONote} (h : β.NF) : Cl S β := by
   induction β with
   | zero =>
-      intro _
       exact Cl.ofNat 0
   | oadd ε n a ihε iha =>
-      intro h
       have hε : ε.NF := h.fst
       have ha : a.NF := h.snd
       have hhead : (oadd ε n 0).NF := hε.oadd n NFBelow.zero

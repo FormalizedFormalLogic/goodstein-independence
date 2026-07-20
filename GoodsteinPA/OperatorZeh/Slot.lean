@@ -135,8 +135,7 @@ theorem iter_normControlled {f : ℕ → ℕ} {e : ONote} {m : ℕ}
 /-- Iterate monotone in the index count: `f^[j] ≤ f^[k]` pointwise for `j ≤ k`, `f` inflationary +
 monotone.  Feeds `mono_f` when a pass outputs a longer iterate than a sibling branch needs. -/
 theorem iter_le_of_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
-    {j k : ℕ} (hjk : j ≤ k) : ∀ x, f^[j] x ≤ f^[k] x := by
-  intro x
+    {j k : ℕ} (hjk : j ≤ k) (x : ℕ) : f^[j] x ≤ f^[k] x := by
   obtain ⟨d, rfl⟩ := Nat.le.dest hjk
   rw [Function.iterate_add_apply]
   exact iter_monotone hf_mono j (iter_infl hf_infl d x)
@@ -250,18 +249,16 @@ step `iterSlot f β x = iterSlot f γ (f x)` shifts the argument from `x` to `f 
 absorbed by inflationarity (`x ≤ f x`, `hf_infl`) plus monotonicity of the intermediate
 `iterSlot f γ` — the exact analog of `hardy_le_of_reaches`'s `Nat.le_succ` absorption. -/
 theorem iterSlot_le_of_reaches {f : ℕ → ℕ} (hf_infl : ∀ x, x ≤ f x) {x : ℕ} {β α : ONote}
-    (h : Reaches x β α) :
-    (∀ γ, Reaches x β γ → Monotone (iterSlot f γ)) → iterSlot f α x ≤ iterSlot f β x := by
+    (h : Reaches x β α) (hmono : ∀ γ, Reaches x β γ → Monotone (iterSlot f γ)) :
+    iterSlot f α x ≤ iterSlot f β x := by
   induction h with
-  | refl a => intro _; exact le_rfl
+  | refl a => exact le_rfl
   | @succ β γ α hb _ ih =>
-      intro hmono
       have hmγ : Monotone (iterSlot f γ) := hmono γ (Reaches.succ hb (Reaches.refl γ))
       have ihγ : iterSlot f α x ≤ iterSlot f γ x := ih (fun δ hδ => hmono δ (Reaches.succ hb hδ))
       have heq : iterSlot f β x = iterSlot f γ (f x) := by rw [iterSlot_succ f _ hb]
       rw [heq]; exact le_trans ihγ (hmγ (hf_infl x))
   | @limit β α g hb _ ih =>
-      intro hmono
       have ihg : iterSlot f α x ≤ iterSlot f (g x) x :=
         ih (fun δ hδ => hmono δ (Reaches.limit hb hδ))
       have heq : iterSlot f β x = iterSlot f (g x) x := by rw [iterSlot_limit f _ hb]

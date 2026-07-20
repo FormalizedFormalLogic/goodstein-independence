@@ -37,29 +37,24 @@ the sequent.  The bound consumes ONLY the judgment's control `e` and stage `m`.
 - [Tow20, §17, Theorem 17.1]
 -/
 theorem readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
-    (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v) :
-    ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zeh α e H m c Γ → c = 0 → ReadoffShape φ e m Γ → ReadoffGoal φ e m Γ := by
-  intro α e H m c Γ dd
+    (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
+    {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zeh α e H m c Γ) (hc : c = 0) (hshape : ReadoffShape φ e m Γ) : ReadoffGoal φ e m Γ := by
   induction dd with
   | @axL α e H m c Γ ar r v hp hn =>
-      intro _ _
       by_cases htrue : atomTrue (Semiformula.rel r v)
       · exact Or.inr ⟨_, hp, htrue, ar, r, v, Or.inl rfl⟩
       · refine Or.inr ⟨_, hn, ?_, ar, r, v, Or.inr rfl⟩
         simpa [atomTrue, Semiformula.eval_nrel, Semiformula.eval_rel, Function.comp_def] using htrue
   | @wk α e H m c Δ Γ hsub _ ih =>
-      intro hc hshape
       rcases ih hc (fun ψ hψ => hshape ψ (hsub hψ)) with h | ⟨ψ, hψ, hrest⟩
       · exact Or.inl h
       · exact Or.inr ⟨ψ, hsub hψ, hrest⟩
   | @weak α β e H m c Δ Γ hβ hβNF hαNF hβH hsub _ ih =>
-      intro hc hshape
       rcases ih hc (fun ψ hψ => hshape ψ (hsub hψ)) with h | ⟨ψ, hψ, hrest⟩
       · exact Or.inl h
       · exact Or.inr ⟨ψ, hsub hψ, hrest⟩
   | @allω α e H m c Γ χ β hβ hβNF hαNF hβH _ _ =>
-      intro _ hshape
       rcases hshape (∀⁰ χ) (Finset.mem_insert_self _ _) with h | ⟨n, _, h⟩ | ⟨ar, r, v, h | h⟩
       · exact absurd h (by simp [UnivQuantifier.all, ExsQuantifier.exs])
       · obtain ⟨ar, r, v, hrel⟩ := hφinst n
@@ -68,7 +63,6 @@ theorem readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
       · exact absurd h (by simp [UnivQuantifier.all])
       · exact absurd h (by simp [UnivQuantifier.all])
   | @exI α β e H m c Γ χ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro hc hshape
       have hχφ : χ = φ := by
         rcases hshape (∃⁰ χ) (Finset.mem_insert_self _ _) with h | ⟨n', _, h⟩ | ⟨ar, r, v, h | h⟩
         · simpa [ExsQuantifier.exs] using h
@@ -90,7 +84,6 @@ theorem readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
         · exact Or.inl ⟨n, hbound, htrue⟩
         · exact Or.inr ⟨ψ, Finset.mem_insert_of_mem hψΓ, htrue, hlit⟩
   | @cut α βφ βψ e H m c Γ χ hcompl _ _ _ _ _ _ _ _ _ _ _ =>
-      intro hc _
       exact absurd hcompl (by omega)
 
 /-- **The headline-instantiation read-off**: a rank-0 `Zeh` root deriving the single
@@ -143,29 +136,24 @@ def ReadoffGoalF (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Fins
 sequent: a witness `n ≤ f 0` with `φ/[nm n]` true, or a true literal.  The bound is EXACTLY the
 slot at 0. -/
 theorem readoff_sigma1_Zef {φ : ArithmeticSemiformula ℕ 1}
-    (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef α e H f c Γ → c = 0 → ReadoffShapeF φ f Γ → ReadoffGoalF φ f Γ := by
-  intro α e H f c Γ dd
+    (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef α e H f c Γ) (hc : c = 0) (hshape : ReadoffShapeF φ f Γ) : ReadoffGoalF φ f Γ := by
   induction dd with
   | @axL α e H f c Γ ar r v hp hn =>
-      intro _ _
       by_cases htrue : atomTrue (Semiformula.rel r v)
       · exact Or.inr ⟨_, hp, htrue, ar, r, v, Or.inl rfl⟩
       · refine Or.inr ⟨_, hn, ?_, ar, r, v, Or.inr rfl⟩
         simpa [atomTrue, Semiformula.eval_nrel, Semiformula.eval_rel, Function.comp_def] using htrue
   | @wk α e H f c Δ Γ hsub _ ih =>
-      intro hc hshape
       rcases ih hc (fun ψ hψ => hshape ψ (hsub hψ)) with h | ⟨ψ, hψ, hrest⟩
       · exact Or.inl h
       · exact Or.inr ⟨ψ, hsub hψ, hrest⟩
   | @weak α β e H f c Δ Γ hβ hβNF hαNF hβH hsub _ ih =>
-      intro hc hshape
       rcases ih hc (fun ψ hψ => hshape ψ (hsub hψ)) with h | ⟨ψ, hψ, hrest⟩
       · exact Or.inl h
       · exact Or.inr ⟨ψ, hsub hψ, hrest⟩
   | @allω α e H f c Γ χ β hβ hβNF hαNF hβH _ _ =>
-      intro _ hshape
       rcases hshape (∀⁰ χ) (Finset.mem_insert_self _ _) with h | ⟨n, _, h⟩ | ⟨ar, r, v, h | h⟩
       · exact absurd h (by simp [UnivQuantifier.all, ExsQuantifier.exs])
       · obtain ⟨ar, r, v, hrel⟩ := hφinst n
@@ -174,7 +162,6 @@ theorem readoff_sigma1_Zef {φ : ArithmeticSemiformula ℕ 1}
       · exact absurd h (by simp [UnivQuantifier.all])
       · exact absurd h (by simp [UnivQuantifier.all])
   | @exI α β e H f c Γ χ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro hc hshape
       have hχφ : χ = φ := by
         rcases hshape (∃⁰ χ) (Finset.mem_insert_self _ _) with h | ⟨n', _, h⟩ | ⟨ar, r, v, h | h⟩
         · simpa [ExsQuantifier.exs] using h
@@ -196,7 +183,6 @@ theorem readoff_sigma1_Zef {φ : ArithmeticSemiformula ℕ 1}
         · exact Or.inl ⟨n, hbound, htrue⟩
         · exact Or.inr ⟨ψ, Finset.mem_insert_of_mem hψΓ, htrue, hlit⟩
   | @cut α βφ βψ e H f c Γ χ hcompl _ _ _ _ _ _ _ _ _ _ _ =>
-      intro hc _
       exact absurd hcompl (by omega)
 
 /-- **`headline_readoff_Zef`** — the slot-calculus exit: a rank-0 `Zef` root deriving `{∃⁰ φ}`

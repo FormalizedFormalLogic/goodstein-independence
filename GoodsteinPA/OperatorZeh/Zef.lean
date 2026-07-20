@@ -61,40 +61,35 @@ theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ
 
 /-- **Slot weakening** (`mono_f` — the slot analog of `Zeh.mono_H`'s stage-raise): a larger slot
 is more permissive.  `exI` rides `n ≤ f 0 ≤ f' 0`; `allω` rides `rel1_mono`. -/
-theorem mono_f : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef α e H f c Γ → ∀ {f' : ℕ → ℕ}, (∀ x, f x ≤ f' x) → Zef α e H f' c Γ := by
-  intro α e H f c Γ dd
-  induction dd with
-  | axL r v hp hn => intro f' _; exact Zef.axL r v hp hn
-  | wk hsub _ ih => intro f' hff'; exact Zef.wk hsub (ih hff')
+theorem mono_f {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef α e H f c Γ) {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) : Zef α e H f' c Γ := by
+  induction dd generalizing f' with
+  | axL r v hp hn => exact Zef.axL r v hp hn
+  | wk hsub _ ih => exact Zef.wk hsub (ih hff')
   | weak hβ hβNF hαNF hβH hsub _ ih =>
-      intro f' hff'; exact Zef.weak hβ hβNF hαNF hβH hsub (ih hff')
+      exact Zef.weak hβ hβNF hαNF hβH hsub (ih hff')
   | allω φ β hβ hβNF hαNF hβH _ ih =>
-      intro f' hff'
       exact Zef.allω φ β hβ hβNF hαNF hβH (fun n => ih n (rel1_mono hff' n))
   | exI φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro f' hff'
       exact Zef.exI φ n hβ hβNF hαNF hβH (le_trans hbound (hff' 0)) (ih hff')
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro f' hff'
       exact Zef.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hff') (ih₂ hff')
 
 /-- **Operator irrelevance** (R1, slot form): the generator slot `H` carries no information
 (every `Cl H β` side condition is at an NF ordinal — `Cl_of_NF`), so a derivation at `H` is one
 at any `H'`, same `(α, e, f, c, Γ)`.  Mirrors `Zeh.change_H`. -/
-theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef α e H f c Γ → ∀ {H' : ONote → Prop}, Zef α e H' f c Γ := by
-  intro α e H f c Γ dd
-  induction dd with
-  | axL r v hp hn => intro H'; exact Zef.axL r v hp hn
-  | wk hsub _ ih => intro H'; exact Zef.wk hsub ih
-  | weak hβ hβNF hαNF _ hsub _ ih => intro H'; exact Zef.weak hβ hβNF hαNF (Cl_of_NF hβNF) hsub ih
+theorem change_H {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef α e H f c Γ) {H' : ONote → Prop} : Zef α e H' f c Γ := by
+  induction dd generalizing H' with
+  | axL r v hp hn => exact Zef.axL r v hp hn
+  | wk hsub _ ih => exact Zef.wk hsub ih
+  | weak hβ hβNF hαNF _ hsub _ ih => exact Zef.weak hβ hβNF hαNF (Cl_of_NF hβNF) hsub ih
   | allω φ β hβ hβNF hαNF _ _ ih =>
-      intro H'; exact Zef.allω φ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n)) (fun n => ih n)
+      exact Zef.allω φ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n)) (fun n => ih n)
   | exI φ n hβ hβNF hαNF _ hbound _ ih =>
-      intro H'; exact Zef.exI φ n hβ hβNF hαNF (Cl_of_NF hβNF) hbound ih
+      exact Zef.exI φ n hβ hβNF hαNF (Cl_of_NF hβNF) hbound ih
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF _ _ _ _ ih₁ ih₂ =>
-      intro H'; exact Zef.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF
+      exact Zef.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
 
 /-- Combined operator+slot move (operator free via `change_H`, slot raised via `mono_f`) — the
@@ -164,19 +159,17 @@ cuts before eliminating them and to rebuild ω-nodes.  None raises the control; 
 
 /-- **`c`-monotonicity** (cut rank): a derivation valid at rank `c` is valid at any `c' ≥ c`.
 Only the `cut` rule reads `c` (via `hcompl : φ.complexity < c`), so every other case threads. -/
-theorem Zef.mono_c : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef α e H f c Γ → ∀ {c' : ℕ}, c ≤ c' → Zef α e H f c' Γ := by
-  intro α e H f c Γ dd
-  induction dd with
-  | axL r v hp hn => intro c' _; exact Zef.axL r v hp hn
-  | wk hsub _ ih => intro c' hc; exact Zef.wk hsub (ih hc)
-  | weak hβ hβNF hαNF hβH hsub _ ih => intro c' hc; exact Zef.weak hβ hβNF hαNF hβH hsub (ih hc)
+theorem Zef.mono_c {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef α e H f c Γ) {c' : ℕ} (hc : c ≤ c') : Zef α e H f c' Γ := by
+  induction dd generalizing c' with
+  | axL r v hp hn => exact Zef.axL r v hp hn
+  | wk hsub _ ih => exact Zef.wk hsub (ih hc)
+  | weak hβ hβNF hαNF hβH hsub _ ih => exact Zef.weak hβ hβNF hαNF hβH hsub (ih hc)
   | allω φ β hβ hβNF hαNF hβH _ ih =>
-      intro c' hc; exact Zef.allω φ β hβ hβNF hαNF hβH (fun n => ih n hc)
+      exact Zef.allω φ β hβ hβNF hαNF hβH (fun n => ih n hc)
   | exI φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro c' hc; exact Zef.exI φ n hβ hβNF hαNF hβH hbound (ih hc)
+      exact Zef.exI φ n hβ hβNF hαNF hβH hbound (ih hc)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro c' hc
       exact Zef.cut φ (lt_of_lt_of_le hcompl hc) hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH
         (ih₁ hc) (ih₂ hc)
 

@@ -42,20 +42,17 @@ the two axis-critical moves:
 theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
-    (fam : ∀ n (H' : ONote → Prop), Zef α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zef γ e H f c Δ → γ.NF →
-      Monotone f → (∀ x, x ≤ f x) → (∃⁰ ∼φ) ∈ Δ →
-      ZefProv (osucc (α + γ)) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
-  intro γ H f Δ D
+    (fam : ∀ n (H' : ONote → Prop), Zef α e H' (rel1 g n) c (insert (φ/[nm n]) Γ))
+    {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)} (D : Zef γ e H f c Δ)
+    (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hmem : (∃⁰ ∼φ) ∈ Δ) :
+    ZefProv (osucc (α + γ)) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   induction D with
   | @axL γ e H f c Δ ar r v hp hn =>
-      intro hγNF _ _ hmem
       refine ZefProv.of (osucc_NF (ONote.add_nf α γ)) (Cl_of_NF (osucc_NF (ONote.add_nf α γ))) ?_
       exact Zef.axL r v
         (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩))
         (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩))
   | @wk γ e H f c Δsub Δsup hsub D' ih =>
-      intro hγNF hmono hinfl hmem
       by_cases hd : (∃⁰ ∼φ) ∈ Δsub
       · exact (ih hφc heNF fam hγNF hmono hinfl hd).weakening (by
           intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
@@ -68,7 +65,6 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
             exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
   | @weak γ β e H f c Δsub Δsup hβ hβNF hγNF' hβH hsub D' ih =>
-      intro hγNF hmono hinfl hmem
       by_cases hd : (∃⁰ ∼φ) ∈ Δsub
       · exact ((ih hφc heNF fam hβNF hmono hinfl hd).weakening (by
           intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
@@ -82,7 +78,6 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
             exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
   | @allω γ e H f c Γ₀ χ β hβ hβNF hγNF' hβH dd ih =>
-      intro hγNF hmono hinfl hmem
       have hhead : (∀⁰ χ) ≠ (∃⁰ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
       have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have hsuccNF : (osucc (α + γ)).NF := osucc_NF (ONote.add_nf α γ)
@@ -110,7 +105,6 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
         · exact Or.inl ⟨hhead, Or.inl rfl⟩
         · tauto)
   | @exI γ β e H f c Γ₀ χ n hβ hβNF hγNF' hβH hbound dχ ih =>
-      intro hγNF hmono hinfl hmem
       have hsuccNF : (osucc (α + γ)).NF := osucc_NF (ONote.add_nf α γ)
       by_cases hhd : (∃⁰ χ) = (∃⁰ ∼φ)
       · -- PRINCIPAL: χ = ∼φ; cut `fam n` (re-slotted to `g∘f`) against the ∃-premise.
@@ -173,7 +167,6 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           · exact Or.inl ⟨hhd, Or.inl rfl⟩
           · tauto)
   | @cut γ βφ βψ e H f c Γ₀ χ hχc hβφ hβψ hβφNF hβψNF hγNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
-      intro hγNF hmono hinfl hmem
       obtain ⟨a₁, ha₁le, ha₁NF, ha₁H, D₁⟩ := ih₁ hφc heNF fam hβφNF hmono hinfl (Finset.mem_insert_of_mem hmem)
       obtain ⟨a₂, ha₂le, ha₂NF, ha₂H, D₂⟩ := ih₂ hφc heNF fam hβψNF hmono hinfl (Finset.mem_insert_of_mem hmem)
       have hsuccNF : (osucc (α + γ)).NF := osucc_NF (ONote.add_nf α γ)
