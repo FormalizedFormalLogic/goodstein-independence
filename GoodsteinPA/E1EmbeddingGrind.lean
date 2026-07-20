@@ -569,7 +569,7 @@ theorem budgetedEmbedsTC_or {Γ : Finset (ArithmeticFormula ℕ)}
     omega
   have hor := Zef2TC.orI (α := osucc α) hg
     (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
-    (Zekd.lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
+    (lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
   have hmem : (Embedding.asg env ▹ φ ⋎ Embedding.asg env ▹ ψ)
       ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
     have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
@@ -588,9 +588,9 @@ theorem budgetedEmbedsTC_and {Γ : Finset (ArithmeticFormula ℕ)}
   have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
   have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
   have hlt₁ : e₁ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Zekd.le_add_right_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ he₂) (lt_osucc headdNF)
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Zekd.le_add_left_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   refine ⟨B₁ + B₂ + norm e₁ + norm e₂, max d₁ d₂, osucc (e₁ + e₂), heNF, fun env => ?_⟩
   obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
   obtain ⟨K₂, α₂, hα₂NF, D₂⟩ := ih₂ env
@@ -624,8 +624,8 @@ theorem budgetedEmbedsTC_and {Γ : Finset (ArithmeticFormula ℕ)}
     omega
   have hand := Zef2TC.andI (α := osucc (α₁ + α₂)) hg
     (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
-    (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
-    (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
+    (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
+    (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
   have hmem : (Embedding.asg env ▹ φ ⋏ Embedding.asg env ▹ ψ)
       ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
@@ -645,9 +645,9 @@ theorem budgetedEmbedsTC_cut {Γ : Finset (ArithmeticFormula ℕ)}
   have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
   have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
   have hlt₁ : e₁ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Zekd.le_add_right_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ he₂) (lt_osucc headdNF)
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Zekd.le_add_left_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   refine ⟨B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity, max (max d₁ d₂) (φ.complexity + 1),
     osucc (e₁ + e₂), heNF, fun env => ?_⟩
   obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
@@ -697,8 +697,8 @@ theorem budgetedEmbedsTC_cut {Γ : Finset (ArithmeticFormula ℕ)}
     simp only [Semiformula.complexity_rew]
     omega
   exact Zef2TC.cut hg (Embedding.asg env ▹ φ) hcompl hread
-    (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
-    (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
+    (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
+    (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
 
 /- **`axm` / `all` leaves of `budgetedEmbedding_Zef2TC` — RETIRED (SERIES-5 Lane C).**  These were
@@ -1015,8 +1015,8 @@ theorem budgetedEmbedsTC_exs {Γ : Finset (ArithmeticFormula ℕ)}
   have Dnum : Zef2TC (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))) e₁ (fun _ => True) F d
       (insert (ψ'/[nm m]) (Γ.image (fun χ => Embedding.asg env ▹ χ))) :=
     Zef2TC.cut hgcut (ψ'/[s]) hcompl hread
-      (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hofNF) (Zekd.lt_osucc haddNF))
-      (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hofNF) (Zekd.lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_right_NF hα₁NF hofNF) (lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_left_NF hα₁NF hofNF) (lt_osucc haddNF))
       hα₁NF hofNF (osucc_NF haddNF) (clT _) (clT _) Dsrc Dcong'
   -- the ∃-introduction at the numeral witness `m`
   refine ⟨K, osucc (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))),
@@ -1040,7 +1040,7 @@ theorem budgetedEmbedsTC_exs {Γ : Finset (ArithmeticFormula ℕ)}
   have hwit : m ≤ F 0 := le_trans (by omega) (index_le_relSlot_zero e₁ B K)
   have hexI := Zef2TC.exI (α := osucc (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))))
     hgout ψ' m
-    (Zekd.lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
+    (lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
     (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
   have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
     have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
@@ -1359,7 +1359,7 @@ theorem budgetedEmbedsV3_or {Γ : Finset (ArithmeticFormula ℕ)}
       omega
     have hor := Zef2TC.orI (α := osucc α) hg
       (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
-      (Zekd.lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
+      (lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
     have hmem : (Embedding.asg env ▹ φ ⋎ Embedding.asg env ▹ ψ)
         ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
       have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h; simpa using this
@@ -1450,7 +1450,7 @@ theorem budgetedEmbedsV3_all {Γ : Finset (ArithmeticFormula ℕ)}
     have hall := Zef2TC.allω (α := osucc α)
       (f := rel1 (ewRootSlot e (B + 1)) (envSup env N)) hgate
       ((Embedding.asg env).q ▹ φ) (fun _ => α)
-      (fun _ => Zekd.lt_osucc hαNF) (fun _ => hαNF) (osucc_NF hαNF) hrel hfam
+      (fun _ => lt_osucc hαNF) (fun _ => hαNF) (osucc_NF hαNF) hrel hfam
     have hmem : (Embedding.asg env ▹ (∀⁰ φ))
         ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := Finset.mem_image_of_mem _ h
     rw [show (Embedding.asg env ▹ (∀⁰ φ)) = ∀⁰ ((Embedding.asg env).q ▹ φ) by simp] at hmem
@@ -1470,9 +1470,9 @@ theorem budgetedEmbedsV3_and {Γ : Finset (ArithmeticFormula ℕ)}
   have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
   have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
   have hlt₁ : e₁ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Zekd.le_add_right_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ he₂) (lt_osucc headdNF)
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Zekd.le_add_left_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   have haddNF : (α₁ + α₂).NF := by haveI := hα₁NF; haveI := hα₂NF; exact ONote.add_nf α₁ α₂
   set B := max B₁ B₂ + norm e₁ + norm e₂ + 2 with hB
   refine ⟨B, max d₁ d₂, max N₁ N₂, osucc (e₁ + e₂), osucc (α₁ + α₂),
@@ -1501,8 +1501,8 @@ theorem budgetedEmbedsV3_and {Γ : Finset (ArithmeticFormula ℕ)}
       omega
     have hand := Zef2TC.andI (α := osucc (α₁ + α₂)) hg
       (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
-      (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
-      (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
     have hmem : (Embedding.asg env ▹ φ ⋏ Embedding.asg env ▹ ψ)
         ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
@@ -1522,9 +1522,9 @@ theorem budgetedEmbedsV3_cut {Γ : Finset (ArithmeticFormula ℕ)}
   have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
   have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
   have hlt₁ : e₁ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Zekd.le_add_right_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ he₂) (lt_osucc headdNF)
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Zekd.le_add_left_NF he₁ he₂) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   have haddNF : (α₁ + α₂).NF := by haveI := hα₁NF; haveI := hα₂NF; exact ONote.add_nf α₁ α₂
   set B := max B₁ B₂ + norm e₁ + norm e₂ + φ.complexity + 2 with hB
   refine ⟨B, max (max d₁ d₂) (φ.complexity + 1), max N₁ N₂, osucc (e₁ + e₂),
@@ -1565,8 +1565,8 @@ theorem budgetedEmbedsV3_cut {Γ : Finset (ArithmeticFormula ℕ)}
       simp only [Semiformula.complexity_rew]
       omega
     exact Zef2TC.cut hg (Embedding.asg env ▹ φ) hcompl hread
-      (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
-      (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hα₂NF) (Zekd.lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
 
 /-- **V3 `exs`** — the closed-term collapse with a STRUCTURAL witness budget.  The witness
@@ -1590,9 +1590,9 @@ theorem budgetedEmbedsV3_exs {Γ : Finset (ArithmeticFormula ℕ)}
   have heNF : (osucc (e₁ + eG)).NF := osucc_NF headdNF
   set e : ONote := osucc (e₁ + eG) with he
   have hlt₁ : e₁ < e :=
-    lt_of_le_of_lt (Zekd.le_add_right_NF he₁ heGNF) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ heGNF) (lt_osucc headdNF)
   have hltG : eG < e :=
-    lt_of_le_of_lt (Zekd.le_add_left_NF he₁ heGNF) (Zekd.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ heGNF) (lt_osucc headdNF)
   set B : ℕ := B₁ + φ.complexity + clog (2 * φ.complexity + 1)
     + norm e₁ + norm eG + 3 with hB
   set d : ℕ := max d₁ (φ.complexity + 1) with hd
@@ -1658,8 +1658,8 @@ theorem budgetedEmbedsV3_exs {Γ : Finset (ArithmeticFormula ℕ)}
         (fun _ => True) F d
         (insert (ψ'/[nm m]) (Γ.image (fun χ => Embedding.asg env ▹ χ))) :=
       Zef2TC.cut hgcut (ψ'/[s]) hcompl hread
-        (lt_of_le_of_lt (Zekd.le_add_right_NF hα₁NF hofNF) (Zekd.lt_osucc haddNF))
-        (lt_of_le_of_lt (Zekd.le_add_left_NF hα₁NF hofNF) (Zekd.lt_osucc haddNF))
+        (lt_of_le_of_lt (le_add_right_NF hα₁NF hofNF) (lt_osucc haddNF))
+        (lt_of_le_of_lt (le_add_left_NF hα₁NF hofNF) (lt_osucc haddNF))
         hα₁NF hofNF (osucc_NF haddNF) (clT _) (clT _) Dsrc Dcong'
     -- THE structural witness bound: `m ≤ Gexp^[c] ≤ hardy eG ≤ hardy e ≤ F 0`
     have hwit : m ≤ F 0 := by
@@ -1686,7 +1686,7 @@ theorem budgetedEmbedsV3_exs {Γ : Finset (ArithmeticFormula ℕ)}
     have hexI := Zef2TC.exI
       (α := osucc (osucc (α₁ + ONote.ofNat (2 * φ.complexity + 1))))
       hgout ψ' m
-      (Zekd.lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
+      (lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
       (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
     have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
       have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
@@ -2171,7 +2171,7 @@ theorem allClosure_peel {e : ONote} {d : ℕ} {f₀ : ℕ → ℕ} :
           exact hinst (m :> w) (adjoin H' m) (rel1 f' m) (rel1_monotone hmono' m)
             (rel1_infl hinfl' m) (le_trans hf0' hf'm)
         have hgd : Nlog (osucc α) ≤ f' 0 := le_trans (hg 1 (by omega)) hf0'
-        exact Zef2TC.allω hgd _ (fun _ => α) (fun _ => Zekd.lt_osucc hNF) (fun _ => hNF)
+        exact Zef2TC.allω hgd _ (fun _ => α) (fun _ => lt_osucc hNF) (fun _ => hNF)
           (osucc_NF hNF) (fun m => hCl (adjoin H' m)) fam
       have h := ih (osucc α) (osucc_NF hNF) (fun S => Cl.osucc (hCl S)) (∀⁰ χ) Γ step
         (fun k hk => by
@@ -2460,14 +2460,14 @@ theorem succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
     ht.wk ht.gate (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto)
   have horI₂ := Zef2TC.orI (α := osucc ONote.omega)
     (le_trans hNs (le_trans (by omega : (3:ℕ) ≤ 12) (le_trans (by omega) hg1)))
-    (∃⁰ (∼stepw)) (∀⁰ ψw) (Zekd.lt_osucc omega_NF) omega_NF (osucc_NF omega_NF)
+    (∃⁰ (∼stepw)) (∀⁰ ψw) (lt_osucc omega_NF) omega_NF (osucc_NF omega_NF)
     (Cl_omega H) hre
   have hre₂ : Zef2TC (osucc ONote.omega) e H f (ψw.complexity + 1)
       (insert (∼(ψw/[t0])) (insert ((∃⁰ (∼stepw)) ⋎ (∀⁰ ψw)) Γ)) :=
     horI₂.wk horI₂.gate (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto)
   have horI₁ := Zef2TC.orI (α := osucc (osucc ONote.omega))
     (le_trans hNss (le_trans (by omega : (4:ℕ) ≤ 12) (le_trans (by omega) hg1)))
-    (∼(ψw/[t0])) ((∃⁰ (∼stepw)) ⋎ (∀⁰ ψw)) (Zekd.lt_osucc (osucc_NF omega_NF))
+    (∼(ψw/[t0])) ((∃⁰ (∼stepw)) ⋎ (∀⁰ ψw)) (lt_osucc (osucc_NF omega_NF))
     (osucc_NF omega_NF) (osucc_NF (osucc_NF omega_NF)) (Cl.osucc (Cl_omega H)) hre₂
   rw [hb]
   exact horI₁
@@ -3106,10 +3106,10 @@ theorem stepAnd_Zef2TC {φ ψ : Form} {βφ βψ e : ONote} {H : ONote → Prop}
   have hα₁NF : (osucc (βφ + βψ)).NF := osucc_NF hσNF
   have hα₂NF : (osucc (osucc (βφ + βψ))).NF := osucc_NF hα₁NF
   have hβφ1 : βφ < osucc (βφ + βψ) :=
-    lt_of_le_of_lt (Zekd.le_add_right_NF hβφNF hβψNF) (Zekd.lt_osucc hσNF)
+    lt_of_le_of_lt (le_add_right_NF hβφNF hβψNF) (lt_osucc hσNF)
   have hβψ1 : βψ < osucc (βφ + βψ) :=
-    lt_of_le_of_lt (Zekd.le_add_left_NF hβφNF hβψNF) (Zekd.lt_osucc hσNF)
-  have h12 : osucc (βφ + βψ) < osucc (osucc (βφ + βψ)) := Zekd.lt_osucc hα₁NF
+    lt_of_le_of_lt (le_add_left_NF hβφNF hβψNF) (lt_osucc hσNF)
+  have h12 : osucc (βφ + βψ) < osucc (osucc (βφ + βψ)) := lt_osucc hα₁NF
   have hβφ2 : βφ < osucc (osucc (βφ + βψ)) := lt_trans hβφ1 h12
   have hα₁N : Nlog (osucc (βφ + βψ)) ≤ f 0 :=
     le_trans (Nlog_osucc_le hσNF) (by omega)
@@ -3303,7 +3303,7 @@ theorem stepAtom_Zef2TC {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Se
     rw [Finset.erase_insert_eq_erase] at E
     have E' : Zef2TC βψ e H f c Γ := Zef2TC.wk E.gate (Finset.erase_subset _ _) E
     exact Zef2TC.weak hα₁N
-      (lt_of_le_of_lt (Zekd.le_add_left_NF hβφNF hβψNF) (Zekd.lt_osucc hσNF))
+      (lt_of_le_of_lt (le_add_left_NF hβφNF hβψNF) (lt_osucc hσNF))
       hβψNF hα₁NF (Cl_of_NF hβψNF) (Finset.Subset.refl _) E'
   · -- `rel` is FALSE: erase it from `D₁`
     have hntrue : atomTrue (Semiformula.nrel rr vv) :=
@@ -3312,7 +3312,7 @@ theorem stepAtom_Zef2TC {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Se
     rw [Finset.erase_insert_eq_erase] at E
     have E' : Zef2TC βφ e H f c Γ := Zef2TC.wk E.gate (Finset.erase_subset _ _) E
     exact Zef2TC.weak hα₁N
-      (lt_of_le_of_lt (Zekd.le_add_right_NF hβφNF hβψNF) (Zekd.lt_osucc hσNF))
+      (lt_of_le_of_lt (le_add_right_NF hβφNF hβψNF) (lt_osucc hσNF))
       hβφNF hα₁NF (Cl_of_NF hβφNF) (Finset.Subset.refl _) E'
 
 /-- **`stepVerum_Zef2TC`** — the ⊤-principal top-rank cut is FREE: `∼⊤ = ⊥` and ⊥ is never
@@ -3410,7 +3410,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)
-      · exact ⟨γ, Zekd.le_add_left_NF hαNF hγNF, hγNF, Cl_of_NF hγNF,
+      · exact ⟨γ, le_add_left_NF hαNF hγNF, hγNF, Cl_of_NF hγNF,
           le_trans hαN (reslot_exside hg_infl 0),
           Zef2TC.wk (le_trans hαN (reslot_exside hg_infl 0)) (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
@@ -3423,8 +3423,8 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)).mono
-          (le_of_lt (Zekd.add_lt_add_left_NF hαNF hβNF hγNF hβ))
-      · exact ⟨β, le_of_lt (lt_of_lt_of_le hβ (Zekd.le_add_left_NF hαNF hγNF)), hβNF, Cl_of_NF hβNF,
+          (le_of_lt (add_lt_add_left_NF hαNF hβNF hγNF hβ))
+      · exact ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_add_left_NF hαNF hγNF)), hβNF, Cl_of_NF hβNF,
           le_trans (Zef2TC.gate D') (reslot_exside hg_infl 0),
           Zef2TC.wk (le_trans (Zef2TC.gate D') (reslot_exside hg_infl 0)) (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
@@ -3452,8 +3452,8 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
       have hAnd : Zef2TC (α + γ) e H (g ∘ f) c
           (insert (χ₁ ⋏ χ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
         Zef2TC.andI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ₁ χ₂
-          (lt_of_le_of_lt ha₁le (Zekd.add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
-          (lt_of_le_of_lt ha₂le (Zekd.add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
+          (lt_of_le_of_lt ha₁le (add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
+          (lt_of_le_of_lt ha₂le (add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
           ha₁NF ha₂NF haddNF ha₁H ha₂H D₁' D₂'
       exact Zef2TC.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
         intro x hx
@@ -3479,7 +3479,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
       have hOr : Zef2TC (α + γ) e H (g ∘ f) c
           (insert (χ₁ ⋎ χ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
         Zef2TC.orI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ₁ χ₂
-          (lt_of_le_of_lt hale (Zekd.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+          (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
           haNF haddNF haH Da'
       exact Zef2TC.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
         intro x hx
@@ -3508,7 +3508,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
         exact Zef2TC.allω (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ (fun n => (ihn n).choose)
           (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
-            (Zekd.add_lt_add_left_NF hαNF (hβNF n) hγNF (hβ n)))
+            (add_lt_add_left_NF hαNF (hβNF n) hγNF (hβ n)))
           (fun n => (ihn n).choose_spec.2.1) haddNF
           (fun n => Cl_of_NF (ihn n).choose_spec.2.1)
           (fun n => (ihn n).choose_spec.2.2.2.2)
@@ -3551,7 +3551,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
               simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) Da
           refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
           exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
-            (lt_of_le_of_lt hale (Zekd.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+            (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
             hαNF haNF haddNF (Cl_of_NF hαNF) haH famn Da'
         · have Dβ' : Zef2TC β e H (g ∘ f) c
               (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
@@ -3565,7 +3565,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
               (dχ.mono_f (reslot_exside hg_infl))
           refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
           exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
-            (lt_of_lt_of_le hβ (Zekd.le_add_left_NF hαNF hγNF))
+            (lt_of_lt_of_le hβ (le_add_left_NF hαNF hγNF))
             hαNF hβNF haddNF (Cl_of_NF hαNF) (Cl_of_NF hβNF) famn Dβ'
       · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
         obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hφc heNF fam hβNF hmono hinfl hsl hφread
@@ -3583,7 +3583,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           · exact Or.inl ⟨hhd, Or.inl rfl⟩
           · tauto)
           (Zef2TC.exI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ n
-            (lt_of_le_of_lt hale (Zekd.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+            (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
             haNF haddNF haH hbound' Da')
   | @cut γ βφ βψ e H f c Γ₀ hαN χ hχc hcutRead' hβφ hβψ hβφNF hβψNF hγNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
       intro hγNF hmono hinfl hsl hφread hmem
@@ -3603,8 +3603,8 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
       refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
       exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ hχc
         (le_trans hcutRead' (hg_infl (f 0)))
-        (lt_of_le_of_lt ha₁le (Zekd.add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
-        (lt_of_le_of_lt ha₂le (Zekd.add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
+        (lt_of_le_of_lt ha₁le (add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
+        (lt_of_le_of_lt ha₂le (add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF haddNF ha₁H ha₂H D₁' D₂'
 
 /-- **`stepAllωTC_bnd`** — the bound-exposing principal ∀/∃ cut-reduction step over `Zef2TC`
