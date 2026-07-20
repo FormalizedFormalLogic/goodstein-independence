@@ -77,14 +77,14 @@ gate through the reduction / inversion. -/
 lemma gate (dd : Zef2 α e H f c Γ) : Nlog α ≤ f 0 := by
   cases dd <;> assumption
 
-lemma weakening {Δ : Finset (ArithmeticFormula ℕ)}
+lemma weakening {Δ}
     (hαN : Nlog α ≤ f 0) (hsub : Δ ⊆ Γ) (dd : Zef2 α e H f c Δ) :
     Zef2 α e H f c Γ :=
   Zef2.wk hαN hsub dd
 
 /-- **Slot weakening** (`mono_f`): a larger slot is more permissive (all gates ride `f 0 ≤ f' 0`;
 `exI` bound rides it too; `allω` rides `rel1_mono`). -/
-lemma mono_f (dd : Zef2 α e H f c Γ) {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) : Zef2 α e H f' c Γ := by
+lemma mono_f (dd : Zef2 α e H f c Γ) {f'} (hff' : ∀ x, f x ≤ f' x) : Zef2 α e H f' c Γ := by
   induction dd generalizing f' with
   | axL hαN r v hp hn =>
       exact Zef2.axL (le_trans hαN (hff' 0)) r v hp hn
@@ -103,7 +103,7 @@ lemma mono_f (dd : Zef2 α e H f c Γ) {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤
         hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hff') (ih₂ hff')
 
 /-- **Operator irrelevance** (R1): the generator slot `H` carries no information. -/
-lemma change_H (dd : Zef2 α e H f c Γ) {H' : ONote → Prop} : Zef2 α e H' f c Γ := by
+lemma change_H (dd : Zef2 α e H f c Γ) {H'} : Zef2 α e H' f c Γ := by
   induction dd generalizing H' with
   | axL hαN r v hp hn => exact Zef2.axL hαN r v hp hn
   | wk hαN hsub _ ih => exact Zef2.wk hαN hsub ih
@@ -119,7 +119,7 @@ lemma change_H (dd : Zef2 α e H f c Γ) {H' : ONote → Prop} : Zef2 α e H' f 
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
 
 /-- Combined operator+slot move. -/
-lemma mono_Hf (dd : Zef2 α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
+lemma mono_Hf (dd : Zef2 α e H f c Γ) {H'} {f'} (hff' : ∀ x, f x ≤ f' x) :
     Zef2 α e H' f' c Γ := (dd.change_H).mono_f hff'
 
 /-- **`toZef`** — the forgetful map dropping the `Nlog`/cut-read gate (the mandated read-off route;
@@ -146,11 +146,11 @@ lemma of (hNF : α.NF) (hH : Cl H α) (hN : Nlog α ≤ f 0) (D : Zef2 α e H f 
     Zef2Prov α e H f c Γ :=
   ⟨α, le_refl _, hNF, hH, hN, D⟩
 
-lemma mono {β : ONote} (hα : α ≤ β) : Zef2Prov α e H f c Γ → Zef2Prov β e H f c Γ := by
+lemma mono {β} (hα : α ≤ β) : Zef2Prov α e H f c Γ → Zef2Prov β e H f c Γ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', le_trans hα' hα, hNF, hH, hN, D⟩
 
-lemma weakening {Δ : Finset (ArithmeticFormula ℕ)}
+lemma weakening {Δ}
     (h : Γ ⊆ Δ) : Zef2Prov α e H f c Γ → Zef2Prov α e H f c Δ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', hα', hNF, hH, hN, D.wk hN h⟩

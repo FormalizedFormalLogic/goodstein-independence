@@ -17,7 +17,7 @@ These are the size-control facts the reduction's synthesized `osucc (α + γ)` r
 `ewN (osucc (α + γ)) ≤ ewN α + ewN γ + 1`.  Unconditional for `+`, needs `NF` for `osucc`. -/
 
 /-- `ewN` is sub-additive over `addAux`. -/
-lemma ewN_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
+lemma ewN_addAux_le (e) (n : ℕ+) (o) :
     ewN (addAux e n o) ≤ ewN e + (n : ℕ) + ewN o := by
   unfold addAux
   cases o with
@@ -33,7 +33,7 @@ lemma ewN_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
       | gt => simp only [ewN_oadd]; omega
 
 /-- `ewN` is sub-additive over ordinal addition (unconditional). -/
-lemma ewN_add_le (a o : ONote) : ewN (a + o) ≤ ewN a + ewN o := by
+lemma ewN_add_le (a o) : ewN (a + o) ≤ ewN a + ewN o := by
   induction a generalizing o with
   | zero => simp [ewN]
   | oadd e n b ihe ih =>
@@ -98,7 +98,7 @@ lemma collapse_add_lt (hβφ : βφ.NF) (hβψ : βψ.NF) (_hα : α.NF)
   exact (Ordinal.isPrincipal_add_omega0_opow α.repr) hφr hψr
 
 /-- `ewN (collapse α) = ewN α + 1` (`collapse α = oadd α 1 0`). -/
-lemma ewN_collapse (α : ONote) : ewN (collapse α) = ewN α + 1 := by
+lemma ewN_collapse (α) : ewN (collapse α) = ewN α + 1 := by
   simp [collapse, expTower, ewN]
 
 /-- **Per-node gate for the pass** — the rebuilt node at `collapse α` with slot `ewIter f α` needs
@@ -126,7 +126,7 @@ lemma ewN_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
 
 /-- `Nlog (collapse α) = Nlog α + 1` (`collapse α = oadd α 1 0`, `clog 1 = 1`) — the `Nlog`
 analog of `ewN_collapse`. -/
-lemma Nlog_collapse (α : ONote) : Nlog (collapse α) = Nlog α + 1 := by
+lemma Nlog_collapse (α) : Nlog (collapse α) = Nlog α + 1 := by
   show Nlog (oadd α 1 0) = Nlog α + 1
   have hc : clog 1 = 1 := by decide
   simp [Nlog_oadd, hc]

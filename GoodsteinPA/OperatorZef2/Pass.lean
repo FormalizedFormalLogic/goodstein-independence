@@ -29,8 +29,8 @@ The crux decomposition is in three cases:
 - `cut`: sub-rank rebuild (χ.complexity < c) OR TOP-rank eliminate (χ.complexity = c, ∀/∃ →
   `stepAllω_Zf2` + `collapse_add_lt` + `ewIter_comp_le`; the c=0 atomic case needs an atom-cut lemma).
 -/
-lemma passAux (c : ℕ) (heNF : e.NF) {f : ℕ → ℕ}
-    {r : ℕ} (D : Zef2 α e H f r Γ) (hr : r = c + 1)
+lemma passAux (c) (heNF : e.NF) {f}
+    {r} (D : Zef2 α e H f r Γ) (hr : r = c + 1)
     (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hlow : ∀ m, 2 * m + 1 ≤ f m)
     (hαNF : α.NF) (hαH : Cl H α) :
     Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
@@ -226,7 +226,7 @@ collapses (`collapse α`) and the numeric slot iterates (`ewIter f α`).
 
 - [EW12, Lemma 26, Lemma 27]
 -/
-lemma cutElimPass_Zef2 {c : ℕ} (f : ℕ → ℕ)
+lemma cutElimPass_Zef2 {c} (f)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f (c + 1) Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapse α) e H (ewIter f α) c Γ :=
@@ -236,7 +236,7 @@ lemma cutElimPass_Zef2 {c : ℕ} (f : ℕ → ℕ)
 (`cutElimPass_Zef2`, rank `1 → 0`) composed with `headline_readoff_Zef2`, at the concrete
 `ewRootSlot`.  The `ewIter (ewRootSlot e m) α 0` iterate is VISIBLE in the bound and is what the
 read-off reads. -/
-lemma cutElimPass_exit_root_Zef2 {m : ℕ}
+lemma cutElimPass_exit_root_Zef2 {m}
     {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
@@ -287,7 +287,7 @@ lemma rankToZeroAux (e : ONote) (heNF : e.NF) (d : ℕ) {f : ℕ → ℕ}
 /-- **`rankToZero_Zef2`** — iterate `cutElimPass_Zef2` down the cut rank `d → 0`.
 A plain induction over the pass (`rankToZeroAux`): `d` applications collapse the ordinal to
 `collapseIter d α` and tower the slot to `ewIterTower f d α`, landing at rank 0. -/
-lemma rankToZero_Zef2 {d : ℕ} (f : ℕ → ℕ)
+lemma rankToZero_Zef2 {d} (f)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f d Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ :=

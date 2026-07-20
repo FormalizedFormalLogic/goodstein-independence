@@ -15,7 +15,7 @@ variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : F
 /-- The numeral term `nm n` (`OperatorZinfty.nm`) evaluates to `n` under any standard-model
 assignment — the value of a closed numeral const is assignment-independent.  Local companion of
 `stdClosedVal_nm`, phrased with `valm ℕ` so it `rw`s inside `eval_substs` read-offs. -/
-@[simp] lemma valm_nm (n : ℕ) (f : ℕ → ℕ) :
+@[simp] lemma valm_nm (n) (f) :
     GoodsteinPA.Compat.gValm ℕ ![] f (nm n) = n := by simp [nm]
 
 /-- **Rank-0 `Zef2` soundness** (the reusable truth core of the Δ₀ read-off).  A cut-free
@@ -184,7 +184,7 @@ guard, as for the Goodstein bounded-`∀` clauses), that survivor is contradicto
 `atomTrue (∀⁰ χ)`, contradicting `hfalse`.  So under `hmono` the trap never fires.  A ready
 building block for a monotone-guarded specialization of `readoff_delta0_Zef2`. -/
 lemma readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
-    {Γ₀ : Finset (ArithmeticFormula ℕ)} {β : ℕ → ONote}
+    {Γ₀} {β : ℕ → ONote}
     (_hbranch : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) 0 (insert (χ/[nm n]) Γ₀))
     (_htrap : (∃⁰ φ) ∈ Γ₀)
     (hfalse : ¬ atomTrue (∀⁰ χ))
