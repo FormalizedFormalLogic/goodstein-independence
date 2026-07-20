@@ -11,7 +11,7 @@ open LO LO.FirstOrder ONote
 /-! ### The PA-induction leaf's witness side condition
 
 The unbounded `PXFc` induction-axiom construction in `EmbeddingBound.metaInduction_cong_bdd`
-uses an `∃`-introduction with witness `n` at the `n`-th step of the cut tower.  In `Zekd` that
+uses an `∃`-introduction with witness `n` at the `n`-th step of the cut tower.  In `Provable` that
 move is legal only when the witness is bounded by `hardy e (k+d)`.
 
 These lemmas isolate the decisive arithmetic.  A fixed numeric index cannot support all
@@ -33,14 +33,14 @@ theorem inductionLeaf_runningIndex_witnessBound (e : ONote) (k d n : ℕ) :
     n ≤ hardy e (max k n + d) :=
   le_trans (by omega) (le_hardy e (max k n + d))
 
-/-- The actual `Zekd.exI` move needed in the induction-axiom leaf is legal at the running
+/-- The actual `Provable.exI` move needed in the induction-axiom leaf is legal at the running
 index.  This is the local replacement for the unbounded proof's free `PXFc.exI` step. -/
 theorem inductionLeaf_exI_runningIndex_probe {α β e : ONote} {k d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {φ : ArithmeticSemiformula ℕ 1}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < max k n + d)
-    (D : Zekd β e (max k n) d c (insert (φ/[nm n]) Γ)) :
-    Zekd α e (max k n) d c (insert (∃⁰ φ) Γ) :=
-  Zekd.exI φ n hβ hβNF hαNF hτ (inductionLeaf_runningIndex_witnessBound e k d n) D
+    (D : Provable β e (max k n) d c (insert (φ/[nm n]) Γ)) :
+    Provable α e (max k n) d c (insert (∃⁰ φ) Γ) :=
+  Provable.exI φ n hβ hβNF hαNF hτ (inductionLeaf_runningIndex_witnessBound e k d n) D
 
 /-! #### Bounded embedding leaves: value-congruent atomic closure -/
 
@@ -68,7 +68,7 @@ lemma embedding_subst_q_cons_app {n : ℕ} (w : Fin n → ArithmeticTerm ℕ) (m
   show Rew.subst ![nm m] ▹ ((Rew.subst w).q ▹ ψ) = Rew.subst (nm m :> w) ▹ ψ
   rw [← TransitiveRewriting.comp_app, embedding_subst_q_cons]
 
-/-- Standard-value congruence for renamed terms, ported to the `Zekd` embedding probes. -/
+/-- Standard-value congruence for renamed terms, ported to the `Provable` embedding probes. -/
 lemma embedding_valm_subst_congr {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
     (t : ArithmeticSemiterm ℕ n) :
@@ -123,7 +123,7 @@ variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 /--
 Bounded value-congruent atomic closure, relation-positive side.
 
-This is the `Zekd` base leaf needed by assignment-carrying embedding: if the sequent contains
+This is the `Provable` base leaf needed by assignment-carrying embedding: if the sequent contains
 `R(v)` and `¬R(v')`, and the closed term vectors have equal standard values, a bounded truth leaf
 closes the sequent at any normal ordinal whose norm fits the current budget.
 -/
@@ -132,13 +132,13 @@ theorem embedding_valueCongruentRelAtom_probe {ar : ℕ}
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v' ∈ Γ) :
-    Zekd α e k d c Γ := by
+    Provable α e k d c Γ := by
   by_cases hrel : atomTrue (Semiformula.rel r v)
-  · exact Zekd.trueRel r v hrel hτ hαNF hp
+  · exact Provable.trueRel r v hrel hτ hαNF hp
   · have hrel' : ¬ atomTrue (Semiformula.rel r v') := by
       intro hv'
       exact hrel ((atomTrue_rel_congr r v v' hval).mpr hv')
-    exact Zekd.trueNrel r v' ((atomTrue_nrel_iff_not_rel r v').mpr hrel') hτ hαNF hn
+    exact Provable.trueNrel r v' ((atomTrue_nrel_iff_not_rel r v').mpr hrel') hτ hαNF hn
 
 /--
 Bounded value-congruent atomic closure, negated-relation-positive side.
@@ -150,13 +150,13 @@ theorem embedding_valueCongruentNrelAtom_probe {ar : ℕ}
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
     (hp : Semiformula.nrel r v ∈ Γ) (hn : Semiformula.rel r v' ∈ Γ) :
-    Zekd α e k d c Γ := by
+    Provable α e k d c Γ := by
   by_cases hnrel : atomTrue (Semiformula.nrel r v)
-  · exact Zekd.trueNrel r v hnrel hτ hαNF hp
+  · exact Provable.trueNrel r v hnrel hτ hαNF hp
   · have hnrel' : ¬ atomTrue (Semiformula.nrel r v') := by
       intro hv'
       exact hnrel ((atomTrue_nrel_congr r v v' hval).mpr hv')
-    exact Zekd.trueRel r v' ((atomTrue_rel_iff_not_nrel r v').mpr hnrel') hτ hαNF hn
+    exact Provable.trueRel r v' ((atomTrue_rel_iff_not_nrel r v').mpr hnrel') hτ hαNF hn
 
 /-- Substituted-term form of the bounded value-congruent relation atom leaf. -/
 theorem embedding_valueCongruentRelSubstAtom_probe {ar n : ℕ}
@@ -166,7 +166,7 @@ theorem embedding_valueCongruentRelSubstAtom_probe {ar n : ℕ}
     (hαNF : α.NF) (hτ : norm α < k + d)
     (hp : Semiformula.rel r (fun i => Rew.subst w (v i)) ∈ Γ)
     (hn : Semiformula.nrel r (fun i => Rew.subst w' (v i)) ∈ Γ) :
-    Zekd α e k d c Γ :=
+    Provable α e k d c Γ :=
   embedding_valueCongruentRelAtom_probe r
     (fun i => Rew.subst w (v i)) (fun i => Rew.subst w' (v i))
     (fun i => embedding_valm_subst_congr w w' hval (v i)) hαNF hτ hp hn
@@ -179,7 +179,7 @@ theorem embedding_valueCongruentNrelSubstAtom_probe {ar n : ℕ}
     (hαNF : α.NF) (hτ : norm α < k + d)
     (hp : Semiformula.nrel r (fun i => Rew.subst w (v i)) ∈ Γ)
     (hn : Semiformula.rel r (fun i => Rew.subst w' (v i)) ∈ Γ) :
-    Zekd α e k d c Γ :=
+    Provable α e k d c Γ :=
   embedding_valueCongruentNrelAtom_probe r
     (fun i => Rew.subst w (v i)) (fun i => Rew.subst w' (v i))
     (fun i => embedding_valm_subst_congr w w' hval (v i)) hαNF hτ hp hn
@@ -193,7 +193,7 @@ theorem embedding_valueCongruentRelClosedTermAtom_probe
     (hαNF : α.NF) (hτ : norm α < k + d)
     (hp : (Semiformula.rel r v)/[s] ∈ Γ)
     (hn : (Semiformula.nrel r v)/[s'] ∈ Γ) :
-    Zekd α e k d c Γ := by
+    Provable α e k d c Γ := by
   refine embedding_valueCongruentRelSubstAtom_probe r ![s] ![s'] v ?_ hαNF hτ ?_ ?_
   · intro i
     cases i using Fin.cases with
@@ -211,7 +211,7 @@ theorem embedding_valueCongruentNrelClosedTermAtom_probe
     (hαNF : α.NF) (hτ : norm α < k + d)
     (hp : (Semiformula.nrel r v)/[s] ∈ Γ)
     (hn : (Semiformula.rel r v)/[s'] ∈ Γ) :
-    Zekd α e k d c Γ := by
+    Provable α e k d c Γ := by
   refine embedding_valueCongruentNrelSubstAtom_probe r ![s] ![s'] v ?_ hαNF hτ ?_ ?_
   · intro i
     cases i using Fin.cases with
@@ -224,15 +224,15 @@ theorem embedding_valueCongruentNrelClosedTermAtom_probe
 theorem embedding_valueCongruentVerum_probe {n : ℕ}
     (w : Fin n → ArithmeticTerm ℕ)
     (hp : (Rew.subst w ▹ (⊤ : ArithmeticSemiformula ℕ n)) ∈ Γ) :
-    Zekd α e k d c Γ :=
-  Zekd.verumR (by simpa using hp)
+    Provable α e k d c Γ :=
+  Provable.verumR (by simpa using hp)
 
 /-- Constant-false base case for the bounded value-congruent EM engine. -/
 theorem embedding_valueCongruentFalsum_probe {n : ℕ}
     (w' : Fin n → ArithmeticTerm ℕ)
     (hn : (∼(Rew.subst w' ▹ (⊥ : ArithmeticSemiformula ℕ n))) ∈ Γ) :
-    Zekd α e k d c Γ :=
-  Zekd.verumR (by simpa using hn)
+    Provable α e k d c Γ :=
+  Provable.verumR (by simpa using hn)
 
 end ValueCongruentAtoms
 
@@ -256,17 +256,17 @@ theorem embedding_closedTermExI_of_valueCongruentEM_probe
     (hτSrc : norm βSrc < k + d) (hτCong : norm βCong < k + d)
     (hτCut : norm αCut < k + d)
     (hbound : stdClosedVal s ≤ hardy e (k + d))
-    (dSrc : Zekd βSrc e k d c (insert (ψ/[s]) Γ))
-    (dCong : Zekd βCong e k d c
+    (dSrc : Provable βSrc e k d c (insert (ψ/[s]) Γ))
+    (dCong : Provable βCong e k d c
       (insert (∼(ψ/[s])) (insert (ψ/[nm (stdClosedVal s)]) Γ))) :
-    Zekd αOut e k d c (insert (∃⁰ ψ) Γ) := by
-  have dSrc' : Zekd βSrc e k d c
+    Provable αOut e k d c (insert (∃⁰ ψ) Γ) := by
+  have dSrc' : Provable βSrc e k d c
       (insert (ψ/[s]) (insert (ψ/[nm (stdClosedVal s)]) Γ)) :=
-    Zekd.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dSrc
-  have dNumeral : Zekd αCut e k d c (insert (ψ/[nm (stdClosedVal s)]) Γ) :=
-    Zekd.cut (ψ/[s]) hψc hSrcLt hCongLt hSrcNF hCongNF hCutNF hτSrc hτCong
+    Provable.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dSrc
+  have dNumeral : Provable αCut e k d c (insert (ψ/[nm (stdClosedVal s)]) Γ) :=
+    Provable.cut (ψ/[s]) hψc hSrcLt hCongLt hSrcNF hCongNF hCutNF hτSrc hτCong
       dSrc' dCong
-  exact Zekd.exI ψ (stdClosedVal s) hCutLt hCutNF hOutNF hτCut hbound dNumeral
+  exact Provable.exI ψ (stdClosedVal s) hCutLt hCutNF hOutNF hτCut hbound dNumeral
 
 /--
 Conjunction step for the bounded value-congruent EM engine.
@@ -285,27 +285,27 @@ theorem embedding_valueCongruentAndFromChildren_probe
     (hτA : norm βA < k + d) (hτB : norm βB < k + d) (hτAnd : norm αAnd < k + d)
     (hp : (Rew.subst w ▹ (a ⋏ b)) ∈ Γ)
     (hn : (∼(Rew.subst w' ▹ (a ⋏ b))) ∈ Γ)
-    (dA : Zekd βA e k d c
+    (dA : Provable βA e k d c
       (insert (Rew.subst w ▹ a)
         (insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ))))
-    (dB : Zekd βB e k d c
+    (dB : Provable βB e k d c
       (insert (Rew.subst w ▹ b)
         (insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ)))) :
-    Zekd αOut e k d c Γ := by
+    Provable αOut e k d c Γ := by
   have hp' : ((Rew.subst w ▹ a) ⋏ (Rew.subst w ▹ b)) ∈ Γ := by
     simpa using hp
   have hn' : (∼(Rew.subst w' ▹ a) ⋎ ∼(Rew.subst w' ▹ b)) ∈ Γ := by
     simpa using hn
-  have hand : Zekd αAnd e k d c
+  have hand : Provable αAnd e k d c
       (insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ)) := by
-    have h := Zekd.andI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
+    have h := Provable.andI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
       hA_lt hB_lt hANF hBNF hAndNF hτA hτB dA dB
     rw [Finset.insert_eq_self.mpr
       (show ((Rew.subst w ▹ a) ⋏ (Rew.subst w ▹ b))
           ∈ insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ) by
         simp [hp'])] at h
     exact h
-  have hor := Zekd.orI (∼(Rew.subst w' ▹ a)) (∼(Rew.subst w' ▹ b))
+  have hor := Provable.orI (∼(Rew.subst w' ▹ a)) (∼(Rew.subst w' ▹ b))
     hAnd_lt hAndNF hOutNF hτAnd hand
   rwa [Finset.insert_eq_self.mpr hn'] at hor
 
@@ -314,7 +314,7 @@ Disjunction step for the bounded value-congruent EM engine.
 
 This is the polarity-dual parent constructor to
 `embedding_valueCongruentAndFromChildren_probe`: child closures for `a` and `b` build
-`¬a[w'] ∧ ¬b[w']`, then `Zekd.orI` packages the positive `a[w] ∨ b[w]` parent.
+`¬a[w'] ∧ ¬b[w']`, then `Provable.orI` packages the positive `a[w] ∨ b[w]` parent.
 -/
 theorem embedding_valueCongruentOrFromChildren_probe
     {n : ℕ} {βA βB αAnd αOut : ONote}
@@ -324,27 +324,27 @@ theorem embedding_valueCongruentOrFromChildren_probe
     (hτA : norm βA < k + d) (hτB : norm βB < k + d) (hτAnd : norm αAnd < k + d)
     (hp : (Rew.subst w ▹ (a ⋎ b)) ∈ Γ)
     (hn : (∼(Rew.subst w' ▹ (a ⋎ b))) ∈ Γ)
-    (dA : Zekd βA e k d c
+    (dA : Provable βA e k d c
       (insert (∼(Rew.subst w' ▹ a))
         (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ))))
-    (dB : Zekd βB e k d c
+    (dB : Provable βB e k d c
       (insert (∼(Rew.subst w' ▹ b))
         (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ)))) :
-    Zekd αOut e k d c Γ := by
+    Provable αOut e k d c Γ := by
   have hp' : ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) ∈ Γ := by
     simpa using hp
   have hn' : (∼(Rew.subst w' ▹ a) ⋏ ∼(Rew.subst w' ▹ b)) ∈ Γ := by
     simpa using hn
-  have hand : Zekd αAnd e k d c
+  have hand : Provable αAnd e k d c
       (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ)) := by
-    have h := Zekd.andI (∼(Rew.subst w' ▹ a)) (∼(Rew.subst w' ▹ b))
+    have h := Provable.andI (∼(Rew.subst w' ▹ a)) (∼(Rew.subst w' ▹ b))
       hA_lt hB_lt hANF hBNF hAndNF hτA hτB dA dB
     rw [Finset.insert_eq_self.mpr
       (show (∼(Rew.subst w' ▹ a) ⋏ ∼(Rew.subst w' ▹ b))
           ∈ insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ) by
         simp [hn'])] at h
     exact h
-  have hor := Zekd.orI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
+  have hor := Provable.orI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
     hAnd_lt hAndNF hOutNF hτAnd hand
   rwa [Finset.insert_eq_self.mpr hp'] at hor
 
@@ -357,11 +357,11 @@ theorem embedding_valueCongruentAndClosedTermFromChildren_probe
     (hτA : norm βA < k + d) (hτB : norm βB < k + d) (hτAnd : norm αAnd < k + d)
     (hp : ((a ⋏ b)/[s]) ∈ Γ)
     (hn : (∼((a ⋏ b)/[s'])) ∈ Γ)
-    (dA : Zekd βA e k d c
+    (dA : Provable βA e k d c
       (insert (a/[s]) (insert (∼(a/[s'])) (insert (∼(b/[s'])) Γ))))
-    (dB : Zekd βB e k d c
+    (dB : Provable βB e k d c
       (insert (b/[s]) (insert (∼(a/[s'])) (insert (∼(b/[s'])) Γ)))) :
-    Zekd αOut e k d c Γ := by
+    Provable αOut e k d c Γ := by
   refine embedding_valueCongruentAndFromChildren_probe ![s] ![s'] a b
     hA_lt hB_lt hAnd_lt hANF hBNF hAndNF hOutNF hτA hτB hτAnd ?_ ?_ ?_ ?_
   · simpa using hp
@@ -378,11 +378,11 @@ theorem embedding_valueCongruentOrClosedTermFromChildren_probe
     (hτA : norm βA < k + d) (hτB : norm βB < k + d) (hτAnd : norm αAnd < k + d)
     (hp : ((a ⋎ b)/[s]) ∈ Γ)
     (hn : (∼((a ⋎ b)/[s'])) ∈ Γ)
-    (dA : Zekd βA e k d c
+    (dA : Provable βA e k d c
       (insert (∼(a/[s'])) (insert (a/[s]) (insert (b/[s]) Γ))))
-    (dB : Zekd βB e k d c
+    (dB : Provable βB e k d c
       (insert (∼(b/[s'])) (insert (a/[s]) (insert (b/[s]) Γ)))) :
-    Zekd αOut e k d c Γ := by
+    Provable αOut e k d c Γ := by
   refine embedding_valueCongruentOrFromChildren_probe ![s] ![s'] a b
     hA_lt hB_lt hAnd_lt hANF hBNF hAndNF hOutNF hτA hτB hτAnd ?_ ?_ ?_ ?_
   · simpa using hp
@@ -442,7 +442,7 @@ theorem embedding_valueCongruentQFreeClosedTerm_probe :
       (s s' : ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ 1),
       ψ.complexity ≤ q → QFreeForm ψ → stdClosedVal s = stdClosedVal s' →
       2 * q < K + d → (ψ/[s]) ∈ Γ → (∼(ψ/[s'])) ∈ Γ →
-      Zekd (ONote.ofNat (2 * q)) e K d c Γ := by
+      Provable (ONote.ofNat (2 * q)) e K d c Γ := by
   intro q
   induction q with
   | zero =>
@@ -493,12 +493,12 @@ theorem embedding_valueCongruentQFreeClosedTerm_probe :
             simp only [Semiformula.complexity_and] at hψq
             omega
           obtain ⟨hqfa, hqfb⟩ : QFreeForm a ∧ QFreeForm b := by simpa using hqf
-          have dA : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dA : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (a/[s]) (insert (∼(a/[s'])) (insert (∼(b/[s'])) Γ))) :=
             ih (K := K) (d := d) (c := c) (e := e)
               (Γ := insert (a/[s]) (insert (∼(a/[s'])) (insert (∼(b/[s'])) Γ)))
               s s' a haq hqfa hval (by omega) (by simp) (by simp)
-          have dB : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dB : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (b/[s]) (insert (∼(a/[s'])) (insert (∼(b/[s'])) Γ))) :=
             ih (K := K) (d := d) (c := c) (e := e)
               (Γ := insert (b/[s]) (insert (∼(a/[s'])) (insert (∼(b/[s'])) Γ)))
@@ -521,12 +521,12 @@ theorem embedding_valueCongruentQFreeClosedTerm_probe :
             simp only [Semiformula.complexity_or] at hψq
             omega
           obtain ⟨hqfa, hqfb⟩ : QFreeForm a ∧ QFreeForm b := by simpa using hqf
-          have dA : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dA : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (∼(a/[s'])) (insert (a/[s]) (insert (b/[s]) Γ))) :=
             ih (K := K) (d := d) (c := c) (e := e)
               (Γ := insert (∼(a/[s'])) (insert (a/[s]) (insert (b/[s]) Γ)))
               s s' a haq hqfa hval (by omega) (by simp) (by simp)
-          have dB : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dB : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (∼(b/[s'])) (insert (a/[s]) (insert (b/[s]) Γ))) :=
             ih (K := K) (d := d) (c := c) (e := e)
               (Γ := insert (∼(b/[s'])) (insert (a/[s]) (insert (b/[s]) Γ)))
@@ -559,7 +559,7 @@ theorem embedding_valueCongruentEM_probe :
       ψ.complexity ≤ q →
       (∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) →
       2 * q < K + d → (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ →
-      Zekd (ONote.ofNat (2 * q)) e K d c Γ := by
+      Provable (ONote.ofNat (2 * q)) e K d c Γ := by
   intro q
   induction q with
   | zero =>
@@ -615,12 +615,12 @@ theorem embedding_valueCongruentEM_probe :
           have hbq : b.complexity ≤ q := by
             simp only [Semiformula.complexity_and] at hψq
             omega
-          have dA : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dA : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (Rew.subst w ▹ a)
                 (insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ))) :=
             ih (K := K) (d := d) (c := c) (e := e) (n := n) w w' a haq hval
               (by omega) (by simp) (by simp)
-          have dB : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dB : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (Rew.subst w ▹ b)
                 (insert (∼(Rew.subst w' ▹ a)) (insert (∼(Rew.subst w' ▹ b)) Γ))) :=
             ih (K := K) (d := d) (c := c) (e := e) (n := n) w w' b hbq hval
@@ -642,12 +642,12 @@ theorem embedding_valueCongruentEM_probe :
           have hbq : b.complexity ≤ q := by
             simp only [Semiformula.complexity_or] at hψq
             omega
-          have dA : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dA : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (∼(Rew.subst w' ▹ a))
                 (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ))) :=
             ih (K := K) (d := d) (c := c) (e := e) (n := n) w w' a haq hval
               (by omega) (by simp) (by simp)
-          have dB : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dB : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (∼(Rew.subst w' ▹ b))
                 (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ))) :=
             ih (K := K) (d := d) (c := c) (e := e) (n := n) w w' b hbq hval
@@ -668,37 +668,37 @@ theorem embedding_valueCongruentEM_probe :
             omega
           have hp' : (∀⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
           have hn' : (∃⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
-          have fam : ∀ m, Zekd (ONote.ofNat (2 * q + 1)) e (max K m) d c
+          have fam : ∀ m, Provable (ONote.ofNat (2 * q + 1)) e (max K m) d c
               (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ) := by
             intro m
             have hvalm : ∀ i, stdClosedVal ((nm m :> w) i) = stdClosedVal ((nm m :> w') i) :=
               embedding_valm_cons_nm_congr w w' m hval
-            have hx : Zekd (ONote.ofNat (2 * q)) e (max K m) d c
+            have hx : Provable (ONote.ofNat (2 * q)) e (max K m) d c
                 (insert (((Rew.subst w).q ▹ a)/[nm m])
                   (insert (∼(((Rew.subst w').q ▹ a)/[nm m])) Γ)) :=
               ih (K := max K m) (d := d) (c := c) (e := e) (n := n + 1)
                 (nm m :> w) (nm m :> w') a haq hvalm (by omega)
                 (by rw [← embedding_subst_q_cons_app]; simp)
                 (by rw [← embedding_subst_q_cons_app]; simp)
-            have hx' : Zekd (ONote.ofNat (2 * q)) e (max K m) d c
+            have hx' : Provable (ONote.ofNat (2 * q)) e (max K m) d c
                 (insert ((((Rew.subst w').q ▹ ∼a)/[nm m])
                   ) (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ)) := by
               have heq : (((Rew.subst w').q ▹ ∼a)/[nm m])
                   = ∼(((Rew.subst w').q ▹ a)/[nm m]) := by simp
               rw [heq, Finset.insert_comm]
               exact hx
-            have hexI : Zekd (ONote.ofNat (2 * q + 1)) e (max K m) d c
+            have hexI : Provable (ONote.ofNat (2 * q + 1)) e (max K m) d c
                 (insert (∃⁰ ((Rew.subst w').q ▹ ∼a))
                   (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ)) :=
-              Zekd.exI ((Rew.subst w').q ▹ ∼a) m
+              Provable.exI ((Rew.subst w').q ▹ ∼a) m
                 (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
                 (by rw [embedding_norm_ofNat]; omega)
                 (inductionLeaf_runningIndex_witnessBound e K d m) hx'
             rw [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hn')] at hexI
             exact hexI
-          have hallω : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+          have hallω : Provable (ONote.ofNat (2 * (q + 1))) e K d c
               (insert (∀⁰ ((Rew.subst w).q ▹ a)) Γ) :=
-            Zekd.allω ((Rew.subst w).q ▹ a) (fun _ => ONote.ofNat (2 * q + 1))
+            Provable.allω ((Rew.subst w).q ▹ a) (fun _ => ONote.ofNat (2 * q + 1))
               (fun _ => embedding_ofNat_lt_of_lt (by omega))
               (fun _ => inferInstance) inferInstance
               (fun m => by rw [embedding_norm_ofNat]; omega) fam
@@ -709,37 +709,37 @@ theorem embedding_valueCongruentEM_probe :
             omega
           have hp' : (∃⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
           have hn' : (∀⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
-          have fam : ∀ m, Zekd (ONote.ofNat (2 * q + 1)) e (max K m) d c
+          have fam : ∀ m, Provable (ONote.ofNat (2 * q + 1)) e (max K m) d c
               (insert (((Rew.subst w').q ▹ ∼a)/[nm m]) Γ) := by
             intro m
             have hvalm : ∀ i, stdClosedVal ((nm m :> w) i) = stdClosedVal ((nm m :> w') i) :=
               embedding_valm_cons_nm_congr w w' m hval
-            have hx : Zekd (ONote.ofNat (2 * q)) e (max K m) d c
+            have hx : Provable (ONote.ofNat (2 * q)) e (max K m) d c
                 (insert (((Rew.subst w).q ▹ a)/[nm m])
                   (insert (∼(((Rew.subst w').q ▹ a)/[nm m])) Γ)) :=
               ih (K := max K m) (d := d) (c := c) (e := e) (n := n + 1)
                 (nm m :> w) (nm m :> w') a haq hvalm (by omega)
                 (by rw [← embedding_subst_q_cons_app]; simp)
                 (by rw [← embedding_subst_q_cons_app]; simp)
-            have hx' : Zekd (ONote.ofNat (2 * q)) e (max K m) d c
+            have hx' : Provable (ONote.ofNat (2 * q)) e (max K m) d c
                 (insert (((Rew.subst w).q ▹ a)/[nm m])
                   (insert (((Rew.subst w').q ▹ ∼a)/[nm m]) Γ)) := by
               have heq : (((Rew.subst w').q ▹ ∼a)/[nm m])
                   = ∼(((Rew.subst w').q ▹ a)/[nm m]) := by simp
               rw [heq]
               exact hx
-            have hexI : Zekd (ONote.ofNat (2 * q + 1)) e (max K m) d c
+            have hexI : Provable (ONote.ofNat (2 * q + 1)) e (max K m) d c
                 (insert (∃⁰ ((Rew.subst w).q ▹ a))
                   (insert (((Rew.subst w').q ▹ ∼a)/[nm m]) Γ)) :=
-              Zekd.exI ((Rew.subst w).q ▹ a) m
+              Provable.exI ((Rew.subst w).q ▹ a) m
                 (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
                 (by rw [embedding_norm_ofNat]; omega)
                 (inductionLeaf_runningIndex_witnessBound e K d m) hx'
             rw [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hp')] at hexI
             exact hexI
-          have hallω : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+          have hallω : Provable (ONote.ofNat (2 * (q + 1))) e K d c
               (insert (∀⁰ ((Rew.subst w').q ▹ ∼a)) Γ) :=
-            Zekd.allω ((Rew.subst w').q ▹ ∼a) (fun _ => ONote.ofNat (2 * q + 1))
+            Provable.allω ((Rew.subst w').q ▹ ∼a) (fun _ => ONote.ofNat (2 * q + 1))
               (fun _ => embedding_ofNat_lt_of_lt (by omega))
               (fun _ => inferInstance) inferInstance
               (fun m => by rw [embedding_norm_ofNat]; omega) fam

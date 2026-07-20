@@ -11,38 +11,38 @@ open LO LO.FirstOrder ONote
 /-! #### Bounded true axiom leaves -/
 
 /--
-Truth with the exact witness bounds needed by the `Zekd` rules after a closed substitution.
+Truth with the exact witness bounds needed by the `Provable` rules after a closed substitution.
 
 Unlike plain standard-model truth, the existential case records a witness already bounded by the
 current control budget `hardy e (K + d)`, and the universal case switches to the running index
 `max K m`.  This is the reusable target for the finite `𝗣𝗔⁻`/equality axiom-leaf discharge.
 -/
-noncomputable def ZekdBoundedTruth (e : ONote) (K d : ℕ) :
+noncomputable def BoundedTruth (e : ONote) (K d : ℕ) :
     {n : ℕ} → (Fin n → ArithmeticTerm ℕ) → ArithmeticSemiformula ℕ n → Prop
   | _, _, .verum => True
   | _, _, .falsum => False
   | _, w, .rel r v => atomTrue (Semiformula.rel r (fun i => Rew.subst w (v i)))
   | _, w, .nrel r v => atomTrue (Semiformula.nrel r (fun i => Rew.subst w (v i)))
-  | _, w, .and a b => ZekdBoundedTruth e K d w a ∧ ZekdBoundedTruth e K d w b
-  | _, w, .or a b => ZekdBoundedTruth e K d w a ∨ ZekdBoundedTruth e K d w b
-  | _, w, .all a => ∀ m, ZekdBoundedTruth e (max K m) d (nm m :> w) a
-  | _, w, .exs a => ∃ m, m ≤ hardy e (K + d) ∧ ZekdBoundedTruth e K d (nm m :> w) a
+  | _, w, .and a b => BoundedTruth e K d w a ∧ BoundedTruth e K d w b
+  | _, w, .or a b => BoundedTruth e K d w a ∨ BoundedTruth e K d w b
+  | _, w, .all a => ∀ m, BoundedTruth e (max K m) d (nm m :> w) a
+  | _, w, .exs a => ∃ m, m ≤ hardy e (K + d) ∧ BoundedTruth e K d (nm m :> w) a
 
 /--
-Bounded truth gives an exact-index `Zekd` derivation.
+Bounded truth gives an exact-index `Provable` derivation.
 
 The proof mirrors the old `provable_true` recursion, but the universal and existential cases are
-indexed by `ZekdBoundedTruth`: universals run at `max K m`, and existential witnesses are already
+indexed by `BoundedTruth`: universals run at `max K m`, and existential witnesses are already
 within the control-ordinal Hardy budget.
 -/
-theorem zekdOfBoundedTruth_probe :
+theorem provableOfBoundedTruth_probe :
     ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ}
       (w : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
       ψ.complexity ≤ q →
-      ZekdBoundedTruth e K d w ψ →
+      BoundedTruth e K d w ψ →
       2 * q < K + d →
       (Rew.subst w ▹ ψ) ∈ Γ →
-      Zekd (ONote.ofNat (2 * q)) e K d c Γ := by
+      Provable (ONote.ofNat (2 * q)) e K d c Γ := by
   intro q
   induction q with
   | zero =>
@@ -53,11 +53,11 @@ theorem zekdOfBoundedTruth_probe :
       | hfalsum =>
           cases hBT
       | hrel r v =>
-          exact Zekd.trueRel r (fun i => Rew.subst w (v i)) hBT
+          exact Provable.trueRel r (fun i => Rew.subst w (v i)) hBT
             (by rw [embedding_norm_ofNat]; omega) inferInstance
             (by simpa [Semiformula.rew_rel, Function.comp_def] using hmem)
       | hnrel r v =>
-          exact Zekd.trueNrel r (fun i => Rew.subst w (v i)) hBT
+          exact Provable.trueNrel r (fun i => Rew.subst w (v i)) hBT
             (by rw [embedding_norm_ofNat]; omega) inferInstance
             (by simpa [Semiformula.rew_nrel, Function.comp_def] using hmem)
       | hand a b =>
@@ -80,11 +80,11 @@ theorem zekdOfBoundedTruth_probe :
       | hfalsum =>
           cases hBT
       | hrel r v =>
-          exact Zekd.trueRel r (fun i => Rew.subst w (v i)) hBT
+          exact Provable.trueRel r (fun i => Rew.subst w (v i)) hBT
             (by rw [embedding_norm_ofNat]; omega) inferInstance
             (by simpa [Semiformula.rew_rel, Function.comp_def] using hmem)
       | hnrel r v =>
-          exact Zekd.trueNrel r (fun i => Rew.subst w (v i)) hBT
+          exact Provable.trueNrel r (fun i => Rew.subst w (v i)) hBT
             (by rw [embedding_norm_ofNat]; omega) inferInstance
             (by simpa [Semiformula.rew_nrel, Function.comp_def] using hmem)
       | hand a b =>
@@ -95,17 +95,17 @@ theorem zekdOfBoundedTruth_probe :
             simp only [Semiformula.complexity_and] at hψq
             omega
           obtain ⟨hBTa, hBTb⟩ := hBT
-          have dA : Zekd (ONote.ofNat (2 * q)) e K d c (insert (Rew.subst w ▹ a) Γ) :=
+          have dA : Provable (ONote.ofNat (2 * q)) e K d c (insert (Rew.subst w ▹ a) Γ) :=
             ih (K := K) (d := d) (c := c) (e := e) (Γ := insert (Rew.subst w ▹ a) Γ)
               w a haq hBTa (by omega) (by simp)
-          have dB : Zekd (ONote.ofNat (2 * q)) e K d c (insert (Rew.subst w ▹ b) Γ) :=
+          have dB : Provable (ONote.ofNat (2 * q)) e K d c (insert (Rew.subst w ▹ b) Γ) :=
             ih (K := K) (d := d) (c := c) (e := e) (Γ := insert (Rew.subst w ▹ b) Γ)
               w b hbq hBTb (by omega) (by simp)
           have hp' : ((Rew.subst w ▹ a) ⋏ (Rew.subst w ▹ b)) ∈ Γ := by
             simpa using hmem
-          have hand : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+          have hand : Provable (ONote.ofNat (2 * (q + 1))) e K d c
               (insert ((Rew.subst w ▹ a) ⋏ (Rew.subst w ▹ b)) Γ) :=
-            Zekd.andI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
+            Provable.andI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
               (embedding_ofNat_lt_of_lt (by omega)) (embedding_ofNat_lt_of_lt (by omega))
               inferInstance inferInstance inferInstance
               (by rw [embedding_norm_ofNat]; omega) (by rw [embedding_norm_ofNat]; omega)
@@ -121,28 +121,28 @@ theorem zekdOfBoundedTruth_probe :
           have hp' : ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) ∈ Γ := by
             simpa using hmem
           rcases hBT with hBTa | hBTb
-          · have dA : Zekd (ONote.ofNat (2 * q)) e K d c
+          · have dA : Provable (ONote.ofNat (2 * q)) e K d c
                 (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ)) :=
               ih (K := K) (d := d) (c := c) (e := e)
                 (Γ := insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ))
                 w a haq hBTa (by omega) (by simp)
-            have hor : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+            have hor : Provable (ONote.ofNat (2 * (q + 1))) e K d c
                 (insert ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) Γ) :=
-              Zekd.orI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
+              Provable.orI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
                 (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
                 (by rw [embedding_norm_ofNat]; omega) dA
             rwa [Finset.insert_eq_self.mpr hp'] at hor
-          · have dB0 : Zekd (ONote.ofNat (2 * q)) e K d c
+          · have dB0 : Provable (ONote.ofNat (2 * q)) e K d c
                 (insert (Rew.subst w ▹ b) (insert (Rew.subst w ▹ a) Γ)) :=
               ih (K := K) (d := d) (c := c) (e := e)
                 (Γ := insert (Rew.subst w ▹ b) (insert (Rew.subst w ▹ a) Γ))
                 w b hbq hBTb (by omega) (by simp)
-            have dB : Zekd (ONote.ofNat (2 * q)) e K d c
+            have dB : Provable (ONote.ofNat (2 * q)) e K d c
                 (insert (Rew.subst w ▹ a) (insert (Rew.subst w ▹ b) Γ)) :=
-              Zekd.wk (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto) dB0
-            have hor : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+              Provable.wk (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto) dB0
+            have hor : Provable (ONote.ofNat (2 * (q + 1))) e K d c
                 (insert ((Rew.subst w ▹ a) ⋎ (Rew.subst w ▹ b)) Γ) :=
-              Zekd.orI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
+              Provable.orI (Rew.subst w ▹ a) (Rew.subst w ▹ b)
                 (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
                 (by rw [embedding_norm_ofNat]; omega) dB
             rwa [Finset.insert_eq_self.mpr hp'] at hor
@@ -152,16 +152,16 @@ theorem zekdOfBoundedTruth_probe :
             omega
           have hp' : (∀⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by
             simpa using hmem
-          have fam : ∀ m, Zekd (ONote.ofNat (2 * q)) e (max K m) d c
+          have fam : ∀ m, Provable (ONote.ofNat (2 * q)) e (max K m) d c
               (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ) := by
             intro m
             exact ih (K := max K m) (d := d) (c := c) (e := e)
               (Γ := insert (((Rew.subst w).q ▹ a)/[nm m]) Γ)
               (nm m :> w) a haq (hBT m) (by omega)
               (by rw [← embedding_subst_q_cons_app]; simp)
-          have hallω : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+          have hallω : Provable (ONote.ofNat (2 * (q + 1))) e K d c
               (insert (∀⁰ ((Rew.subst w).q ▹ a)) Γ) :=
-            Zekd.allω ((Rew.subst w).q ▹ a) (fun _ => ONote.ofNat (2 * q))
+            Provable.allω ((Rew.subst w).q ▹ a) (fun _ => ONote.ofNat (2 * q))
               (fun _ => embedding_ofNat_lt_of_lt (by omega))
               (fun _ => inferInstance) inferInstance
               (fun m => by rw [embedding_norm_ofNat]; omega) fam
@@ -173,15 +173,15 @@ theorem zekdOfBoundedTruth_probe :
           have hp' : (∃⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by
             simpa using hmem
           rcases hBT with ⟨m, hbound, hBTm⟩
-          have dA : Zekd (ONote.ofNat (2 * q)) e K d c
+          have dA : Provable (ONote.ofNat (2 * q)) e K d c
               (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ) :=
             ih (K := K) (d := d) (c := c) (e := e)
               (Γ := insert (((Rew.subst w).q ▹ a)/[nm m]) Γ)
               (nm m :> w) a haq hBTm (by omega)
               (by rw [← embedding_subst_q_cons_app]; simp)
-          have hexI : Zekd (ONote.ofNat (2 * (q + 1))) e K d c
+          have hexI : Provable (ONote.ofNat (2 * (q + 1))) e K d c
               (insert (∃⁰ ((Rew.subst w).q ▹ a)) Γ) :=
-            Zekd.exI ((Rew.subst w).q ▹ a) m
+            Provable.exI ((Rew.subst w).q ▹ a) m
               (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
               (by rw [embedding_norm_ofNat]; omega) hbound dA
           rwa [Finset.insert_eq_self.mpr hp'] at hexI
@@ -189,7 +189,7 @@ theorem zekdOfBoundedTruth_probe :
 /--
 Closed-term existential introduction using the checked bounded value-congruence EM engine.
 
-This is the direct `Zekd` adapter for the Foundation `exs` shape after an open witness term has been
+This is the direct `Provable` adapter for the Foundation `exs` shape after an open witness term has been
 closed by an assignment.  The only semantic side condition still exposed is the real witness bound
 `stdClosedVal s ≤ hardy e (K+d)`.
 -/
@@ -204,15 +204,15 @@ theorem embedding_closedTermExI_probe
     (hτCut : norm αCut < K + d)
     (hbudget : 2 * q < K + d)
     (hbound : stdClosedVal s ≤ hardy e (K + d))
-    (dSrc : Zekd βSrc e K d c (insert (ψ/[s]) Γ)) :
-    Zekd αOut e K d c (insert (∃⁰ ψ) Γ) := by
+    (dSrc : Provable βSrc e K d c (insert (ψ/[s]) Γ)) :
+    Provable αOut e K d c (insert (∃⁰ ψ) Γ) := by
   have hval : ∀ i, stdClosedVal ((![nm (stdClosedVal s)] : Fin 1 → ArithmeticTerm ℕ) i)
       = stdClosedVal ((![s] : Fin 1 → ArithmeticTerm ℕ) i) := by
     intro i
     cases i using Fin.cases with
     | zero => simp
     | succ j => exact Fin.elim0 j
-  have dCong : Zekd (ONote.ofNat (2 * q)) e K d c
+  have dCong : Provable (ONote.ofNat (2 * q)) e K d c
       (insert (∼(ψ/[s])) (insert (ψ/[nm (stdClosedVal s)]) Γ)) := by
     refine embedding_valueCongruentEM_probe q
       (![nm (stdClosedVal s)] : Fin 1 → ArithmeticTerm ℕ)
@@ -222,7 +222,7 @@ theorem embedding_closedTermExI_probe
   exact embedding_closedTermExI_of_valueCongruentEM_probe s hψc hSrcLt hCongLt hCutLt
     hSrcNF inferInstance hCutNF hOutNF hτSrc hτCong hτCut hbound dSrc dCong
 
-/-- A finite numeric budget bound on a closed witness term is enough for the `Zekd.exI`
+/-- A finite numeric budget bound on a closed witness term is enough for the `Provable.exI`
 witness side condition, because every Hardy level is expansive. -/
 theorem closedTerm_witnessBound_of_budget
     (e : ONote) {K d : ℕ} {s : ArithmeticTerm ℕ}
@@ -247,8 +247,8 @@ theorem embedding_closedTermExI_raiseK_probe
     (hτSrc : norm βSrc < K + d) (hτCong : norm (ONote.ofNat (2 * q)) < K + d)
     (hτCut : norm αCut < K + d)
     (hbudget : 2 * q < K + d)
-    (dSrc : Zekd βSrc e K d c (insert (ψ/[s]) Γ)) :
-    Zekd αOut e (max K (stdClosedVal s)) d c (insert (∃⁰ ψ) Γ) := by
+    (dSrc : Provable βSrc e K d c (insert (ψ/[s]) Γ)) :
+    Provable αOut e (max K (stdClosedVal s)) d c (insert (∃⁰ ψ) Γ) := by
   refine embedding_closedTermExI_probe (K := max K (stdClosedVal s)) s hψq hψc
     hSrcLt hCongLt hCutLt hSrcNF hCutNF hOutNF ?_ ?_ ?_ ?_ ?_ ?_
   · exact lt_of_lt_of_le hτSrc (by omega)

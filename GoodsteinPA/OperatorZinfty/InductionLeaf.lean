@@ -23,8 +23,8 @@ theorem embedding_closedTermExI_someK_probe
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)
     (hCutLt : αCut < αOut)
     (hSrcNF : βSrc.NF) (hCutNF : αCut.NF) (hOutNF : αOut.NF)
-    (dSrc : ZekdSomeK βSrc e d c (insert (ψ/[s]) Γ)) :
-    ZekdSomeK αOut e d c (insert (∃⁰ ψ) Γ) := by
+    (dSrc : ProvableSomeK βSrc e d c (insert (ψ/[s]) Γ)) :
+    ProvableSomeK αOut e d c (insert (∃⁰ ψ) Γ) := by
   rcases dSrc with ⟨K0, d0⟩
   let K1 :=
     max K0
@@ -44,7 +44,7 @@ theorem embedding_closedTermExI_someK_probe
 /--
 One bounded cut-tower step for the PA-induction leaf.
 
-This is the structural kernel behind `EmbeddingBound.metaInduction_cong_bdd`, ported to `Zekd`:
+This is the structural kernel behind `EmbeddingBound.metaInduction_cong_bdd`, ported to `Provable`:
 given the finite excluded-middle premises for `ψ(n)` and `ψ(n+1)`, combine them into the bad-step
 formula, introduce `∃ badStep` using the running witness bound, then cut against the current
 `ψ(n)` derivation to obtain `ψ(n+1)`.
@@ -65,39 +65,39 @@ theorem inductionLeaf_cutTowerStep_probe
     (hτIH : norm βIH < max k n + d) (hτA : norm βA < max k n + d)
     (hτB : norm βB < max k n + d) (hτAnd : norm βAnd < max k n + d)
     (hτEx : norm βEx < max k n + d)
-    (dIH : Zekd βIH e (max k n) d c (insert (ψ/[nm n]) Δ))
-    (dA : Zekd βA e (max k n) d c
+    (dIH : Provable βIH e (max k n) d c (insert (ψ/[nm n]) Δ))
+    (dA : Provable βA e (max k n) d c
       (insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ))))
-    (dB : Zekd βB e (max k n) d c
+    (dB : Provable βB e (max k n) d c
       (insert (∼(ψ/[nm (n + 1)])) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ)))) :
-    Zekd α e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ) := by
-  have hAnd : Zekd βAnd e (max k n) d c
+    Provable α e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ) := by
+  have hAnd : Provable βAnd e (max k n) d c
       (insert ((ψ/[nm n]) ⋏ ∼(ψ/[nm (n + 1)]))
         (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ))) :=
-    Zekd.andI (ψ/[nm n]) (∼(ψ/[nm (n + 1)]))
+    Provable.andI (ψ/[nm n]) (∼(ψ/[nm (n + 1)]))
       hAlt hBlt hANF hBNF hAndNF hτA hτB dA dB
-  have hBadStep : Zekd βAnd e (max k n) d c
+  have hBadStep : Provable βAnd e (max k n) d c
       (insert ((∼step)/[nm n])
         (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ))) := by
     rw [hstep]
     exact hAnd
-  have hEx : Zekd βEx e (max k n) d c
+  have hEx : Provable βEx e (max k n) d c
       (insert (∃⁰ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ))) :=
-    Zekd.exI (∼step) n hAndlt hAndNF hExNF hτAnd
+    Provable.exI (∼step) n hAndlt hAndNF hExNF hτAnd
       (inductionLeaf_runningIndex_witnessBound e k d n) hBadStep
-  have hEx' : Zekd βEx e (max k n) d c
+  have hEx' : Provable βEx e (max k n) d c
       (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ)) := by
     rw [Finset.insert_eq_self.mpr
       (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmemEx))] at hEx
     exact hEx
-  have hIH' : Zekd βIH e (max k n) d c
+  have hIH' : Provable βIH e (max k n) d c
       (insert (ψ/[nm n]) (insert (ψ/[nm (n + 1)]) Δ)) :=
-    Zekd.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dIH
-  exact Zekd.cut (ψ/[nm n]) hψc hIHlt hExlt hIHNF hExNF hαNF hτIH hτEx hIH' hEx'
+    Provable.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dIH
+  exact Provable.cut (ψ/[nm n]) hψc hIHlt hExlt hIHNF hExNF hαNF hτIH hτEx hIH' hEx'
 
 /-- Value-substitution by a cut against a value-congruent excluded-middle premise.
 
-This is the `Zekd` analogue of the cut used by
+This is the `Provable` analogue of the cut used by
 `EmbeddingBound.subst_value_subst_bdd`; the actual proof of the congruent EM premise is still
 outside this probe, but the cut interface and budgets are now checked. -/
 theorem inductionLeaf_valueSubst_cut_probe
@@ -107,11 +107,11 @@ theorem inductionLeaf_valueSubst_cut_probe
     (hSrcLt : βSrc < α) (hCongLt : βCong < α)
     (hSrcNF : βSrc.NF) (hCongNF : βCong.NF) (hαNF : α.NF)
     (hτSrc : norm βSrc < k + d) (hτCong : norm βCong < k + d)
-    (dSrc : Zekd βSrc e k d c (insert (ψ/[s]) Γ))
-    (dCong : Zekd βCong e k d c (insert (∼(ψ/[s])) (insert (ψ/[t]) Γ))) :
-    Zekd α e k d c (insert (ψ/[t]) Γ) :=
-  Zekd.cut (ψ/[s]) hψc hSrcLt hCongLt hSrcNF hCongNF hαNF hτSrc hτCong
-    (Zekd.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dSrc) dCong
+    (dSrc : Provable βSrc e k d c (insert (ψ/[s]) Γ))
+    (dCong : Provable βCong e k d c (insert (∼(ψ/[s])) (insert (ψ/[t]) Γ))) :
+    Provable α e k d c (insert (ψ/[t]) Γ) :=
+  Provable.cut (ψ/[s]) hψc hSrcLt hCongLt hSrcNF hCongNF hαNF hτSrc hτCong
+    (Provable.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dSrc) dCong
 
 /--
 The same cut-tower step, but with the successor occurrence still written as an arbitrary closed
@@ -136,46 +136,46 @@ theorem inductionLeaf_cutTowerStepWithTerm_probe
     (hτB : norm βB < max k n + d) (hτAnd : norm βAnd < max k n + d)
     (hτEx : norm βEx < max k n + d) (hτStep : norm αStep < max k n + d)
     (hτCong : norm βCong < max k n + d)
-    (dIH : Zekd βIH e (max k n) d c (insert (ψ/[nm n]) Δ))
-    (dA : Zekd βA e (max k n) d c
+    (dIH : Provable βIH e (max k n) d c (insert (ψ/[nm n]) Δ))
+    (dA : Provable βA e (max k n) d c
       (insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))))
-    (dB : Zekd βB e (max k n) d c
+    (dB : Provable βB e (max k n) d c
       (insert (∼(ψ/[succT])) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))))
-    (dCong : Zekd βCong e (max k n) d c
+    (dCong : Provable βCong e (max k n) d c
       (insert (∼(ψ/[succT])) (insert (ψ/[nm (n + 1)]) Δ))) :
-    Zekd α e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ) := by
-  have hAnd : Zekd βAnd e (max k n) d c
+    Provable α e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ) := by
+  have hAnd : Provable βAnd e (max k n) d c
       (insert ((ψ/[nm n]) ⋏ ∼(ψ/[succT]))
         (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
-    Zekd.andI (ψ/[nm n]) (∼(ψ/[succT]))
+    Provable.andI (ψ/[nm n]) (∼(ψ/[succT]))
       hAlt hBlt hANF hBNF hAndNF hτA hτB dA dB
-  have hBadStep : Zekd βAnd e (max k n) d c
+  have hBadStep : Provable βAnd e (max k n) d c
       (insert ((∼step)/[nm n])
         (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) := by
     rw [hstep]
     exact hAnd
-  have hEx : Zekd βEx e (max k n) d c
+  have hEx : Provable βEx e (max k n) d c
       (insert (∃⁰ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
-    Zekd.exI (∼step) n hAndlt hAndNF hExNF hτAnd
+    Provable.exI (∼step) n hAndlt hAndNF hExNF hτAnd
       (inductionLeaf_runningIndex_witnessBound e k d n) hBadStep
-  have hEx' : Zekd βEx e (max k n) d c
+  have hEx' : Provable βEx e (max k n) d c
       (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ)) := by
     rw [Finset.insert_eq_self.mpr
       (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmemEx))] at hEx
     exact hEx
-  have hIH' : Zekd βIH e (max k n) d c
+  have hIH' : Provable βIH e (max k n) d c
       (insert (ψ/[nm n]) (insert (ψ/[succT]) Δ)) :=
-    Zekd.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dIH
-  have hStep : Zekd αStep e (max k n) d c (insert (ψ/[succT]) Δ) :=
-    Zekd.cut (ψ/[nm n]) hψc hIHlt hExlt hIHNF hExNF hStepNF hτIH hτEx hIH' hEx'
+    Provable.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dIH
+  have hStep : Provable αStep e (max k n) d c (insert (ψ/[succT]) Δ) :=
+    Provable.cut (ψ/[nm n]) hψc hIHlt hExlt hIHNF hExNF hStepNF hτIH hτEx hIH' hEx'
   exact inductionLeaf_valueSubst_cut_probe hsuccc hStepLt hCongLt hStepNF hCongNF hαNF
     hτStep hτCong hStep dCong
 
 /--
 Existential-budget surface for one successor-induction cut-tower step with a closed successor term.
 
-The exact `Zekd` probe above requires all four premises at the same running index `max k n`.
-This wrapper instead runs the same `andI`/`exI`/`cut` wiring in the `ZekdSomeK` calculus, letting
+The exact `Provable` probe above requires all four premises at the same running index `max k n`.
+This wrapper instead runs the same `andI`/`exI`/`cut` wiring in the `ProvableSomeK` calculus, letting
 the existential-budget rules absorb the independently chosen finite premise budgets.
 -/
 theorem inductionLeaf_cutTowerStepWithTerm_someK_probe
@@ -190,48 +190,48 @@ theorem inductionLeaf_cutTowerStepWithTerm_someK_probe
     (hIHNF : βIH.NF) (hANF : βA.NF) (hBNF : βB.NF)
     (hAndNF : βAnd.NF) (hExNF : βEx.NF) (hStepNF : αStep.NF)
     (hCongNF : βCong.NF) (hαNF : α.NF)
-    (dIH : ZekdSomeK βIH e d c (insert (ψ/[nm n]) Δ))
-    (dA : ZekdSomeK βA e d c
+    (dIH : ProvableSomeK βIH e d c (insert (ψ/[nm n]) Δ))
+    (dA : ProvableSomeK βA e d c
       (insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))))
-    (dB : ZekdSomeK βB e d c
+    (dB : ProvableSomeK βB e d c
       (insert (∼(ψ/[succT])) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))))
-    (dCong : ZekdSomeK βCong e d c
+    (dCong : ProvableSomeK βCong e d c
       (insert (∼(ψ/[succT])) (insert (ψ/[nm (n + 1)]) Δ))) :
-    ZekdSomeK α e d c (insert (ψ/[nm (n + 1)]) Δ) := by
-  have hAnd : ZekdSomeK βAnd e d c
+    ProvableSomeK α e d c (insert (ψ/[nm (n + 1)]) Δ) := by
+  have hAnd : ProvableSomeK βAnd e d c
       (insert ((ψ/[nm n]) ⋏ ∼(ψ/[succT]))
         (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
-    ZekdSomeK.andI (ψ/[nm n]) (∼(ψ/[succT]))
+    ProvableSomeK.andI (ψ/[nm n]) (∼(ψ/[succT]))
       hAlt hBlt hANF hBNF hAndNF dA dB
-  have hBadStep : ZekdSomeK βAnd e d c
+  have hBadStep : ProvableSomeK βAnd e d c
       (insert ((∼step)/[nm n])
         (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) := by
     rw [hstep]
     exact hAnd
-  have hEx : ZekdSomeK βEx e d c
+  have hEx : ProvableSomeK βEx e d c
       (insert (∃⁰ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
-    ZekdSomeK.exI (∼step) n hAndlt hAndNF hExNF hBadStep
-  have hEx' : ZekdSomeK βEx e d c
+    ProvableSomeK.exI (∼step) n hAndlt hAndNF hExNF hBadStep
+  have hEx' : ProvableSomeK βEx e d c
       (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ)) := by
     rw [Finset.insert_eq_self.mpr
       (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmemEx))] at hEx
     exact hEx
-  have hIH' : ZekdSomeK βIH e d c
+  have hIH' : ProvableSomeK βIH e d c
       (insert (ψ/[nm n]) (insert (ψ/[succT]) Δ)) :=
-    ZekdSomeK.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dIH
-  have hStep : ZekdSomeK αStep e d c (insert (ψ/[succT]) Δ) :=
-    ZekdSomeK.cut (ψ/[nm n]) hψc hIHlt hExlt hIHNF hExNF hStepNF hIH' hEx'
-  have hStep' : ZekdSomeK αStep e d c
+    ProvableSomeK.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dIH
+  have hStep : ProvableSomeK αStep e d c (insert (ψ/[succT]) Δ) :=
+    ProvableSomeK.cut (ψ/[nm n]) hψc hIHlt hExlt hIHNF hExNF hStepNF hIH' hEx'
+  have hStep' : ProvableSomeK αStep e d c
       (insert (ψ/[succT]) (insert (ψ/[nm (n + 1)]) Δ)) :=
-    ZekdSomeK.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) hStep
-  exact ZekdSomeK.cut (ψ/[succT]) hsuccc hStepLt hCongLt hStepNF hCongNF hαNF
+    ProvableSomeK.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) hStep
+  exact ProvableSomeK.cut (ψ/[succT]) hsuccc hStepLt hCongLt hStepNF hCongNF hαNF
     hStep' dCong
 
 /--
 Package a running finite induction chain into the `allω` rule.
 
 This is the outer shape of `EmbeddingBound.metaInduction_cong_bdd` in the witness-bounded
-`Zekd` calculus: the successor step is allowed to run at the old index `max k n`; monotonicity
+`Provable` calculus: the successor step is allowed to run at the old index `max k n`; monotonicity
 then raises it to the next `allω` premise index `max k (n+1)`.
 -/
 theorem inductionLeaf_allOmegaFromStep_probe
@@ -239,19 +239,19 @@ theorem inductionLeaf_allOmegaFromStep_probe
     {ψ : ArithmeticSemiformula ℕ 1} (β : ℕ → ONote)
     (hβlt : ∀ n, β n < αAll) (hβNF : ∀ n, (β n).NF)
     (hαAllNF : αAll.NF) (hβτ : ∀ n, norm (β n) < max k n + d)
-    (hbase : Zekd (β 0) e k d c (insert (ψ/[nm 0]) Δ))
+    (hbase : Provable (β 0) e k d c (insert (ψ/[nm 0]) Δ))
     (hnext : ∀ n,
-      Zekd (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) →
-      Zekd (β (n + 1)) e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ)) :
-    Zekd αAll e k d c (insert (∀⁰ ψ) Δ) := by
-  have chain : ∀ n, Zekd (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) := by
+      Provable (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) →
+      Provable (β (n + 1)) e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ)) :
+    Provable αAll e k d c (insert (∀⁰ ψ) Δ) := by
+  have chain : ∀ n, Provable (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) := by
     intro n
     induction n with
     | zero =>
         simpa using hbase
     | succ n ih =>
         exact (hnext n ih).mono_k (by omega)
-  exact Zekd.allω ψ β hβlt hβNF hαAllNF hβτ chain
+  exact Provable.allω ψ β hβlt hβNF hαAllNF hβτ chain
 
 /-- Existential-budget surface for a uniform running-index induction chain.
 
@@ -265,11 +265,11 @@ theorem inductionLeaf_allOmegaFromStep_someK_probe
       (∀ n, (β n).NF) ∧
       αAll.NF ∧
       (∀ n, norm (β n) < max k n + d) ∧
-      Zekd (β 0) e k d c (insert (ψ/[nm 0]) Δ) ∧
+      Provable (β 0) e k d c (insert (ψ/[nm 0]) Δ) ∧
       (∀ n,
-        Zekd (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) →
-        Zekd (β (n + 1)) e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ))) :
-    ZekdSomeK αAll e d c (insert (∀⁰ ψ) Δ) := by
+        Provable (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) →
+        Provable (β (n + 1)) e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ))) :
+    ProvableSomeK αAll e d c (insert (∀⁰ ψ) Δ) := by
   rcases hpack with ⟨k, hβlt, hβNF, hαAllNF, hβτ, hbase, hnext⟩
   exact ⟨k, inductionLeaf_allOmegaFromStep_probe β hβlt hβNF hαAllNF hβτ hbase hnext⟩
 
@@ -298,12 +298,12 @@ theorem inductionLeaf_allOmegaCutTowerNumeral_probe
     (hstep : ∀ n, (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[nm (n + 1)]))
     (hmemEx : (∃⁰ ∼step) ∈ Δ)
     (hψc : ∀ n, (ψ/[nm n]).complexity < c)
-    (hbase : Zekd (β 0) e k d c (insert (ψ/[nm 0]) Δ))
-    (dA : ∀ n, Zekd (βA n) e (max k n) d c
+    (hbase : Provable (β 0) e k d c (insert (ψ/[nm 0]) Δ))
+    (dA : ∀ n, Provable (βA n) e (max k n) d c
       (insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ))))
-    (dB : ∀ n, Zekd (βB n) e (max k n) d c
+    (dB : ∀ n, Provable (βB n) e (max k n) d c
       (insert (∼(ψ/[nm (n + 1)])) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ)))) :
-    Zekd αAll e k d c (insert (∀⁰ ψ) Δ) :=
+    Provable αAll e k d c (insert (∀⁰ ψ) Δ) :=
   inductionLeaf_allOmegaFromStep_probe β hβAllLt hβNF hαAllNF hβτ hbase
     (fun n dIH =>
       inductionLeaf_cutTowerStep_probe (hstep n) hmemEx (hψc n)
@@ -317,7 +317,7 @@ The `allω` packaging specialized to the bounded PA-induction cut tower.
 
 All finite EM/congruence premises are still explicit hypotheses.  The theorem checks the important
 interface: the local `andI`/`exI`/`cut`/value-substitution step composes through ordinary finite
-induction and then through `Zekd.allω` without losing the running witness index.
+induction and then through `Provable.allω` without losing the running witness index.
 -/
 theorem inductionLeaf_allOmegaCutTowerWithTerm_probe
     {αAll e : ONote} {k d c : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
@@ -344,14 +344,14 @@ theorem inductionLeaf_allOmegaCutTowerWithTerm_probe
     (hmemEx : (∃⁰ ∼step) ∈ Δ)
     (hψc : ∀ n, (ψ/[nm n]).complexity < c)
     (hsuccc : ∀ n, (ψ/[succT n]).complexity < c)
-    (hbase : Zekd (β 0) e k d c (insert (ψ/[nm 0]) Δ))
-    (dA : ∀ n, Zekd (βA n) e (max k n) d c
+    (hbase : Provable (β 0) e k d c (insert (ψ/[nm 0]) Δ))
+    (dA : ∀ n, Provable (βA n) e (max k n) d c
       (insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) (insert (ψ/[succT n]) Δ))))
-    (dB : ∀ n, Zekd (βB n) e (max k n) d c
+    (dB : ∀ n, Provable (βB n) e (max k n) d c
       (insert (∼(ψ/[succT n])) (insert (∼(ψ/[nm n])) (insert (ψ/[succT n]) Δ))))
-    (dCong : ∀ n, Zekd (βCong n) e (max k n) d c
+    (dCong : ∀ n, Provable (βCong n) e (max k n) d c
       (insert (∼(ψ/[succT n])) (insert (ψ/[nm (n + 1)]) Δ))) :
-    Zekd αAll e k d c (insert (∀⁰ ψ) Δ) :=
+    Provable αAll e k d c (insert (∀⁰ ψ) Δ) :=
   inductionLeaf_allOmegaFromStep_probe β hβAllLt hβNF hαAllNF hβτ hbase
     (fun n dIH =>
       inductionLeaf_cutTowerStepWithTerm_probe (succT n) (hstep n) hmemEx (hψc n) (hsuccc n)

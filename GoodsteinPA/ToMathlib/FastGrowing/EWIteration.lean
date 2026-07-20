@@ -74,7 +74,7 @@ def collapse (α : ONote) : ONote := expTower α
 theorem collapse_NF {α : ONote} (hα : α.NF) : (collapse α).NF := expTower_NF hα
 
 /-- **C5: `collapse` is strictly monotone** (`β < α → collapse β < collapse α`) — the descent the
-rank-lowering induction needs (the `Zekd.add_osucc_descent`-class compatibility). -/
+rank-lowering induction needs (the `Provable.add_osucc_descent`-class compatibility). -/
 theorem collapse_strictMono {β α : ONote} (hβ : β.NF) (h : β < α) : collapse β < collapse α :=
   expTower_lt_expTower hβ h
 
