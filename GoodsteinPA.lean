@@ -8,7 +8,13 @@ public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2
 public import GoodsteinPA.OperatorZeh
-public import GoodsteinPA.OperatorZinfty
+public import GoodsteinPA.OperatorZinfty.Basic
+public import GoodsteinPA.OperatorZinfty.BoundedTruth
+public import GoodsteinPA.OperatorZinfty.Cut
+public import GoodsteinPA.OperatorZinfty.Embedding
+public import GoodsteinPA.OperatorZinfty.InductionLeaf
+public import GoodsteinPA.OperatorZinfty.Inversion
+public import GoodsteinPA.OperatorZinfty.SomeK
 public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Statement
 public import GoodsteinPA.ToMathlib.FastGrowing.Basic
