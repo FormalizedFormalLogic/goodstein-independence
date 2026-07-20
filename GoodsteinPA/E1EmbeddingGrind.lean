@@ -407,32 +407,6 @@ end Zef2TC
 
 /-! ### `Nlog`/slot toolkit for the ordinal joins -/
 
-/-- `Nlog` is near-stable under `osucc` (mirror of `ewN_osucc_le`). -/
-theorem Nlog_osucc_le : ∀ {o : ONote}, o.NF → Nlog (osucc o) ≤ Nlog o + 1
-  | 0, _ => by
-      show Nlog (oadd 0 1 0) ≤ Nlog 0 + 1
-      simp only [Nlog_oadd, Nlog_zero, PNat.one_coe]
-      have : clog 1 = 1 := by decide
-      omega
-  | oadd 0 n a, h => by
-      have ha0 : a = 0 := by
-        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
-        rw [ONote.repr_zero, Ordinal.opow_zero] at hlt
-        exact (@ONote.repr_inj a 0 h.snd ONote.NF.zero).1
-          (by rw [ONote.repr_zero]; exact Order.lt_one_iff.1 hlt)
-      subst ha0
-      show Nlog (oadd 0 (n + 1) 0) ≤ Nlog (oadd 0 n 0) + 1
-      have hadd := clog_add_le (n : ℕ) 1
-      have hpos := clog_pos n
-      have h1 : clog 1 = 1 := by decide
-      simp only [Nlog_oadd, Nlog_zero, PNat.add_coe, PNat.one_coe, Nat.zero_add]
-      omega
-  | oadd (oadd e' n' a') m b, h => by
-      show Nlog (oadd (oadd e' n' a') m (osucc b)) ≤ Nlog (oadd (oadd e' n' a') m b) + 1
-      have hIH := Nlog_osucc_le h.snd
-      simp only [Nlog_oadd] at hIH ⊢
-      omega
-
 /-- The `K`-relativized root slot dominates a smaller-budget one: `e₁ < e` (with
 `norm e₁ ≤ B`), `B₁ ≤ B`, `K₁ ≤ K` give pointwise domination.  The `norm e₁ ≤ B`
 side condition is exactly `hardy_le_of_lt`'s budget gate, absorbed into the structural `B`. -/
@@ -569,7 +543,7 @@ theorem budgetedEmbedsTC_or {Γ : Finset (ArithmeticFormula ℕ)}
     omega
   have hor := Zef2TC.orI (α := osucc α) hg
     (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
-    (Provable.lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
+    (lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
   have hmem : (Embedding.asg env ▹ φ ⋎ Embedding.asg env ▹ ψ)
       ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
     have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
@@ -588,9 +562,9 @@ theorem budgetedEmbedsTC_and {Γ : Finset (ArithmeticFormula ℕ)}
   have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
   have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
   have hlt₁ : e₁ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Provable.le_add_right_NF he₁ he₂) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ he₂) (lt_osucc headdNF)
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Provable.le_add_left_NF he₁ he₂) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   refine ⟨B₁ + B₂ + norm e₁ + norm e₂, max d₁ d₂, osucc (e₁ + e₂), heNF, fun env => ?_⟩
   obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
   obtain ⟨K₂, α₂, hα₂NF, D₂⟩ := ih₂ env
@@ -624,8 +598,8 @@ theorem budgetedEmbedsTC_and {Γ : Finset (ArithmeticFormula ℕ)}
     omega
   have hand := Zef2TC.andI (α := osucc (α₁ + α₂)) hg
     (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
-    (lt_of_le_of_lt (Provable.le_add_right_NF hα₁NF hα₂NF) (Provable.lt_osucc haddNF))
-    (lt_of_le_of_lt (Provable.le_add_left_NF hα₁NF hα₂NF) (Provable.lt_osucc haddNF))
+    (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
+    (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
   have hmem : (Embedding.asg env ▹ φ ⋏ Embedding.asg env ▹ ψ)
       ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
@@ -645,9 +619,9 @@ theorem budgetedEmbedsTC_cut {Γ : Finset (ArithmeticFormula ℕ)}
   have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
   have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
   have hlt₁ : e₁ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Provable.le_add_right_NF he₁ he₂) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ he₂) (lt_osucc headdNF)
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Provable.le_add_left_NF he₁ he₂) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   refine ⟨B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity, max (max d₁ d₂) (φ.complexity + 1),
     osucc (e₁ + e₂), heNF, fun env => ?_⟩
   obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
@@ -697,8 +671,8 @@ theorem budgetedEmbedsTC_cut {Γ : Finset (ArithmeticFormula ℕ)}
     simp only [Semiformula.complexity_rew]
     omega
   exact Zef2TC.cut hg (Embedding.asg env ▹ φ) hcompl hread
-    (lt_of_le_of_lt (Provable.le_add_right_NF hα₁NF hα₂NF) (Provable.lt_osucc haddNF))
-    (lt_of_le_of_lt (Provable.le_add_left_NF hα₁NF hα₂NF) (Provable.lt_osucc haddNF))
+    (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
+    (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
 
 /- **`axm` / `all` leaves of `budgetedEmbedding_Zef2TC` — RETIRED (SERIES-5 Lane C).**  These were
@@ -1015,8 +989,8 @@ theorem budgetedEmbedsTC_exs {Γ : Finset (ArithmeticFormula ℕ)}
   have Dnum : Zef2TC (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))) e₁ (fun _ => True) F d
       (insert (ψ'/[nm m]) (Γ.image (fun χ => Embedding.asg env ▹ χ))) :=
     Zef2TC.cut hgcut (ψ'/[s]) hcompl hread
-      (lt_of_le_of_lt (Provable.le_add_right_NF hα₁NF hofNF) (Provable.lt_osucc haddNF))
-      (lt_of_le_of_lt (Provable.le_add_left_NF hα₁NF hofNF) (Provable.lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_right_NF hα₁NF hofNF) (lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_left_NF hα₁NF hofNF) (lt_osucc haddNF))
       hα₁NF hofNF (osucc_NF haddNF) (clT _) (clT _) Dsrc Dcong'
   -- the ∃-introduction at the numeral witness `m`
   refine ⟨K, osucc (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))),
@@ -1040,7 +1014,7 @@ theorem budgetedEmbedsTC_exs {Γ : Finset (ArithmeticFormula ℕ)}
   have hwit : m ≤ F 0 := le_trans (by omega) (index_le_relSlot_zero e₁ B K)
   have hexI := Zef2TC.exI (α := osucc (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))))
     hgout ψ' m
-    (Provable.lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
+    (lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
     (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
   have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
     have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
@@ -1359,7 +1333,7 @@ theorem budgetedEmbedsV3_or {Γ : Finset (ArithmeticFormula ℕ)}
       omega
     have hor := Zef2TC.orI (α := osucc α) hg
       (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
-      (Provable.lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
+      (lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
     have hmem : (Embedding.asg env ▹ φ ⋎ Embedding.asg env ▹ ψ)
         ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
       have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h; simpa using this
@@ -1450,7 +1424,7 @@ theorem budgetedEmbedsV3_all {Γ : Finset (ArithmeticFormula ℕ)}
     have hall := Zef2TC.allω (α := osucc α)
       (f := rel1 (ewRootSlot e (B + 1)) (envSup env N)) hgate
       ((Embedding.asg env).q ▹ φ) (fun _ => α)
-      (fun _ => Provable.lt_osucc hαNF) (fun _ => hαNF) (osucc_NF hαNF) hrel hfam
+      (fun _ => lt_osucc hαNF) (fun _ => hαNF) (osucc_NF hαNF) hrel hfam
     have hmem : (Embedding.asg env ▹ (∀⁰ φ))
         ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := Finset.mem_image_of_mem _ h
     rw [show (Embedding.asg env ▹ (∀⁰ φ)) = ∀⁰ ((Embedding.asg env).q ▹ φ) by simp] at hmem
@@ -1470,9 +1444,9 @@ theorem budgetedEmbedsV3_and {Γ : Finset (ArithmeticFormula ℕ)}
   have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
   have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
   have hlt₁ : e₁ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Provable.le_add_right_NF he₁ he₂) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ he₂) (lt_osucc headdNF)
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Provable.le_add_left_NF he₁ he₂) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   have haddNF : (α₁ + α₂).NF := by haveI := hα₁NF; haveI := hα₂NF; exact ONote.add_nf α₁ α₂
   set B := max B₁ B₂ + norm e₁ + norm e₂ + 2 with hB
   refine ⟨B, max d₁ d₂, max N₁ N₂, osucc (e₁ + e₂), osucc (α₁ + α₂),
@@ -1501,8 +1475,8 @@ theorem budgetedEmbedsV3_and {Γ : Finset (ArithmeticFormula ℕ)}
       omega
     have hand := Zef2TC.andI (α := osucc (α₁ + α₂)) hg
       (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
-      (lt_of_le_of_lt (Provable.le_add_right_NF hα₁NF hα₂NF) (Provable.lt_osucc haddNF))
-      (lt_of_le_of_lt (Provable.le_add_left_NF hα₁NF hα₂NF) (Provable.lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
     have hmem : (Embedding.asg env ▹ φ ⋏ Embedding.asg env ▹ ψ)
         ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
@@ -1522,9 +1496,9 @@ theorem budgetedEmbedsV3_cut {Γ : Finset (ArithmeticFormula ℕ)}
   have headdNF : (e₁ + e₂).NF := by haveI := he₁; haveI := he₂; exact ONote.add_nf e₁ e₂
   have heNF : (osucc (e₁ + e₂)).NF := osucc_NF headdNF
   have hlt₁ : e₁ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Provable.le_add_right_NF he₁ he₂) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ he₂) (lt_osucc headdNF)
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
-    lt_of_le_of_lt (Provable.le_add_left_NF he₁ he₂) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   have haddNF : (α₁ + α₂).NF := by haveI := hα₁NF; haveI := hα₂NF; exact ONote.add_nf α₁ α₂
   set B := max B₁ B₂ + norm e₁ + norm e₂ + φ.complexity + 2 with hB
   refine ⟨B, max (max d₁ d₂) (φ.complexity + 1), max N₁ N₂, osucc (e₁ + e₂),
@@ -1565,8 +1539,8 @@ theorem budgetedEmbedsV3_cut {Γ : Finset (ArithmeticFormula ℕ)}
       simp only [Semiformula.complexity_rew]
       omega
     exact Zef2TC.cut hg (Embedding.asg env ▹ φ) hcompl hread
-      (lt_of_le_of_lt (Provable.le_add_right_NF hα₁NF hα₂NF) (Provable.lt_osucc haddNF))
-      (lt_of_le_of_lt (Provable.le_add_left_NF hα₁NF hα₂NF) (Provable.lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
+      (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
 
 /-- **V3 `exs`** — the closed-term collapse with a STRUCTURAL witness budget.  The witness
@@ -1590,9 +1564,9 @@ theorem budgetedEmbedsV3_exs {Γ : Finset (ArithmeticFormula ℕ)}
   have heNF : (osucc (e₁ + eG)).NF := osucc_NF headdNF
   set e : ONote := osucc (e₁ + eG) with he
   have hlt₁ : e₁ < e :=
-    lt_of_le_of_lt (Provable.le_add_right_NF he₁ heGNF) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_right_NF he₁ heGNF) (lt_osucc headdNF)
   have hltG : eG < e :=
-    lt_of_le_of_lt (Provable.le_add_left_NF he₁ heGNF) (Provable.lt_osucc headdNF)
+    lt_of_le_of_lt (le_add_left_NF he₁ heGNF) (lt_osucc headdNF)
   set B : ℕ := B₁ + φ.complexity + clog (2 * φ.complexity + 1)
     + norm e₁ + norm eG + 3 with hB
   set d : ℕ := max d₁ (φ.complexity + 1) with hd
@@ -1658,8 +1632,8 @@ theorem budgetedEmbedsV3_exs {Γ : Finset (ArithmeticFormula ℕ)}
         (fun _ => True) F d
         (insert (ψ'/[nm m]) (Γ.image (fun χ => Embedding.asg env ▹ χ))) :=
       Zef2TC.cut hgcut (ψ'/[s]) hcompl hread
-        (lt_of_le_of_lt (Provable.le_add_right_NF hα₁NF hofNF) (Provable.lt_osucc haddNF))
-        (lt_of_le_of_lt (Provable.le_add_left_NF hα₁NF hofNF) (Provable.lt_osucc haddNF))
+        (lt_of_le_of_lt (le_add_right_NF hα₁NF hofNF) (lt_osucc haddNF))
+        (lt_of_le_of_lt (le_add_left_NF hα₁NF hofNF) (lt_osucc haddNF))
         hα₁NF hofNF (osucc_NF haddNF) (clT _) (clT _) Dsrc Dcong'
     -- THE structural witness bound: `m ≤ Gexp^[c] ≤ hardy eG ≤ hardy e ≤ F 0`
     have hwit : m ≤ F 0 := by
@@ -1686,7 +1660,7 @@ theorem budgetedEmbedsV3_exs {Γ : Finset (ArithmeticFormula ℕ)}
     have hexI := Zef2TC.exI
       (α := osucc (osucc (α₁ + ONote.ofNat (2 * φ.complexity + 1))))
       hgout ψ' m
-      (Provable.lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
+      (lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
       (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
     have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
       have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
@@ -2099,30 +2073,9 @@ theorem budgetedEmbedsV3_axm_PAminus {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-! ### The induction-schema kit, part 1 — `osuccs` + the ∀-closure peel -/
 
-/-- Iterated successor (the closure-peel ordinal ladder). -/
-def osuccs (α : ONote) : ℕ → ONote
-  | 0 => α
-  | n + 1 => osucc (osuccs α n)
-
-theorem osuccs_NF {α : ONote} (h : α.NF) : ∀ n, (osuccs α n).NF
-  | 0 => h
-  | n + 1 => osucc_NF (osuccs_NF h n)
-
-theorem osuccs_succ_shift (α : ONote) : ∀ n, osuccs (osucc α) n = osucc (osuccs α n)
-  | 0 => rfl
-  | n + 1 => by simp only [osuccs, osuccs_succ_shift α n]
-
 theorem Cl_osuccs {S : ONote → Prop} {α : ONote} (h : Cl S α) : ∀ n, Cl S (osuccs α n)
   | 0 => h
   | n + 1 => Cl.osucc (Cl_osuccs h n)
-
-theorem Nlog_osuccs_le {α : ONote} (h : α.NF) : ∀ n, Nlog (osuccs α n) ≤ Nlog α + n
-  | 0 => le_refl _
-  | n + 1 => by
-      have h1 := Nlog_osucc_le (osuccs_NF h n)
-      have h2 := Nlog_osuccs_le h n
-      simp only [osuccs]
-      omega
 
 /-- **∀-closure peel**: if every numeral instance of the `ℓ`-ary matrix is derivable at `α`
 (uniformly in the operator/slot, `em_cong`-style stability), the universal closure is
@@ -2171,7 +2124,7 @@ theorem allClosure_peel {e : ONote} {d : ℕ} {f₀ : ℕ → ℕ} :
           exact hinst (m :> w) (adjoin H' m) (rel1 f' m) (rel1_monotone hmono' m)
             (rel1_infl hinfl' m) (le_trans hf0' hf'm)
         have hgd : Nlog (osucc α) ≤ f' 0 := le_trans (hg 1 (by omega)) hf0'
-        exact Zef2TC.allω hgd _ (fun _ => α) (fun _ => Provable.lt_osucc hNF) (fun _ => hNF)
+        exact Zef2TC.allω hgd _ (fun _ => α) (fun _ => lt_osucc hNF) (fun _ => hNF)
           (osucc_NF hNF) (fun m => hCl (adjoin H' m)) fam
       have h := ih (osucc α) (osucc_NF hNF) (fun S => Cl.osucc (hCl S)) (∀⁰ χ) Γ step
         (fun k hk => by
@@ -2184,40 +2137,6 @@ theorem allClosure_peel {e : ONote} {d : ℕ} {f₀ : ℕ → ℕ} :
 
 /-! ### The induction-schema kit, part 2 — `clog` gate arithmetic + the ω-root -/
 
-/-- `2·⌈log⌉` is dominated by the argument (+3): `2·log₂(m+1) ≤ m+3`. -/
-theorem two_mul_clog_le (m : ℕ) : 2 * clog m ≤ m + 3 := by
-  have hkey : ∀ k : ℕ, 2 * k ≤ 2 ^ k + 2 := by
-    intro k
-    induction k with
-    | zero => omega
-    | succ k ih =>
-        have h2 : 2 ^ k ≥ 1 := Nat.one_le_two_pow
-        have : 2 ^ (k + 1) = 2 ^ k + 2 ^ k := by ring
-        omega
-  have hpow : 2 ^ Nat.log 2 (m + 1) ≤ m + 1 := Nat.pow_log_le_self 2 (by omega)
-  have := hkey (Nat.log 2 (m + 1))
-  simp only [clog]
-  omega
-
-/-- `clog` submultiplicativity: `clog (a·b) ≤ clog a + clog b + 1`. -/
-theorem clog_mul_le (a b : ℕ) : clog (a * b) ≤ clog a + clog b + 1 := by
-  rcases Nat.eq_zero_or_pos a with ha | ha
-  · subst ha; simp
-  rcases Nat.eq_zero_or_pos b with hb | hb
-  · subst hb; simp
-  have h1 : a + 1 < 2 ^ (clog a + 1) := by
-    simpa [clog] using Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) (a + 1)
-  have h2 : b + 1 < 2 ^ (clog b + 1) := by
-    simpa [clog] using Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) (b + 1)
-  have hle : a * b + 1 < 2 ^ (clog a + 1) * 2 ^ (clog b + 1) := by
-    have hexp : (a + 1) * (b + 1) = a * b + a + b + 1 := by ring
-    have : a * b + 1 ≤ (a + 1) * (b + 1) := by omega
-    exact lt_of_le_of_lt this (Nat.mul_lt_mul'' h1 h2)
-  rw [← pow_add] at hle
-  have hfin : clog (a * b) < clog a + 1 + (clog b + 1) := by
-    simpa [clog] using Nat.log_lt_of_lt_pow (by omega : a * b + 1 ≠ 0) hle
-  omega
-
 /-- **The tower-gate bound**: linear-in-`k` `ofNat` towers have `clog`-gates dominated by
 `max n C` for the constant `C = 2·clog a + 12` — exactly what an arbitrary
 monotone+inflationary slot pays at branch `n`. -/
@@ -2228,28 +2147,9 @@ theorem clog_tower_gate (a : ℕ) {k n : ℕ} (hk : k ≤ n) :
   have h3 := two_mul_clog_le (n + 1)
   omega
 
-/-- The `ONote` `ω` is the closure element `expTower (ofNat 1)` — in every `Cl S`. -/
-theorem omega_eq_expTower : (ONote.omega : ONote) = expTower (ONote.ofNat 1) := rfl
-
-theorem omega_NF : (ONote.omega : ONote).NF := by
-  rw [omega_eq_expTower]; exact expTower_NF (ONote.nf_ofNat 1)
-
+/-- `ω` is in the closure of any generating set `S`. -/
 theorem Cl_omega (S : ONote → Prop) : Cl S ONote.omega := by
   rw [omega_eq_expTower]; exact Cl.expTower (Cl.ofNat 1)
-
-theorem ofNat_lt_omega (m : ℕ) : ONote.ofNat m < ONote.omega := by
-  rw [ONote.lt_def, ONote.repr_ofNat,
-    show ONote.omega.repr = Ordinal.omega0 from by simp [ONote.omega]]
-  exact Ordinal.natCast_lt_omega0 m
-
-theorem Nlog_omega : Nlog ONote.omega = 2 := by
-  show Nlog (ONote.oadd 1 1 0) = 2
-  have h2 : Nat.log 2 2 = 1 := by decide
-  show max (Nlog (1 : ONote) + clog 1) (Nlog 0) = 2
-  have h1 : Nlog (1 : ONote) = 1 := by
-    show max (Nlog 0 + clog 1) (Nlog 0) = 1
-    simp [clog, h2]
-  simp [h1, clog, h2]
 
 /-! ### The induction-schema kit, part 3 — `succInd` rewriting naturality over `ℒₒᵣ`
 (ports of `EmbeddingX.subst1_comp_bShift` / `rew_subst1_comm_q` / `rew_succInd` /
@@ -2460,14 +2360,14 @@ theorem succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
     ht.wk ht.gate (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto)
   have horI₂ := Zef2TC.orI (α := osucc ONote.omega)
     (le_trans hNs (le_trans (by omega : (3:ℕ) ≤ 12) (le_trans (by omega) hg1)))
-    (∃⁰ (∼stepw)) (∀⁰ ψw) (Provable.lt_osucc omega_NF) omega_NF (osucc_NF omega_NF)
+    (∃⁰ (∼stepw)) (∀⁰ ψw) (lt_osucc omega_NF) omega_NF (osucc_NF omega_NF)
     (Cl_omega H) hre
   have hre₂ : Zef2TC (osucc ONote.omega) e H f (ψw.complexity + 1)
       (insert (∼(ψw/[t0])) (insert ((∃⁰ (∼stepw)) ⋎ (∀⁰ ψw)) Γ)) :=
     horI₂.wk horI₂.gate (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto)
   have horI₁ := Zef2TC.orI (α := osucc (osucc ONote.omega))
     (le_trans hNss (le_trans (by omega : (4:ℕ) ≤ 12) (le_trans (by omega) hg1)))
-    (∼(ψw/[t0])) ((∃⁰ (∼stepw)) ⋎ (∀⁰ ψw)) (Provable.lt_osucc (osucc_NF omega_NF))
+    (∼(ψw/[t0])) ((∃⁰ (∼stepw)) ⋎ (∀⁰ ψw)) (lt_osucc (osucc_NF omega_NF))
     (osucc_NF omega_NF) (osucc_NF (osucc_NF omega_NF)) (Cl.osucc (Cl_omega H)) hre₂
   rw [hb]
   exact horI₁
@@ -3106,10 +3006,10 @@ theorem stepAnd_Zef2TC {φ ψ : ArithmeticFormula ℕ} {βφ βψ e : ONote} {H 
   have hα₁NF : (osucc (βφ + βψ)).NF := osucc_NF hσNF
   have hα₂NF : (osucc (osucc (βφ + βψ))).NF := osucc_NF hα₁NF
   have hβφ1 : βφ < osucc (βφ + βψ) :=
-    lt_of_le_of_lt (Provable.le_add_right_NF hβφNF hβψNF) (Provable.lt_osucc hσNF)
+    lt_of_le_of_lt (le_add_right_NF hβφNF hβψNF) (lt_osucc hσNF)
   have hβψ1 : βψ < osucc (βφ + βψ) :=
-    lt_of_le_of_lt (Provable.le_add_left_NF hβφNF hβψNF) (Provable.lt_osucc hσNF)
-  have h12 : osucc (βφ + βψ) < osucc (osucc (βφ + βψ)) := Provable.lt_osucc hα₁NF
+    lt_of_le_of_lt (le_add_left_NF hβφNF hβψNF) (lt_osucc hσNF)
+  have h12 : osucc (βφ + βψ) < osucc (osucc (βφ + βψ)) := lt_osucc hα₁NF
   have hβφ2 : βφ < osucc (osucc (βφ + βψ)) := lt_trans hβφ1 h12
   have hα₁N : Nlog (osucc (βφ + βψ)) ≤ f 0 :=
     le_trans (Nlog_osucc_le hσNF) (by omega)
@@ -3303,7 +3203,7 @@ theorem stepAtom_Zef2TC {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Se
     rw [Finset.erase_insert_eq_erase] at E
     have E' : Zef2TC βψ e H f c Γ := Zef2TC.wk E.gate (Finset.erase_subset _ _) E
     exact Zef2TC.weak hα₁N
-      (lt_of_le_of_lt (Provable.le_add_left_NF hβφNF hβψNF) (Provable.lt_osucc hσNF))
+      (lt_of_le_of_lt (le_add_left_NF hβφNF hβψNF) (lt_osucc hσNF))
       hβψNF hα₁NF (Cl_of_NF hβψNF) (Finset.Subset.refl _) E'
   · -- `rel` is FALSE: erase it from `D₁`
     have hntrue : atomTrue (Semiformula.nrel rr vv) :=
@@ -3312,7 +3212,7 @@ theorem stepAtom_Zef2TC {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Se
     rw [Finset.erase_insert_eq_erase] at E
     have E' : Zef2TC βφ e H f c Γ := Zef2TC.wk E.gate (Finset.erase_subset _ _) E
     exact Zef2TC.weak hα₁N
-      (lt_of_le_of_lt (Provable.le_add_right_NF hβφNF hβψNF) (Provable.lt_osucc hσNF))
+      (lt_of_le_of_lt (le_add_right_NF hβφNF hβψNF) (lt_osucc hσNF))
       hβφNF hα₁NF (Cl_of_NF hβφNF) (Finset.Subset.refl _) E'
 
 /-- **`stepVerum_Zef2TC`** — the ⊤-principal top-rank cut is FREE: `∼⊤ = ⊥` and ⊥ is never
@@ -3410,7 +3310,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)
-      · exact ⟨γ, Provable.le_add_left_NF hαNF hγNF, hγNF, Cl_of_NF hγNF,
+      · exact ⟨γ, le_add_left_NF hαNF hγNF, hγNF, Cl_of_NF hγNF,
           le_trans hαN (reslot_exside hg_infl 0),
           Zef2TC.wk (le_trans hαN (reslot_exside hg_infl 0)) (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
@@ -3423,8 +3323,8 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)).mono
-          (le_of_lt (Provable.add_lt_add_left_NF hαNF hβNF hγNF hβ))
-      · exact ⟨β, le_of_lt (lt_of_lt_of_le hβ (Provable.le_add_left_NF hαNF hγNF)), hβNF, Cl_of_NF hβNF,
+          (le_of_lt (add_lt_add_left_NF hαNF hβNF hγNF hβ))
+      · exact ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_add_left_NF hαNF hγNF)), hβNF, Cl_of_NF hβNF,
           le_trans (Zef2TC.gate D') (reslot_exside hg_infl 0),
           Zef2TC.wk (le_trans (Zef2TC.gate D') (reslot_exside hg_infl 0)) (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
@@ -3452,8 +3352,8 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
       have hAnd : Zef2TC (α + γ) e H (g ∘ f) c
           (insert (χ₁ ⋏ χ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
         Zef2TC.andI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ₁ χ₂
-          (lt_of_le_of_lt ha₁le (Provable.add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
-          (lt_of_le_of_lt ha₂le (Provable.add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
+          (lt_of_le_of_lt ha₁le (add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
+          (lt_of_le_of_lt ha₂le (add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
           ha₁NF ha₂NF haddNF ha₁H ha₂H D₁' D₂'
       exact Zef2TC.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
         intro x hx
@@ -3479,7 +3379,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
       have hOr : Zef2TC (α + γ) e H (g ∘ f) c
           (insert (χ₁ ⋎ χ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
         Zef2TC.orI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ₁ χ₂
-          (lt_of_le_of_lt hale (Provable.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+          (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
           haNF haddNF haH Da'
       exact Zef2TC.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
         intro x hx
@@ -3508,7 +3408,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
         exact Zef2TC.allω (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ (fun n => (ihn n).choose)
           (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
-            (Provable.add_lt_add_left_NF hαNF (hβNF n) hγNF (hβ n)))
+            (add_lt_add_left_NF hαNF (hβNF n) hγNF (hβ n)))
           (fun n => (ihn n).choose_spec.2.1) haddNF
           (fun n => Cl_of_NF (ihn n).choose_spec.2.1)
           (fun n => (ihn n).choose_spec.2.2.2.2)
@@ -3551,7 +3451,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
               simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto) Da
           refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
           exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
-            (lt_of_le_of_lt hale (Provable.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+            (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
             hαNF haNF haddNF (Cl_of_NF hαNF) haH famn Da'
         · have Dβ' : Zef2TC β e H (g ∘ f) c
               (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
@@ -3565,7 +3465,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
               (dχ.mono_f (reslot_exside hg_infl))
           refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
           exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
-            (lt_of_lt_of_le hβ (Provable.le_add_left_NF hαNF hγNF))
+            (lt_of_lt_of_le hβ (le_add_left_NF hαNF hγNF))
             hαNF hβNF haddNF (Cl_of_NF hαNF) (Cl_of_NF hβNF) famn Dβ'
       · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
         obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hφc heNF fam hβNF hmono hinfl hsl hφread
@@ -3583,7 +3483,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           · exact Or.inl ⟨hhd, Or.inl rfl⟩
           · tauto)
           (Zef2TC.exI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ n
-            (lt_of_le_of_lt hale (Provable.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+            (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
             haNF haddNF haH hbound' Da')
   | @cut γ βφ βψ e H f c Γ₀ hαN χ hχc hcutRead' hβφ hβψ hβφNF hβψNF hγNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
       intro hγNF hmono hinfl hsl hφread hmem
@@ -3603,8 +3503,8 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
       refine Zef2TCProv.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
       exact Zef2TC.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ hχc
         (le_trans hcutRead' (hg_infl (f 0)))
-        (lt_of_le_of_lt ha₁le (Provable.add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
-        (lt_of_le_of_lt ha₂le (Provable.add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
+        (lt_of_le_of_lt ha₁le (add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
+        (lt_of_le_of_lt ha₂le (add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF haddNF ha₁H ha₂H D₁' D₂'
 
 /-- **`stepAllωTC_bnd`** — the bound-exposing principal ∀/∃ cut-reduction step over `Zef2TC`
@@ -3647,21 +3547,6 @@ The top-rank cut dispatches by cut-formula shape to the four banked reductions:
 principality + limit headroom (`osucc_lt_collapse`), and their `Nlog … + 2` gates are paid by
 one extra threaded base-slack conjunct `3 ≤ f 0` (preserved by `rel1`, satisfied by every real
 root slot: `ewRootSlot … 0 ≥ 3`). -/
-
-/-- Successor headroom under the collapse: `collapse α = ω^α` is a limit for `α > 0`, so
-`σ < collapse α → osucc σ < collapse α` (additive principality with `1 < ω^α`). -/
-theorem osucc_lt_collapse {σ α : ONote} (hσNF : σ.NF) (_hαNF : α.NF)
-    (hαpos : (0 : ONote) < α) (h : σ < collapse α) : osucc σ < collapse α := by
-  haveI := hσNF; haveI := _hαNF
-  refine ONote.lt_def.mpr ?_
-  rw [repr_osucc hσNF, repr_collapse]
-  have h1 : σ.repr < Ordinal.omega0 ^ α.repr := by
-    have := ONote.lt_def.mp h
-    rwa [repr_collapse] at this
-  have h0 : (0 : Ordinal) < α.repr := by simpa using ONote.lt_def.mp hαpos
-  have h2 : (1 : Ordinal) < Ordinal.omega0 ^ α.repr :=
-    lt_of_lt_of_le Ordinal.one_lt_omega0 (Ordinal.left_le_opow _ h0)
-  exact Ordinal.isPrincipal_add_omega0_opow α.repr h1 h2
 
 set_option maxHeartbeats 3200000 in
 /-- **`passAuxTC`** — one cut-elimination pass over `Zef2TC` (port of `passAux`): the ordinal
@@ -4106,20 +3991,13 @@ The composition `embedding_Zef2TC_V3 → rankToZeroAuxTC → readoff_delta0_Zef2
 slot `rel1 (ewRootSlot e B) K`, which is NOT `EwF1` (the `rel1` plateau below `K` breaks
 `StrictMono`) — so it feeds `rankToZeroAuxTC` (the EwLow entry: `Monotone ∧ infl ∧ 2m+1 ∧ 3≤·0`),
 NOT the `rankToZero_TC` `EwF1` wrapper.  `readoff_delta0_Zef2TC` then needs the OUTPUT tower slot
-`ewIterTower … d α` inflationary.  These two lemmas bank exactly those prerequisites. -/
+`ewIterTower … d α` inflationary (`ewIterTower_infl`). -/
 
 /-- `3 ≤ (rel1 (ewRootSlot e B) K) 0` — the root slot pays `rankToZeroAuxTC`'s `3 ≤ f 0` gate
 (`ewRootSlot _ _ x = 2·(…) + 3 ≥ 3`). -/
 theorem three_le_rel1_rootSlot (e : ONote) (B K : ℕ) :
     3 ≤ (rel1 (ewRootSlot e B) K) 0 := by
   simp only [rel1, ewRootSlot]; omega
-
-/-- **`ewIterTower_infl`** — the `d`-fold slot tower inherits inflationarity from its base slot
-(each pass is `ewIter`, inflationary by `ewIter_infl`).  Feeds `readoff_delta0_Zef2TC`'s `hinfl`. -/
-theorem ewIterTower_infl {f : ℕ → ℕ} (hinfl : ∀ m, m ≤ f m) (α : ONote) :
-    ∀ (d : ℕ) (m : ℕ), m ≤ ewIterTower f d α m
-  | 0, m => hinfl m
-  | (d + 1), m => ewIter_infl (ewIterTower_infl hinfl α d) (collapseIter d α) m
 
 /-! ### E-seam piece (1): the BOUNDED rank-0 `Zef2TC` read-off
 
@@ -4137,23 +4015,11 @@ That residual is EXACTLY the fragment `readoffD_trapped_of_mono` (`OperatorZef2.
 the goodstein downward-closed guard (`atomTrue (χ/[nm 0]) → atomTrue (∀⁰ χ)`), so it is a disclosed
 `sorry` pending the guard-carrying statement the judge ratifies for rung D/E. -/
 
-/-- Root weakening `f 0 ≤ ewIter f α 0` (needs only inflationarity). -/
-theorem f0_le_ewIter {f : ℕ → ℕ} (hinfl : ∀ m, m ≤ f m) (α : ONote) : f 0 ≤ ewIter f α 0 := by
-  by_cases hα : α = 0
-  · subst hα; simp
-  · have h0α : (0 : ONote) < α := by
-      cases α with
-      | zero => exact (hα rfl).elim
-      | oadd e n a => exact oadd_pos e n a
-    have hlow := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) NF.zero h0α (Nat.zero_le _)
-    have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow
-    exact le_trans (hinfl (f 0)) hff
-
 /- **`readoffTC_core` / `readoff_delta0_Zef2TC` (TC bounded rank-0 read-off) — RETIRED
 (SERIES-5 Lane C).**  The invariant-form TC read-off and its singleton wrapper carried the single
 `allω` non-monotone-matrix `sorry`; both are superseded by the V-threaded VALUE-BUDGET read-off
 below (`readoffVTC_core` / `readoff_value_pipeline` / `readoff_value_goodstein'`), which carries the
-clean route-B chain. Neither had a code consumer outside this dead pair. `f0_le_ewIter` is retained. -/
+clean route-B chain. Neither had a code consumer outside this dead pair. -/
 
 /-! ### Route-(c): the V-threaded VALUE-BUDGET read-off (DIRECTION lap-206 step (3))
 
@@ -4179,36 +4045,6 @@ theorem Sslot_mono {f₀ P : ℕ → ℕ} (hf : Monotone f₀) (hP : Monotone P)
 
 theorem Sslot_infl {f₀ P : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f₀ m) :
     ∀ m, m ≤ Sslot f₀ P m := fun m => le_trans (hf_infl m) (le_max_left _ _)
-
-/-- One-step absorption at a nonzero ordinal (copy of the probe's `SS_le_ewIter`). -/
-theorem SS_le_ewIter' {S : ℕ → ℕ} {β : ONote} (hβ : β ≠ 0) (x : ℕ) :
-    S (S x) ≤ ewIter S β x := by
-  have h0β : (0 : ONote) < β := by
-    cases β with
-    | zero => exact (hβ rfl).elim
-    | oadd e n a => exact oadd_pos e n a
-  have h := ewIter_lower (f := S) (β := 0) (α := β) (m := x) NF.zero h0β (Nat.zero_le _)
-  simpa [ewIter_zero] using h
-
-/-- **T3 — the decisive descent inequality** (copy of the probe's `T3_descent`): a premise at
-`β < α` with any bumped budget `V' ≤ S V` has its master bound absorbed by the node's. -/
-theorem T3_descent' {S : ℕ → ℕ} (hS_mono : Monotone S) (hS_infl : ∀ m, m ≤ S m)
-    {β α : ONote} (hβNF : β.NF) (hβα : β < α)
-    {V V' : ℕ} (hV' : V' ≤ S V)
-    (hgate : Nlog β ≤ S (S V)) :
-    ewIter S β (S V') ≤ ewIter S α (S V) := by
-  have ha : ewIter S β (S V') ≤ ewIter S β (S (S V)) :=
-    ewIter_monotone hS_mono hS_infl β (hS_mono hV')
-  have hb : S (S V) ≤ ewIter S β (S V) := by
-    by_cases hβ0 : β = 0
-    · subst hβ0
-      simp [ewIter_zero]
-    · exact le_trans (hS_infl (S (S V))) (SS_le_ewIter' hβ0 (S V))
-  have hc : ewIter S β (S (S V)) ≤ ewIter S β (ewIter S β (S V)) :=
-    ewIter_monotone hS_mono hS_infl β hb
-  have hd : ewIter S β (ewIter S β (S V)) ≤ ewIter S α (S V) :=
-    ewIter_lower hβNF hβα (le_trans hgate (hS_mono (by omega)))
-  exact le_trans ha (le_trans hc hd)
 
 /-- **`readoffVTC_core`** — the V-threaded value-budget read-off (route (c)).  Invariant: the
 tracked `∃⁰ φ` is a member, every member is `Gated P V`, every non-tracked member is
@@ -4427,13 +4263,6 @@ theorem readoff_value_Zef2TC {φ : ArithmeticSemiformula ℕ 1} {f₀ P : ℕ �
       rcases Finset.mem_singleton.mp hψ with rfl
       exact ⟨hroot, Or.inl rfl⟩)
 
-/-- The tower slot preserves monotonicity (copy of `wip/NlogGateProbe.ewIterTower_monotone`). -/
-theorem ewIterTower_monotone {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
-    (α : ONote) : ∀ d, Monotone (ewIterTower f d α)
-  | 0 => hmono
-  | (d + 1) => ewIter_monotone (ewIterTower_monotone hmono hinfl α d)
-      (ewIterTower_infl hinfl α d) _
-
 /-- **Piece 2a — the STRUCTURAL PIPELINE** (bound-shape-independent): from a rank-`d` `Zef2TC`
 derivation of a singleton `{∃⁰ φ}` at the embedding's root slot `rel1 (ewRootSlot e B) K`
 (the `embedding_Zef2TC_V3` output shape) + the root `Gated` certificate, compose
@@ -4508,55 +4337,6 @@ contraction).  The two lemmas here collapse (i): `ewIter` is pointwise monotone 
 (bigger slot ⟹ bigger ball and bigger branches), hence the `rel1` pre-max commutes out of the
 whole tower — `ewIterTower (rel1 f K) d α x ≤ ewIterTower f d α (max K x)` — leaving ONE fixed
 tower with the `m`-dependence pushed into the argument. -/
-
-/-- **Pointwise slot-domination of `ewIter`**: a pointwise-dominated slot yields a
-pointwise-dominated iterate (the ball only grows, and each branch value is dominated by
-IH + `ewIter_lower` on the dominating side). -/
-theorem ewIter_mono_slot {f g : ℕ → ℕ} (hfg : ∀ x, f x ≤ g x)
-    (hg_mono : Monotone g) (hg_infl : ∀ m, m ≤ g m) :
-    ∀ (α : ONote) (m : ℕ), ewIter f α m ≤ ewIter g α m := by
-  intro α m
-  by_cases hα : α = 0
-  · subst hα
-    simpa [ewIter_zero] using hfg m
-  · conv_lhs => rw [ewIter_unfold f α m]
-    rw [ewStep]
-    simp only [dif_neg hα]
-    apply Finset.max'_le
-    intro y hy
-    rcases Finset.mem_image.mp hy with ⟨δ, hδmem, rfl⟩
-    have hδlt : (δ : ONote) < α := (Finset.mem_filter.mp δ.2).2.1
-    have hδNF : (δ : ONote).NF := (mem_NlogBall.mp (Finset.mem_filter.mp δ.2).1).1
-    have hδgate : Nlog (δ : ONote) ≤ f (Nlog α + m) := (Finset.mem_filter.mp δ.2).2.2
-    have hδgate' : Nlog (δ : ONote) ≤ g (Nlog α + m) := le_trans hδgate (hfg _)
-    have ih1 : ewIter f (δ : ONote) m ≤ ewIter g (δ : ONote) m :=
-      ewIter_mono_slot hfg hg_mono hg_infl δ m
-    have ih2 : ewIter f (δ : ONote) (ewIter f (δ : ONote) m)
-        ≤ ewIter g (δ : ONote) (ewIter g (δ : ONote) m) :=
-      le_trans (ewIter_mono_slot hfg hg_mono hg_infl δ _)
-        (ewIter_monotone hg_mono hg_infl (δ : ONote) ih1)
-    exact le_trans ih2 (ewIter_lower hδNF hδlt hδgate')
-termination_by α _ => α
-decreasing_by
-  all_goals exact hδlt
-
-/-- **The tower/`rel1` commutation** — the slot-stage pre-max `K` commutes out of the whole
-`d`-fold tower into the argument: ONE fixed tower dominates all stages. -/
-theorem ewIterTower_rel1_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
-    (K : ℕ) (α : ONote) : ∀ (d : ℕ) (x : ℕ),
-    ewIterTower (rel1 f K) d α x ≤ ewIterTower f d α (max K x)
-  | 0, x => le_of_eq (by simp [ewIterTower, rel1])
-  | (d + 1), x => by
-      have hTmono : Monotone (ewIterTower f d α) := ewIterTower_monotone hmono hinfl α d
-      have hTinfl : ∀ m, m ≤ ewIterTower f d α m := ewIterTower_infl hinfl α d
-      have hpt : ∀ x', ewIterTower (rel1 f K) d α x' ≤ rel1 (ewIterTower f d α) K x' :=
-        fun x' => ewIterTower_rel1_le hmono hinfl K α d x'
-      calc ewIter (ewIterTower (rel1 f K) d α) (collapseIter d α) x
-          ≤ ewIter (rel1 (ewIterTower f d α) K) (collapseIter d α) x :=
-            ewIter_mono_slot hpt (rel1_monotone hTmono K) (rel1_infl hTinfl K)
-              (collapseIter d α) x
-        _ ≤ ewIter (ewIterTower f d α) (collapseIter d α) (max K x) :=
-            ewIter_rel1_le hTmono hTinfl (collapseIter d α) K x
 
 /-! ### 2b item (d) — the semantic link (igoodstein faithfulness)
 

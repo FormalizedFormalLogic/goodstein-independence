@@ -57,7 +57,7 @@ open GoodsteinPA.OperatorZinfty
 /-! ## §0 The SPIKE-W4 transforms (LOCK §1 verbatim; `wip/` copies were re-derivations). -/
 
 @[simp] theorem norm_expTower (α : ONote) : norm (expTower α) = max (norm α) 1 :=
-  Provable.norm_omegaPow
+  norm_omegaPow
 
 /-- SPIKE-W4's family-uniform control raise `raise e α := e + ω^α`. -/
 def raise (e α : ONote) : ONote := e + expTower α
@@ -68,7 +68,7 @@ theorem raise_NF {e α : ONote} (he : e.NF) (hα : α.NF) : (raise e α).NF := b
 
 theorem raise_lt_raise {e β α : ONote} (he : e.NF) (hβ : β.NF) (hα : α.NF) (h : β < α) :
     raise e β < raise e α :=
-  Provable.add_lt_add_left_NF he (expTower_NF hβ) (expTower_NF hα) (expTower_lt_expTower hβ h)
+  add_lt_add_left_NF he (expTower_NF hβ) (expTower_NF hα) (expTower_lt_expTower hβ h)
 
 /-- `ω·(m+1)` as an explicit `ONote` (the W4B two-level-configuration family). -/
 def wmul (m : ℕ) : ONote := oadd 1 m.succPNat 0
@@ -465,7 +465,7 @@ theorem concrete_readoff_instance {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
     {H : ONote → Prop} :
     Zeh (osucc 0) ONote.omega H 1 0
       (insert (∃⁰ φ) (insert (Semiformula.rel r v) {Semiformula.nrel r v})) := by
-  refine Zeh.exI φ 3 (Provable.lt_osucc NF.zero) NF.zero (osucc_NF NF.zero)
+  refine Zeh.exI φ 3 (lt_osucc NF.zero) NF.zero (osucc_NF NF.zero)
     (Cl.ofNat 0) (by rw [show ONote.omega = oadd 1 1 0 from rfl, hardy_omega]) ?_
   exact Zeh.axL r v
     (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
@@ -1005,7 +1005,7 @@ theorem two_level_config_Zeh {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar →
     (fun n => Cl.osucc (wmul_mem _ n))
     (fun n => ?_)
   refine Zeh.cut (∀⁰ χ) (Nat.lt_succ_self _)
-    (Provable.lt_osucc (wmul_NF n)) (Provable.lt_osucc (wmul_NF n))
+    (lt_osucc (wmul_NF n)) (lt_osucc (wmul_NF n))
     (wmul_NF n) (wmul_NF n) (osucc_NF (wmul_NF n))
     (wmul_mem _ n) (wmul_mem _ n) ?_ ?_
   · exact Zeh.axL r v (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hp))
@@ -1253,14 +1253,14 @@ theorem osucc_add_NF {α γ : ONote} (hα : α.NF) (hγ : γ.NF) : (osucc (α + 
 premise's ordinal strictly drops below the spliced output). -/
 theorem osucc_add_lt_osucc_add {α γ' γ : ONote} (hα : α.NF) (hγ' : γ'.NF) (hγ : γ.NF)
     (h : γ' < γ) : osucc (α + γ') < osucc (α + γ) :=
-  Provable.osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ)
-    (Provable.add_lt_add_left_NF hα hγ' hγ h)
+  osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ)
+    (add_lt_add_left_NF hα hγ' hγ h)
 
 /-- **Splice descent, bare form:** `γ' < γ ⟹ α + γ' < osucc (α + γ)` (a premise below `γ`
 lies strictly below the spliced output — the direct `weak`/`exI` descent witness). -/
 theorem add_lt_osucc_add {α γ' γ : ONote} (hα : α.NF) (hγ' : γ'.NF) (hγ : γ.NF)
     (h : γ' < γ) : α + γ' < osucc (α + γ) :=
-  Provable.lt_osucc_of_lt (ONote.add_nf α γ) (Provable.add_lt_add_left_NF hα hγ' hγ h)
+  lt_osucc_of_lt (ONote.add_nf α γ) (add_lt_add_left_NF hα hγ' hγ h)
 
 /-- Membership of the reduction-output ordinal by closure (the seam-1 brick, named for the
 reduction's use site: `osucc (α + γ)` is a member whenever `α`, `γ` are). -/
@@ -1275,7 +1275,7 @@ theorem add_le_add_NF {α₁ β₁ α₂ β₂ : ONote} (hα₁ : α₁.NF) (hβ
   haveI := hα₁; haveI := hβ₁; haveI := hα₂; haveI := hβ₂
   exact le_def.mpr (by rw [repr_add, repr_add]; exact add_le_add (le_def.mp h₁) (le_def.mp h₂))
 
-/-- `osucc` non-strict monotonicity (pairs with `Provable.osucc_lt_osucc`). -/
+/-- `osucc` non-strict monotonicity (pairs with `osucc_lt_osucc`). -/
 theorem osucc_le_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x ≤ y) : osucc x ≤ osucc y := by
   refine le_def.mpr ?_
   rw [repr_osucc hx, repr_osucc hy, ← Order.succ_eq_add_one, ← Order.succ_eq_add_one]
@@ -1297,8 +1297,8 @@ theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ :
       (add_le_add_NF hNF₁ hβφNF hNF₂ hβψNF hle₁ hle₂),
     osucc_add_NF hNF₁ hNF₂, osucc_add_mem hH₁ hH₂,
     Zeh.cut φ hcompl
-      (lt_of_le_of_lt (Provable.le_add_right_NF hNF₁ hNF₂) (Provable.lt_osucc (ONote.add_nf α₁ α₂)))
-      (lt_of_le_of_lt (Provable.le_add_left_NF hNF₁ hNF₂) (Provable.lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (le_add_right_NF hNF₁ hNF₂) (lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (le_add_left_NF hNF₁ hNF₂) (lt_osucc (ONote.add_nf α₁ α₂)))
       hNF₁ hNF₂ (osucc_add_NF hNF₁ hNF₂) hH₁ hH₂ d₁ d₂⟩
 
 /-- **`ZehProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
@@ -1310,7 +1310,7 @@ theorem ZehProv.exI {β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset
     ZehProv (osucc β) e H m c (insert (∃⁰ φ) Γ) := by
   obtain ⟨β', hle, hNF', hH', d⟩ := D
   exact ⟨osucc β, le_rfl, osucc_NF hβNF, Cl.osucc hβH,
-    Zeh.exI φ n (lt_of_le_of_lt hle (Provable.lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
+    Zeh.exI φ n (lt_of_le_of_lt hle (lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
 
 /-- **`ZehProv`-level `allω` combinator** (assembly plumbing): reassemble an ω-node at the
 wrapper level.  Each branch's `≤`-slack witness is threaded through (`< α` survives since
@@ -1518,8 +1518,8 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)
-      · refine ⟨γ, le_trans (Provable.le_add_left_NF hαNF hγNF)
-          (le_of_lt (Provable.lt_osucc (ONote.add_nf α γ))), hγNF, Cl_of_NF hγNF,
+      · refine ⟨γ, le_trans (le_add_left_NF hαNF hγNF)
+          (le_of_lt (lt_osucc (ONote.add_nf α γ))), hγNF, Cl_of_NF hγNF,
           (D'.mono_f (reslot_exside hg_infl)).wk (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
             exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
@@ -1531,9 +1531,9 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)).mono
-          (le_of_lt (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
-      · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (Provable.le_add_left_NF hαNF hγNF)
-          (le_of_lt (Provable.lt_osucc (ONote.add_nf α γ))))), hβNF, Cl_of_NF hβNF,
+          (le_of_lt (add_osucc_descent hαNF hβNF hγNF hβ))
+      · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (le_add_left_NF hαNF hγNF)
+          (le_of_lt (lt_osucc (ONote.add_nf α γ))))), hβNF, Cl_of_NF hβNF,
           (D'.mono_f (reslot_exside hg_infl)).wk (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
             exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
@@ -1555,7 +1555,7 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
         -- branch slot `g ∘ rel1 f n` is `rel1 (g∘f) n` by `rel1_comp` (definitional)
         refine Zef.allω χ (fun n => (ihn n).choose)
           (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
-            (Provable.add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
+            (add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
           (fun n => (ihn n).choose_spec.2.1) hsuccNF
           (fun n => Cl_of_NF (ihn n).choose_spec.2.1)
           (fun n => (ihn n).choose_spec.2.2.2)
@@ -1580,7 +1580,7 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           ((fam n H).mono_f (reslot_family hg_mono hinfl hmono hbound)).wk (by
             intro x hx; simp only [Finset.mem_insert, Finset.mem_union] at hx ⊢; tauto)
         have hαlt : α < osucc (α + γ) :=
-          lt_of_le_of_lt (Provable.le_add_right_NF hαNF hγNF) (Provable.lt_osucc (ONote.add_nf α γ))
+          lt_of_le_of_lt (le_add_right_NF hαNF hγNF) (lt_osucc (ONote.add_nf α γ))
         by_cases hd : (∃⁰ ∼φ) ∈ Γ₀
         · obtain ⟨a, hale, haNF, haH, Da⟩ := ih hφc heNF fam hβNF hmono hinfl
             (Finset.mem_insert_of_mem hd)
@@ -1591,7 +1591,7 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
               simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
           refine ZefProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
           exact Zef.cut (φ/[nm n]) hcompl hαlt
-            (lt_of_le_of_lt hale (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
+            (lt_of_le_of_lt hale (add_osucc_descent hαNF hβNF hγNF hβ))
             hαNF haNF hsuccNF (Cl_of_NF hαNF) haH famn Da'
         · -- ∃-premise `dχ` re-slots `f → g∘f`
           have Dβ' : Zef β e H (g ∘ f) c
@@ -1605,8 +1605,8 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
               · exact Or.inr (Or.inl ⟨fun e0 => hd (e0 ▸ hxΓ₀), hxΓ₀⟩))
           refine ZefProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
           exact Zef.cut (φ/[nm n]) hcompl hαlt
-            (lt_of_lt_of_le hβ (le_trans (Provable.le_add_left_NF hαNF hγNF)
-              (le_of_lt (Provable.lt_osucc (ONote.add_nf α γ)))))
+            (lt_of_lt_of_le hβ (le_trans (le_add_left_NF hαNF hγNF)
+              (le_of_lt (lt_osucc (ONote.add_nf α γ)))))
             hαNF hβNF hsuccNF (Cl_of_NF hαNF) (Cl_of_NF hβNF) famn Dβ'
       · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
         obtain ⟨a, hale, haNF, haH, Da⟩ := ih hφc heNF fam hβNF hmono hinfl
@@ -1620,7 +1620,7 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
         have hbound' : n ≤ (g ∘ f) 0 := le_trans hbound (hg_infl (f 0))
         have hExI : Zef (osucc (α + γ)) e H (g ∘ f) c
             (insert (∃⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-          Zef.exI χ n (lt_of_le_of_lt hale (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
+          Zef.exI χ n (lt_of_le_of_lt hale (add_osucc_descent hαNF hβNF hγNF hβ))
             haNF hsuccNF haH hbound' Da'
         exact hExI.wk (by
           intro x hx
@@ -1643,8 +1643,8 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
       refine ZefProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
       exact Zef.cut χ hχc
-        (lt_of_le_of_lt ha₁le (Provable.add_osucc_descent hαNF hβφNF hγNF hβφ))
-        (lt_of_le_of_lt ha₂le (Provable.add_osucc_descent hαNF hβψNF hγNF hβψ))
+        (lt_of_le_of_lt ha₁le (add_osucc_descent hαNF hβφNF hγNF hβφ))
+        (lt_of_le_of_lt ha₂le (add_osucc_descent hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF hsuccNF ha₁H ha₂H D₁' D₂'
 
 /-! ## ∀-inversion in the slot calculus (feeds the reduction from a ∀-side derivation) -/
@@ -1908,7 +1908,7 @@ theorem two_level_config_Zef {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar →
     (fun n => Cl.osucc (wmul_mem _ n))
     (fun n => ?_)
   refine Zef.cut (∀⁰ χ) (Nat.lt_succ_self _)
-    (Provable.lt_osucc (wmul_NF n)) (Provable.lt_osucc (wmul_NF n))
+    (lt_osucc (wmul_NF n)) (lt_osucc (wmul_NF n))
     (wmul_NF n) (wmul_NF n) (osucc_NF (wmul_NF n))
     (wmul_mem _ n) (wmul_mem _ n) ?_ ?_
   · exact Zef.axL r v (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hp))
@@ -2130,8 +2130,8 @@ theorem ZefProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
       (add_le_add_NF hNF₁ hβφNF hNF₂ hβψNF hle₁ hle₂),
     osucc_add_NF hNF₁ hNF₂, osucc_add_mem hH₁ hH₂,
     Zef.cut φ hcompl
-      (lt_of_le_of_lt (Provable.le_add_right_NF hNF₁ hNF₂) (Provable.lt_osucc (ONote.add_nf α₁ α₂)))
-      (lt_of_le_of_lt (Provable.le_add_left_NF hNF₁ hNF₂) (Provable.lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (le_add_right_NF hNF₁ hNF₂) (lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (le_add_left_NF hNF₁ hNF₂) (lt_osucc (ONote.add_nf α₁ α₂)))
       hNF₁ hNF₂ (osucc_add_NF hNF₁ hNF₂) hH₁ hH₂ d₁ d₂⟩
 
 /-- **`ZefProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
@@ -2143,7 +2143,7 @@ theorem ZefProv.exI {β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : �
     ZefProv (osucc β) e H f c (insert (∃⁰ φ) Γ) := by
   obtain ⟨β', hle, hNF', hH', d⟩ := D
   exact ⟨osucc β, le_rfl, osucc_NF hβNF, Cl.osucc hβH,
-    Zef.exI φ n (lt_of_le_of_lt hle (Provable.lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
+    Zef.exI φ n (lt_of_le_of_lt hle (lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
 
 /-- **`ZefProv`-level `allω` combinator** (assembly plumbing): reassemble an ω-node at the
 wrapper level.  Each branch's `≤`-slack witness is threaded through (`< α` survives since
