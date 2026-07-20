@@ -11,7 +11,14 @@ public import GoodsteinPA.OperatorZef2.CutStep
 public import GoodsteinPA.OperatorZef2.GateArith
 public import GoodsteinPA.OperatorZef2.Pass
 public import GoodsteinPA.OperatorZef2.Rank0
-public import GoodsteinPA.OperatorZeh
+public import GoodsteinPA.OperatorZeh.Cut
+public import GoodsteinPA.OperatorZeh.Examples
+public import GoodsteinPA.OperatorZeh.Inversion
+public import GoodsteinPA.OperatorZeh.Operator
+public import GoodsteinPA.OperatorZeh.Readoff
+public import GoodsteinPA.OperatorZeh.Slot
+public import GoodsteinPA.OperatorZeh.Zef
+public import GoodsteinPA.OperatorZeh.Zeh
 public import GoodsteinPA.OperatorZinfty.Basic
 public import GoodsteinPA.OperatorZinfty.BoundedTruth
 public import GoodsteinPA.OperatorZinfty.Cut
