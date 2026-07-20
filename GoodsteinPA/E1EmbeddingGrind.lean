@@ -96,14 +96,13 @@ inductive Zef2TC : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → �
 
 namespace Zef2TC
 
-theorem gate {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
-    (dd : Zef2TC α e H f c Γ) : Nlog α ≤ f 0 := by
+variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+
+theorem gate (dd : Zef2TC α e H f c Γ) : Nlog α ≤ f 0 := by
   cases dd <;> assumption
 
 /-- `Zef2 ⊆ Zef2TC`. -/
-theorem ofZef2 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef2 α e H f c Γ → Zef2TC α e H f c Γ := by
-  intro α e H f c Γ dd
+theorem ofZef2 (dd : Zef2 α e H f c Γ) : Zef2TC α e H f c Γ := by
   induction dd with
   | axL hαN r v hp hn => exact Zef2TC.axL hαN r v hp hn
   | wk hαN hsub _ ih => exact Zef2TC.wk hαN hsub ih
@@ -244,8 +243,8 @@ theorem em_Zef2TC (k : ℕ) :
 
 
 /-- Non-`k`-indexed corollary: EM at the formula's own complexity rung. -/
-theorem em_Zef2TC' (φ : ArithmeticFormula ℕ) {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+theorem em_Zef2TC' (φ : ArithmeticFormula ℕ) {e} {H} {f} {Γ}
+    (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
     (hgate : clog (2 * φ.complexity + 1) ≤ f 0)
     (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     Zef2TC (ONote.ofNat (2 * φ.complexity + 1)) e H f 0 Γ :=
@@ -289,10 +288,10 @@ so-amended rung-E statement (the DRAFT above is retained verbatim as the flagged
 
 namespace Zef2TC
 
+variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-- Slot monotonicity (port of `Zef2.mono_f` over the full rule set). -/
-theorem mono_f : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef2TC α e H f c Γ → ∀ {f' : ℕ → ℕ}, (∀ x, f x ≤ f' x) → Zef2TC α e H f' c Γ := by
-  intro α e H f c Γ dd
+theorem mono_f (dd : Zef2TC α e H f c Γ) : ∀ {f' : ℕ → ℕ}, (∀ x, f x ≤ f' x) → Zef2TC α e H f' c Γ := by
   induction dd with
   | axL hαN r v hp hn =>
       intro f' hff'; exact .axL (le_trans hαN (hff' 0)) r v hp hn
@@ -324,9 +323,7 @@ theorem mono_f : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : 
         hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hff') (ih₂ hff')
 
 /-- Cut-rank monotonicity (only `cut` mentions `c`). -/
-theorem mono_c : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef2TC α e H f c Γ → ∀ {c' : ℕ}, c ≤ c' → Zef2TC α e H f c' Γ := by
-  intro α e H f c Γ dd
+theorem mono_c (dd : Zef2TC α e H f c Γ) : ∀ {c'}, c ≤ c' → Zef2TC α e H f c' Γ := by
   induction dd with
   | axL hαN r v hp hn => intro c' _; exact .axL hαN r v hp hn
   | trueRel hαN r v htrue hmem => intro c' _; exact .trueRel hαN r v htrue hmem
@@ -350,9 +347,7 @@ theorem mono_c : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : 
         hβφH hβψH (ih₁ hcc) (ih₂ hcc)
 
 /-- Operator swap (port of `Zef2.change_H`; `Cl_of_NF` supplies every `Cl` obligation). -/
-theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef2TC α e H f c Γ → ∀ {H' : ONote → Prop}, Zef2TC α e H' f c Γ := by
-  intro α e H f c Γ dd
+theorem change_H (dd : Zef2TC α e H f c Γ) : ∀ {H' : ONote → Prop}, Zef2TC α e H' f c Γ := by
   induction dd with
   | axL hαN r v hp hn => intro H'; exact .axL hαN r v hp hn
   | trueRel hαN r v htrue hmem => intro H'; exact .trueRel hαN r v htrue hmem
@@ -379,9 +374,7 @@ theorem change_H : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c 
 /-- Control-ordinal swap: `e` is a phantom index of the derivation relation (no rule inspects
 it), so a derivation transports to ANY control ordinal.  (The control ordinal only acquires
 meaning in the cut-elimination pass, where it drives the `ewIter`/`hardy` slot arithmetic.) -/
-theorem change_e : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef2TC α e H f c Γ → ∀ (e' : ONote), Zef2TC α e' H f c Γ := by
-  intro α e H f c Γ dd
+theorem change_e (dd : Zef2TC α e H f c Γ) : ∀ (e' : ONote), Zef2TC α e' H f c Γ := by
   induction dd with
   | axL hαN r v hp hn => intro e'; exact .axL hαN r v hp hn
   | trueRel hαN r v htrue hmem => intro e'; exact .trueRel hαN r v htrue hmem
@@ -410,7 +403,7 @@ end Zef2TC
 /-- The `K`-relativized root slot dominates a smaller-budget one: `e₁ < e` (with
 `norm e₁ ≤ B`), `B₁ ≤ B`, `K₁ ≤ K` give pointwise domination.  The `norm e₁ ≤ B`
 side condition is exactly `hardy_le_of_lt`'s budget gate, absorbed into the structural `B`. -/
-theorem relSlot_le {e₁ e : ONote} (he₁ : e₁.NF) (he : e.NF) (hlt : e₁ < e)
+theorem relSlot_le {e₁ e} (he₁ : e₁.NF) (he : e.NF) (hlt : e₁ < e)
     {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ K) (hnorm : norm e₁ ≤ B) (x : ℕ) :
     rel1 (ewRootSlot e₁ B₁) K₁ x ≤ rel1 (ewRootSlot e B) K x := by
   simp only [rel1, ewRootSlot]
@@ -424,7 +417,7 @@ theorem relSlot_le {e₁ e : ONote} (he₁ : e₁.NF) (he : e.NF) (hlt : e₁ < 
   omega
 
 /-- Same-`e` slot monotonicity in `(B, K)`. -/
-theorem relSlot_mono {e : ONote} {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ K) (x : ℕ) :
+theorem relSlot_mono {e} {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ K) (x : ℕ) :
     rel1 (ewRootSlot e B₁) K₁ x ≤ rel1 (ewRootSlot e B) K x := by
   simp only [rel1, ewRootSlot]
   have h1 : hardy e (max B₁ (max K₁ x)) ≤ hardy e (max B (max K x)) :=
@@ -465,7 +458,7 @@ theorem clT (β : ONote) : Cl (fun _ : ONote => True) β := Cl.base trivial
 
 /-- **`closed`** — consume `em_Zef2TC'`; the ordinal is the deterministic complexity rung
 (env-independent since rewriting preserves `complexity`), the budget is its `clog` gate. -/
-theorem budgetedEmbedsTC_closed {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsTC_closed {Γ}
     (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     BudgetedEmbedsTC Γ := by
   refine ⟨clog (2 * φ.complexity + 1), 0, 0, ONote.NF.zero, fun env => ?_⟩
@@ -484,7 +477,7 @@ theorem budgetedEmbedsTC_closed {Γ : Finset (ArithmeticFormula ℕ)}
     (by simpa using Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) hn)
 
 /-- **`verum`** — `verumR` at ordinal `0`. -/
-theorem budgetedEmbedsTC_verum {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsTC_verum {Γ}
     (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsTC Γ := by
   refine ⟨0, 0, 0, ONote.NF.zero, fun env => ⟨0, 0, ONote.NF.zero, ?_⟩⟩
@@ -494,7 +487,7 @@ theorem budgetedEmbedsTC_verum {Γ : Finset (ArithmeticFormula ℕ)}
   exact Zef2TC.verumR (by simp) hmem
 
 /-- **`wk`** — image weakening; all budgets carried. -/
-theorem budgetedEmbedsTC_wk {Δ Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsTC_wk {Δ Γ}
     (hsub : Δ ⊆ Γ) (ih : BudgetedEmbedsTC Δ) :
     BudgetedEmbedsTC Γ := by
   obtain ⟨B, d, e, he, ih⟩ := ih
@@ -504,7 +497,7 @@ theorem budgetedEmbedsTC_wk {Δ Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- **`shift`** — the image collapses under the shifted assignment (`embedC`'s `hB`
 computation, verbatim); budgets and derivation carried unchanged. -/
-theorem budgetedEmbedsTC_shift {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsTC_shift {Γ}
     (ih : BudgetedEmbedsTC Γ) :
     BudgetedEmbedsTC (Γ.image Rewriting.shift) := by
   obtain ⟨B, d, e, he, ih⟩ := ih
@@ -526,7 +519,7 @@ theorem budgetedEmbedsTC_shift {Γ : Finset (ArithmeticFormula ℕ)}
   rwa [himg]
 
 /-- **`or`** — single premise; `osucc` root, one `K`-rung pays the `Nlog` gate. -/
-theorem budgetedEmbedsTC_or {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsTC_or {Γ}
     {φ ψ : ArithmeticFormula ℕ} (h : φ ⋎ ψ ∈ Γ)
     (ih : BudgetedEmbedsTC (insert φ (insert ψ Γ))) :
     BudgetedEmbedsTC Γ := by
@@ -553,7 +546,7 @@ theorem budgetedEmbedsTC_or {Γ : Finset (ArithmeticFormula ℕ)}
 /-- **`and`** — the two-premise join: control tower `osucc (e₁ + e₂)` (both strictly below,
 `hardy_le_of_lt` fed by `norm eᵢ` absorbed into the structural `B`), root `osucc (α₁ + α₂)`
 (`Nlog` absorbing + one `K`-rung of gate slack), budgets aligned by `max`/`mono`. -/
-theorem budgetedEmbedsTC_and {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsTC_and {Γ}
     {φ ψ : ArithmeticFormula ℕ} (h : φ ⋏ ψ ∈ Γ)
     (ihp : BudgetedEmbedsTC (insert φ Γ)) (ihq : BudgetedEmbedsTC (insert ψ Γ)) :
     BudgetedEmbedsTC Γ := by
@@ -610,7 +603,7 @@ theorem budgetedEmbedsTC_and {Γ : Finset (ArithmeticFormula ℕ)}
 /-- **`cut`** — same two-premise join as `and`; the cut rank is `max`ed with
 `φ.complexity + 1` (env-independent: rewriting preserves `complexity`) and the read gate
 `complexity ≤ f 0` is paid by absorbing `φ.complexity` into the structural `B`. -/
-theorem budgetedEmbedsTC_cut {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsTC_cut {Γ}
     {φ : ArithmeticFormula ℕ}
     (ihp : BudgetedEmbedsTC (insert φ Γ)) (ihn : BudgetedEmbedsTC (insert (∼φ) Γ)) :
     BudgetedEmbedsTC Γ := by
@@ -914,7 +907,7 @@ value `m`; the value-congruent EM (`em_cong1_Zef2TC`, at pair `(nm m, asg env t)
 fires at witness `m` — env-dependent, absorbed into the relativization index
 `K := max K₁ m + 3` (the `∃ K` amendment's raison d'être; `n ≤ f 0` paid by
 `index_le_relSlot_zero`, the two ordinal-join gates by `relSlot_succ_gap` rungs). -/
-theorem budgetedEmbedsTC_exs {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsTC_exs {Γ}
     {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
     (ih : BudgetedEmbedsTC (insert (φ/[t]) Γ)) :
     BudgetedEmbedsTC Γ := by
@@ -1105,7 +1098,7 @@ theorem le_Gexp_iter (c x : ℕ) : x ≤ Gexp^[c] x := by
       rw [Function.iterate_succ_apply']
       exact le_trans ih (le_Gexp _)
 
-theorem Gexp_iter_le_iter {c c' : ℕ} (h : c ≤ c') (x : ℕ) : Gexp^[c] x ≤ Gexp^[c'] x := by
+theorem Gexp_iter_le_iter {c c'} (h : c ≤ c') (x : ℕ) : Gexp^[c] x ≤ Gexp^[c'] x := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le h
   rw [Function.iterate_add_apply]
   exact Gexp_iter_monotone c (le_Gexp_iter k x)
@@ -1280,7 +1273,7 @@ theorem envSup_shift_le (env : ℕ → ℕ) (N : ℕ) :
 
 /-- **V3 `closed`** — the deterministic-complexity EM leaf (structural `α = ofNat (2·complexity+1)`,
 budget `clog`; `envSup env 0 = 0`). -/
-theorem budgetedEmbedsV3_closed {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_closed {Γ}
     (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
   refine ⟨clog (2 * φ.complexity + 1), 0, 0, 0, ONote.ofNat (2 * φ.complexity + 1),
@@ -1303,7 +1296,7 @@ theorem budgetedEmbedsV3_closed {Γ : Finset (ArithmeticFormula ℕ)}
   rwa [show (Embedding.asg env ▹ φ).complexity = φ.complexity from by simp] at hem
 
 /-- **V3 `verum`** — `verumR` at `α = 0`. -/
-theorem budgetedEmbedsV3_verum {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_verum {Γ}
     (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
   refine ⟨0, 0, 0, 0, 0, ONote.NF.zero, ONote.NF.zero, by simp, fun env => ?_⟩
   have hmem : (⊤ : ArithmeticFormula ℕ) ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
@@ -1311,14 +1304,14 @@ theorem budgetedEmbedsV3_verum {Γ : Finset (ArithmeticFormula ℕ)}
   exact Zef2TC.verumR (by simp) hmem
 
 /-- **V3 `wk`** — image weakening; all structural budgets carried. -/
-theorem budgetedEmbedsV3_wk {Δ Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_wk {Δ Γ}
     (hsub : Δ ⊆ Γ) (ih : BudgetedEmbedsV3 Δ) : BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
   refine ⟨B, d, N, e, α, he, hαNF, hNlogB, fun env => ?_⟩
   exact (ih env).wk (ih env).gate (Finset.image_subset_image hsub)
 
 /-- **V3 `or`** — single premise; `osucc` root, `B+1` for the `Nlog`/gate slack. -/
-theorem budgetedEmbedsV3_or {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_or {Γ}
     {φ ψ : ArithmeticFormula ℕ} (h : φ ⋎ ψ ∈ Γ)
     (ih : BudgetedEmbedsV3 (insert φ (insert ψ Γ))) : BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
@@ -1341,7 +1334,7 @@ theorem budgetedEmbedsV3_or {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- **V3 `shift`** — the shifted assignment `fun x => env (x+1)`; the index absorbs into `N+1`
 (`envSup_shift_le`).  Budgets and derivation carried. -/
-theorem budgetedEmbedsV3_shift {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_shift {Γ}
     (ih : BudgetedEmbedsV3 Γ) : BudgetedEmbedsV3 (Γ.image Rewriting.shift) := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
   refine ⟨B, d, N + 1, e, α, he, hαNF, hNlogB, fun env => ?_⟩
@@ -1365,7 +1358,7 @@ predicate: the node ordinal is uniform (`β n := α`, root `osucc α`), and the 
 `envSup env N` is paid by the branch relativization `rel1 · n` via `envSup_cons_le`.  This validates
 the V3 design — the block-8 `all` obstruction (unbounded per-branch `K_n, α_n`) is a predicate-shape
 artifact, dissolved by moving `α`/budgets outside `∀ env`. -/
-theorem budgetedEmbedsV3_all {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_all {Γ}
     {φ : ArithmeticSemiformula ℕ 1} (h : ∀⁰ φ ∈ Γ)
     (ih : BudgetedEmbedsV3 (insert (Rewriting.free φ) (Γ.image Rewriting.shift))) :
     BudgetedEmbedsV3 Γ := by
@@ -1435,7 +1428,7 @@ theorem budgetedEmbedsV3_all {Γ : Finset (ArithmeticFormula ℕ)}
 `osucc (α₁ + α₂)`, `B := max B₁ B₂ + norm e₁ + norm e₂ + 2` (covers the `Nlog` invariant AND
 the `relSlot_le` norm gates), `N := max N₁ N₂`, `d := max d₁ d₂`.  Unlike block-8, the root
 gate is FREE from the structural invariant (`Nlog root ≤ B ≤ slot 0`) — no succ-gap rung. -/
-theorem budgetedEmbedsV3_and {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_and {Γ}
     {φ ψ : ArithmeticFormula ℕ} (h : φ ⋏ ψ ∈ Γ)
     (ihp : BudgetedEmbedsV3 (insert φ Γ)) (ihq : BudgetedEmbedsV3 (insert ψ Γ)) :
     BudgetedEmbedsV3 Γ := by
@@ -1487,7 +1480,7 @@ theorem budgetedEmbedsV3_and {Γ : Finset (ArithmeticFormula ℕ)}
 /-- **V3 `cut`** — the two-premise join of `and` with the cut rank `max`ed against
 `φ.complexity + 1` and the read gate paid by absorbing `φ.complexity` into `B`
 (rewriting preserves `complexity`, so this stays env-independent). -/
-theorem budgetedEmbedsV3_cut {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_cut {Γ}
     {φ : ArithmeticFormula ℕ}
     (ihp : BudgetedEmbedsV3 (insert φ Γ)) (ihn : BudgetedEmbedsV3 (insert (∼φ) Γ)) :
     BudgetedEmbedsV3 Γ := by
@@ -1550,7 +1543,7 @@ by `Gexp^[c] (envSup env Nt)` with STRUCTURAL `(c, Nt)`; raising the control tow
 (`Gexp_iter_eq_hardy`) dominated by the root slot (`hardy_le_of_lt`, `norm` gate paid by `B`).
 The value-congruent EM + cut + `exI` assembly ports from block-8; the ordinal-join gates are
 free from the structural `Nlog ≤ B` invariant. -/
-theorem budgetedEmbedsV3_exs {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_exs {Γ}
     {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
     (ih : BudgetedEmbedsV3 (insert (φ/[t]) Γ)) :
     BudgetedEmbedsV3 Γ := by
@@ -1703,9 +1696,8 @@ def ExFree : ∀ {n : ℕ}, ArithmeticSemiformula ℕ n → Prop
     ExFree (∃⁰ φ) ↔ False := Iff.rfl
 
 /-- `ExFree` is stable under every rewriting (rewriting preserves the connective tree). -/
-theorem ExFree.rew : ∀ {n₁ : ℕ} (ψ : ArithmeticSemiformula ℕ n₁), ExFree ψ →
+theorem ExFree.rew {n₁ : ℕ} (ψ : ArithmeticSemiformula ℕ n₁) : ExFree ψ →
     ∀ {n₂ : ℕ} (ω : Rew ℒₒᵣ ℕ n₁ ℕ n₂), ExFree (ω ▹ ψ) := by
-  intro n₁ ψ
   induction ψ using Semiformula.rec' with
   | hverum => intro _ n₂ ω; simp
   | hfalsum => intro _ n₂ ω; simp
@@ -1808,9 +1800,8 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
         rwa [Finset.insert_eq_self.mpr hmem] at hall
     | hexs a => exact absurd hex (by simp)
 
-@[simp] theorem exFree_allClosure : ∀ {n : ℕ} {φ : ArithmeticSemiformula ℕ n},
+@[simp] theorem exFree_allClosure {n : ℕ} : ∀ {φ : ArithmeticSemiformula ℕ n},
     ExFree (∀⁰* φ) ↔ ExFree φ := by
-  intro n
   induction n with
   | zero => intro φ; rfl
   | succ n ih => intro φ; rw [show (∀⁰* φ) = (∀⁰* (∀⁰ φ)) from rfl, ih]; exact exFree_all
@@ -1835,7 +1826,7 @@ theorem atomTrue_asg_emb {σ : ArithmeticSentence} (h : ℕ ⊧ₘ σ) (env : �
 
 /-- **The ∃-free `axm` wrapper**: a TRUE ∃-free PA-axiom sentence in `Γ` is budgeted-embeddable
 outright — `truth_exFree_Zef2TC` at the V3 structural budget of the `closed` case. -/
-theorem budgetedEmbedsV3_of_exFree_true {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_of_exFree_true {Γ}
     (σ : ArithmeticSentence) (hex : ExFree (↑σ : ArithmeticFormula ℕ)) (htrue : ℕ ⊧ₘ σ)
     (hΓ : (↑σ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
   set k : ℕ := (↑σ : ArithmeticFormula ℕ).complexity with hk
@@ -1861,7 +1852,7 @@ theorem budgetedEmbedsV3_of_exFree_true {Γ : Finset (ArithmeticFormula ℕ)}
 The witness `z = y - x ≤ y` is dominated by the second ω-branch numeral, hence by the branch
 slot's relativization (`rel1 · y`) — no structural tower needed.  Bespoke `exI` assembly;
 disclosed `sorry`, next E-1 block. -/
-theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_addEqOfLt {Γ}
     (hΓ : (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt) : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
   refine ⟨clog 11, 0, 0, 0, ONote.ofNat 5, ONote.NF.zero, ONote.nf_ofNat _,
@@ -1981,7 +1972,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ : Finset (ArithmeticFormula ℕ)}
 /-- **The PA⁻ `axm` dispatcher**: every PA⁻ axiom in `Γ` is budgeted-embeddable.  All cases
 except `addEqOfLt` are TRUE ∃-free sentences — `budgetedEmbedsV3_of_exFree_true` (bounded
 ω-truth), per-case `ExFree` by unfolding the concrete axiom.  -/
-theorem budgetedEmbedsV3_axm_PAminus {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_axm_PAminus {Γ}
     (σ : ArithmeticSentence) (hσ : σ ∈ 𝗣𝗔⁻) (hΓ : (↑σ : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
   have hmod : ℕ ⊧ₘ σ := Semantics.modelsSet_iff.mp inferInstance hσ
@@ -2073,7 +2064,7 @@ theorem budgetedEmbedsV3_axm_PAminus {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-! ### The induction-schema kit, part 1 — `osuccs` + the ∀-closure peel -/
 
-theorem Cl_osuccs {S : ONote → Prop} {α : ONote} (h : Cl S α) : ∀ n, Cl S (osuccs α n)
+theorem Cl_osuccs {S : ONote → Prop} {α} (h : Cl S α) : ∀ n, Cl S (osuccs α n)
   | 0 => h
   | n + 1 => Cl.osucc (Cl_osuccs h n)
 
@@ -2081,7 +2072,7 @@ theorem Cl_osuccs {S : ONote → Prop} {α : ONote} (h : Cl S α) : ∀ n, Cl S 
 (uniformly in the operator/slot, `em_cong`-style stability), the universal closure is
 derivable at `osuccs α ℓ`.  Instances feed through `embedding_subst_q_cons_app`; the
 `Cl`-in-every-operator hypothesis pays every `relOp` side condition. -/
-theorem allClosure_peel {e : ONote} {d : ℕ} {f₀ : ℕ → ℕ} :
+theorem allClosure_peel {e} {d} {f₀ : ℕ → ℕ} :
     ∀ (ℓ : ℕ) (α : ONote), α.NF → (∀ S : ONote → Prop, Cl S α) →
       ∀ (χ : ArithmeticSemiformula ℕ ℓ) (Γ : Finset (ArithmeticFormula ℕ)),
       (∀ (w : Fin ℓ → ℕ) (H : ONote → Prop) (f : ℕ → ℕ), Monotone f → (∀ m, m ≤ f m) →
@@ -2376,7 +2367,7 @@ theorem succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
 sentence is env-fixed (`asg_emb_fix`), coerces to `∀⁰* (fixitr ▹ succInd φ)`, and peels by
 `allClosure_peel` into numeral instances `succInd ψw` handled by `succInd_shape_Zef2TC` at the
 uniform root `osucc² ω` — total root `osuccs (osucc² ω) fvSup`, all budgets structural. -/
-theorem budgetedEmbedsV3_succInd {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_succInd {Γ}
     (φ : Semiformula ℒₒᵣ ℕ 1)
     (hΓ : (↑(Semiformula.univCl (Arithmetic.succInd φ)) : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
@@ -2439,7 +2430,7 @@ theorem budgetedEmbedsV3_succInd {Γ : Finset (ArithmeticFormula ℕ)}
 /-- **V3 `axm`, complete**: every 𝗣𝗔 axiom in `Γ` is budgeted-embeddable — 𝗣𝗔 splits as
 𝗣𝗔⁻ (`budgetedEmbedsV3_axm_PAminus`) + the universal induction scheme
 (`budgetedEmbedsV3_succInd`). -/
-theorem budgetedEmbedsV3_axm {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbedsV3_axm {Γ}
     (σ : ArithmeticSentence) (hσ : σ ∈ (𝗣𝗔 : ArithmeticTheory))
     (hΓ : (↑σ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
   have hsplit : σ ∈ (𝗣𝗔⁻ : ArithmeticTheory) ∨ σ ∈ Arithmetic.InductionScheme ℒₒᵣ Set.univ := by
@@ -2453,7 +2444,7 @@ theorem budgetedEmbedsV3_axm {Γ : Finset (ArithmeticFormula ℕ)}
 from 𝗣𝗔 is budgeted-embeddable into `Zef2TC` under the structural-budget predicate
 `BudgetedEmbedsV3`.  This is the rung-E embedding content, complete (judge input;
 NOT self-ratified into src per the directive). -/
-theorem budgetedEmbeddingV3 {Γ : Finset (ArithmeticFormula ℕ)}
+theorem budgetedEmbeddingV3 {Γ}
     (d : Derivation2 (𝗣𝗔 : ArithmeticTheory) Γ) :
     BudgetedEmbedsV3 Γ := by
   induction d with
@@ -2477,9 +2468,9 @@ replacing `∀⁰ φ` by its `m`-th numeral instance throughout.  Operators are 
 to `≤ rel1 f m 0` by monotonicity, and nested ω-branches commute via `rel1_rel1`+`max_comm`. -/
 
 set_option maxHeartbeats 1600000 in
-theorem allω_inversion {φ : ArithmeticSemiformula ℕ 1} (m : ℕ) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H f c Γ → Monotone f →
+theorem allω_inversion {φ : ArithmeticSemiformula ℕ 1} (m : ℕ)
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2TC α e H f c Γ) : Monotone f →
       Zef2TC α e H (rel1 f m) c (insert (φ/[nm m]) (Γ.erase (∀⁰ φ))) := by
   have hkey : ∀ (f : ℕ → ℕ), Monotone f → ∀ x, f x ≤ rel1 f m x := by
     intro f hmono x
@@ -2493,7 +2484,6 @@ theorem allω_inversion {φ : ArithmeticSemiformula ℕ 1} (m : ℕ) :
     simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
     tauto
   -- targets: conclusion reshaping `insert χ (insert inst (Γ.erase ∀φ)) ⊇ goal` when χ ∈ Γ-form
-  intro α e H F c Γ dd
   induction dd with
   | axL hαN r v hp hn =>
       intro hmono
@@ -2648,9 +2638,9 @@ principal here).  The port needs: and/or-INVERSION (the finite mirrors of `allω
 no slot change, no operator change), and ⊥-erase (⊥ is still never principal in TC). -/
 
 /-- Left ⋏-inversion: replace `χ₁ ⋏ χ₂` by `χ₁` throughout.  Same ordinal, slot, rank. -/
-theorem and_inversion_left {χ₁ χ₂ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H f c Γ →
+theorem and_inversion_left {χ₁ χ₂}
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2TC α e H f c Γ) :
       Zef2TC α e H f c (insert χ₁ (Γ.erase (χ₁ ⋏ χ₂))) := by
   have hreshape : ∀ (χ : ArithmeticFormula ℕ) (Γ : Finset (ArithmeticFormula ℕ)),
       insert χ₁ ((insert χ Γ).erase (χ₁ ⋏ χ₂))
@@ -2658,7 +2648,6 @@ theorem and_inversion_left {χ₁ χ₂ : ArithmeticFormula ℕ} :
     intro χ Γ x hx
     simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
     tauto
-  intro α e H f c Γ dd
   induction dd with
   | axL hαN r v hp hn =>
       exact Zef2TC.axL hαN r v
@@ -2732,9 +2721,9 @@ theorem and_inversion_left {χ₁ χ₂ : ArithmeticFormula ℕ} :
       · exact Zef2TC.wk ih₂.gate (hreshape (∼φ) Γ') ih₂
 
 /-- Right ⋏-inversion. -/
-theorem and_inversion_right {χ₁ χ₂ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H f c Γ →
+theorem and_inversion_right {χ₁ χ₂}
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2TC α e H f c Γ) :
       Zef2TC α e H f c (insert χ₂ (Γ.erase (χ₁ ⋏ χ₂))) := by
   have hreshape : ∀ (χ : ArithmeticFormula ℕ) (Γ : Finset (ArithmeticFormula ℕ)),
       insert χ₂ ((insert χ Γ).erase (χ₁ ⋏ χ₂))
@@ -2742,7 +2731,6 @@ theorem and_inversion_right {χ₁ χ₂ : ArithmeticFormula ℕ} :
     intro χ Γ x hx
     simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
     tauto
-  intro α e H f c Γ dd
   induction dd with
   | axL hαN r v hp hn =>
       exact Zef2TC.axL hαN r v
@@ -2815,9 +2803,9 @@ theorem and_inversion_right {χ₁ χ₂ : ArithmeticFormula ℕ} :
       · exact Zef2TC.wk ih₂.gate (hreshape (∼φ) Γ') ih₂
 
 /-- ⋎-inversion: replace `χ₁ ⋎ χ₂` by BOTH disjuncts. -/
-theorem or_inversion {χ₁ χ₂ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H f c Γ →
+theorem or_inversion {χ₁ χ₂}
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2TC α e H f c Γ) :
       Zef2TC α e H f c (insert χ₁ (insert χ₂ (Γ.erase (χ₁ ⋎ χ₂)))) := by
   have hreshape : ∀ (χ : ArithmeticFormula ℕ) (Γ : Finset (ArithmeticFormula ℕ)),
       insert χ₁ (insert χ₂ ((insert χ Γ).erase (χ₁ ⋎ χ₂)))
@@ -2825,7 +2813,6 @@ theorem or_inversion {χ₁ χ₂ : ArithmeticFormula ℕ} :
     intro χ Γ x hx
     simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
     tauto
-  intro α e H f c Γ dd
   induction dd with
   | axL hαN r v hp hn =>
       exact Zef2TC.axL hαN r v
@@ -2926,16 +2913,14 @@ theorem or_inversion {χ₁ χ₂ : ArithmeticFormula ℕ} :
 
 /-- ⊥-erase: `⊥` is never principal in `Zef2TC` (no rule introduces `falsum`), so it can be
 erased from any context. -/
-theorem falsum_erase :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H f c Γ →
+theorem falsum_erase {α e} {H} {f} {c}
+    {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zef2TC α e H f c Γ) :
       Zef2TC α e H f c (Γ.erase (⊥ : ArithmeticFormula ℕ)) := by
   have hreshape : ∀ (χ : ArithmeticFormula ℕ) (Γ : Finset (ArithmeticFormula ℕ)),
       (insert χ Γ).erase (⊥ : ArithmeticFormula ℕ) ⊆ insert χ (Γ.erase (⊥ : ArithmeticFormula ℕ)) := by
     intro χ Γ x hx
     simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
     tauto
-  intro α e H f c Γ dd
   induction dd with
   | axL hαN r v hp hn =>
       exact Zef2TC.axL hαN r v
@@ -2993,7 +2978,7 @@ reuses `all`).  The ⊤/⊥ principal cuts are FREE: `∼⊤ = ⊥` and ⊥ is n
 /-- **`stepAnd_Zef2TC`** — the ⋏-principal top-rank cut reduction (E–W/Buchholz finite
 reduction).  From `⊢ φ⋏ψ, Γ` and `⊢ ∼φ⋎∼ψ, Γ` (same slot `f`, rank `c`), derive `Γ` at rank
 `c` using two cuts on `ψ` and `φ` (both `complexity < c`), at root `osucc (osucc (βφ + βψ))`. -/
-theorem stepAnd_Zef2TC {φ ψ : ArithmeticFormula ℕ} {βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
+theorem stepAnd_Zef2TC {φ ψ} {βφ βψ e} {H} {f}
     {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (hβφNF : βφ.NF) (hβψNF : βψ.NF)
     (hφc : φ.complexity < c) (hψc : ψ.complexity < c)
@@ -3059,9 +3044,9 @@ root, no composition. -/
 
 /-- Erase a FALSE `nrel` literal (its `rel` is `atomTrue`): never honestly principal. -/
 theorem false_nrel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    (htrue : atomTrue (Semiformula.rel rr vv)) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H f c Γ →
+    (htrue : atomTrue (Semiformula.rel rr vv))
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2TC α e H f c Γ) :
       Zef2TC α e H f c (Γ.erase (Semiformula.nrel rr vv)) := by
   have hreshape : ∀ (χ : ArithmeticFormula ℕ) (Γ : Finset (ArithmeticFormula ℕ)),
       (insert χ Γ).erase (Semiformula.nrel rr vv)
@@ -3069,7 +3054,6 @@ theorem false_nrel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → S
     intro χ Γ x hx
     simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
     tauto
-  intro α e H f c Γ dd
   induction dd with
   | @axL α' e' H' F' c' Γ' ar' hαN r v hp hn =>
       by_cases h : (Semiformula.nrel r v : ArithmeticFormula ℕ) = Semiformula.nrel rr vv
@@ -3123,9 +3107,9 @@ theorem false_nrel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → S
 
 /-- Erase a FALSE `rel` literal (its `nrel` is `atomTrue`): dual of `false_nrel_erase`. -/
 theorem false_rel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    (htrue : atomTrue (Semiformula.nrel rr vv)) :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H f c Γ →
+    (htrue : atomTrue (Semiformula.nrel rr vv))
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2TC α e H f c Γ) :
       Zef2TC α e H f c (Γ.erase (Semiformula.rel rr vv)) := by
   have hreshape : ∀ (χ : ArithmeticFormula ℕ) (Γ : Finset (ArithmeticFormula ℕ)),
       (insert χ Γ).erase (Semiformula.rel rr vv)
@@ -3133,7 +3117,6 @@ theorem false_rel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Se
     intro χ Γ x hx
     simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
     tauto
-  intro α e H f c Γ dd
   induction dd with
   | @axL α' e' H' F' c' Γ' ar' hαN r v hp hn =>
       by_cases h : (Semiformula.rel r v : ArithmeticFormula ℕ) = Semiformula.rel rr vv
@@ -3217,7 +3200,7 @@ theorem stepAtom_Zef2TC {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Se
 
 /-- **`stepVerum_Zef2TC`** — the ⊤-principal top-rank cut is FREE: `∼⊤ = ⊥` and ⊥ is never
 principal, so `falsum_erase` on the ⊥-side premise already derives `Γ` at ITS ordinal `βψ`. -/
-theorem stepVerum_Zef2TC {βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+theorem stepVerum_Zef2TC {βψ e} {H} {f} {c} {Γ}
     (D₂ : Zef2TC βψ e H f c (insert (⊥ : ArithmeticFormula ℕ) Γ)) :
     Zef2TC βψ e H f c Γ := by
   have C := falsum_erase D₂
@@ -3239,22 +3222,22 @@ def Zef2TCProv (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (
 
 namespace Zef2TCProv
 
-theorem of {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+theorem of {α e} {H} {f} {c} {Γ}
     (hNF : α.NF) (hH : Cl H α) (hN : Nlog α ≤ f 0) (D : Zef2TC α e H f c Γ) :
     Zef2TCProv α e H f c Γ :=
   ⟨α, le_refl _, hNF, hH, hN, D⟩
 
-theorem mono {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+theorem mono {α β e} {H} {f} {c} {Γ}
     (hα : α ≤ β) : Zef2TCProv α e H f c Γ → Zef2TCProv β e H f c Γ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', le_trans hα' hα, hNF, hH, hN, D⟩
 
-theorem weakening {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)}
+theorem weakening {α e} {H} {f} {c} {Γ Δ}
     (h : Γ ⊆ Δ) : Zef2TCProv α e H f c Γ → Zef2TCProv α e H f c Δ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', hα', hNF, hH, hN, Zef2TC.wk hN h D⟩
 
-theorem mono_f {α e : ONote} {H : ONote → Prop} {f f' : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+theorem mono_f {α e} {H} {f f'} {c} {Γ}
     (h : ∀ x, f x ≤ f' x) : Zef2TCProv α e H f c Γ → Zef2TCProv α e H f' c Γ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', hα', hNF, hH, le_trans hN (h 0), D.mono_f h⟩
@@ -3264,17 +3247,17 @@ end Zef2TCProv
 set_option maxHeartbeats 1000000 in
 /-- **`cutReduceAllAuxRunning_TC`** — the running-family ∀/∃ cut-reduction over `Zef2TC`
 (port of `cutReduceAllAuxRunning_Zf2`; fresh root `α + γ`, output slot `g ∘ f`). -/
-theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
+theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c} {α e}
     {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
-    (fam : ∀ n (H' : ONote → Prop), Zef2TC α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zef2TC γ e H f c Δ → γ.NF →
+    (fam : ∀ n (H' : ONote → Prop), Zef2TC α e H' (rel1 g n) c (insert (φ/[nm n]) Γ))
+    {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
+    (D : Zef2TC γ e H f c Δ) : γ.NF →
       Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δ →
       Zef2TCProv (α + γ) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   have hg0 : Nlog α ≤ g 0 := by
     have h := Zef2TC.gate (fam 0 (fun _ => True)); simpa [rel1] using h
-  intro γ H f Δ D
   induction D with
   | @axL γ e H f c Δ ar hαN r v hp hn =>
       intro hγNF _ _ hsl _ hmem
@@ -3510,7 +3493,7 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
 /-- **`stepAllωTC_bnd`** — the bound-exposing principal ∀/∃ cut-reduction step over `Zef2TC`
 (mirror of `stepAllω_Zf2_bnd`): invert the ∀-side via `allω_inversion`, feed the running
 reduction; output witness ordinal bounded by `P₁ + P₂`. -/
-theorem stepAllωTC_bnd {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+theorem stepAllωTC_bnd {E} {H} {c} {Γ}
     {χ : ArithmeticSemiformula ℕ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
     (hP₁ : P₁.NF) (hP₂ : P₂.NF)
     (hENF : E.NF) (hχc : χ.complexity < c)
@@ -3551,12 +3534,11 @@ root slot: `ewRootSlot … 0 ≥ 3`). -/
 set_option maxHeartbeats 3200000 in
 /-- **`passAuxTC`** — one cut-elimination pass over `Zef2TC` (port of `passAux`): the ordinal
 collapses (`collapse α`), the slot iterates (`ewIter f α`), the rank drops `c+1 → c`. -/
-theorem passAuxTC (c : ℕ) {e : ONote} (heNF : e.NF) :
-    ∀ {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {r : ℕ},
-      Zef2TC α e H f r Γ → r = c + 1 → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
+theorem passAuxTC (c : ℕ) {e} (heNF : e.NF)
+    {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {r : ℕ}
+    (D : Zef2TC α e H f r Γ) : r = c + 1 → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
       3 ≤ f 0 → α.NF → Cl H α →
       Zef2TCProv (collapse α) e H (ewIter f α) c Γ := by
-  intro α H f Γ r D
   induction D with
   | @axL α e H f r Γ ar hαN rel v hp hn =>
       intro hr hmono hinfl hlow hbase3 hαNF hαH
@@ -3903,7 +3885,7 @@ theorem rankToZeroAuxTC (e : ONote) (heNF : e.NF) :
 
 /-- **`rankToZero_TC`** — the rung-R analog over `Zef2TC` (EwF1/EwF2 entry point; the extra
 `3 ≤ f 0` is satisfied by every real root slot, e.g. `ewRootSlot e m 0 ≥ 3`). -/
-theorem rankToZero_TC {α e : ONote} {H : ONote → Prop} {d : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)
+theorem rankToZero_TC {α e} {H} {d} {Γ} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α) (hf0 : 3 ≤ f 0)
     (D : Zef2TC α e H f d Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2TCProv (collapseIter d α) e H (ewIterTower f d α) 0 Γ :=
@@ -3912,9 +3894,8 @@ theorem rankToZero_TC {α e : ONote} {H : ONote → Prop} {d : ℕ} {Γ : Finset
 /-- **Rank-0 `Zef2TC` soundness** — the truth core over the FULL rule set: a cut-free (rank-0)
 `Zef2TC` derivation has a standard-model-true member.  Truth leaves are their own witnesses;
 `andI`/`orI` combine premise truths through the connective evaluation. -/
-theorem sound0_TC : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef2TC α e H f c Γ → c = 0 → ∃ ψ ∈ Γ, atomTrue ψ := by
-  intro α e H f c Γ dd
+theorem sound0_TC {α e} {H} {f} {c} {Γ}
+    (dd : Zef2TC α e H f c Γ) : c = 0 → ∃ ψ ∈ Γ, atomTrue ψ := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
       intro _
@@ -4052,16 +4033,15 @@ standard-false; slot frame `g = rel1 f₀ j`, `j ≤ V`.  Conclusion bound: the 
 `BND V α = ewIter S α (S V)`, `S = Sslot f₀ P`.  SORRY-FREE: the `allω` trap descends into the
 `Gated` false branch `k₀ ≤ P V`; `T3_descent'` absorbs every budget bump. -/
 theorem readoffVTC_core {φ : ArithmeticSemiformula ℕ 1} {f₀ P : ℕ → ℕ}
-    (hf_mono : Monotone f₀) (hf_infl : ∀ m, m ≤ f₀ m) (hP_mono : Monotone P) :
-    ∀ {α e : ONote} {H : ONote → Prop} {g : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H g c Γ → c = 0 →
+    (hf_mono : Monotone f₀) (hf_infl : ∀ m, m ≤ f₀ m) (hP_mono : Monotone P)
+    {α e : ONote} {H : ONote → Prop} {g : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2TC α e H g c Γ) : c = 0 →
       ∀ (V j : ℕ), g = rel1 f₀ j → j ≤ V →
       (∃⁰ φ) ∈ Γ →
       (∀ ψ ∈ Γ, Gated P V ψ ∧ (ψ = (∃⁰ φ) ∨ ¬ atomTrue ψ)) →
       ∃ n, n ≤ ewIter (Sslot f₀ P) α (Sslot f₀ P V) ∧ atomTrue (φ/[nm n]) := by
   have hS_mono : Monotone (Sslot f₀ P) := Sslot_mono hf_mono hP_mono
   have hS_infl : ∀ m, m ≤ Sslot f₀ P m := Sslot_infl hf_infl
-  intro α e H g c Γ dd
   induction dd with
   | @axL α e H g c Γ ar hαN r v hp hn =>
       intro _ _ _ _ _ _ hinv

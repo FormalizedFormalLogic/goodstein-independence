@@ -16,7 +16,7 @@ Beyond the verbatim seed this module carries the lap-1 statement work:
 
 * **§4 — the inversion suite (A3, PROVEN).**  `allInv_Zeh` (Z1 pin 1) is discharged as a
   real proof — the six-case induction mirroring the banked `Provable.allInv`
-  (`OperatorZinfty.lean:484`) with the numeric `max k n₀`/`d`-inert bookkeeping re-keyed to
+  (`GoodsteinPA.OperatorZinfty.Provable.allInv`) with the numeric `max k n₀`/`d`-inert bookkeeping re-keyed to
   the stage `max m n₀` and the relativization `adjoin H n₀`.  `#print axioms` clean.
 * **§5/§7 — the f-slot elimination suite (A2; pins 1–2 DISCHARGED lap 184, pin 3 `sorry`).**
   The Eguchi–Weiermann function-slot forms (LOCK §3): the running-family reduction
@@ -42,7 +42,7 @@ declarations (R5).
 -/
 module
 
-public import GoodsteinPA.OperatorZinfty
+public import GoodsteinPA.OperatorZinfty.InductionLeaf
 public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 import Std.Tactic.BVDecide.Normalize.Prop
@@ -478,7 +478,7 @@ theorem concrete_bound_computes : hardy ONote.omega 1 = 3 := by
 /-! ## §4 The inversion suite (A3 — Z1 pin 1 DISCHARGED)
 
 `allInv_Zeh` was the first disclosed Z1 statement pin; here it is a REAL proof, the
-six-case induction mirroring the banked `Provable.allInv` (`OperatorZinfty.lean:484`) with the
+six-case induction mirroring the banked `Provable.allInv` (`GoodsteinPA.OperatorZinfty.Inversion`) with the
 numeric `max k n₀`/`d`-inert bookkeeping re-keyed to the stage axis `max m n₀` and the
 relativization axis `adjoin H n₀`.  Since the minimal `Zeh` core has only the six mandated
 constructors (no `andI`/`orI`/`verumR`/`trueRel`/`trueNrel`), the induction is strictly
@@ -524,8 +524,7 @@ theorem inv1Push (A e b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula 
     insert e ((insert b s).erase A) ⊆ insert b (insert e (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A)
-    (s : Finset (ArithmeticFormula ℕ)) :
+theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) :
     insert b (insert e (s.erase A)) ⊆ insert e ((insert b s).erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | hx
@@ -1036,7 +1035,7 @@ theorem probe_allomega_reassembly_Zf {e : ONote} {H : ONote → Prop} {m c : ℕ
 /-! ## §7 Companion inversions (A3 — mirroring the banked `Provable` suite)
 
 `orInv_Zeh`, `andInvL_Zeh`, `andInvR_Zeh` — the propositional inversions the banked `Provable`
-suite carries (`OperatorZinfty.lean:221/326/404`).  They keep the SAME `(α, e, H, m, c)`
+suite carries (`GoodsteinPA.OperatorZinfty.Inversion`: `orInv`/`andInvL`/`andInvR`).  They keep the SAME `(α, e, H, m, c)`
 (unlike `allInv_Zeh`, which raises the stage/relativization), so no `mono_H`/`Cl_mono`
 re-keying is needed — the side-condition memberships thread through unchanged.  Since the
 minimal `Zeh` core has NO `andI`/`orI` introduction rule, `φ ⋏ ψ` / `φ ⋎ ψ` is never
@@ -1047,13 +1046,11 @@ assembly (laps 5–7) for cuts on propositional formulas. -/
 
 /-- Double-insert reshuffle helpers (∨-inversion inserts both `φ` and `ψ`; re-derivations of
 the `private` `OperatorZinfty` copies). -/
-theorem invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ))
-    {φ ψ : ArithmeticFormula ℕ} :
+theorem invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b s).erase A)) ⊆ insert b (insert φ (insert ψ (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A)
-    (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
+theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert b (insert φ (insert ψ (s.erase A))) ⊆ insert φ (insert ψ ((insert b s).erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | rfl | hx
@@ -1064,8 +1061,7 @@ theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b �
 
 /-- **∨-inversion, `Zeh` form** (Towsner §19.3): replace `φ ⋎ ψ` by `φ, ψ`, same
 `(α, e, H, m, c)`. -/
-theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
+theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → (φ ⋎ ψ) ∈ Γ →
     Zeh α e H m c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   intro α e H m c Γ dd
@@ -1115,8 +1111,7 @@ theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ} :
 
 /-- **∧-inversion, left, `Zeh` form** (Towsner §19.3): replace `φ ⋏ ψ` by `φ`, same
 `(α, e, H, m, c)`. -/
-theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
+theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → (φ ⋏ ψ) ∈ Γ →
     Zeh α e H m c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   intro α e H m c Γ dd
@@ -1163,8 +1158,7 @@ theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ} :
 
 /-- **∧-inversion, right, `Zeh` form** (Towsner §19.3): replace `φ ⋏ ψ` by `ψ`, same
 `(α, e, H, m, c)`. -/
-theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
+theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zeh α e H m c Γ → (φ ⋏ ψ) ∈ Γ →
     Zeh α e H m c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   intro α e H m c Γ dd
@@ -1211,7 +1205,7 @@ theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ} :
 
 /-! ## §8 Structural monotonicity infrastructure (assembly plumbing, not judge-gated)
 
-Cut-rank monotonicity — banked in the `Provable` suite (`OperatorZinfty.lean:146`), reused by
+Cut-rank monotonicity — banked in the `Provable` suite (`GoodsteinPA.OperatorZinfty.Provable.mono_c`), reused by
 the rank-lowering elimination pass (`cutElimPass_Zf`, which relates rank-`c+1` and rank-`c`
 derivations).  Structural, does NOT consume the §5 f-slot statements; safe pre-ratification
 infrastructure. -/
@@ -1286,8 +1280,8 @@ the cut RULE at the wrapper level — combine proofs of `φ` and `∼φ` (with `
 into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, SAME rank and control (no rank-lowering, no
 control-raise — those are the judge-gated `cutElimPass_Zf`/reduction).  The step/reduction
 assembly reuses this to introduce cuts before eliminating them. -/
-theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
-    (φ : ArithmeticFormula ℕ) (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
+theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticFormula ℕ)
+    (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
     (D₁ : ZehProv βφ e H m c (insert φ Γ)) (D₂ : ZehProv βψ e H m c (insert (∼φ) Γ)) :
     ZehProv (osucc (βφ + βψ)) e H m c Γ := by
   obtain ⟨α₁, hle₁, hNF₁, hH₁, d₁⟩ := D₁
@@ -1338,7 +1332,7 @@ Only the PROVEN nodes carry ledger attributes.  Pins 1–2 (`cutReduceAllAuxRunn
 
 attribute [goodstein_blueprint 10 clean "zeh_inversion_suite" "0" 100 allInv_Zeh
   []
-  ["Towsner §19.4 ∀-inversion; mirrors the banked Provable.allInv (OperatorZinfty.lean:484)",
+  ["Towsner §19.4 ∀-inversion; mirrors the banked Provable.allInv (GoodsteinPA.OperatorZinfty.Inversion)",
    "GoodsteinPA.OperatorZeh.orInv_Zeh / andInvL_Zeh / andInvR_Zeh: complete propositional companions, axiom-clean",
    "E-2026-07-02-JUDGE-rebuild-z-lap1-validation.md §2: suite completeness verified (the minimal core admits no fifth inversion)"]
   "The Zeh inversion suite: control-preserving inversions (∀ at the relativization + running stage) feeding the fixed-control reduction and the cut-elimination assembly."]
@@ -1495,8 +1489,8 @@ current slot `f'` (threaded monotone + inflationary) and the two axis-critical m
   could not cross;
 - **`allω`** — each branch's IH output slot `g ∘ rel1 f' n` is `rel1 (g∘f') n` by `rel1_comp`
   (definitional), exactly the `allω` node's branch slot. -/
-theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
-    {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
+theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
+    {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef α e H' (rel1 g n) c (insert (φ/[nm n]) Γ)) :
     ∀ {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zef γ e H f c Δ → γ.NF →
@@ -1943,8 +1937,7 @@ never principal, so every case threads the inversion past a passive side formula
 
 /-- **∨-inversion, `Zef` form** (Towsner §19.3): replace `φ ⋎ ψ` by `φ, ψ`, same
 `(α, e, H, f, c)`. -/
-theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
+theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef α e H f c Γ → (φ ⋎ ψ) ∈ Γ →
     Zef α e H f c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   intro α e H f c Γ dd
@@ -1994,8 +1987,7 @@ theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ} :
 
 /-- **∧-inversion, left, `Zef` form** (Towsner §19.3): replace `φ ⋏ ψ` by `φ`, same
 `(α, e, H, f, c)`. -/
-theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
+theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef α e H f c Γ → (φ ⋏ ψ) ∈ Γ →
     Zef α e H f c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   intro α e H f c Γ dd
@@ -2042,8 +2034,7 @@ theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ} :
 
 /-- **∧-inversion, right, `Zef` form** (Towsner §19.3): replace `φ ⋏ ψ` by `ψ`, same
 `(α, e, H, f, c)`. -/
-theorem andInvR_Zef {φ ψ : ArithmeticFormula ℕ} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
+theorem andInvR_Zef {φ ψ : ArithmeticFormula ℕ} : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
     Zef α e H f c Γ → (φ ⋏ ψ) ∈ Γ →
     Zef α e H f c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   intro α e H f c Γ dd
@@ -2118,8 +2109,7 @@ the cut RULE at the wrapper level — combine proofs of `φ` and `∼φ` (with `
 into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, SAME rank and control (no rank-lowering, no
 control-raise — those are the judge-gated `cutElimPass_Zf`/reduction).  The step/reduction
 assembly reuses this to introduce cuts before eliminating them. -/
-theorem ZefProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticFormula ℕ)
+theorem ZefProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (φ : ArithmeticFormula ℕ)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
     (D₁ : ZefProv βφ e H f c (insert φ Γ)) (D₂ : ZefProv βψ e H f c (insert (∼φ) Γ)) :
     ZefProv (osucc (βφ + βψ)) e H f c Γ := by
