@@ -417,4 +417,83 @@ theorem tower_cofinal : ∀ (o : ONote), o.NF → ∃ k, o < tower k
         opow_le_opow_right omega0_pos (Order.succ_le_of_lt hej)
       exact lt_of_lt_of_le h1 h2
 
+/-! ### `osucc` strict order facts -/
+
+theorem lt_osucc {o : ONote} (h : o.NF) : o < osucc o :=
+  lt_def.mpr (by rw [repr_osucc h]; exact lt_add_one _)
+
+/-- `osucc` is strictly monotone on normal-form notations. -/
+theorem osucc_lt_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x < y) : osucc x < osucc y := by
+  refine lt_def.mpr ?_
+  rw [repr_osucc hx, repr_osucc hy, ← Order.succ_eq_add_one, ← Order.succ_eq_add_one]
+  exact Order.succ_lt_succ (lt_def.mp h)
+
+/-- `x < y ⟹ x < osucc y` (NF). -/
+theorem lt_osucc_of_lt {x y : ONote} (hy : y.NF) (h : x < y) : x < osucc y :=
+  lt_trans h (lt_osucc hy)
+
+/-! ### Ordinal addition and `norm` bookkeeping on normal forms -/
+
+/-- Strict monotonicity of `+` in the right summand, on normal-form notations. -/
+theorem add_lt_add_left_NF {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
+    (h : γ' < γ) : α + γ' < α + γ := by
+  haveI := hαNF; haveI := hγ'NF; haveI := hγNF
+  exact lt_def.mpr (by rw [repr_add, repr_add]; exact (add_lt_add_iff_left _).mpr (lt_def.mp h))
+
+theorem le_add_left_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ α + γ := by
+  haveI := hαNF; haveI := hγNF
+  exact le_def.mpr (by rw [repr_add]; exact le_add_self)
+
+theorem le_add_right_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : α ≤ α + γ := by
+  haveI := hαNF; haveI := hγNF
+  exact le_def.mpr (by rw [repr_add]; exact le_self_add)
+
+/-- Combines `add_lt_add_left_NF` and `osucc_lt_osucc`: `osucc (α + γ') < osucc (α + γ)`
+whenever `γ' < γ`. -/
+theorem add_osucc_descent {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
+    (h : γ' < γ) : osucc (α + γ') < osucc (α + γ) :=
+  osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ) (add_lt_add_left_NF hαNF hγ'NF hγNF h)
+
+@[simp] theorem norm_omegaPow {α : ONote} : norm (oadd α 1 0) = max (norm α) 1 := by
+  simp [norm_oadd]
+
+/-- Additive bound for `norm` under `+` on normal-form arguments. Sharper than the
+unconditional `norm_add_le` (which bounds the left summand's contribution by `normSum`
+rather than `norm`), at the cost of requiring both arguments to be normal forms. -/
+theorem norm_add_le_of_nf {α : ONote} (hα : α.NF) {γ : ONote} (hγ : γ.NF) :
+    norm (α + γ) ≤ norm α + norm γ := by
+  induction α generalizing γ with
+  | zero => simp
+  | oadd e n a ihe iha =>
+    have ha : a.NF := hα.snd
+    haveI := ha; haveI := hγ
+    have iha' : norm (a + γ) ≤ norm a + norm γ := iha ha hγ
+    rw [oadd_add]
+    rcases hr : a + γ with _ | ⟨e', n', a'⟩
+    · simp only [addAux, norm_oadd, norm_zero]; omega
+    · rw [hr] at iha'
+      simp only [norm_oadd] at iha'
+      simp only [addAux]
+      rcases hcmp : ONote.cmp e e' with _ | _ | _
+      · simp only [norm_oadd]; omega
+      · have hee : e = e' := eq_of_cmp_eq hcmp
+        have hge : Ordinal.omega0 ^ ONote.repr e ≤ ONote.repr (a + γ) := by
+          rw [hr, hee]; exact omega0_le_oadd e' n' a'
+        have hra : ONote.repr a < Ordinal.omega0 ^ ONote.repr e := hα.snd'.repr_lt
+        have hgγ : Ordinal.omega0 ^ ONote.repr e ≤ ONote.repr γ := by
+          by_contra hlt
+          push Not at hlt
+          have : ONote.repr a + ONote.repr γ < Ordinal.omega0 ^ ONote.repr e :=
+            (Ordinal.isPrincipal_add_omega0_opow (ONote.repr e)) hra hlt
+          rw [repr_add] at hge
+          exact absurd (lt_of_le_of_lt hge this) (lt_irrefl _)
+        have habs : a + γ = γ := by
+          have : ONote.repr (a + γ) = ONote.repr γ := by
+            rw [repr_add]; exact Ordinal.add_of_omega0_opow_le hra hgγ
+          exact repr_inj.mp this
+        have hnγ : norm γ = max (norm e') (max (n':ℕ) (norm a')) := by
+          rw [← habs, hr]; simp [norm_oadd]
+        simp only [norm_oadd, PNat.add_coe]; omega
+      · simp only [norm_oadd]; omega
+
 end ONote
