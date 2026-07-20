@@ -546,7 +546,6 @@ theorem embedding_valueCongruentQFreeClosedTerm_probe :
       | hexs a =>
           simp at hqf
 
-set_option maxHeartbeats 1000000 in
 /--
 Bounded value-congruent EM for arbitrary formulas at explicit finite `ONote` height.
 

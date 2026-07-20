@@ -28,7 +28,6 @@ noncomputable def ZekdBoundedTruth (e : ONote) (K d : ℕ) :
   | _, w, .all a => ∀ m, ZekdBoundedTruth e (max K m) d (nm m :> w) a
   | _, w, .exs a => ∃ m, m ≤ hardy e (K + d) ∧ ZekdBoundedTruth e K d (nm m :> w) a
 
-set_option maxHeartbeats 1000000 in
 /--
 Bounded truth gives an exact-index `Zekd` derivation.
 
