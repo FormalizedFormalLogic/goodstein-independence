@@ -189,7 +189,7 @@ private lemma cutReduceAllAux_trueRel {γ' : ONote} {Δ : Finset (ArithmeticForm
     (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (r : (ℒₒᵣ).Rel ar) (v)
     (htrue : atomTrue (Semiformula.rel r v)) (hmemA : Semiformula.rel r v ∈ Δ) :
     ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
-  ⟨_, le_trans (Provable.le_add_left_NF hαNF hγNF) (le_of_lt (Provable.lt_osucc (ONote.add_nf α _))),
+  ⟨_, le_trans (le_add_left_NF hαNF hγNF) (le_of_lt (lt_osucc (ONote.add_nf α _))),
     hγNF, by omega, Provable.trueRel r v htrue (by omega) hγNF
       (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemA⟩))⟩
 
@@ -199,7 +199,7 @@ private lemma cutReduceAllAux_trueNrel {γ' : ONote} {Δ : Finset (ArithmeticFor
     (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (r : (ℒₒᵣ).Rel ar) (v)
     (htrue : atomTrue (Semiformula.nrel r v)) (hmemA : Semiformula.nrel r v ∈ Δ) :
     ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
-  ⟨_, le_trans (Provable.le_add_left_NF hαNF hγNF) (le_of_lt (Provable.lt_osucc (ONote.add_nf α _))),
+  ⟨_, le_trans (le_add_left_NF hαNF hγNF) (le_of_lt (lt_osucc (ONote.add_nf α _))),
     hγNF, by omega, Provable.trueNrel r v htrue (by omega) hγNF
       (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemA⟩))⟩
 
@@ -218,7 +218,7 @@ private lemma cutReduceAllAux_wk {γ' : ONote} {Δsub Δsup : Finset (Arithmetic
       rcases hx with ⟨hne, hxs⟩ | hxΓ
       · exact Or.inl ⟨hne, hsub hxs⟩
       · exact Or.inr hxΓ)
-  · refine ⟨γ', le_trans (Provable.le_add_left_NF hαNF hγNF) (le_of_lt (Provable.lt_osucc (ONote.add_nf α _))),
+  · refine ⟨γ', le_trans (le_add_left_NF hαNF hγNF) (le_of_lt (lt_osucc (ONote.add_nf α _))),
       hγNF, by omega, (D'.mono_d (by omega)).wk (by
         intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
         exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
@@ -239,9 +239,9 @@ private lemma cutReduceAllAux_weak {γ' β : ONote} {Δsub Δsup : Finset (Arith
       rcases hx with ⟨hne, hxs⟩ | hxΓ
       · exact Or.inl ⟨hne, hsub hxs⟩
       · exact Or.inr hxΓ)).mono
-      (le_of_lt (Provable.add_osucc_descent hαNF hβNF hγNF hβ)) le_rfl le_rfl le_rfl
-  · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (Provable.le_add_left_NF hαNF hγNF)
-      (le_of_lt (Provable.lt_osucc (ONote.add_nf α _))))), hβNF, by omega,
+      (le_of_lt (add_osucc_descent hαNF hβNF hγNF hβ)) le_rfl le_rfl le_rfl
+  · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (le_add_left_NF hαNF hγNF)
+      (le_of_lt (lt_osucc (ONote.add_nf α _))))), hβNF, by omega,
       (D'.mono_d (by omega)).wk (by
         intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
         exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
@@ -273,11 +273,11 @@ private lemma cutReduceAllAux_andI {γ' βφ βψ : ONote} {Γ₀ : Finset (Arit
   have hAnd : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
       (insert (ψ₁ ⋏ ψ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
     Provable.andI ψ₁ ψ₂
-      (lt_of_le_of_lt haφle (Provable.add_osucc_descent hαNF hβφNF hγNF hβφ))
-      (lt_of_le_of_lt haψle (Provable.add_osucc_descent hαNF hβψNF hγNF hβψ))
+      (lt_of_le_of_lt haφle (add_osucc_descent hαNF hβφNF hγNF hβφ))
+      (lt_of_le_of_lt haψle (add_osucc_descent hαNF hβψNF hγNF hβψ))
       haφNF haψNF hsuccNF haφnorm haψnorm Dφ' Dψ'
   refine ProvableSlack.of hsuccNF
-    (lt_of_le_of_lt norm_osucc_le (by have := Provable.norm_add_le hαNF hγNF; omega))
+    (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega))
     (hAnd.wk (insert_erase_union_subset hhead))
 
 include hαNF hφc heNF fam in
@@ -301,10 +301,10 @@ private lemma cutReduceAllAux_orI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFo
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
   have hOr : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
       (insert (ψ₁ ⋎ ψ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-    Provable.orI ψ₁ ψ₂ (lt_of_le_of_lt hale (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
+    Provable.orI ψ₁ ψ₂ (lt_of_le_of_lt hale (add_osucc_descent hαNF hβNF hγNF hβ))
       haNF hsuccNF hanorm Da'
   refine ProvableSlack.of hsuccNF
-    (lt_of_le_of_lt norm_osucc_le (by have := Provable.norm_add_le hαNF hγNF; omega))
+    (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega))
     (hOr.wk (by
       intro x hx
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -337,10 +337,10 @@ private lemma cutReduceAllAux_allω {γ' : ONote} {Γ₀ : Finset (ArithmeticFor
   have hAll : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
       (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
     Provable.allω χ β'
-      (fun n => lt_of_le_of_lt (hβ'le n) (Provable.add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
+      (fun n => lt_of_le_of_lt (hβ'le n) (add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
       hβ'NF hsuccNF hβ'norm Dβ'
   refine ProvableSlack.of hsuccNF
-    (lt_of_le_of_lt norm_osucc_le (by have := Provable.norm_add_le hαNF hγNF; omega))
+    (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega))
     (hAll.wk (by
       intro x hx
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -368,7 +368,7 @@ private lemma cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFo
     have hNeg : (∼φ)/[nm n] = ∼(φ/[nm n]) := by simp
     have hcompl : (φ/[nm n]).complexity < c' := by simpa using hφc
     have hαlt : α < osucc (α + γ') :=
-      lt_of_le_of_lt (Provable.le_add_right_NF hαNF hγNF) (Provable.lt_osucc (ONote.add_nf α γ'))
+      lt_of_le_of_lt (le_add_right_NF hαNF hγNF) (lt_osucc (ONote.add_nf α γ'))
     have famn : Provable α e' k' (dd' + norm α + 1) c'
         (insert (φ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
       (((fam n).mono_k hk).mono_d (by omega)).wk (by
@@ -384,10 +384,10 @@ private lemma cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFo
           simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
       have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
         Provable.cut (φ/[nm n]) hcompl hαlt
-          (lt_of_le_of_lt hale (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
+          (lt_of_le_of_lt hale (add_osucc_descent hαNF hβNF hγNF hβ))
           hαNF haNF hsuccNF (by omega) hanorm famn Da'
       exact ProvableSlack.of hsuccNF
-        (lt_of_le_of_lt norm_osucc_le (by have := Provable.norm_add_le hαNF hγNF; omega)) hCut
+        (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega)) hCut
     · have Dβ' : Provable β e' k' (dd' + norm α + 1) c'
           (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
         (dχ.mono_d (by omega)).wk (by
@@ -399,11 +399,11 @@ private lemma cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFo
           · exact Or.inr (Or.inl ⟨fun e0 => hd (e0 ▸ hxΓ₀), hxΓ₀⟩))
       have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
         Provable.cut (φ/[nm n]) hcompl hαlt
-          (lt_of_lt_of_le hβ (le_trans (Provable.le_add_left_NF hαNF hγNF)
-            (le_of_lt (Provable.lt_osucc (ONote.add_nf α γ')))))
+          (lt_of_lt_of_le hβ (le_trans (le_add_left_NF hαNF hγNF)
+            (le_of_lt (lt_osucc (ONote.add_nf α γ')))))
           hαNF hβNF hsuccNF (by omega) (by omega) famn Dβ'
       exact ProvableSlack.of hsuccNF
-        (lt_of_le_of_lt norm_osucc_le (by have := Provable.norm_add_le hαNF hγNF; omega)) hCut
+        (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega)) hCut
   · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
     obtain ⟨a, hale, haNF, hanorm, Da⟩ := ih hφc heNF fam hβNF (by omega) hk hdd
       (Finset.mem_insert_of_mem hmem0)
@@ -413,10 +413,10 @@ private lemma cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFo
         simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
     have hExI : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
         (insert (∃⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-      Provable.exI χ n (lt_of_le_of_lt hale (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
+      Provable.exI χ n (lt_of_le_of_lt hale (add_osucc_descent hαNF hβNF hγNF hβ))
         haNF hsuccNF hanorm (le_trans hbound (hardy_monotone _ (by omega))) Da'
     refine ProvableSlack.of hsuccNF
-      (lt_of_le_of_lt norm_osucc_le (by have := Provable.norm_add_le hαNF hγNF; omega))
+      (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega))
       (hExI.wk (by
         intro x hx
         simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -452,11 +452,11 @@ private lemma cutReduceAllAux_cut {γ' βφ βψ : ONote} {Γ₀ : Finset (Arith
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
   have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
     Provable.cut χ hχc
-      (lt_of_le_of_lt ha₁le (Provable.add_osucc_descent hαNF hβφNF hγNF hβφ))
-      (lt_of_le_of_lt ha₂le (Provable.add_osucc_descent hαNF hβψNF hγNF hβψ))
+      (lt_of_le_of_lt ha₁le (add_osucc_descent hαNF hβφNF hγNF hβφ))
+      (lt_of_le_of_lt ha₂le (add_osucc_descent hαNF hβψNF hγNF hβψ))
       ha₁NF ha₂NF hsuccNF ha₁norm ha₂norm D₁' D₂'
   exact ProvableSlack.of hsuccNF
-    (lt_of_le_of_lt norm_osucc_le (by have := Provable.norm_add_le hαNF hγNF; omega)) hCut
+    (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega)) hCut
 
 lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
