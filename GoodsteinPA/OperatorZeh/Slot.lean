@@ -62,14 +62,14 @@ lemma normControlled_rel1 (h : NormControlled f e m)
 
 /-- Norm control is monotone in the slot (assembly plumbing: a dominating slot still
 controls; reused when a reduction outputs a larger-than-needed composed slot). -/
-lemma NormControlled.mono {f' : ℕ → ℕ}
+lemma NormControlled.mono {f'}
     (h : NormControlled f e m) (hff' : ∀ x, f x ≤ f' x) : NormControlled f' e m :=
   fun x => le_trans (h x) (hff' x)
 
 /-- Norm control is antitone in the stage: a slot controlling stage `m` controls any
 smaller stage `m' ≤ m` (the `exI` bound only shrinks).  Reused when the reduction runs a
 premise at a lower stage than the conclusion. -/
-lemma NormControlled.stage_antitone {m' : ℕ}
+lemma NormControlled.stage_antitone {m'}
     (h : NormControlled f e m) (hm : m' ≤ m) : NormControlled f e m' :=
   fun x => le_trans (hardy_monotone e (by omega)) (h x)
 
@@ -78,7 +78,7 @@ lemma NormControlled.stage_antitone {m' : ℕ}
 (condition `(f.1)`: `2y+1 ≤ f y ⟹ y ≤ f y`), then the composed slot `f ∘ g` still controls `e`
 at `m`.  Note: this is the *fixed*-control fact; the *raised*-control demand belongs to
 `cutElimPass_Zf`'s pinned iterate, not here. -/
-lemma NormControlled.comp {g : ℕ → ℕ}
+lemma NormControlled.comp {g}
     (hg : NormControlled g e m) (hf : ∀ y, y ≤ f y) : NormControlled (f ∘ g) e m :=
   fun x => le_trans (hg x) (hf (g x))
 
@@ -88,7 +88,7 @@ slot `f ∘ g` is controlled at `m`.  Unlike `NormControlled.comp` this needs no
 inflationarity hypothesis on `f`: control of `g` already forces `g` inflationary
 (`x ≤ max m₀ x ≤ hardy e (max m₀ x) ≤ g x`, via `le_hardy`), and then
 `f (g x) ≥ hardy e (max m (g x)) ≥ hardy e (max m x)` (`hf` at `g x`, `hardy_monotone`). -/
-lemma normControlled_comp_running {g : ℕ → ℕ} {m₀ : ℕ}
+lemma normControlled_comp_running {g} {m₀}
     (hg : NormControlled g e m₀) (hf : NormControlled f e m) : NormControlled (f ∘ g) e m := by
   intro x
   have hxg : x ≤ g x :=
@@ -139,7 +139,7 @@ lemma iter_normControlled
 /-- Iterate monotone in the index count: `f^[j] ≤ f^[k]` pointwise for `j ≤ k`, `f` inflationary +
 monotone.  Feeds `mono_f` when a pass outputs a longer iterate than a sibling branch needs. -/
 lemma iter_le_of_le (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
-    {j k : ℕ} (hjk : j ≤ k) (x : ℕ) : f^[j] x ≤ f^[k] x := by
+    {j k} (hjk : j ≤ k) (x : ℕ) : f^[j] x ≤ f^[k] x := by
   obtain ⟨d, rfl⟩ := Nat.le.dest hjk
   rw [Function.iterate_add_apply]
   exact iter_monotone hf_mono j (iter_infl hf_infl d x)
@@ -251,7 +251,7 @@ iterate, then `iterSlot f α x ≤ iterSlot f β x`.  Unlike the fast-growing tr
 step `iterSlot f β x = iterSlot f γ (f x)` shifts the argument from `x` to `f x`; that shift is
 absorbed by inflationarity (`x ≤ f x`, `hf_infl`) plus monotonicity of the intermediate
 `iterSlot f γ` — the exact analog of `hardy_le_of_reaches`'s `Nat.le_succ` absorption. -/
-lemma iterSlot_le_of_reaches (hf_infl : ∀ x, x ≤ f x) {x : ℕ} {β α : ONote}
+lemma iterSlot_le_of_reaches (hf_infl : ∀ x, x ≤ f x) {x} {β α}
     (h : Reaches x β α) (hmono : ∀ γ, Reaches x β γ → Monotone (iterSlot f γ)) :
     iterSlot f α x ≤ iterSlot f β x := by
   induction h with
@@ -318,7 +318,7 @@ node-relative (argument `≥ norm` of the node's ordinal — e.g. a relativized
 `rel1 (iterSlot f α) K` with `K ≥ norm α`) restores the `weak`/`exI`/`cut` slot-lift that the bare
 `iterSlot f α` cannot supply. -/
 lemma iterSlot_le_of_lt (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
-    {x : ℕ} {α β : ONote} (hα : α.NF) (hβ : β.NF) (hβα : β < α) (hnorm : norm β ≤ x) :
+    {x} {α β} (hα : α.NF) (hβ : β.NF) (hβα : β < α) (hnorm : norm β ≤ x) :
     iterSlot f β x ≤ iterSlot f α x :=
   iterSlot_le_of_reaches hf_infl (reaches_of_lt α hα β hβ hβα hnorm)
     (fun γ _ => iterSlot_monotone hf_mono hf_infl γ)

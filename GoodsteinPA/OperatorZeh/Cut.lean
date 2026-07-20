@@ -14,8 +14,8 @@ open GoodsteinPA.OperatorZinfty
 
 /-- **The ∀-family member re-slots to `g∘f`**: for `g` monotone, `f` monotone + inflationary,
 and witness `n ≤ f 0`, `rel1 g n ≤ g∘f` pointwise. -/
-lemma reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
-    (hf_infl : ∀ x, x ≤ f x) (hf_mono : Monotone f) {n : ℕ} (hn : n ≤ f 0) (x : ℕ) :
+lemma reslot_family {f g} (hg_mono : Monotone g)
+    (hf_infl : ∀ x, x ≤ f x) (hf_mono : Monotone f) {n} (hn : n ≤ f 0) (x : ℕ) :
     rel1 g n x ≤ (g ∘ f) x := by
   simp only [rel1, Function.comp]
   refine hg_mono ?_
@@ -24,7 +24,7 @@ lemma reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
   · rw [max_eq_left h]; exact le_trans hn (hf_mono (Nat.zero_le x))
 
 /-- **The ∃-side reduct re-slots to `g∘f`**: `f ≤ g∘f` for `g` inflationary. -/
-lemma reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) (x : ℕ) :
+lemma reslot_exside {f : ℕ → ℕ} {g} (hg_infl : ∀ x, x ≤ g x) (x : ℕ) :
     f x ≤ (g ∘ f) x := hg_infl (f x)
 
 /-! ## The running-family reduction, sorry-free -/
@@ -38,11 +38,11 @@ the two axis-critical moves:
   could not cross;
 - **`allω`** — each branch's IH output slot `g ∘ rel1 f' n` is `rel1 (g∘f') n` by `rel1_comp`
   (definitional), exactly the `allω` node's branch slot. -/
-lemma cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
-    {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
+lemma cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c} {α e} {Γ}
+    {g} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef α e H' (rel1 g n) c (insert (φ/[nm n]) Γ))
-    {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)} (D : Zef γ e H f c Δ)
+    {γ} {H} {f} {Δ} (D : Zef γ e H f c Δ)
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hmem : (∃⁰ ∼φ) ∈ Δ) :
     ZefProv (osucc (α + γ)) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   induction D with

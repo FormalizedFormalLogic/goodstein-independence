@@ -56,7 +56,7 @@ lemma norm_ball_not_add_closed (R : ℕ) (hR : 1 ≤ R) :
 /-- **Concrete kernel instance of the read-off**: a two-node derivation — `exI` at witness
 `3` over an `axL` leaf — at control `ω` and stage `1`; the rule's bound is
 `3 ≤ hardy ω 1 = 3`, kernel-computed exactly (`hardy_omega`). -/
-lemma concrete_readoff_instance {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
+lemma concrete_readoff_instance {ar} (r : (ℒₒᵣ).Rel ar)
     (v : Fin ar → ArithmeticTerm ℕ) (φ : ArithmeticSemiformula ℕ 1) :
     Zeh (osucc 0) ONote.omega H 1 0
       (insert (∃⁰ φ) (insert (Semiformula.rel r v) {Semiformula.nrel r v})) := by
@@ -109,7 +109,7 @@ node at `ω^ω` whose EVERY branch `n` is a rank-`c` principal ∀/∃ cut with 
 a legal `Zeh` derivation: every side condition is a membership, discharged by a REAL
 per-branch closure tree.  This is the inhabitedness witness the seam-2 reversal rests on
 (the reassembly probe would be vacuous without it). -/
-lemma two_level_config_Zeh {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
+lemma two_level_config_Zeh {ar} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (χ ψ : ArithmeticSemiformula ℕ 1)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
     Zeh (expTower ONote.omega) e H m ((∀⁰ χ).complexity + 1) (insert (∀⁰ ψ) Γ) := by
@@ -133,7 +133,7 @@ reduction-output class, with each branch's control carried by the relativized f-
 `rel1 f n` (`normControlled_rel1`) — the numeric control rides the function slot the seam
 demands. -/
 lemma probe_allomega_reassembly_Zf
-    {χ : ArithmeticSemiformula ℕ 1} (hf : NormControlled f e m)
+    {χ} (hf : NormControlled f e m)
     (dd : ∀ n, Zeh (osucc (wmul n + wmul n)) e (adjoin H n) (max m n) c
       (insert (χ/[nm n]) Γ)) :
     Zeh (expTower ONote.omega) e H m c (insert (∀⁰ χ) Γ) ∧
@@ -158,7 +158,7 @@ needs no separate `NormControlled` conjunct: each ω-branch simply runs at the r
 `allω` node at `ω^ω` whose every branch is a rank-`c` principal ∀/∃ cut with premise ordinals
 `ω·(n+1)` — the branch-unbounded configuration that killed the `(k,d)` calculus, a legal `Zef`
 derivation at an arbitrary slot `f`. -/
-lemma two_level_config_Zef {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
+lemma two_level_config_Zef {ar} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (χ ψ : ArithmeticSemiformula ℕ 1)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
     Zef (expTower ONote.omega) e H f ((∀⁰ χ).complexity + 1) (insert (∀⁰ ψ) Γ) := by
@@ -182,7 +182,7 @@ sorry-free).**  The ω-node re-assembles over the reduction-output class, each b
 carried by the relativized slot `rel1 f n` — the branch-unbounded demand that overflowed the
 `(k,d)` counter, now paid by the function slot inside the judgment (no separate control conjunct). -/
 lemma probe_allomega_reassembly_Zef
-    {χ : ArithmeticSemiformula ℕ 1}
+    {χ}
     (dd : ∀ n, Zef (osucc (wmul n + wmul n)) e (adjoin H n) (rel1 f n) c
       (insert (χ/[nm n]) Γ)) :
     Zef (expTower ONote.omega) e H f c (insert (∀⁰ χ) Γ) := by

@@ -55,7 +55,7 @@ namespace Zeh
 /-- **`mono_H`** — the replacement for `Provable.mono_k`/`Provable.mono_d`: raise the generator set and
 the stage together.  The `exI` bound rides `hardy_monotone` (argument monotonicity — no
 ordinal-raise, hence no gate); memberships ride `Cl_mono`. -/
-lemma mono_H (dd : Zeh α e H m c Γ) {H' : ONote → Prop} {m' : ℕ}
+lemma mono_H (dd : Zeh α e H m c Γ) {H'} {m'}
     (hH : ∀ β, H β → H' β) (hm : m ≤ m') : Zeh α e H' m' c Γ := by
   induction dd generalizing H' m' with
   | axL r v hp hn => exact Zeh.axL r v hp hn
@@ -74,7 +74,7 @@ lemma mono_H (dd : Zeh α e H m c Γ) {H' : ONote → Prop} {m' : ℕ}
         (ih₁ hH hm) (ih₂ hH hm)
 
 /-- Sequent weakening (height-preserving). -/
-lemma weakening {Δ : Finset (ArithmeticFormula ℕ)}
+lemma weakening {Δ}
     (hsub : Δ ⊆ Γ) (dd : Zeh α e H m c Δ) : Zeh α e H m c Γ :=
   Zeh.wk hsub dd
 
@@ -86,7 +86,7 @@ strong form of `mono_H` that `mono_H` (which needs `H ⊆ H'`) cannot express: t
 freely replaceable in BOTH directions.  Discharges the operator-threading bookkeeping in the
 f-slot reductions — the running relativization `adjoin H n` of the inversion family and the
 ambient `H` of the ∃-side are interchangeable at will (membership is bookkeeping only). -/
-lemma change_H (dd : Zeh α e H m c Γ) {H' : ONote → Prop} : Zeh α e H' m c Γ := by
+lemma change_H (dd : Zeh α e H m c Γ) {H'} : Zeh α e H' m c Γ := by
   induction dd generalizing H' with
   | axL r v hp hn => exact Zeh.axL r v hp hn
   | wk hsub _ ih => exact Zeh.wk hsub ih
@@ -112,11 +112,11 @@ namespace ZehProv
 lemma of (hNF : α.NF) (hH : Cl H α) (D : Zeh α e H m c Γ) : ZehProv α e H m c Γ :=
   ⟨α, le_refl _, hNF, hH, D⟩
 
-lemma mono {β : ONote} (hα : α ≤ β) (D : ZehProv α e H m c Γ) : ZehProv β e H m c Γ := by
+lemma mono {β} (hα : α ≤ β) (D : ZehProv α e H m c Γ) : ZehProv β e H m c Γ := by
   obtain ⟨α', hα', hNF, hH, D⟩ := D
   exact ⟨α', le_trans hα' hα, hNF, hH, D⟩
 
-lemma weakening {Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) (D : ZehProv α e H m c Γ) :
+lemma weakening {Δ} (h : Γ ⊆ Δ) (D : ZehProv α e H m c Γ) :
     ZehProv α e H m c Δ := by
   obtain ⟨α', hα', hNF, hH, D⟩ := D
   exact ⟨α', hα', hNF, hH, D.wk h⟩
@@ -133,7 +133,7 @@ namespace Zeh
 
 /-- **`c`-monotonicity** (cut rank): a derivation valid at rank `c` is valid at any `c' ≥ c`.
 Only the `cut` rule reads `c` (via `hcompl : φ.complexity < c`), so every other case threads. -/
-lemma mono_c (dd : Zeh α e H m c Γ) {c' : ℕ} (hc : c ≤ c') : Zeh α e H m c' Γ := by
+lemma mono_c (dd : Zeh α e H m c Γ) {c'} (hc : c ≤ c') : Zeh α e H m c' Γ := by
   induction dd generalizing c' with
   | axL r v hp hn => exact Zeh.axL r v hp hn
   | wk hsub _ ih => exact Zeh.wk hsub (ih hc)
@@ -153,7 +153,7 @@ the cut rule at the wrapper level — combine proofs of `φ` and `∼φ` (with `
 into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, same rank and control (no rank-lowering, no
 control-raise — those belong to `cutElimPass_Zf`/the reduction).  A step/reduction assembly
 would reuse this to introduce cuts before eliminating them. -/
-lemma ZehProv.cut {βφ βψ : ONote} (φ : ArithmeticFormula ℕ)
+lemma ZehProv.cut {βφ βψ} (φ : ArithmeticFormula ℕ)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
     (D₁ : ZehProv βφ e H m c (insert φ Γ)) (D₂ : ZehProv βψ e H m c (insert (∼φ) Γ)) :
     ZehProv (osucc (βφ + βψ)) e H m c Γ := by
@@ -171,7 +171,7 @@ lemma ZehProv.cut {βφ βψ : ONote} (φ : ArithmeticFormula ℕ)
 /-- **`ZehProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
 wrapper level — the output ordinal `osucc β` is fully determined, no rank/control change.
 Reused by the assembly to introduce existentials at the prov level. -/
-lemma ZehProv.exI {β : ONote}
+lemma ZehProv.exI {β}
     (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβNF : β.NF) (hβH : Cl H β)
     (hbound : n ≤ hardy e m) (D : ZehProv β e H m c (insert (φ/[nm n]) Γ)) :
     ZehProv (osucc β) e H m c (insert (∃⁰ φ) Γ) := by
