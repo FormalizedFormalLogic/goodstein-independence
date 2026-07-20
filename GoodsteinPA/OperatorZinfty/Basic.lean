@@ -90,123 +90,106 @@ namespace Zekd
 
 /-- **`k`-monotonicity** (the `max`/cofinal part; inversions raise this idempotently). The witness
 bound `hardy e (k+d)` rises with `k` via `hardy_monotone`. -/
-theorem mono_k : ∀ {α e k d c Γ}, Zekd α e k d c Γ → ∀ {k'}, k ≤ k' → Zekd α e k' d c Γ := by
-  intro α e k d c Γ dd
-  induction dd with
-  | axL r v hp hn => intro k' _; exact Zekd.axL r v hp hn
-  | verumR h => intro k' _; exact Zekd.verumR h
+theorem mono_k {α e k d c Γ} (dd : Zekd α e k d c Γ) {k'} (hk : k ≤ k') : Zekd α e k' d c Γ := by
+  induction dd generalizing k' with
+  | axL r v hp hn => exact Zekd.axL r v hp hn
+  | verumR h => exact Zekd.verumR h
   | trueRel r v htrue hτ hαNF hmem =>
-      intro k' hk; exact Zekd.trueRel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
+      exact Zekd.trueRel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
   | trueNrel r v htrue hτ hαNF hmem =>
-      intro k' hk; exact Zekd.trueNrel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
-  | wk hsub _ ih => intro k' hk; exact Zekd.wk hsub (ih hk)
+      exact Zekd.trueNrel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
+  | wk hsub _ ih => exact Zekd.wk hsub (ih hk)
   | weak hβ hβNF hαNF hτ hsub _ ih =>
-      intro k' hk; exact Zekd.weak hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) hsub (ih hk)
+      exact Zekd.weak hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) hsub (ih hk)
   | andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      intro k' hk
       exact Zekd.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
         (lt_of_lt_of_le hτψ (by omega)) (ihφ hk) (ihψ hk)
   | orI φ ψ hβ hβNF hαNF hτ _ ih =>
-      intro k' hk; exact Zekd.orI φ ψ hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) (ih hk)
+      exact Zekd.orI φ ψ hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) (ih hk)
   | allω φ β hβ hβNF hαNF hτ _ ih =>
-      intro k' hk
       exact Zekd.allω φ β hβ hβNF hαNF
         (fun n => lt_of_lt_of_le (hτ n) (by have := Nat.add_le_add_right (max_le_max hk (le_refl n)) d; omega))
         (fun n => ih n (max_le_max hk (le_refl n)))
   | exI φ n hβ hβNF hαNF hτ hbound _ ih =>
-      intro k' hk
       exact Zekd.exI φ n hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega))
         (le_trans hbound (hardy_monotone _ (by omega))) (ih hk)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      intro k' hk
       exact Zekd.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
         (lt_of_lt_of_le hτψ (by omega)) (ih₁ hk) (ih₂ hk)
 
 /-- **`d`-monotonicity** (the additive cut-shift budget; the ∀/∃ commuting cut-reduction case
 raises this by `norm α`, cf. [Tow20, §19.6]). The witness bound `hardy e (k+d)` rises with `d`
 via `hardy_monotone`. -/
-theorem mono_d : ∀ {α e k d c Γ}, Zekd α e k d c Γ → ∀ {d'}, d ≤ d' → Zekd α e k d' c Γ := by
-  intro α e k d c Γ dd
-  induction dd with
-  | axL r v hp hn => intro d' _; exact Zekd.axL r v hp hn
-  | verumR h => intro d' _; exact Zekd.verumR h
+theorem mono_d {α e k d c Γ} (dd : Zekd α e k d c Γ) {d'} (hd : d ≤ d') : Zekd α e k d' c Γ := by
+  induction dd generalizing d' with
+  | axL r v hp hn => exact Zekd.axL r v hp hn
+  | verumR h => exact Zekd.verumR h
   | trueRel r v htrue hτ hαNF hmem =>
-      intro d' hd; exact Zekd.trueRel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
+      exact Zekd.trueRel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
   | trueNrel r v htrue hτ hαNF hmem =>
-      intro d' hd; exact Zekd.trueNrel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
-  | wk hsub _ ih => intro d' hd; exact Zekd.wk hsub (ih hd)
+      exact Zekd.trueNrel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
+  | wk hsub _ ih => exact Zekd.wk hsub (ih hd)
   | weak hβ hβNF hαNF hτ hsub _ ih =>
-      intro d' hd; exact Zekd.weak hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) hsub (ih hd)
+      exact Zekd.weak hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) hsub (ih hd)
   | andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      intro d' hd
       exact Zekd.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
         (lt_of_lt_of_le hτψ (by omega)) (ihφ hd) (ihψ hd)
   | orI φ ψ hβ hβNF hαNF hτ _ ih =>
-      intro d' hd; exact Zekd.orI φ ψ hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) (ih hd)
+      exact Zekd.orI φ ψ hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) (ih hd)
   | allω φ β hβ hβNF hαNF hτ _ ih =>
-      intro d' hd
       exact Zekd.allω φ β hβ hβNF hαNF (fun n => lt_of_lt_of_le (hτ n) (by omega))
         (fun n => ih n hd)
   | exI φ n hβ hβNF hαNF hτ hbound _ ih =>
-      intro d' hd
       exact Zekd.exI φ n hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega))
         (le_trans hbound (hardy_monotone _ (by omega))) (ih hd)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      intro d' hd
       exact Zekd.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
         (lt_of_lt_of_le hτψ (by omega)) (ih₁ hd) (ih₂ hd)
 
 /-- **`c`-monotonicity** (cut-rank). -/
-theorem mono_c : ∀ {α e k d c Γ}, Zekd α e k d c Γ → ∀ {c'}, c ≤ c' → Zekd α e k d c' Γ := by
-  intro α e k d c Γ dd
-  induction dd with
-  | axL r v hp hn => intro c' _; exact Zekd.axL r v hp hn
-  | verumR h => intro c' _; exact Zekd.verumR h
-  | trueRel r v htrue hτ hαNF hmem => intro c' _; exact Zekd.trueRel r v htrue hτ hαNF hmem
-  | trueNrel r v htrue hτ hαNF hmem => intro c' _; exact Zekd.trueNrel r v htrue hτ hαNF hmem
-  | wk hsub _ ih => intro c' hc; exact Zekd.wk hsub (ih hc)
-  | weak hβ hβNF hαNF hτ hsub _ ih => intro c' hc; exact Zekd.weak hβ hβNF hαNF hτ hsub (ih hc)
+theorem mono_c {α e k d c Γ} (dd : Zekd α e k d c Γ) {c'} (hc : c ≤ c') : Zekd α e k d c' Γ := by
+  induction dd generalizing c' with
+  | axL r v hp hn => exact Zekd.axL r v hp hn
+  | verumR h => exact Zekd.verumR h
+  | trueRel r v htrue hτ hαNF hmem => exact Zekd.trueRel r v htrue hτ hαNF hmem
+  | trueNrel r v htrue hτ hαNF hmem => exact Zekd.trueNrel r v htrue hτ hαNF hmem
+  | wk hsub _ ih => exact Zekd.wk hsub (ih hc)
+  | weak hβ hβNF hαNF hτ hsub _ ih => exact Zekd.weak hβ hβNF hαNF hτ hsub (ih hc)
   | andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      intro c' hc; exact Zekd.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ihφ hc) (ihψ hc)
-  | orI φ ψ hβ hβNF hαNF hτ _ ih => intro c' hc; exact Zekd.orI φ ψ hβ hβNF hαNF hτ (ih hc)
-  | allω φ β hβ hβNF hαNF hτ _ ih => intro c' hc; exact Zekd.allω φ β hβ hβNF hαNF hτ (fun n => ih n hc)
+      exact Zekd.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ihφ hc) (ihψ hc)
+  | orI φ ψ hβ hβNF hαNF hτ _ ih => exact Zekd.orI φ ψ hβ hβNF hαNF hτ (ih hc)
+  | allω φ β hβ hβNF hαNF hτ _ ih => exact Zekd.allω φ β hβ hβNF hαNF hτ (fun n => ih n hc)
   | exI φ n hβ hβNF hαNF hτ hbound _ ih =>
-      intro c' hc; exact Zekd.exI φ n hβ hβNF hαNF hτ hbound (ih hc)
+      exact Zekd.exI φ n hβ hβNF hαNF hτ hbound (ih hc)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      intro c' hc
       exact Zekd.cut φ (lt_of_lt_of_le hcompl hc) hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ih₁ hc) (ih₂ hc)
 
 /-- **`e`-monotonicity** (the NEW control axis; cut-elimination raises `e` to dominate cut-formula
 bounds). Only the `exI` witness bound `hardy e (k+d)` depends on `e`, and it rises with `e` via
 the index-monotonicity `hardy_le_of_lt` (with the budget side condition `norm e ≤ k+d`). -/
-theorem mono_e : ∀ {α e k d c Γ}, Zekd α e k d c Γ → ∀ {e'}, e.NF → e'.NF → e < e' →
-    norm e ≤ k + d → Zekd α e' k d c Γ := by
-  intro α e k d c Γ dd
-  induction dd with
-  | axL r v hp hn => intro e' _ _ _ _; exact Zekd.axL r v hp hn
-  | verumR h => intro e' _ _ _ _; exact Zekd.verumR h
-  | trueRel r v htrue hτ hαNF hmem => intro e' _ _ _ _; exact Zekd.trueRel r v htrue hτ hαNF hmem
-  | trueNrel r v htrue hτ hαNF hmem => intro e' _ _ _ _; exact Zekd.trueNrel r v htrue hτ hαNF hmem
-  | wk hsub _ ih => intro e' he heN' hlt hnorm; exact Zekd.wk hsub (ih he heN' hlt hnorm)
+theorem mono_e {α e k d c Γ} (dd : Zekd α e k d c Γ) {e'} (he : e.NF) (heN' : e'.NF) (hlt : e < e')
+    (hnorm : norm e ≤ k + d) : Zekd α e' k d c Γ := by
+  induction dd generalizing e' with
+  | axL r v hp hn => exact Zekd.axL r v hp hn
+  | verumR h => exact Zekd.verumR h
+  | trueRel r v htrue hτ hαNF hmem => exact Zekd.trueRel r v htrue hτ hαNF hmem
+  | trueNrel r v htrue hτ hαNF hmem => exact Zekd.trueNrel r v htrue hτ hαNF hmem
+  | wk hsub _ ih => exact Zekd.wk hsub (ih he heN' hlt hnorm)
   | weak hβ hβNF hαNF hτ hsub _ ih =>
-      intro e' he heN' hlt hnorm; exact Zekd.weak hβ hβNF hαNF hτ hsub (ih he heN' hlt hnorm)
+      exact Zekd.weak hβ hβNF hαNF hτ hsub (ih he heN' hlt hnorm)
   | andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      intro e' he heN' hlt hnorm
       exact Zekd.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ihφ he heN' hlt hnorm) (ihψ he heN' hlt hnorm)
   | orI φ ψ hβ hβNF hαNF hτ _ ih =>
-      intro e' he heN' hlt hnorm; exact Zekd.orI φ ψ hβ hβNF hαNF hτ (ih he heN' hlt hnorm)
+      exact Zekd.orI φ ψ hβ hβNF hαNF hτ (ih he heN' hlt hnorm)
   | allω φ β hβ hβNF hαNF hτ _ ih =>
-      intro e' he heN' hlt hnorm
       refine Zekd.allω φ β hβ hβNF hαNF hτ (fun n => ih n he heN' hlt ?_)
       -- premise n runs at index (max k n, d): budget `norm e ≤ max k n + d` from `norm e ≤ k + d`
       have : k ≤ max k n := le_max_left _ _
       omega
   | exI φ n hβ hβNF hαNF hτ hbound _ ih =>
-      intro e' he heN' hlt hnorm
       refine Zekd.exI φ n hβ hβNF hαNF hτ ?_ (ih he heN' hlt hnorm)
       exact le_trans hbound (hardy_le_of_lt he heN' hlt hnorm)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      intro e' he heN' hlt hnorm
       exact Zekd.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ih₁ he heN' hlt hnorm) (ih₂ he heN' hlt hnorm)
 
 theorem lt_osucc {o : ONote} (h : o.NF) : o < osucc o :=
@@ -257,16 +240,14 @@ theorem norm_addAux_le (e : ONote) (n : ℕ+) (r : ONote) :
     rcases ONote.cmp e e' with _ | _ | _ <;>
       simp only [norm_oadd, PNat.add_coe] <;> omega
 
-theorem norm_add_le : ∀ {α : ONote}, α.NF → ∀ {γ : ONote}, γ.NF →
+theorem norm_add_le {α : ONote} (hα : α.NF) {γ : ONote} (hγ : γ.NF) :
     norm (α + γ) ≤ norm α + norm γ := by
-  intro α
   induction α with
-  | zero => intro _ γ _; simp
+  | zero => simp
   | oadd e n a ihe iha =>
-    intro hα γ hγ
     have ha : a.NF := hα.snd
     haveI := ha; haveI := hγ
-    have iha' : norm (a + γ) ≤ norm a + norm γ := iha ha hγ
+    have iha' : norm (a + γ) ≤ norm a + norm γ := iha ha
     rw [oadd_add]
     rcases hr : a + γ with _ | ⟨e', n', a'⟩
     · simp only [addAux, norm_oadd, norm_zero]; omega

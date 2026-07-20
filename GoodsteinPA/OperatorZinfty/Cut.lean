@@ -458,38 +458,28 @@ private theorem cutReduceAllAux_cut {γ' βφ βψ : ONote} {Γ₀ : Finset (Ari
 
 theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
-    (fam : ∀ n, Zekd α e k₀ dd₀ c (insert (φ/[nm n]) Γ)) :
-    ∀ {γ : ONote} {k dd : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}, Zekd γ e k dd c Δ → γ.NF → norm γ < k + dd →
-      k₀ ≤ k → dd₀ ≤ dd → (∃⁰ ∼φ) ∈ Δ →
-      ZekdProv (osucc (α + γ)) e k (dd + norm α + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
-  intro γ k dd Δ D
+    (fam : ∀ n, Zekd α e k₀ dd₀ c (insert (φ/[nm n]) Γ))
+    {γ : ONote} {k dd : ℕ} {Δ : Finset (ArithmeticFormula ℕ)} (D : Zekd γ e k dd c Δ) (hγNF : γ.NF)
+    (hγb : norm γ < k + dd) (hk : k₀ ≤ k) (hdd : dd₀ ≤ dd) (hmem : (∃⁰ ∼φ) ∈ Δ) :
+    ZekdProv (osucc (α + γ)) e k (dd + norm α + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
   induction D with
-  | axL r v hp hn => intro _ _ _ _ _; exact cutReduceAllAux_axL r v hp hn
-  | verumR h => intro _ _ _ _ _; exact cutReduceAllAux_verumR h
-  | trueRel r v htrue hτ hαNF' hmemA =>
-      intro hγNF hγb _ _ _; exact cutReduceAllAux_trueRel hαNF hγNF hγb r v htrue hmemA
-  | trueNrel r v htrue hτ hαNF' hmemA =>
-      intro hγNF hγb _ _ _; exact cutReduceAllAux_trueNrel hαNF hγNF hγb r v htrue hmemA
+  | axL r v hp hn => exact cutReduceAllAux_axL r v hp hn
+  | verumR h => exact cutReduceAllAux_verumR h
+  | trueRel r v htrue hτ hαNF' hmemA => exact cutReduceAllAux_trueRel hαNF hγNF hγb r v htrue hmemA
+  | trueNrel r v htrue hτ hαNF' hmemA => exact cutReduceAllAux_trueNrel hαNF hγNF hγb r v htrue hmemA
   | @wk γ' e' k' dd' c' Δsub Δsup hsub D' ih =>
-      intro hγNF hγb hk hdd hmem
       exact cutReduceAllAux_wk hαNF hφc heNF fam hsub D' ih hγNF hγb hk hdd hmem
   | @weak γ' β e' k' dd' c' Δsub Δsup hβ hβNF hαNF' hτ hsub D' ih =>
-      intro hγNF hγb hk hdd hmem
       exact cutReduceAllAux_weak hαNF hφc heNF fam hβ hβNF hτ hsub D' ih hγNF hk hdd hmem
   | @andI γ' βφ βψ e' k' dd' c' Γ₀ ψ₁ ψ₂ hβφ hβψ hβφNF hβψNF hαNF' hτφ hτψ dφ dψ ihφ ihψ =>
-      intro hγNF hγb hk hdd hmem
       exact cutReduceAllAux_andI hαNF hφc heNF fam hβφ hβψ hβφNF hβψNF hτφ hτψ ihφ ihψ hγNF hγb hk hdd hmem
   | @orI γ' β e' k' dd' c' Γ₀ ψ₁ ψ₂ hβ hβNF hαNF' hτ dχ ih =>
-      intro hγNF hγb hk hdd hmem
       exact cutReduceAllAux_orI hαNF hφc heNF fam hβ hβNF hτ ih hγNF hγb hk hdd hmem
   | @allω γ' e' k' dd' c' Γ₀ χ β hβ hβNF hαNF' hτ dχ ih =>
-      intro hγNF hγb hk hdd hmem
       exact cutReduceAllAux_allω hαNF hφc heNF fam hβ hβNF hτ ih hγNF hγb hk hdd hmem
   | @exI γ' β e' k' dd' c' Γ₀ χ n hβ hβNF hαNF' hτ hbound dχ ih =>
-      intro hγNF hγb hk hdd hmem
       exact cutReduceAllAux_exI hαNF hφc heNF fam hβ hβNF hτ hbound dχ ih hγNF hγb hk hdd hmem
   | @cut γ' βφ βψ e' k' dd' c' Γ₀ χ hχc hβφ hβψ hβφNF hβψNF hαNF' hτφ hτψ d₁ d₂ ih₁ ih₂ =>
-      intro hγNF hγb hk hdd hmem
       exact cutReduceAllAux_cut hαNF hφc heNF fam hχc hβφ hβψ hβφNF hβψNF hτφ hτψ ih₁ ih₂ hγNF hγb hk hdd hmem
 
 end GoodsteinPA.OperatorZinfty
