@@ -24,7 +24,7 @@ follows [Tow20] alone.
 -/
 module
 
-public import GoodsteinPA.OperatorZinfty
+public import GoodsteinPA.OperatorZinfty.InductionLeaf
 public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 
 @[expose] public section
