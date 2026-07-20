@@ -50,7 +50,7 @@ inductive Zeh : ONote → ONote → (ONote → Prop) → ℕ → ℕ → Finset 
 
 namespace Zeh
 
-/-- **`mono_H`** — the replacement for `Zekd.mono_k`/`Zekd.mono_d`: raise the generator set and
+/-- **`mono_H`** — the replacement for `Provable.mono_k`/`Provable.mono_d`: raise the generator set and
 the stage together.  The `exI` bound rides `hardy_monotone` (argument monotonicity — no
 ordinal-raise, hence no gate); memberships ride `Cl_mono`. -/
 theorem mono_H {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
@@ -101,7 +101,7 @@ theorem change_H {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (A
 
 end Zeh
 
-/-- The `≤`-slack bookkeeping wrapper (`ZekdProv`'s twin with the NORM clause deleted —
+/-- The `≤`-slack bookkeeping wrapper (`ProvableSlack`'s twin with the NORM clause deleted —
 the simplification the fork buys — and the ordinal's `Cl H`-membership carried instead:
 "the judgment carries `α ∈ H` directly"). -/
 def ZehProv (α e : ONote) (H : ONote → Prop) (m c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
@@ -127,7 +127,7 @@ end ZehProv
 
 /-! ## Structural monotonicity infrastructure (assembly plumbing)
 
-Cut-rank monotonicity, mirroring the `Zekd` suite (`OperatorZinfty.lean`), reused by the
+Cut-rank monotonicity, mirroring the `Provable` suite (`OperatorZinfty.lean`), reused by the
 rank-lowering elimination pass `cutElimPass_Zf` (which relates rank-`c+1` and rank-`c`
 derivations).  Structural: does not consume the f-slot statements. -/
 
@@ -167,8 +167,8 @@ theorem ZehProv.cut {βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ :
       (add_le_add_NF hNF₁ hβφNF hNF₂ hβψNF hle₁ hle₂),
     osucc_add_NF hNF₁ hNF₂, osucc_add_mem hH₁ hH₂,
     Zeh.cut φ hcompl
-      (lt_of_le_of_lt (Zekd.le_add_right_NF hNF₁ hNF₂) (Zekd.lt_osucc (ONote.add_nf α₁ α₂)))
-      (lt_of_le_of_lt (Zekd.le_add_left_NF hNF₁ hNF₂) (Zekd.lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (Provable.le_add_right_NF hNF₁ hNF₂) (Provable.lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (Provable.le_add_left_NF hNF₁ hNF₂) (Provable.lt_osucc (ONote.add_nf α₁ α₂)))
       hNF₁ hNF₂ (osucc_add_NF hNF₁ hNF₂) hH₁ hH₂ d₁ d₂⟩
 
 /-- **`ZehProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
@@ -180,7 +180,7 @@ theorem ZehProv.exI {β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset
     ZehProv (osucc β) e H m c (insert (∃⁰ φ) Γ) := by
   obtain ⟨β', hle, hNF', hH', d⟩ := D
   exact ⟨osucc β, le_rfl, osucc_NF hβNF, Cl.osucc hβH,
-    Zeh.exI φ n (lt_of_le_of_lt hle (Zekd.lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
+    Zeh.exI φ n (lt_of_le_of_lt hle (Provable.lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
 
 /-- **`ZehProv`-level `allω` combinator** (assembly plumbing): reassemble an ω-node at the
 wrapper level.  Each branch's `≤`-slack witness is threaded through (`< α` survives since

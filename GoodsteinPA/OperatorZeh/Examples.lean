@@ -23,7 +23,7 @@ theorem raise_absorbs_base : raise (ONote.ofNat 5) 1 = ONote.omega := rfl
 `e' = raise e 1`), both normal-form, both in EVERY closure, with
 `hardy e' m < hardy e m`: `hardy ω 0 = 1 < 5 = hardy (ofNat 5) 0`.  So no `Zeh`-rule
 package of (NF, `<`, membership) facts can re-establish the `exI` bound after a raise —
-`Zekd.mono_e`'s numeric gate `norm e ≤ k + d` does not "become `e ∈ H`"; the domination
+`Provable.mono_e`'s numeric gate `norm e ≤ k + d` does not "become `e ∈ H`"; the domination
 content must come from elsewhere. -/
 theorem mono_e_membership_gate_refuted :
     ∃ (e e' : ONote) (m : ℕ), e.NF ∧ e'.NF ∧ e < e' ∧ e' = raise e 1 ∧
@@ -59,7 +59,7 @@ theorem concrete_readoff_instance {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
     {H : ONote → Prop} :
     Zeh (osucc 0) ONote.omega H 1 0
       (insert (∃⁰ φ) (insert (Semiformula.rel r v) {Semiformula.nrel r v})) := by
-  refine Zeh.exI φ 3 (Zekd.lt_osucc NF.zero) NF.zero (osucc_NF NF.zero)
+  refine Zeh.exI φ 3 (Provable.lt_osucc NF.zero) NF.zero (osucc_NF NF.zero)
     (Cl.ofNat 0) (by rw [show ONote.omega = oadd 1 1 0 from rfl, hardy_omega]) ?_
   exact Zeh.axL r v
     (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
@@ -121,7 +121,7 @@ theorem two_level_config_Zeh {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar →
     (fun n => Cl.osucc (wmul_mem _ n))
     (fun n => ?_)
   refine Zeh.cut (∀⁰ χ) (Nat.lt_succ_self _)
-    (Zekd.lt_osucc (wmul_NF n)) (Zekd.lt_osucc (wmul_NF n))
+    (Provable.lt_osucc (wmul_NF n)) (Provable.lt_osucc (wmul_NF n))
     (wmul_NF n) (wmul_NF n) (osucc_NF (wmul_NF n))
     (wmul_mem _ n) (wmul_mem _ n) ?_ ?_
   · exact Zeh.axL r v (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hp))
@@ -170,7 +170,7 @@ theorem two_level_config_Zef {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar →
     (fun n => Cl.osucc (wmul_mem _ n))
     (fun n => ?_)
   refine Zef.cut (∀⁰ χ) (Nat.lt_succ_self _)
-    (Zekd.lt_osucc (wmul_NF n)) (Zekd.lt_osucc (wmul_NF n))
+    (Provable.lt_osucc (wmul_NF n)) (Provable.lt_osucc (wmul_NF n))
     (wmul_NF n) (wmul_NF n) (osucc_NF (wmul_NF n))
     (wmul_mem _ n) (wmul_mem _ n) ?_ ?_
   · exact Zef.axL r v (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hp))

@@ -16,7 +16,7 @@ the Buchholz-style operator-controlled derivation methodology in its number-theo
 family `f^α` (`GoodsteinPA.OperatorZeh.Slot`'s `iterSlot`, `NormControlled`)
 [EW12, Definition 16, Definition 23, Lemma 25]. In this PA/`ε₀` setting `Zeh`'s ordinal operator
 `H` turns out to carry no information (`Zeh.change_H`); only `Zef`'s numeric slot `f` is
-load-bearing. The inversion suite (`GoodsteinPA.OperatorZeh.Inversion`, mirroring `Zekd.allInv`)
+load-bearing. The inversion suite (`GoodsteinPA.OperatorZeh.Inversion`, mirroring `Provable.allInv`)
 follows [Tow20] alone.
 
 - [Tow20, §13, §15, §19]
@@ -37,7 +37,7 @@ open GoodsteinPA.OperatorZinfty
 /-! ## ONote/expTower transforms -/
 
 @[simp] theorem norm_expTower (α : ONote) : norm (expTower α) = max (norm α) 1 :=
-  Zekd.norm_omegaPow
+  Provable.norm_omegaPow
 
 /-- The family-uniform control raise `raise e α := e + ω^α`. -/
 def raise (e α : ONote) : ONote := e + expTower α
@@ -48,7 +48,7 @@ theorem raise_NF {e α : ONote} (he : e.NF) (hα : α.NF) : (raise e α).NF := b
 
 theorem raise_lt_raise {e β α : ONote} (he : e.NF) (hβ : β.NF) (hα : α.NF) (h : β < α) :
     raise e β < raise e α :=
-  Zekd.add_lt_add_left_NF he (expTower_NF hβ) (expTower_NF hα) (expTower_lt_expTower hβ h)
+  Provable.add_lt_add_left_NF he (expTower_NF hβ) (expTower_NF hα) (expTower_lt_expTower hβ h)
 
 /-- `ω·(m+1)` as an explicit `ONote` (the W4B two-level-configuration family). -/
 def wmul (m : ℕ) : ONote := oadd 1 m.succPNat 0
@@ -238,7 +238,7 @@ theorem wmul_mem (S : ONote → Prop) (n : ℕ) : Cl S (wmul n) := by
 
 The [Tow20, Theorem 19.6] reduction outputs ordinal `osucc (α + γ)`; its inner descent cites
 these pure `ONote` facts (no `Zeh` manipulation — reused by, but distinct from, the reduction
-itself). Each composes the `Zekd` ordinal lemmas. -/
+itself). Each composes the `Provable` ordinal lemmas. -/
 
 /-- The reduction-output ordinal is NF whenever its components are. -/
 theorem osucc_add_NF {α γ : ONote} (hα : α.NF) (hγ : γ.NF) : (osucc (α + γ)).NF :=
@@ -248,14 +248,14 @@ theorem osucc_add_NF {α γ : ONote} (hα : α.NF) (hγ : γ.NF) : (osucc (α + 
 premise's ordinal strictly drops below the spliced output). -/
 theorem osucc_add_lt_osucc_add {α γ' γ : ONote} (hα : α.NF) (hγ' : γ'.NF) (hγ : γ.NF)
     (h : γ' < γ) : osucc (α + γ') < osucc (α + γ) :=
-  Zekd.osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ)
-    (Zekd.add_lt_add_left_NF hα hγ' hγ h)
+  Provable.osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ)
+    (Provable.add_lt_add_left_NF hα hγ' hγ h)
 
 /-- **Splice descent, bare form:** `γ' < γ ⟹ α + γ' < osucc (α + γ)` (a premise below `γ`
 lies strictly below the spliced output — the direct `weak`/`exI` descent witness). -/
 theorem add_lt_osucc_add {α γ' γ : ONote} (hα : α.NF) (hγ' : γ'.NF) (hγ : γ.NF)
     (h : γ' < γ) : α + γ' < osucc (α + γ) :=
-  Zekd.lt_osucc_of_lt (ONote.add_nf α γ) (Zekd.add_lt_add_left_NF hα hγ' hγ h)
+  Provable.lt_osucc_of_lt (ONote.add_nf α γ) (Provable.add_lt_add_left_NF hα hγ' hγ h)
 
 /-- Membership of the reduction-output ordinal by closure (the seam-1 brick, named for the
 reduction's use site: `osucc (α + γ)` is a member whenever `α`, `γ` are). -/
@@ -270,7 +270,7 @@ theorem add_le_add_NF {α₁ β₁ α₂ β₂ : ONote} (hα₁ : α₁.NF) (hβ
   haveI := hα₁; haveI := hβ₁; haveI := hα₂; haveI := hβ₂
   exact le_def.mpr (by rw [repr_add, repr_add]; exact add_le_add (le_def.mp h₁) (le_def.mp h₂))
 
-/-- `osucc` non-strict monotonicity (pairs with `Zekd.osucc_lt_osucc`). -/
+/-- `osucc` non-strict monotonicity (pairs with `Provable.osucc_lt_osucc`). -/
 theorem osucc_le_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x ≤ y) : osucc x ≤ osucc y := by
   refine le_def.mpr ?_
   rw [repr_osucc hx, repr_osucc hy, ← Order.succ_eq_add_one, ← Order.succ_eq_add_one]

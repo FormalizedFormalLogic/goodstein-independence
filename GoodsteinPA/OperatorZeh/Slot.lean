@@ -49,7 +49,7 @@ theorem normControlled_root (e : ONote) : NormControlled (fun x => hardy e x) e 
 /-- **Seam 2 in controlled form — the ω-node re-entry** (real proof): a controlled slot,
 relativized at branch `n` and run at the max-adjoined stage, is controlled by `rel1 f n`.
 This is `rel1_comp`'s semantic payload: the branch-unbounded demand that overflowed every
-`Zekd` `d`-slot re-enters through ONE function slot's relativization. -/
+`Provable` `d`-slot re-enters through ONE function slot's relativization. -/
 theorem normControlled_rel1 {f : ℕ → ℕ} {e : ONote} {m : ℕ} (h : NormControlled f e m)
     (n : ℕ) : NormControlled (rel1 f n) e (max m n) := by
   intro x

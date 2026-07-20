@@ -59,8 +59,8 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)
-      · refine ⟨γ, le_trans (Zekd.le_add_left_NF hαNF hγNF)
-          (le_of_lt (Zekd.lt_osucc (ONote.add_nf α γ))), hγNF, Cl_of_NF hγNF,
+      · refine ⟨γ, le_trans (Provable.le_add_left_NF hαNF hγNF)
+          (le_of_lt (Provable.lt_osucc (ONote.add_nf α γ))), hγNF, Cl_of_NF hγNF,
           (D'.mono_f (reslot_exside hg_infl)).wk (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
             exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
@@ -71,9 +71,9 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)).mono
-          (le_of_lt (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
-      · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (Zekd.le_add_left_NF hαNF hγNF)
-          (le_of_lt (Zekd.lt_osucc (ONote.add_nf α γ))))), hβNF, Cl_of_NF hβNF,
+          (le_of_lt (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
+      · refine ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_trans (Provable.le_add_left_NF hαNF hγNF)
+          (le_of_lt (Provable.lt_osucc (ONote.add_nf α γ))))), hβNF, Cl_of_NF hβNF,
           (D'.mono_f (reslot_exside hg_infl)).wk (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
             exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
@@ -94,7 +94,7 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
         -- branch slot `g ∘ rel1 f n` is `rel1 (g∘f) n` by `rel1_comp` (definitional)
         refine Zef.allω χ (fun n => (ihn n).choose)
           (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
-            (Zekd.add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
+            (Provable.add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
           (fun n => (ihn n).choose_spec.2.1) hsuccNF
           (fun n => Cl_of_NF (ihn n).choose_spec.2.1)
           (fun n => (ihn n).choose_spec.2.2.2)
@@ -118,7 +118,7 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           ((fam n H).mono_f (reslot_family hg_mono hinfl hmono hbound)).wk (by
             intro x hx; simp only [Finset.mem_insert, Finset.mem_union] at hx ⊢; tauto)
         have hαlt : α < osucc (α + γ) :=
-          lt_of_le_of_lt (Zekd.le_add_right_NF hαNF hγNF) (Zekd.lt_osucc (ONote.add_nf α γ))
+          lt_of_le_of_lt (Provable.le_add_right_NF hαNF hγNF) (Provable.lt_osucc (ONote.add_nf α γ))
         by_cases hd : (∃⁰ ∼φ) ∈ Γ₀
         · obtain ⟨a, hale, haNF, haH, Da⟩ := ih hφc heNF fam hβNF hmono hinfl
             (Finset.mem_insert_of_mem hd)
@@ -129,7 +129,7 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
               simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
           refine ZefProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
           exact Zef.cut (φ/[nm n]) hcompl hαlt
-            (lt_of_le_of_lt hale (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
+            (lt_of_le_of_lt hale (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
             hαNF haNF hsuccNF (Cl_of_NF hαNF) haH famn Da'
         · -- ∃-premise `dχ` re-slots `f → g∘f`
           have Dβ' : Zef β e H (g ∘ f) c
@@ -143,8 +143,8 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
               · exact Or.inr (Or.inl ⟨fun e0 => hd (e0 ▸ hxΓ₀), hxΓ₀⟩))
           refine ZefProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
           exact Zef.cut (φ/[nm n]) hcompl hαlt
-            (lt_of_lt_of_le hβ (le_trans (Zekd.le_add_left_NF hαNF hγNF)
-              (le_of_lt (Zekd.lt_osucc (ONote.add_nf α γ)))))
+            (lt_of_lt_of_le hβ (le_trans (Provable.le_add_left_NF hαNF hγNF)
+              (le_of_lt (Provable.lt_osucc (ONote.add_nf α γ)))))
             hαNF hβNF hsuccNF (Cl_of_NF hαNF) (Cl_of_NF hβNF) famn Dβ'
       · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
         obtain ⟨a, hale, haNF, haH, Da⟩ := ih hφc heNF fam hβNF hmono hinfl
@@ -158,7 +158,7 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
         have hbound' : n ≤ (g ∘ f) 0 := le_trans hbound (hg_infl (f 0))
         have hExI : Zef (osucc (α + γ)) e H (g ∘ f) c
             (insert (∃⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
-          Zef.exI χ n (lt_of_le_of_lt hale (Zekd.add_osucc_descent hαNF hβNF hγNF hβ))
+          Zef.exI χ n (lt_of_le_of_lt hale (Provable.add_osucc_descent hαNF hβNF hγNF hβ))
             haNF hsuccNF haH hbound' Da'
         exact hExI.wk (by
           intro x hx
@@ -180,8 +180,8 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
           simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
       refine ZefProv.of hsuccNF (Cl_of_NF hsuccNF) ?_
       exact Zef.cut χ hχc
-        (lt_of_le_of_lt ha₁le (Zekd.add_osucc_descent hαNF hβφNF hγNF hβφ))
-        (lt_of_le_of_lt ha₂le (Zekd.add_osucc_descent hαNF hβψNF hγNF hβψ))
+        (lt_of_le_of_lt ha₁le (Provable.add_osucc_descent hαNF hβφNF hγNF hβφ))
+        (lt_of_le_of_lt ha₂le (Provable.add_osucc_descent hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF hsuccNF ha₁H ha₂H D₁' D₂'
 
 /-- **`stepAllω_Zf`** — the principal ∀/∃ cut-reduction step in the slot calculus, IHs at one

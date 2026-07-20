@@ -13,13 +13,13 @@ open GoodsteinPA.OperatorZinfty
 
 /-! ## The inversion suite
 
-`allInv_Zeh` is the six-case induction mirroring `Zekd.allInv` (`OperatorZinfty.lean`), with the
+`allInv_Zeh` is the six-case induction mirroring `Provable.allInv` (`OperatorZinfty.lean`), with the
 numeric `max k n₀` bookkeeping re-keyed to the stage axis `max m n₀` and the relativization axis
 `adjoin H n₀`.  Since the minimal `Zeh` core has only the six mandated constructors (no
-`andI`/`orI`/`verumR`/`trueRel`/`trueNrel`), the induction is strictly shorter than `Zekd`'s —
+`andI`/`orI`/`verumR`/`trueRel`/`trueNrel`), the induction is strictly shorter than `Provable`'s —
 the only genuinely new bookkeeping is that inverting under an `allω`/`exI` sub-derivation
 adjoins `n₀` on top of the branch relativization, which the `adjoin` reassociation lemmas below
-absorb (they are the operator-side analog of `Zekd`'s `max`-reshuffle
+absorb (they are the operator-side analog of `Provable`'s `max`-reshuffle
 `max (max k n₀) n = max (max k n) n₀`). -/
 
 /-! ### Finset push/pull helpers for the inversion (re-derivations of the `private`
@@ -113,7 +113,7 @@ is still `sorryAx`-bearing and is not eligible. -/
 
 attribute [goodstein_blueprint 10 clean "zeh_inversion_suite" "0" 100 allInv_Zeh
   []
-  ["∀-inversion, mirrors the banked Zekd.allInv; [Tow20, Theorem 19.4]",
+  ["∀-inversion, mirrors the banked Provable.allInv; [Tow20, Theorem 19.4]",
    "GoodsteinPA.OperatorZeh.orInv_Zeh / andInvL_Zeh / andInvR_Zeh: complete propositional companions, axiom-clean",
    "Suite completeness: the minimal core admits no fifth inversion"]
   "The Zeh inversion suite: control-preserving inversions (∀ at the relativization + running stage) feeding the fixed-control reduction and the cut-elimination assembly."]
@@ -121,13 +121,13 @@ attribute [goodstein_blueprint 10 clean "zeh_inversion_suite" "0" 100 allInv_Zeh
 
 /-! ## Companion inversions
 
-`orInv_Zeh`, `andInvL_Zeh`, `andInvR_Zeh` — the propositional inversions mirroring the `Zekd`
+`orInv_Zeh`, `andInvL_Zeh`, `andInvR_Zeh` — the propositional inversions mirroring the `Provable`
 suite (`OperatorZinfty.lean:221/326/404`).  They keep the same `(α, e, H, m, c)` (unlike
 `allInv_Zeh`, which raises the stage/relativization), so no `mono_H`/`Cl_mono` re-keying is
 needed — the side-condition memberships thread through unchanged.  Since the minimal `Zeh` core
 has no `andI`/`orI` introduction rule, `φ ⋏ ψ` / `φ ⋎ ψ` is never principal: every case just
 threads the inversion past a passive side formula, so these ports are strictly shorter than
-`Zekd`'s (which each carry a principal `andI`/`orI` sub-case).  They do not consume the f-slot
+`Provable`'s (which each carry a principal `andI`/`orI` sub-case).  They do not consume the f-slot
 statements — reused by a cut-elimination assembly for cuts on propositional formulas.
 `∧`-inversion is [Tow20, Theorem 19.3]; `∨`-inversion is standard and has no dedicated
 theorem number in [Tow20] (`∨` is symmetric/trivial there).
