@@ -88,9 +88,11 @@ inductive Provable : ONote → ONote → ℕ → ℕ → ℕ → Finset (Arithme
 
 namespace Provable
 
+variable {α e k d c Γ}
+
 /-- **`k`-monotonicity** (the `max`/cofinal part; inversions raise this idempotently). The witness
 bound `hardy e (k+d)` rises with `k` via `hardy_monotone`. -/
-theorem mono_k {α e k d c Γ} (dd : Provable α e k d c Γ) {k'} (hk : k ≤ k') : Provable α e k' d c Γ := by
+theorem mono_k (dd : Provable α e k d c Γ) {k'} (hk : k ≤ k') : Provable α e k' d c Γ := by
   induction dd generalizing k' with
   | axL r v hp hn => exact Provable.axL r v hp hn
   | verumR h => exact Provable.verumR h
@@ -120,7 +122,7 @@ theorem mono_k {α e k d c Γ} (dd : Provable α e k d c Γ) {k'} (hk : k ≤ k'
 /-- **`d`-monotonicity** (the additive cut-shift budget; the ∀/∃ commuting cut-reduction case
 raises this by `norm α`, cf. [Tow20, §19.6]). The witness bound `hardy e (k+d)` rises with `d`
 via `hardy_monotone`. -/
-theorem mono_d {α e k d c Γ} (dd : Provable α e k d c Γ) {d'} (hd : d ≤ d') : Provable α e k d' c Γ := by
+theorem mono_d (dd : Provable α e k d c Γ) {d'} (hd : d ≤ d') : Provable α e k d' c Γ := by
   induction dd generalizing d' with
   | axL r v hp hn => exact Provable.axL r v hp hn
   | verumR h => exact Provable.verumR h
@@ -147,7 +149,7 @@ theorem mono_d {α e k d c Γ} (dd : Provable α e k d c Γ) {d'} (hd : d ≤ d'
         (lt_of_lt_of_le hτψ (by omega)) (ih₁ hd) (ih₂ hd)
 
 /-- **`c`-monotonicity** (cut-rank). -/
-theorem mono_c {α e k d c Γ} (dd : Provable α e k d c Γ) {c'} (hc : c ≤ c') : Provable α e k d c' Γ := by
+theorem mono_c (dd : Provable α e k d c Γ) {c'} (hc : c ≤ c') : Provable α e k d c' Γ := by
   induction dd generalizing c' with
   | axL r v hp hn => exact Provable.axL r v hp hn
   | verumR h => exact Provable.verumR h
@@ -167,7 +169,7 @@ theorem mono_c {α e k d c Γ} (dd : Provable α e k d c Γ) {c'} (hc : c ≤ c'
 /-- **`e`-monotonicity** (the NEW control axis; cut-elimination raises `e` to dominate cut-formula
 bounds). Only the `exI` witness bound `hardy e (k+d)` depends on `e`, and it rises with `e` via
 the index-monotonicity `hardy_le_of_lt` (with the budget side condition `norm e ≤ k+d`). -/
-theorem mono_e {α e k d c Γ} (dd : Provable α e k d c Γ) {e'} (he : e.NF) (heN' : e'.NF) (hlt : e < e')
+theorem mono_e (dd : Provable α e k d c Γ) {e'} (he : e.NF) (heN' : e'.NF) (hlt : e < e')
     (hnorm : norm e ≤ k + d) : Provable α e' k d c Γ := by
   induction dd generalizing e' with
   | axL r v hp hn => exact Provable.axL r v hp hn
@@ -278,7 +280,7 @@ theorem norm_add_le {α : ONote} (hα : α.NF) {γ : ONote} (hγ : γ.NF) :
 
 
 /-- Sequent weakening (height-preserving). -/
-theorem weakening {α e k d c Δ Γ} (hsub : Δ ⊆ Γ) (dd : Provable α e k d c Δ) : Provable α e k d c Γ :=
+theorem weakening {Δ} (hsub : Δ ⊆ Γ) (dd : Provable α e k d c Δ) : Provable α e k d c Γ :=
   Provable.wk hsub dd
 
 end Provable

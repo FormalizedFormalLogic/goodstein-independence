@@ -10,10 +10,12 @@ open LO LO.FirstOrder ONote
 
 namespace Provable
 
+variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-- **∧/∨ cut reduction, conjunction case**.
 
 - [Tow20, §19.5] -/
-theorem cutReduceConj {a b : ArithmeticFormula ℕ} {c k d : ℕ} {α β δ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
+theorem cutReduceConj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
@@ -35,7 +37,7 @@ theorem cutReduceConj {a b : ArithmeticFormula ℕ} {c k d : ℕ} {α β δ e : 
     hτα hτδ hB cutA
 
 /-- **∧/∨ cut reduction, disjunction case** (dual). -/
-theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {c k d : ℕ} {α β δ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
+theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)

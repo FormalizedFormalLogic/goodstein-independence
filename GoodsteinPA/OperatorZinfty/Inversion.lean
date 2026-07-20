@@ -32,8 +32,10 @@ private theorem princOrSub {A : ArithmeticFormula ℕ} (s : Finset (ArithmeticFo
     insert φ (insert ψ ((insert φ (insert ψ s)).erase A)) ⊆ insert φ (insert ψ (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
+variable {α e k d c Γ}
+
 /-- **∨-inversion.** Replace `φ ⋎ ψ` by `φ`, `ψ`, same `(α,k,d,c)`. -/
-theorem orInv {φ ψ : ArithmeticFormula ℕ} {α e k d c Γ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋎ ψ) ∈ Γ) :
+theorem orInv {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋎ ψ) ∈ Γ) :
     Provable α e k d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
@@ -128,7 +130,7 @@ private theorem princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (Arithmeti
 /-- **∧-inversion, left**: replace `φ ⋏ ψ` by `φ`, same `(α,k,d,c)`.
 
 - [Tow20, §19.3] -/
-theorem andInvL {φ ψ : ArithmeticFormula ℕ} {α e k d c Γ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
+theorem andInvL {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
     Provable α e k d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e k d c Γ ar r v hp hn =>
@@ -196,7 +198,7 @@ theorem andInvL {φ ψ : ArithmeticFormula ℕ} {α e k d c Γ} (dd : Provable �
 /-- **∧-inversion, right**: replace `φ ⋏ ψ` by `ψ`, same `(α,k,d,c)`.
 
 - [Tow20, §19.3] -/
-theorem andInvR {φ ψ : ArithmeticFormula ℕ} {α e k d c Γ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
+theorem andInvR {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
     Provable α e k d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e k d c Γ ar r v hp hn =>
@@ -266,7 +268,7 @@ Result raises the **`k`-part** to `max k n₀` (`d` inert): the principal case's
 `max (max k n₀) n₀ = max k n₀` is exactly why the split index keeps `allInv` working.
 
 - [Tow20, §19.4] -/
-theorem allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) {α e k d c Γ} (dd : Provable α e k d c Γ)
+theorem allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Provable α e k d c Γ)
     (hmem0 : (∀⁰ φ₀) ∈ Γ) : Provable α e (max k n₀) d c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   have hI0 : (φ₀/[nm n₀]) ≠ (∀⁰ φ₀) := Semiformula.ne_of_ne_complexity (by simp)
   induction dd with
