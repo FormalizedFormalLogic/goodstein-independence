@@ -151,8 +151,8 @@ def relOp (H : ONote → Prop) (n : ℕ) : ONote → Prop := Cl (adjoin H n)
 
 /-- `ω^e·n` (zero tail) is in every closure, by `n`-fold equal-exponent merge of
 `expTower e` (kernel-computed merges via `repr_inj`). -/
-theorem oaddZero_mem {S : ONote → Prop} {ε : ONote} (hε : ε.NF) (hεS : Cl S ε) :
-    ∀ n : ℕ+, Cl S (oadd ε n 0) := by
+theorem oaddZero_mem {S : ONote → Prop} {ε : ONote} (hε : ε.NF) (hεS : Cl S ε) (n : ℕ+) :
+    Cl S (oadd ε n 0) := by
   have key : ∀ k : ℕ, Cl S (oadd ε k.succPNat 0) := by
     intro k
     induction k with
@@ -172,7 +172,6 @@ theorem oaddZero_mem {S : ONote → Prop} {ε : ONote} (hε : ε.NF) (hεS : Cl 
             try rfl
           rw [hc, mul_add, mul_one]
         exact hsum ▸ Cl.add ih (Cl.expTower hεS)
-  intro n
   have h := key n.natPred
   rwa [PNat.succPNat_natPred] at h
 
@@ -196,32 +195,32 @@ theorem Cl_of_NF {S : ONote → Prop} {β : ONote} (h : β.NF) : Cl S β := by
       exact hsplit ▸ Cl.add (oaddZero_mem hε (ihε hε) n) (iha ha)
 
 /-- The relativization only grows the operator (feeds every `Cl_mono`/`mono_H` re-key). -/
-theorem adjoin_le (H : ONote → Prop) (n : ℕ) : ∀ γ, H γ → adjoin H n γ :=
-  fun _ h => Or.inl h
+theorem adjoin_le (H : ONote → Prop) (n : ℕ) (γ) (h : H γ) : adjoin H n γ :=
+  Or.inl h
 
 /-- Adjoining a fresh numeral commutes past an inner relativization (the operator-side
 analog of `max (max k a) b = max (max k b) a`; feeds the non-principal `allω` re-key). -/
-theorem adjoin_swap (H : ONote → Prop) (a b : ℕ) :
-    ∀ γ, adjoin (adjoin H a) b γ → adjoin (adjoin H b) a γ := by
-  rintro γ ((hg | rfl) | rfl)
+theorem adjoin_swap (H : ONote → Prop) (a b : ℕ) (γ) (h : adjoin (adjoin H a) b γ) :
+    adjoin (adjoin H b) a γ := by
+  rcases h with (hg | rfl) | rfl
   · exact Or.inl (Or.inl hg)
   · exact Or.inr rfl
   · exact Or.inl (Or.inr rfl)
 
 /-- Adjoining the SAME numeral twice collapses (the operator-side analog of
 `max (max k n₀) n₀ = max k n₀`; feeds the principal `allω` re-key). -/
-theorem adjoin_idem (H : ONote → Prop) (n : ℕ) :
-    ∀ γ, adjoin (adjoin H n) n γ → adjoin H n γ := by
-  rintro γ ((hg | rfl) | rfl)
+theorem adjoin_idem (H : ONote → Prop) (n : ℕ) (γ) (h : adjoin (adjoin H n) n γ) :
+    adjoin H n γ := by
+  rcases h with (hg | rfl) | rfl
   · exact Or.inl hg
   · exact Or.inr rfl
   · exact Or.inr rfl
 
 /-- Relativization is monotone in the base operator (feeds the non-principal `allω`
 side-condition re-key `relOp H n → relOp (adjoin H n₀) n`). -/
-theorem adjoin_base_mono {H H' : ONote → Prop} (n : ℕ) (h : ∀ γ, H γ → H' γ) :
-    ∀ γ, adjoin H n γ → adjoin H' n γ := by
-  rintro γ (hg | rfl)
+theorem adjoin_base_mono {H H' : ONote → Prop} (n : ℕ) (h : ∀ γ, H γ → H' γ)
+    (γ) (hg : adjoin H n γ) : adjoin H' n γ := by
+  rcases hg with hg | rfl
   · exact Or.inl (h _ hg)
   · exact Or.inr rfl
 

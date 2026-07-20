@@ -282,8 +282,8 @@ theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ}
 /-! ## ∀-inversion in the slot calculus (feeds the reduction from a ∀-side derivation) -/
 
 /-- `f ≤ rel1 f n₀` for monotone `f` (`f x ≤ f (max n₀ x)`). -/
-private theorem f_le_rel1 (hf : Monotone f) (n₀ : ℕ) :
-    ∀ x, f x ≤ rel1 f n₀ x := fun x => hf (le_max_right n₀ x)
+private theorem f_le_rel1 (hf : Monotone f) (n₀ x : ℕ) :
+    f x ≤ rel1 f n₀ x := hf (le_max_right n₀ x)
 
 /-- **`allInv_Zef`** — ∀-inversion, slot form: port of `allInv_Zeh` with `max m n₀ ⤳ rel1 f n₀`.
 The extracted instance runs at the relativization `adjoin H n₀` and the relativized slot

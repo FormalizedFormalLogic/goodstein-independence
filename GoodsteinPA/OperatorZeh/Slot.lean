@@ -114,16 +114,18 @@ ordinal-indexed iterate `iterSlot` (below) is built on.
 -/
 
 /-- The iterate is monotone if `f` is. -/
-theorem iter_monotone (hf : Monotone f) : ∀ k, Monotone f^[k]
-  | 0 => monotone_id
-  | k + 1 => by rw [Function.iterate_succ]; exact (iter_monotone hf k).comp hf
+theorem iter_monotone (hf : Monotone f) (k : ℕ) : Monotone f^[k] := by
+  induction k with
+  | zero => exact monotone_id
+  | succ k ih => rw [Function.iterate_succ]; exact ih.comp hf
 
 /-- The iterate is inflationary if `f` is. -/
-theorem iter_infl (hf : ∀ x, x ≤ f x) : ∀ k x, x ≤ f^[k] x
-  | 0, x => le_rfl
-  | k + 1, x => by
+theorem iter_infl (hf : ∀ x, x ≤ f x) (k x : ℕ) : x ≤ f^[k] x := by
+  induction k with
+  | zero => exact le_rfl
+  | succ k ih =>
       rw [Function.iterate_succ']
-      exact le_trans (iter_infl hf k x) (hf _)
+      exact le_trans ih (hf _)
 
 /-- The iterate preserves `NormControlled` (for `k ≥ 1`): `f^[k+1] x ≥ f x ≥ hardy e (max m x)`,
 via `f^[k]` inflationary. -/

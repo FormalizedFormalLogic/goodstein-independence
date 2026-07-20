@@ -14,8 +14,8 @@ variable {e : ONote} {H : ONote → Prop} {m c : ℕ} {f : ℕ → ℕ} {Γ : Fi
 
 /-- **(K2a)** The finite part of every closure is ALL of ℕ — so an `exI` designation
 "some `m ∈ H ∩ ℕ`" would designate nothing (the stage is judgment-carried instead). -/
-theorem finite_part_unbounded (S : ONote → Prop) : ∀ m : ℕ, Cl S (ONote.ofNat m) :=
-  Cl.ofNat
+theorem finite_part_unbounded (S : ONote → Prop) (m : ℕ) : Cl S (ONote.ofNat m) :=
+  Cl.ofNat m
 
 /-- The additive raise genuinely absorbs a numeral base (kernel-computed):
 `raise (ofNat 5) 1 = ofNat 5 + ω = ω`. -/

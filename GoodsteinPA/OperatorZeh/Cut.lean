@@ -15,9 +15,8 @@ open GoodsteinPA.OperatorZinfty
 /-- **The ∀-family member re-slots to `g∘f`**: for `g` monotone, `f` monotone + inflationary,
 and witness `n ≤ f 0`, `rel1 g n ≤ g∘f` pointwise. -/
 theorem reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
-    (hf_infl : ∀ x, x ≤ f x) (hf_mono : Monotone f) {n : ℕ} (hn : n ≤ f 0) :
-    ∀ x, rel1 g n x ≤ (g ∘ f) x := by
-  intro x
+    (hf_infl : ∀ x, x ≤ f x) (hf_mono : Monotone f) {n : ℕ} (hn : n ≤ f 0) (x : ℕ) :
+    rel1 g n x ≤ (g ∘ f) x := by
   simp only [rel1, Function.comp]
   refine hg_mono ?_
   rcases le_total n x with h | h
@@ -25,8 +24,8 @@ theorem reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
   · rw [max_eq_left h]; exact le_trans hn (hf_mono (Nat.zero_le x))
 
 /-- **The ∃-side reduct re-slots to `g∘f`**: `f ≤ g∘f` for `g` inflationary. -/
-theorem reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) :
-    ∀ x, f x ≤ (g ∘ f) x := fun x => hg_infl (f x)
+theorem reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) (x : ℕ) :
+    f x ≤ (g ∘ f) x := hg_infl (f x)
 
 /-! ## The running-family reduction, sorry-free -/
 

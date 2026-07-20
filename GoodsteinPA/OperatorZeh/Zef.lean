@@ -108,13 +108,13 @@ namespace ZefProv
 theorem of (hNF : α.NF) (hH : Cl H α) (D : Zef α e H f c Γ) : ZefProv α e H f c Γ :=
   ⟨α, le_refl _, hNF, hH, D⟩
 
-theorem mono {β : ONote} (hα : α ≤ β) : ZefProv α e H f c Γ → ZefProv β e H f c Γ := by
-  rintro ⟨α', hα', hNF, hH, D⟩
+theorem mono {β : ONote} (hα : α ≤ β) (D : ZefProv α e H f c Γ) : ZefProv β e H f c Γ := by
+  obtain ⟨α', hα', hNF, hH, D⟩ := D
   exact ⟨α', le_trans hα' hα, hNF, hH, D⟩
 
 theorem weakening {Δ : Finset (ArithmeticFormula ℕ)}
-    (h : Γ ⊆ Δ) : ZefProv α e H f c Γ → ZefProv α e H f c Δ := by
-  rintro ⟨α', hα', hNF, hH, D⟩
+    (h : Γ ⊆ Δ) (D : ZefProv α e H f c Γ) : ZefProv α e H f c Δ := by
+  obtain ⟨α', hα', hNF, hH, D⟩ := D
   exact ⟨α', hα', hNF, hH, D.wk h⟩
 
 end ZefProv
