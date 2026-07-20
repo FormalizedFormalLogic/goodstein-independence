@@ -22,9 +22,9 @@ EM/cut/value-substitution tower.
 
 /-- A fixed numeric index cannot bound the witnesses `n` needed by the induction cut tower. -/
 lemma inductionLeaf_fixedIndex_witnessBound_impossible (e : ONote) (k d : ℕ) :
-    ¬ ∀ n : ℕ, n ≤ hardy e (k + d) := by
-  intro h
-  have := h (hardy e (k + d) + 1)
+  ¬∀ n : ℕ, n ≤ hardy e (k + d) := by
+  push Not;
+  use (hardy e (k + d) + 1);
   omega
 
 /-- The `n`-th `allω` premise runs at index `max k n`, which is large enough to pay for

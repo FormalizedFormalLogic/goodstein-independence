@@ -10,52 +10,52 @@ open LO LO.FirstOrder ONote
 
 namespace Provable
 
-variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+variable {α β δ e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {φ ψ : ArithmeticFormula ℕ}
 
 /-- **∧/∨ cut reduction, conjunction case**.
 
 - [Tow20, §19.5] -/
-lemma cutReduceConj {a b : ArithmeticFormula ℕ} {β δ : ONote}
-    (ha : a.complexity < c) (hb : b.complexity < c)
+lemma cutReduceConj
+    (ha : φ.complexity < c) (hb : ψ.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
-    (hC : Provable α e k d c (insert (a ⋏ b) Γ)) (hNC : Provable β e k d c (insert (∼a ⋎ ∼b) Γ)) :
+    (hC : Provable α e k d c (insert (φ ⋏ ψ) Γ)) (hNC : Provable β e k d c (insert (∼φ ⋎ ∼ψ) Γ)) :
     Provable (osucc δ) e k d c Γ := by
-  have hA : Provable α e k d c (insert a Γ) := Provable.wk
+  have hA : Provable α e k d c (insert φ Γ) := Provable.wk
     (by intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
     (hC.andInvL (Finset.mem_insert_self _ _))
-  have hB : Provable α e k d c (insert b Γ) := Provable.wk
+  have hB : Provable α e k d c (insert ψ Γ) := Provable.wk
     (by intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
     (hC.andInvR (Finset.mem_insert_self _ _))
-  have hNab : Provable β e k d c (insert (∼a) (insert (∼b) Γ)) := Provable.wk
+  have hNab : Provable β e k d c (insert (∼φ) (insert (∼ψ) Γ)) := Provable.wk
     (by intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
     (hNC.orInv (Finset.mem_insert_self _ _))
-  have cutA : Provable δ e k d c (insert (∼b) Γ) :=
-    Provable.cut a ha hαδ hβδ hαNF hβNF hδNF hτα hτβ
+  have cutA : Provable δ e k d c (insert (∼ψ) Γ) :=
+    Provable.cut φ ha hαδ hβδ hαNF hβNF hδNF hτα hτβ
       (Provable.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) hA) hNab
-  exact Provable.cut b hb (lt_trans hαδ (lt_osucc hδNF)) (lt_osucc hδNF) hαNF hδNF (osucc_NF hδNF)
+  exact Provable.cut ψ hb (lt_trans hαδ (lt_osucc hδNF)) (lt_osucc hδNF) hαNF hδNF (osucc_NF hδNF)
     hτα hτδ hB cutA
 
 /-- **∧/∨ cut reduction, disjunction case** (dual). -/
-lemma cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
-    (ha : a.complexity < c) (hb : b.complexity < c)
+lemma cutReduceDisj
+    (ha : φ.complexity < c) (hb : ψ.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
-    (hC : Provable α e k d c (insert (a ⋎ b) Γ)) (hNC : Provable β e k d c (insert (∼a ⋏ ∼b) Γ)) :
+    (hC : Provable α e k d c (insert (φ ⋎ ψ) Γ)) (hNC : Provable β e k d c (insert (∼φ ⋏ ∼ψ) Γ)) :
     Provable (osucc δ) e k d c Γ := by
-  have hAB : Provable α e k d c (insert a (insert b Γ)) := Provable.wk
+  have hAB : Provable α e k d c (insert φ (insert ψ Γ)) := Provable.wk
     (by intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
     (hC.orInv (Finset.mem_insert_self _ _))
-  have hNa : Provable β e k d c (insert (∼a) Γ) := Provable.wk
+  have hNa : Provable β e k d c (insert (∼φ) Γ) := Provable.wk
     (by intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
     (hNC.andInvL (Finset.mem_insert_self _ _))
-  have hNb : Provable β e k d c (insert (∼b) Γ) := Provable.wk
+  have hNb : Provable β e k d c (insert (∼ψ) Γ) := Provable.wk
     (by intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto)
     (hNC.andInvR (Finset.mem_insert_self _ _))
-  have cutA : Provable δ e k d c (insert b Γ) :=
-    Provable.cut a ha hαδ hβδ hαNF hβNF hδNF hτα hτβ hAB
+  have cutA : Provable δ e k d c (insert ψ Γ) :=
+    Provable.cut φ ha hαδ hβδ hαNF hβNF hδNF hτα hτβ hAB
       (Provable.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) hNa)
-  exact Provable.cut b hb (lt_osucc hδNF) (lt_trans hβδ (lt_osucc hδNF)) hδNF hβNF (osucc_NF hδNF)
+  exact Provable.cut ψ hb (lt_osucc hδNF) (lt_trans hβδ (lt_osucc hδNF)) hδNF hβNF (osucc_NF hδNF)
     hτδ hτβ cutA hNb
 
 
@@ -73,36 +73,32 @@ def ProvableSlack (α e : ONote) (k d c : ℕ) (Γ : Finset (ArithmeticFormula �
 
 namespace ProvableSlack
 
-variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+variable {α β e e' : ONote} {k k' d d' c c' : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)}
 
 /-- Monotonicity in `α` (≤), `k`, `d`, `c` (the control `e` is raised separately by `mono_e`,
 which carries a budget side condition). The carried norm bound `norm α' < k+d` rides up to `k'+d'`. -/
-lemma mono {β} {k' d' c'}
-    (hα : α ≤ β) (hk : k ≤ k') (hd : d ≤ d') (hc : c ≤ c') :
-    ProvableSlack α e k d c Γ → ProvableSlack β e k' d' c' Γ := by
+lemma mono (hα : α ≤ β) (hk : k ≤ k') (hd : d ≤ d') (hc : c ≤ c') :
+  ProvableSlack α e k d c Γ → ProvableSlack β e k' d' c' Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', le_trans hα' hα, hNF, by omega, ((D.mono_k hk).mono_d hd).mono_c hc⟩
 
 /-- Control-ordinal raising at the wrapper level. -/
-lemma mono_e {e'}
-    (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e') (hbudget : norm e ≤ k + d) :
-    ProvableSlack α e k d c Γ → ProvableSlack α e' k d c Γ := by
+lemma mono_e (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e') (hbudget : norm e ≤ k + d) :
+  ProvableSlack α e k d c Γ → ProvableSlack α e' k d c Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.mono_e heNF he'NF hlt hbudget⟩
 
 /-- Sequent weakening. -/
-lemma weakening {Δ} (h : Γ ⊆ Δ) :
-    ProvableSlack α e k d c Γ → ProvableSlack α e k d c Δ := by
+lemma weakening (h : Γ ⊆ Δ) : ProvableSlack α e k d c Γ → ProvableSlack α e k d c Δ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.wk h⟩
 
 /-- Respect set-equality of sequents. -/
-lemma cast {Δ} (e0 : Γ = Δ) :
-    ProvableSlack α e k d c Γ → ProvableSlack α e k d c Δ := fun h => e0 ▸ h
+lemma cast (e0 : Γ = Δ) : ProvableSlack α e k d c Γ → ProvableSlack α e k d c Δ := fun h => e0 ▸ h
 
 /-- Lift a raw `Provable` derivation (NF ordinal + norm bound) into the wrapper. -/
-lemma of (hNF : α.NF) (hnorm : norm α < k + d)
-    (D : Provable α e k d c Γ) : ProvableSlack α e k d c Γ := ⟨α, le_refl _, hNF, hnorm, D⟩
+lemma of (hNF : α.NF) (hnorm : norm α < k + d) (D : Provable α e k d c Γ)
+  : ProvableSlack α e k d c Γ := ⟨α, by rfl, hNF, hnorm, D⟩
 
 end ProvableSlack
 

@@ -265,7 +265,7 @@ Hardy value transfer (`hardy_le_of_reaches`), discharging the latter's monotonic
 condition with `hardy_monotone` (every Hardy level is monotone). The Hardy companion of
 `fastGrowing_le_of_lt`. -/
 theorem hardy_le_of_lt {x : ℕ} {α β : ONote} (hα : α.NF) (hβ : β.NF)
-    (hαβ : α < β) (hnorm : norm α ≤ x) : hardy α x ≤ hardy β x :=
+  (hαβ : α < β) (hnorm : norm α ≤ x) : hardy α x ≤ hardy β x :=
   hardy_le_of_reaches (reaches_of_lt β hβ α hα hαβ hnorm) (fun γ _ => hardy_monotone γ)
 
 /-- **Closed form for finite Hardy levels:** `H_k(x) = x + k`. Induction on `k`: `H_0 = id`;

@@ -32,11 +32,11 @@ private lemma princOrSub {A} (s : Finset (ArithmeticFormula ℕ)) {φ ψ} :
     insert φ (insert ψ ((insert φ (insert ψ s)).erase A)) ⊆ insert φ (insert ψ (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {φ ψ}
 
 /-- **∨-inversion.** Replace `φ ⋎ ψ` by `φ`, `ψ`, same `(α,k,d,c)`. -/
-lemma orInv {φ ψ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋎ ψ) ∈ Γ) :
-    Provable α e k d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
+lemma orInv (dd : Provable α e k d c Γ) (hmem0 : (φ ⋎ ψ) ∈ Γ) :
+  Provable α e k d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
   induction dd with
@@ -130,8 +130,8 @@ private lemma princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticF
 /-- **∧-inversion, left**: replace `φ ⋏ ψ` by `φ`, same `(α,k,d,c)`.
 
 - [Tow20, §19.3] -/
-lemma andInvL {φ ψ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
-    Provable α e k d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
+lemma andInvL (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
+  Provable α e k d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e k d c Γ ar r v hp hn =>
       refine Provable.axL r v ?_ ?_ <;>
@@ -198,8 +198,8 @@ lemma andInvL {φ ψ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ)
 /-- **∧-inversion, right**: replace `φ ⋏ ψ` by `ψ`, same `(α,k,d,c)`.
 
 - [Tow20, §19.3] -/
-lemma andInvR {φ ψ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
-    Provable α e k d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
+lemma andInvR (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
+  Provable α e k d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e k d c Γ ar r v hp hn =>
       refine Provable.axL r v ?_ ?_ <;>
@@ -269,7 +269,7 @@ Result raises the **`k`-part** to `max k n₀` (`d` inert): the principal case's
 
 - [Tow20, §19.4] -/
 lemma allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Provable α e k d c Γ)
-    (hmem0 : (∀⁰ φ₀) ∈ Γ) : Provable α e (max k n₀) d c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
+  (hmem0 : (∀⁰ φ₀) ∈ Γ) : Provable α e (max k n₀) d c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   have hI0 : (φ₀/[nm n₀]) ≠ (∀⁰ φ₀) := Semiformula.ne_of_ne_complexity (by simp)
   induction dd with
   | @axL α e k d c Γ ar r v hp hn =>

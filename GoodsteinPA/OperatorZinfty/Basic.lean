@@ -57,7 +57,7 @@ the control ordinal `e` are this formalization's own refinement.
 - [EW12, Definition 23]
 - [Buc03, §6]
 -/
-inductive Provable : ONote → ONote → ℕ → ℕ → ℕ → Finset (ArithmeticFormula ℕ) → Prop
+inductive Provable : (α : ONote) → (e : ONote) → (k : ℕ) → (d : ℕ) → (c : ℕ) → (Γ : Finset (ArithmeticFormula ℕ)) → Prop
   | axL {α e k d c Γ} {ar} (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Γ)
       (hn : Semiformula.nrel r v ∈ Γ) : Provable α e k d c Γ
   | verumR {α e k d c Γ} (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : Provable α e k d c Γ
@@ -88,115 +88,103 @@ inductive Provable : ONote → ONote → ℕ → ℕ → ℕ → Finset (Arithme
 
 namespace Provable
 
-variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+variable {α e e' : ONote} {k k' d d' c c' : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)}
 
 /-- **`k`-monotonicity** (the `max`/cofinal part; inversions raise this idempotently). The witness
 bound `hardy e (k+d)` rises with `k` via `hardy_monotone`. -/
-lemma mono_k (dd : Provable α e k d c Γ) {k'} (hk : k ≤ k') : Provable α e k' d c Γ := by
+lemma mono_k (dd : Provable α e k d c Γ) (hk : k ≤ k') : Provable α e k' d c Γ := by
   induction dd generalizing k' with
-  | axL r v hp hn => exact Provable.axL r v hp hn
-  | verumR h => exact Provable.verumR h
+  | axL r v hp hn => exact axL r v hp hn
+  | verumR h => exact verumR h
   | trueRel r v htrue hτ hαNF hmem =>
-      exact Provable.trueRel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
+    exact trueRel r v htrue (by grind) hαNF hmem
   | trueNrel r v htrue hτ hαNF hmem =>
-      exact Provable.trueNrel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
-  | wk hsub _ ih => exact Provable.wk hsub (ih hk)
+    exact trueNrel r v htrue (by grind) hαNF hmem
+  | wk hsub _ ih => exact wk hsub (ih hk)
   | weak hβ hβNF hαNF hτ hsub _ ih =>
-      exact Provable.weak hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) hsub (ih hk)
+    exact weak hβ hβNF hαNF (by grind) hsub (ih hk)
   | andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      exact Provable.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
-        (lt_of_lt_of_le hτψ (by omega)) (ihφ hk) (ihψ hk)
+    exact andI φ ψ hβφ hβψ hβφNF hβψNF hαNF (by grind) (by grind) (ihφ hk) (ihψ hk)
   | orI φ ψ hβ hβNF hαNF hτ _ ih =>
-      exact Provable.orI φ ψ hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) (ih hk)
+    exact orI φ ψ hβ hβNF hαNF (by grind) (ih hk)
   | allω φ β hβ hβNF hαNF hτ _ ih =>
-      exact Provable.allω φ β hβ hβNF hαNF
-        (fun n => lt_of_lt_of_le (hτ n) (by have := Nat.add_le_add_right (max_le_max hk (le_refl n)) d; omega))
-        (fun n => ih n (max_le_max hk (le_refl n)))
+    exact allω φ β hβ hβNF hαNF (by grind) (by grind)
   | exI φ n hβ hβNF hαNF hτ hbound _ ih =>
-      exact Provable.exI φ n hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega))
-        (le_trans hbound (hardy_monotone _ (by omega))) (ih hk)
+    exact exI φ n hβ hβNF hαNF (by grind) (le_trans hbound (hardy_monotone _ (by omega))) (ih hk)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      exact Provable.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
-        (lt_of_lt_of_le hτψ (by omega)) (ih₁ hk) (ih₂ hk)
+    exact cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF (by grind) (by grind) (ih₁ hk) (ih₂ hk)
 
 /-- **`d`-monotonicity** (the additive cut-shift budget; the ∀/∃ commuting cut-reduction case
 raises this by `norm α`, cf. [Tow20, §19.6]). The witness bound `hardy e (k+d)` rises with `d`
 via `hardy_monotone`. -/
-lemma mono_d (dd : Provable α e k d c Γ) {d'} (hd : d ≤ d') : Provable α e k d' c Γ := by
+lemma mono_d (dd : Provable α e k d c Γ) (hd : d ≤ d') : Provable α e k d' c Γ := by
   induction dd generalizing d' with
-  | axL r v hp hn => exact Provable.axL r v hp hn
-  | verumR h => exact Provable.verumR h
+  | axL r v hp hn => exact axL r v hp hn
+  | verumR h => exact verumR h
   | trueRel r v htrue hτ hαNF hmem =>
-      exact Provable.trueRel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
+    exact trueRel r v htrue (by grind) hαNF hmem
   | trueNrel r v htrue hτ hαNF hmem =>
-      exact Provable.trueNrel r v htrue (lt_of_lt_of_le hτ (by omega)) hαNF hmem
-  | wk hsub _ ih => exact Provable.wk hsub (ih hd)
+    exact trueNrel r v htrue (by grind) hαNF hmem
+  | wk hsub _ ih => exact wk hsub (ih hd)
   | weak hβ hβNF hαNF hτ hsub _ ih =>
-      exact Provable.weak hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) hsub (ih hd)
+    exact weak hβ hβNF hαNF (by grind) hsub (ih hd)
   | andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      exact Provable.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
-        (lt_of_lt_of_le hτψ (by omega)) (ihφ hd) (ihψ hd)
+    exact andI φ ψ hβφ hβψ hβφNF hβψNF hαNF (by grind) (by grind) (ihφ hd) (ihψ hd)
   | orI φ ψ hβ hβNF hαNF hτ _ ih =>
-      exact Provable.orI φ ψ hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega)) (ih hd)
+    exact orI φ ψ hβ hβNF hαNF (by grind) (ih hd)
   | allω φ β hβ hβNF hαNF hτ _ ih =>
-      exact Provable.allω φ β hβ hβNF hαNF (fun n => lt_of_lt_of_le (hτ n) (by omega))
-        (fun n => ih n hd)
+    exact allω φ β hβ hβNF hαNF (by grind) (ih · hd)
   | exI φ n hβ hβNF hαNF hτ hbound _ ih =>
-      exact Provable.exI φ n hβ hβNF hαNF (lt_of_lt_of_le hτ (by omega))
-        (le_trans hbound (hardy_monotone _ (by omega))) (ih hd)
+    exact exI φ n hβ hβNF hαNF (by grind) (le_trans hbound (hardy_monotone _ (by omega))) (ih hd)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      exact Provable.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF (lt_of_lt_of_le hτφ (by omega))
-        (lt_of_lt_of_le hτψ (by omega)) (ih₁ hd) (ih₂ hd)
+    exact cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF (by grind) (by grind) (ih₁ hd) (ih₂ hd)
 
 /-- **`c`-monotonicity** (cut-rank). -/
-lemma mono_c (dd : Provable α e k d c Γ) {c'} (hc : c ≤ c') : Provable α e k d c' Γ := by
+lemma mono_c (dd : Provable α e k d c Γ) (hc : c ≤ c') : Provable α e k d c' Γ := by
   induction dd generalizing c' with
-  | axL r v hp hn => exact Provable.axL r v hp hn
-  | verumR h => exact Provable.verumR h
-  | trueRel r v htrue hτ hαNF hmem => exact Provable.trueRel r v htrue hτ hαNF hmem
-  | trueNrel r v htrue hτ hαNF hmem => exact Provable.trueNrel r v htrue hτ hαNF hmem
-  | wk hsub _ ih => exact Provable.wk hsub (ih hc)
-  | weak hβ hβNF hαNF hτ hsub _ ih => exact Provable.weak hβ hβNF hαNF hτ hsub (ih hc)
+  | axL r v hp hn => exact .axL r v hp hn
+  | verumR h => exact .verumR h
+  | trueRel r v htrue hτ hαNF hmem => exact trueRel r v htrue hτ hαNF hmem
+  | trueNrel r v htrue hτ hαNF hmem => exact trueNrel r v htrue hτ hαNF hmem
+  | wk hsub _ ih => exact wk hsub (ih hc)
+  | weak hβ hβNF hαNF hτ hsub _ ih => exact weak hβ hβNF hαNF hτ hsub (ih hc)
   | andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      exact Provable.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ihφ hc) (ihψ hc)
-  | orI φ ψ hβ hβNF hαNF hτ _ ih => exact Provable.orI φ ψ hβ hβNF hαNF hτ (ih hc)
-  | allω φ β hβ hβNF hαNF hτ _ ih => exact Provable.allω φ β hβ hβNF hαNF hτ (fun n => ih n hc)
-  | exI φ n hβ hβNF hαNF hτ hbound _ ih =>
-      exact Provable.exI φ n hβ hβNF hαNF hτ hbound (ih hc)
+    exact andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ihφ hc) (ihψ hc)
+  | orI φ ψ hβ hβNF hαNF hτ _ ih => exact orI φ ψ hβ hβNF hαNF hτ (ih hc)
+  | allω φ β hβ hβNF hαNF hτ _ ih => exact allω φ β hβ hβNF hαNF hτ (fun n => ih n hc)
+  | exI φ n hβ hβNF hαNF hτ hbound _ ih => exact exI φ n hβ hβNF hαNF hτ hbound (ih hc)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      exact Provable.cut φ (lt_of_lt_of_le hcompl hc) hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ih₁ hc) (ih₂ hc)
+    exact cut φ (by grind) hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ih₁ hc) (ih₂ hc)
 
 /-- **`e`-monotonicity** (the NEW control axis; cut-elimination raises `e` to dominate cut-formula
 bounds). Only the `exI` witness bound `hardy e (k+d)` depends on `e`, and it rises with `e` via
 the index-monotonicity `hardy_le_of_lt` (with the budget side condition `norm e ≤ k+d`). -/
-lemma mono_e (dd : Provable α e k d c Γ) {e'} (he : e.NF) (heN' : e'.NF) (hlt : e < e')
-    (hnorm : norm e ≤ k + d) : Provable α e' k d c Γ := by
+lemma mono_e (dd : Provable α e k d c Γ) (he : e.NF) (heN' : e'.NF) (hlt : e < e')
+  (hnorm : norm e ≤ k + d) : Provable α e' k d c Γ := by
   induction dd generalizing e' with
-  | axL r v hp hn => exact Provable.axL r v hp hn
-  | verumR h => exact Provable.verumR h
-  | trueRel r v htrue hτ hαNF hmem => exact Provable.trueRel r v htrue hτ hαNF hmem
-  | trueNrel r v htrue hτ hαNF hmem => exact Provable.trueNrel r v htrue hτ hαNF hmem
-  | wk hsub _ ih => exact Provable.wk hsub (ih he heN' hlt hnorm)
+  | axL r v hp hn => exact axL r v hp hn
+  | verumR h => exact verumR h
+  | trueRel r v htrue hτ hαNF hmem => exact trueRel r v htrue hτ hαNF hmem
+  | trueNrel r v htrue hτ hαNF hmem => exact trueNrel r v htrue hτ hαNF hmem
+  | wk hsub _ ih => exact wk hsub (ih he heN' hlt hnorm)
   | weak hβ hβNF hαNF hτ hsub _ ih =>
-      exact Provable.weak hβ hβNF hαNF hτ hsub (ih he heN' hlt hnorm)
+    exact weak hβ hβNF hαNF hτ hsub (ih he heN' hlt hnorm)
   | andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      exact Provable.andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ihφ he heN' hlt hnorm) (ihψ he heN' hlt hnorm)
+    exact andI φ ψ hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ihφ he heN' hlt hnorm) (ihψ he heN' hlt hnorm)
   | orI φ ψ hβ hβNF hαNF hτ _ ih =>
-      exact Provable.orI φ ψ hβ hβNF hαNF hτ (ih he heN' hlt hnorm)
+    exact orI φ ψ hβ hβNF hαNF hτ (ih he heN' hlt hnorm)
   | allω φ β hβ hβNF hαNF hτ _ ih =>
-      refine Provable.allω φ β hβ hβNF hαNF hτ (fun n => ih n he heN' hlt ?_)
-      -- premise n runs at index (max k n, d): budget `norm e ≤ max k n + d` from `norm e ≤ k + d`
-      have : k ≤ max k n := le_max_left _ _
-      omega
+    refine allω φ β hβ hβNF hαNF hτ (fun n => ih n he heN' hlt ?_)
+    grind;
   | exI φ n hβ hβNF hαNF hτ hbound _ ih =>
-      refine Provable.exI φ n hβ hβNF hαNF hτ ?_ (ih he heN' hlt hnorm)
-      exact le_trans hbound (hardy_le_of_lt he heN' hlt hnorm)
+    refine exI φ n hβ hβNF hαNF hτ ?_ (ih he heN' hlt hnorm);
+    exact le_trans hbound (hardy_le_of_lt he heN' hlt hnorm)
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      exact Provable.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ih₁ he heN' hlt hnorm) (ih₂ he heN' hlt hnorm)
+    exact cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ih₁ he heN' hlt hnorm) (ih₂ he heN' hlt hnorm)
 
 /-- Sequent weakening (height-preserving). -/
-lemma weakening {Δ} (hsub : Δ ⊆ Γ) (dd : Provable α e k d c Δ) : Provable α e k d c Γ :=
-  Provable.wk hsub dd
+lemma weakening (hsub : Δ ⊆ Γ) (dd : Provable α e k d c Δ) : Provable α e k d c Γ :=
+  wk hsub dd
 
 end Provable
 
