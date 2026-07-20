@@ -7,7 +7,7 @@ public import GoodsteinPA.OperatorZef2.CutStep
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder ONote Ordinal
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 variable {α e : ONote} {H : ONote → Prop} {Γ : Finset (ArithmeticFormula ℕ)}

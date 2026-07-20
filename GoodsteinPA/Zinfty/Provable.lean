@@ -13,7 +13,7 @@ public import GoodsteinPA.Zinfty.Basic
 
 namespace GoodsteinPA.ZinftyF
 
-open LO LO.FirstOrder
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
 
 variable {Γ : Finset (ArithmeticFormula ℕ)} {α β : Ordinal.{0}} {c : ℕ}
 

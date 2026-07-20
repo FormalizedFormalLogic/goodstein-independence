@@ -31,7 +31,7 @@ amended DRAFT `embedding_Zef2TC_DRAFT` re-bases the E-0 draft verbatim onto `Zef
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder ONote Ordinal
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ## `Zef2TC` — the full-rule-set target calculus -/
@@ -1032,7 +1032,7 @@ end GoodsteinPA.E1EmbeddingGrind
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder ONote
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ## E-1 block 5 — the GROWTH KIT: `Gexp = hardy (ω²)` dominates ℒₒᵣ term values
@@ -1379,8 +1379,8 @@ theorem budgetedEmbedsV3_all {Γ}
             = (Rew.subst ![nm n]).comp (Embedding.asg env).q := by
           ext x
           · refine Fin.cases ?_ (fun i => Fin.elim0 i) x
-            simp [Embedding.asg, Rew.comp_app, ZinftyF.nm, GoodsteinPA.OperatorZinfty.nm]
-          · simp [Embedding.asg, Rew.comp_app, ZinftyF.nm, GoodsteinPA.OperatorZinfty.nm]
+            simp [Embedding.asg, Rew.comp_app, nm]
+          · simp [Embedding.asg, Rew.comp_app, nm]
         show Embedding.asg (n :>ₙ env) ▹ (Rew.free ▹ φ)
             = Rew.subst ![nm n] ▹ ((Embedding.asg env).q ▹ φ)
         rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, hRew]
@@ -4356,7 +4356,7 @@ theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ
   have hval : Semiterm.val (L := ℒₒᵣ) (ξ := ℕ) (fun _ => n) (fun _ => 0)
       ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q #1) = m := by
     rw [hq1]
-    simp [Semiterm.val_bShift', Matrix.empty_eq, valm_nm]
+    simp [Matrix.empty_eq]
   simp at hkey
   rw [hval] at hkey
   simpa using hkey.symm

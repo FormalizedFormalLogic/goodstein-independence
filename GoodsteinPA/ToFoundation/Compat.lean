@@ -1,5 +1,5 @@
 /-
-# `Compat.lean` — anti-corruption shim over Foundation's semantics API
+# `GoodsteinPA.ToFoundation.Compat` — anti-corruption shim over Foundation's semantics API
 
 goodstein's proof internals were written against an older `Foundation` spelling. Upstream
 (`FormalizedFormalLogic/Foundation`) has since refactored that surface:
@@ -33,7 +33,8 @@ public import Foundation.FirstOrder.Arithmetic.HFS
 open LO LO.FirstOrder LO.FirstOrder.Arithmetic
 
 /-- Fork models-theory notation `V ⊧ₘ* T` (was `ModelsTheory`), now `V↓[ℒₒᵣ] ⊧* T` (`ModelsSet`).
-Global (no `open` needed) so a bare `import GoodsteinPA.Compat` restores the old spelling. -/
+Global (no `open` needed) so a bare `import GoodsteinPA.ToFoundation.Compat` restores the old
+spelling. -/
 notation:45 V:46 " ⊧ₘ* " T:46 => (V↓[ℒₒᵣ]) ⊧* T
 
 /-- Fork single-formula models notation `M ⊧ₘ σ` (`Models`), now spelled `M↓[ℒₒᵣ] ⊧ σ` upstream.

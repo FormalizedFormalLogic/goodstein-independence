@@ -14,7 +14,7 @@ public import GoodsteinPA.Zinfty.Inversion
 
 namespace GoodsteinPA.ZinftyF
 
-open LO LO.FirstOrder
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
 open Derivation
 
 variable {Γ : Finset (ArithmeticFormula ℕ)} {α β : Ordinal.{0}} {c : ℕ}
