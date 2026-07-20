@@ -7,12 +7,12 @@ import Std.Tactic.BVDecide.Normalize.Prop
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder ONote Ordinal
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
-/-- The numeral term `nm n` (`OperatorZinfty.nm`) evaluates to `n` under any standard-model
+/-- The numeral term `nm n` (`LO.FirstOrder.ArithmeticTerm.nm`) evaluates to `n` under any standard-model
 assignment — the value of a closed numeral const is assignment-independent.  Local companion of
 `stdClosedVal_nm`, phrased with `valm ℕ` so it `rw`s inside `eval_substs` read-offs. -/
 @[simp] lemma valm_nm (n) (f) :

@@ -33,15 +33,14 @@ module
 public import Foundation.FirstOrder.Incompleteness.Second
 public import Foundation.FirstOrder.Arithmetic.R0.Representation
 public import GoodsteinPA.ToMathlib.Hardy
-public import GoodsteinPA.Compat
+public import GoodsteinPA.ToFoundation.Numeral
 
 @[expose] public section
 
 namespace GoodsteinPA.OperatorZinfty
 
-open LO LO.FirstOrder ONote
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 
-noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.numeral ℒₒᵣ n).const
 noncomputable def atomTrue (φ : ArithmeticFormula ℕ) : Prop :=
   GoodsteinPA.Compat.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
 

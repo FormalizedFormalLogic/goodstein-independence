@@ -6,7 +6,7 @@ public import GoodsteinPA.OperatorZinfty.Inversion
 
 namespace GoodsteinPA.OperatorZinfty
 
-open LO LO.FirstOrder ONote
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 
 namespace Provable
 

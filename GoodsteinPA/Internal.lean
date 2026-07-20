@@ -12,7 +12,7 @@ file is one section below.
 -/
 module
 
-public import GoodsteinPA.Compat
+public import GoodsteinPA.ToFoundation.Compat
 public import GoodsteinPA.ToMathlib.Goodstein.Domination
 
 @[expose] public section

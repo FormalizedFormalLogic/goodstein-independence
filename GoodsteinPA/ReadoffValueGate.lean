@@ -31,7 +31,7 @@ laws: budget monotonicity (`Gated_mono`) and the accessor lemmas the induction's
 
 namespace GoodsteinPA.ReadoffValueGate
 
-open LO LO.FirstOrder
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-- **The hereditary value gate.**  `Gated P V ψ` says: along any refutation descent through

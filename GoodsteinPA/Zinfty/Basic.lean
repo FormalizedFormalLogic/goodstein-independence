@@ -17,16 +17,13 @@ public import Foundation.FirstOrder.Arithmetic.R0.Representation
 public import Mathlib.SetTheory.Ordinal.Principal
 public import Mathlib.SetTheory.Ordinal.Veblen
 public import Mathlib.Data.ENat.Lattice
-public import GoodsteinPA.Compat
+public import GoodsteinPA.ToFoundation.Numeral
 
 @[expose] public section
 
 namespace GoodsteinPA.ZinftyF
 
-open LO LO.FirstOrder
-
-/-- The `n`-th numeral of `ℒₒᵣ` as a closed term, ready for substitution `φ/[nm n]`. -/
-noncomputable def nm (n : ℕ) : Semiterm ℒₒᵣ ℕ 0 := (Semiterm.Operator.numeral ℒₒᵣ n).const
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
 
 /-- A **signed atomic literal**: `signedLit true r v = rel r v`, `signedLit false r v = nrel r v`. The
 atomic-truth axiom `axTrue` ranges over *true closed literals* of either polarity (the ω-logic

@@ -6,7 +6,7 @@ public import GoodsteinPA.OperatorZinfty.Basic
 
 namespace GoodsteinPA.OperatorZinfty
 
-open LO LO.FirstOrder ONote
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 
 /-! ### The PA-induction leaf's witness side condition
 

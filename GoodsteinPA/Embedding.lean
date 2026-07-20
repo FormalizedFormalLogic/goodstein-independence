@@ -41,7 +41,7 @@ public import GoodsteinPA.Zinfty.Examples
 
 namespace GoodsteinPA.Embedding
 
-open LO LO.FirstOrder GoodsteinPA.ZinftyF GoodsteinPA.ZinftyF.Derivation
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm GoodsteinPA.ZinftyF GoodsteinPA.ZinftyF.Derivation
 
 /-- **General substitution–rewriting commutation** (the `exs`/`axm` version of `rew_subst_nm`, for an
 arbitrary witness term `t`): `ω ▹ (φ/[t]) = (ω.q ▹ φ)/[ω t]`. In the assignment embedding `ω = asg e`

@@ -14,7 +14,7 @@ public import GoodsteinPA.Zinfty.Provable
 
 namespace GoodsteinPA.ZinftyF
 
-open LO LO.FirstOrder
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
 open Derivation
 
 /-! ### Inversion lemmas (Towsner §19.2–19.4)

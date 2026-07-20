@@ -6,7 +6,7 @@ public import GoodsteinPA.OperatorZinfty.SomeK
 
 namespace GoodsteinPA.OperatorZinfty
 
-open LO LO.FirstOrder ONote
+open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 
 variable {e : ONote} {k d c : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)}
 
