@@ -237,15 +237,15 @@ Both nodes are `clean` (real kernel footprint = trust base only), checked agains
 
 attribute [goodstein_blueprint 12 clean "zeh_reduction_pin1" "0" 100 cutReduceAllAuxRunning_Zf
   []
-  ["Eguchi–Weiermann arXiv:1205.2879 Lemma 25 (compose the slot at a principal cut)",
-   "Towsner §19.6 running-family cut-reduction; output slot g∘f at FIXED control",
+  ["compose the slot at a principal cut; [EW12, Lemma 25]",
+   "running-family cut-reduction, output slot g∘f at fixed control; [Tow20, Theorem 19.6]",
    "Discharged in the Zef function-slot judgment; the ℕ-stage Zeh form was kernel-refuted (principal_witness_exceeds_stage)"]
   "Pin 1: the running-family cut-reduction, function-slot form (fixed control, output slot g∘f)."]
   cutReduceAllAuxRunning_Zf
 
 attribute [goodstein_blueprint 13 clean "zeh_step_pin2" "0" 100 stepAllω_Zf
   []
-  ["Eguchi–Weiermann arXiv:1205.2879 Lemma 25; the common-control ∀/∃ step",
+  ["common-control ∀/∃ step; [EW12, Lemma 25]",
    "Q3-unified (one ⋁-principal reduction; the ∀-side enters via allInv_Zef)",
    "Discharged in the Zef function-slot judgment"]
   "Pin 2: the common-control ∀/∃ step motive, function-slot form (feeds pin 1 via allInv_Zef inversion)."]

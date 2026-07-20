@@ -121,7 +121,7 @@ is still `sorryAx`-bearing and is not eligible. -/
 
 attribute [goodstein_blueprint 10 clean "zeh_inversion_suite" "0" 100 allInv_Zeh
   []
-  ["Towsner §19.4 ∀-inversion; mirrors the banked Zekd.allInv (OperatorZinfty.lean:484)",
+  ["∀-inversion, mirrors the banked Zekd.allInv; [Tow20, Theorem 19.4]",
    "GoodsteinPA.OperatorZeh.orInv_Zeh / andInvL_Zeh / andInvR_Zeh: complete propositional companions, axiom-clean",
    "Suite completeness: the minimal core admits no fifth inversion"]
   "The Zeh inversion suite: control-preserving inversions (∀ at the relativization + running stage) feeding the fixed-control reduction and the cut-elimination assembly."]

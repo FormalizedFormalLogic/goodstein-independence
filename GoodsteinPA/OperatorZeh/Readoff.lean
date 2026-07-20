@@ -112,8 +112,8 @@ theorem headline_readoff {φ : ArithmeticSemiformula ℕ 1}
 
 attribute [goodstein_blueprint 11 clean "zeh_readoff_exit" "0" 100 headline_readoff
   []
-  ["Buchholz–Wainer 1987, Bounding Lemma (∀-free positive Σ₁ shape)",
-   "Eguchi–Weiermann arXiv:1205.2879, Lemma 31 (witnessing bound f 0)",
+  ["Δ₀ read-off / ∀-free positive Σ₁ witness shape; [Tow20, §17, Theorem 17.1]",
+   "witnessing bound f 0; [EW12, Definition 23]",
    "Proven per-instance: no evaluator, no truth predicate, no H-data (Σ₁-definability-of-H risk dissolved)"]
   "The read-off exit: a rank-0 Zeh derivation of the Σ₁ headline shape yields a witness ≤ hardy e m."]
   headline_readoff
