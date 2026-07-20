@@ -23,7 +23,7 @@ derivation of `Γ` has a standard-model-true member.  The `allω` (Π) case comb
 branch's true member is in the shared context `Γ` (done), or every branch is true at its own
 instance `φ/[nm n]` — whence `∀⁰ φ` is true (`atomTrue (∀⁰ φ) = ∀ k, atomTrue (φ/[nm k])`).
 Slot-INDEPENDENT (truth does not see `f`). -/
-theorem sound0 (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ := by
+lemma sound0 (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
       by_cases htrue : atomTrue (Semiformula.rel r v)
@@ -65,7 +65,7 @@ theorem sound0 (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue 
 
 /-- `atomTrue (∀⁰ χ) ↔ ∀ k, atomTrue (χ/[nm k])` — a standard ω-universal is standard-model-true
 iff every numeral instance is true.  (`∀⁰` at the top of a Δ₀ read-off descends to its instances.) -/
-theorem atomTrue_all_iff (χ : ArithmeticSemiformula ℕ 1) :
+lemma atomTrue_all_iff (χ : ArithmeticSemiformula ℕ 1) :
     atomTrue (∀⁰ χ) ↔ ∀ k, atomTrue (χ/[nm k]) := by
   simp only [atomTrue, Semiformula.eval_all]
   constructor
@@ -77,7 +77,7 @@ theorem atomTrue_all_iff (χ : ArithmeticSemiformula ℕ 1) :
     simpa [Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton] using hx
 
 /-- `atomTrue (∃⁰ χ) ↔ ∃ k, atomTrue (χ/[nm k])` — dual of `atomTrue_all_iff`. -/
-theorem atomTrue_ex_iff (χ : ArithmeticSemiformula ℕ 1) :
+lemma atomTrue_ex_iff (χ : ArithmeticSemiformula ℕ 1) :
     atomTrue (∃⁰ χ) ↔ ∃ k, atomTrue (χ/[nm k]) := by
   simp only [atomTrue, Semiformula.eval_ex]
   constructor
@@ -100,7 +100,7 @@ def spineHead {n} : ArithmeticSemiformula ℕ n → Option (Bool × ((k : ℕ) �
   | Semiformula.or _ _ => none
 
 /-- Rewriting (in particular substitution `φ/[nm n]`) preserves the spine head. -/
-theorem spineHead_rew {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : ArithmeticSemiformula ℕ n₁) :
+lemma spineHead_rew {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : ArithmeticSemiformula ℕ n₁) :
     spineHead (om ▹ φ) = spineHead φ := by
   induction φ generalizing n₂ with
   | rel r v => simp [spineHead, Function.comp_def]
@@ -124,13 +124,11 @@ theorem spineHead_rew {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : A
       rw [show (Semiformula.or φ ψ) = φ ⋎ ψ from rfl]
       simp [spineHead]
 
-@[simp] theorem spineHead_all (φ : ArithmeticSemiformula ℕ 1) :
-    spineHead (∀⁰ φ) = spineHead φ := rfl
+@[simp] lemma spineHead_all (φ : ArithmeticSemiformula ℕ 1) : spineHead (∀⁰ φ) = spineHead φ := rfl
 
-@[simp] theorem spineHead_exs (φ : ArithmeticSemiformula ℕ 1) :
-    spineHead (∃⁰ φ) = spineHead φ := rfl
+@[simp] lemma spineHead_exs (φ : ArithmeticSemiformula ℕ 1) : spineHead (∃⁰ φ) = spineHead φ := rfl
 
-theorem spineHead_substs (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) :
+lemma spineHead_substs (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) :
     spineHead (φ/[nm n]) = spineHead φ :=
   spineHead_rew _ φ
 
@@ -138,7 +136,7 @@ theorem spineHead_substs (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) :
 spine head `t`, no `Zef2` derivation at cut-rank 0 exists: `axL` would force
 `some (true, s) = t = some (false, s)`; `allω`/`exI` insert spine-head-preserving instances;
 `wk`/`weak` shrink; `cut` needs `complexity < 0`. -/
-theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))}
+lemma zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))}
     (dd : Zef2 α e H f c Γ) (hc : c = 0) (hyp : ∀ ψ ∈ Γ, spineHead ψ = t) : False := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
@@ -170,7 +168,7 @@ theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × 
       omega
 
 /-- **`Zef2` cannot derive `{∃⁰ φ}` at rank 0, for any `φ`.** -/
-theorem zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1} :
+lemma zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1} :
     ¬ Zef2 α e H f 0 {(∃⁰ φ)} := by
   intro dd
   refine zef2_rank0_uniform_spine_underivable (t := spineHead (∃⁰ φ)) dd rfl ?_
@@ -185,7 +183,7 @@ only survivor is `χ/[nm 0]` TRUE while `∀⁰ χ` is false.  If the matrix `χ
 guard, as for the Goodstein bounded-`∀` clauses), that survivor is contradictory: `h0` forces
 `atomTrue (∀⁰ χ)`, contradicting `hfalse`.  So under `hmono` the trap never fires.  A ready
 building block for a monotone-guarded specialization of `readoff_delta0_Zef2`. -/
-theorem readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
+lemma readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
     {Γ₀ : Finset (ArithmeticFormula ℕ)} {β : ℕ → ONote}
     (_hbranch : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) 0 (insert (χ/[nm n]) Γ₀))
     (_htrap : (∃⁰ φ) ∈ Γ₀)
@@ -216,7 +214,7 @@ true disjunct plus the Δ₀ bound to bound the load-bearing branches.
 
 - [Tow20, §17, Theorem 17.1]
 -/
-theorem readoff_delta0_Zef2 {φ : ArithmeticSemiformula ℕ 1}
+lemma readoff_delta0_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (_hφbdd : ∀ n, LO.FirstOrder.Arithmetic.DeltaZero (φ/[nm n]))
     (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
     ∃ n ≤ ewIter f α 0, atomTrue (φ/[nm n]) :=

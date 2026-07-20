@@ -17,7 +17,7 @@ These are the size-control facts the reduction's synthesized `osucc (α + γ)` r
 `ewN (osucc (α + γ)) ≤ ewN α + ewN γ + 1`.  Unconditional for `+`, needs `NF` for `osucc`. -/
 
 /-- `ewN` is sub-additive over `addAux`. -/
-theorem ewN_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
+lemma ewN_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
     ewN (addAux e n o) ≤ ewN e + (n : ℕ) + ewN o := by
   unfold addAux
   cases o with
@@ -33,7 +33,7 @@ theorem ewN_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
       | gt => simp only [ewN_oadd]; omega
 
 /-- `ewN` is sub-additive over ordinal addition (unconditional). -/
-theorem ewN_add_le (a o : ONote) : ewN (a + o) ≤ ewN a + ewN o := by
+lemma ewN_add_le (a o : ONote) : ewN (a + o) ≤ ewN a + ewN o := by
   induction a generalizing o with
   | zero => simp [ewN]
   | oadd e n b ihe ih =>
@@ -43,7 +43,7 @@ theorem ewN_add_le (a o : ONote) : ewN (a + o) ≤ ewN a + ewN o := by
       simp only [ewN_oadd]; omega
 
 /-- `ewN` grows by at most one under the notation successor (for normal forms). -/
-theorem ewN_osucc_le {o : ONote} (h : o.NF) : ewN (osucc o) ≤ ewN o + 1 :=
+lemma ewN_osucc_le {o : ONote} (h : o.NF) : ewN (osucc o) ≤ ewN o + 1 :=
   match o, h with
   | 0, _ => by simp [osucc, ewN]
   | oadd 0 n a, h => by
@@ -60,8 +60,7 @@ theorem ewN_osucc_le {o : ONote} (h : o.NF) : ewN (osucc o) ≤ ewN o + 1 :=
       simp only [ewN_oadd] at hIH ⊢; omega
 
 /-- The composite the reduction roots need: `ewN (osucc (α + γ)) ≤ ewN α + ewN γ + 1`. -/
-theorem ewN_osucc_add_le (hαNF : α.NF) (hγNF : γ.NF) :
-    ewN (osucc (α + γ)) ≤ ewN α + ewN γ + 1 := by
+lemma ewN_osucc_add_le (hαNF : α.NF) (hγNF : γ.NF) : ewN (osucc (α + γ)) ≤ ewN α + ewN γ + 1 := by
   refine le_trans (ewN_osucc_le (ONote.add_nf α γ)) ?_
   have := ewN_add_le α γ
   omega
@@ -69,7 +68,7 @@ theorem ewN_osucc_add_le (hαNF : α.NF) (hγNF : γ.NF) :
 /-- **The composed-slot base gate** — the `α + γ` output gate.
 `ewN α ≤ g 0`, `ewN γ ≤ f 0`, and the `∀`-side per-step floor `g 0 + k ≤ g k` close the fresh
 node's gate `ewN (α + γ) ≤ (g ∘ f) 0 = g (f 0)`. -/
-theorem ewN_add_le_comp
+lemma ewN_add_le_comp
     (hα : ewN α ≤ g 0) (hγ : ewN γ ≤ f 0) (hg_base : ∀ k, g 0 + k ≤ g k) :
     ewN (α + γ) ≤ g (f 0) :=
   le_trans (ewN_add_le α γ) (base_add_le_comp hg_base hα hγ)
@@ -77,7 +76,7 @@ theorem ewN_add_le_comp
 /-! ## The pass's ordinal-collapse containment -/
 
 /-- `repr (collapse x) = ω ^ repr x` (`collapse = expTower = oadd · 1 0`). -/
-theorem repr_collapse (x : ONote) : (collapse x).repr = ω ^ x.repr := by
+lemma repr_collapse (x : ONote) : (collapse x).repr = ω ^ x.repr := by
   simp [collapse, expTower, ONote.repr]
 
 /-- **Ordinal-collapse containment** — the cut-elimination step feeds two
@@ -85,7 +84,7 @@ IH-reduced premises (at `collapse βφ`, `collapse βψ`, `βφ,βψ < α`) into
 cut-reduction (`cutReduceAllAuxRunning_Zf2`), whose additive output `collapse βφ + collapse βψ`
 must fit strictly under the single collapse `collapse α = ω^α`.  This is the additive principality
 of `ω^α`. -/
-theorem collapse_add_lt (hβφ : βφ.NF) (hβψ : βψ.NF) (_hα : α.NF)
+lemma collapse_add_lt (hβφ : βφ.NF) (hβψ : βψ.NF) (_hα : α.NF)
     (hφ : βφ < α) (hψ : βψ < α) : collapse βφ + collapse βψ < collapse α := by
   haveI := hβφ; haveI := hβψ; haveI := _hα
   haveI := collapse_NF hβφ; haveI := collapse_NF hβψ; haveI := collapse_NF _hα
@@ -99,7 +98,7 @@ theorem collapse_add_lt (hβφ : βφ.NF) (hβψ : βψ.NF) (_hα : α.NF)
   exact (Ordinal.isPrincipal_add_omega0_opow α.repr) hφr hψr
 
 /-- `ewN (collapse α) = ewN α + 1` (`collapse α = oadd α 1 0`). -/
-theorem ewN_collapse (α : ONote) : ewN (collapse α) = ewN α + 1 := by
+lemma ewN_collapse (α : ONote) : ewN (collapse α) = ewN α + 1 := by
   simp [collapse, expTower, ewN]
 
 /-- **Per-node gate for the pass** — the rebuilt node at `collapse α` with slot `ewIter f α` needs
@@ -109,7 +108,7 @@ gate `ewN (collapse α) ≤ (ewIter f α) 0`.  From the derivation's base gate `
 `α = 0`).  Crucially uses only `hlow`, NOT strict monotonicity — so it survives the pass's `allω`
 branches where the slot is `rel1 f n` (which preserves `hlow` via `rel1_low` but breaks
 strictness). -/
-theorem ewN_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
+lemma ewN_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
     (hgate : ewN α ≤ f 0) : ewN (collapse α) ≤ ewIter f α 0 := by
   rw [ewN_collapse]
   by_cases hα : α = 0
@@ -127,7 +126,7 @@ theorem ewN_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
 
 /-- `Nlog (collapse α) = Nlog α + 1` (`collapse α = oadd α 1 0`, `clog 1 = 1`) — the `Nlog`
 analog of `ewN_collapse`. -/
-theorem Nlog_collapse (α : ONote) : Nlog (collapse α) = Nlog α + 1 := by
+lemma Nlog_collapse (α : ONote) : Nlog (collapse α) = Nlog α + 1 := by
   show Nlog (oadd α 1 0) = Nlog α + 1
   have hc : clog 1 = 1 := by decide
   simp [Nlog_oadd, hc]
@@ -136,7 +135,7 @@ theorem Nlog_collapse (α : ONote) : Nlog (collapse α) = Nlog α + 1 := by
 node at `collapse α` with slot `ewIter f α` closes its `Nlog` gate from the derivation's base
 gate `Nlog α ≤ f 0` + the EwLow floor.  Same `f (f 0)` mechanism; only `hlow`, no strictness,
 so it survives the `allω` branches' `rel1 f n` slots. -/
-theorem Nlog_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
+lemma Nlog_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
     (hgate : Nlog α ≤ f 0) : Nlog (collapse α) ≤ ewIter f α 0 := by
   rw [Nlog_collapse]
   by_cases hα : α = 0
