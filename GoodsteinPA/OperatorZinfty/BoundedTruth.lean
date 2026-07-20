@@ -8,6 +8,8 @@ namespace GoodsteinPA.OperatorZinfty
 
 open LO LO.FirstOrder ONote
 
+variable {e : ONote} {K d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-! #### Bounded true axiom leaves -/
 
 /--
@@ -35,18 +37,13 @@ The proof mirrors the old `provable_true` recursion, but the universal and exist
 indexed by `BoundedTruth`: universals run at `max K m`, and existential witnesses are already
 within the control-ordinal Hardy budget.
 -/
-theorem provableOfBoundedTruth_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ}
-      (w : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
-      ψ.complexity ≤ q →
-      BoundedTruth e K d w ψ →
-      2 * q < K + d →
-      (Rew.subst w ▹ ψ) ∈ Γ →
-      Provable (ONote.ofNat (2 * q)) e K d c Γ := by
-  intro q
-  induction q with
+theorem provableOfBoundedTruth_probe (q : ℕ) {n : ℕ} (w : Fin n → ArithmeticTerm ℕ)
+    (ψ : ArithmeticSemiformula ℕ n)
+    (hψq : ψ.complexity ≤ q) (hBT : BoundedTruth e K d w ψ) (hbudget : 2 * q < K + d)
+    (hmem : (Rew.subst w ▹ ψ) ∈ Γ) :
+    Provable (ONote.ofNat (2 * q)) e K d c Γ := by
+  induction q generalizing K d c e Γ n w ψ hBT hmem with
   | zero =>
-      intro K d c e Γ n w ψ hψq hBT hbudget hmem
       cases ψ using Semiformula.cases' with
       | hverum =>
           exact embedding_valueCongruentVerum_probe w (by simpa using hmem)
@@ -73,7 +70,6 @@ theorem provableOfBoundedTruth_probe :
           simp only [Semiformula.complexity_exs] at hψq
           omega
   | succ q ih =>
-      intro K d c e Γ n w ψ hψq hBT hbudget hmem
       cases ψ using Semiformula.cases' with
       | hverum =>
           exact embedding_valueCongruentVerum_probe w (by simpa using hmem)
@@ -194,7 +190,7 @@ closed by an assignment.  The only semantic side condition still exposed is the 
 `stdClosedVal s ≤ hardy e (K+d)`.
 -/
 theorem embedding_closedTermExI_probe
-    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    {βSrc αCut αOut : ONote} {q : ℕ}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)
@@ -238,7 +234,7 @@ is available at index `K`, then it can be used at `max K (stdClosedVal s)`, wher
 term is automatically within the Hardy witness budget.  No extra logical premise is introduced.
 -/
 theorem embedding_closedTermExI_raiseK_probe
-    {βSrc αCut αOut e : ONote} {K d c q : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    {βSrc αCut αOut : ONote} {q : ℕ}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
     (hSrcLt : βSrc < αCut) (hCongLt : ONote.ofNat (2 * q) < αCut)

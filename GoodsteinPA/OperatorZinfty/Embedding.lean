@@ -430,6 +430,10 @@ lemma embedding_ofNat_lt_of_lt {m n : ℕ} (h : m < n) : ONote.ofNat m < ONote.o
   | zero => rfl
   | succ k => rw [ONote.ofNat_succ, norm_oadd, norm_zero]; simp
 
+section ValueCongruentEM
+
+variable {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
+
 /--
 Quantifier-free closed-term value-congruent EM at explicit finite `ONote` height.
 
@@ -437,16 +441,13 @@ For a one-variable quantifier-free formula `ψ`, closed terms with the same stan
 sequent containing `ψ[s]` and `¬ψ[s']` at height `ofNat (2*q)`, provided that finite height fits the
 current norm budget.
 -/
-theorem embedding_valueCongruentQFreeClosedTerm_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
-      (s s' : ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ 1),
-      ψ.complexity ≤ q → QFreeForm ψ → stdClosedVal s = stdClosedVal s' →
-      2 * q < K + d → (ψ/[s]) ∈ Γ → (∼(ψ/[s'])) ∈ Γ →
-      Provable (ONote.ofNat (2 * q)) e K d c Γ := by
-  intro q
-  induction q with
+theorem embedding_valueCongruentQFreeClosedTerm_probe (q : ℕ)
+    (s s' : ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ 1)
+    (hψq : ψ.complexity ≤ q) (hqf : QFreeForm ψ) (hval : stdClosedVal s = stdClosedVal s')
+    (hbudget : 2 * q < K + d) (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) :
+    Provable (ONote.ofNat (2 * q)) e K d c Γ := by
+  induction q generalizing K d c e Γ s s' ψ hqf hval hp hn with
   | zero =>
-      intro K d c e Γ s s' ψ hψq hqf hval hbudget hp hn
       cases ψ using Semiformula.cases' with
       | hverum =>
           exact embedding_valueCongruentVerum_probe ![s] (by simpa using hp)
@@ -471,7 +472,6 @@ theorem embedding_valueCongruentQFreeClosedTerm_probe :
       | hexs a =>
           simp at hqf
   | succ q ih =>
-      intro K d c e Γ s s' ψ hψq hqf hval hbudget hp hn
       cases ψ using Semiformula.cases' with
       | hverum =>
           exact embedding_valueCongruentVerum_probe ![s] (by simpa using hp)
@@ -553,17 +553,13 @@ This is the arity-general recursive shell needed by the bounded embedding route.
 cases are the decisive check: each `allω` premise runs at `max K m`, so the corresponding `exI`
 witness `m` is paid by `inductionLeaf_runningIndex_witnessBound`.
 -/
-theorem embedding_valueCongruentEM_probe :
-    ∀ (q : ℕ) {K d c : ℕ} {e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ}
-      (w w' : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
-      ψ.complexity ≤ q →
-      (∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) →
-      2 * q < K + d → (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ →
-      Provable (ONote.ofNat (2 * q)) e K d c Γ := by
-  intro q
-  induction q with
+theorem embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+    (ψ : ArithmeticSemiformula ℕ n) (hψq : ψ.complexity ≤ q)
+    (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) (hbudget : 2 * q < K + d)
+    (hp : (Rew.subst w ▹ ψ) ∈ Γ) (hn : (∼(Rew.subst w' ▹ ψ)) ∈ Γ) :
+    Provable (ONote.ofNat (2 * q)) e K d c Γ := by
+  induction q generalizing K d c e Γ n w w' ψ hval hp hn with
   | zero =>
-      intro K d c e Γ n w w' ψ hψq hval hbudget hp hn
       cases ψ using Semiformula.cases' with
       | hverum =>
           exact embedding_valueCongruentVerum_probe w (by simpa using hp)
@@ -592,7 +588,6 @@ theorem embedding_valueCongruentEM_probe :
           simp only [Semiformula.complexity_exs] at hψq
           omega
   | succ q ih =>
-      intro K d c e Γ n w w' ψ hψq hval hbudget hp hn
       cases ψ using Semiformula.cases' with
       | hverum =>
           exact embedding_valueCongruentVerum_probe w (by simpa using hp)
@@ -745,5 +740,6 @@ theorem embedding_valueCongruentEM_probe :
               (fun m => by rw [embedding_norm_ofNat]; omega) fam
           rwa [Finset.insert_eq_self.mpr hn'] at hallω
 
+end ValueCongruentEM
 
 end GoodsteinPA.OperatorZinfty
