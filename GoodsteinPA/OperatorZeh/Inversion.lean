@@ -27,11 +27,11 @@ absorb (they are the operator-side analog of `Provable`'s `max`-reshuffle
 /-! ### Finset push/pull helpers for the inversion (re-derivations of the `private`
 `OperatorZinfty` copies — calculus-independent). -/
 
-theorem inv1Push (A e b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
+lemma inv1Push (A e b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert b s).erase A) ⊆ insert b (insert e (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) :
+lemma inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) :
     insert b (insert e (s.erase A)) ⊆ insert e ((insert b s).erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | hx
@@ -39,7 +39,7 @@ theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : 
   · exact Or.inl rfl
   · exact Or.inr ⟨hx.1, Or.inr hx.2⟩
 
-theorem princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
+lemma princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert e s).erase A) ⊆ insert e (s.erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
@@ -48,7 +48,7 @@ theorem princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula
 
 - [Tow20, Theorem 19.4]
 -/
-theorem allInv_Zeh {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
+lemma allInv_Zeh {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
     (dd : Zeh α e H m c Γ) (hmem : (∀⁰ φ₀) ∈ Γ) :
     Zeh α e (adjoin H n₀) (max m n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   induction dd with
@@ -132,18 +132,18 @@ threads the inversion past a passive side formula, so these ports are strictly s
 `Provable`'s (which each carry a principal `andI`/`orI` sub-case).  They do not consume the f-slot
 statements — reused by a cut-elimination assembly for cuts on propositional formulas.
 `∧`-inversion is [Tow20, Theorem 19.3]; `∨`-inversion is standard and has no dedicated
-theorem number in [Tow20] (`∨` is symmetric/trivial there).
+lemma number in [Tow20] (`∨` is symmetric/trivial there).
 
 - [Tow20, §19]
 -/
 
 /-- Double-insert reshuffle helpers (∨-inversion inserts both `φ` and `ψ`; re-derivations of
 the `private` `OperatorZinfty` copies). -/
-theorem invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
+lemma invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b s).erase A)) ⊆ insert b (insert φ (insert ψ (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
+lemma invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert b (insert φ (insert ψ (s.erase A))) ⊆ insert φ (insert ψ ((insert b s).erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | rfl | hx
@@ -154,7 +154,7 @@ theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b �
 
 /-- **∨-inversion, `Zeh` form**: replace `φ ⋎ ψ` by `φ, ψ`, same `(α, e, H, m, c)`. Standard
 ∨-inversion; cf. [Tow20, §19]. -/
-theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ}
+lemma orInv_Zeh {φ ψ : ArithmeticFormula ℕ}
     (dd : Zeh α e H m c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
     Zeh α e H m c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   induction dd with
@@ -199,7 +199,7 @@ theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ}
 
 - [Tow20, Theorem 19.3]
 -/
-theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ}
+lemma andInvL_Zeh {φ ψ : ArithmeticFormula ℕ}
     (dd : Zeh α e H m c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     Zeh α e H m c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
@@ -241,7 +241,7 @@ theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ}
 
 - [Tow20, Theorem 19.3]
 -/
-theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ}
+lemma andInvR_Zeh {φ ψ : ArithmeticFormula ℕ}
     (dd : Zeh α e H m c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     Zeh α e H m c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
@@ -282,14 +282,13 @@ theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ}
 /-! ## ∀-inversion in the slot calculus (feeds the reduction from a ∀-side derivation) -/
 
 /-- `f ≤ rel1 f n₀` for monotone `f` (`f x ≤ f (max n₀ x)`). -/
-private theorem f_le_rel1 (hf : Monotone f) (n₀ x : ℕ) :
-    f x ≤ rel1 f n₀ x := hf (le_max_right n₀ x)
+private lemma f_le_rel1 (hf : Monotone f) (n₀ x : ℕ) : f x ≤ rel1 f n₀ x := hf (le_max_right n₀ x)
 
 /-- **`allInv_Zef`** — ∀-inversion, slot form: port of `allInv_Zeh` with `max m n₀ ⤳ rel1 f n₀`.
 The extracted instance runs at the relativization `adjoin H n₀` and the relativized slot
 `rel1 f n₀`.  Needs `f` monotone (to raise `exI` bounds `n ≤ f 0 ≤ (rel1 f n₀) 0 = f n₀`).  The
 operator threading is FREE (`mono_Hf`/`change_H`, R1). -/
-theorem allInv_Zef {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Zef α e H f c Γ)
+lemma allInv_Zef {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Zef α e H f c Γ)
     (hmono : Monotone f) (hmem : (∀⁰ φ₀) ∈ Γ) :
     Zef α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   induction dd with
@@ -354,7 +353,7 @@ never principal, so every case threads the inversion past a passive side formula
 
 /-- **∨-inversion, `Zef` form**: replace `φ ⋎ ψ` by `φ, ψ`, same `(α, e, H, f, c)`. Standard
 ∨-inversion; cf. [Tow20, §19]. -/
-theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ}
+lemma orInv_Zef {φ ψ : ArithmeticFormula ℕ}
     (dd : Zef α e H f c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
     Zef α e H f c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   induction dd with
@@ -399,7 +398,7 @@ theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ}
 
 - [Tow20, Theorem 19.3]
 -/
-theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ}
+lemma andInvL_Zef {φ ψ : ArithmeticFormula ℕ}
     (dd : Zef α e H f c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     Zef α e H f c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
@@ -441,7 +440,7 @@ theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ}
 
 - [Tow20, Theorem 19.3]
 -/
-theorem andInvR_Zef {φ ψ : ArithmeticFormula ℕ}
+lemma andInvR_Zef {φ ψ : ArithmeticFormula ℕ}
     (dd : Zef α e H f c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     Zef α e H f c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with

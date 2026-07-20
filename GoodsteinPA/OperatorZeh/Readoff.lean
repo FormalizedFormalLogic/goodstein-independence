@@ -38,7 +38,7 @@ the sequent.  The bound consumes ONLY the judgment's control `e` and stage `m`.
 
 - [Tow20, §17, Theorem 17.1]
 -/
-theorem readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
+lemma readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     (dd : Zeh α e H m c Γ) (hc : c = 0) (hshape : ReadoffShape φ e m Γ) : ReadoffGoal φ e m Γ := by
   induction dd with
@@ -89,7 +89,7 @@ theorem readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
 
 /-- **The headline-instantiation read-off**: a rank-0 `Zeh` root deriving the single
 per-instance Σ₁ sequent `{∃⁰ φ}` (atomic matrix) yields a numeric witness `≤ hardy e m`. -/
-theorem headline_readoff {φ : ArithmeticSemiformula ℕ 1}
+lemma headline_readoff {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     (dd : Zeh α e H m 0 {(∃⁰ φ)}) :
     ∃ n ≤ hardy e m, atomTrue (φ/[nm n]) := by
@@ -135,7 +135,7 @@ def ReadoffGoalF (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Fins
 `readoff_sigma1`, `hardy e m ⤳ f 0`).  From a rank-0 `Zef` derivation of a `ReadoffShapeF`
 sequent: a witness `n ≤ f 0` with `φ/[nm n]` true, or a true literal.  The bound is EXACTLY the
 slot at 0. -/
-theorem readoff_sigma1_Zef {φ : ArithmeticSemiformula ℕ 1}
+lemma readoff_sigma1_Zef {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     (dd : Zef α e H f c Γ) (hc : c = 0) (hshape : ReadoffShapeF φ f Γ) : ReadoffGoalF φ f Γ := by
   induction dd with
@@ -187,7 +187,7 @@ theorem readoff_sigma1_Zef {φ : ArithmeticSemiformula ℕ 1}
 /-- **`headline_readoff_Zef`** — the slot-calculus exit: a rank-0 `Zef` root deriving `{∃⁰ φ}`
 yields a numeric witness `≤ f 0`.  The slot-form of `headline_readoff`; the numeric content of
 the whole derivation is carried in `f 0`. -/
-theorem headline_readoff_Zef {φ : ArithmeticSemiformula ℕ 1}
+lemma headline_readoff_Zef {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     (dd : Zef α e H f 0 {(∃⁰ φ)}) :
     ∃ n ≤ f 0, atomTrue (φ/[nm n]) := by

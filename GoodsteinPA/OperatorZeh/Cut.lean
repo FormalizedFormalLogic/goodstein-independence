@@ -14,7 +14,7 @@ open GoodsteinPA.OperatorZinfty
 
 /-- **The ∀-family member re-slots to `g∘f`**: for `g` monotone, `f` monotone + inflationary,
 and witness `n ≤ f 0`, `rel1 g n ≤ g∘f` pointwise. -/
-theorem reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
+lemma reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
     (hf_infl : ∀ x, x ≤ f x) (hf_mono : Monotone f) {n : ℕ} (hn : n ≤ f 0) (x : ℕ) :
     rel1 g n x ≤ (g ∘ f) x := by
   simp only [rel1, Function.comp]
@@ -24,7 +24,7 @@ theorem reslot_family {f g : ℕ → ℕ} (hg_mono : Monotone g)
   · rw [max_eq_left h]; exact le_trans hn (hf_mono (Nat.zero_le x))
 
 /-- **The ∃-side reduct re-slots to `g∘f`**: `f ≤ g∘f` for `g` inflationary. -/
-theorem reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) (x : ℕ) :
+lemma reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) (x : ℕ) :
     f x ≤ (g ∘ f) x := hg_infl (f x)
 
 /-! ## The running-family reduction, sorry-free -/
@@ -38,7 +38,7 @@ the two axis-critical moves:
   could not cross;
 - **`allω`** — each branch's IH output slot `g ∘ rel1 f' n` is `rel1 (g∘f') n` by `rel1_comp`
   (definitional), exactly the `allω` node's branch slot. -/
-theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
+lemma cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef α e H' (rel1 g n) c (insert (φ/[nm n]) Γ))
@@ -190,7 +190,7 @@ variable {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticForm
 control `E` and stage-slots, output slot `g∘f`.  Invert the ∀-side `D₁` (slot `g`) to the
 running family via `allInv_Zef`, then apply `cutReduceAllAuxRunning_Zf` against the ∃-side `D₂`
 (slot `f`).  Both premises are `ZefProv` wrappers; slots monotone + inflationary. -/
-theorem stepAllω_Zf (hENF : E.NF) (hχc : χ.complexity < c)
+lemma stepAllω_Zf (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
     (D₁ : ZefProv (expTower βφ) E H g c (insert (∀⁰ χ) Γ))
@@ -212,7 +212,7 @@ theorem stepAllω_Zf (hENF : E.NF) (hχc : χ.complexity < c)
 slots `g` (∀-family) and `f` (∃-side) compose to `g ∘ f` on the output, at the fixed control `E`
 (the raise/iteration live in `cutElimPass_Zf` alone).  A direct consequence of `stepAllω_Zf`;
 seam 1 reverses in the slot form. -/
-theorem probe_cut_all_arm_Zf (hENF : E.NF) (hχc : χ.complexity < c)
+lemma probe_cut_all_arm_Zf (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
     (IH1 : ZefProv (expTower βφ) E H g c (insert (∀⁰ χ) Γ))

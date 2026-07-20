@@ -57,13 +57,13 @@ variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {m c : ℕ} {Γ :
 namespace Zef
 
 /-- Sequent weakening (height-preserving). -/
-theorem weakening {Δ : Finset (ArithmeticFormula ℕ)}
+lemma weakening {Δ : Finset (ArithmeticFormula ℕ)}
     (hsub : Δ ⊆ Γ) (dd : Zef α e H f c Δ) : Zef α e H f c Γ :=
   Zef.wk hsub dd
 
 /-- **Slot weakening** (`mono_f` — the slot analog of `Zeh.mono_H`'s stage-raise): a larger slot
 is more permissive.  `exI` rides `n ≤ f 0 ≤ f' 0`; `allω` rides `rel1_mono`. -/
-theorem mono_f (dd : Zef α e H f c Γ) {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) : Zef α e H f' c Γ := by
+lemma mono_f (dd : Zef α e H f c Γ) {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) : Zef α e H f' c Γ := by
   induction dd generalizing f' with
   | axL r v hp hn => exact Zef.axL r v hp hn
   | wk hsub _ ih => exact Zef.wk hsub (ih hff')
@@ -79,7 +79,7 @@ theorem mono_f (dd : Zef α e H f c Γ) {f' : ℕ → ℕ} (hff' : ∀ x, f x �
 /-- **Operator irrelevance** (R1, slot form): the generator slot `H` carries no information
 (every `Cl H β` side condition is at an NF ordinal — `Cl_of_NF`), so a derivation at `H` is one
 at any `H'`, same `(α, e, f, c, Γ)`.  Mirrors `Zeh.change_H`. -/
-theorem change_H (dd : Zef α e H f c Γ) {H' : ONote → Prop} : Zef α e H' f c Γ := by
+lemma change_H (dd : Zef α e H f c Γ) {H' : ONote → Prop} : Zef α e H' f c Γ := by
   induction dd generalizing H' with
   | axL r v hp hn => exact Zef.axL r v hp hn
   | wk hsub _ ih => exact Zef.wk hsub ih
@@ -94,7 +94,7 @@ theorem change_H (dd : Zef α e H f c Γ) {H' : ONote → Prop} : Zef α e H' f 
 
 /-- Combined operator+slot move (operator free via `change_H`, slot raised via `mono_f`) — the
 `mono_H` analog the inversion port needs. -/
-theorem mono_Hf (dd : Zef α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
+lemma mono_Hf (dd : Zef α e H f c Γ) {H' : ONote → Prop} {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
     Zef α e H' f' c Γ := (dd.change_H).mono_f hff'
 
 end Zef
@@ -105,14 +105,14 @@ def ZefProv (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (Γ 
 
 namespace ZefProv
 
-theorem of (hNF : α.NF) (hH : Cl H α) (D : Zef α e H f c Γ) : ZefProv α e H f c Γ :=
+lemma of (hNF : α.NF) (hH : Cl H α) (D : Zef α e H f c Γ) : ZefProv α e H f c Γ :=
   ⟨α, le_refl _, hNF, hH, D⟩
 
-theorem mono {β : ONote} (hα : α ≤ β) (D : ZefProv α e H f c Γ) : ZefProv β e H f c Γ := by
+lemma mono {β : ONote} (hα : α ≤ β) (D : ZefProv α e H f c Γ) : ZefProv β e H f c Γ := by
   obtain ⟨α', hα', hNF, hH, D⟩ := D
   exact ⟨α', le_trans hα' hα, hNF, hH, D⟩
 
-theorem weakening {Δ : Finset (ArithmeticFormula ℕ)}
+lemma weakening {Δ : Finset (ArithmeticFormula ℕ)}
     (h : Γ ⊆ Δ) (D : ZefProv α e H f c Γ) : ZefProv α e H f c Δ := by
   obtain ⟨α', hα', hNF, hH, D⟩ := D
   exact ⟨α', hα', hNF, hH, D.wk h⟩
@@ -131,7 +131,7 @@ slot — nothing the stage calculus proved is lost. -/
 
 /-- **Stage→slot embedding `Zeh → Zef`** at the root slot `rel1 (hardy e) m`.  Witnesses that the
 function-slot judgment is a conservative generalization of the ℕ-stage judgment. -/
-theorem zeh_to_zef (d : Zeh α e H m c Γ) : Zef α e H (rel1 (hardy e) m) c Γ := by
+lemma zeh_to_zef (d : Zeh α e H m c Γ) : Zef α e H (rel1 (hardy e) m) c Γ := by
   induction d with
   | axL r v hp hn => exact Zef.axL r v hp hn
   | wk hsub _ ih => exact Zef.wk hsub ih
@@ -155,7 +155,7 @@ cuts before eliminating them and to rebuild ω-nodes.  None raises the control; 
 
 /-- **`c`-monotonicity** (cut rank): a derivation valid at rank `c` is valid at any `c' ≥ c`.
 Only the `cut` rule reads `c` (via `hcompl : φ.complexity < c`), so every other case threads. -/
-theorem Zef.mono_c (dd : Zef α e H f c Γ) {c' : ℕ} (hc : c ≤ c') : Zef α e H f c' Γ := by
+lemma Zef.mono_c (dd : Zef α e H f c Γ) {c' : ℕ} (hc : c ≤ c') : Zef α e H f c' Γ := by
   induction dd generalizing c' with
   | axL r v hp hn => exact Zef.axL r v hp hn
   | wk hsub _ ih => exact Zef.wk hsub (ih hc)
@@ -173,7 +173,7 @@ the cut rule at the wrapper level — combine proofs of `φ` and `∼φ` (with `
 into a proof of `Γ` at ordinal `osucc (βφ + βψ)`, same rank and control (no rank-lowering, no
 control-raise — those belong to `cutElimPass_Zf`/the reduction).  A step/reduction assembly
 would reuse this to introduce cuts before eliminating them. -/
-theorem ZefProv.cut {βφ βψ : ONote} (φ : ArithmeticFormula ℕ)
+lemma ZefProv.cut {βφ βψ : ONote} (φ : ArithmeticFormula ℕ)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hcompl : φ.complexity < c)
     (D₁ : ZefProv βφ e H f c (insert φ Γ)) (D₂ : ZefProv βψ e H f c (insert (∼φ) Γ)) :
     ZefProv (osucc (βφ + βψ)) e H f c Γ := by
@@ -191,7 +191,7 @@ theorem ZefProv.cut {βφ βψ : ONote} (φ : ArithmeticFormula ℕ)
 /-- **`ZefProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
 wrapper level — the output ordinal `osucc β` is fully determined, no rank/control change.
 Reused by the assembly to introduce existentials at the prov level. -/
-theorem ZefProv.exI {β : ONote}
+lemma ZefProv.exI {β : ONote}
     (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβNF : β.NF) (hβH : Cl H β)
     (hbound : n ≤ f 0) (D : ZefProv β e H f c (insert (φ/[nm n]) Γ)) :
     ZefProv (osucc β) e H f c (insert (∃⁰ φ) Γ) := by
@@ -203,7 +203,7 @@ theorem ZefProv.exI {β : ONote}
 wrapper level.  Each branch's `≤`-slack witness is threaded through (`< α` survives since
 `β' n ≤ β n < α`); the output witness is `α` itself (needs `Cl H α`).  Reused by the
 assembly to rebuild ω-nodes over the branch family. -/
-theorem ZefProv.allω (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
+lemma ZefProv.allω (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
     (hβ : ∀ n, β n < α) (hαNF : α.NF) (hαH : Cl H α)
     (D : ∀ n, ZefProv (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
     ZefProv α e H f c (insert (∀⁰ φ) Γ) :=
