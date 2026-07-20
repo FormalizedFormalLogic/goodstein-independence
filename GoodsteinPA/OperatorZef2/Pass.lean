@@ -27,29 +27,24 @@ The crux decomposition is in three cases:
 - `cut`: sub-rank rebuild (χ.complexity < c) OR TOP-rank eliminate (χ.complexity = c, ∀/∃ →
   `stepAllω_Zf2` + `collapse_add_lt` + `ewIter_comp_le`; the c=0 atomic case needs an atom-cut lemma).
 -/
-theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
-    ∀ {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {r : ℕ},
-      Zef2 α e H f r Γ → r = c + 1 → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
-      α.NF → Cl H α →
-      Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
-  intro α H f Γ r D
+theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
+    {Γ : Finset (ArithmeticFormula ℕ)} {r : ℕ} (D : Zef2 α e H f r Γ) (hr : r = c + 1)
+    (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hlow : ∀ m, 2 * m + 1 ≤ f m)
+    (hαNF : α.NF) (hαH : Cl H α) :
+    Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
   induction D with
   | @axL α e H f r Γ ar hαN rel v hp hn =>
-      intro hr hmono hinfl hlow hαNF hαH
       have hg := Nlog_collapse_le hlow hαN
       exact Zef2Prov.of (collapse_NF hαNF) (Cl_of_NF (collapse_NF hαNF)) hg
         (Zef2.axL hg rel v hp hn)
   | @wk α e H f r Δ Γ hαN hsub D' ih =>
-      intro hr hmono hinfl hlow hαNF hαH
       exact (ih heNF hr hmono hinfl hlow hαNF hαH).weakening hsub
   | @weak α β e H f r Δ Γ hαN hβ hβNF hαNF' hβH hsub D' ih =>
-      intro hr hmono hinfl hlow hαNF hαH
       obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih heNF hr hmono hinfl hlow hβNF (Cl_of_NF hβNF)
       have hslot := ewIter_slot_le hmono hinfl hβNF hβ (Zef2.gate D')
       exact ⟨a, le_trans hale (le_of_lt (collapse_strictMono hβNF hβ)), haNF, haH,
         le_trans hag (hslot 0), (Da.mono_f hslot).wk (le_trans hag (hslot 0)) hsub⟩
   | @allω α e H f r Γ hαN χ β hβ hβNF hαNF' hβH dd ih =>
-      intro hr hmono hinfl hlow hαNF hαH
       have hg := Nlog_collapse_le hlow hαN
       have hbranch : ∀ n, Zef2Prov (collapse (β n)) e (adjoin H n)
           (ewIter (rel1 f n) (β n)) c (insert (χ/[nm n]) Γ) := fun n =>
@@ -73,7 +68,6 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
       exact Zef2.allω hg χ a haltcol haNF (collapse_NF hαNF)
         (fun n => Cl_of_NF (haNF n)) Da'
   | @exI α β e H f r Γ hαN χ n hβ hβNF hαNF' hβH hbound dχ ih =>
-      intro hr hmono hinfl hlow hαNF hαH
       obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih heNF hr hmono hinfl hlow hβNF (Cl_of_NF hβNF)
       have hslot := ewIter_slot_le hmono hinfl hβNF hβ (Zef2.gate dχ)
       have haltcol : a < collapse α := lt_of_le_of_lt hale (collapse_strictMono hβNF hβ)
@@ -92,7 +86,6 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) :
       exact Zef2.exI hg χ n haltcol haNF (collapse_NF hαNF) haH hbound'
         ((Da.mono_f hslot).wk (le_trans hag (hslot 0)) (Finset.Subset.refl _))
   | @cut α βφ βψ e H f r Γ hαN χ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF' hβφH hβψH d₁ d₂ ih₁ ih₂ =>
-      intro hr hmono hinfl hlow hαNF hαH
       have hg := Nlog_collapse_le hlow hαN
       have hf0 : f 0 ≤ ewIter f α 0 := by
         by_cases h0 : α = 0

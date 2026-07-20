@@ -21,26 +21,21 @@ derivation of `Γ` has a standard-model-true member.  The `allω` (Π) case comb
 branch's true member is in the shared context `Γ` (done), or every branch is true at its own
 instance `φ/[nm n]` — whence `∀⁰ φ` is true (`atomTrue (∀⁰ φ) = ∀ k, atomTrue (φ/[nm k])`).
 Slot-INDEPENDENT (truth does not see `f`). -/
-theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-    Zef2 α e H f c Γ → c = 0 → ∃ ψ ∈ Γ, atomTrue ψ := by
-  intro α e H f c Γ dd
+theorem sound0 {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
-      intro _
       by_cases htrue : atomTrue (Semiformula.rel r v)
       · exact ⟨_, hp, htrue⟩
       · refine ⟨_, hn, ?_⟩
         simpa [atomTrue, Semiformula.eval_nrel, Semiformula.eval_rel, Function.comp_def] using htrue
   | @wk α e H f c Δ Γ hαN hsub _ ih =>
-      intro hc
       obtain ⟨ψ, hψ, htrue⟩ := ih hc
       exact ⟨ψ, hsub hψ, htrue⟩
   | @weak α β e H f c Δ Γ hαN hβ hβNF hαNF hβH hsub _ ih =>
-      intro hc
       obtain ⟨ψ, hψ, htrue⟩ := ih hc
       exact ⟨ψ, hsub hψ, htrue⟩
   | @allω α e H f c Γ hαN φ β hβ hβNF hαNF hβH _ ih =>
-      intro hc
       rcases Classical.em (∃ n : ℕ, ∃ ψ ∈ Γ, atomTrue ψ) with hctx | hctx
       · obtain ⟨n, ψ, hψ, htrue⟩ := hctx
         exact ⟨ψ, Finset.mem_insert_of_mem hψ, htrue⟩
@@ -56,7 +51,6 @@ theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : 
         have hx := hall x
         simpa [atomTrue, Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton] using hx
   | @exI α β e H f c Γ hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro hc
       obtain ⟨ψ, hψ, htrue⟩ := ih hc
       rcases Finset.mem_insert.mp hψ with rfl | hψΓ
       · refine ⟨∃⁰ φ, Finset.mem_insert_self _ _, ?_⟩
@@ -65,7 +59,7 @@ theorem sound0 : ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : 
           simpa [atomTrue, Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton] using htrue⟩
       · exact ⟨ψ, Finset.mem_insert_of_mem hψΓ, htrue⟩
   | @cut α βφ βψ e H f c Γ hαN φ hcompl hcutRead _ _ _ _ _ _ _ _ _ _ _ =>
-      intro hc; subst hc
+      subst hc
       exact absurd hcompl (by omega)
 
 /-- `atomTrue (∀⁰ χ) ↔ ∀ k, atomTrue (χ/[nm k])` — a standard ω-universal is standard-model-true
@@ -94,15 +88,15 @@ theorem atomTrue_ex_iff (χ : ArithmeticSemiformula ℕ 1) :
 /-- The **spine head** of a formula: strip the `∀/∃` quantifier spine; report the terminal's
 polarity + relation symbol (arity-packed, so comparisons never pay the dependent-`Rel` tax), or
 `none` for the `Zef2`-inert heads `⊤/⊥/⋏/⋎`. -/
-def spineHead : ∀ {n}, ArithmeticSemiformula ℕ n → Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))
-  | _, Semiformula.rel r _ => some (true, ⟨_, r⟩)
-  | _, Semiformula.nrel r _ => some (false, ⟨_, r⟩)
-  | _, Semiformula.all φ => spineHead φ
-  | _, Semiformula.exs φ => spineHead φ
-  | _, Semiformula.verum => none
-  | _, Semiformula.falsum => none
-  | _, Semiformula.and _ _ => none
-  | _, Semiformula.or _ _ => none
+def spineHead {n} : ArithmeticSemiformula ℕ n → Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))
+  | Semiformula.rel r _ => some (true, ⟨_, r⟩)
+  | Semiformula.nrel r _ => some (false, ⟨_, r⟩)
+  | Semiformula.all φ => spineHead φ
+  | Semiformula.exs φ => spineHead φ
+  | Semiformula.verum => none
+  | Semiformula.falsum => none
+  | Semiformula.and _ _ => none
+  | Semiformula.or _ _ => none
 
 /-- Rewriting (in particular substitution `φ/[nm n]`) preserves the spine head. -/
 theorem spineHead_rew : ∀ {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : ArithmeticSemiformula ℕ n₁),
@@ -142,13 +136,11 @@ theorem spineHead_substs (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) :
 spine head `t`, no `Zef2` derivation at cut-rank 0 exists: `axL` would force
 `some (true, s) = t = some (false, s)`; `allω`/`exI` insert spine-head-preserving instances;
 `wk`/`weak` shrink; `cut` needs `complexity < 0`. -/
-theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))} :
-    ∀ {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2 α e H f c Γ → c = 0 → (∀ ψ ∈ Γ, spineHead ψ = t) → False := by
-  intro α e H f c Γ dd
+theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))}
+    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (dd : Zef2 α e H f c Γ) (hc : c = 0) (hyp : ∀ ψ ∈ Γ, spineHead ψ = t) : False := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
-      intro _ hyp
       have h1 := hyp _ hp
       have h2 := hyp _ hn
       rw [show spineHead (Semiformula.rel r v) = some (true, ⟨ar, r⟩) from rfl] at h1
@@ -156,13 +148,10 @@ theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × 
       rw [← h2] at h1
       simp at h1
   | wk hαN hsub _ ih =>
-      intro hc hyp
       exact ih hc (fun ψ hψ => hyp ψ (hsub hψ))
   | weak hαN hβ hβNF hαNF hβH hsub _ ih =>
-      intro hc hyp
       exact ih hc (fun ψ hψ => hyp ψ (hsub hψ))
   | @allω α e H f c Γ hαN φ β hβ hβNF hαNF hβH dd ih =>
-      intro hc hyp
       refine ih 0 hc ?_
       intro ψ hψ
       rcases Finset.mem_insert.mp hψ with rfl | hψΓ
@@ -170,7 +159,6 @@ theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × 
         simpa using hyp (∀⁰ φ) (Finset.mem_insert_self _ _)
       · exact hyp ψ (Finset.mem_insert_of_mem hψΓ)
   | @exI α β e H f c Γ hαN φ n hβ hβNF hαNF hβH hbound dd ih =>
-      intro hc hyp
       refine ih hc ?_
       intro ψ hψ
       rcases Finset.mem_insert.mp hψ with rfl | hψΓ
@@ -178,7 +166,6 @@ theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × 
         simpa using hyp (∃⁰ φ) (Finset.mem_insert_self _ _)
       · exact hyp ψ (Finset.mem_insert_of_mem hψΓ)
   | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ _ _ =>
-      intro hc _
       omega
 
 variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}

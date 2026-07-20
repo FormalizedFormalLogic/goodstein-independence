@@ -45,7 +45,8 @@ theorem ewN_add_le : ∀ (a o : ONote), ewN (a + o) ≤ ewN a + ewN o := by
       simp only [ewN_oadd]; omega
 
 /-- `ewN` grows by at most one under the notation successor (for normal forms). -/
-theorem ewN_osucc_le : ∀ {o : ONote}, o.NF → ewN (osucc o) ≤ ewN o + 1
+theorem ewN_osucc_le {o : ONote} (h : o.NF) : ewN (osucc o) ≤ ewN o + 1 :=
+  match o, h with
   | 0, _ => by simp [osucc, ewN]
   | oadd 0 n a, h => by
       have ha0 : a = 0 := by
