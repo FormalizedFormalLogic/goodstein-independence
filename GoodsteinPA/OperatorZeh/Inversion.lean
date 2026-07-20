@@ -11,6 +11,8 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
+variable {α e : ONote} {H : ONote → Prop} {m c : ℕ} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-! ## The inversion suite
 
 `allInv_Zeh` is the six-case induction mirroring `Provable.allInv` (`OperatorZinfty.lean`), with the
@@ -46,8 +48,8 @@ theorem princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula
 
 - [Tow20, Theorem 19.4]
 -/
-theorem allInv_Zeh {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) {α e : ONote} {H : ONote → Prop} {m c : ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zeh α e H m c Γ) (hmem : (∀⁰ φ₀) ∈ Γ) :
+theorem allInv_Zeh {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
+    (dd : Zeh α e H m c Γ) (hmem : (∀⁰ φ₀) ∈ Γ) :
     Zeh α e (adjoin H n₀) (max m n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   induction dd with
   | @axL α e H m c Γ ar r v hp hn =>
@@ -152,8 +154,8 @@ theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b �
 
 /-- **∨-inversion, `Zeh` form**: replace `φ ⋎ ψ` by `φ, ψ`, same `(α, e, H, m, c)`. Standard
 ∨-inversion; cf. [Tow20, §19]. -/
-theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote → Prop} {m c : ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zeh α e H m c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
+theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ}
+    (dd : Zeh α e H m c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
     Zeh α e H m c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   induction dd with
   | @axL α e H m c Γ ar r v hp hn =>
@@ -197,8 +199,8 @@ theorem orInv_Zeh {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote → 
 
 - [Tow20, Theorem 19.3]
 -/
-theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote → Prop} {m c : ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zeh α e H m c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ}
+    (dd : Zeh α e H m c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     Zeh α e H m c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e H m c Γ ar r v hp hn =>
@@ -239,8 +241,8 @@ theorem andInvL_Zeh {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote �
 
 - [Tow20, Theorem 19.3]
 -/
-theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote → Prop} {m c : ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zeh α e H m c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ}
+    (dd : Zeh α e H m c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     Zeh α e H m c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e H m c Γ ar r v hp hn =>
@@ -280,15 +282,14 @@ theorem andInvR_Zeh {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote �
 /-! ## ∀-inversion in the slot calculus (feeds the reduction from a ∀-side derivation) -/
 
 /-- `f ≤ rel1 f n₀` for monotone `f` (`f x ≤ f (max n₀ x)`). -/
-private theorem f_le_rel1 {f : ℕ → ℕ} (hf : Monotone f) (n₀ : ℕ) :
+private theorem f_le_rel1 (hf : Monotone f) (n₀ : ℕ) :
     ∀ x, f x ≤ rel1 f n₀ x := fun x => hf (le_max_right n₀ x)
 
 /-- **`allInv_Zef`** — ∀-inversion, slot form: port of `allInv_Zeh` with `max m n₀ ⤳ rel1 f n₀`.
 The extracted instance runs at the relativization `adjoin H n₀` and the relativized slot
 `rel1 f n₀`.  Needs `f` monotone (to raise `exI` bounds `n ≤ f 0 ≤ (rel1 f n₀) 0 = f n₀`).  The
 operator threading is FREE (`mono_Hf`/`change_H`, R1). -/
-theorem allInv_Zef {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) {α e : ONote} {H : ONote → Prop}
-    {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zef α e H f c Γ)
+theorem allInv_Zef {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Zef α e H f c Γ)
     (hmono : Monotone f) (hmem : (∀⁰ φ₀) ∈ Γ) :
     Zef α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   induction dd with
@@ -353,8 +354,8 @@ never principal, so every case threads the inversion past a passive side formula
 
 /-- **∨-inversion, `Zef` form**: replace `φ ⋎ ψ` by `φ, ψ`, same `(α, e, H, f, c)`. Standard
 ∨-inversion; cf. [Tow20, §19]. -/
-theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zef α e H f c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
+theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ}
+    (dd : Zef α e H f c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
     Zef α e H f c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   induction dd with
   | @axL α e H f c Γ ar r v hp hn =>
@@ -398,8 +399,8 @@ theorem orInv_Zef {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote → 
 
 - [Tow20, Theorem 19.3]
 -/
-theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zef α e H f c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ}
+    (dd : Zef α e H f c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     Zef α e H f c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e H f c Γ ar r v hp hn =>
@@ -440,8 +441,8 @@ theorem andInvL_Zef {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote �
 
 - [Tow20, Theorem 19.3]
 -/
-theorem andInvR_Zef {φ ψ : ArithmeticFormula ℕ} {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zef α e H f c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+theorem andInvR_Zef {φ ψ : ArithmeticFormula ℕ}
+    (dd : Zef α e H f c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
     Zef α e H f c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e H f c Γ ar r v hp hn =>

@@ -10,6 +10,8 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
+variable {α e : ONote} {H : ONote → Prop} {m c : ℕ} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-! ## The bounding read-off — the exit
 
 The witness read-off exit follows the restricted-cut deduction of [Tow20, §17, Theorem 17.1];
@@ -38,7 +40,6 @@ the sequent.  The bound consumes ONLY the judgment's control `e` and stage `m`.
 -/
 theorem readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    {α e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : Zeh α e H m c Γ) (hc : c = 0) (hshape : ReadoffShape φ e m Γ) : ReadoffGoal φ e m Γ := by
   induction dd with
   | @axL α e H m c Γ ar r v hp hn =>
@@ -90,7 +91,6 @@ theorem readoff_sigma1 {φ : ArithmeticSemiformula ℕ 1}
 per-instance Σ₁ sequent `{∃⁰ φ}` (atomic matrix) yields a numeric witness `≤ hardy e m`. -/
 theorem headline_readoff {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    {α e : ONote} {H : ONote → Prop} {m : ℕ}
     (dd : Zeh α e H m 0 {(∃⁰ φ)}) :
     ∃ n ≤ hardy e m, atomTrue (φ/[nm n]) := by
   have hshape : ReadoffShape φ e m {(∃⁰ φ)} := by
@@ -137,7 +137,6 @@ sequent: a witness `n ≤ f 0` with `φ/[nm n]` true, or a true literal.  The bo
 slot at 0. -/
 theorem readoff_sigma1_Zef {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : Zef α e H f c Γ) (hc : c = 0) (hshape : ReadoffShapeF φ f Γ) : ReadoffGoalF φ f Γ := by
   induction dd with
   | @axL α e H f c Γ ar r v hp hn =>
@@ -190,7 +189,6 @@ yields a numeric witness `≤ f 0`.  The slot-form of `headline_readoff`; the nu
 the whole derivation is carried in `f 0`. -/
 theorem headline_readoff_Zef {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
     (dd : Zef α e H f 0 {(∃⁰ φ)}) :
     ∃ n ≤ f 0, atomTrue (φ/[nm n]) := by
   have hshape : ReadoffShapeF φ f {(∃⁰ φ)} := by

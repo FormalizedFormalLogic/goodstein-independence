@@ -10,6 +10,8 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
+variable {f : ℕ → ℕ} {e : ONote} {m : ℕ}
+
 /-! ## The f-slot elimination suite
 
 The number-theoretic operator slot `f : ℕ → ℕ` is what a plain numeric stage counter cannot be:
@@ -50,7 +52,7 @@ theorem normControlled_root (e : ONote) : NormControlled (fun x => hardy e x) e 
 relativized at branch `n` and run at the max-adjoined stage, is controlled by `rel1 f n`.
 This is `rel1_comp`'s semantic payload: the branch-unbounded demand that overflowed every
 `Provable` `d`-slot re-enters through ONE function slot's relativization. -/
-theorem normControlled_rel1 {f : ℕ → ℕ} {e : ONote} {m : ℕ} (h : NormControlled f e m)
+theorem normControlled_rel1 (h : NormControlled f e m)
     (n : ℕ) : NormControlled (rel1 f n) e (max m n) := by
   intro x
   have hx := h (max n x)
@@ -60,14 +62,14 @@ theorem normControlled_rel1 {f : ℕ → ℕ} {e : ONote} {m : ℕ} (h : NormCon
 
 /-- Norm control is monotone in the slot (assembly plumbing: a dominating slot still
 controls; reused when a reduction outputs a larger-than-needed composed slot). -/
-theorem NormControlled.mono {f f' : ℕ → ℕ} {e : ONote} {m : ℕ}
+theorem NormControlled.mono {f' : ℕ → ℕ}
     (h : NormControlled f e m) (hff' : ∀ x, f x ≤ f' x) : NormControlled f' e m :=
   fun x => le_trans (h x) (hff' x)
 
 /-- Norm control is antitone in the stage: a slot controlling stage `m` controls any
 smaller stage `m' ≤ m` (the `exI` bound only shrinks).  Reused when the reduction runs a
 premise at a lower stage than the conclusion. -/
-theorem NormControlled.stage_antitone {f : ℕ → ℕ} {e : ONote} {m m' : ℕ}
+theorem NormControlled.stage_antitone {m' : ℕ}
     (h : NormControlled f e m) (hm : m' ≤ m) : NormControlled f e m' :=
   fun x => le_trans (hardy_monotone e (by omega)) (h x)
 
@@ -76,7 +78,7 @@ theorem NormControlled.stage_antitone {f : ℕ → ℕ} {e : ONote} {m m' : ℕ}
 (condition `(f.1)`: `2y+1 ≤ f y ⟹ y ≤ f y`), then the composed slot `f ∘ g` still controls `e`
 at `m`.  Note: this is the *fixed*-control fact; the *raised*-control demand belongs to
 `cutElimPass_Zf`'s pinned iterate, not here. -/
-theorem NormControlled.comp {f g : ℕ → ℕ} {e : ONote} {m : ℕ}
+theorem NormControlled.comp {g : ℕ → ℕ}
     (hg : NormControlled g e m) (hf : ∀ y, y ≤ f y) : NormControlled (f ∘ g) e m :=
   fun x => le_trans (hg x) (hf (g x))
 
@@ -86,7 +88,7 @@ slot `f ∘ g` is controlled at `m`.  Unlike `NormControlled.comp` this needs no
 inflationarity hypothesis on `f`: control of `g` already forces `g` inflationary
 (`x ≤ max m₀ x ≤ hardy e (max m₀ x) ≤ g x`, via `le_hardy`), and then
 `f (g x) ≥ hardy e (max m (g x)) ≥ hardy e (max m x)` (`hf` at `g x`, `hardy_monotone`). -/
-theorem normControlled_comp_running {f g : ℕ → ℕ} {e : ONote} {m₀ m : ℕ}
+theorem normControlled_comp_running {g : ℕ → ℕ} {m₀ : ℕ}
     (hg : NormControlled g e m₀) (hf : NormControlled f e m) : NormControlled (f ∘ g) e m := by
   intro x
   have hxg : x ≤ g x :=
@@ -112,12 +114,12 @@ ordinal-indexed iterate `iterSlot` (below) is built on.
 -/
 
 /-- The iterate is monotone if `f` is. -/
-theorem iter_monotone {f : ℕ → ℕ} (hf : Monotone f) : ∀ k, Monotone f^[k]
+theorem iter_monotone (hf : Monotone f) : ∀ k, Monotone f^[k]
   | 0 => monotone_id
   | k + 1 => by rw [Function.iterate_succ]; exact (iter_monotone hf k).comp hf
 
 /-- The iterate is inflationary if `f` is. -/
-theorem iter_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) : ∀ k x, x ≤ f^[k] x
+theorem iter_infl (hf : ∀ x, x ≤ f x) : ∀ k x, x ≤ f^[k] x
   | 0, x => le_rfl
   | k + 1, x => by
       rw [Function.iterate_succ']
@@ -125,7 +127,7 @@ theorem iter_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) : ∀ k x, x ≤ f^[
 
 /-- The iterate preserves `NormControlled` (for `k ≥ 1`): `f^[k+1] x ≥ f x ≥ hardy e (max m x)`,
 via `f^[k]` inflationary. -/
-theorem iter_normControlled {f : ℕ → ℕ} {e : ONote} {m : ℕ}
+theorem iter_normControlled
     (hf : NormControlled f e m) (hf_infl : ∀ x, x ≤ f x) (k : ℕ) :
     NormControlled f^[k + 1] e m := by
   intro x
@@ -134,7 +136,7 @@ theorem iter_normControlled {f : ℕ → ℕ} {e : ONote} {m : ℕ}
 
 /-- Iterate monotone in the index count: `f^[j] ≤ f^[k]` pointwise for `j ≤ k`, `f` inflationary +
 monotone.  Feeds `mono_f` when a pass outputs a longer iterate than a sibling branch needs. -/
-theorem iter_le_of_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
+theorem iter_le_of_le (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
     {j k : ℕ} (hjk : j ≤ k) (x : ℕ) : f^[j] x ≤ f^[k] x := by
   obtain ⟨d, rfl⟩ := Nat.le.dest hjk
   rw [Function.iterate_add_apply]
@@ -223,7 +225,7 @@ theorem iterSlot_limit (f : ℕ → ℕ) (o) {fs} (h : fundamentalSequence o = S
 
 /-- **`iterSlot f α` is inflationary** if `f` is (slot stays inflationary through the pass).
 Mirrors `le_hardy`. -/
-theorem iterSlot_infl {f : ℕ → ℕ} (hf_infl : ∀ x, x ≤ f x) (o : ONote) (n : ℕ) :
+theorem iterSlot_infl (hf_infl : ∀ x, x ≤ f x) (o : ONote) (n : ℕ) :
     n ≤ iterSlot f o n := by
   rcases e : fundamentalSequence o with (_ | a) | fs
   · rw [iterSlot_zero' f o e]; exact hf_infl n
@@ -248,7 +250,7 @@ iterate, then `iterSlot f α x ≤ iterSlot f β x`.  Unlike the fast-growing tr
 step `iterSlot f β x = iterSlot f γ (f x)` shifts the argument from `x` to `f x`; that shift is
 absorbed by inflationarity (`x ≤ f x`, `hf_infl`) plus monotonicity of the intermediate
 `iterSlot f γ` — the exact analog of `hardy_le_of_reaches`'s `Nat.le_succ` absorption. -/
-theorem iterSlot_le_of_reaches {f : ℕ → ℕ} (hf_infl : ∀ x, x ≤ f x) {x : ℕ} {β α : ONote}
+theorem iterSlot_le_of_reaches (hf_infl : ∀ x, x ≤ f x) {x : ℕ} {β α : ONote}
     (h : Reaches x β α) (hmono : ∀ γ, Reaches x β γ → Monotone (iterSlot f γ)) :
     iterSlot f α x ≤ iterSlot f β x := by
   induction h with
@@ -270,7 +272,7 @@ monotonicity, and the limit case combines monotonicity of `iterSlot f (α[n])` (
 step `iterSlot f (α[n])(n+1) ≤ iterSlot f (α[n+1])(n+1)` = `iterSlot_le_of_reaches` on the
 structural Bachmann reach `fastGrowing_bachmann_reach` (every intermediate is `< α`, so the IH
 supplies its monotonicity). -/
-theorem iterSlot_monotone {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
+theorem iterSlot_monotone (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
     (α : ONote) : Monotone (iterSlot f α) := by
   refine monotone_nat_of_le_succ (fun n => ?_)
   rcases e : fundamentalSequence α with (_ | a) | fs
@@ -314,7 +316,7 @@ argument reaches the `norm`-budget of the smaller ordinal.  So any output slot w
 node-relative (argument `≥ norm` of the node's ordinal — e.g. a relativized
 `rel1 (iterSlot f α) K` with `K ≥ norm α`) restores the `weak`/`exI`/`cut` slot-lift that the bare
 `iterSlot f α` cannot supply. -/
-theorem iterSlot_le_of_lt {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
+theorem iterSlot_le_of_lt (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
     {x : ℕ} {α β : ONote} (hα : α.NF) (hβ : β.NF) (hβα : β < α) (hnorm : norm β ≤ x) :
     iterSlot f β x ≤ iterSlot f α x :=
   iterSlot_le_of_reaches hf_infl (reaches_of_lt α hα β hβ hβα hnorm)

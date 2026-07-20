@@ -184,13 +184,14 @@ theorem cutReduceAllAuxRunning_Zf {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {
         (lt_of_le_of_lt ha₂le (Provable.add_osucc_descent hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF hsuccNF ha₁H ha₂H D₁' D₂'
 
+variable {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+  {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
+
 /-- **`stepAllω_Zf`** — the principal ∀/∃ cut-reduction step in the slot calculus, IHs at one
 control `E` and stage-slots, output slot `g∘f`.  Invert the ∀-side `D₁` (slot `g`) to the
 running family via `allInv_Zef`, then apply `cutReduceAllAuxRunning_Zf` against the ∃-side `D₂`
 (slot `f`).  Both premises are `ZefProv` wrappers; slots monotone + inflationary. -/
-theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
-    {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
-    (hENF : E.NF) (hχc : χ.complexity < c)
+theorem stepAllω_Zf (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
     (D₁ : ZefProv (expTower βφ) E H g c (insert (∀⁰ χ) Γ))
@@ -212,9 +213,7 @@ theorem stepAllω_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (Ar
 slots `g` (∀-family) and `f` (∃-side) compose to `g ∘ f` on the output, at the fixed control `E`
 (the raise/iteration live in `cutElimPass_Zf` alone).  A direct consequence of `stepAllω_Zf`;
 seam 1 reverses in the slot form. -/
-theorem probe_cut_all_arm_Zf {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
-    {χ : ArithmeticSemiformula ℕ 1} {βφ βψ : ONote} {f g : ℕ → ℕ}
-    (hENF : E.NF) (hχc : χ.complexity < c)
+theorem probe_cut_all_arm_Zf (hENF : E.NF) (hχc : χ.complexity < c)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x)
     (IH1 : ZefProv (expTower βφ) E H g c (insert (∀⁰ χ) Γ))
