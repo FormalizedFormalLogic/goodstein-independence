@@ -21,7 +21,7 @@ EM/cut/value-substitution tower.
 -/
 
 /-- A fixed numeric index cannot bound the witnesses `n` needed by the induction cut tower. -/
-theorem inductionLeaf_fixedIndex_witnessBound_impossible (e : ONote) (k d : ℕ) :
+lemma inductionLeaf_fixedIndex_witnessBound_impossible (e : ONote) (k d : ℕ) :
     ¬ ∀ n : ℕ, n ≤ hardy e (k + d) := by
   intro h
   have := h (hardy e (k + d) + 1)
@@ -29,13 +29,12 @@ theorem inductionLeaf_fixedIndex_witnessBound_impossible (e : ONote) (k d : ℕ)
 
 /-- The `n`-th `allω` premise runs at index `max k n`, which is large enough to pay for
 the `∃`-witness `n`. -/
-theorem inductionLeaf_runningIndex_witnessBound (e : ONote) (k d n : ℕ) :
-    n ≤ hardy e (max k n + d) :=
+lemma inductionLeaf_runningIndex_witnessBound (e : ONote) (k d n : ℕ) : n ≤ hardy e (max k n + d) :=
   le_trans (by omega) (le_hardy e (max k n + d))
 
 /-- The actual `Provable.exI` move needed in the induction-axiom leaf is legal at the running
 index.  This is the local replacement for the unbounded proof's free `PXFc.exI` step. -/
-theorem inductionLeaf_exI_runningIndex_probe {α β e : ONote} {k d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+lemma inductionLeaf_exI_runningIndex_probe {α β e : ONote} {k d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     {φ : ArithmeticSemiformula ℕ 1}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < max k n + d)
     (D : Provable β e (max k n) d c (insert (φ/[nm n]) Γ)) :
@@ -49,8 +48,7 @@ noncomputable abbrev stdClosedVal (t : ArithmeticTerm ℕ) : ℕ :=
   GoodsteinPA.Compat.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) t
 
 /-- The standard value of the numeral term `nm m` is `m`. -/
-@[simp] lemma stdClosedVal_nm (m : ℕ) : stdClosedVal (nm m) = m := by
-  simp [stdClosedVal, nm]
+@[simp] lemma stdClosedVal_nm (m : ℕ) : stdClosedVal (nm m) = m := by simp [stdClosedVal, nm]
 
 /-- Substitution-composition for extending an assignment by a numeral in the freed variable. -/
 lemma embedding_subst_q_cons {n : ℕ} (w : Fin n → ArithmeticTerm ℕ) (m : ℕ) :
@@ -127,7 +125,7 @@ This is the `Provable` base leaf needed by assignment-carrying embedding: if the
 `R(v)` and `¬R(v')`, and the closed term vectors have equal standard values, a bounded truth leaf
 closes the sequent at any normal ordinal whose norm fits the current budget.
 -/
-theorem embedding_valueCongruentRelAtom_probe {ar : ℕ}
+lemma embedding_valueCongruentRelAtom_probe {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
@@ -145,7 +143,7 @@ Bounded value-congruent atomic closure, negated-relation-positive side.
 
 This is the polarity twin of `embedding_valueCongruentRelAtom_probe`.
 -/
-theorem embedding_valueCongruentNrelAtom_probe {ar : ℕ}
+lemma embedding_valueCongruentNrelAtom_probe {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i))
     (hαNF : α.NF) (hτ : norm α < k + d)
@@ -159,7 +157,7 @@ theorem embedding_valueCongruentNrelAtom_probe {ar : ℕ}
     exact Provable.trueRel r v' ((atomTrue_rel_iff_not_nrel r v').mpr hnrel') hτ hαNF hn
 
 /-- Substituted-term form of the bounded value-congruent relation atom leaf. -/
-theorem embedding_valueCongruentRelSubstAtom_probe {ar n : ℕ}
+lemma embedding_valueCongruentRelSubstAtom_probe {ar n : ℕ}
     (r : (ℒₒᵣ).Rel ar) (w w' : Fin n → ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ n)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
@@ -172,7 +170,7 @@ theorem embedding_valueCongruentRelSubstAtom_probe {ar n : ℕ}
     (fun i => embedding_valm_subst_congr w w' hval (v i)) hαNF hτ hp hn
 
 /-- Substituted-term form of the bounded value-congruent negated-relation atom leaf. -/
-theorem embedding_valueCongruentNrelSubstAtom_probe {ar n : ℕ}
+lemma embedding_valueCongruentNrelSubstAtom_probe {ar n : ℕ}
     (r : (ℒₒᵣ).Rel ar) (w w' : Fin n → ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ n)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
@@ -185,7 +183,7 @@ theorem embedding_valueCongruentNrelSubstAtom_probe {ar n : ℕ}
     (fun i => embedding_valm_subst_congr w w' hval (v i)) hαNF hτ hp hn
 
 /-- Closed-term specialization of the value-congruent relation atom leaf. -/
-theorem embedding_valueCongruentRelClosedTermAtom_probe
+lemma embedding_valueCongruentRelClosedTermAtom_probe
     {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (s s' : ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ 1)
@@ -203,7 +201,7 @@ theorem embedding_valueCongruentRelClosedTermAtom_probe
   · simpa [Semiformula.rew_nrel, Function.comp_def] using hn
 
 /-- Closed-term specialization of the value-congruent negated-relation atom leaf. -/
-theorem embedding_valueCongruentNrelClosedTermAtom_probe
+lemma embedding_valueCongruentNrelClosedTermAtom_probe
     {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (s s' : ArithmeticTerm ℕ)
     (v : Fin ar → ArithmeticSemiterm ℕ 1)
@@ -221,14 +219,14 @@ theorem embedding_valueCongruentNrelClosedTermAtom_probe
   · simpa [Semiformula.rew_rel, Function.comp_def] using hn
 
 /-- Constant-true base case for the bounded value-congruent EM engine. -/
-theorem embedding_valueCongruentVerum_probe {n : ℕ}
+lemma embedding_valueCongruentVerum_probe {n : ℕ}
     (w : Fin n → ArithmeticTerm ℕ)
     (hp : (Rew.subst w ▹ (⊤ : ArithmeticSemiformula ℕ n)) ∈ Γ) :
     Provable α e k d c Γ :=
   Provable.verumR (by simpa using hp)
 
 /-- Constant-false base case for the bounded value-congruent EM engine. -/
-theorem embedding_valueCongruentFalsum_probe {n : ℕ}
+lemma embedding_valueCongruentFalsum_probe {n : ℕ}
     (w' : Fin n → ArithmeticTerm ℕ)
     (hn : (∼(Rew.subst w' ▹ (⊥ : ArithmeticSemiformula ℕ n))) ∈ Γ) :
     Provable α e k d c Γ :=
@@ -247,7 +245,7 @@ This is the assignment-carrying embedding adapter for Foundation's `exs` rule: a
 has been closed by an assignment, its standard value `stdClosedVal s` is used as the numeral witness.
 The only non-structural input is the value-congruent premise converting `ψ[s]` to `ψ[nm (stdClosedVal s)]`.
 -/
-theorem embedding_closedTermExI_of_valueCongruentEM_probe
+lemma embedding_closedTermExI_of_valueCongruentEM_probe
     {βSrc βCong αCut αOut : ONote}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψc : (ψ/[s]).complexity < c)
@@ -277,7 +275,7 @@ value-congruent negation, this composes them into the parent sequent containing
 ordinals: the future recursive engine can choose any ordinal schedule and discharge these
 side conditions separately.
 -/
-theorem embedding_valueCongruentAndFromChildren_probe
+lemma embedding_valueCongruentAndFromChildren_probe
     {n : ℕ} {βA βB αAnd αOut : ONote}
     (w w' : Fin n → ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ n)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
@@ -316,7 +314,7 @@ This is the polarity-dual parent constructor to
 `embedding_valueCongruentAndFromChildren_probe`: child closures for `a` and `b` build
 `¬a[w'] ∧ ¬b[w']`, then `Provable.orI` packages the positive `a[w] ∨ b[w]` parent.
 -/
-theorem embedding_valueCongruentOrFromChildren_probe
+lemma embedding_valueCongruentOrFromChildren_probe
     {n : ℕ} {βA βB αAnd αOut : ONote}
     (w w' : Fin n → ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ n)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
@@ -349,7 +347,7 @@ theorem embedding_valueCongruentOrFromChildren_probe
   rwa [Finset.insert_eq_self.mpr hp'] at hor
 
 /-- Closed-term specialization of the conjunction parent constructor. -/
-theorem embedding_valueCongruentAndClosedTermFromChildren_probe
+lemma embedding_valueCongruentAndClosedTermFromChildren_probe
     {βA βB αAnd αOut : ONote}
     (s s' : ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ 1)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
@@ -370,7 +368,7 @@ theorem embedding_valueCongruentAndClosedTermFromChildren_probe
   · simpa using dB
 
 /-- Closed-term specialization of the disjunction parent constructor. -/
-theorem embedding_valueCongruentOrClosedTermFromChildren_probe
+lemma embedding_valueCongruentOrClosedTermFromChildren_probe
     {βA βB αAnd αOut : ONote}
     (s s' : ArithmeticTerm ℕ) (a b : ArithmeticSemiformula ℕ 1)
     (hA_lt : βA < αAnd) (hB_lt : βB < αAnd) (hAnd_lt : αAnd < αOut)
@@ -441,7 +439,7 @@ For a one-variable quantifier-free formula `ψ`, closed terms with the same stan
 sequent containing `ψ[s]` and `¬ψ[s']` at height `ofNat (2*q)`, provided that finite height fits the
 current norm budget.
 -/
-theorem embedding_valueCongruentQFreeClosedTerm_probe (q : ℕ)
+lemma embedding_valueCongruentQFreeClosedTerm_probe (q : ℕ)
     (s s' : ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ 1)
     (hψq : ψ.complexity ≤ q) (hqf : QFreeForm ψ) (hval : stdClosedVal s = stdClosedVal s')
     (hbudget : 2 * q < K + d) (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) :
@@ -553,7 +551,7 @@ This is the arity-general recursive shell needed by the bounded embedding route.
 cases are the decisive check: each `allω` premise runs at `max K m`, so the corresponding `exI`
 witness `m` is paid by `inductionLeaf_runningIndex_witnessBound`.
 -/
-theorem embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+lemma embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (ψ : ArithmeticSemiformula ℕ n) (hψq : ψ.complexity ≤ q)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) (hbudget : 2 * q < K + d)
     (hp : (Rew.subst w ▹ ψ) ∈ Γ) (hn : (∼(Rew.subst w' ▹ ψ)) ∈ Γ) :

@@ -19,14 +19,11 @@ namespace ProvableSomeK
 variable {α e : ONote} {d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Embed a concrete `Provable` derivation into the existential-budget wrapper. -/
-theorem of {K : ℕ}
-    (dd : Provable α e K d c Γ) : ProvableSomeK α e d c Γ :=
-  ⟨K, dd⟩
+lemma of {K : ℕ} (dd : Provable α e K d c Γ) : ProvableSomeK α e d c Γ := ⟨K, dd⟩
 
 /-- Convert the ordinal-upper-bound wrapper back to an exact-ordinal existential-budget
 derivation by raising the stored derivation ordinal when needed. -/
-theorem ofProv {K : ℕ}
-    (hαNF : α.NF) (dd : ProvableSlack α e K d c Γ) : ProvableSomeK α e d c Γ := by
+lemma ofProv {K : ℕ} (hαNF : α.NF) (dd : ProvableSlack α e K d c Γ) : ProvableSomeK α e d c Γ := by
   rcases dd with ⟨α', hα', hα'NF, hnorm, D⟩
   by_cases hEq : α' = α
   · subst hEq
@@ -38,20 +35,18 @@ theorem ofProv {K : ℕ}
     exact ⟨K, Provable.weak hlt hα'NF hαNF hnorm (Finset.Subset.refl _) D⟩
 
 /-- Identity/complementary-literal axiom for the existential-budget wrapper. -/
-theorem axL {ar : ℕ}
+lemma axL {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
     ProvableSomeK α e d c Γ :=
   ⟨0, Provable.axL r v hp hn⟩
 
 /-- Truth of `⊤` for the existential-budget wrapper. -/
-theorem verumR
-    (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : ProvableSomeK α e d c Γ :=
-  ⟨0, Provable.verumR h⟩
+lemma verumR (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : ProvableSomeK α e d c Γ := ⟨0, Provable.verumR h⟩
 
 /-- True positive atomic leaf for the existential-budget wrapper; the finite index is
 chosen large enough to pay the norm side condition. -/
-theorem trueRel {ar : ℕ}
+lemma trueRel {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (htrue : atomTrue (Semiformula.rel r v)) (hαNF : α.NF)
     (hmem : Semiformula.rel r v ∈ Γ) : ProvableSomeK α e d c Γ := by
@@ -60,7 +55,7 @@ theorem trueRel {ar : ℕ}
 
 /-- True negative atomic leaf for the existential-budget wrapper; the finite index is
 chosen large enough to pay the norm side condition. -/
-theorem trueNrel {ar : ℕ}
+lemma trueNrel {ar : ℕ}
     (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (htrue : atomTrue (Semiformula.nrel r v)) (hαNF : α.NF)
     (hmem : Semiformula.nrel r v ∈ Γ) : ProvableSomeK α e d c Γ := by
@@ -68,7 +63,7 @@ theorem trueNrel {ar : ℕ}
   exact ⟨K, Provable.trueNrel r v htrue (by dsimp [K]; omega) hαNF hmem⟩
 
 /-- Existential-budget surface for bounded true closed-substitution leaves. -/
-theorem ofBoundedTruth {n : ℕ}
+lemma ofBoundedTruth {n : ℕ}
     (q : ℕ) (w : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n)
     (hψq : ψ.complexity ≤ q)
     (hpack : ∃ K : ℕ, BoundedTruth e K d w ψ ∧ 2 * q < K + d)
@@ -78,29 +73,24 @@ theorem ofBoundedTruth {n : ℕ}
   exact ⟨K, provableOfBoundedTruth_probe q w ψ hψq hBT hbudget hmem⟩
 
 /-- Monotonicity in the sequent for the existential-budget wrapper. -/
-theorem wk {Δ : Finset (ArithmeticFormula ℕ)}
-    (hsub : Δ ⊆ Γ) (dd : ProvableSomeK α e d c Δ) :
-    ProvableSomeK α e d c Γ := by
+lemma wk {Δ : Finset (ArithmeticFormula ℕ)} (hsub : Δ ⊆ Γ) (dd : ProvableSomeK α e d c Δ) :
+  ProvableSomeK α e d c Γ := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, Provable.wk hsub D⟩
 
 /-- Monotonicity in the additive norm-budget component. -/
-theorem mono_d {d' : ℕ}
-    (hd : d ≤ d') (dd : ProvableSomeK α e d c Γ) :
-    ProvableSomeK α e d' c Γ := by
+lemma mono_d {d' : ℕ} (hd : d ≤ d') (dd : ProvableSomeK α e d c Γ) : ProvableSomeK α e d' c Γ := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.mono_d hd⟩
 
 /-- Monotonicity in the cut-rank/complexity bound. -/
-theorem mono_c {c' : ℕ}
-    (hc : c ≤ c') (dd : ProvableSomeK α e d c Γ) :
-    ProvableSomeK α e d c' Γ := by
+lemma mono_c {c' : ℕ} (hc : c ≤ c') (dd : ProvableSomeK α e d c Γ) : ProvableSomeK α e d c' Γ := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.mono_c hc⟩
 
 /-- Control-ordinal monotonicity for the existential-budget wrapper.  The wrapper can
 raise `K`, so the `norm e ≤ K+d` side condition of `Provable.mono_e` is paid locally. -/
-theorem mono_e {e' : ONote}
+lemma mono_e {e' : ONote}
     (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e')
     (dd : ProvableSomeK α e d c Γ) :
     ProvableSomeK α e' d c Γ := by
@@ -112,7 +102,7 @@ theorem mono_e {e' : ONote}
 
 /-- Ordinal/sequent weakening for the existential-budget wrapper: choose a finite
 index large enough for the source ordinal norm side condition. -/
-theorem weak {β : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
+lemma weak {β : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (hsub : Δ ⊆ Γ) (dd : ProvableSomeK β e d c Δ) :
     ProvableSomeK α e d c Γ := by
@@ -123,14 +113,13 @@ theorem weak {β : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
   · dsimp [K]; omega
 
 /-- Combined monotonicity in the two numeric side budgets. -/
-theorem mono {d' c' : ℕ}
-    (hd : d ≤ d') (hc : c ≤ c') (dd : ProvableSomeK α e d c Γ) :
-    ProvableSomeK α e d' c' Γ :=
+lemma mono {d' c' : ℕ} (hd : d ≤ d') (hc : c ≤ c') (dd : ProvableSomeK α e d c Γ) :
+  ProvableSomeK α e d' c' Γ :=
   mono_c hc (mono_d hd dd)
 
 /-- One-shot lift used by proof embeddings: raise the derivation ordinal, control ordinal,
 numeric side budgets, and sequent at the same time, choosing a larger finite `K` internally. -/
-theorem lift {β e' : ONote} {d' c' : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
+lemma lift {β e' : ONote} {d' c' : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (heNF : e.NF) (he'NF : e'.NF) (he : e < e')
     (hd : d ≤ d') (hc : c ≤ c') (hsub : Δ ⊆ Γ)
@@ -140,7 +129,7 @@ theorem lift {β e' : ONote} {d' c' : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
 
 /-- `andI` for the existential-budget wrapper: choose a finite index large enough for
 both premises and both norm side conditions. -/
-theorem andI {βφ βψ : ONote}
+lemma andI {βφ βψ : ONote}
     (φ ψ : ArithmeticFormula ℕ) (hβφ : βφ < α) (hβψ : βψ < α)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
     (dφ : ProvableSomeK βφ e d c (insert φ Γ))
@@ -156,7 +145,7 @@ theorem andI {βφ βψ : ONote}
   · exact Dψ.mono_k (by dsimp [K]; omega)
 
 /-- `orI` for the existential-budget wrapper. -/
-theorem orI {β : ONote}
+lemma orI {β : ONote}
     (φ ψ : ArithmeticFormula ℕ) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (dd : ProvableSomeK β e d c (insert φ (insert ψ Γ))) :
     ProvableSomeK α e d c (insert (φ ⋎ ψ) Γ) := by
@@ -169,7 +158,7 @@ theorem orI {β : ONote}
 /-- `allω` for the existential-budget wrapper when the premise family is already
 uniform at one finite base index `K`.  A fully existential premise family is not
 enough: the rule needs a single finite budget whose `max K n` handles every branch. -/
-theorem allω {K : ℕ}
+lemma allω {K : ℕ}
     (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
     (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
     (hτ : ∀ n, norm (β n) < max K n + d)
@@ -179,20 +168,23 @@ theorem allω {K : ℕ}
 
 /-- `exI` for the existential-budget wrapper.  The wrapper chooses a finite
 index large enough for both the premise derivation and the explicit witness. -/
-theorem exI {β : ONote}
+lemma exI {β : ONote}
     (φ : ArithmeticSemiformula ℕ 1) (n : ℕ)
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (dd : ProvableSomeK β e d c (insert (φ/[nm n]) Γ)) :
     ProvableSomeK α e d c (insert (∃⁰ φ) Γ) := by
   rcases dd with ⟨K0, D0⟩
-  let K := max K0 (max (norm β + 1) n)
-  refine ⟨K, Provable.exI φ n hβ hβNF hαNF ?_ ?_ (D0.mono_k ?_)⟩
-  · dsimp [K]; omega
-  · exact le_trans (by dsimp [K]; omega) (le_hardy e (K + d))
-  · dsimp [K]; omega
+  let K := max K0 (max (norm β + 1) n);
+  use K;
+  apply Provable.exI φ n hβ hβNF hαNF ?_ ?_ (D0.mono_k ?_);
+  · omega
+  · trans K + d;
+    . omega;
+    . apply le_hardy;
+  · omega
 
 /-- `cut` for the existential-budget wrapper. -/
-theorem cut {βφ βψ : ONote}
+lemma cut {βφ βψ : ONote}
     (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c)
     (hβφ : βφ < α) (hβψ : βψ < α)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
@@ -201,39 +193,32 @@ theorem cut {βφ βψ : ONote}
     ProvableSomeK α e d c Γ := by
   rcases d₁ with ⟨K₁, D₁⟩
   rcases d₂ with ⟨K₂, D₂⟩
-  let K := max K₁ (max K₂ (max (norm βφ + 1) (norm βψ + 1)))
-  refine ⟨K, Provable.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF ?_ ?_ ?_ ?_⟩
-  · dsimp [K]; omega
-  · dsimp [K]; omega
-  · exact D₁.mono_k (by dsimp [K]; omega)
-  · exact D₂.mono_k (by dsimp [K]; omega)
+  use max K₁ (max K₂ (max (norm βφ + 1) (norm βψ + 1)));
+  apply Provable.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF ?_ ?_ (D₁.mono_k ?_) (D₂.mono_k ?_);
+  all_goals omega;
 
 /-- Disjunction inversion for the existential-budget wrapper. -/
-theorem orInv {φ ψ : ArithmeticFormula ℕ}
-    (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
-    ProvableSomeK α e d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
-  rcases dd with ⟨K, D⟩
+lemma orInv {φ ψ : ArithmeticFormula ℕ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
+  ProvableSomeK α e d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
+  rcases dd with ⟨K, D⟩;
   exact ⟨K, D.orInv hmem⟩
 
 /-- Left conjunction inversion for the existential-budget wrapper. -/
-theorem andInvL {φ ψ : ArithmeticFormula ℕ}
-    (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
-    ProvableSomeK α e d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
+lemma andInvL {φ ψ : ArithmeticFormula ℕ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+  ProvableSomeK α e d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.andInvL hmem⟩
 
 /-- Right conjunction inversion for the existential-budget wrapper. -/
-theorem andInvR {φ ψ : ArithmeticFormula ℕ}
-    (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
-    ProvableSomeK α e d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
+lemma andInvR {φ ψ : ArithmeticFormula ℕ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+  ProvableSomeK α e d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.andInvR hmem⟩
 
 /-- Universal inversion for the existential-budget wrapper.  The extracted witness
 index is the raw derivation index raised to `max K n₀`, matching `Provable.allInv`. -/
-theorem allInv {φ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
-    (dd : ProvableSomeK α e d c Γ) (hmem : (∀⁰ φ) ∈ Γ) :
-    ProvableSomeK α e d c (insert (φ/[nm n₀]) (Γ.erase (∀⁰ φ))) := by
+lemma allInv {φ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : ProvableSomeK α e d c Γ) (hmem : (∀⁰ φ) ∈ Γ) :
+  ProvableSomeK α e d c (insert (φ/[nm n₀]) (Γ.erase (∀⁰ φ))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨max K n₀, D.allInv n₀ hmem⟩
 
@@ -242,27 +227,22 @@ This is the `someK` surface of the fixed-index raw reduction, reused after choos
 `K` large enough for both premises and the reduction ordinal.
 
 - [Tow20, §19.5] -/
-theorem cutReduceConj {a b : ArithmeticFormula ℕ} {β δ : ONote}
+lemma cutReduceConj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ)
     (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hC : ProvableSomeK α e d c (insert (a ⋏ b) Γ))
     (hNC : ProvableSomeK β e d c (insert (∼a ⋎ ∼b) Γ)) :
     ProvableSomeK (osucc δ) e d c Γ := by
-  rcases hC with ⟨Kα, DC⟩
-  rcases hNC with ⟨Kβ, DNC⟩
-  let K := max Kα (max Kβ (max (norm α + 1) (max (norm β + 1) (norm δ + 1))))
-  refine ⟨K, Provable.cutReduceConj ha hb hαδ hβδ hαNF hβNF hδNF ?_ ?_ ?_
-    (DC.mono_k ?_) (DNC.mono_k ?_)⟩
-  · dsimp [K]; omega
-  · dsimp [K]; omega
-  · dsimp [K]; omega
-  · dsimp [K]; omega
-  · dsimp [K]; omega
+  rcases hC with ⟨Kα, DC⟩;
+  rcases hNC with ⟨Kβ, DNC⟩;
+  use max Kα (max Kβ (max (norm α + 1) (max (norm β + 1) (norm δ + 1))));
+  apply Provable.cutReduceConj ha hb hαδ hβδ hαNF hβNF hδNF ?_ ?_ ?_ (DC.mono_k ?_) (DNC.mono_k ?_);
+  all_goals omega;
 
 /-- Principal disjunction/conjunction cut reduction for the existential-budget wrapper.
 Dual to `cutReduceConj`; again the wrapper absorbs the finite witness-index bookkeeping. -/
-theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
+lemma cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ)
     (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
@@ -271,14 +251,9 @@ theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     ProvableSomeK (osucc δ) e d c Γ := by
   rcases hC with ⟨Kα, DC⟩
   rcases hNC with ⟨Kβ, DNC⟩
-  let K := max Kα (max Kβ (max (norm α + 1) (max (norm β + 1) (norm δ + 1))))
-  refine ⟨K, Provable.cutReduceDisj ha hb hαδ hβδ hαNF hβNF hδNF ?_ ?_ ?_
-    (DC.mono_k ?_) (DNC.mono_k ?_)⟩
-  · dsimp [K]; omega
-  · dsimp [K]; omega
-  · dsimp [K]; omega
-  · dsimp [K]; omega
-  · dsimp [K]; omega
+  use max Kα (max Kβ (max (norm α + 1) (max (norm β + 1) (norm δ + 1))));
+  apply Provable.cutReduceDisj ha hb hαδ hβδ hαNF hβNF hδNF ?_ ?_ ?_ (DC.mono_k ?_) (DNC.mono_k ?_);
+  all_goals omega;
 
 /-- Existential-budget surface for the proved ∀/∃ cut-reduction norm-budget auxiliary
 (cf. [Tow20, §19.6]).
@@ -286,7 +261,7 @@ theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
 This is intentionally still the *fixed-family* theorem: the ∀-side family is supplied at one
 finite index `k₀`. The wrapper absorbs the ∃-side finite index and converts the `ProvableSlack`
 ordinal upper bound back to an exact `ProvableSomeK` derivation. -/
-theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
+lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
     {γ : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF) (heNF : e.NF)
     (hd₀ : d₀ ≤ d)
@@ -307,7 +282,7 @@ theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
 This is the part of the full `Provable` cut-elimination assembly where the norm-budget auxiliary
 has already fired and the control ordinal is then raised to enlarge every existential witness
 bound.  The existential-budget wrapper chooses the finite index needed by `mono_e` internally. -/
-theorem cutReduceAllAux_control {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
+lemma cutReduceAllAux_control {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
     {γ e' : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF)
     (heNF : e.NF) (he'NF : e'.NF) (helt : e < e')

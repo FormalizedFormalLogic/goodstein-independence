@@ -37,7 +37,7 @@ The proof mirrors the old `provable_true` recursion, but the universal and exist
 indexed by `BoundedTruth`: universals run at `max K m`, and existential witnesses are already
 within the control-ordinal Hardy budget.
 -/
-theorem provableOfBoundedTruth_probe (q : ℕ) {n : ℕ} (w : Fin n → ArithmeticTerm ℕ)
+lemma provableOfBoundedTruth_probe (q : ℕ) {n : ℕ} (w : Fin n → ArithmeticTerm ℕ)
     (ψ : ArithmeticSemiformula ℕ n)
     (hψq : ψ.complexity ≤ q) (hBT : BoundedTruth e K d w ψ) (hbudget : 2 * q < K + d)
     (hmem : (Rew.subst w ▹ ψ) ∈ Γ) :
@@ -189,7 +189,7 @@ This is the direct `Provable` adapter for the Foundation `exs` shape after an op
 closed by an assignment.  The only semantic side condition still exposed is the real witness bound
 `stdClosedVal s ≤ hardy e (K+d)`.
 -/
-theorem embedding_closedTermExI_probe
+lemma embedding_closedTermExI_probe
     {βSrc αCut αOut : ONote} {q : ℕ}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
@@ -220,7 +220,7 @@ theorem embedding_closedTermExI_probe
 
 /-- A finite numeric budget bound on a closed witness term is enough for the `Provable.exI`
 witness side condition, because every Hardy level is expansive. -/
-theorem closedTerm_witnessBound_of_budget
+lemma closedTerm_witnessBound_of_budget
     (e : ONote) {K d : ℕ} {s : ArithmeticTerm ℕ}
     (hterm : stdClosedVal s ≤ K + d) :
     stdClosedVal s ≤ hardy e (K + d) :=
@@ -233,7 +233,7 @@ This is the local `exs` budget adapter needed by the bounded embedding route: if
 is available at index `K`, then it can be used at `max K (stdClosedVal s)`, where the closed witness
 term is automatically within the Hardy witness budget.  No extra logical premise is introduced.
 -/
-theorem embedding_closedTermExI_raiseK_probe
+lemma embedding_closedTermExI_raiseK_probe
     {βSrc αCut αOut : ONote} {q : ℕ}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)

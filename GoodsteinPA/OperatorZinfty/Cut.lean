@@ -15,7 +15,7 @@ variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 /-- **∧/∨ cut reduction, conjunction case**.
 
 - [Tow20, §19.5] -/
-theorem cutReduceConj {a b : ArithmeticFormula ℕ} {β δ : ONote}
+lemma cutReduceConj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
@@ -37,7 +37,7 @@ theorem cutReduceConj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     hτα hτδ hB cutA
 
 /-- **∧/∨ cut reduction, disjunction case** (dual). -/
-theorem cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
+lemma cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
     (ha : a.complexity < c) (hb : b.complexity < c)
     (hαδ : α < δ) (hβδ : β < δ) (hαNF : α.NF) (hβNF : β.NF) (hδNF : δ.NF)
     (hτα : norm α < k + d) (hτβ : norm β < k + d) (hτδ : norm δ < k + d)
@@ -77,31 +77,31 @@ variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Monotonicity in `α` (≤), `k`, `d`, `c` (the control `e` is raised separately by `mono_e`,
 which carries a budget side condition). The carried norm bound `norm α' < k+d` rides up to `k'+d'`. -/
-theorem mono {β : ONote} {k' d' c' : ℕ}
+lemma mono {β : ONote} {k' d' c' : ℕ}
     (hα : α ≤ β) (hk : k ≤ k') (hd : d ≤ d') (hc : c ≤ c') :
     ProvableSlack α e k d c Γ → ProvableSlack β e k' d' c' Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', le_trans hα' hα, hNF, by omega, ((D.mono_k hk).mono_d hd).mono_c hc⟩
 
 /-- Control-ordinal raising at the wrapper level. -/
-theorem mono_e {e' : ONote}
+lemma mono_e {e' : ONote}
     (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e') (hbudget : norm e ≤ k + d) :
     ProvableSlack α e k d c Γ → ProvableSlack α e' k d c Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.mono_e heNF he'NF hlt hbudget⟩
 
 /-- Sequent weakening. -/
-theorem weakening {Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) :
+lemma weakening {Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) :
     ProvableSlack α e k d c Γ → ProvableSlack α e k d c Δ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.wk h⟩
 
 /-- Respect set-equality of sequents. -/
-theorem cast {Δ : Finset (ArithmeticFormula ℕ)} (e0 : Γ = Δ) :
+lemma cast {Δ : Finset (ArithmeticFormula ℕ)} (e0 : Γ = Δ) :
     ProvableSlack α e k d c Γ → ProvableSlack α e k d c Δ := fun h => e0 ▸ h
 
 /-- Lift a raw `Provable` derivation (NF ordinal + norm bound) into the wrapper. -/
-theorem of (hNF : α.NF) (hnorm : norm α < k + d)
+lemma of (hNF : α.NF) (hnorm : norm α < k + d)
     (D : Provable α e k d c Γ) : ProvableSlack α e k d c Γ := ⟨α, le_refl _, hNF, hnorm, D⟩
 
 end ProvableSlack
@@ -151,7 +151,7 @@ variable {φ : ArithmeticSemiformula ℕ 1} {α : ONote} {k₀ dd₀ : ℕ} {Γ 
 
 /-- Moving an `insert` past an `erase` only ever shrinks the set, regardless of whether the
 inserted element is the erased one. Used to weaken the case lemmas of `cutReduceAllAux`. -/
-private theorem erase_insert_union_subset {a b : ArithmeticFormula ℕ} {s t : Finset (ArithmeticFormula ℕ)} :
+private lemma erase_insert_union_subset {a b : ArithmeticFormula ℕ} {s t : Finset (ArithmeticFormula ℕ)} :
     (insert a s).erase b ∪ t ⊆ insert a (s.erase b ∪ t) := by
   intro x hx
   simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢
@@ -159,7 +159,7 @@ private theorem erase_insert_union_subset {a b : ArithmeticFormula ℕ} {s t : F
 
 /-- The converse inclusion of `erase_insert_union_subset`, valid when the inserted element differs
 from the erased one. Used to weaken the case lemmas of `cutReduceAllAux`. -/
-private theorem insert_erase_union_subset {a b : ArithmeticFormula ℕ} {s t : Finset (ArithmeticFormula ℕ)}
+private lemma insert_erase_union_subset {a b : ArithmeticFormula ℕ} {s t : Finset (ArithmeticFormula ℕ)}
     (hab : a ≠ b) :
     insert a (s.erase b ∪ t) ⊆ (insert a s).erase b ∪ t := by
   intro x hx
@@ -169,7 +169,7 @@ private theorem insert_erase_union_subset {a b : ArithmeticFormula ℕ} {s t : F
   · tauto
 
 /-- `cutReduceAllAux`, the `axL` case. -/
-private theorem cutReduceAllAux_axL {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
+private lemma cutReduceAllAux_axL {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
     (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Δ) (hn : Semiformula.nrel r v ∈ Δ) :
     ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
   ⟨0, le_def.mpr (by simp), NF.zero, by simp only [norm_zero]; omega, Provable.axL r v
@@ -177,7 +177,7 @@ private theorem cutReduceAllAux_axL {γ' : ONote} {Δ : Finset (ArithmeticFormul
     (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩))⟩
 
 /-- `cutReduceAllAux`, the `verumR` case. -/
-private theorem cutReduceAllAux_verumR {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
+private lemma cutReduceAllAux_verumR {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (h : (⊤ : ArithmeticFormula ℕ) ∈ Δ) :
     ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
   ⟨0, le_def.mpr (by simp), NF.zero, by simp only [norm_zero]; omega, Provable.verumR
@@ -185,7 +185,7 @@ private theorem cutReduceAllAux_verumR {γ' : ONote} {Δ : Finset (ArithmeticFor
 
 include hαNF in
 /-- `cutReduceAllAux`, the `trueRel` case. -/
-private theorem cutReduceAllAux_trueRel {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
+private lemma cutReduceAllAux_trueRel {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
     (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (r : (ℒₒᵣ).Rel ar) (v)
     (htrue : atomTrue (Semiformula.rel r v)) (hmemA : Semiformula.rel r v ∈ Δ) :
     ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
@@ -195,7 +195,7 @@ private theorem cutReduceAllAux_trueRel {γ' : ONote} {Δ : Finset (ArithmeticFo
 
 include hαNF in
 /-- `cutReduceAllAux`, the `trueNrel` case. -/
-private theorem cutReduceAllAux_trueNrel {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
+private lemma cutReduceAllAux_trueNrel {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
     (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (r : (ℒₒᵣ).Rel ar) (v)
     (htrue : atomTrue (Semiformula.nrel r v)) (hmemA : Semiformula.nrel r v ∈ Δ) :
     ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
@@ -205,7 +205,7 @@ private theorem cutReduceAllAux_trueNrel {γ' : ONote} {Δ : Finset (ArithmeticF
 
 include hαNF hφc heNF fam in
 /-- `cutReduceAllAux`, the `wk` case. -/
-private theorem cutReduceAllAux_wk {γ' : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)}
+private lemma cutReduceAllAux_wk {γ' : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)}
     (hsub : Δsub ⊆ Δsup) (D' : Provable γ' e' k' dd' c' Δsub)
     (ih : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
       γ'.NF → norm γ' < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ Δsub →
@@ -225,7 +225,7 @@ private theorem cutReduceAllAux_wk {γ' : ONote} {Δsub Δsup : Finset (Arithmet
 
 include hαNF hφc heNF fam in
 /-- `cutReduceAllAux`, the `weak` case. -/
-private theorem cutReduceAllAux_weak {γ' β : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)}
+private lemma cutReduceAllAux_weak {γ' β : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)}
     (hβ : β < γ') (hβNF : β.NF) (hτ : norm β < k' + dd') (hsub : Δsub ⊆ Δsup)
     (D' : Provable β e' k' dd' c' Δsub)
     (ih : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
@@ -248,7 +248,7 @@ private theorem cutReduceAllAux_weak {γ' β : ONote} {Δsub Δsup : Finset (Ari
 
 include hαNF hφc heNF fam in
 /-- `cutReduceAllAux`, the `andI` case. -/
-private theorem cutReduceAllAux_andI {γ' βφ βψ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
+private lemma cutReduceAllAux_andI {γ' βφ βψ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     {ψ₁ ψ₂ : ArithmeticFormula ℕ} (hβφ : βφ < γ') (hβψ : βψ < γ') (hβφNF : βφ.NF) (hβψNF : βψ.NF)
     (hτφ : norm βφ < k' + dd') (hτψ : norm βψ < k' + dd')
     (ihφ : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
@@ -282,7 +282,7 @@ private theorem cutReduceAllAux_andI {γ' βφ βψ : ONote} {Γ₀ : Finset (Ar
 
 include hαNF hφc heNF fam in
 /-- `cutReduceAllAux`, the `orI` case. -/
-private theorem cutReduceAllAux_orI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
+private lemma cutReduceAllAux_orI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     {ψ₁ ψ₂ : ArithmeticFormula ℕ} (hβ : β < γ') (hβNF : β.NF) (hτ : norm β < k' + dd')
     (ih : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
       β.NF → norm β < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ insert ψ₁ (insert ψ₂ Γ₀) →
@@ -314,7 +314,7 @@ private theorem cutReduceAllAux_orI {γ' β : ONote} {Γ₀ : Finset (Arithmetic
 
 include hαNF hφc heNF fam in
 /-- `cutReduceAllAux`, the `allω` case. -/
-private theorem cutReduceAllAux_allω {γ' : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
+private lemma cutReduceAllAux_allω {γ' : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     {χ : ArithmeticSemiformula ℕ 1} {β : ℕ → ONote}
     (hβ : ∀ n, β n < γ') (hβNF : ∀ n, (β n).NF) (hτ : ∀ n, norm (β n) < max k' n + dd')
     (ih : ∀ n, φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
@@ -350,7 +350,7 @@ private theorem cutReduceAllAux_allω {γ' : ONote} {Γ₀ : Finset (ArithmeticF
 
 include hαNF hφc heNF fam in
 /-- `cutReduceAllAux`, the `exI` case. -/
-private theorem cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
+private lemma cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     {χ : ArithmeticSemiformula ℕ 1} {n : ℕ}
     (hβ : β < γ') (hβNF : β.NF) (hτ : norm β < k' + dd') (hbound : n ≤ hardy e' (k' + dd'))
     (dχ : Provable β e' k' dd' c' (insert (χ/[nm n]) Γ₀))
@@ -426,7 +426,7 @@ private theorem cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (Arithmetic
 
 include hαNF hφc heNF fam in
 /-- `cutReduceAllAux`, the `cut` case. -/
-private theorem cutReduceAllAux_cut {γ' βφ βψ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
+private lemma cutReduceAllAux_cut {γ' βφ βψ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     {χ : ArithmeticFormula ℕ} (hχc : χ.complexity < c') (hβφ : βφ < γ') (hβψ : βψ < γ')
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hτφ : norm βφ < k' + dd') (hτψ : norm βψ < k' + dd')
     (ih₁ : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
@@ -458,7 +458,7 @@ private theorem cutReduceAllAux_cut {γ' βφ βψ : ONote} {Γ₀ : Finset (Ari
   exact ProvableSlack.of hsuccNF
     (lt_of_le_of_lt norm_osucc_le (by have := Provable.norm_add_le hαNF hγNF; omega)) hCut
 
-theorem cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
+lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {α e : ONote} {Γ : Finset (ArithmeticFormula ℕ)}
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (fam : ∀ n, Provable α e k₀ dd₀ c (insert (φ/[nm n]) Γ))
     {γ : ONote} {k dd : ℕ} {Δ : Finset (ArithmeticFormula ℕ)} (D : Provable γ e k dd c Δ) (hγNF : γ.NF)

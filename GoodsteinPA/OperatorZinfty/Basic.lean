@@ -92,7 +92,7 @@ variable {α e k d c Γ}
 
 /-- **`k`-monotonicity** (the `max`/cofinal part; inversions raise this idempotently). The witness
 bound `hardy e (k+d)` rises with `k` via `hardy_monotone`. -/
-theorem mono_k (dd : Provable α e k d c Γ) {k'} (hk : k ≤ k') : Provable α e k' d c Γ := by
+lemma mono_k (dd : Provable α e k d c Γ) {k'} (hk : k ≤ k') : Provable α e k' d c Γ := by
   induction dd generalizing k' with
   | axL r v hp hn => exact Provable.axL r v hp hn
   | verumR h => exact Provable.verumR h
@@ -122,7 +122,7 @@ theorem mono_k (dd : Provable α e k d c Γ) {k'} (hk : k ≤ k') : Provable α 
 /-- **`d`-monotonicity** (the additive cut-shift budget; the ∀/∃ commuting cut-reduction case
 raises this by `norm α`, cf. [Tow20, §19.6]). The witness bound `hardy e (k+d)` rises with `d`
 via `hardy_monotone`. -/
-theorem mono_d (dd : Provable α e k d c Γ) {d'} (hd : d ≤ d') : Provable α e k d' c Γ := by
+lemma mono_d (dd : Provable α e k d c Γ) {d'} (hd : d ≤ d') : Provable α e k d' c Γ := by
   induction dd generalizing d' with
   | axL r v hp hn => exact Provable.axL r v hp hn
   | verumR h => exact Provable.verumR h
@@ -149,7 +149,7 @@ theorem mono_d (dd : Provable α e k d c Γ) {d'} (hd : d ≤ d') : Provable α 
         (lt_of_lt_of_le hτψ (by omega)) (ih₁ hd) (ih₂ hd)
 
 /-- **`c`-monotonicity** (cut-rank). -/
-theorem mono_c (dd : Provable α e k d c Γ) {c'} (hc : c ≤ c') : Provable α e k d c' Γ := by
+lemma mono_c (dd : Provable α e k d c Γ) {c'} (hc : c ≤ c') : Provable α e k d c' Γ := by
   induction dd generalizing c' with
   | axL r v hp hn => exact Provable.axL r v hp hn
   | verumR h => exact Provable.verumR h
@@ -169,7 +169,7 @@ theorem mono_c (dd : Provable α e k d c Γ) {c'} (hc : c ≤ c') : Provable α 
 /-- **`e`-monotonicity** (the NEW control axis; cut-elimination raises `e` to dominate cut-formula
 bounds). Only the `exI` witness bound `hardy e (k+d)` depends on `e`, and it rises with `e` via
 the index-monotonicity `hardy_le_of_lt` (with the budget side condition `norm e ≤ k+d`). -/
-theorem mono_e (dd : Provable α e k d c Γ) {e'} (he : e.NF) (heN' : e'.NF) (hlt : e < e')
+lemma mono_e (dd : Provable α e k d c Γ) {e'} (he : e.NF) (heN' : e'.NF) (hlt : e < e')
     (hnorm : norm e ≤ k + d) : Provable α e' k d c Γ := by
   induction dd generalizing e' with
   | axL r v hp hn => exact Provable.axL r v hp hn
@@ -194,45 +194,43 @@ theorem mono_e (dd : Provable α e k d c Γ) {e'} (he : e.NF) (heN' : e'.NF) (hl
   | cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
       exact Provable.cut φ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ (ih₁ he heN' hlt hnorm) (ih₂ he heN' hlt hnorm)
 
-theorem lt_osucc {o : ONote} (h : o.NF) : o < osucc o :=
+lemma lt_osucc {o : ONote} (h : o.NF) : o < osucc o :=
   lt_def.mpr (by rw [repr_osucc h]; exact lt_add_one _)
 
 /-- **`osucc` strict monotonicity** (the cut-reduction descent: `βᵢ < γ ⟹ osucc(α+βᵢ) < osucc(α+γ)`,
 cf. [Tow20, §19.6]). -/
-theorem osucc_lt_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x < y) : osucc x < osucc y := by
+lemma osucc_lt_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x < y) : osucc x < osucc y := by
   refine lt_def.mpr ?_
   rw [repr_osucc hx, repr_osucc hy, ← Order.succ_eq_add_one, ← Order.succ_eq_add_one]
   exact Order.succ_lt_succ (lt_def.mp h)
 
 /-- `x < y ⟹ x < osucc y` (NF). -/
-theorem lt_osucc_of_lt {x y : ONote} (hy : y.NF) (h : x < y) : x < osucc y :=
-  lt_trans h (lt_osucc hy)
+lemma lt_osucc_of_lt {x y : ONote} (hy : y.NF) (h : x < y) : x < osucc y := lt_trans h (lt_osucc hy)
 
 /-! #### Ordinal/`norm` bookkeeping for the cut-elimination reductions (cf. [Tow20, §19.6, §19.7]). -/
 
-theorem add_lt_add_left_NF {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
+lemma add_lt_add_left_NF {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
     (h : γ' < γ) : α + γ' < α + γ := by
   haveI := hαNF; haveI := hγ'NF; haveI := hγNF
   exact lt_def.mpr (by rw [repr_add, repr_add]; exact (add_lt_add_iff_left _).mpr (lt_def.mp h))
 
-theorem le_add_left_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ α + γ := by
+lemma le_add_left_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ α + γ := by
   haveI := hαNF; haveI := hγNF
   exact le_def.mpr (by rw [repr_add]; exact le_add_self)
 
-theorem le_add_right_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : α ≤ α + γ := by
+lemma le_add_right_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : α ≤ α + γ := by
   haveI := hαNF; haveI := hγNF
   exact le_def.mpr (by rw [repr_add]; exact le_self_add)
 
 /-- **The cut-reduction descent step**, assembled: `γ' < γ ⟹ osucc (α + γ') < osucc (α + γ)`
 (cf. [Tow20, §19.6]). -/
-theorem add_osucc_descent {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
+lemma add_osucc_descent {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
     (h : γ' < γ) : osucc (α + γ') < osucc (α + γ) :=
   osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ) (add_lt_add_left_NF hαNF hγ'NF hγNF h)
 
-@[simp] theorem norm_omegaPow {α : ONote} : norm (oadd α 1 0) = max (norm α) 1 := by
-  simp [norm_oadd]
+@[simp] lemma norm_omegaPow {α : ONote} : norm (oadd α 1 0) = max (norm α) 1 := by simp [norm_oadd]
 
-theorem norm_addAux_le (e : ONote) (n : ℕ+) (r : ONote) :
+lemma norm_addAux_le (e : ONote) (n : ℕ+) (r : ONote) :
     norm (addAux e n r) ≤ max (norm e) (n : ℕ) + norm r := by
   unfold addAux
   match r with
@@ -242,7 +240,7 @@ theorem norm_addAux_le (e : ONote) (n : ℕ+) (r : ONote) :
     rcases ONote.cmp e e' with _ | _ | _ <;>
       simp only [norm_oadd, PNat.add_coe] <;> omega
 
-theorem norm_add_le {α : ONote} (hα : α.NF) {γ : ONote} (hγ : γ.NF) :
+lemma norm_add_le {α : ONote} (hα : α.NF) {γ : ONote} (hγ : γ.NF) :
     norm (α + γ) ≤ norm α + norm γ := by
   induction α with
   | zero => simp
@@ -280,7 +278,7 @@ theorem norm_add_le {α : ONote} (hα : α.NF) {γ : ONote} (hγ : γ.NF) :
 
 
 /-- Sequent weakening (height-preserving). -/
-theorem weakening {Δ} (hsub : Δ ⊆ Γ) (dd : Provable α e k d c Δ) : Provable α e k d c Γ :=
+lemma weakening {Δ} (hsub : Δ ⊆ Γ) (dd : Provable α e k d c Δ) : Provable α e k d c Γ :=
   Provable.wk hsub dd
 
 end Provable

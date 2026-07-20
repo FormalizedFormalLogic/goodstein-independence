@@ -10,11 +10,11 @@ open LO LO.FirstOrder ONote
 
 namespace Provable
 
-private theorem invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
+private lemma invPush (A b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b s).erase A)) ⊆ insert b (insert φ (insert ψ (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
+private lemma invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert b (insert φ (insert ψ (s.erase A))) ⊆ insert φ (insert ψ ((insert b s).erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | rfl | hx
@@ -23,19 +23,19 @@ private theorem invPull (A : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} 
   · exact Or.inr (Or.inl rfl)
   · exact Or.inr (Or.inr ⟨hx.1, Or.inr hx.2⟩)
 
-private theorem invPush2 (A b₁ b₂ : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
+private lemma invPush2 (A b₁ b₂ : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert b₁ (insert b₂ s)).erase A))
       ⊆ insert b₁ (insert b₂ (insert φ (insert ψ (s.erase A)))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem princOrSub {A : ArithmeticFormula ℕ} (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
+private lemma princOrSub {A : ArithmeticFormula ℕ} (s : Finset (ArithmeticFormula ℕ)) {φ ψ : ArithmeticFormula ℕ} :
     insert φ (insert ψ ((insert φ (insert ψ s)).erase A)) ⊆ insert φ (insert ψ (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 variable {α e k d c Γ}
 
 /-- **∨-inversion.** Replace `φ ⋎ ψ` by `φ`, `ψ`, same `(α,k,d,c)`. -/
-theorem orInv {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋎ ψ) ∈ Γ) :
+lemma orInv {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋎ ψ) ∈ Γ) :
     Provable α e k d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   have hφ0 : φ ≠ (φ ⋎ ψ) := Semiformula.ne_or_left φ ψ
   have hψ0 : ψ ≠ (φ ⋎ ψ) := Semiformula.ne_or_right φ ψ
@@ -107,11 +107,11 @@ theorem orInv {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hme
 
 /-! ### Single-insert reshuffle helpers (for ∧-inversion and the ∀-inversion). -/
 
-private theorem inv1Push (A e b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
+private lemma inv1Push (A e b : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert b s).erase A) ⊆ insert b (insert e (s.erase A)) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) :
+private lemma inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula ℕ} (h : b ≠ A) (s : Finset (ArithmeticFormula ℕ)) :
     insert b (insert e (s.erase A)) ⊆ insert e ((insert b s).erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
   rcases hx with rfl | rfl | hx
@@ -119,18 +119,18 @@ private theorem inv1Pull (A e : ArithmeticFormula ℕ) {b : ArithmeticFormula �
   · exact Or.inl rfl
   · exact Or.inr ⟨hx.1, Or.inr hx.2⟩
 
-private theorem inv1Push2 (A e b₁ b₂ : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
+private lemma inv1Push2 (A e b₁ b₂ : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert b₁ (insert b₂ s)).erase A) ⊆ insert b₁ (insert b₂ (insert e (s.erase A))) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
-private theorem princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
+private lemma princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula ℕ)) :
     insert e ((insert e s).erase A) ⊆ insert e (s.erase A) := by
   intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
 
 /-- **∧-inversion, left**: replace `φ ⋏ ψ` by `φ`, same `(α,k,d,c)`.
 
 - [Tow20, §19.3] -/
-theorem andInvL {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
+lemma andInvL {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
     Provable α e k d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e k d c Γ ar r v hp hn =>
@@ -198,7 +198,7 @@ theorem andInvL {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (h
 /-- **∧-inversion, right**: replace `φ ⋏ ψ` by `ψ`, same `(α,k,d,c)`.
 
 - [Tow20, §19.3] -/
-theorem andInvR {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
+lemma andInvR {φ ψ : ArithmeticFormula ℕ} (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
     Provable α e k d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   induction dd with
   | @axL α e k d c Γ ar r v hp hn =>
@@ -268,7 +268,7 @@ Result raises the **`k`-part** to `max k n₀` (`d` inert): the principal case's
 `max (max k n₀) n₀ = max k n₀` is exactly why the split index keeps `allInv` working.
 
 - [Tow20, §19.4] -/
-theorem allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Provable α e k d c Γ)
+lemma allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Provable α e k d c Γ)
     (hmem0 : (∀⁰ φ₀) ∈ Γ) : Provable α e (max k n₀) d c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   have hI0 : (φ₀/[nm n₀]) ≠ (∀⁰ φ₀) := Semiformula.ne_of_ne_complexity (by simp)
   induction dd with

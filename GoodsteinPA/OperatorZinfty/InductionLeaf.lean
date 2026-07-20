@@ -18,7 +18,7 @@ pays all local norm side conditions and the closed witness value.  This is the s
 global finite-budget embedding pass: each rule may enlarge `K`, and the final theorem only exports
 the resulting finite budget.
 -/
-theorem embedding_closedTermExI_someK_probe
+lemma embedding_closedTermExI_someK_probe
     {βSrc αCut αOut : ONote} {q : ℕ}
     {ψ : ArithmeticSemiformula ℕ 1} (s : ArithmeticTerm ℕ)
     (hψq : ψ.complexity ≤ q) (hψc : (ψ/[s]).complexity < c)
@@ -54,7 +54,7 @@ formula, introduce `∃ badStep` using the running witness bound, then cut again
 The EM/value-substitution premises are still external to this probe.  The point of the theorem is
 that the witness-bounded `andI`/`exI`/`cut` wiring itself is tractable at index `max k n`.
 -/
-theorem inductionLeaf_cutTowerStep_probe
+lemma inductionLeaf_cutTowerStep_probe
     {βIH βA βB βAnd βEx α : ONote} {n : ℕ}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[nm (n + 1)]))
@@ -102,7 +102,7 @@ theorem inductionLeaf_cutTowerStep_probe
 This is the `Provable` analogue of the cut used by
 `EmbeddingBound.subst_value_subst_bdd`; the actual proof of the congruent EM premise is still
 outside this probe, but the cut interface and budgets are now checked. -/
-theorem inductionLeaf_valueSubst_cut_probe
+lemma inductionLeaf_valueSubst_cut_probe
     {βSrc βCong α : ONote}
     {ψ : ArithmeticSemiformula ℕ 1} {s t : ArithmeticTerm ℕ}
     (hψc : (ψ/[s]).complexity < c)
@@ -122,7 +122,7 @@ the numeral instance `ψ/[nm (n+1)]`.
 
 This mirrors the real `succInd` leaf more closely than `inductionLeaf_cutTowerStep_probe`.
 -/
-theorem inductionLeaf_cutTowerStepWithTerm_probe
+lemma inductionLeaf_cutTowerStepWithTerm_probe
     {βIH βA βB βAnd βEx βCong αStep α : ONote} {n : ℕ}
     {ψ step : ArithmeticSemiformula ℕ 1} (succT : ArithmeticTerm ℕ)
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
@@ -180,7 +180,7 @@ The exact `Provable` probe above requires all four premises at the same running 
 This wrapper instead runs the same `andI`/`exI`/`cut` wiring in the `ProvableSomeK` calculus, letting
 the existential-budget rules absorb the independently chosen finite premise budgets.
 -/
-theorem inductionLeaf_cutTowerStepWithTerm_someK_probe
+lemma inductionLeaf_cutTowerStepWithTerm_someK_probe
     {βIH βA βB βAnd βEx βCong αStep α : ONote} {n : ℕ}
     {ψ step : ArithmeticSemiformula ℕ 1} (succT : ArithmeticTerm ℕ)
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
@@ -236,7 +236,7 @@ This is the outer shape of `EmbeddingBound.metaInduction_cong_bdd` in the witnes
 `Provable` calculus: the successor step is allowed to run at the old index `max k n`; monotonicity
 then raises it to the next `allω` premise index `max k (n+1)`.
 -/
-theorem inductionLeaf_allOmegaFromStep_probe
+lemma inductionLeaf_allOmegaFromStep_probe
     {αAll : ONote}
     {ψ : ArithmeticSemiformula ℕ 1} (β : ℕ → ONote)
     (hβlt : ∀ n, β n < αAll) (hβNF : ∀ n, (β n).NF)
@@ -259,7 +259,7 @@ theorem inductionLeaf_allOmegaFromStep_probe
 
 This packages the `allω` outer layer used by the bounded PA-induction leaf: once the chain data
 has a single base index `k`, the exported conclusion only remembers that some finite index exists. -/
-theorem inductionLeaf_allOmegaFromStep_someK_probe
+lemma inductionLeaf_allOmegaFromStep_someK_probe
     {αAll : ONote}
     {ψ : ArithmeticSemiformula ℕ 1} (β : ℕ → ONote)
     (hpack : ∃ k : ℕ,
@@ -281,7 +281,7 @@ The `allω` packaging for the numeral-successor cut tower.
 This is the value-congruence-free core of the bounded PA-induction leaf: the local step already concludes
 `ψ(n+1)`, so the outer finite induction and `allω` rule do not need any extra congruent-value premise.
 -/
-theorem inductionLeaf_allOmegaCutTowerNumeral_probe
+lemma inductionLeaf_allOmegaCutTowerNumeral_probe
     {αAll : ONote}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (β βA βB βAnd βEx : ℕ → ONote)
@@ -321,7 +321,7 @@ All finite EM/congruence premises are still explicit hypotheses.  The theorem ch
 interface: the local `andI`/`exI`/`cut`/value-substitution step composes through ordinary finite
 induction and then through `Provable.allω` without losing the running witness index.
 -/
-theorem inductionLeaf_allOmegaCutTowerWithTerm_probe
+lemma inductionLeaf_allOmegaCutTowerWithTerm_probe
     {αAll : ONote}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (β βA βB βAnd βEx βStep βCong : ℕ → ONote)
