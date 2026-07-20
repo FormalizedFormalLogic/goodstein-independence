@@ -260,18 +260,14 @@ operator-controlled cut-elimination pipeline.
 but it DOES inherit these three via `ewIter_monotone`/`_infl`/`_low`, so the pass ITERATES).  Each
 step applies one `passAux`, promotes the reduced witness UP to `collapse α` exactly (`Zef2.weak`,
 gate `Nlog_collapse_le`), recurses, and rewrites via the two tower-shift lemmas. -/
-theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
-    ∀ (d : ℕ) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2 α e H f d Γ → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
-      α.NF → Cl H α →
-      Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ := by
-  intro d
-  induction d with
+theorem rankToZeroAux (e : ONote) (heNF : e.NF) (d : ℕ) {f : ℕ → ℕ}
+    (D : Zef2 α e H f d Γ) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hlow : ∀ m, 2 * m + 1 ≤ f m)
+    (hαNF : α.NF) (hαH : Cl H α) :
+    Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ := by
+  induction d generalizing α H f Γ with
   | zero =>
-      intro α H f Γ D hmono hinfl hlow hαNF hαH
       exact Zef2Prov.of hαNF hαH (Zef2.gate D) D
   | succ d ih =>
-      intro α H f Γ D hmono hinfl hlow hαNF hαH
       obtain ⟨β, hβle, hβNF, hβH, hβgate, Dβ⟩ :=
         passAux d heNF D rfl hmono hinfl hlow hαNF hαH
       have hg := Nlog_collapse_le hlow (Zef2.gate D)

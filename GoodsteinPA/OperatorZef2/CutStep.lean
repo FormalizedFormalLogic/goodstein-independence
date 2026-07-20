@@ -277,8 +277,8 @@ theorem cutReduceAllAuxRunning_Zf2 {γ : ONote} {Δ : Finset (ArithmeticFormula 
         (ih₁ hφc heNF fam) (ih₂ hφc heNF fam) hγNF hmono hinfl hsl hφread hmem
 
 /-- `f x ≤ rel1 f n₀ x` for monotone `f`. -/
-private theorem f_le_rel1_2 (hf : Monotone f) (n₀ : ℕ) :
-    ∀ x, f x ≤ rel1 f n₀ x := fun x => hf (le_max_right n₀ x)
+private theorem f_le_rel1_2 (hf : Monotone f) (n₀ x : ℕ) :
+    f x ≤ rel1 f n₀ x := hf (le_max_right n₀ x)
 
 /-- Transport a gate `Nlog α ≤ f 0` to the relativized slot `rel1 f n₀`. -/
 private theorem gate_rel1 (hmono : Monotone f) (n₀ : ℕ)

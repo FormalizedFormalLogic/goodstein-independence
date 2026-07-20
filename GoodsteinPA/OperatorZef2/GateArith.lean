@@ -33,12 +33,10 @@ theorem ewN_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
       | gt => simp only [ewN_oadd]; omega
 
 /-- `ewN` is sub-additive over ordinal addition (unconditional). -/
-theorem ewN_add_le : ∀ (a o : ONote), ewN (a + o) ≤ ewN a + ewN o := by
-  intro a
-  induction a with
-  | zero => intro o; simp [ewN]
+theorem ewN_add_le (a o : ONote) : ewN (a + o) ≤ ewN a + ewN o := by
+  induction a generalizing o with
+  | zero => simp [ewN]
   | oadd e n b ihe ih =>
-      intro o
       rw [oadd_add]
       refine le_trans (ewN_addAux_le e n (b + o)) ?_
       have := ih o

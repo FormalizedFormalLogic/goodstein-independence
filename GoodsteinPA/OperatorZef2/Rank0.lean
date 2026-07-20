@@ -100,26 +100,27 @@ def spineHead {n} : ArithmeticSemiformula ℕ n → Option (Bool × ((k : ℕ) �
   | Semiformula.or _ _ => none
 
 /-- Rewriting (in particular substitution `φ/[nm n]`) preserves the spine head. -/
-theorem spineHead_rew : ∀ {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : ArithmeticSemiformula ℕ n₁),
-    spineHead (om ▹ φ) = spineHead φ
-  | _, _, om, Semiformula.rel r v => by simp [spineHead, Function.comp_def]
-  | _, _, om, Semiformula.nrel r v => by simp [spineHead, Function.comp_def]
-  | _, _, om, Semiformula.all φ => by
+theorem spineHead_rew {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : ArithmeticSemiformula ℕ n₁) :
+    spineHead (om ▹ φ) = spineHead φ := by
+  induction φ generalizing n₂ with
+  | rel r v => simp [spineHead, Function.comp_def]
+  | nrel r v => simp [spineHead, Function.comp_def]
+  | all φ ih =>
       rw [show (Semiformula.all φ) = ∀⁰ φ from rfl, Rewriting.app_all]
-      simpa [spineHead] using spineHead_rew om.q φ
-  | _, _, om, Semiformula.exs φ => by
+      simpa [spineHead] using ih om.q
+  | exs φ ih =>
       rw [show (Semiformula.exs φ) = ∃⁰ φ from rfl, Rewriting.app_exs]
-      simpa [spineHead] using spineHead_rew om.q φ
-  | _, _, om, Semiformula.verum => by
+      simpa [spineHead] using ih om.q
+  | verum =>
       rw [show (Semiformula.verum : ArithmeticSemiformula ℕ _) = ⊤ from rfl]
       simp [spineHead]
-  | _, _, om, Semiformula.falsum => by
+  | falsum =>
       rw [show (Semiformula.falsum : ArithmeticSemiformula ℕ _) = ⊥ from rfl]
       simp [spineHead]
-  | _, _, om, Semiformula.and φ ψ => by
+  | and φ ψ =>
       rw [show (Semiformula.and φ ψ) = φ ⋏ ψ from rfl]
       simp [spineHead]
-  | _, _, om, Semiformula.or φ ψ => by
+  | or φ ψ =>
       rw [show (Semiformula.or φ ψ) = φ ⋎ ψ from rfl]
       simp [spineHead]
 
