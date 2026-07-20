@@ -10,6 +10,8 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
+variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-- The numeral term `nm n` (`OperatorZinfty.nm`) evaluates to `n` under any standard-model
 assignment — the value of a closed numeral const is assignment-independent.  Local companion of
 `stdClosedVal_nm`, phrased with `valm ℕ` so it `rw`s inside `eval_substs` read-offs. -/
@@ -21,8 +23,7 @@ derivation of `Γ` has a standard-model-true member.  The `allω` (Π) case comb
 branch's true member is in the shared context `Γ` (done), or every branch is true at its own
 instance `φ/[nm n]` — whence `∀⁰ φ` is true (`atomTrue (∀⁰ φ) = ∀ k, atomTrue (φ/[nm k])`).
 Slot-INDEPENDENT (truth does not see `f`). -/
-theorem sound0 {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
-    (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ := by
+theorem sound0 (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
       by_cases htrue : atomTrue (Semiformula.rel r v)
@@ -137,7 +138,6 @@ spine head `t`, no `Zef2` derivation at cut-rank 0 exists: `axL` would force
 `some (true, s) = t = some (false, s)`; `allω`/`exI` insert spine-head-preserving instances;
 `wk`/`weak` shrink; `cut` needs `complexity < 0`. -/
 theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × (ℒₒᵣ).Rel k))}
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : Zef2 α e H f c Γ) (hc : c = 0) (hyp : ∀ ψ ∈ Γ, spineHead ψ = t) : False := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
@@ -167,8 +167,6 @@ theorem zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × 
       · exact hyp ψ (Finset.mem_insert_of_mem hψΓ)
   | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ _ _ =>
       omega
-
-variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
 
 /-- **`Zef2` cannot derive `{∃⁰ φ}` at rank 0, for any `φ`.** -/
 theorem zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1} :

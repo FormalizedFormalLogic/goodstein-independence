@@ -23,14 +23,17 @@ private theorem lt_add_of_inner_lt {α β γ : ONote} (hαNF : α.NF) (hγNF : �
   have hγpos : (0 : Ordinal) < γ.repr := lt_of_le_of_lt (by simp) (lt_def.mp hβ)
   simpa using (add_lt_add_iff_left α.repr).mpr hγpos
 
+variable {φ : ArithmeticSemiformula ℕ 1} {α e : ONote} {H : ONote → Prop} {f g : ℕ → ℕ} {c : ℕ}
+  {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-! ### Case lemmas for `cutReduceAllAuxRunning_Zf2`
 
 Each lemma below discharges one constructor case of the induction on `Zef2 γ e H f c Δ` inside
 `cutReduceAllAuxRunning_Zf2`.  Splitting the cases into separate declarations keeps each proof
 well within the default heartbeat budget (the combined single-declaration proof did not). -/
 
-private theorem cutRun_axL {φ : ArithmeticSemiformula ℕ 1} {α γ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
-    {c : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} {ar : ℕ} (hαNF : α.NF) (hg0 : Nlog α ≤ g 0)
+private theorem cutRun_axL {γ : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar : ℕ}
+    (hαNF : α.NF) (hg0 : Nlog α ≤ g 0)
     (hαN : Nlog γ ≤ f 0) (r : (ℒₒᵣ).Rel ar) (v : Fin ar → Semiterm ℒₒᵣ ℕ 0)
     (hp : Semiformula.rel r v ∈ Δ) (hn : Semiformula.nrel r v ∈ Δ)
     (hγNF : γ.NF) (_hmono : Monotone f) (_hinfl : ∀ x, x ≤ f x)
@@ -43,8 +46,8 @@ private theorem cutRun_axL {φ : ArithmeticSemiformula ℕ 1} {α γ e : ONote} 
     (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩))
     (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩))
 
-private theorem cutRun_wk {φ : ArithmeticSemiformula ℕ 1} {α γ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
-    {c : ℕ} {Γ Δsub Δsup : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hαNF : α.NF) (hg_infl : ∀ x, x ≤ g x)
+private theorem cutRun_wk {γ : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)}
+    (hαNF : α.NF) (hg_infl : ∀ x, x ≤ g x)
     (hαN : Nlog γ ≤ f 0) (hsub : Δsub ⊆ Δsup) (D' : Zef2 γ e H f c Δsub)
     (ih : γ.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δsub → Zef2Prov (α + γ) e H (g ∘ f) c (Δsub.erase (∃⁰ ∼φ) ∪ Γ))
@@ -64,8 +67,8 @@ private theorem cutRun_wk {φ : ArithmeticSemiformula ℕ 1} {α γ e : ONote} {
         intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
         exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
 
-private theorem cutRun_weak {φ : ArithmeticSemiformula ℕ 1} {α γ β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
-    {c : ℕ} {Γ Δsub Δsup : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hαNF : α.NF) (hg_infl : ∀ x, x ≤ g x)
+private theorem cutRun_weak {γ β : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)}
+    (hαNF : α.NF) (hg_infl : ∀ x, x ≤ g x)
     (hβ : β < γ) (hβNF : β.NF) (hsub : Δsub ⊆ Δsup) (D' : Zef2 β e H f c Δsub)
     (ih : β.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δsub → Zef2Prov (α + β) e H (g ∘ f) c (Δsub.erase (∃⁰ ∼φ) ∪ Γ))
@@ -86,8 +89,8 @@ private theorem cutRun_weak {φ : ArithmeticSemiformula ℕ 1} {α γ β e : ONo
         intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
         exact Or.inl ⟨fun e0 => hd (e0 ▸ hx), hsub hx⟩)⟩
 
-private theorem cutRun_allω {φ : ArithmeticSemiformula ℕ 1} {α γ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
-    {c : ℕ} {Γ Γ₀ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hαNF : α.NF) (hg0 : Nlog α ≤ g 0)
+private theorem cutRun_allω {γ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
+    (hαNF : α.NF) (hg0 : Nlog α ≤ g 0)
     (hαN : Nlog γ ≤ f 0) (χ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
     (hβ : ∀ n, β n < γ) (hβNF : ∀ n, (β n).NF)
     (ih : ∀ n, (β n).NF → Monotone (rel1 f n) → (∀ x, x ≤ rel1 f n x) →
@@ -129,8 +132,7 @@ private theorem cutRun_allω {φ : ArithmeticSemiformula ℕ 1} {α γ e : ONote
     · exact Or.inl ⟨hhead, Or.inl rfl⟩
     · tauto)
 
-private theorem cutRun_exI {φ : ArithmeticSemiformula ℕ 1} {α γ β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
-    {c : ℕ} {Γ Γ₀ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ}
+private theorem cutRun_exI {γ β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     (hαNF : α.NF) (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x) (hg0 : Nlog α ≤ g 0)
     (fam : ∀ n (H' : ONote → Prop), Zef2 α e H' (rel1 g n) c (insert (φ/[nm n]) Γ))
     (hαN : Nlog γ ≤ f 0) (hφc : φ.complexity < c) (χ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < γ)
@@ -202,8 +204,7 @@ private theorem cutRun_exI {φ : ArithmeticSemiformula ℕ 1} {α γ β e : ONot
       · exact Or.inl ⟨hhd, Or.inl rfl⟩
       · tauto)
 
-private theorem cutRun_cut {φ : ArithmeticSemiformula ℕ 1} {α γ βφ βψ e : ONote} {H : ONote → Prop}
-    {f : ℕ → ℕ} {c : ℕ} {Γ Γ₀ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ}
+private theorem cutRun_cut {γ βφ βψ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     (hαNF : α.NF) (hg_infl : ∀ x, x ≤ g x) (hg0 : Nlog α ≤ g 0)
     (hαN : Nlog γ ≤ f 0) (χ : ArithmeticFormula ℕ) (hχc : χ.complexity < c)
     (hcutRead' : χ.complexity ≤ f 0) (hβφ : βφ < γ) (hβψ : βψ < γ) (hβφNF : βφ.NF) (hβψNF : βψ.NF)
@@ -249,11 +250,10 @@ covariance of the reduction.
 
 - [EW12, Lemma 25]
 -/
-theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} {α e : ONote}
-    {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
+theorem cutReduceAllAuxRunning_Zf2 {γ : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
+    (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (fam : ∀ n (H' : ONote → Prop), Zef2 α e H' (rel1 g n) c (insert (φ/[nm n]) Γ))
-    {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
     (D : Zef2 γ e H f c Δ) (hγNF : γ.NF)
     (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k)
     (hφread : φ.complexity ≤ f 0) (hmem : (∃⁰ ∼φ) ∈ Δ) :
@@ -277,11 +277,11 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
         (ih₁ hφc heNF fam) (ih₂ hφc heNF fam) hγNF hmono hinfl hsl hφread hmem
 
 /-- `f x ≤ rel1 f n₀ x` for monotone `f`. -/
-private theorem f_le_rel1_2 {f : ℕ → ℕ} (hf : Monotone f) (n₀ : ℕ) :
+private theorem f_le_rel1_2 (hf : Monotone f) (n₀ : ℕ) :
     ∀ x, f x ≤ rel1 f n₀ x := fun x => hf (le_max_right n₀ x)
 
 /-- Transport a gate `Nlog α ≤ f 0` to the relativized slot `rel1 f n₀`. -/
-private theorem gate_rel1 {f : ℕ → ℕ} (hmono : Monotone f) {α : ONote} (n₀ : ℕ)
+private theorem gate_rel1 (hmono : Monotone f) (n₀ : ℕ)
     (h : Nlog α ≤ f 0) : Nlog α ≤ rel1 f n₀ 0 := by
   refine le_trans h ?_
   simp only [rel1]
@@ -290,8 +290,8 @@ private theorem gate_rel1 {f : ℕ → ℕ} (hmono : Monotone f) {α : ONote} (n
 /-- **`allInv_Zef2`** — ∀-inversion over `Zef2` (port of `allInv_Zef`).  Ordinals are unchanged by
 inversion, so every rebuilt node's gate re-threads from its input gate through the relativized
 slot `rel1 f n₀` (`gate_rel1`, `f` monotone). -/
-theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
-    {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (dd : Zef2 α e H f c Γ) (hmono : Monotone f)
+theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
+    (dd : Zef2 α e H f c Γ) (hmono : Monotone f)
     (hmem : (∀⁰ φ₀) ∈ Γ) :
     Zef2 α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
   induction dd with
@@ -359,8 +359,7 @@ theorem allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) {α e : O
         (by simp only [rel1]; exact hmono (Nat.zero_le _))) hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
-variable {E : ONote} {H : ONote → Prop} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {χ : ArithmeticSemiformula ℕ 1}
-  {f g : ℕ → ℕ}
+variable {E : ONote} {χ : ArithmeticSemiformula ℕ 1}
 
 /-- **`stepAllω_Zf2`** — the principal ∀/∃ cut-reduction step over `Zef2` — invert the
 ∀-side via `allInv_Zef2`, feed `cutReduceAllAuxRunning_Zf2`, with the `hg_base` floor and
@@ -446,7 +445,6 @@ theorem inertForm_or (φ₁ φ₂ : ArithmeticFormula ℕ) : InertForm (φ₁ �
 never principal, so every rule commutes; instance formulas `χ/[nm n]` that happen to EQUAL the
 inert formula are restored by plain `wk`).  All gates ride unchanged (same `α`, same `f`). -/
 theorem Zef2.erase_inert {A : ArithmeticFormula ℕ} (hA : InertForm A)
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
     (dd : Zef2 α e H f c Γ) : Zef2 α e H f c (Γ.erase A) := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
@@ -504,8 +502,8 @@ Each lemma below discharges one constructor case of the induction on `Zef2 γ e 
 the default heartbeat budget (the combined single-declaration proof did not). -/
 
 private theorem atomRun_axL {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {βψ γ e : ONote} {H H₂ : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Δ : Finset (ArithmeticFormula ℕ)}
-    {g : ℕ → ℕ} {ar' : ℕ} (hβψNF : βψ.NF) (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
+    {βψ γ : ONote} {H₂ : ONote → Prop} {Δ : Finset (ArithmeticFormula ℕ)}
+    {ar' : ℕ} (hβψNF : βψ.NF) (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hg0 : Nlog βψ ≤ g 0) (hαN : Nlog γ ≤ f 0) (r : (ℒₒᵣ).Rel ar') (v : Fin ar' → Semiterm ℒₒᵣ ℕ 0)
     (hp : Semiformula.rel r v ∈ Δ) (hn : Semiformula.nrel r v ∈ Δ)
     (D₂ : Zef2 βψ e H₂ g c (insert (Semiformula.nrel rr vv) Γ))
@@ -532,8 +530,7 @@ private theorem atomRun_axL {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar �
       (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨by simp, hn⟩))
 
 private theorem atomRun_wk {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {βψ γ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Δsub Δsup : Finset (ArithmeticFormula ℕ)}
-    {g : ℕ → ℕ} (hsub : Δsub ⊆ Δsup)
+    {βψ γ : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)} (hsub : Δsub ⊆ Δsup)
     (ih : γ.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       Zef2Prov (βψ + γ) e H (g ∘ f) c (Δsub.erase (Semiformula.rel rr vv) ∪ Γ))
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x)
@@ -546,8 +543,7 @@ private theorem atomRun_wk {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar →
     · exact Or.inr hxΓ)
 
 private theorem atomRun_weak {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {βψ γ β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ}
-    {Γ Δsub Δsup : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hβψNF : βψ.NF) (hβ : β < γ) (hβNF : β.NF)
+    {βψ γ β : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)} (hβψNF : βψ.NF) (hβ : β < γ) (hβNF : β.NF)
     (hsub : Δsub ⊆ Δsup)
     (ih : β.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       Zef2Prov (βψ + β) e H (g ∘ f) c (Δsub.erase (Semiformula.rel rr vv) ∪ Γ))
@@ -562,8 +558,8 @@ private theorem atomRun_weak {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar �
     (le_of_lt (Provable.add_lt_add_left_NF hβψNF hβNF hγNF hβ))
 
 private theorem atomRun_allω {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {βψ γ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Γ₀ : Finset (ArithmeticFormula ℕ)}
-    {g : ℕ → ℕ} (hβψNF : βψ.NF) (hg0 : Nlog βψ ≤ g 0) (hαN : Nlog γ ≤ f 0) (χ : ArithmeticSemiformula ℕ 1)
+    {βψ γ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
+    (hβψNF : βψ.NF) (hg0 : Nlog βψ ≤ g 0) (hαN : Nlog γ ≤ f 0) (χ : ArithmeticSemiformula ℕ 1)
     (β : ℕ → ONote) (hβ : ∀ n, β n < γ) (hβNF : ∀ n, (β n).NF)
     (ih : ∀ n, (β n).NF → Monotone (rel1 f n) → (∀ x, x ≤ rel1 f n x) →
       (∀ k, rel1 f n 0 ≤ k → max (g 0) k + 1 ≤ g k) →
@@ -602,8 +598,8 @@ private theorem atomRun_allω {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar 
     · tauto)
 
 private theorem atomRun_exI {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {βψ γ β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ Γ₀ : Finset (ArithmeticFormula ℕ)}
-    {g : ℕ → ℕ} (hβψNF : βψ.NF) (hg0 : Nlog βψ ≤ g 0) (hg_infl : ∀ x, x ≤ g x) (hαN : Nlog γ ≤ f 0)
+    {βψ γ β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
+    (hβψNF : βψ.NF) (hg0 : Nlog βψ ≤ g 0) (hg_infl : ∀ x, x ≤ g x) (hαN : Nlog γ ≤ f 0)
     (χ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < γ) (hβNF : β.NF) (hbound : n ≤ f 0)
     (ih : β.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
       Zef2Prov (βψ + β) e H (g ∘ f) c ((insert (χ/[nm n]) Γ₀).erase (Semiformula.rel rr vv) ∪ Γ))
@@ -632,8 +628,7 @@ private theorem atomRun_exI {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar �
     · tauto)
 
 private theorem atomRun_cut {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {βψ γ βφ βψ' e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ}
-    {Γ Γ₀ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hβψNF : βψ.NF) (hg0 : Nlog βψ ≤ g 0)
+    {βψ γ βφ βψ' : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)} (hβψNF : βψ.NF) (hg0 : Nlog βψ ≤ g 0)
     (hg_infl : ∀ x, x ≤ g x) (hαN : Nlog γ ≤ f 0) (χ : ArithmeticFormula ℕ) (hχc : χ.complexity < c)
     (hcutRead' : χ.complexity ≤ f 0) (hβφ : βφ < γ) (hβψ' : βψ' < γ) (hβφNF : βφ.NF) (hβψNF' : βψ'.NF)
     (ih₁ : βφ.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
@@ -671,11 +666,11 @@ replaced by `D₂` (weakened); all other nodes rebuild at the fresh root `βψ +
 absorbing gate (`Nlog_add_le_comp` + the slot-threaded slack, exactly as in the running
 reduction).  Output slot `g ∘ f`. -/
 theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {c : ℕ} {βψ e : ONote} {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} {H₂ : ONote → Prop}
+    {βψ : ONote} {H₂ : ONote → Prop}
     (hβψNF : βψ.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (D₂ : Zef2 βψ e H₂ g c (insert (Semiformula.nrel rr vv) Γ))
-    {γ : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
+    {γ : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (D : Zef2 γ e H f c Δ) (hγNF : γ.NF)
     (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) :
     Zef2Prov (βψ + γ) e H (g ∘ f) c (Δ.erase (Semiformula.rel rr vv) ∪ Γ) := by

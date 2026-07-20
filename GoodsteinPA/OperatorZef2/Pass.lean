@@ -10,6 +10,8 @@ namespace GoodsteinPA.OperatorZeh
 open LO LO.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
+variable {α e : ONote} {H : ONote → Prop} {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-! ## The cut-elimination pass; `passAux` is the induction -/
 
 /-- **`passAux`** — the cut-elimination pass as a generalized induction, threading
@@ -27,8 +29,8 @@ The crux decomposition is in three cases:
 - `cut`: sub-rank rebuild (χ.complexity < c) OR TOP-rank eliminate (χ.complexity = c, ∀/∃ →
   `stepAllω_Zf2` + `collapse_add_lt` + `ewIter_comp_le`; the c=0 atomic case needs an atom-cut lemma).
 -/
-theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ}
-    {Γ : Finset (ArithmeticFormula ℕ)} {r : ℕ} (D : Zef2 α e H f r Γ) (hr : r = c + 1)
+theorem passAux (c : ℕ) (heNF : e.NF) {f : ℕ → ℕ}
+    {r : ℕ} (D : Zef2 α e H f r Γ) (hr : r = c + 1)
     (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hlow : ∀ m, 2 * m + 1 ≤ f m)
     (hαNF : α.NF) (hαH : Cl H α) :
     Zef2Prov (collapse α) e H (ewIter f α) c Γ := by
@@ -219,14 +221,12 @@ theorem passAux (c : ℕ) {e : ONote} (heNF : e.NF) {α : ONote} {H : ONote → 
             exact ⟨w, le_trans hwle (le_of_lt hcollt'), hwNF, hwH,
               le_trans hwg (hcomp' 0), Dw.mono_f hcomp'⟩
 
-variable {α e : ONote} {H : ONote → Prop}
-
 /-- **One cut-elimination pass over `Zef2`**: a single predicative rank step — the ordinal
 collapses (`collapse α`) and the numeric slot iterates (`ewIter f α`).
 
 - [EW12, Lemma 26, Lemma 27]
 -/
-theorem cutElimPass_Zef2 {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)
+theorem cutElimPass_Zef2 {c : ℕ} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f (c + 1) Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapse α) e H (ewIter f α) c Γ :=
@@ -291,7 +291,7 @@ theorem rankToZeroAux (e : ONote) (heNF : e.NF) :
 /-- **`rankToZero_Zef2`** — iterate `cutElimPass_Zef2` down the cut rank `d → 0`.
 A plain induction over the pass (`rankToZeroAux`): `d` applications collapse the ordinal to
 `collapseIter d α` and tower the slot to `ewIterTower f d α`, landing at rank 0. -/
-theorem rankToZero_Zef2 {d : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (f : ℕ → ℕ)
+theorem rankToZero_Zef2 {d : ℕ} (f : ℕ → ℕ)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
     (D : Zef2 α e H f d Γ) (hf1 : EwF1 f) (_hf2 : EwF2 f) :
     Zef2Prov (collapseIter d α) e H (ewIterTower f d α) 0 Γ :=
