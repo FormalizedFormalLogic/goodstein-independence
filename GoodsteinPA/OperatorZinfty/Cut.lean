@@ -77,27 +77,27 @@ variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- Monotonicity in `α` (≤), `k`, `d`, `c` (the control `e` is raised separately by `mono_e`,
 which carries a budget side condition). The carried norm bound `norm α' < k+d` rides up to `k'+d'`. -/
-lemma mono {β : ONote} {k' d' c' : ℕ}
+lemma mono {β} {k' d' c'}
     (hα : α ≤ β) (hk : k ≤ k') (hd : d ≤ d') (hc : c ≤ c') :
     ProvableSlack α e k d c Γ → ProvableSlack β e k' d' c' Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', le_trans hα' hα, hNF, by omega, ((D.mono_k hk).mono_d hd).mono_c hc⟩
 
 /-- Control-ordinal raising at the wrapper level. -/
-lemma mono_e {e' : ONote}
+lemma mono_e {e'}
     (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e') (hbudget : norm e ≤ k + d) :
     ProvableSlack α e k d c Γ → ProvableSlack α e' k d c Γ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.mono_e heNF he'NF hlt hbudget⟩
 
 /-- Sequent weakening. -/
-lemma weakening {Δ : Finset (ArithmeticFormula ℕ)} (h : Γ ⊆ Δ) :
+lemma weakening {Δ} (h : Γ ⊆ Δ) :
     ProvableSlack α e k d c Γ → ProvableSlack α e k d c Δ := by
   rintro ⟨α', hα', hNF, hnorm, D⟩
   exact ⟨α', hα', hNF, hnorm, D.wk h⟩
 
 /-- Respect set-equality of sequents. -/
-lemma cast {Δ : Finset (ArithmeticFormula ℕ)} (e0 : Γ = Δ) :
+lemma cast {Δ} (e0 : Γ = Δ) :
     ProvableSlack α e k d c Γ → ProvableSlack α e k d c Δ := fun h => e0 ▸ h
 
 /-- Lift a raw `Provable` derivation (NF ordinal + norm bound) into the wrapper. -/

@@ -34,7 +34,7 @@ lemma inductionLeaf_runningIndex_witnessBound (e : ONote) (k d n : ℕ) : n ≤ 
 
 /-- The actual `Provable.exI` move needed in the induction-axiom leaf is legal at the running
 index.  This is the local replacement for the unbounded proof's free `PXFc.exI` step. -/
-lemma inductionLeaf_exI_runningIndex_probe {α β e : ONote} {k d c n : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+lemma inductionLeaf_exI_runningIndex_probe {α β e} {k d c n} {Γ}
     {φ : ArithmeticSemiformula ℕ 1}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < max k n + d)
     (D : Provable β e (max k n) d c (insert (φ/[nm n]) Γ)) :

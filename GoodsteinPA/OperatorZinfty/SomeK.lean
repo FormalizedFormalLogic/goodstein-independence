@@ -73,24 +73,24 @@ lemma ofBoundedTruth {n : ℕ}
   exact ⟨K, provableOfBoundedTruth_probe q w ψ hψq hBT hbudget hmem⟩
 
 /-- Monotonicity in the sequent for the existential-budget wrapper. -/
-lemma wk {Δ : Finset (ArithmeticFormula ℕ)} (hsub : Δ ⊆ Γ) (dd : ProvableSomeK α e d c Δ) :
+lemma wk {Δ} (hsub : Δ ⊆ Γ) (dd : ProvableSomeK α e d c Δ) :
   ProvableSomeK α e d c Γ := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, Provable.wk hsub D⟩
 
 /-- Monotonicity in the additive norm-budget component. -/
-lemma mono_d {d' : ℕ} (hd : d ≤ d') (dd : ProvableSomeK α e d c Γ) : ProvableSomeK α e d' c Γ := by
+lemma mono_d {d'} (hd : d ≤ d') (dd : ProvableSomeK α e d c Γ) : ProvableSomeK α e d' c Γ := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.mono_d hd⟩
 
 /-- Monotonicity in the cut-rank/complexity bound. -/
-lemma mono_c {c' : ℕ} (hc : c ≤ c') (dd : ProvableSomeK α e d c Γ) : ProvableSomeK α e d c' Γ := by
+lemma mono_c {c'} (hc : c ≤ c') (dd : ProvableSomeK α e d c Γ) : ProvableSomeK α e d c' Γ := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.mono_c hc⟩
 
 /-- Control-ordinal monotonicity for the existential-budget wrapper.  The wrapper can
 raise `K`, so the `norm e ≤ K+d` side condition of `Provable.mono_e` is paid locally. -/
-lemma mono_e {e' : ONote}
+lemma mono_e {e'}
     (heNF : e.NF) (he'NF : e'.NF) (hlt : e < e')
     (dd : ProvableSomeK α e d c Γ) :
     ProvableSomeK α e' d c Γ := by
@@ -102,7 +102,7 @@ lemma mono_e {e' : ONote}
 
 /-- Ordinal/sequent weakening for the existential-budget wrapper: choose a finite
 index large enough for the source ordinal norm side condition. -/
-lemma weak {β : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
+lemma weak {β} {Δ}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (hsub : Δ ⊆ Γ) (dd : ProvableSomeK β e d c Δ) :
     ProvableSomeK α e d c Γ := by
@@ -113,13 +113,13 @@ lemma weak {β : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
   · dsimp [K]; omega
 
 /-- Combined monotonicity in the two numeric side budgets. -/
-lemma mono {d' c' : ℕ} (hd : d ≤ d') (hc : c ≤ c') (dd : ProvableSomeK α e d c Γ) :
+lemma mono {d' c'} (hd : d ≤ d') (hc : c ≤ c') (dd : ProvableSomeK α e d c Γ) :
   ProvableSomeK α e d' c' Γ :=
   mono_c hc (mono_d hd dd)
 
 /-- One-shot lift used by proof embeddings: raise the derivation ordinal, control ordinal,
 numeric side budgets, and sequent at the same time, choosing a larger finite `K` internally. -/
-lemma lift {β e' : ONote} {d' c' : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
+lemma lift {β e'} {d' c'} {Δ}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (heNF : e.NF) (he'NF : e'.NF) (he : e < e')
     (hd : d ≤ d') (hc : c ≤ c') (hsub : Δ ⊆ Γ)
@@ -129,7 +129,7 @@ lemma lift {β e' : ONote} {d' c' : ℕ} {Δ : Finset (ArithmeticFormula ℕ)}
 
 /-- `andI` for the existential-budget wrapper: choose a finite index large enough for
 both premises and both norm side conditions. -/
-lemma andI {βφ βψ : ONote}
+lemma andI {βφ βψ}
     (φ ψ : ArithmeticFormula ℕ) (hβφ : βφ < α) (hβψ : βψ < α)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
     (dφ : ProvableSomeK βφ e d c (insert φ Γ))
@@ -145,7 +145,7 @@ lemma andI {βφ βψ : ONote}
   · exact Dψ.mono_k (by dsimp [K]; omega)
 
 /-- `orI` for the existential-budget wrapper. -/
-lemma orI {β : ONote}
+lemma orI {β}
     (φ ψ : ArithmeticFormula ℕ) (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (dd : ProvableSomeK β e d c (insert φ (insert ψ Γ))) :
     ProvableSomeK α e d c (insert (φ ⋎ ψ) Γ) := by
@@ -168,7 +168,7 @@ lemma allω {K : ℕ}
 
 /-- `exI` for the existential-budget wrapper.  The wrapper chooses a finite
 index large enough for both the premise derivation and the explicit witness. -/
-lemma exI {β : ONote}
+lemma exI {β}
     (φ : ArithmeticSemiformula ℕ 1) (n : ℕ)
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (dd : ProvableSomeK β e d c (insert (φ/[nm n]) Γ)) :
@@ -184,7 +184,7 @@ lemma exI {β : ONote}
   · omega
 
 /-- `cut` for the existential-budget wrapper. -/
-lemma cut {βφ βψ : ONote}
+lemma cut {βφ βψ}
     (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c)
     (hβφ : βφ < α) (hβψ : βψ < α)
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
@@ -198,19 +198,19 @@ lemma cut {βφ βψ : ONote}
   all_goals omega;
 
 /-- Disjunction inversion for the existential-budget wrapper. -/
-lemma orInv {φ ψ : ArithmeticFormula ℕ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
+lemma orInv {φ ψ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋎ ψ) ∈ Γ) :
   ProvableSomeK α e d c (insert φ (insert ψ (Γ.erase (φ ⋎ ψ)))) := by
   rcases dd with ⟨K, D⟩;
   exact ⟨K, D.orInv hmem⟩
 
 /-- Left conjunction inversion for the existential-budget wrapper. -/
-lemma andInvL {φ ψ : ArithmeticFormula ℕ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+lemma andInvL {φ ψ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
   ProvableSomeK α e d c (insert φ (Γ.erase (φ ⋏ ψ))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.andInvL hmem⟩
 
 /-- Right conjunction inversion for the existential-budget wrapper. -/
-lemma andInvR {φ ψ : ArithmeticFormula ℕ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
+lemma andInvR {φ ψ} (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
   ProvableSomeK α e d c (insert ψ (Γ.erase (φ ⋏ ψ))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨K, D.andInvR hmem⟩
@@ -261,8 +261,7 @@ lemma cutReduceDisj {a b : ArithmeticFormula ℕ} {β δ : ONote}
 This is intentionally still the *fixed-family* theorem: the ∀-side family is supplied at one
 finite index `k₀`. The wrapper absorbs the ∃-side finite index and converts the `ProvableSlack`
 ordinal upper bound back to an exact `ProvableSomeK` derivation. -/
-lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
-    {γ : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
+lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀} {γ} {Δ}
     (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF) (heNF : e.NF)
     (hd₀ : d₀ ≤ d)
     (fam : ∀ n, Provable α e k₀ d₀ c (insert (φ/[nm n]) Γ))
@@ -282,8 +281,7 @@ lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
 This is the part of the full `Provable` cut-elimination assembly where the norm-budget auxiliary
 has already fired and the control ordinal is then raised to enlarge every existential witness
 bound.  The existential-budget wrapper chooses the finite index needed by `mono_e` internally. -/
-lemma cutReduceAllAux_control {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀ : ℕ}
-    {γ e' : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
+lemma cutReduceAllAux_control {φ : ArithmeticSemiformula ℕ 1} {k₀ d₀} {γ e'} {Δ}
     (hφc : φ.complexity < c) (hαNF : α.NF) (hγNF : γ.NF)
     (heNF : e.NF) (he'NF : e'.NF) (helt : e < e')
     (hd₀ : d₀ ≤ d)

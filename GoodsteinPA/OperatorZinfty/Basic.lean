@@ -88,7 +88,7 @@ inductive Provable : ONote → ONote → ℕ → ℕ → ℕ → Finset (Arithme
 
 namespace Provable
 
-variable {α e k d c Γ}
+variable {α e : ONote} {k d c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- **`k`-monotonicity** (the `max`/cofinal part; inversions raise this idempotently). The witness
 bound `hardy e (k+d)` rises with `k` via `hardy_monotone`. -/
