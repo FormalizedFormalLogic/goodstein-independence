@@ -30,7 +30,6 @@ theorem reslot_exside {f g : ℕ → ℕ} (hg_infl : ∀ x, x ≤ g x) :
 
 /-! ## The running-family reduction, sorry-free -/
 
-set_option maxHeartbeats 400000 in
 /-- **`cutReduceAllAuxRunning_Zf`** — the running-family cut-reduction shape of [Tow20,
 Theorem 19.6], carried through in the function-slot form [EW12, Lemma 25]: the stage `m` is
 replaced by the current slot `f'` (threaded monotone + inflationary), output slot `g∘f'`, via
