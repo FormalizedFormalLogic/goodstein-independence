@@ -394,7 +394,7 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)
-      · exact ⟨γ, Provable.le_add_left_NF hαNF hγNF, hγNF, Cl_of_NF hγNF,
+      · exact ⟨γ, le_add_left_NF hαNF hγNF, hγNF, Cl_of_NF hγNF,
           le_trans hαN (reslot_exside hg_infl 0),
           (D'.mono_f (reslot_exside hg_infl)).wk (le_trans hαN (reslot_exside hg_infl 0)) (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
@@ -407,8 +407,8 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
           rcases hx with ⟨hne, hxs⟩ | hxΓ
           · exact Or.inl ⟨hne, hsub hxs⟩
           · exact Or.inr hxΓ)).mono
-          (le_of_lt (Provable.add_lt_add_left_NF hαNF hβNF hγNF hβ))
-      · exact ⟨β, le_of_lt (lt_of_lt_of_le hβ (Provable.le_add_left_NF hαNF hγNF)), hβNF, Cl_of_NF hβNF,
+          (le_of_lt (add_lt_add_left_NF hαNF hβNF hγNF hβ))
+      · exact ⟨β, le_of_lt (lt_of_lt_of_le hβ (le_add_left_NF hαNF hγNF)), hβNF, Cl_of_NF hβNF,
           le_trans (Zef2.gate D') (reslot_exside hg_infl 0),
           (D'.mono_f (reslot_exside hg_infl)).wk (le_trans (Zef2.gate D') (reslot_exside hg_infl 0)) (by
             intro x hx; simp only [Finset.mem_union, Finset.mem_erase]
@@ -434,7 +434,7 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
           (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
         exact Zef2.allω (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ (fun n => (ihn n).choose)
           (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
-            (Provable.add_lt_add_left_NF hαNF (hβNF n) hγNF (hβ n)))
+            (add_lt_add_left_NF hαNF (hβNF n) hγNF (hβ n)))
           (fun n => (ihn n).choose_spec.2.1) haddNF
           (fun n => Cl_of_NF (ihn n).choose_spec.2.1)
           (fun n => (ihn n).choose_spec.2.2.2.2)
@@ -471,7 +471,7 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
               simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
           refine Zef2Prov.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
           exact Zef2.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
-            (lt_of_le_of_lt hale (Provable.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+            (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
             hαNF haNF haddNF (Cl_of_NF hαNF) haH famn Da'
         · have Dβ' : Zef2 β e H (g ∘ f) c
               (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
@@ -485,7 +485,7 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
               · exact Or.inr (Or.inl ⟨fun e0 => hd (e0 ▸ hxΓ₀), hxΓ₀⟩))
           refine Zef2Prov.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
           exact Zef2.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
-            (lt_of_lt_of_le hβ (Provable.le_add_left_NF hαNF hγNF))
+            (lt_of_lt_of_le hβ (le_add_left_NF hαNF hγNF))
             hαNF hβNF haddNF (Cl_of_NF hαNF) (Cl_of_NF hβNF) famn Dβ'
       · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
         obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hφc heNF fam hβNF hmono hinfl hsl hφread
@@ -497,7 +497,7 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
         refine Zef2Prov.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
         have hbound' : n ≤ (g ∘ f) 0 := le_trans hbound (hg_infl (f 0))
         exact Zef2.exI (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ n
-          (lt_of_le_of_lt hale (Provable.add_lt_add_left_NF hαNF hβNF hγNF hβ))
+          (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
           haNF haddNF haH hbound' Da'
         |>.wk (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (by
           intro x hx
@@ -523,8 +523,8 @@ theorem cutReduceAllAuxRunning_Zf2 {φ : ArithmeticSemiformula ℕ 1} {c : ℕ} 
       refine Zef2Prov.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
       exact Zef2.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ hχc
         (le_trans hcutRead' (hg_infl (f 0)))
-        (lt_of_le_of_lt ha₁le (Provable.add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
-        (lt_of_le_of_lt ha₂le (Provable.add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
+        (lt_of_le_of_lt ha₁le (add_lt_add_left_NF hαNF hβφNF hγNF hβφ))
+        (lt_of_le_of_lt ha₂le (add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF haddNF ha₁H ha₂H D₁' D₂'
 
 /-- `f x ≤ rel1 f n₀ x` for monotone `f`. -/
@@ -783,7 +783,7 @@ theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Sem
         have hnmem : Semiformula.nrel rr vv ∈ Δ.erase (Semiformula.rel rr vv) ∪ Γ :=
           Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨by simp, hnrel ▸ hn⟩)
         have hgate : Nlog βψ ≤ (g ∘ f) 0 := le_trans hg0 (hg_mono (Nat.zero_le _))
-        refine ⟨βψ, Provable.le_add_right_NF hβψNF hγNF, hβψNF, Cl_of_NF hβψNF, hgate, ?_⟩
+        refine ⟨βψ, le_add_right_NF hβψNF hγNF, hβψNF, Cl_of_NF hβψNF, hgate, ?_⟩
         exact ((D₂.change_H (H' := H)).mono_f (fun x => hg_mono (hinfl x))).wk hgate (by
           intro x hx
           rcases Finset.mem_insert.mp hx with rfl | hxΓ
@@ -791,7 +791,7 @@ theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Sem
           · exact Finset.mem_union_right _ hxΓ)
       · -- ordinary axL: the pair survives the erasure; keep the ordinal `γ` (no fresh root)
         have hgate : Nlog γ ≤ (g ∘ f) 0 := le_trans hαN (hg_infl (f 0))
-        refine ⟨γ, Provable.le_add_left_NF hβψNF hγNF, hγNF, Cl_of_NF hγNF, hgate, ?_⟩
+        refine ⟨γ, le_add_left_NF hβψNF hγNF, hγNF, Cl_of_NF hγNF, hgate, ?_⟩
         exact Zef2.axL hgate r v
           (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨hsplice, hp⟩))
           (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨by simp, hn⟩))
@@ -809,7 +809,7 @@ theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Sem
         rcases hx with ⟨hne, hxs⟩ | hxΓ
         · exact Or.inl ⟨hne, hsub hxs⟩
         · exact Or.inr hxΓ)).mono
-        (le_of_lt (Provable.add_lt_add_left_NF hβψNF hβNF hγNF hβ))
+        (le_of_lt (add_lt_add_left_NF hβψNF hβNF hγNF hβ))
   | @allω γ e H f c Γ₀ hαN χ β hβ hβNF hγNF' hβH dd ih =>
       intro hγNF hmono hinfl hsl
       have hhead : (∀⁰ χ) ≠ Semiformula.rel rr vv := (fun h => by cases h)
@@ -830,7 +830,7 @@ theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Sem
         exact Zef2.allω (Nlog_add_le_comp hβψNF hγNF hg0 hαN (hsl _ le_rfl)) χ
           (fun n => (ihn n).choose)
           (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
-            (Provable.add_lt_add_left_NF hβψNF (hβNF n) hγNF (hβ n)))
+            (add_lt_add_left_NF hβψNF (hβNF n) hγNF (hβ n)))
           (fun n => (ihn n).choose_spec.2.1) haddNF
           (fun n => Cl_of_NF (ihn n).choose_spec.2.1)
           (fun n => (ihn n).choose_spec.2.2.2.2)
@@ -855,7 +855,7 @@ theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Sem
         (Nlog_add_le_comp hβψNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
       have hbound' : n ≤ (g ∘ f) 0 := le_trans hbound (hg_infl (f 0))
       exact Zef2.exI (Nlog_add_le_comp hβψNF hγNF hg0 hαN (hsl _ le_rfl)) χ n
-        (lt_of_le_of_lt hale (Provable.add_lt_add_left_NF hβψNF hβNF hγNF hβ))
+        (lt_of_le_of_lt hale (add_lt_add_left_NF hβψNF hβNF hγNF hβ))
         haNF haddNF haH hbound' Da'
       |>.wk (Nlog_add_le_comp hβψNF hγNF hg0 hαN (hsl _ le_rfl)) (by
         intro x hx
@@ -884,8 +884,8 @@ theorem atomCutRun_Zf2 {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Sem
         (Nlog_add_le_comp hβψNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
       exact Zef2.cut (Nlog_add_le_comp hβψNF hγNF hg0 hαN (hsl _ le_rfl)) χ hχc
         (le_trans hcutRead' (hg_infl (f 0)))
-        (lt_of_le_of_lt ha₁le (Provable.add_lt_add_left_NF hβψNF hβφNF hγNF hβφ))
-        (lt_of_le_of_lt ha₂le (Provable.add_lt_add_left_NF hβψNF hβψNF' hγNF hβψ'))
+        (lt_of_le_of_lt ha₁le (add_lt_add_left_NF hβψNF hβφNF hγNF hβφ))
+        (lt_of_le_of_lt ha₂le (add_lt_add_left_NF hβψNF hβψNF' hγNF hβψ'))
         ha₁NF ha₂NF haddNF ha₁H ha₂H Dc₁' Dc₂'
 
 /-! ## The cut-elimination pass (P-e) — Stage-3 grind (UNLOCKED); `passAux` is the induction -/

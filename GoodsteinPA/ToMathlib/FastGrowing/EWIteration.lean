@@ -74,7 +74,7 @@ def collapse (α : ONote) : ONote := expTower α
 theorem collapse_NF {α : ONote} (hα : α.NF) : (collapse α).NF := expTower_NF hα
 
 /-- **C5: `collapse` is strictly monotone** (`β < α → collapse β < collapse α`) — the descent the
-rank-lowering induction needs (the `Provable.add_osucc_descent`-class compatibility). -/
+rank-lowering induction needs (the `ONote.add_osucc_descent`-class compatibility). -/
 theorem collapse_strictMono {β α : ONote} (hβ : β.NF) (h : β < α) : collapse β < collapse α :=
   expTower_lt_expTower hβ h
 
@@ -186,6 +186,40 @@ theorem coe_lt_of_clog_le {n : ℕ+} {K : ℕ} (h : clog (n : ℕ) ≤ K) : (n :
     Nat.lt_pow_succ_log_self Nat.one_lt_two _
   have h2 : 2 ^ (Nat.log 2 ((n : ℕ) + 1) + 1) ≤ 2 ^ (K + 1) :=
     Nat.pow_le_pow_right (by norm_num) (by unfold clog at h; omega)
+  omega
+
+/-- `2·⌈log⌉` is dominated by the argument (+3): `2·log₂(m+1) ≤ m+3`. -/
+theorem two_mul_clog_le (m : ℕ) : 2 * clog m ≤ m + 3 := by
+  have hkey : ∀ k : ℕ, 2 * k ≤ 2 ^ k + 2 := by
+    intro k
+    induction k with
+    | zero => omega
+    | succ k ih =>
+        have h2 : 2 ^ k ≥ 1 := Nat.one_le_two_pow
+        have : 2 ^ (k + 1) = 2 ^ k + 2 ^ k := by ring
+        omega
+  have hpow : 2 ^ Nat.log 2 (m + 1) ≤ m + 1 := Nat.pow_log_le_self 2 (by omega)
+  have := hkey (Nat.log 2 (m + 1))
+  simp only [clog]
+  omega
+
+/-- `clog` submultiplicativity: `clog (a·b) ≤ clog a + clog b + 1`. -/
+theorem clog_mul_le (a b : ℕ) : clog (a * b) ≤ clog a + clog b + 1 := by
+  rcases Nat.eq_zero_or_pos a with ha | ha
+  · subst ha; simp
+  rcases Nat.eq_zero_or_pos b with hb | hb
+  · subst hb; simp
+  have h1 : a + 1 < 2 ^ (clog a + 1) := by
+    simpa [clog] using Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) (a + 1)
+  have h2 : b + 1 < 2 ^ (clog b + 1) := by
+    simpa [clog] using Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) (b + 1)
+  have hle : a * b + 1 < 2 ^ (clog a + 1) * 2 ^ (clog b + 1) := by
+    have hexp : (a + 1) * (b + 1) = a * b + a + b + 1 := by ring
+    have : a * b + 1 ≤ (a + 1) * (b + 1) := by omega
+    exact lt_of_le_of_lt this (Nat.mul_lt_mul'' h1 h2)
+  rw [← pow_add] at hle
+  have hfin : clog (a * b) < clog a + 1 + (clog b + 1) := by
+    simpa [clog] using Nat.log_lt_of_lt_pow (by omega : a * b + 1 ≠ 0) hle
   omega
 
 /-- **The absorbing norm**: max-over-terms with logarithmic coefficient charge.  Contrast
@@ -412,6 +446,95 @@ theorem Nlog_add_le_comp {α γ : ONote} {f g : ℕ → ℕ}
   have habs := Nlog_add_le_max_succ α hαNF γ hγNF
   have hmm : max (Nlog α) (Nlog γ) ≤ max (g 0) (f 0) := max_le_max hα hγ
   omega
+
+/-! ## `ω` as an `ONote` -/
+
+/-- `ω` (`ONote.omega`) is the closure element `expTower (ofNat 1)`. -/
+theorem omega_eq_expTower : (ONote.omega : ONote) = expTower (ONote.ofNat 1) := rfl
+
+theorem omega_NF : (ONote.omega : ONote).NF := by
+  rw [omega_eq_expTower]; exact expTower_NF (ONote.nf_ofNat 1)
+
+/-- Every numeral `ONote.ofNat m` lies strictly below `ω`. -/
+theorem ofNat_lt_omega (m : ℕ) : ONote.ofNat m < ONote.omega := by
+  rw [ONote.lt_def, ONote.repr_ofNat,
+    show ONote.omega.repr = Ordinal.omega0 from by simp [ONote.omega]]
+  exact Ordinal.natCast_lt_omega0 m
+
+theorem Nlog_omega : Nlog ONote.omega = 2 := by
+  show Nlog (ONote.oadd 1 1 0) = 2
+  have h2 : Nat.log 2 2 = 1 := by decide
+  show max (Nlog (1 : ONote) + clog 1) (Nlog 0) = 2
+  have h1 : Nlog (1 : ONote) = 1 := by
+    show max (Nlog 0 + clog 1) (Nlog 0) = 1
+    simp [clog, h2]
+  simp [h1, clog, h2]
+
+/-! ## `osucc` interaction with `Nlog` and `collapse` -/
+
+/-- `Nlog` is near-stable under `osucc` (mirror of `ewN_osucc_le`). -/
+theorem Nlog_osucc_le : ∀ {o : ONote}, o.NF → Nlog (osucc o) ≤ Nlog o + 1
+  | 0, _ => by
+      show Nlog (oadd 0 1 0) ≤ Nlog 0 + 1
+      simp only [Nlog_oadd, Nlog_zero, PNat.one_coe]
+      have : clog 1 = 1 := by decide
+      omega
+  | oadd 0 n a, h => by
+      have ha0 : a = 0 := by
+        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
+        rw [ONote.repr_zero, Ordinal.opow_zero] at hlt
+        exact (@ONote.repr_inj a 0 h.snd ONote.NF.zero).1
+          (by rw [ONote.repr_zero]; exact Order.lt_one_iff.1 hlt)
+      subst ha0
+      show Nlog (oadd 0 (n + 1) 0) ≤ Nlog (oadd 0 n 0) + 1
+      have hadd := clog_add_le (n : ℕ) 1
+      have hpos := clog_pos n
+      have h1 : clog 1 = 1 := by decide
+      simp only [Nlog_oadd, Nlog_zero, PNat.add_coe, PNat.one_coe, Nat.zero_add]
+      omega
+  | oadd (oadd e' n' a') m b, h => by
+      show Nlog (oadd (oadd e' n' a') m (osucc b)) ≤ Nlog (oadd (oadd e' n' a') m b) + 1
+      have hIH := Nlog_osucc_le h.snd
+      simp only [Nlog_oadd] at hIH ⊢
+      omega
+
+/-- `osuccs α n` is the `n`-fold iterate of `osucc` applied to `α`. -/
+def osuccs (α : ONote) : ℕ → ONote
+  | 0 => α
+  | n + 1 => osucc (osuccs α n)
+
+theorem osuccs_NF {α : ONote} (h : α.NF) : ∀ n, (osuccs α n).NF
+  | 0 => h
+  | n + 1 => osucc_NF (osuccs_NF h n)
+
+theorem osuccs_succ_shift (α : ONote) : ∀ n, osuccs (osucc α) n = osucc (osuccs α n)
+  | 0 => rfl
+  | n + 1 => by simp only [osuccs, osuccs_succ_shift α n]
+
+theorem Nlog_osuccs_le {α : ONote} (h : α.NF) : ∀ n, Nlog (osuccs α n) ≤ Nlog α + n
+  | 0 => le_refl _
+  | n + 1 => by
+      have h1 := Nlog_osucc_le (osuccs_NF h n)
+      have h2 := Nlog_osuccs_le h n
+      simp only [osuccs]
+      omega
+
+/-- Successor headroom under the collapse: `collapse α = ω^α` is a limit for `α > 0`, so
+`σ < collapse α → osucc σ < collapse α` (additive principality with `1 < ω^α`). -/
+theorem osucc_lt_collapse {σ α : ONote} (hσNF : σ.NF) (_hαNF : α.NF)
+    (hαpos : (0 : ONote) < α) (h : σ < collapse α) : osucc σ < collapse α := by
+  haveI := hσNF; haveI := _hαNF
+  have hrepr_collapse : ∀ x : ONote, (collapse x).repr = ω ^ x.repr := fun x => by
+    simp [collapse, expTower, ONote.repr]
+  refine ONote.lt_def.mpr ?_
+  rw [repr_osucc hσNF, hrepr_collapse]
+  have h1 : σ.repr < Ordinal.omega0 ^ α.repr := by
+    have := ONote.lt_def.mp h
+    rwa [hrepr_collapse] at this
+  have h0 : (0 : Ordinal) < α.repr := by simpa using ONote.lt_def.mp hαpos
+  have h2 : (1 : Ordinal) < Ordinal.omega0 ^ α.repr :=
+    lt_of_lt_of_le Ordinal.one_lt_omega0 (Ordinal.left_le_opow _ h0)
+  exact Ordinal.isPrincipal_add_omega0_opow α.repr h1 h2
 
 def EwF1 (f : ℕ → ℕ) : Prop :=
   StrictMono f ∧ ∀ m, 2 * m + 1 ≤ f m
@@ -813,6 +936,98 @@ theorem ewIterTower_collapse (f : ℕ → ℕ) (α : ONote) :
       show ewIter (ewIterTower (ewIter f α) d (collapse α)) (collapseIter d (collapse α))
          = ewIter (ewIterTower f (d + 1) α) (collapse (collapseIter d α))
       rw [ewIterTower_collapse f α d, collapseIter_collapse α d]
+
+/-- The `d`-fold slot tower inherits inflationarity from its base slot (each pass is `ewIter`,
+inflationary by `ewIter_infl`). -/
+theorem ewIterTower_infl {f : ℕ → ℕ} (hinfl : ∀ m, m ≤ f m) (α : ONote) :
+    ∀ (d : ℕ) (m : ℕ), m ≤ ewIterTower f d α m
+  | 0, m => hinfl m
+  | (d + 1), m => ewIter_infl (ewIterTower_infl hinfl α d) (collapseIter d α) m
+
+/-- The tower slot `ewIterTower f d α` preserves monotonicity. -/
+theorem ewIterTower_monotone {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (α : ONote) : ∀ d, Monotone (ewIterTower f d α)
+  | 0 => hmono
+  | (d + 1) => ewIter_monotone (ewIterTower_monotone hmono hinfl α d)
+      (ewIterTower_infl hinfl α d) _
+
+/-- A pointwise-dominated slot yields a pointwise-dominated `ewIter`: if `f x ≤ g x` for all `x`
+(with `g` monotone and inflationary), then `ewIter f α m ≤ ewIter g α m`. -/
+theorem ewIter_mono_slot {f g : ℕ → ℕ} (hfg : ∀ x, f x ≤ g x)
+    (hg_mono : Monotone g) (hg_infl : ∀ m, m ≤ g m) :
+    ∀ (α : ONote) (m : ℕ), ewIter f α m ≤ ewIter g α m := by
+  intro α m
+  by_cases hα : α = 0
+  · subst hα
+    simpa [ewIter_zero] using hfg m
+  · conv_lhs => rw [ewIter_unfold f α m]
+    rw [ewStep]
+    simp only [dif_neg hα]
+    apply Finset.max'_le
+    intro y hy
+    rcases Finset.mem_image.mp hy with ⟨δ, hδmem, rfl⟩
+    have hδlt : (δ : ONote) < α := (Finset.mem_filter.mp δ.2).2.1
+    have hδNF : (δ : ONote).NF := (mem_NlogBall.mp (Finset.mem_filter.mp δ.2).1).1
+    have hδgate : Nlog (δ : ONote) ≤ f (Nlog α + m) := (Finset.mem_filter.mp δ.2).2.2
+    have hδgate' : Nlog (δ : ONote) ≤ g (Nlog α + m) := le_trans hδgate (hfg _)
+    have ih1 : ewIter f (δ : ONote) m ≤ ewIter g (δ : ONote) m :=
+      ewIter_mono_slot hfg hg_mono hg_infl δ m
+    have ih2 : ewIter f (δ : ONote) (ewIter f (δ : ONote) m)
+        ≤ ewIter g (δ : ONote) (ewIter g (δ : ONote) m) :=
+      le_trans (ewIter_mono_slot hfg hg_mono hg_infl δ _)
+        (ewIter_monotone hg_mono hg_infl (δ : ONote) ih1)
+    exact le_trans ih2 (ewIter_lower hδNF hδlt hδgate')
+termination_by α _ => α
+decreasing_by
+  all_goals exact hδlt
+
+/-- The slot-stage pre-max `K` commutes out of the whole `d`-fold tower into the argument: one
+fixed tower dominates all stages. -/
+theorem ewIterTower_rel1_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (K : ℕ) (α : ONote) : ∀ (d : ℕ) (x : ℕ),
+    ewIterTower (rel1 f K) d α x ≤ ewIterTower f d α (max K x)
+  | 0, x => le_of_eq (by simp [ewIterTower, rel1])
+  | (d + 1), x => by
+      have hTmono : Monotone (ewIterTower f d α) := ewIterTower_monotone hmono hinfl α d
+      have hTinfl : ∀ m, m ≤ ewIterTower f d α m := ewIterTower_infl hinfl α d
+      have hpt : ∀ x', ewIterTower (rel1 f K) d α x' ≤ rel1 (ewIterTower f d α) K x' :=
+        fun x' => ewIterTower_rel1_le hmono hinfl K α d x'
+      calc ewIter (ewIterTower (rel1 f K) d α) (collapseIter d α) x
+          ≤ ewIter (rel1 (ewIterTower f d α) K) (collapseIter d α) x :=
+            ewIter_mono_slot hpt (rel1_monotone hTmono K) (rel1_infl hTinfl K)
+              (collapseIter d α) x
+        _ ≤ ewIter (ewIterTower f d α) (collapseIter d α) (max K x) :=
+            ewIter_rel1_le hTmono hTinfl (collapseIter d α) K x
+
+/-- One-step absorption at a nonzero ordinal: `S (S x) ≤ ewIter S β x` for `β ≠ 0`. -/
+theorem SS_le_ewIter' {S : ℕ → ℕ} {β : ONote} (hβ : β ≠ 0) (x : ℕ) :
+    S (S x) ≤ ewIter S β x := by
+  have h0β : (0 : ONote) < β := by
+    cases β with
+    | zero => exact (hβ rfl).elim
+    | oadd e n a => exact oadd_pos e n a
+  have h := ewIter_lower (f := S) (β := 0) (α := β) (m := x) NF.zero h0β (Nat.zero_le _)
+  simpa [ewIter_zero] using h
+
+/-- **Descent inequality**: a premise at `β < α` with any bumped budget `V' ≤ S V` has its
+master bound absorbed by the node's `ewIter S α (S V)`. -/
+theorem T3_descent' {S : ℕ → ℕ} (hS_mono : Monotone S) (hS_infl : ∀ m, m ≤ S m)
+    {β α : ONote} (hβNF : β.NF) (hβα : β < α)
+    {V V' : ℕ} (hV' : V' ≤ S V)
+    (hgate : Nlog β ≤ S (S V)) :
+    ewIter S β (S V') ≤ ewIter S α (S V) := by
+  have ha : ewIter S β (S V') ≤ ewIter S β (S (S V)) :=
+    ewIter_monotone hS_mono hS_infl β (hS_mono hV')
+  have hb : S (S V) ≤ ewIter S β (S V) := by
+    by_cases hβ0 : β = 0
+    · subst hβ0
+      simp [ewIter_zero]
+    · exact le_trans (hS_infl (S (S V))) (SS_le_ewIter' hβ0 (S V))
+  have hc : ewIter S β (S (S V)) ≤ ewIter S β (ewIter S β (S V)) :=
+    ewIter_monotone hS_mono hS_infl β hb
+  have hd : ewIter S β (ewIter S β (S V)) ≤ ewIter S α (S V) :=
+    ewIter_lower hβNF hβα (le_trans hgate (hS_mono (by omega)))
+  exact le_trans ha (le_trans hc hd)
 
 /-! ## Ordinal-ladder toolkit (`ofNat` rungs) -/
 

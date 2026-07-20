@@ -164,8 +164,8 @@ lemma ZehProv.cut {βφ βψ : ONote} (φ : ArithmeticFormula ℕ)
       (add_le_add_NF hNF₁ hβφNF hNF₂ hβψNF hle₁ hle₂),
     osucc_add_NF hNF₁ hNF₂, osucc_add_mem hH₁ hH₂,
     Zeh.cut φ hcompl
-      (lt_of_le_of_lt (Provable.le_add_right_NF hNF₁ hNF₂) (Provable.lt_osucc (ONote.add_nf α₁ α₂)))
-      (lt_of_le_of_lt (Provable.le_add_left_NF hNF₁ hNF₂) (Provable.lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (le_add_right_NF hNF₁ hNF₂) (lt_osucc (ONote.add_nf α₁ α₂)))
+      (lt_of_le_of_lt (le_add_left_NF hNF₁ hNF₂) (lt_osucc (ONote.add_nf α₁ α₂)))
       hNF₁ hNF₂ (osucc_add_NF hNF₁ hNF₂) hH₁ hH₂ d₁ d₂⟩
 
 /-- **`ZehProv`-level `exI` combinator** (assembly plumbing): package the `∃`-rule at the
@@ -177,7 +177,7 @@ lemma ZehProv.exI {β : ONote}
     ZehProv (osucc β) e H m c (insert (∃⁰ φ) Γ) := by
   obtain ⟨β', hle, hNF', hH', d⟩ := D
   exact ⟨osucc β, le_rfl, osucc_NF hβNF, Cl.osucc hβH,
-    Zeh.exI φ n (lt_of_le_of_lt hle (Provable.lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
+    Zeh.exI φ n (lt_of_le_of_lt hle (lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
 
 /-- **`ZehProv`-level `allω` combinator** (assembly plumbing): reassemble an ω-node at the
 wrapper level.  Each branch's `≤`-slack witness is threaded through (`< α` survives since

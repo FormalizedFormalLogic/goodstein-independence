@@ -60,7 +60,7 @@ lemma concrete_readoff_instance {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
     (v : Fin ar → ArithmeticTerm ℕ) (φ : ArithmeticSemiformula ℕ 1) :
     Zeh (osucc 0) ONote.omega H 1 0
       (insert (∃⁰ φ) (insert (Semiformula.rel r v) {Semiformula.nrel r v})) := by
-  refine Zeh.exI φ 3 (Provable.lt_osucc NF.zero) NF.zero (osucc_NF NF.zero)
+  refine Zeh.exI φ 3 (lt_osucc NF.zero) NF.zero (osucc_NF NF.zero)
     (Cl.ofNat 0) (by rw [show ONote.omega = oadd 1 1 0 from rfl, hardy_omega]) ?_
   exact Zeh.axL r v
     (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
@@ -120,7 +120,7 @@ lemma two_level_config_Zeh {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → A
     (fun n => Cl.osucc (wmul_mem _ n))
     (fun n => ?_)
   refine Zeh.cut (∀⁰ χ) (Nat.lt_succ_self _)
-    (Provable.lt_osucc (wmul_NF n)) (Provable.lt_osucc (wmul_NF n))
+    (lt_osucc (wmul_NF n)) (lt_osucc (wmul_NF n))
     (wmul_NF n) (wmul_NF n) (osucc_NF (wmul_NF n))
     (wmul_mem _ n) (wmul_mem _ n) ?_ ?_
   · exact Zeh.axL r v (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hp))
@@ -169,7 +169,7 @@ lemma two_level_config_Zef {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → A
     (fun n => Cl.osucc (wmul_mem _ n))
     (fun n => ?_)
   refine Zef.cut (∀⁰ χ) (Nat.lt_succ_self _)
-    (Provable.lt_osucc (wmul_NF n)) (Provable.lt_osucc (wmul_NF n))
+    (lt_osucc (wmul_NF n)) (lt_osucc (wmul_NF n))
     (wmul_NF n) (wmul_NF n) (osucc_NF (wmul_NF n))
     (wmul_mem _ n) (wmul_mem _ n) ?_ ?_
   · exact Zef.axL r v (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hp))
