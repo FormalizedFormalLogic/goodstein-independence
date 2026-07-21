@@ -40,14 +40,14 @@ namespace ONote
 from `GoodsteinPA.ToMathlib.Ordinal.Epsilon0`. -/
 
 /-- `encodeONote` and `decodeONote` are mutually inverse: `encode` is a bijection `ONote ≃ ℕ`. -/
-lemma encodeONote_decodeONote : ∀ n : ℕ, encodeONote (decodeONote n) = n := by
-  intro n
-  induction' n using Nat.strongRecOn with n ih
-  generalize_proofs at *;
-  rcases n with ( _ | m );
+lemma encodeONote_decodeONote (n : ℕ) : encodeONote (decodeONote n) = n := by
+  induction n using Nat.strongRecOn with
+  | ind n ih =>
+  rcases n with (_ | m);
   · simp [decodeONote, encodeONote];
   · unfold decodeONote;
-    simp +arith +decide [ encodeONote, ih _ ( Nat.lt_succ_of_le ( Nat.unpair_left_le _ ) ), ih _ ( Nat.lt_succ_of_le ( Nat.unpair_right_le _ |> le_trans <| Nat.unpair_right_le _ ) ) ]
+    simp +arith +decide [encodeONote, ih _ (Nat.lt_succ_of_le (Nat.unpair_left_le _)),
+      ih _ (Nat.lt_succ_of_le (Nat.unpair_right_le _ |> le_trans <| Nat.unpair_right_le _))]
 
 /-- The structural `Encodable ONote` decodes via `decodeONote` (never failing). -/
 lemma decode_eq (n : ℕ) : (Encodable.decode n : Option ONote) = some (decodeONote n) := by
@@ -59,15 +59,13 @@ lemma encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
 
 lemma encode_decode_eq (n : ℕ) :
     Encodable.encode (Encodable.decode n : Option ONote) = n + 1 := by
-  rw [ decode_eq ];
-  simp +decide [ Encodable.encode, encodeONote_decodeONote ]
+  rw [decode_eq];
+  simp +decide [Encodable.encode, encodeONote_decodeONote]
 
+/-- `encode ∘ decode` is `Nat.succ` up to the `+ 1` shift, so it is primitive recursive. -/
 lemma primrec_encode_decode :
     Nat.Primrec (fun n => Encodable.encode (Encodable.decode n : Option ONote)) := by
-  -- Since `Nat.succ` is primitive recursive, and `encode` and `decode` are inverses, the function `n => encode (decode n)` is also primitive recursive.
-  have h_succ : Nat.Primrec Nat.succ := by
-    exact Nat.Primrec.succ;
-  convert h_succ using 1;
+  convert Nat.Primrec.succ using 1;
   exact funext fun n => by simpa using encode_decode_eq n;
 
 /-- **Structural `Primcodable ONote`.** Built from the structural `Encodable ONote` above. -/
@@ -76,9 +74,9 @@ instance instPrimcodableONote : Primcodable ONote :=
     prim := primrec_encode_decode }
 
 lemma computable_decodeONote : Computable decodeONote := by
-  have h_decodeONote_computable : Computable (fun n => (Encodable.decode n : Option ONote)) := by
-    convert Computable.decode ( α := ONote ) using 1;
-  exact Computable.option_getD ( h_decodeONote_computable ) ( Computable.const ONote.zero )
+  have h_decodeONote_computable : Computable (fun n => (Encodable.decode n : Option ONote)) :=
+    Computable.decode (α := ONote)
+  exact Computable.option_getD h_decodeONote_computable (Computable.const ONote.zero)
 
 /-! ### Ordering encoded as `ℕ` (lt = 0, eq = 1, gt = 2) -/
 
