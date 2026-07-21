@@ -21,7 +21,7 @@ public import GoodsteinPA.ToFoundation.Numeral
 
 @[expose] public section
 
-namespace GoodsteinPA.ZinftyF
+namespace GoodsteinPA.Zinfty
 
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
 
@@ -37,7 +37,7 @@ def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Arithmet
 standard ℒₒᵣ-model evaluation with no bound variables. For a closed literal the free-variable
 assignment is immaterial (fixed to `id`). -/
 @[grind =]
-def LitTrue (φ : ArithmeticFormula ℕ) : Prop := GoodsteinPA.Compat.gEvalm ℕ ![] (id : ℕ → ℕ) φ
+def LitTrue (φ : ArithmeticFormula ℕ) : Prop := Semiformula.gEvalm ℕ ![] (id : ℕ → ℕ) φ
 
 /-- `∼`-duality: a closed formula is true iff its negation is false. -/
 @[simp, grind =]
@@ -45,6 +45,11 @@ lemma litTrue_neg (φ : ArithmeticFormula ℕ) : LitTrue (∼φ) ↔ ¬ LitTrue 
 
 /-- Totality (classical): every closed formula is true or its negation is. -/
 lemma litTrue_or_neg (φ : ArithmeticFormula ℕ) : LitTrue φ ∨ LitTrue (∼φ) := by simp [LitTrue, em];
+
+@[simp] lemma litTrue_verum : LitTrue ⊤ := by simp [LitTrue]
+@[simp] lemma litTrue_falsum : ¬(LitTrue ⊥) := by simp [LitTrue]
+lemma iff_litTrue_or : LitTrue (φ ⋎ ψ) ↔ LitTrue φ ∨ LitTrue ψ := by simp [LitTrue]
+lemma iff_litTrue_and : LitTrue (φ ⋏ ψ) ↔ LitTrue φ ∧ LitTrue ψ := by simp [LitTrue]
 
 variable {k : ℕ} {b : Bool} {r : (ℒₒᵣ).Rel k} {v : Fin k → ArithmeticSemiterm ℕ 0}
 
@@ -154,15 +159,23 @@ lemma mono (hα : α ≤ β) (hc : c ≤ c') : Provable α c Γ → Provable β 
   rintro ⟨D, ho, hcr⟩;
   exact ⟨D, ho.trans hα, hcr.trans (by exact_mod_cast hc)⟩
 
+lemma mono_ordinalBound (h : α ≤ β) : Provable α c Γ → Provable β c Γ := mono h le_rfl
+lemma mono_cutRank (h : c ≤ c') : Provable α c Γ → Provable α c' Γ := mono le_rfl h
+
 /-- **Sequent weakening**: enlarge the sequent without raising bounds.
 - [Tow20, Lemma 19.1] -/
 @[grind →]
 lemma weakening (h : Γ ⊆ Δ) : Provable α c Γ → Provable α c Δ := by
   rintro ⟨D, ho, hcr⟩
-  exact ⟨Derivation.weak D h, by tauto, by tauto⟩
+  exact ⟨D.weak h, by tauto, by tauto⟩
 
 /-- Provability respects set equality of sequents. -/
 lemma cast (e : Γ = Δ) : Provable α c Γ → Provable α c Δ := fun h => e ▸ h
+
+/-- **Absorption**: a formula already present in `Γ` can be dropped from an extra `insert`. -/
+@[grind →]
+lemma insert_absorb (h : Provable α c (insert φ Γ)) (hmem : φ ∈ Γ) : Provable α c Γ := by
+  rwa [Finset.insert_eq_self.mpr hmem] at h
 
 /-- Identity axiom: `rel r v` and `nrel r v` together close at bound `0`, cut rank `0`.
 - [Tow20, §13] -/
@@ -253,6 +266,156 @@ lemma cut (χ : ArithmeticFormula ℕ) (hc : (χ.complexity + 1 : ℕ∞) ≤ (c
   · exact add_le_add (max_le_max ho₁ ho₂) le_rfl
   · exact max_le hc (max_le hcr₁ hcr₂)
 
+attribute [grind =]
+  Semiformula.complexity_and
+  Semiformula.complexity_or
+  Semiformula.complexity_all
+  Semiformula.complexity_exs
+
+/-- Auxiliary step shared by the `∧`/`∨` cases of the excluded-middle induction (`lemAux`): given a
+conjunction `A ⋏ B` and a disjunction `C ⋎ D` both in `Γ`, derivability of `A` and of `B` alongside
+`C`, `D` on the left collapses to derivability of `Γ` alone. -/
+lemma em_binaryStep (hab : A ⋏ B ∈ Γ) (hcd : C ⋎ D ∈ Γ)
+    (h1 : ∃ a, Provable a 0 (insert A (insert C (insert D Γ))))
+    (h2 : ∃ a, Provable a 0 (insert B (insert C (insert D Γ)))) :
+    ∃ a, Provable a 0 Γ := by
+  obtain ⟨a, h1⟩ := h1
+  obtain ⟨b, h2⟩ := h2
+  have hand := (Provable.andI h1 h2).insert_absorb
+    (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hab))
+  exact ⟨_, hand.orI.insert_absorb hcd⟩
+
+/-- Auxiliary step shared by the `∀`/`∃` cases of the excluded-middle induction (`lemAux`): given
+`∀⁰ φₓ` and `∃⁰ ψₓ` both in `Γ`, derivability of every instance `ψₓ/[nm n]` alongside `φₓ/[nm n]` on
+the left collapses to derivability of `Γ` alone. -/
+lemma em_quantStep (hall' : (∀⁰ φₓ) ∈ Γ) (hexs' : (∃⁰ ψₓ) ∈ Γ)
+    (fam : ∀ n, ∃ a, Provable a 0 (insert (ψₓ/[nm n]) (insert (φₓ/[nm n]) Γ))) :
+    ∃ a, Provable a 0 Γ := by
+  choose β hβ using fam
+  have hex : ∀ n, Provable (β n + 1) 0 (insert (φₓ/[nm n]) Γ) :=
+    fun n => (Provable.exI n (hβ n)).insert_absorb (Finset.mem_insert_of_mem hexs')
+  exact ⟨_, (Provable.allω hex).insert_absorb hall'⟩
+
+lemma lemAux (φ  : ArithmeticFormula ℕ) (hk : φ.complexity ≤ k) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) : ∃ α, Provable α 0 Γ := by
+  induction k generalizing φ Γ with
+  | zero =>
+    cases φ using Semiformula.cases' with
+    | hverum    => exact ⟨0, Provable.verumR hp⟩
+    | hfalsum   => exact ⟨0, Provable.verumR (by simpa using hn)⟩
+    | hrel r v  => exact ⟨0, Provable.axL r v hp (by simpa using hn)⟩
+    | hnrel r v => exact ⟨0, Provable.axL r v (by simpa using hn) hp⟩
+    | _ => simp at hk
+  | succ k ih =>
+    cases φ using Semiformula.cases' with
+    | hverum    => exact ⟨0, Provable.verumR hp⟩
+    | hfalsum   => exact ⟨0, Provable.verumR (by simpa using hn)⟩
+    | hrel r v  => exact ⟨0, Provable.axL r v hp (by simpa using hn)⟩
+    | hnrel r v => exact ⟨0, Provable.axL r v (by simpa using hn) hp⟩
+    | hand φ ψ =>
+      haveI : φ.complexity ≤ k := by grind;
+      haveI : ψ.complexity ≤ k := by grind;
+      obtain ⟨α1, h1⟩ := ih φ ‹_› (Γ := insert φ (insert (∼φ) (insert (∼ψ) Γ))) (by grind) (by grind);
+      obtain ⟨α2, h2⟩ := ih ψ ‹_› (Γ := insert ψ (insert (∼φ) (insert (∼ψ) Γ))) (by grind) (by grind);
+      exact Provable.em_binaryStep hp (show (∼φ ⋎ ∼ψ) ∈ Γ by simpa using hn) ⟨α1, h1⟩ ⟨α2, h2⟩
+    | hor φ ψ =>
+      haveI : φ.complexity ≤ k := by grind
+      haveI : ψ.complexity ≤ k := by grind
+      obtain ⟨α1, h1⟩ := ih φ ‹_› (Γ := insert (∼φ) (insert φ (insert ψ Γ))) (by grind) (by grind)
+      obtain ⟨α2, h2⟩ := ih ψ ‹_› (Γ := insert (∼ψ) (insert φ (insert ψ Γ))) (by grind) (by grind)
+      exact Provable.em_binaryStep (show (∼φ ⋏ ∼ψ) ∈ Γ by simpa using hn) hp ⟨α1, h1⟩ ⟨α2, h2⟩
+    | hall ψ =>
+      refine Provable.em_quantStep hp (show (∃⁰ ∼ψ) ∈ Γ by simpa using hn) fun n => ?_
+      have hcomp : (ψ/[nm n]).complexity ≤ k := calc
+        _ = ψ.complexity := by simp;
+        _ ≤ k            := by grind;
+      obtain ⟨α, hα⟩ := ih (ψ/[nm n]) hcomp (Γ := insert (∼(ψ/[nm n])) (insert (ψ/[nm n]) Γ)) (by grind) (by grind)
+      have heq : (∼ψ)/[nm n] = ∼(ψ/[nm n]) := by simp
+      exact ⟨α, heq ▸ hα⟩
+    | hexs ψ =>
+      refine Provable.em_quantStep (show (∀⁰ ∼ψ) ∈ Γ by simpa using hn) hp fun n => ?_
+      have hcomp : (ψ/[nm n]).complexity ≤ k := calc
+        _ = ψ.complexity := by simp
+        _ ≤ k            := by grind;
+      obtain ⟨α, hα⟩ := ih (ψ/[nm n]) hcomp (Γ := insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) Γ)) (by simp) (by simp)
+      have heq : (∼ψ)/[nm n] = ∼(ψ/[nm n]) := by simp
+      exact ⟨α, heq ▸ hα⟩
+
+/-- **Identity / law of excluded middle for `Z_∞`** (the `closed` case). For any `φ`, a sequent
+containing both `φ` and `∼φ` is `Z_∞`-derivable cut-free. Proved by induction on a `complexity`
+bound (the standard Tait `em`, cf. Foundation `Derivation.em`, `Calculus.lean:164`). The atomic /
+propositional cases are discharged here; the **∀/∃ cases** use the numeral ω-family (`allω` over
+all `nm n`, each premise closed by `exI` + the inductive hypothesis at the substitution instance `φ/[nm n]`,
+whose `complexity` equals `φ`'s).
+- [Tow20, §14] -/
+theorem lem (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) : ∃ α, Provable α 0 Γ := lemAux φ le_rfl hp hn
+
+/-- **ω-completeness for true closed formulas.** Any closed (`ArithmeticFormula ℕ`) formula that is
+TRUE in the standard model `ℕ` (`LitTrue`) is `Z∞`-derivable, cut-free. Proof by induction on
+`complexity`: atomic via `axTrue`, `∀` via the ω-rule `allω`, `∃` by choosing a true witness.
+- [Tow20, §14] -/
+theorem of_trueAux (hk : φ.complexity ≤ k) (htrue : LitTrue φ) (hmem : φ ∈ Γ) : ∃ α, Provable α 0 Γ := by
+  induction k generalizing φ Γ htrue hmem with
+  | zero =>
+    cases φ using Semiformula.cases' with
+    | hfalsum   => simp_all;
+    | hverum    => exact ⟨0, Provable.verumR hmem⟩
+    | hrel r v  => exact ⟨0, Provable.axTrue true r v htrue hmem⟩
+    | hnrel r v => exact ⟨0, Provable.axTrue false r v htrue hmem⟩
+    | _ => simp at hk
+  | succ k ih =>
+    cases φ using Semiformula.cases' with
+    | hfalsum  => simp_all;
+    | hverum   => exact ⟨0, Provable.verumR hmem⟩
+    | hrel r v => exact ⟨0, Provable.axTrue true r v htrue hmem⟩
+    | hnrel r v => exact ⟨0, Provable.axTrue false r v htrue hmem⟩
+    | hand φ ψ =>
+      have : φ.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
+      have : ψ.complexity ≤ k := by simp only [Semiformula.complexity_and] at hk; omega
+      obtain ⟨hta, htb⟩ := iff_litTrue_and.mp htrue
+      obtain ⟨α1, h1⟩ := ih ‹_› hta (Γ := insert φ Γ) (by simp)
+      obtain ⟨α2, h2⟩ := ih ‹_› htb (Γ := insert ψ Γ) (by simp)
+      exact ⟨_, (Provable.andI h1 h2).insert_absorb hmem⟩
+    | hor φ ψ =>
+      rcases (iff_litTrue_or.mp htrue) with hta | htb
+      · have : φ.complexity ≤ k := by grind;
+        obtain ⟨α1, h1⟩ := ih ‹_› hta (Γ := insert φ (insert ψ Γ)) (by simp)
+        exact ⟨_, (Provable.orI h1).insert_absorb hmem⟩;
+      · have : ψ.complexity ≤ k := by grind;
+        obtain ⟨α2, h2⟩ := ih ‹_› htb (Γ := insert φ (insert ψ Γ)) (by simp)
+        exact ⟨_, (Provable.orI h2).insert_absorb hmem⟩;
+    | hall a =>
+      have hak : a.complexity ≤ k := by grind;
+      have hfam : ∀ n, LitTrue (a/[nm n]) := by
+        intro n
+        have := htrue
+        simp only [LitTrue, Semiformula.eval_all] at this
+        simpa [LitTrue, Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton]
+          using this n
+      have fam : ∀ n, ∃ x, Provable x 0 (insert (a/[nm n]) Γ) := by
+        intro n
+        have hcomp : (a/[nm n]).complexity ≤ k := by
+          have : (a/[nm n]).complexity = a.complexity := by simp
+          rw [this]; exact hak
+        exact ih (φ := a/[nm n]) hcomp (hfam n) (by simp)
+      choose β hβ using fam
+      exact ⟨_, (Provable.allω hβ).insert_absorb hmem⟩
+    | hexs a =>
+      have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_exs] at hk; omega
+      have hex : ∃ n, LitTrue (a/[nm n]) := by
+        have := htrue
+        simp only [LitTrue, Semiformula.eval_ex] at this
+        obtain ⟨x, hx⟩ := this
+        exact ⟨x, by simpa [LitTrue, Semiformula.eval_substs, valm_nm,
+          Matrix.constant_eq_singleton] using hx⟩
+      obtain ⟨n, hn⟩ := hex
+      have hcomp : (a/[nm n]).complexity ≤ k := by
+        have : (a/[nm n]).complexity = a.complexity := by simp
+        rw [this]; exact hak
+      obtain ⟨x, hx⟩ := ih (φ := a/[nm n]) hcomp hn (Γ := insert (a/[nm n]) Γ) (by simp)
+      exact ⟨_, (Provable.exI n hx).insert_absorb hmem⟩
+
+lemma of_true (htrue : LitTrue φ) (hmem : φ ∈ Γ) : ∃ α, Provable α 0 Γ := of_trueAux le_rfl htrue hmem
+
 end Provable
 
-end GoodsteinPA.ZinftyF
+end GoodsteinPA.Zinfty

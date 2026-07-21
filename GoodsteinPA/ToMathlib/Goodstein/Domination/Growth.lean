@@ -782,12 +782,8 @@ lemma Good_fundSeq (b : ℕ) : ∀ E f, Good b E → fundamentalSequence E = Sum
       show Good b (oadd a m (g b))
       exact (Good_oadd b a m (g b)).2 (Or.inl ⟨hca, hmb, ihr g hgr hr⟩)
 
-/-- **The general borrowing predecessor.** For every NF `E ≠ 0` satisfying the frontier
-invariant `Good b E`, one Hardy step on `ω^E` (`= oadd E 1 0`) at argument `b` is the
-all-digits-`b` base-`(b+1)` notation of `(b+1)^(evalNat b E) − 1`. Well-founded recursion on
-`repr E`: the limit case closes via the IH on `f b` and `evalNat_fundSeq`; the successor case
-peels the coefficient (`hstep_oadd_coeff`), applies the IH to the predecessor `E'`, and
-reconstructs `E'` via `canon_round_trip` (valid since `Canon_pred` makes `E'` canonical). -/
+/-- The general borrowing predecessor for a normal-form notation satisfying the frontier invariant:
+one Hardy step on `ω^E` at argument `b` is the base-`(b+1)` notation of `(b+1)^(evalNat b E) − 1`. -/
 lemma hstep_pred_pow (b : ℕ) (hb : 2 ≤ b) :
     ∀ E : ONote, E.NF → E ≠ 0 → Good b E →
       hstep (oadd E 1 0) b = toONote (b + 1) ((b + 1) ^ evalNat b E - 1) := by
@@ -837,11 +833,8 @@ lemma hstep_pred_pow (b : ℕ) (hb : 2 ≤ b) :
         ih (f b).repr hltfb (f b) rfl hNFfb hfbne (Good_fundSeq b E f hgood hfs),
         evalNat_fundSeq b hfs]
 
-/-- **The `c = 1` predecessor.** One Hardy step on `oadd (toONote b L) 1 0` (i.e. `ω^E` for
-`E = toONote b L`, `L ≥ 1`) at argument `b` is the base-`(b+1)` notation of
-`(b+1)^(bump b L) − 1` — the fully-filled (all-digits-`b`) expansion produced by the borrowing
-descent through `fundamentalSequence`. This is the `E = toONote b L` instance of
-`hstep_pred_pow` (via `evalNat_toONote`). -/
+/-- For a positive exponent `L`, one Hardy step on `oadd (toONote b L) 1 0` at argument `b`
+is the base-`(b+1)` notation of `(b+1)^(bump b L) − 1`. -/
 lemma hstep_oadd_one_zero (b : ℕ) (hb : 2 ≤ b) (L : ℕ) (hL : 1 ≤ L) :
     hstep (oadd (toONote b L) 1 0) b = toONote (b + 1) ((b + 1) ^ bump b L - 1) := by
   have hE : toONote b L ≠ 0 := by rw [Ne, toONote_eq_zero_iff]; omega
@@ -849,23 +842,8 @@ lemma hstep_oadd_one_zero (b : ℕ) (hb : 2 ≤ b) (L : ℕ) (hL : 1 ≤ L) :
   have hgood : Good b (toONote b L) := Good_of_Canon b _ (Canon_toONote b hb L)
   rw [hstep_pred_pow b hb (toONote b L) hNF hE hgood, evalNat_toONote b hb L]
 
-/-- **The Cichoń step.** One budget-incrementing Hardy step on the base-`b`
-notation of `p ≠ 0`, at argument `b`, equals the notation (in base `b+1`) of the
-Goodstein operation `bump b p − 1`:
-
-  `hstep (toONote b p) b = toONote (b+1) (bump b p − 1)`.
-
-This is the heart of Cichoń's theorem identifying the Goodstein descent with the
-Hardy descent. Strong induction on `p`, writing `p = c·b^L + r` (leading Cantor term):
-
-* **`r ≠ 0`.** The leading term is preserved and the step happens in the tail:
-  `hstep (oadd E C R) b = oadd E C (hstep R b)` (`hstep_oadd_tail`), then the IH on `r < p`
-  and the reconstruction `toONote_oadd` + bump-invariance `toONote_bump` close it.
-* **`r = 0`.** Here `p = c·b^L` and the step computes the *predecessor* of `c·(b+1)^(bump b L)`.
-  - `L = 0` (single digit): `oadd 0 c 0` is a successor (`hstep_oadd_zero_zero`).
-  - `L ≥ 1` (via `hstep_oadd_one_zero`): the genuine **borrowing** case — a nested
-    `fundamentalSequence` descent producing the filled `(b+1)`-ary expansion of
-    `(b+1)^(bump b L) − 1`.
+/-- The Cichoń step: one Hardy step on the base-`b` notation of `p` at argument `b`
+equals the base-`(b+1)` notation of `bump b p − 1`.
 
 - [Cic83]. -/
 theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ p, p ≠ 0 →

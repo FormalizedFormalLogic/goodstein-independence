@@ -16,7 +16,7 @@ variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : F
 assignment — the value of a closed numeral const is assignment-independent.  Local companion of
 `stdClosedVal_nm`, phrased with `valm ℕ` so it `rw`s inside `eval_substs` read-offs. -/
 @[simp] lemma valm_nm (n) (f) :
-    GoodsteinPA.Compat.gValm ℕ ![] f (nm n) = n := by simp [nm]
+    Semiterm.gValm ℕ ![] f (nm n) = n := by simp [nm]
 
 /-- **Rank-0 `Zef2` soundness** (the reusable truth core of the Δ₀ read-off).  A cut-free
 derivation of `Γ` has a standard-model-true member.  The `allω` (Π) case combines: either some

@@ -2,7 +2,6 @@ module  -- shake: keep-all --deprecated_module: ignore
 
 public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.E1EmbeddingGrind
-public import GoodsteinPA.Embedding
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2.Basic
@@ -29,6 +28,7 @@ public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Statement
 public import GoodsteinPA.ToFoundation.Compat
 public import GoodsteinPA.ToFoundation.Numeral
+public import GoodsteinPA.ToFoundation.Subst
 public import GoodsteinPA.ToMathlib.FastGrowing.Basic
 public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
@@ -55,5 +55,5 @@ public import GoodsteinPA.ToMathlib.Ordinal.Epsilon0
 public import GoodsteinPA.ToMathlib.Ordinal.WellFoundedRank
 public import GoodsteinPA.Zinfty.Basic
 public import GoodsteinPA.Zinfty.Cut
-public import GoodsteinPA.Zinfty.Examples
+public import GoodsteinPA.Zinfty.Embedding
 public import GoodsteinPA.Zinfty.Inversion

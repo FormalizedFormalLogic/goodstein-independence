@@ -12,7 +12,7 @@ public import GoodsteinPA.Zinfty.Inversion
 
 @[expose] public section
 
-namespace GoodsteinPA.ZinftyF
+namespace GoodsteinPA.Zinfty
 
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
 open Derivation
@@ -680,4 +680,4 @@ theorem cut_elimination (h : Provable α c Γ) : Provable (Ordinal.omegaTower c 
 
 end Provable
 
-end GoodsteinPA.ZinftyF
+end GoodsteinPA.Zinfty

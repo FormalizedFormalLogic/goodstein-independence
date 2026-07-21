@@ -78,12 +78,8 @@ lemma fastGrowing_fixed_add_two_lt_successor {o : ONote} (ho : o.NF) {m : ℕ}
   rw [hfs, hsplit]
   omega
 
-/-- Cichon/Caicedo in the exact no-fixed-bound form needed by Wainer.
-
-The repo's existing lower bound gives `f_{osucc o}(m) ≤ goodsteinLength m + 2`
-eventually.  The successor-gap lemma above gives `f_o(m) + 2 < f_{osucc o}(m)` for
-`m ≥ 4`.  Together they imply `f_o(m) < goodsteinLength m` eventually, so no fixed
-`f_o` can eventually bound the Goodstein length function from above. -/
+/-- Cichon/Caicedo in the exact no-fixed-bound form needed by Wainer: for any fixed fast-growing level `o`,
+the Goodstein length eventually strictly exceeds `f_o`. -/
 theorem goodsteinLength_eventually_strictly_dominates_fixed_fastGrowing (o : ONote)
     (ho : o.NF) :
     ∃ N, ∀ m, N ≤ m → fastGrowing o m < Goodstein.Dom.goodsteinLength m := by

@@ -757,19 +757,8 @@ def ppCount (m : ℕ) : ℕ → ℕ
   | k + 1 => ppCount m k +
       (if base k ^ Nat.log (base k) (goodsteinSeq m k) = goodsteinSeq m k then 1 else 0)
 
-/-- **Sharpened telescope: the leading exponent only falls at pure-power steps.**
-`Nat.log 2 m ≤ leadExp_k + ppCount m k`, i.e. `leadExp_k ≥ (log₂ m) − ppCount m k`. Strictly sharper
-than `leadExp_ge_sub` (which bounds the deficit by `k`): the deficit is bounded by the number of
-*pure-power* steps, which are rare. Proof by induction on `k` via the per-step dichotomy — at a
-non-pure-power step the exponent is non-decreasing (`leadExp_ge_of_not_pow`, deficit unchanged) and at
-a pure-power step it drops by `≤ 1` (`leadExp_drop_le_one`, deficit and `ppCount` both `+1`).
-
-**This isolates the diagonal-domination crux to a single sparsity bound.** If a future lap proves
-`ppCount m m ≤ Nat.log 2 m − 2` (the genuine steps-between-drops content: pure-power events are
-`≪ log₂ m` among the first `m` steps), then `leadExp_k ≥ 2` for all `k ≤ m`, hence `seqONote m (m−2)
-≥ ω²`, closing the `o = 2` diagonal `f_2(m) ≤ goodsteinLength m + 2` via `fastGrowing_step_le_goodsteinLength`
-— and the general `o` analogously. The regime hypothesis (`value ≥ base` over `[0,k)`) is automatic
-while the exponent stays `≥ 1`, supplied here by `goodsteinSeq_ge_init`. -/
+/-- The leading exponent only falls at pure-power steps: `leadExp_k ≥ (log₂ m) − ppCount m k`,
+where `ppCount m k` counts the number of pure-power events among the first `k` steps. -/
 lemma leadExp_ge_sub_ppCount (m : ℕ) : ∀ k, k + 1 ≤ m →
     Nat.log 2 m ≤ Nat.log (base k) (goodsteinSeq m k) + ppCount m k := by
   intro k
