@@ -149,8 +149,7 @@ lemma fundamentalSequence_oadd_limit {m : ℕ+} {h : ℕ → ONote} (hb : fundam
 -- `@[grind →]` fails to find a trigger pattern for the inductive `Reaches` hypothesis;
 -- `@[grind =>]` works instead.
 @[grind =>]
-lemma Reaches.oadd_tail {m : ℕ+} {d' d : ONote} (h : Reaches x d' d) :
-    Reaches x (oadd a m d') (oadd a m d) := by
+lemma Reaches.oadd_tail {m : ℕ+} {d' d : ONote} (h : Reaches x d' d) : Reaches x (oadd a m d') (oadd a m d) := by
   induction h with
   | refl c => exact Reaches.refl _
   | succ hb _ ih => exact Reaches.succ (fundamentalSequence_oadd_succ hb) ih
@@ -169,8 +168,7 @@ termination_by o
 decreasing_by all_goals exact hlt
 
 /-- **Coefficient step:** `ω^e·(j+2)` descends to `ω^e·(j+1)` with any budget. -/
-lemma reaches_coeff_step' (e : ONote) (j x : ℕ) :
-    Reaches x (oadd e (j + 1).succPNat 0) (oadd e j.succPNat 0) := by
+lemma reaches_coeff_step' (e : ONote) (j x : ℕ) : Reaches x (oadd e (j + 1).succPNat 0) (oadd e j.succPNat 0) := by
   rcases he : fundamentalSequence e with (_ | e') | p
   · have h0 : e = 0 := by have hp := fundamentalSequence_has_prop e; rw [he] at hp; exact hp
     subst h0
@@ -189,8 +187,7 @@ lemma reaches_coeff_step' (e : ONote) (j x : ℕ) :
     exact Reaches.limit hlim (Reaches.oadd_tail (reaches_zero (oadd (p x) 1 0) x))
 
 /-- **Coefficient chain:** `ω^e·(j+1)` descends to `ω^e·1`. -/
-lemma reaches_coeff_chain (e : ONote) (j x : ℕ) :
-    Reaches x (oadd e j.succPNat 0) (oadd e (0 : ℕ).succPNat 0) := by
+lemma reaches_coeff_chain (e : ONote) (j x : ℕ) : Reaches x (oadd e j.succPNat 0) (oadd e (0 : ℕ).succPNat 0) := by
   induction j with
   | zero => exact Reaches.refl _
   | succ j ih => exact (reaches_coeff_step' e j x).trans ih
@@ -224,8 +221,7 @@ lemma reaches_omega_pow_lift {p r : ONote} (h : Reaches x p r) : Reaches x (oadd
 /-- The fundamental sequence of a successor *natural-number* notation is its
 predecessor: `(k+1)[·] = k`. (Both branches reduce to `rfl`.) -/
 @[simp, grind =]
-lemma fundamentalSequence_ofNat_succ (k : ℕ) :
-    fundamentalSequence (ofNat (k + 1)) = Sum.inl (some (ofNat k)) := by
+lemma fundamentalSequence_ofNat_succ (k : ℕ) : fundamentalSequence (ofNat (k + 1)) = Sum.inl (some (ofNat k)) := by
   cases k with
   | zero => rfl
   | succ k' => rfl
@@ -242,8 +238,7 @@ lemma fastGrowing_succ_chain_mono
 
 /-- **Finite-level index monotonicity** (the base case): `m ≤ n`, `1 ≤ x ⟹ f_m(x) ≤
 f_n(x)`. The `ofNat` instance of `fastGrowing_succ_chain_mono`. -/
-lemma fastGrowing_ofNat_mono (hmn : m ≤ n) (hx : 1 ≤ x) :
-    fastGrowing (ofNat m) x ≤ fastGrowing (ofNat n) x :=
+lemma fastGrowing_ofNat_mono (hmn : m ≤ n) (hx : 1 ≤ x) : fastGrowing (ofNat m) x ≤ fastGrowing (ofNat n) x :=
   fastGrowing_succ_chain_mono fundamentalSequence_ofNat_succ hmn hx
 
 /-- **Finite-level argument monotonicity:** each `f_k` is monotone in its argument. -/
@@ -352,8 +347,7 @@ lemma fastGrowing_monotone_omega : Monotone (fastGrowing (oadd 1 1 0)) := by
     (fun k => fundamentalSequence_ofNat_succ (k + 1)) (fastGrowing_ofNat_monotone 1)
 
 /-- **`f_{ω·(j+1)}` is monotone for every `j` — the whole `ω·k` family (axiom-clean).** -/
-lemma fastGrowing_monotone_omega_mul (j : ℕ) :
-    Monotone (fastGrowing (oadd 1 j.succPNat 0)) := by
+lemma fastGrowing_monotone_omega_mul (j : ℕ) : Monotone (fastGrowing (oadd 1 j.succPNat 0)) := by
   induction j with
   | zero => exact fastGrowing_monotone_omega
   | succ j ih =>
@@ -398,8 +392,7 @@ lemma fastGrowing_monotone_omega_sq : Monotone (fastGrowing (oadd (ofNat 2) 1 0)
     _ ≤ fastGrowing (oadd 1 (n + 1).succPNat 0) (n + 1) := fastGrowing_omega_sq_index_step n
 
 /-- **Monotonicity in the argument, successor form:** `f_o(n) ≤ f_o(n+1)`. -/
-lemma fastGrowing_le_succ (o : ONote) (n : ℕ) :
-    fastGrowing o n ≤ fastGrowing o (n + 1) := by
+lemma fastGrowing_le_succ (o : ONote) (n : ℕ) : fastGrowing o n ≤ fastGrowing o (n + 1) := by
   rcases e : fundamentalSequence o with (_ | a) | g
   · rw [fastGrowing_zero' o e]
     exact Nat.le_succ _

@@ -44,14 +44,12 @@ lemma encodeONote_decodeONote (n : ℕ) : encodeONote (decodeONote n) = n := by
 @[simp] lemma encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
   rfl
 
-lemma encode_decode_eq (n : ℕ) :
-    Encodable.encode (Encodable.decode n : Option ONote) = n + 1 := by
+lemma encode_decode_eq (n : ℕ) : Encodable.encode (Encodable.decode n : Option ONote) = n + 1 := by
   rw [decode_eq];
   simp +decide [Encodable.encode, encodeONote_decodeONote]
 
 /-- `encode ∘ decode` is `Nat.succ` up to the `+ 1` shift. -/
-lemma primrec_encode_decode :
-    Nat.Primrec (fun n => Encodable.encode (Encodable.decode n : Option ONote)) := by
+lemma primrec_encode_decode : Nat.Primrec (fun n => Encodable.encode (Encodable.decode n : Option ONote)) := by
   convert Nat.Primrec.succ using 1;
   exact funext fun n => by simpa using encode_decode_eq n;
 
@@ -151,12 +149,10 @@ def cmpStep (L : List ℕ) : Option ℕ :=
 def Cnat (m : ℕ) : ℕ :=
   ordCode (ONote.cmp (decodeONote (Nat.unpair m).1) (decodeONote (Nat.unpair m).2))
 
-lemma Cnat_pair (cx cy : ℕ) :
-    Cnat (Nat.pair cx cy) = ordCode (ONote.cmp (decodeONote cx) (decodeONote cy)) := by
+lemma Cnat_pair (cx cy : ℕ) : Cnat (Nat.pair cx cy) = ordCode (ONote.cmp (decodeONote cx) (decodeONote cy)) := by
   simp [Cnat, Nat.unpair_pair]
 
-lemma pair_lt_pair {a₁ a₂ b₁ b₂ : ℕ} (ha : a₁ < a₂) (hb : b₁ < b₂) :
-    Nat.pair a₁ b₁ < Nat.pair a₂ b₂ :=
+lemma pair_lt_pair {a₁ a₂ b₁ b₂ : ℕ} (ha : a₁ < a₂) (hb : b₁ < b₂) : Nat.pair a₁ b₁ < Nat.pair a₂ b₂ :=
   lt_trans (Nat.pair_lt_pair_left b₁ ha) (Nat.pair_lt_pair_right a₂ hb)
 
 lemma computable_cmpStep : Computable cmpStep := by
@@ -340,13 +336,15 @@ theorem computable_Nfb : Computable Nfb :=
 
 /-! ### Enumeration of normal-form codes -/
 
+variable (a : ℕ)
+
 /-- The structural NF-code of the `a`-th notation. -/
 def enc (a : ℕ) : ℕ := encodeONote (natCode a).1
 
-lemma decodeONote_enc (a : ℕ) : decodeONote (enc a) = (natCode a).1 := by
+lemma decodeONote_enc : decodeONote (enc a) = (natCode a).1 := by
   rw [enc, decodeONote_encodeONote]
 
-lemma nf_decode_enc (a : ℕ) : (decodeONote (enc a)).NF := by
+lemma nf_decode_enc : (decodeONote (enc a)).NF := by
   rw [decodeONote_enc]; exact (natCode a).2
 
 lemma enc_injective : Function.Injective enc := by
@@ -413,14 +411,13 @@ lemma computable_countNF : Computable countNF := by
     exact h_countNF_eq.comp Computable.snd;
   · rfl
 
-lemma Nfb_enc (a : ℕ) : Nfb (enc a) = true := by
+lemma Nfb_enc : Nfb (enc a) = true := by
   simp [Nfb, nf_decode_enc]
 
-lemma countNF_eq (n : ℕ) :
-    countNF n = ((Finset.range n).filter (fun k => (decodeONote k).NF)).card := by
+lemma countNF_eq (n : ℕ) : countNF n = ((Finset.range n).filter (fun k => (decodeONote k).NF)).card := by
   congr
 
-lemma countNF_enc (a : ℕ) : countNF (enc a) = a := by
+lemma countNF_enc : countNF (enc a) = a := by
   have h_card : ((Finset.range (enc a)).filter (fun k => (decodeONote k).NF)).card = ((Finset.range a).image enc).card := by
     congr 1 with x; simp +decide [Finset.mem_image, Finset.mem_range];
     constructor;
@@ -439,16 +436,16 @@ lemma countNF_enc (a : ℕ) : countNF (enc a) = a := by
 lemma countNF_mono : Monotone countNF :=
   monotone_nat_of_le_succ (by simp +decide [countNF_succ])
 
-lemma lt_countNF_succ_enc (a : ℕ) : a < countNF (enc a + 1) := by
+lemma lt_countNF_succ_enc : a < countNF (enc a + 1) := by
   rw [countNF_succ];
   rw [countNF_enc, if_pos (Nfb_enc a)]; linarith
 
-lemma exists_count (a : ℕ) : ∃ n, a < countNF (n + 1) := ⟨enc a, lt_countNF_succ_enc a⟩
+lemma exists_count : ∃ n, a < countNF (n + 1) := ⟨enc a, lt_countNF_succ_enc a⟩
 
 /-- The `a`-th NF-code. -/
 noncomputable def nthNF (a : ℕ) : ℕ := Nat.find (exists_count a)
 
-lemma enc_eq_nthNF (a : ℕ) : enc a = nthNF a :=
+lemma enc_eq_nthNF : enc a = nthNF a :=
   Eq.symm <| (Nat.find_eq_iff _).2
     ⟨lt_countNF_succ_enc a, fun n hn => not_lt_of_ge <| by
       linarith [countNF_mono <| Nat.succ_le_of_lt hn, countNF_enc a]⟩
@@ -482,8 +479,7 @@ lemma lt_iff_Cnat (a b : ℕ) : natCode a < natCode b ↔ Cnat (Nat.pair (enc a)
   exact (cmp_eq_lt_iff_lt (natCode a) (natCode b)).symm
 
 /-- The order `natCode a < natCode b` on ℕ-codes is `REPred` (recursively enumerable). -/
-theorem rePred_ltPull_natCode :
-    REPred fun v : List.Vector ℕ 2 ↦ natCode (v.get 0) < natCode (v.get 1) := by
+theorem rePred_ltPull_natCode : REPred fun v : List.Vector ℕ 2 ↦ natCode (v.get 0) < natCode (v.get 1) := by
   apply ComputablePred.to_re
   refine ⟨inferInstance, ?_⟩
   have hidx0 : Computable (fun v : List.Vector ℕ 2 => v.get (0 : Fin 2)) :=

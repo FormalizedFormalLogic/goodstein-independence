@@ -243,8 +243,8 @@ noncomputable def NlogBall (K : ℕ) : Finset ONote := (Nlog_finite_fiber K).toF
     o ∈ NlogBall K ↔ NF o ∧ Nlog o ≤ K := Set.Finite.mem_toFinset _
 
 /-- Absorption on `ONote`, packaged: `x + c = c` when the reprs absorb. -/
-lemma add_eq_right_of_repr {x c : ONote} [NF x] [NF c]
-    (h : ONote.repr x + ONote.repr c = ONote.repr c) : x + c = c := by
+lemma add_eq_right_of_repr {x c : ONote} [NF x] [NF c] (h : ONote.repr x + ONote.repr c = ONote.repr c) :
+    x + c = c := by
   haveI : NF (x + c) := inferInstance
   exact repr_inj.1 (by rw [repr_add]; exact h)
 
@@ -487,8 +487,7 @@ lemma base_add_le_comp {f g : ℕ → ℕ} (hg_base : ∀ k, g 0 + k ≤ g k) {a
 
 /-- **The controlled step**: the branch ball is the NF `Nlog`-ball, whose NF restriction is
 forced by `Nlog`'s fiber structure and is the population the calculus feeds anyway. -/
-noncomputable def ewStep (f : ℕ → ℕ) (a : ONote) (rec : (b : ONote) → b < a → ℕ → ℕ)
-    (m : ℕ) : ℕ :=
+noncomputable def ewStep (f : ℕ → ℕ) (a : ONote) (rec : (b : ONote) → b < a → ℕ → ℕ) (m : ℕ) : ℕ :=
   if ha : a = 0 then
     f m
   else
