@@ -425,11 +425,11 @@ lemma enc_strictMono : StrictMono enc := by
 /-- Number of NF-codes strictly below `n`. -/
 def countNF (n : ℕ) : ℕ := ((List.range n).filter (fun k => Nfb k)).length
 
-theorem computable_countNF : Computable countNF := by
+lemma computable_countNF : Computable countNF := by
   have h_countNF_eq : countNF = fun n => Nat.recOn n 0 (fun n count => count + if Nfb n then 1 else 0) := by
-    funext n; induction' n with n ih <;> simp_all +decide [ countNF ] ;
-    rw [ List.range_succ, List.filter_append ] ; aesop;
-  rw [ h_countNF_eq ];
+    funext n; induction' n with n ih <;> simp_all +decide [countNF];
+    rw [List.range_succ, List.filter_append]; aesop;
+  rw [h_countNF_eq];
   convert Computable.nat_rec _ _ _ using 1;
   rotate_left;
   exact fun n => n;
@@ -440,13 +440,13 @@ theorem computable_countNF : Computable countNF := by
   · have h_countNF_eq : Computable (fun (p : ℕ × ℕ) => p.2 + (if Nfb p.1 then 1 else 0)) := by
       have h_cond : Computable (fun (p : ℕ × ℕ) => if Nfb p.1 then 1 else 0) := by
         have h_cond : Computable (fun (p : ℕ) => if Nfb p then 1 else 0) := by
-          convert Computable.cond ( computable_Nfb ) ( Computable.const 1 ) ( Computable.const 0 ) using 1;
+          convert Computable.cond computable_Nfb (Computable.const 1) (Computable.const 0) using 1;
           grind;
-        exact h_cond.comp ( Computable.fst )
+        exact h_cond.comp Computable.fst
       have h_add : Computable (fun (p : ℕ × ℕ) => p.1 + p.2) := by
-        exact Primrec.to_comp ( Primrec.nat_add.comp ( Primrec.fst ) ( Primrec.snd ) );
-      convert h_add.comp ( Computable.snd.pair h_cond ) using 1;
-    exact h_countNF_eq.comp ( Computable.snd );
+        exact Primrec.to_comp (Primrec.nat_add.comp Primrec.fst Primrec.snd);
+      convert h_add.comp (Computable.snd.pair h_cond) using 1;
+    exact h_countNF_eq.comp Computable.snd;
   · rfl
 
 lemma Nfb_enc (a : ℕ) : Nfb (enc a) = true := by
@@ -496,7 +496,7 @@ lemma rfind_nthNF (a : ℕ) :
   simp +zetaDelta at *;
   exact ⟨ Nat.find_spec ( exists_count a ), fun { m } hm => not_lt.1 fun contra => hm.not_ge <| Nat.find_min' _ contra ⟩
 
-theorem computable_nthNF : Computable nthNF := by
+lemma computable_nthNF : Computable nthNF := by
   have hp : Partrec₂ (fun (a m : ℕ) =>
       (Part.some (decide (a < countNF (m + 1))) : Part Bool)) :=
     (Primrec.nat_lt.decide.to_comp).comp Computable.fst
