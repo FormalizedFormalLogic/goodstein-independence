@@ -204,21 +204,21 @@ lemma computable_cmpStep : Computable cmpStep := by
 
 lemma cmpStep_spec (m : ℕ) : cmpStep ((List.range m).map Cnat) = some (Cnat m) := by
   unfold cmpStep;
-  simp +decide [ cmpIdxE, cmpIdxA, cmpNV ];
-  rcases n : Nat.unpair m with ⟨ x, y ⟩ ; rcases x with ( _ | x ) <;> rcases y with ( _ | y ) <;> simp +decide;
-  · rw [ show m = 0 by rw [ ← Nat.pair_unpair m, n ] ; rfl ] ; simp +decide [ Cnat ] ;
+  simp +decide [cmpIdxE, cmpIdxA, cmpNV];
+  rcases n : Nat.unpair m with ⟨x, y⟩; rcases x with (_ | x) <;> rcases y with (_ | y) <;> simp +decide;
+  · rw [show m = 0 by rw [← Nat.pair_unpair m, n]; rfl]; simp +decide [Cnat];
     native_decide;
-  · unfold Cnat; simp +decide [ n ] ;
-    unfold decodeONote; simp +decide [ ONote.cmp ] ;
-  · unfold Cnat; simp +decide [ n ] ;
-    unfold decodeONote; simp +decide [ ONote.cmp ] ;
-  · rw [ List.getElem?_range, List.getElem?_range ] <;> norm_num [ n ];
+  · unfold Cnat; simp +decide [n];
+    unfold decodeONote; simp +decide [ONote.cmp];
+  · unfold Cnat; simp +decide [n];
+    unfold decodeONote; simp +decide [ONote.cmp];
+  · rw [List.getElem?_range, List.getElem?_range] <;> norm_num [n];
     · unfold Cnat;
-      rw [ n ];
-      rw [ decodeONote, decodeONote ];
-      simp +decide [ ONote.cmp, ordCode_then, ordCode_cmp ];
+      rw [n];
+      rw [decodeONote, decodeONote];
+      simp +decide [ONote.cmp, ordCode_then, ordCode_cmp];
       unfold cmpNat; aesop;
-    · rw [ ← Nat.pair_unpair m, n ]
+    · rw [← Nat.pair_unpair m, n]
       have e1 := Nat.unpair_left_le x
       have e2 := Nat.unpair_right_le x
       have e3 := Nat.unpair_left_le y
@@ -226,15 +226,14 @@ lemma cmpStep_spec (m : ℕ) : cmpStep ((List.range m).map Cnat) = some (Cnat m)
       have e5 := Nat.unpair_right_le (Nat.unpair x).2
       have e6 := Nat.unpair_right_le (Nat.unpair y).2
       exact pair_lt_pair (by omega) (by omega)
-    · rw [ ← Nat.pair_unpair m, n ];
-      exact pair_lt_pair ( Nat.unpair_left_le _ |> Nat.lt_succ_of_le ) ( Nat.unpair_left_le _ |> Nat.lt_succ_of_le )
+    · rw [← Nat.pair_unpair m, n];
+      exact pair_lt_pair (Nat.unpair_left_le _ |> Nat.lt_succ_of_le) (Nat.unpair_left_le _ |> Nat.lt_succ_of_le)
 
 theorem computable_Cnat : Computable Cnat := by
-  have h_rec_comp : Computable (fun n => Cnat n) := by
-    have h_step : Computable (fun (L : List ℕ) => cmpStep L) := computable_cmpStep
-    have h_step_spec : ∀ n, cmpStep ((List.range n).map Cnat) = some (Cnat n) := cmpStep_spec
-    exact Computable.nat_strong_rec ( fun ( _ : Unit ) n => Cnat n ) ( h_step.comp Computable.snd |> Computable.to₂ ) ( fun _ n => h_step_spec n ) |> fun h => h.comp ( Computable.const () ) Computable.id
-  exact h_rec_comp
+  have h_step_spec : ∀ n, cmpStep ((List.range n).map Cnat) = some (Cnat n) := cmpStep_spec
+  exact (Computable.nat_strong_rec (fun (_ : Unit) n => Cnat n)
+    (computable_cmpStep.comp Computable.snd |> Computable.to₂)
+    (fun _ n => h_step_spec n)).comp (Computable.const ()) Computable.id
 
 /-! ### Computability of the `NF` predicate (needed to enumerate `NONote`) -/
 
