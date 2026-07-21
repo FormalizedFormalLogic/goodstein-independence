@@ -11,14 +11,9 @@ namespace Goodstein.Dom
 
 open ONote Ordinal
 
-/-! ### The CNF norm of a Goodstein notation is bounded by its step index
+/-! ### CNF norm bounds: automatic budget satisfaction
 
-A Goodstein notation `seqONote m j = toONote (j+2) (goodsteinSeq m j)` is, by construction, a
-base-`(j+2)` hereditary numeral: *every* coefficient appearing anywhere in its Cantor normal
-form (digits and recursively the exponents) is a base-`(j+2)` digit, hence `< j+2`. So its CNF
-norm is `≤ j+1`. The structural consequence: **the Hardy budget `norm ≤ argument` is always met
-at the telescope step `j+2`** — the budget obstruction is automatic on the descent itself, and
-`hardy_le_of_lt` can be applied in either comparison direction at every telescope step. -/
+`seqONote m j` has CNF norm `≤ j+1`, so the Hardy budget `norm ≤ j+2` is always satisfied. -/
 
 /-- Every coefficient of `toONote b n` is a base-`b` digit, so its CNF norm is `< b`
 (for `b ≥ 2`). Strong induction mirroring `toONote`'s peeling recursion: the leading digit
@@ -56,28 +51,12 @@ lemma norm_seqONote_le (m j : ℕ) : norm (seqONote m j) ≤ j + 1 := by
   show norm (toONote (j + 2) (goodsteinSeq m j)) ≤ j + 1
   omega
 
-/-! ### The domination headline, reduced to a single ordinal-domination fact
+/-! ### Domination headline, reduced to ordinal domination
 
-The full chain of the growth headline — `fastGrowing o m ≤ goodsteinLength m + 2` — is here
-assembled and machine-checked, modulo exactly one deep input: that after `m` Goodstein steps the
-descent notation `seqONote m m` still exceeds `ω^o = oadd o 1 0` (the
-"ordinal-stays-high" / super-exponential term bound). Everything else is banked:
+Assembles the full Cichoń pipeline (Hardy telescope, budget satisfaction, bridge to fast-growing)
+modulo one deep input: ordinal domination (`seqONote m m > ω^o`). -/
 
-* the Cichoń telescope `hardy_seqONote_telescope` at `j = m` (valid by the linear length bound
-  `le_goodsteinLength`) plus `hardy_seqONote_zero`, giving
-  `goodsteinLength m + 2 = H_{seqONote m m}(m+2)`;
-* the **budget-valid** index step `hardy_le_of_lt` (the norm budget `m+2 ≥ norm (oadd o 1 0)` now
-  holds — this is why we evaluate at the high-budget step `m+2`, not at the fixed argument `2`);
-* the Hardy↔fast-growing bridge `fastGrowing_le_hardy_pow` at matching argument `m+2`;
-* argument-monotonicity `fastGrowing_monotone` to descend `m+2 ↦ m`.
-
-This isolates the remaining mathematical content to `hidx` alone. -/
-
-/-- **Domination, reduced to an ordinal-domination fact.** Given that the Goodstein descent stays
-above `ω^o` for at least `m` steps (`hidx : oadd o 1 0 < seqONote m m`) and the budget is met
-(`norm o ≤ m`), the Goodstein length dominates the fast-growing level `o` at the diagonal:
-`fastGrowing o m ≤ goodsteinLength m + 2`. The whole Cichoń assembly is machine-checked here;
-the only open input is `hidx`. -/
+/-- From ordinal domination, derive diagonal domination. -/
 lemma goodstein_dominates_of_index {o : ONote} (ho : o.NF) {m : ℕ}
     (hnorm : norm o ≤ m) (hidx : oadd o 1 0 < seqONote m m) :
     fastGrowing o m ≤ goodsteinLength m + 2 := by

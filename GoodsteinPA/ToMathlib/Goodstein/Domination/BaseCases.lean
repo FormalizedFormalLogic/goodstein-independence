@@ -12,36 +12,16 @@ namespace Goodstein.Dom
 open ONote Ordinal
 
 /-
-# `GoodsteinLike` sequences and the self-similarity TOWER
+# The self-similarity tower: iterated leading-exponent domination
 
-Lap 9 found the winning idea — **self-similarity**: the leading-exponent sequence
-`L_k = log_{base k}(G_k)` of a Goodstein descent is *itself* a Goodstein-like descent, so it
-dominates the genuine Goodstein sequence seeded at `L_0 = log₂ m`. Lap 10 closed `o = ω` by iterating
-that idea once. This file extracts the idea into its **clean reusable abstraction** and proves the
-*fully iterated* form, the engine for climbing the ordinal tower toward `f_{ε₀}`.
-
-A sequence `a : ℕ → ℕ` is `GoodsteinLike` when it obeys the Goodstein lower-bound recursion
-`a (k+1) ≥ bump (base k) (a k) − 1` at every step (the genuine `goodsteinSeq` obeys it with equality).
-Two structural facts hold for every such sequence:
-
-* **`GoodsteinLike.dominates`** — `a` dominates `goodsteinSeq (a 0)` (self-similarity: the recursion
-  with the `−1` firing at every step is the slowest, so `goodsteinSeq (a 0)` is a lower envelope).
-* **`GoodsteinLike.logSeq`** — `k ↦ log_{base k} (a k)` is again `GoodsteinLike` (the leading exponent
-  of a Goodstein-like sequence is Goodstein-like — the level-up that drives the tower).
-
-Iterating the second fact (`GoodsteinLike.iterate`) and feeding the first gives the headline
-**`iterLeadExp_dominates`**: the `j`-fold iterated leading exponent of the seed-`m` descent dominates
-the Goodstein sequence seeded at the `j`-fold logarithm `(log₂)^[j] m`. For `j = 0` this is the value
-itself; `j = 1` is `leadExp_ge_goodsteinSeq_log`; each higher `j` is one ordinal level up
-(`o = ω^j`-flavoured), the precise self-reference behind Cichoń's lower bound at the limit levels.
+The leading-exponent sequence of a Goodstein descent is itself Goodstein-like, giving a self-similar
+tower structure. This file extracts this idea abstractly via `GoodsteinLike` sequences and proves the
+fully iterated form: `iterLeadExp_dominates` states that the `k`-fold iterated leading exponent
+dominates the Goodstein sequence seeded at the `k`-fold logarithm.
 -/
 
 
-/-- **General per-step log descent.** For any `n`, the leading exponent obeys the Goodstein recursion
-as a *lower bound*: `bump b (log_b n) − 1 ≤ log_{b+1} (bump b n − 1)`. Off pure powers it is an
-equality at `bump b (log_b n)` (`log_bump_pred_of_not_pow`); at a pure power it drops by exactly one
-(`log_bump_pred_of_pow`); when `n = 0` both sides are `0`. Generalizes `leadExp_step_ge` from the
-concrete Goodstein value to an arbitrary `n` — the brick that makes `log ∘ a` Goodstein-like. -/
+/-- Per-step log descent: `bump b (log_b n) − 1 ≤ log_{b+1} (bump b n − 1)`. -/
 lemma log_step_ge (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
     bump b (Nat.log b n) - 1 ≤ Nat.log (b + 1) (bump b n - 1) := by
   rcases eq_or_ne n 0 with hv0 | hv0
@@ -65,11 +45,7 @@ def logSeq (a : ℕ → ℕ) : ℕ → ℕ := fun k => Nat.log (base k) (a k)
 lemma goodsteinSeq_goodsteinLike (m : ℕ) : GoodsteinLike (goodsteinSeq m) :=
   fun _ => le_of_eq rfl
 
-/-- **Self-similarity, abstract form.** Every Goodstein-like `a` dominates the genuine Goodstein
-sequence seeded at `a 0`: `goodsteinSeq (a 0) k ≤ a k` for all `k`. Induction with `bump_mono`
-carrying the step — the `goodsteinSeq` recursion subtracts `1` at *every* step, while `a` does so only
-where forced, so `goodsteinSeq (a 0)` is the slowest descent. Generalizes `leadExp_ge_goodsteinSeq_log`
-(the case `a = leadExp = logSeq (goodsteinSeq m)`, where `a 0 = log₂ m`). -/
+/-- Self-similarity: every Goodstein-like `a` dominates `goodsteinSeq (a 0)`. -/
 lemma GoodsteinLike.dominates {a : ℕ → ℕ} (ha : GoodsteinLike a) :
     ∀ k, goodsteinSeq (a 0) k ≤ a k := by
   intro k
@@ -83,11 +59,7 @@ lemma GoodsteinLike.dominates {a : ℕ → ℕ} (ha : GoodsteinLike a) :
     have hak := ha k
     rw [hstep]; omega
 
-/-- **The leading exponent of a Goodstein-like sequence is Goodstein-like.** If `a` is Goodstein-like
-then so is `logSeq a = (k ↦ log_{base k} (a k))`. Per step: `log_step_ge` gives the recursion lower
-bound at `bump (base k) (a k) − 1`, then monotonicity of `Nat.log` in its argument carries it through
-`a (k+1) ≥ bump (base k) (a k) − 1`. This is the **level-up** that, iterated, climbs the ordinal
-tower. Generalizes `leadExp_step_ge`. -/
+/-- The leading exponent of a Goodstein-like sequence is Goodstein-like. -/
 lemma goodsteinLike_logSeq {a : ℕ → ℕ} (ha : GoodsteinLike a) : GoodsteinLike (logSeq a) := by
   intro k
   have hb : 2 ≤ base k := Nat.le_add_left 2 k
@@ -114,19 +86,8 @@ lemma logSeq_iterate_zero (a : ℕ → ℕ) (j : ℕ) :
     show Nat.log (base 0) ((logSeq^[j] a) 0) = Nat.log 2 ((Nat.log 2)^[j] (a 0))
     rw [show base 0 = 2 from rfl, ih]
 
-/-- **The self-similarity TOWER (headline).** The `j`-fold iterated leading exponent of the seed-`m`
-Goodstein descent dominates the Goodstein sequence seeded at the `j`-fold logarithm `(log₂)^[j] m`:
-`goodsteinSeq ((log₂)^[j] m) k ≤ (logSeq^[j] (goodsteinSeq m)) k`.
-
-* `j = 0`: the value bound `goodsteinSeq m k ≤ goodsteinSeq m k` (trivial).
-* `j = 1`: `leadExp_ge_goodsteinSeq_log` — the leading exponent dominates `goodsteinSeq (log₂ m)`.
-* `j ≥ 2`: each level is one ordinal step up. To certify the descent ordinal `≥ ω^{ω^{···}}` (tower
-  of height `j+1`, i.e. `o = ω^j`-flavoured) at step `≈ m`, one needs the `j`-th iterated leading
-  exponent `≥ base` there, which via this bound needs `goodsteinSeq ((log₂)^[j] m) (m−2) ≥ m`, i.e. a
-  length bound `goodsteinLength ((log₂)^[j] m) ≥ 2m`. The deeper seed `(log₂)^[j] m` is small, so this
-  needs an increasingly strong length bound — supplied by *bootstrapping the domination already
-  proved* (e.g. `f_ω(t) ≤ goodsteinLength t + 2` makes `goodsteinLength ((log₂)^[2] m) ≥ f_ω(log₂log₂m)
-  ≫ 2m`). That bootstrap is the next frontier; this lemma is its reusable backbone. -/
+/-- The self-similarity tower: the `j`-fold iterated leading exponent dominates the Goodstein
+sequence seeded at the `j`-fold logarithm. -/
 theorem iterLeadExp_dominates (m j : ℕ) :
     ∀ k, goodsteinSeq ((Nat.log 2)^[j] m) k ≤ (logSeq^[j] (goodsteinSeq m)) k := by
   have hgl : GoodsteinLike (logSeq^[j] (goodsteinSeq m)) :=
@@ -145,20 +106,11 @@ example (m k : ℕ) :
 
 
 /-
-# Cichoń's lower bound at finite levels: the unconditional closure
+# Finite-level diagonal domination and base cases
 
-`Domination.lean` reduces the diagonal domination
-`fastGrowing (ofNat n) m ≤ goodsteinLength m + 2` to **one** self-referential length bound
-`goodsteinLength m ≥ 2^{m+1} + m` (`goodsteinLength_exp_lower`), via the self-similarity recursion
-`leadExp_ge_goodsteinSeq_log` (the leading-exponent sequence dominates the Goodstein sequence one
-scale down). That strong induction needs finitely many computational base cases — the seeds
-`4 ≤ M < 16`, where the length must already be exponentially large. This file discharges them
-**kernel-only**: `le_bump` bounds the per-step drop by 1, so a checkpoint value `v` at
-step `k` certifies `goodsteinLength ≥ k + v` (`glen_ge_of_seq_value`); every seed reaches the
-needed `2^{M+1}+M` by step `k ≤ 4`, and the checkpoint is evaluated in the kernel by the fuel-based
-structural evaluator `gvalF`/`bumpF`. The formerly-needed `native_decide` forward passes (heaviest:
-a 65551-step pass for `M = 15`) are gone, so the unconditional theorems below sit on the standard
-`[propext, Classical.choice, Quot.sound]` with NO `Lean.ofReduceBool`.
+Discharges the finite base cases `4 ≤ M < 16` for Cichoń's exponential length bound via kernel
+evaluation (`gvalF`/`bumpF`), without `native_decide`. The unconditional closures only use the
+standard axioms `[propext, Classical.choice, Quot.sound]`.
 -/
 
 
@@ -247,12 +199,7 @@ lemma glen_ge_of_seq_value {M k v : ℕ} (hv : 1 ≤ v) (h : goodsteinSeq M k = 
   · have := hsub (n - k)
     rw [show k + (n - k) = n from by omega, hzero] at this; omega
 
-/-- **The finitely many base cases of Cichoń's exponential length bound** (`4 ≤ M < 16`):
-`2^{M+1} + M ≤ goodsteinLength M`, each discharged **kernel-only**: `le_bump` gives a per-step
-drop of at most 1, so a checkpoint value at step `k ≤ 4` (computed in the kernel by the
-fuel-based evaluator `gvalF`) certifies the whole exponential bound (`glen_ge_of_seq_value`).
-No `native_decide` — the former 65551-step forward pass (`M = 15`) is replaced by a 4-step
-kernel evaluation reaching value `326593`. -/
+/-- Base cases `4 ≤ M < 16` for Cichoń's exponential length bound: `2^{M+1} + M ≤ goodsteinLength M`. -/
 lemma goodsteinLength_base_cases (M : ℕ) (h4 : 4 ≤ M) (h16 : M < 16) :
     2 ^ (M + 1) + M ≤ goodsteinLength M := by
   have hM : M = 4 ∨ M = 5 ∨ M = 6 ∨ M = 7 ∨ M = 8 ∨ M = 9 ∨ M = 10 ∨ M = 11 ∨ M = 12 ∨
@@ -277,23 +224,12 @@ lemma goodsteinLength_base_cases (M : ℕ) (h4 : 4 ≤ M) (h16 : M < 16) :
   · exact key 14 4 326591 (by omega) (by decide) (by norm_num)
   · exact key 15 4 326593 (by omega) (by decide) (by norm_num)
 
-/-- **Cichoń's exponential length lower bound, UNCONDITIONAL:** `2^{m+1} + m ≤ goodsteinLength m` for
-every `m ≥ 4`. The strong-induction engine `goodsteinLength_exp_lower` fed by the computational base
-cases. The self-similarity makes the exponential bound reproduce itself at each scale. -/
+/-- Cichoń's exponential length lower bound: `2^{m+1} + m ≤ goodsteinLength m` for every `m ≥ 4`. -/
 theorem goodsteinLength_exp_lower_uncond {m : ℕ} (hm : 4 ≤ m) :
     2 ^ (m + 1) + m ≤ goodsteinLength m :=
   goodsteinLength_exp_lower goodsteinLength_base_cases m hm
 
-/-- **THE `o = 2` DIAGONAL DOMINATION — UNCONDITIONAL (every `m ≥ 16`):**
-`fastGrowing 2 m ≤ goodsteinLength m + 2`, i.e. `f_2(m) = 2^m · m ≤ goodsteinLength m + 2`. This is the
-*true diagonal* bound — budget `m`, not the earlier `log₂ m` of `fastGrowing_two_log_le_goodsteinLength`
-— hence Cichoń's lower bound at level `o = 2`, fully machine-checked: the Goodstein descent's leading
-CNF exponent provably stays `≥ 2` for the first `m` steps. Assembly: for `m ≥ 16` the smaller seed
-`L = Nat.log 2 m` is `≥ 4`, so the unconditional exponential length bound gives
-`goodsteinLength L ≥ 2^{L+1} + L ≥ m + 2` (as `m < 2^{L+1}`), discharging the hypothesis of
-`fastGrowing_two_le_goodsteinLength_of_log_length`. (The finite tail `4 ≤ m < 16` also holds but its
-direct certification is far more expensive — `f_2(15) ≈ 5·10^5` steps — and is omitted: asymptotic
-domination is the mathematically meaningful statement.) -/
+/-- Diagonal domination at level `o = 2`: `fastGrowing 2 m ≤ goodsteinLength m + 2` for every `m ≥ 16`. -/
 lemma fastGrowing_two_le_goodsteinLength {m : ℕ} (hm : 16 ≤ m) :
     fastGrowing 2 m ≤ goodsteinLength m + 2 := by
   have hL4 : 4 ≤ Nat.log 2 m := by
@@ -305,15 +241,8 @@ lemma fastGrowing_two_le_goodsteinLength {m : ℕ} (hm : 16 ≤ m) :
   have hlen : m + 2 ≤ goodsteinLength (Nat.log 2 m) := by omega
   exact fastGrowing_two_le_goodsteinLength_of_log_length (by omega) hlen
 
-/-- **THE FULL DIAGONAL DOMINATION — UNCONDITIONAL, every finite level `n`:**
-`fastGrowing (ofNat n) m ≤ goodsteinLength m + 2` whenever `n + 1 ≤ Nat.log 2 m` (and `m ≥ 16`).
-For each fixed `n` this holds for all sufficiently large `m` (those with `Nat.log 2 m ≥ n + 1`, i.e.
-`m ≥ 2^{n+1}`). This is **Cichoń's lower bound at every finite level**, fully machine-checked: the
-Goodstein descent's leading CNF exponent provably stays `≥ n` for the first `m` steps, so
-`goodsteinLength` diagonally dominates the entire finite fast-growing hierarchy `f_0, f_1, f_2, …`.
-The unconditional exponential length bound at the smaller seed `L = Nat.log 2 m` supplies
-`goodsteinLength L ≥ 2^{L+1} + L ≥ m + n` (using `m < 2^{L+1}` and `n ≤ L − 1`), discharging the
-hypothesis of `fastGrowing_ofNat_le_goodsteinLength_of_log_length`. -/
+/-- Diagonal domination at every finite level `n`: `fastGrowing (ofNat n) m ≤ goodsteinLength m + 2`
+for every `m ≥ 16` with `n + 1 ≤ Nat.log 2 m`. -/
 lemma fastGrowing_ofNat_le_goodsteinLength {n m : ℕ} (hm : 16 ≤ m)
     (hn : n + 1 ≤ Nat.log 2 m) :
     fastGrowing (ONote.ofNat n) m ≤ goodsteinLength m + 2 := by
@@ -334,18 +263,10 @@ example : fastGrowing 2 16 = 2 ^ 16 * 16 := by rw [ONote.fastGrowing_two]
 
 
 /-
-# Toward `o = ω`: the limit-level diagonal, isolated to its crux
+# The limit ordinal ω: the large-regime crux
 
-With the finite-level diagonal `f_n(m) ≤ goodsteinLength m + 2` closed above, the next tier of
-Cichoń's lower bound is the **limit ordinal `ω`**: `f_ω(m) ≤ goodsteinLength m + 2`. This file
-builds the ordinal bridge for `ω^ω` and reduces the `o = ω` diagonal to a single open hypothesis
-— exactly the way `Domination.lean`'s `goodstein_dominates_of_index` framed the finite levels.
-
-The crux it isolates: the descent's **leading exponent stays in the LARGE regime** (`≥ base`) at step
-`m − 2`. For finite `o = n` we only needed `leadExp ≥ n` (a fixed constant); for `o = ω` we need
-`leadExp ≥ base = m`, i.e. the leading exponent itself reaches `ω` at the ordinal level. This is one
-recursion deeper than the finite-level self-similarity, and is the genuine remaining growth
-content — NOT to be axiomatized.
+Extends the finite-level diagonal to `o = ω` by isolating its crux: keeping the leading exponent
+in the large regime (`≥ base = m`) at step `m − 2`, which bootstraps the level-one domination.
 -/
 
 
@@ -385,14 +306,8 @@ lemma omega_omega_le_seqONote_repr {m i : ℕ}
     rw [← hbb]; exact hSM.monotone hreg
   exact opow_le_seqONote_repr_of_toOrdinal homega_le hv
 
-/-- **The `o = ω` diagonal domination, REDUCED to its crux** (`hreg`). If the Goodstein descent's
-leading exponent is still in the LARGE regime at step `m − 2` (`base (m−2) ≤ leadExp_{m−2}`), then
-`fastGrowing ω m ≤ goodsteinLength m + 2` (with `ω = oadd 1 1 0`). Assembly mirrors the finite-level
-`fastGrowing_ofNat_le_goodsteinLength_of_log_length`: the large-regime hypothesis gives
-`ω^ω ≤ (seqONote m (m−2)).repr` (`omega_omega_le_seqONote_repr`); the diagonal reduction
-`goodstein_dominates_of_index_le` (budget `m`) closes it. **The hypothesis `hreg` IS Cichoń's lower
-bound at the limit level `ω`** — the open obligation is to iterate the self-similarity so the
-one-level-down value stays `≥ base` for `~m` steps. -/
+/-- Diagonal domination at `ω`, reduced to large-regime hypothesis: if `base (m−2) ≤ leadExp_{m−2}`
+then `fastGrowing ω m ≤ goodsteinLength m + 2`. -/
 lemma fastGrowing_omega_le_goodsteinLength_of_largeRegime {m : ℕ} (hm : 4 ≤ m)
     (hreg : base (m - 2) ≤ Nat.log (base (m - 2)) (goodsteinSeq m (m - 2))) :
     fastGrowing (oadd 1 1 0) m ≤ goodsteinLength m + 2 := by
@@ -408,15 +323,7 @@ lemma fastGrowing_omega_le_goodsteinLength_of_largeRegime {m : ℕ} (hm : 4 ≤ 
   have hgl : j ≤ goodsteinLength m := le_trans (by omega) (le_goodsteinLength m)
   exact goodstein_dominates_of_index_le (o := oadd 1 1 0) (m := m) (j := j) ho hgl (by omega) hnorm hidx
 
-/-- **Doubly-iterated length bound — the `ω`-level analog of `goodsteinLength_exp_lower`.** For every
-`m ≥ 2^16` the *one-level-down* Goodstein sequence (seed `L = Nat.log 2 m`) runs at least `2m − 2`
-steps: `2 * m ≤ goodsteinLength (Nat.log 2 m) + 2`. The finite-level diagonal used the *exponential*
-length bound `goodsteinLength M ≥ 2^{M+1}+M` at the smaller seed; that gives only `≈ m` and cannot
-push the leading exponent past a fixed constant. The limit level needs more, so this lemma applies the
-full unconditional **`o = 2` diagonal** `2^L·L = f_2(L) ≤ goodsteinLength L + 2`
-(`fastGrowing_two_le_goodsteinLength`) at the seed `L ≥ 16`: since `m < 2^{L+1}` we have
-`2·2^L ≥ m+1`, so `2^L·L ≥ 16·2^L = 8·(2·2^L) ≥ 8(m+1) ≥ 2m`. The surplus over the seed is exactly
-what lifts the leading exponent into the LARGE regime (`≥ base`), discharging `hreg` below. -/
+/-- Doubly-iterated length bound: `2 * m ≤ goodsteinLength (Nat.log 2 m) + 2` for `m ≥ 2^16`. -/
 lemma two_mul_le_goodsteinLength_log {m : ℕ} (hm : 2 ^ 16 ≤ m) :
     2 * m ≤ goodsteinLength (Nat.log 2 m) + 2 := by
   have hL16 : 16 ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
@@ -433,20 +340,8 @@ lemma two_mul_le_goodsteinLength_log {m : ℕ} (hm : 2 ^ 16 ≤ m) :
   -- hf2 : P * L ≤ goodsteinLength L + 2 ;  hmono : P*16 ≤ P*L ;  hpow : m+1 ≤ P*2
   omega
 
-/-- **THE `o = ω` DIAGONAL DOMINATION — UNCONDITIONAL (every `m ≥ 2^16`):**
-`fastGrowing ω m ≤ goodsteinLength m + 2`, i.e. `f_ω(m) ≤ goodsteinLength m + 2`, with
-`ω = oadd 1 1 0`. This is Cichoń's lower bound at the **first limit ordinal** — the leading CNF
-exponent of the Goodstein descent provably reaches `ω` (the LARGE regime `≥ base`) and stays there
-through step `m − 2`, so the descent ordinal dominates `ω^ω`.
-
-The crux `hreg` (leading exponent `≥ base (m−2) = m` at step `m − 2`) is discharged by **iterating
-the self-similarity once more**: `leadExp_ge_goodsteinSeq_log` bounds the leading exponent below by
-the *one-level-down* Goodstein value `goodsteinSeq (log₂ m) (m−2)`, and `n_le_goodsteinSeq` keeps that
-value `≥ m` provided the one-level-down sequence still has `≥ m` steps to run — supplied by the
-doubly-iterated length bound `two_mul_le_goodsteinLength_log` (`goodsteinLength (log₂ m) ≥ 2m − 2`).
-For finite `o = n` the analog only needed value `≥ n` (a constant); the jump to `o = ω` is precisely
-the jump from "value `≥ n`" to "value `≥ base = m`", which the *factor-of-two* surplus in the length
-bound provides. The whole reduction is then closed by `fastGrowing_omega_le_goodsteinLength_of_largeRegime`. -/
+/-- Diagonal domination at the limit ordinal ω: `fastGrowing ω m ≤ goodsteinLength m + 2`
+for every `m ≥ 2^16`. -/
 lemma fastGrowing_omega_le_goodsteinLength {m : ℕ} (hm : 2 ^ 16 ≤ m) :
     fastGrowing (oadd 1 1 0) m ≤ goodsteinLength m + 2 := by
   have h4 : 4 ≤ m := le_trans (by norm_num) hm
@@ -461,16 +356,12 @@ lemma fastGrowing_omega_le_goodsteinLength {m : ℕ} (hm : 2 ^ 16 ≤ m) :
         n_le_goodsteinSeq (Nat.log 2 m) (m - 2) m hbase.ge hlen
     _ ≤ Nat.log (base (m - 2)) (goodsteinSeq m (m - 2)) := leadExp_ge_goodsteinSeq_log m (m - 2)
 
-/-! ### Toward `o = ω^j`: the SECOND-level tower (next limit tier of Cichoń)
+/-! ### The second-level tower: `o = ω^j`
 
-`o = ω` needed the leading exponent in the LARGE regime (`leadExp ≥ base`). The next tier `o = ω^j`
-needs the *second-level* leading exponent `≥ j` — equivalently the leading exponent `≥ base^j` — at
-step `m − 2`. We build the general ordinal bridge and reduce `o = ω^j` to a single length bound on the
-*doubly-iterated* seed `(log₂)^[2] m`, via the self-similarity tower `iterLeadExp_dominates`. -/
+The second-level leading exponent needs to be `≥ j` at step `m − 2`. Reduced to a length bound on
+the doubly-iterated seed via the self-similarity tower. -/
 
-/-- **`ω^k ≤ toOrdinal b w`** from the leading exponent `log_b w ≥ k` (with `k < b`, `w ≠ 0`). The
-`toOrdinal`-level core of `opow_le_seqONote_repr`, factored out so it applies at the *second* level
-(to the leading exponent itself) — the brick of the `ω^j` tower. -/
+/-- From `log_b w ≥ k`, derive `ω^k ≤ toOrdinal b w`. -/
 lemma opow_le_toOrdinal (b : ℕ) (hb : 2 ≤ b) {w k : ℕ}
     (hk : k ≤ Nat.log b w) (hw : w ≠ 0) (hkb : k < b) :
     (ω : Ordinal) ^ (k : Ordinal) ≤ toOrdinal b w := by

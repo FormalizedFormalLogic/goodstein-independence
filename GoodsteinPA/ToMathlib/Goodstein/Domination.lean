@@ -12,37 +12,13 @@ namespace Goodstein.Dom
 open ONote Ordinal
 
 /-
-# The FULL ω-power tower: diagonal domination at every level up to ε₀
+# The ω-power tower: diagonal domination at every level up to ε₀
 
-`BaseCases.lean` closes the diagonal `f_o(m) ≤ goodsteinLength m + 2` at the individual limit
-levels `o = ω`, `o = ω^j` (finite `j`), and `o = ω^ω`, each by an *ad hoc* bridge. This file makes
-the climb **general in one stroke**: it proves the diagonal domination at EVERY ω-power-tower
-level `o = ω↑↑k` (`towerO k`, `repr = ω↑↑k`), for every `k`, unconditionally and machine-checked.
-Since `sup_k ω↑↑k = ε₀`, this is Cichoń's lower bound at a cofinal family of levels below `ε₀` —
-"`goodsteinLength` grows like `f_{ε₀}`".
-
-The proof rests on two general engines, each subsuming its per-level predecessors:
-
-1. **The general length bootstrap** `two_mul_le_goodsteinLength_iter`:
-   `goodsteinLength ((log₂)^[k] m) ≥ 2m` for every `k`. The key realization is that the *already
-   proved* `o = ω` domination is strong enough at every depth — no `f_{ω^ω}`-strength bound at the
-   deep seed is needed. What carries it is the clean finite-level **tower lower bound**
-   `towerN_le_fastGrowing`: `f_{k+2}(t) ≥ towerN (k+1) (t+1)` (an `(k+1)`-fold iterated
-   exponential), proved by induction on `k`. Composed with `f_ω(t) = f_{t+1}(t) ≥ f_{k+2}(t)`
-   (index monotonicity) and the tower upper bound on `m` (`succ_le_towerN_log_iter`:
-   `m + 1 ≤ towerN k ((log₂)^[k] m + 1)`), the `f_ω` length bound clears `2m` at every depth. This
-   subsumes `two_mul_le_goodsteinLength_log` (k=1) and `two_mul_le_goodsteinLength_loglog` (k=2).
-
-2. **The general ordinal bridge** `omegaTower_succ_le_seqONote_repr`: if the descent's `k`-fold
-   leading exponent is in the large regime (`base i ≤ (log_{base i})^[k] (G_i)`), then the descent
-   ordinal dominates `ω↑↑(k+1)`. Pure `toOrdinal` induction (`omegaTower_le_toOrdinal`), peeling one
-   `Nat.log` per step. This subsumes `omega_omega_le_seqONote_repr` (k=1) and
-   `omega_pow_omega_le_seqONote_repr` (k=2).
-
-The crux at step `i = m − 2` is discharged by the self-similarity tower `iterLeadExp_dominates`
-(read at a fixed index via `logSeq_iterate_apply`) feeding `n_le_goodsteinSeq` the bootstrap length
-bound. Everything below is unconditional; the unconditional closures carry the finite-base-case
-`native_decide` axioms (documented split) inherited through the `f_ω` bootstrap.
+Generalizes the individual limit-level bounds (from `BaseCases.lean`) to EVERY ω-power-tower
+level `o = ω↑↑k` for `k ≥ 1`, forming a cofinal family in `ε₀`. The proof uses two general
+engines: (1) the iterated-exponential length bootstrap `two_mul_le_goodsteinLength_iter` powered
+by the `f_ω` domination; (2) the general ordinal bridge `omegaTower_le_toOrdinal` via iterated
+logarithms. Together they close the entire tower at once, unconditionally.
 -/
 
 
@@ -312,19 +288,8 @@ lemma logSeq_iterate_apply (a : ℕ → ℕ) (k i : ℕ) :
 
 /-! ## The general diagonal domination — Cichoń's lower bound up to ε₀ -/
 
-/-- **THE GENERAL DIAGONAL DOMINATION — UNCONDITIONAL.** For every `k`, with the `k`-fold log seed
-`(log₂)^[k] m ≥ 2^16` (and `≥ k+1`), `fastGrowing (towerO k) m ≤ goodsteinLength m + 2`, where
-`towerO k` has `repr = ω↑↑k`. This is Cichoń's lower bound at EVERY ω-power-tower level:
-`k = 1` is `o = ω`, `k = 2` is `o = ω^ω`, `k = 3` is `o = ω^{ω^ω}`, …, and `sup_k ω↑↑k = ε₀`. One
-general theorem subsuming all the per-level closures of `DominationOmega.lean`.
-
-Assembly: the general length bootstrap (`two_mul_le_goodsteinLength_iter`) feeds `n_le_goodsteinSeq`
-to keep the seed-`((log₂)^[k] m)` value `≥ m` at step `i = m−2`; the self-similarity tower
-(`iterLeadExp_dominates`, read at index `i` via `logSeq_iterate_apply`) lifts that to the `k`-fold
-leading exponent of the genuine descent being `≥ base i = m`; the general ordinal bridge
-(`omegaTower_succ_le_seqONote_repr`) turns that into `ω↑↑(k+1) ≤ descent`; and the diagonal reduction
-`goodstein_dominates_of_index_le` (budget `m`) closes it. Carries the finite-base-case
-`native_decide` axioms (documented split), inherited via the `f_ω` length bootstrap. -/
+/-- General diagonal domination at ω-tower levels: `fastGrowing o m ≤ goodsteinLength m + 2`
+for every NF `o` with `repr o ≤ ω↑↑k`. -/
 lemma fastGrowing_le_goodsteinLength_of_repr_le_tower {o : ONote} (ho : o.NF) {m k : ℕ}
     (ht : 2 ^ 16 ≤ (Nat.log 2)^[k] m) (hk : k + 1 ≤ (Nat.log 2)^[k] m)
     (hrepr : o.repr ≤ omegaTower k) (hnorm : norm o ≤ m) :
@@ -354,11 +319,7 @@ lemma fastGrowing_le_goodsteinLength_of_repr_le_tower {o : ONote} (ho : o.NF) {m
   have hgl : i ≤ goodsteinLength m := le_trans (by omega) (le_goodsteinLength m)
   exact goodstein_dominates_of_index_le ho hgl (by omega) (by omega) hidx
 
-/-- **Tower-level diagonal domination** (the special case `o = towerO k`, `repr = ω↑↑k`): for every
-`k`, `fastGrowing (towerO k) m ≤ goodsteinLength m + 2`. `k = 1` is `o = ω`, `k = 2` is `o = ω^ω`,
-`k = 3` is `o = ω^{ω^ω}`, …, with `sup_k ω↑↑k = ε₀`. Subsumes the per-level closures of
-`DominationOmega.lean`. Immediate corollary of `fastGrowing_le_goodsteinLength_of_repr_le_tower`
-(`repr (towerO k) = ω↑↑k`, `norm (towerO k) = 1 ≤ m`). -/
+/-- Tower-level diagonal domination: `fastGrowing (towerO k) m ≤ goodsteinLength m + 2` for every `k`. -/
 lemma fastGrowing_towerO_le_goodsteinLength {m k : ℕ}
     (ht : 2 ^ 16 ≤ (Nat.log 2)^[k] m) (hk : k + 1 ≤ (Nat.log 2)^[k] m) :
     fastGrowing (towerO k) m ≤ goodsteinLength m + 2 := by
@@ -379,36 +340,20 @@ lemma threshold_le_iterLog (k N m : ℕ) (hm : towerN k N ≤ m) : N ≤ (Nat.lo
     rw [towerN_succ] at hm
     exact ih (Nat.log 2 m) (Nat.le_log_of_pow_le Nat.one_lt_two hm)
 
-/-- **Explicit-threshold form of the general diagonal domination.** For every `k` and every
-`m ≥ towerN k (2^16 + k)` (a tower of height `k` over `2^16 + k`),
-`fastGrowing (towerO k) m ≤ goodsteinLength m + 2`. The single threshold supplies both hypotheses of
-`fastGrowing_towerO_le_goodsteinLength` (`2^16 ≤ (log₂)^[k] m` and `k+1 ≤ (log₂)^[k] m`). -/
+/-- Explicit threshold form: for `m ≥ towerN k (2^16 + k)`, `fastGrowing (towerO k) m ≤ goodsteinLength m + 2`. -/
 lemma goodsteinLength_dominates_fastGrowing_towerO {m k : ℕ}
     (hm : towerN k (2 ^ 16 + k) ≤ m) :
     fastGrowing (towerO k) m ≤ goodsteinLength m + 2 := by
   have h := threshold_le_iterLog k (2 ^ 16 + k) m hm
   exact fastGrowing_towerO_le_goodsteinLength (by omega) (by omega)
 
-/-- **THE ε₀ HEADLINE.** For every ω-power-tower level `k`, `goodsteinLength` eventually dominates
-`f_{ω↑↑k}`: there is a threshold `N` (namely `towerN k (2^16 + k)`) past which
-`fastGrowing (towerO k) m ≤ goodsteinLength m + 2`. Since `{ω↑↑k}` is cofinal in `ε₀`, this is
-Cichoń's lower bound `goodsteinLength m + 2 ≥ f_o(m)` (eventually) for a family of `o` cofinal below
-`ε₀` — the expedition's destination, fully machine-checked and unconditional. -/
+/-- For every ω-tower level `k`, `goodsteinLength` eventually dominates `f_{ω↑↑k}`. -/
 lemma goodsteinLength_eventually_dominates_fastGrowing_towerO (k : ℕ) :
     ∃ N, ∀ m, N ≤ m → fastGrowing (towerO k) m ≤ goodsteinLength m + 2 :=
   ⟨towerN k (2 ^ 16 + k), fun _ hm => goodsteinLength_dominates_fastGrowing_towerO hm⟩
 
-/-- **THE FULL ε₀ HEADLINE — Cichoń's lower bound for every `o < ε₀`.** For EVERY normal-form
-`ONote` `o` (every ordinal `< ε₀`), `goodsteinLength` eventually dominates `f_o`: there is a threshold
-`N` past which `fastGrowing o m ≤ goodsteinLength m + 2`. This is the complete diagonal lower bound —
-not merely along the tower spine `ω↑↑k`, but at *every* ordinal below `ε₀` —
-unconditional and machine-checked.
-
-Proof: `exists_repr_lt_omegaTower` places `o` below some tower level `ω↑↑k` (cofinality of the tower
-in `ε₀`); the threshold `N = max (towerN k (2^16+k)) (norm o)` supplies the deep-seed bound and the
-budget `norm o ≤ m`; then `fastGrowing_le_goodsteinLength_of_repr_le_tower` (whose descent dominates
-`ω↑↑(k+1) ≥ ω^{repr o}`) closes it. Carries the finite-base-case `native_decide` axioms (documented
-split), inherited via the `f_ω` length bootstrap. -/
+/-- Cichoń's lower bound for every ordinal `< ε₀`: for every NF `ONote` `o`, `goodsteinLength`
+eventually dominates `f_o`. -/
 theorem goodsteinLength_eventually_dominates_fastGrowing {o : ONote} (ho : o.NF) :
     ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2 := by
   obtain ⟨k, hk⟩ := exists_repr_lt_omegaTower o ho
@@ -481,10 +426,7 @@ theorem goodsteinLength_dominates_fastGrowing {o : ONote} (ho : o.NF) :
     ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2 :=
   goodsteinLength_eventually_dominates_fastGrowing ho
 
-/-- **`towerO` IS mathlib's `ε₀` fundamental sequence.** The iterate `(a ↦ ω^a)` from `0` that defines
-`fastGrowingε₀` (mathlib's one-step extension to `ε₀`) is exactly our `towerO`:
-`(fun a => oadd a 1 0)^[k+1] 0 = towerO k`. Faithfulness anchor: the tower domination really targets
-the genuine `ε₀` hierarchy `ω, ω^ω, ω^{ω^ω}, …`. -/
+/-- `towerO` is mathlib's `ε₀` fundamental sequence: `(fun a => oadd a 1 0)^[k+1] 0 = towerO k`. -/
 lemma iterate_oadd_eq_towerO (k : ℕ) : (fun a => ONote.oadd a 1 0)^[k + 1] 0 = towerO k := by
   induction k with
   | zero => rfl
@@ -492,35 +434,18 @@ lemma iterate_oadd_eq_towerO (k : ℕ) : (fun a => ONote.oadd a 1 0)^[k + 1] 0 =
     rw [Function.iterate_succ_apply', ih]
     rfl
 
-/-- Consequently `fastGrowingε₀ (k+1) = fastGrowing (towerO k) (k+1)`: mathlib's `ε₀`-level function
-is the diagonal over our tower. (Its *level* `k` grows with the argument, so this diagonal is genuinely
-`ε₀`-fast and is NOT what the per-level headline dominates — the headline dominates each *fixed* `f_o`,
-the faithful reading of "tracks `f_{ε₀}`".) -/
+/-- `fastGrowingε₀ (k+1) = fastGrowing (towerO k) (k+1)`: mathlib's `ε₀`-level function is the diagonal. -/
 lemma fastGrowingε₀_eq_towerO (k : ℕ) :
     ONote.fastGrowingε₀ (k + 1) = fastGrowing (towerO k) (k + 1) := by
   rw [ONote.fastGrowingε₀, iterate_oadd_eq_towerO]
 
-/-- **The matching UPPER bound.** `goodsteinLength m + 2 ≤ f_{o_m}(2)`, where `o_m = seqONote m 0` is
-the base-2 ordinal of `m` (`= toONote 2 m`). Immediate from the Cichoń identity
-`goodsteinLength m + 2 = H_{o_m}(2)` (`hardy_seqONote_zero`) and `hardy_le_fastGrowing` (Hardy ≤
-fast-growing at the same index). Together with `goodsteinLength_dominates_fastGrowing` this squeezes
-`goodsteinLength` inside the fast-growing hierarchy at the `ε₀` frontier — the two-sided "grows like
-`f_{ε₀}`": from below it eventually beats every fixed `f_o` (`o < ε₀`); from above it never exceeds
-`f` at its own ordinal `o_m < ε₀` (argument `2`). -/
+/-- Upper bound: `goodsteinLength m + 2 ≤ f_{o_m}(2)` where `o_m = seqONote m 0`. -/
 theorem goodsteinLength_le_fastGrowing_ordinal (m : ℕ) :
     goodsteinLength m + 2 ≤ fastGrowing (seqONote m 0) 2 := by
   rw [← hardy_seqONote_zero m]
   exact hardy_le_fastGrowing (seqONote m 0) 2 (by norm_num)
 
-/-- **THE TWO-SIDED CAPSTONE — "`goodsteinLength` grows like `f_{ε₀}`".** Packaging both directions as
-the single definitive audit surface: for every `o < ε₀` (every NF `ONote`),
-* **(lower)** `goodsteinLength` eventually dominates `f_o`: `∃ N, ∀ m ≥ N, f_o(m) ≤ goodsteinLength m + 2`;
-* **(upper)** `goodsteinLength` never exceeds `f` at its own base-2 ordinal: `goodsteinLength m + 2 ≤
-  f_{o_m}(2)` for all `m`.
-So `goodsteinLength` sits exactly within the fast-growing hierarchy at the `ε₀` frontier — the formal
-"Goodstein grows too fast for PA" (every PA-provably-total function is some `f_o`, `o < ε₀`; all are
-eventually dominated). The exact Hardy pin is `hardy_seqONote_zero` (Cichoń) + `hardy_omega_pow_ofNat`
-(`H_{ω^k}=f_k`). -/
+/-- Two-sided bound: `goodsteinLength` grows like `f_{ε₀}` (lower and upper). -/
 theorem goodsteinLength_grows_like_fastGrowingε₀ :
     (∀ (o : ONote), o.NF → ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2)
     ∧ (∀ m, goodsteinLength m + 2 ≤ fastGrowing (seqONote m 0) 2) :=
