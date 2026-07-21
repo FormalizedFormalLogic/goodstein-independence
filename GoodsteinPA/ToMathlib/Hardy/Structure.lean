@@ -83,12 +83,11 @@ lemma hstep_def {o : ONote} {x} (e : fundamentalSequence o = x) :
   subst x; rw [hstep]
 
 /-- `hstep o = fun _ => a` when `o` is the successor of `a`. -/
-lemma hstep_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) :
-    hstep o = fun _ => a := by rw [hstep_def h]
+lemma hstep_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) : hstep o = fun _ => a := by rw [hstep_def h]
 
 /-- `hstep o = fun n => hstep (o[n]) n` when `o` is a limit with fundamental sequence `f`. -/
-lemma hstep_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) :
-    hstep o = fun n => hstep (f n) n := by rw [hstep_def h]
+lemma hstep_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) : hstep o = fun n => hstep (f n) n := by rw [hstep_def h]
+
 
 /-- **Intrinsic Hardy step invariant:** For a nonzero notation, `H_o(n) = H_{hstep o n}(n+1)`. -/
 theorem hardy_hstep (o : ONote) (n : ℕ) (h : o ≠ 0) : hardy o n = hardy (hstep o n) (n + 1) := by
