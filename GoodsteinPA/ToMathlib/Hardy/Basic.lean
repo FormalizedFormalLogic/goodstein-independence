@@ -63,16 +63,19 @@ lemma hardy_def {o : ONote} {x} (e : fundamentalSequence o = x) :
   rw [hardy]
 
 /-- `H_o = id` when `o = 0` (the `inl none` branch). -/
+@[grind =]
 lemma hardy_zero' (o : ONote) (h : fundamentalSequence o = Sum.inl none) :
     hardy o = id := by
   rw [hardy_def h]
 
 /-- `H_o(n) = H_a(n+1)` when `o` is the successor of `a`. -/
+@[grind =>]
 lemma hardy_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) :
     hardy o = fun n => hardy a (n + 1) := by
   rw [hardy_def h]
 
 /-- `H_o(n) = H_{o[n]}(n)` when `o` is a limit with fundamental sequence `f`. -/
+@[grind =>]
 lemma hardy_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) :
     hardy o = fun n => hardy (f n) n := by
   rw [hardy_def h]
@@ -83,10 +86,12 @@ lemma hardy_zero : hardy 0 = id :=
   hardy_zero' _ rfl
 
 /-- `H₁(n) = n + 1` — the first successor level just adds one. -/
+@[simp, grind =]
 lemma hardy_one : hardy 1 = fun n => n + 1 := by
   rw [@hardy_succ 1 0 rfl]; funext n; rw [hardy_zero]; rfl
 
 /-- `H₂(n) = n + 2`. -/
+@[simp, grind =]
 lemma hardy_two : hardy 2 = fun n => n + 2 := by
   rw [@hardy_succ 2 1 rfl]; funext n; rw [hardy_one]
 
@@ -105,21 +110,21 @@ theorem le_hardy (o : ONote) (n : ℕ) : n ≤ hardy o n := by
 termination_by o
 decreasing_by all_goals exact hlt
 
-/-- **Value transfer for the Hardy hierarchy:** If `β` structurally reaches `α` at budget `x` and every notation `β` reaches has monotone Hardy level, then `H_α(x) ≤ H_β(x)`. -/
-theorem hardy_le_of_reaches {x : ℕ} {β α : ONote} (h : Reaches x β α) :
-    (∀ γ, Reaches x β γ → Monotone (hardy γ)) → hardy α x ≤ hardy β x := by
+/-- **Value transfer for the Hardy hierarchy:** If `b` structurally reaches `a` at budget `x` and every notation `b` reaches has monotone Hardy level, then `H_a(x) ≤ H_b(x)`. -/
+theorem hardy_le_of_reaches {x : ℕ} {b a : ONote} (h : Reaches x b a) :
+    (∀ γ, Reaches x b γ → Monotone (hardy γ)) → hardy a x ≤ hardy b x := by
   induction h with
   | refl a => intro _; exact le_rfl
-  | @succ β γ α hb _ ih =>
+  | @succ b γ a hb _ ih =>
       intro hmono
       have hmγ : Monotone (hardy γ) := hmono γ (Reaches.succ hb (Reaches.refl γ))
-      have ihγ : hardy α x ≤ hardy γ x := ih (fun δ hδ => hmono δ (Reaches.succ hb hδ))
-      have heq : hardy β x = hardy γ (x + 1) := by rw [hardy_succ _ hb]
-      rw [heq]; exact le_trans ihγ (hmγ (Nat.le_succ x))
-  | @limit β α g hb _ ih =>
+      have iha : hardy a x ≤ hardy γ x := ih (fun δ hδ => hmono δ (Reaches.succ hb hδ))
+      have heq : hardy b x = hardy γ (x + 1) := by rw [hardy_succ _ hb]
+      rw [heq]; exact le_trans iha (hmγ (Nat.le_succ x))
+  | @limit b a g hb _ ih =>
       intro hmono
-      have ihg : hardy α x ≤ hardy (g x) x := ih (fun δ hδ => hmono δ (Reaches.limit hb hδ))
-      have heq : hardy β x = hardy (g x) x := by rw [hardy_limit _ hb]
+      have ihg : hardy a x ≤ hardy (g x) x := ih (fun δ hδ => hmono δ (Reaches.limit hb hδ))
+      have heq : hardy b x = hardy (g x) x := by rw [hardy_limit _ hb]
       rw [heq]; exact ihg
 
 /-- **Monotonicity in the argument** of each Hardy level, for every notation `o`. -/
@@ -147,43 +152,44 @@ decreasing_by
   · exact hγo
 
 /-- **Monotonicity in the argument, successor form** `H_o(n) ≤ H_o(n+1)`. -/
+@[grind .]
 lemma hardy_le_succ (o : ONote) (n : ℕ) : hardy o n ≤ hardy o (n + 1) :=
   hardy_monotone o (Nat.le_succ n)
 
 /-! ### Hardy argument-shift
 
-`H_{α+c}(n) = H_α(n+c)` for finite `c`.
+`H_{a+c}(n) = H_a(n+c)` for finite `c`.
 -/
 
-private lemma add_ofNat_zero {α : ONote} (hα : α.NF) : α + ofNat 0 = α := by
-  haveI := hα
+private lemma add_ofNat_zero {a : ONote} (ha : a.NF) : a + ofNat 0 = a := by
+  haveI := ha
   haveI : (0 : ONote).NF := NF.zero
   rw [ofNat_zero]
-  haveI : (α + 0).NF := ONote.add_nf α 0
+  haveI : (a + 0).NF := ONote.add_nf a 0
   apply repr_inj.mp
   rw [repr_add, repr_zero, add_zero]
 
-private lemma add_ofNat_succ {α : ONote} (hα : α.NF) (c : ℕ) :
-    α + ofNat (c + 1) = osucc (α + ofNat c) := by
-  haveI := hα
-  haveI hac : (α + ofNat c).NF := ONote.add_nf α (ofNat c)
-  haveI : (α + ofNat (c + 1)).NF := ONote.add_nf α (ofNat (c + 1))
-  haveI : (osucc (α + ofNat c)).NF := osucc_NF hac
+private lemma add_ofNat_succ {a : ONote} (ha : a.NF) (c : ℕ) :
+    a + ofNat (c + 1) = osucc (a + ofNat c) := by
+  haveI := ha
+  haveI hac : (a + ofNat c).NF := ONote.add_nf a (ofNat c)
+  haveI : (a + ofNat (c + 1)).NF := ONote.add_nf a (ofNat (c + 1))
+  haveI : (osucc (a + ofNat c)).NF := osucc_NF hac
   apply repr_inj.mp
   rw [repr_osucc hac, repr_add, repr_add, repr_ofNat, repr_ofNat,
     Nat.cast_add, Nat.cast_one, ← add_assoc]
 
-/-- **Hardy argument-shift / finite-tail additivity:** `H_{α+c}(n) = H_α(n+c)`. -/
-theorem hardy_add_ofNat {α : ONote} (hα : α.NF) (c n : ℕ) :
-    hardy (α + ofNat c) n = hardy α (n + c) := by
+/-- **Hardy argument-shift / finite-tail additivity:** `H_{a+c}(n) = H_a(n+c)`. -/
+theorem hardy_add_ofNat {a : ONote} (ha : a.NF) (c n : ℕ) :
+    hardy (a + ofNat c) n = hardy a (n + c) := by
   induction c generalizing n with
-  | zero => rw [add_ofNat_zero hα]; simp
+  | zero => rw [add_ofNat_zero ha]; simp
   | succ c ih =>
-    rw [add_ofNat_succ hα c]
-    have hs := hardy_succ (osucc (α + ofNat c))
-      (fundamentalSequence_osucc (ONote.add_nf α (ofNat c)))
+    rw [add_ofNat_succ ha c]
+    have hs := hardy_succ (osucc (a + ofNat c))
+      (fundamentalSequence_osucc (ONote.add_nf a (ofNat c)))
     rw [hs]
-    show hardy (α + ofNat c) (n + 1) = hardy α (n + (c + 1))
+    show hardy (a + ofNat c) (n + 1) = hardy a (n + (c + 1))
     rw [ih (n + 1)]
     congr 1
     omega
@@ -203,6 +209,7 @@ lemma hardy_ofNat_monotone (k : ℕ) : Monotone (hardy (ofNat k)) := by
       exact ih.comp (monotone_id.add_const 1)
 
 /-- **Finite-level index monotonicity for Hardy:** For `m ≤ n`, `H_m(x) ≤ H_n(x)`. -/
+@[grind .]
 lemma hardy_ofNat_mono {m n : ℕ} (hmn : m ≤ n) (x : ℕ) :
     hardy (ofNat m) x ≤ hardy (ofNat n) x := by
   induction n, hmn using Nat.le_induction with
@@ -221,12 +228,13 @@ lemma hardy_monotone_omega : Monotone (hardy (oadd 1 1 0)) := by
       ≤ hardy (ofNat (n + 1)) (n + 1) := hardy_ofNat_monotone (n + 1) (Nat.le_succ n)
     _ ≤ hardy (ofNat (n + 2)) (n + 1) := hardy_ofNat_mono (Nat.le_succ (n + 1)) (n + 1)
 
-/-- **General index monotonicity of the Hardy hierarchy:** For normal-form `α < β` and budget `x ≥ norm α`, `H_α(x) ≤ H_β(x)`. -/
-theorem hardy_le_of_lt {x : ℕ} {α β : ONote} (hα : α.NF) (hβ : β.NF)
-  (hαβ : α < β) (hnorm : norm α ≤ x) : hardy α x ≤ hardy β x :=
-  hardy_le_of_reaches (reaches_of_lt β hβ α hα hαβ hnorm) (fun γ _ => hardy_monotone γ)
+/-- **General index monotonicity of the Hardy hierarchy:** For normal-form `a < b` and budget `x ≥ norm a`, `H_a(x) ≤ H_b(x)`. -/
+theorem hardy_le_of_lt {x : ℕ} {a b : ONote} (ha : a.NF) (hb : b.NF)
+  (hab : a < b) (hnorm : norm a ≤ x) : hardy a x ≤ hardy b x :=
+  hardy_le_of_reaches (reaches_of_lt b hb a ha hab hnorm) (fun γ _ => hardy_monotone γ)
 
 /-- **Closed form for finite Hardy levels:** `H_k(x) = x + k`. -/
+@[simp, grind =]
 lemma hardy_ofNat (k x : ℕ) : hardy (ofNat k) x = x + k := by
   induction k generalizing x with
   | zero => simp
