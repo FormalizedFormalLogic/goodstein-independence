@@ -5,11 +5,10 @@ public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 @[expose] public section
 
 /-!
-# 2b growth conversion — `ewIter` → `hardy` majorization (lap 207 start)
+# `ewIter` → `hardy` majorization
 
-The route-(c) splice's LAST piece: dominate the read-off's master bound
-`ewIter S γ (S (max m C))` by `fastGrowing o` at ONE fixed NF `o`, eventually.  Design
-(PENDING_WORK lap-207 2b analysis):
+Dominate the read-off's master bound `ewIter S γ (S (max m C))` by `fastGrowing o` at ONE
+fixed NF `o`, eventually.
 
 * the naive Nlog-gated hardy ordinal-monotonicity is FALSE (coefficient `2^x` vs argument `x`);
   the banked `hardy_le_of_lt` gates on the LINEAR `norm`;
@@ -18,8 +17,6 @@ The route-(c) splice's LAST piece: dominate the read-off's master bound
   keeps the argument pre-inflated past that;
 * per level the two-fold branch composes by `hardy_add_comp` (EXACT when no absorption) and
   the ordinal assignment `g α ≈ h·ω^(1+α)` leaves room: `g β · 2 + corrections < g α`.
-
-This file banks the majorization prerequisites, starting with THE bridge.
 -/
 
 namespace ONote
@@ -136,7 +133,7 @@ theorem hardy_step {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hα' : α
   exact hardy_step_raise hβ' he' hα' hlt hβα hnorm
 
 
-/-! ## Argument super-additivity of `hardy` (lap 208)
+/-! ## Argument super-additivity of `hardy`
 
 `H_o(n) + c ≤ H_o(n + c)` — the commuting engine that pushes the branch's additive
 `Nlog β + ·` costs INSIDE the composed Hardy stack (so all principal applications
@@ -260,9 +257,9 @@ theorem stepOrd3_lt_Wpow {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF)
         simp
 
 
-/-! ## THE MASTER MAJORIZATION (lap 208) — `ewIter f α m ≤ H_{ω^{e'+1+α}}(H_{ω^{e'}}(Nlog α + m + p))`
+/-! ## THE MASTER MAJORIZATION — `ewIter f α m ≤ H_{ω^{e'+1+α}}(H_{ω^{e'}}(Nlog α + m + p))`
 
-The 2b growth-conversion crux.  Assignment exponent `g α := e' + 1 + α` (ONote add — strictly
+Assignment exponent `g α := e' + 1 + α` (ONote add — strictly
 monotone, always above the engine `e'`).  WF induction on `α`; the branch (a ball member
 `δ < α`, `Nlog δ ≤ K := f (Nlog α + m)`) pays:
 
@@ -425,7 +422,8 @@ From a plain Hardy domination `f ≤ H_{ω^{e₀}}` (`e₀ ≠ 0`, NF): the engi
 composition `H_{ω^{e₀+1}}∘H_{ω^{e₀}} = H_{ω^{e₀+1}+ω^{e₀}}`, and a final raise under
 `ω^{e₀+2}`.  All norm gates are `e₀`-constants absorbed by the pad `p`. -/
 
-/-- Closed form at `ω²`: `H_{ω²}(y) + 1 = 2^{y+1}·(y+1)` (finite B4 + `fastGrowing_two`). -/
+/-- Closed form at `ω²`: `H_{ω²}(y) + 1 = 2^{y+1}·(y+1)` (finite Hardy/fast-growing identity +
+`fastGrowing_two`). -/
 theorem hardy_omega_sq (y : ℕ) :
     hardy (oadd (ofNat 2) 1 0) y + 1 = 2 ^ (y + 1) * (y + 1) := by
   rw [hardy_omega_pow_ofNat 2 y, show (ofNat 2 : ONote) = 2 from rfl, fastGrowing_two]
@@ -613,7 +611,7 @@ theorem ewIter_hardy_le_of_dom_pad {f : ℕ → ℕ} {e₀ : ONote} {c : ℕ}
   exact ewIter_hardy_le hNFe2 (by omega)
     (hEng_of_dom_pad he₀ he₀0 hdom le_rfl) α hα m
 
-/-! ## `S*`-domination bricks (lap 209) — the concrete pipeline slot is padded-Hardy-dominable
+/-! ## `S*`-domination bricks — the concrete pipeline slot is padded-Hardy-dominable
 
 The read-off hands `n ≤ ewIter (Sslot (ewIterTower (rel1 (ewRootSlot e B) K) d α) P) α' (…)`.  To
 feed `ewIter_hardy_le_of_dom_pad`, the slot must be padded-dominated by a FIXED Hardy level.  These
@@ -800,7 +798,7 @@ theorem ewIterTower_dom_pad {g : ℕ → ℕ} {E : ONote} {c : ℕ} (hE : E.NF) 
 level/pad, carrying `E₀ < E` so the collapse stays ordered).  Mirror of `ewIterTower_dom_pad`:
 `G^[k+1] z = G^[k] (G z)`, the IH + `hardy_arg_add` absorb the pad, `hardy_double_collapse` +
 `Wpow_add_lt_Wpow_succ` fold the double Hardy back to a single level.  Instantiated at
-`G = Gexp = hardy (Wpow 2)` for the `P*` (`gvb`) half of the `S*`-domination (SERIES-4 S-2). -/
+`G = Gexp = hardy (Wpow 2)` for the `P*` (`gvb`) half of the `S*`-domination. -/
 theorem hardy_Wpow_iter_dom_pad (E₀ : ONote) (hE₀ : E₀.NF) :
     ∀ k, ∃ (E : ONote) (c : ℕ), E.NF ∧ E ≠ 0 ∧ E₀ < E ∧
       ∀ z, (hardy (Wpow E₀))^[k] z ≤ hardy (Wpow E) (z + c) := by
@@ -902,7 +900,7 @@ theorem dom_pad_max {f g : ℕ → ℕ} {E₁ E₂ : ONote} {c₁ c₂ : ℕ}
       (hardy_le_of_lt (Wpow_NF hE₂) (Wpow_NF hE) (Wpow_lt hlt₂) hgate₂))
   exact max_le hb₁ hb₂
 
-/-- **THE `S*`-domination** (SERIES-4 S-2 capstone) — the concrete pipeline slot
+/-- **THE `S*`-domination** — the concrete pipeline slot
 `S* z = max (ewIterTower (rel1 (ewRootSlot e m) K) d α z) (P z)` (`Sslot` unfolded; tower over
 the embedding's base root slot, `P` any `Gexp`-iterate-bounded value function — the
 `gvb_le_iter` shape, taken as a hypothesis because `gvb` lives in `wip/ReadoffValueGate.lean`)
@@ -1024,7 +1022,7 @@ theorem two_pow_le_hardy_Wpow2 (x : ℕ) : 2 ^ x ≤ hardy (Wpow (ofNat 2)) x :=
   rw [hexp] at h
   omega
 
-/-- **The `α'`-uniform level cap** (SERIES-4 S-3 brick).  The read-off hands a per-`m`
+/-- **The `α'`-uniform level cap.**  The read-off hands a per-`m`
 ordinal `α' ≤ γ` together with its `Nlog α'` certificate; the double-Hardy bound of
 `ewIter_hardy_le_of_dom_pad` then caps at the FIXED level `ω^{e₀+2+1+γ+1}`: the outer
 norm-gate `norm(ω^{e₀+2+1+α'}) ≤ normSum(e₀+2+1) + norm α' + 1` with `norm α' < 2^{Nlog α'+1}`
@@ -1148,10 +1146,8 @@ theorem ewIter_dom_pad_levelcap {f : ℕ → ℕ} {e₀ γ : ONote} {c : ℕ}
         _ < (e₀ + 2 + 1).repr + γ.repr + 1 := lt_add_one _))
     hgate)
 
-/-- **Padded Hardy eventually under ONE fastGrowing level** (SERIES-4 S-4 brick):
-`H_{ω^L}(m+C) < f_{osucc L}(m)` for `m ≥ C+3`.  Route: `hardy_omega_pow_lt_fastGrowing` into
-the successor level's iterate stack — each `f_L` application gains `≥ 1`, so `C+2` of them
-absorb the pad, and `monotone_iterate_of_id_le` climbs to the full `m`-stack. -/
+/-- **Padded Hardy eventually under ONE fastGrowing level:**
+`H_{ω^L}(m+C) < f_{osucc L}(m)` for `m ≥ C+3`. -/
 theorem hardy_pad_lt_fastGrowing_osucc (L : ONote) (hL : L.NF) (C : ℕ) :
     ∀ m, C + 3 ≤ m → hardy (Wpow L) (m + C) < fastGrowing (osucc L) m := by
   intro m hm
@@ -1223,13 +1219,10 @@ theorem two_mul_add_le_hardy_omega_sq {y q : ℕ} (hq : q ≤ y) (hy : 1 ≤ y) 
   have hmul : 4 * (y + 1) ≤ 2 ^ (y + 1) * (y + 1) := Nat.mul_le_mul_right _ h4
   omega
 
-/-- **THE MASTER CONVERSION** (SERIES-4 S-3 capstone, slot-abstract form).  Given ANY slot `S`
+/-- **THE MASTER CONVERSION** (slot-abstract form).  Given ANY slot `S`
 padded-Hardy-dominated and inflationary, ONE fixed `fastGrowing o` eventually dominates every
 value `n` the uniformized read-off produces: `n ≤ ewIter S α' (S (max K₀ m))` at any per-`m`
-`α' ≤ γ` carrying its `Nlog` certificate.  Chain: `ewIter_dom_pad_levelcap` (fixed level, α'
-absorbed) → the `Nlog` certificate + `two_mul_add_le_hardy_omega_sq` absorb the inner argument
-into `Gexp(S(max K₀ m))` (eventually, `m ≥ q`) → three `dom_pad_comp`s collapse the
-Hardy stack to ONE `H_{E₅}(m+c₅)` → `hardy_pad_lt_fastGrowing_osucc`. -/
+`α' ≤ γ` carrying its `Nlog` certificate. -/
 theorem master_conversion {S : ℕ → ℕ} {E_S γ : ONote} {c_S : ℕ}
     (hES : E_S.NF) (hES0 : E_S ≠ 0) (hγ : γ.NF)
     (hSdom : ∀ z, S z ≤ hardy (oadd E_S 1 0) (z + c_S))
