@@ -13,7 +13,7 @@ namespace ONote
 
 open ONote Ordinal
 
-variable {o a b α β γ : ONote} {f g : ℕ → ONote} {m n x : ℕ}
+variable {o a b : ONote} {f g : ℕ → ONote} {m n x : ℕ}
 
 /-
 # Growth theory of the fast-growing hierarchy
@@ -91,17 +91,17 @@ lemma fastGrowing_le_succ_index
   rw [fastGrowing_succ o h]
   simpa using (Function.monotone_iterate_of_id_le (id_le_fastGrowing a) hn) n
 
-/-- **Structural descent relation** `Reaches x β α`: from `β` one can step down to `α`
+/-- **Structural descent relation** `Reaches x p r`: from `p` one can step down to `r`
 through `fundamentalSequence`, using *predecessor* steps at successor notations and
 *index-`x`* steps at limit notations. This is a purely structural (no `fastGrowing`)
 relation on `ONote`, and it is exactly the "Bachmann path" along which the fast-growing
 hierarchy is monotone in the index. -/
 inductive Reaches (x : ℕ) : ONote → ONote → Prop
   | refl (a : ONote) : Reaches x a a
-  | succ {β γ α : ONote} (h : fundamentalSequence β = Sum.inl (some γ))
-      (hr : Reaches x γ α) : Reaches x β α
-  | limit {β α : ONote} {g : ℕ → ONote} (h : fundamentalSequence β = Sum.inr g)
-      (hr : Reaches x (g x) α) : Reaches x β α
+  | succ {p q r : ONote} (h : fundamentalSequence p = Sum.inl (some q))
+      (hr : Reaches x q r) : Reaches x p r
+  | limit {p r : ONote} {g : ℕ → ONote} (h : fundamentalSequence p = Sum.inr g)
+      (hr : Reaches x (g x) r) : Reaches x p r
 
 /-- `Reaches x` is transitive (paths compose). -/
 lemma Reaches.trans {x : ℕ} {a b c : ONote} (h1 : Reaches x a b) (h2 : Reaches x b c) :
@@ -111,22 +111,23 @@ lemma Reaches.trans {x : ℕ} {a b c : ONote} (h1 : Reaches x a b) (h2 : Reaches
   | succ h _ ih => exact Reaches.succ h (ih h2)
   | limit h _ ih => exact Reaches.limit h (ih h2)
 
-/-- **Value transfer:** if `β` reaches `α` structurally with positive budget `x`,
-then `f_α(x) ≤ f_β(x)`. -/
+/-- **Value transfer:** if `p` reaches `r` structurally with positive budget `x`,
+then `f_r(x) ≤ f_p(x)`. -/
 theorem fastGrowing_le_of_reaches (hx : 1 ≤ x)
-    (h : Reaches x β α) : fastGrowing α x ≤ fastGrowing β x := by
+    (h : Reaches x p r) : fastGrowing r x ≤ fastGrowing p x := by
   induction h with
   | refl a => exact le_rfl
   | succ hb _ ih => exact le_trans ih (fastGrowing_le_succ_index hb hx)
   | limit hb _ ih => rw [fastGrowing_limit _ hb]; exact ih
 
-/-- A structural reach only goes *down* the ordinal order: `Reaches x β α → α ≤ β`. -/
-lemma reaches_le (h : Reaches x β α) : α ≤ β := by
+/-- A structural reach only goes *down* the ordinal order: `Reaches x p r → r ≤ p`. -/
+@[grind →]
+lemma reaches_le (h : Reaches x p r) : r ≤ p := by
   induction h with
   | refl a => exact le_rfl
-  | @succ β γ α hb _ ih =>
+  | @succ p q r hb _ ih =>
       exact le_trans ih (lt_of_fundamentalSequence_succ hb).le
-  | @limit β α g hb _ ih =>
+  | @limit p r g hb _ ih =>
       exact le_trans ih (fundamentalSequence_lt_of_limit hb x).le
 
 /-! ### Structural Bachmann reachability, fully proved
@@ -139,20 +140,28 @@ prefix's tail), `reaches_coeff_step'`/`reaches_coeff_chain` (drop a leading coef
 and `reaches_omega_pow_lift` (lift an exponent reach through `ω^·`). -/
 
 /-- Lifting a successor tail step to `oadd a m ·`. -/
+-- `@[grind =]` fails to find patterns since `b'`/`h` don't occur in the LHS pattern;
+-- `@[grind =>]` treats it as a forward implication instead.
+@[grind =>]
 lemma fundamentalSequence_oadd_succ {m : ℕ+} {b' : ONote}
     (h : fundamentalSequence b = Sum.inl (some b')) :
     fundamentalSequence (oadd a m b) = Sum.inl (some (oadd a m b')) := by
   conv_lhs => rw [fundamentalSequence]; rw [h]
 
 /-- Lifting a limit tail step to `oadd a m ·`. -/
+-- `@[grind =]` fails (same reason as `fundamentalSequence_oadd_succ`); use `@[grind =>]`.
+@[grind =>]
 lemma fundamentalSequence_oadd_limit {m : ℕ+} {h : ℕ → ONote}
     (hb : fundamentalSequence b = Sum.inr h) :
     fundamentalSequence (oadd a m b) = Sum.inr (fun i => oadd a m (h i)) := by
   conv_lhs => rw [fundamentalSequence]; rw [hb]
 
 /-- A structural reach on the tail lifts to the whole `oadd a m ·`. -/
-lemma Reaches.oadd_tail {m : ℕ+} {δ' δ : ONote}
-    (h : Reaches x δ' δ) : Reaches x (oadd a m δ') (oadd a m δ) := by
+-- `@[grind →]` fails to find a trigger pattern for the inductive `Reaches` hypothesis;
+-- `@[grind =>]` works instead.
+@[grind =>]
+lemma Reaches.oadd_tail {m : ℕ+} {d' d : ONote}
+    (h : Reaches x d' d) : Reaches x (oadd a m d') (oadd a m d) := by
   induction h with
   | refl c => exact Reaches.refl _
   | succ hb _ ih => exact Reaches.succ (fundamentalSequence_oadd_succ hb) ih
@@ -198,32 +207,37 @@ lemma reaches_coeff_chain (e : ONote) (j x : ℕ) :
   | succ j ih => exact (reaches_coeff_step' e j x).trans ih
 
 /-- Fundamental sequence of `ω^{successor exponent}`. -/
-lemma fundamentalSequence_omega_pow_succ {γ' δ : ONote}
-    (he : fundamentalSequence γ' = Sum.inl (some δ)) :
-    fundamentalSequence (oadd γ' 1 0) = Sum.inr (fun i => oadd δ i.succPNat 0) := by
+-- `@[grind =]` fails (same reason as `fundamentalSequence_oadd_succ`); use `@[grind =>]`.
+@[grind =>]
+lemma fundamentalSequence_omega_pow_succ {o a : ONote}
+    (he : fundamentalSequence o = Sum.inl (some a)) :
+    fundamentalSequence (oadd o 1 0) = Sum.inr (fun i => oadd a i.succPNat 0) := by
   conv_lhs => rw [fundamentalSequence]
   rw [he]; rfl
 
 /-- Fundamental sequence of `ω^{limit exponent}`. -/
-lemma fundamentalSequence_omega_pow_limit {γ' : ONote} {q : ℕ → ONote}
-    (he : fundamentalSequence γ' = Sum.inr q) :
-    fundamentalSequence (oadd γ' 1 0) = Sum.inr (fun i => oadd (q i) 1 0) := by
+-- `@[grind =]` fails (same reason as `fundamentalSequence_oadd_succ`); use `@[grind =>]`.
+@[grind =>]
+lemma fundamentalSequence_omega_pow_limit {o : ONote} {q : ℕ → ONote}
+    (he : fundamentalSequence o = Sum.inr q) :
+    fundamentalSequence (oadd o 1 0) = Sum.inr (fun i => oadd (q i) 1 0) := by
   conv_lhs => rw [fundamentalSequence]
   rw [he]; rfl
 
 /-- **Exponent lifting:** a structural reach on exponents lifts through `ω^·`. -/
-lemma reaches_omega_pow_lift {x : ℕ} {γ' γ : ONote}
-    (h : Reaches x γ' γ) : Reaches x (oadd γ' 1 0) (oadd γ 1 0) := by
+lemma reaches_omega_pow_lift {x : ℕ} {p r : ONote}
+    (h : Reaches x p r) : Reaches x (oadd p 1 0) (oadd r 1 0) := by
   induction h with
   | refl c => exact Reaches.refl _
-  | @succ β δ α hb _ ih =>
+  | @succ p q r hb _ ih =>
       refine Reaches.limit (fundamentalSequence_omega_pow_succ hb) ?_
-      exact (reaches_coeff_chain δ x x).trans ih
-  | @limit β α g hb _ ih =>
+      exact (reaches_coeff_chain q x x).trans ih
+  | @limit p r g hb _ ih =>
       exact Reaches.limit (fundamentalSequence_omega_pow_limit hb) ih
 
 /-- The fundamental sequence of a successor *natural-number* notation is its
 predecessor: `(k+1)[·] = k`. (Both branches reduce to `rfl`.) -/
+@[simp, grind =]
 lemma fundamentalSequence_ofNat_succ (k : ℕ) :
     fundamentalSequence (ofNat (k + 1)) = Sum.inl (some (ofNat k)) := by
   cases k with
