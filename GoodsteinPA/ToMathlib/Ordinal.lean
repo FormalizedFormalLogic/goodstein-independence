@@ -41,44 +41,43 @@ lemma iSup_add_add_one_add_one_le :
     _ ≤ α + ((⨆ m, f m) + 1) := (add_le_add_iff_left α).mpr (add_le_add_left (Ordinal.le_iSup f n) 1)
 
 /-- `1 < ω^(a+1)` for any ordinal `a`. -/
-lemma one_lt_opow_succ : (1 : Ordinal) < ω ^ (a + 1) := by
-  calc (1 : Ordinal) < ω := one_lt_omega0
+lemma one_lt_opow_succ : 1 < ω ^ (a + 1) := by
+  calc 1 < ω := one_lt_omega0
     _ = ω ^ (1 : Ordinal) := (opow_one _).symm
     _ ≤ ω ^ (a + 1) := opow_le_opow_right omega0_pos (CanonicallyOrderedAdd.le_add_self 1 a)
 
 /-- Any `x ≤ max (ω^a) (ω^b)` is bounded by `ω^(max a b + 1)`. -/
 lemma opow_lt_opow_succ_of_le_max {a b x : Ordinal}
-    (hx : x ≤ max (ω ^ a) (ω ^ b)) : x < ω ^ (max a b + 1) := by
-  refine lt_of_le_of_lt hx (max_lt ?_ ?_)
-  · exact (opow_lt_opow_iff_right one_lt_omega0).mpr
-      (lt_of_le_of_lt (le_max_left a b) (lt_add_of_pos_right _ one_pos))
-  · exact (opow_lt_opow_iff_right one_lt_omega0).mpr
-      (lt_of_le_of_lt (le_max_right a b) (lt_add_of_pos_right _ one_pos))
+    (hx : x ≤ max (ω ^ a) (ω ^ b)) : x < ω ^ (max a b + 1) :=
+  hx.trans_lt (max_lt
+    ((opow_lt_opow_iff_right one_lt_omega0).mpr
+      ((le_max_left a b).trans_lt (lt_add_of_pos_right _ one_pos)))
+    ((opow_lt_opow_iff_right one_lt_omega0).mpr
+      ((le_max_right a b).trans_lt (lt_add_of_pos_right _ one_pos))))
 
 /-- `max (ω^a) (ω^b) + 1 ≤ ω^(max a b + 1)`. -/
 lemma max_opow_add_one_le :
     max (ω ^ a) (ω ^ b) + 1 ≤ ω ^ (max a b + 1) :=
-  le_of_lt (isPrincipal_add_omega0_opow _ (opow_lt_opow_succ_of_le_max le_rfl) (one_lt_opow_succ _))
+  (isPrincipal_add_omega0_opow _ (opow_lt_opow_succ_of_le_max le_rfl) (one_lt_opow_succ _)).le
 
 /-- `max (ω^a) (ω^b) + 1 + 1 ≤ ω^(max a b + 1)`. -/
 lemma max_opow_add_two_le :
     max (ω ^ a) (ω ^ b) + 1 + 1 ≤ ω ^ (max a b + 1) := by
   have hP := isPrincipal_add_omega0_opow (max a b + 1)
-  exact le_of_lt (hP (hP (opow_lt_opow_succ_of_le_max le_rfl) (one_lt_opow_succ _))
-    (one_lt_opow_succ _))
+  exact (hP (hP (opow_lt_opow_succ_of_le_max le_rfl) (one_lt_opow_succ _)) (one_lt_opow_succ _)).le
 
 /-- `ω^a + ω^b + 1 ≤ ω^(max a b + 1)`. -/
 lemma opow_add_opow_add_one_le :
     ω ^ a + ω ^ b + 1 ≤ ω ^ (max a b + 1) := by
   have hP := isPrincipal_add_omega0_opow (max a b + 1)
-  exact le_of_lt (hP (hP (opow_lt_opow_succ_of_le_max (le_max_left _ _))
-    (opow_lt_opow_succ_of_le_max (le_max_right _ _))) (one_lt_opow_succ _))
+  exact (hP (hP (opow_lt_opow_succ_of_le_max (le_max_left _ _))
+    (opow_lt_opow_succ_of_le_max (le_max_right _ _))) (one_lt_opow_succ _)).le
 
 /-- `ω^a + 1 ≤ ω^(a+1)`. -/
 lemma opow_add_one_le' : ω ^ a + 1 ≤ ω ^ (a + 1) := by
   have hP := isPrincipal_add_omega0_opow (a + 1)
-  exact le_of_lt (hP ((opow_lt_opow_iff_right one_lt_omega0).mpr
-    (lt_add_of_pos_right _ one_pos)) (one_lt_opow_succ _))
+  exact (hP ((opow_lt_opow_iff_right one_lt_omega0).mpr
+    (lt_add_of_pos_right _ one_pos)) (one_lt_opow_succ _)).le
 
 /-- `(⨆ n, ω^(f n)) + 1 ≤ ω^((⨆ n, f n) + 1)`. -/
 lemma sup_opow_add_one_le :
@@ -87,7 +86,7 @@ lemma sup_opow_add_one_le :
     Ordinal.iSup_le fun n => opow_le_opow_right omega0_pos (Ordinal.le_iSup f n)
   have hlt : ω ^ (⨆ n, f n) < ω ^ ((⨆ n, f n) + 1) :=
     (opow_lt_opow_iff_right one_lt_omega0).mpr (lt_add_of_pos_right _ one_pos)
-  exact le_of_lt (isPrincipal_add_omega0_opow _ (lt_of_le_of_lt hsup hlt) (one_lt_opow_succ _))
+  exact (isPrincipal_add_omega0_opow _ (hsup.trans_lt hlt) (one_lt_opow_succ _)).le
 
 /-- `ε₀` is closed under `ω^·`. -/
 @[grind →]
