@@ -64,13 +64,13 @@ then raises to `H_{ω^α'}(z)` by the LINEAR-norm-gated `hardy_le_of_lt` — the
 by the pre-inflated seed via the bridge above. -/
 
 /-- `ω^x` as a notation. -/
-noncomputable def Wpow (x : ONote) : ONote := oadd x 1 0
+def Wpow (x : ONote) : ONote := oadd x 1 0
 
 theorem Wpow_NF {x : ONote} (hx : x.NF) : (Wpow x).NF :=
   NF.oadd hx 1 NFBelow.zero
 
 /-- The ONote sum `ω^β'·2 + ω^e'` in normal form. -/
-noncomputable def stepOrd (β' e' : ONote) : ONote := oadd β' 2 (Wpow e')
+def stepOrd (β' e' : ONote) : ONote := oadd β' 2 (Wpow e')
 
 theorem stepOrd_NF {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hlt : e' < β') :
     (stepOrd β' e').NF :=
@@ -231,7 +231,7 @@ middle engine) over one innermost engine: `H_{ω^β'}³(H_{ω^e'}(z)) = H_{ω^β
 then the composed ordinal raises under `ω^α'` exactly as in `hardy_step_raise`. -/
 
 /-- `ω^β'·3 + ω^e'` in normal form. -/
-noncomputable def stepOrd3 (β' e' : ONote) : ONote := oadd β' 3 (Wpow e')
+def stepOrd3 (β' e' : ONote) : ONote := oadd β' 3 (Wpow e')
 
 theorem stepOrd3_NF {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hlt : e' < β') :
     (stepOrd3 β' e').NF :=
