@@ -523,11 +523,10 @@ noncomputable def ewStep (f : ℕ → ℕ) (α : ONote) (rec : (β : ONote) → 
       apply Finset.image_nonempty.mpr
       refine ⟨⟨0, ?_⟩, by simp⟩
       simp only [Finset.mem_filter]
-      constructor
+      and_intros
       · exact mem_NlogBall.mpr ⟨NF.zero, Nat.zero_le _⟩
-      · constructor
-        · exact pos_of_ne_zero hα
-        · exact Nat.zero_le _)
+      · exact pos_of_ne_zero hα
+      · exact Nat.zero_le _)
 
 noncomputable def ewIter (f : ℕ → ℕ) : ONote → ℕ → ℕ
   | α => fun m => ewStep f α (fun β _ => ewIter f β) m
@@ -544,7 +543,9 @@ lemma ewIter_unfold (f : ℕ → ℕ) (α : ONote) (m : ℕ) :
   rw [ewIter_unfold, ewStep]
   simp
 
-lemma ewIter_lower {f : ℕ → ℕ} {β α : ONote} {m : ℕ} (hβNF : β.NF)
+variable {f : ℕ → ℕ} {α β : ONote} {m x : ℕ}
+
+lemma ewIter_lower (hβNF : β.NF)
     (hβα : β < α) (hgate : Nlog β ≤ f (Nlog α + m)) :
     ewIter f β (ewIter f β m) ≤ ewIter f α m := by
   have hαne : α ≠ 0 := by
@@ -600,7 +601,7 @@ theorem ewIter_monotone {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ 
     simp only [dif_neg hα]
     apply Finset.max'_le
     intro y hy
-    rcases Finset.mem_image.mp hy with ⟨δ, hδmem, rfl⟩
+    obtain ⟨δ, hδmem, rfl⟩ := Finset.mem_image.mp hy
     have hδlt : (δ : ONote) < α := (Finset.mem_filter.mp δ.2).2.1
     have hδNF : (δ : ONote).NF := (mem_NlogBall.mp (Finset.mem_filter.mp δ.2).1).1
     have hδgate : Nlog (δ : ONote) ≤ f (Nlog α + m) := (Finset.mem_filter.mp δ.2).2.2
@@ -617,7 +618,7 @@ decreasing_by
 `ewIter f β m ≤ ewIter f α m` (inflate once, then `ewIter_lower`). This lets the
 cut-elimination step compose iterates at different ordinals `< α`, lifting each to
 the common `α`. -/
-lemma ewIter_le_of_lt {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) {β α : ONote} {m : ℕ}
+lemma ewIter_le_of_lt (hf_infl : ∀ m, m ≤ f m)
     (hβNF : β.NF) (hβα : β < α) (hgate : Nlog β ≤ f (Nlog α + m)) :
     ewIter f β m ≤ ewIter f α m :=
   le_trans (ewIter_infl hf_infl β (ewIter f β m)) (ewIter_lower hβNF hβα hgate)
@@ -625,8 +626,8 @@ lemma ewIter_le_of_lt {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) {β α : ON
 /-- **Pointwise slot-lift.** At internal pass nodes the IH slot `ewIter f β` (`β < α`) must
 be raised to the node slot `ewIter f α` via `Zef2.mono_f`; gated ordinal-monotonicity gives
 it pointwise from the base gate `Nlog β ≤ f 0`. -/
-lemma ewIter_slot_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
-    {β α : ONote} (hβNF : β.NF) (hβα : β < α) (g : Nlog β ≤ f 0) :
+lemma ewIter_slot_le (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
+    (hβNF : β.NF) (hβα : β < α) (g : Nlog β ≤ f 0) :
     ∀ x, ewIter f β x ≤ ewIter f α x :=
   fun x => ewIter_le_of_lt (m := x) hf_infl hβNF hβα
     (le_trans g (hf_mono (Nat.zero_le _)))
@@ -667,7 +668,7 @@ lemma ewIter_rel1_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, 
     simp only [dif_neg hβ]
     apply Finset.max'_le
     intro y hy
-    rcases Finset.mem_image.mp hy with ⟨δ, hδmem, rfl⟩
+    obtain ⟨δ, hδmem, rfl⟩ := Finset.mem_image.mp hy
     have hδlt : (δ : ONote) < β := (Finset.mem_filter.mp δ.2).2.1
     have hδNF : (δ : ONote).NF := (mem_NlogBall.mp (Finset.mem_filter.mp δ.2).1).1
     have hδgate_branch :
@@ -694,8 +695,8 @@ termination_by β
 decreasing_by
   all_goals exact hδlt
 
-lemma ewIter_lift_of_mono_infl {f : ℕ → ℕ} (hf_mono : Monotone f)
-    (hf_infl : ∀ m, m ≤ f m) {β α : ONote} (hβNF : β.NF)
+lemma ewIter_lift_of_mono_infl (hf_mono : Monotone f)
+    (hf_infl : ∀ m, m ≤ f m) (hβNF : β.NF)
     (hβα : β < α) (hβN : Nlog β ≤ f 0) :
     ∀ x, ewIter f β x ≤ ewIter f α x := by
   intro x
@@ -704,7 +705,7 @@ lemma ewIter_lift_of_mono_infl {f : ℕ → ℕ} (hf_mono : Monotone f)
   exact le_trans (ewIter_infl hf_infl β (ewIter f β x))
     (ewIter_lower (f := f) hβNF hβα hgate)
 
-lemma ewIter_lift {f : ℕ → ℕ} (hf : EwF1 f) {β α : ONote} (hβNF : β.NF)
+lemma ewIter_lift (hf : EwF1 f) (hβNF : β.NF)
     (hβα : β < α) (hβN : Nlog β ≤ f 0) :
     ∀ x, ewIter f β x ≤ ewIter f α x :=
   ewIter_lift_of_mono_infl (EwF1.monotone hf) (EwF1.infl hf) hβNF hβα hβN
@@ -729,7 +730,7 @@ lemma ewIter_attained {f : ℕ → ℕ} {α : ONote} (hα : α ≠ 0) (x : ℕ) 
     simp only [hS, Finset.mem_filter]
     exact ⟨mem_NlogBall.mpr ⟨NF.zero, Nat.zero_le _⟩, pos_of_ne_zero hα, Nat.zero_le _⟩
   have hmem : vals.max' hne ∈ vals := Finset.max'_mem vals hne
-  rcases Finset.mem_image.mp hmem with ⟨δ, _, hδval⟩
+  obtain ⟨δ, _, hδval⟩ := Finset.mem_image.mp hmem
   have hδfilter := Finset.mem_filter.mp δ.2
   refine ⟨δ.1, (mem_NlogBall.mp hδfilter.1).1, hδfilter.2.1, hδfilter.2.2, ?_⟩
   rw [hunf, ← hδval]
@@ -868,7 +869,7 @@ lemma ewIter_mono_slot {f g : ℕ → ℕ} (hfg : ∀ x, f x ≤ g x)
     simp only [dif_neg hα]
     apply Finset.max'_le
     intro y hy
-    rcases Finset.mem_image.mp hy with ⟨δ, hδmem, rfl⟩
+    obtain ⟨δ, hδmem, rfl⟩ := Finset.mem_image.mp hy
     have hδlt : (δ : ONote) < α := (Finset.mem_filter.mp δ.2).2.1
     have hδNF : (δ : ONote).NF := (mem_NlogBall.mp (Finset.mem_filter.mp δ.2).1).1
     have hδgate : Nlog (δ : ONote) ≤ f (Nlog α + m) := (Finset.mem_filter.mp δ.2).2.2
