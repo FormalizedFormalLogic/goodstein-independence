@@ -50,13 +50,13 @@ by one each time the ordinal drops past a successor. To make that precise we iso
 fixed argument `n`) until passing exactly one successor, returning the resulting notation.
 The single intrinsic fact we need is then `H_o(n) = H_{hstep o n}(n+1)` (`hardy_hstep`) for
 nonzero `o` — the engine that telescopes any unit-step ordinal descent into a Hardy value.
-This is the FastGrowing-side prerequisite for C3 (`Goodstein/Growth.lean`), where the
+This is the FastGrowing-side prerequisite consumed in `Goodstein/Growth.lean`, where the
 Goodstein descent is shown to *be* this Hardy step (`hstep_seqONote`). -/
 
 /-- The fundamental sequence of a limit notation is everywhere nonzero: every branch of
 `ONote.fundamentalSequence` for a limit returns `fun i => oadd …`, and `oadd` is positive.
 Needed so the limit recursion of `hstep`/`hardy_hstep` never collapses to `0` prematurely. -/
-theorem fundamentalSequence_inr_ne_zero {o : ONote} {f : ℕ → ONote}
+lemma fundamentalSequence_inr_ne_zero {o : ONote} {f : ℕ → ONote}
     (h : fundamentalSequence o = Sum.inr f) (i : ℕ) : f i ≠ 0 := by
   induction o with
   | zero => simp [fundamentalSequence] at h
@@ -84,7 +84,7 @@ def hstep : ONote → ℕ → ONote
   termination_by o => o
 
 /-- Unfolding lemma for `hstep`, mirroring `hardy_def`. -/
-theorem hstep_def {o : ONote} {x} (e : fundamentalSequence o = x) :
+lemma hstep_def {o : ONote} {x} (e : fundamentalSequence o = x) :
     hstep o =
       match
         (motive := (x : Option ONote ⊕ (ℕ → ONote)) → FundamentalSequenceProp o x → ℕ → ONote)
@@ -95,11 +95,11 @@ theorem hstep_def {o : ONote} {x} (e : fundamentalSequence o = x) :
   subst x; rw [hstep]
 
 /-- `hstep o = fun _ => a` when `o` is the successor of `a`. -/
-theorem hstep_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) :
+lemma hstep_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) :
     hstep o = fun _ => a := by rw [hstep_def h]
 
 /-- `hstep o = fun n => hstep (o[n]) n` when `o` is a limit with fundamental sequence `f`. -/
-theorem hstep_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) :
+lemma hstep_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) :
     hstep o = fun n => hstep (f n) n := by rw [hstep_def h]
 
 /-- **Intrinsic Hardy step invariant.** For a nonzero notation, one budget-incrementing
@@ -109,10 +109,9 @@ member is nonzero by `fundamentalSequence_inr_ne_zero`, so the IH applies). -/
 theorem hardy_hstep (o : ONote) (n : ℕ) (h : o ≠ 0) :
     hardy o n = hardy (hstep o n) (n + 1) := by
   rcases e : fundamentalSequence o with (_ | a) | f
-  · exact absurd ((fundamentalSequenceProp_inl_none o).1 (e ▸ fundamentalSequence_has_prop o)) h
+  · exact absurd (eq_zero_of_fundamentalSequence_inl_none e) h
   · rw [hardy_succ o e, hstep_succ o e]
-  · have hlt : f n < o := by
-      have hp := fundamentalSequence_has_prop o; rw [e] at hp; exact (hp.2.1 n).2.1
+  · have hlt : f n < o := fundamentalSequence_inr_lt e n
     rw [hardy_limit o e, hstep_limit o e]
     exact hardy_hstep (f n) n (fundamentalSequence_inr_ne_zero e n)
 termination_by o
@@ -123,19 +122,16 @@ on `oadd E C R` happens entirely inside the tail: `hstep (oadd E C R) b = oadd E
 Well-founded induction on `R` (its `ONote <`, via `InvImage repr`): if `R` is a successor the
 step peels directly; if `R` is a limit the step descends to `R[b] ≠ 0 < R` and the IH applies.
 The actual decrement only occurs once `R = 0`. -/
-theorem hstep_oadd_tail (E : ONote) (C : ℕ+) (b : ℕ) :
-    ∀ R, R ≠ 0 → hstep (oadd E C R) b = oadd E C (hstep R b) := by
-  intro R
+lemma hstep_oadd_tail (E : ONote) (C : ℕ+) (b : ℕ) (R : ONote) (hR : R ≠ 0) :
+    hstep (oadd E C R) b = oadd E C (hstep R b) := by
   induction R using (InvImage.wf repr Ordinal.lt_wf).induction with
   | _ R ih =>
-    intro hR
     rcases e : fundamentalSequence R with (_ | R') | g
-    · exact absurd ((fundamentalSequenceProp_inl_none R).1 (e ▸ fundamentalSequence_has_prop R)) hR
+    · exact absurd (eq_zero_of_fundamentalSequence_inl_none e) hR
     · rw [hstep_succ _ (fundamentalSequence_oadd_succ e), hstep_succ _ e]
     · rw [hstep_limit _ (fundamentalSequence_oadd_limit e), hstep_limit _ e]
       have hgb : g b ≠ 0 := fundamentalSequence_inr_ne_zero e b
-      have hglt : g b < R := by
-        have hp := fundamentalSequence_has_prop R; rw [e] at hp; exact (hp.2.1 b).2.1
+      have hglt : g b < R := fundamentalSequence_inr_lt e b
       exact ih (g b) (lt_def.1 hglt) hgb
 
 /-- **Hardy tail-peeling — the additive law, ONote-native form.** Splitting off the tail of an `oadd`
@@ -148,24 +144,18 @@ ordinal-addition machinery needed — purely structural.
 
 This is the **non-absorbing Hardy additive law** (the general `H_{α+β}=H_α∘H_β` is false —
 `1+ω=ω` makes `H_{1+ω}=H_ω ≠ H_1∘H_ω`). It is the key brick for the coefficient lemma
-`H_{ω^β·j} = (H_{ω^β})^[j]` and hence for B4 (`H_{ω^α} = f_α` at finite `α`). -/
+`H_{ω^β·j} = (H_{ω^β})^[j]` and hence for the identity `H_{ω^α} = f_α` at finite `α`. -/
 theorem hardy_oadd_tail (a : ONote) (m : ℕ+) (b : ONote) (n : ℕ) :
     hardy (oadd a m b) n = hardy (oadd a m 0) (hardy b n) := by
   rcases e : fundamentalSequence b with (_ | b') | f
-  · have hb0 : b = 0 := by
-      have hp := fundamentalSequence_has_prop b; rw [e] at hp
-      rwa [fundamentalSequenceProp_inl_none] at hp
+  · have hb0 : b = 0 := eq_zero_of_fundamentalSequence_inl_none e
     rw [hardy_zero' b e, hb0]; rfl
-  · have hlt : b' < b := by
-      have hp := fundamentalSequence_has_prop b; rw [e] at hp
-      rw [lt_def, hp.1]; exact Order.lt_succ _
+  · have hlt : b' < b := lt_of_fundamentalSequence_inl_some e
     have hfs : fundamentalSequence (oadd a m b) = Sum.inl (some (oadd a m b')) := by
       conv_lhs => rw [fundamentalSequence]; rw [e]
     rw [hardy_succ _ hfs, hardy_succ b e]
     exact hardy_oadd_tail a m b' (n + 1)
-  · have hlt : f n < b := by
-      have hp := fundamentalSequence_has_prop b; rw [e] at hp
-      exact (hp.2.1 n).2.1
+  · have hlt : f n < b := fundamentalSequence_inr_lt e n
     have hfs : fundamentalSequence (oadd a m b) = Sum.inr (fun i => oadd a m (f i)) := by
       conv_lhs => rw [fundamentalSequence]; rw [e]
     rw [hardy_limit _ hfs, hardy_limit b e]
@@ -184,9 +174,7 @@ theorem hardy_oadd_coeff_step (β : ONote) (hβ : β ≠ 0) (k x : ℕ) :
     hardy (oadd β (k + 1).succPNat 0) x
       = hardy (oadd β k.succPNat 0) (hardy (oadd β 1 0) x) := by
   rcases e : fundamentalSequence β with (_ | β') | f
-  · exfalso; apply hβ
-    have hp := fundamentalSequence_has_prop β; rw [e] at hp
-    exact (fundamentalSequenceProp_inl_none β).mp hp
+  · exact absurd (eq_zero_of_fundamentalSequence_inl_none e) hβ
   · have hfs : fundamentalSequence (oadd β (k + 1).succPNat 0)
         = Sum.inr (fun i => oadd β k.succPNat (oadd β' i.succPNat 0)) := by
       conv_lhs => rw [fundamentalSequence]
@@ -236,7 +224,7 @@ def lastExp : ONote → ONote
 @[simp] theorem lastExp_zero : lastExp 0 = 0 := rfl
 @[simp] theorem lastExp_oadd_zero (e n) : lastExp (oadd e n 0) = e := rfl
 
-theorem lastExp_oadd_ne {e : ONote} {n : ℕ+} {a : ONote} (h : a ≠ 0) :
+lemma lastExp_oadd_ne {e : ONote} {n : ℕ+} {a : ONote} (h : a ≠ 0) :
     lastExp (oadd e n a) = lastExp a := by
   cases a with
   | zero => exact absurd rfl h
@@ -244,7 +232,7 @@ theorem lastExp_oadd_ne {e : ONote} {n : ℕ+} {a : ONote} (h : a ≠ 0) :
 
 /-- `addAux` concatenates (no merge/absorb) when the right operand's leading exponent is
 strictly below `e`. -/
-theorem addAux_concat {e : ONote} (he : e.NF) {n : ℕ+} {o : ONote} (ho : o.NF)
+lemma addAux_concat {e : ONote} (he : e.NF) {n : ℕ+} {o : ONote} (ho : o.NF)
     (h : o = 0 ∨ ∀ e' n' a', o = oadd e' n' a' → e'.repr < e.repr) :
     addAux e n o = oadd e n o := by
   match o, ho, h with
@@ -259,20 +247,18 @@ theorem addAux_concat {e : ONote} (he : e.NF) {n : ℕ+} {o : ONote} (ho : o.NF)
     simp only [addAux, hee']
 
 /-- The least exponent of a nonzero notation lies below any bound it is `NFBelow`. -/
-theorem lastExp_repr_lt : ∀ {o : ONote} {b : Ordinal}, NFBelow o b → o ≠ 0 →
+lemma lastExp_repr_lt {o : ONote} {b : Ordinal} (hb : NFBelow o b) (h : o ≠ 0) :
     (lastExp o).repr < b := by
-  intro o
-  induction o with
-  | zero => intro b _ h; exact absurd rfl h
+  induction o generalizing b with
+  | zero => exact absurd rfl h
   | oadd e n a _ iha =>
-    intro b hb _
     rcases eq_or_ne a 0 with ha | ha
     · subst ha; rw [lastExp_oadd_zero]; exact hb.lt
     · rw [lastExp_oadd_ne ha]
       exact lt_trans (iha hb.snd ha) hb.lt
 
 /-- Convert an `NFBelow` fact into the leading-exponent bound `addAux_concat` consumes. -/
-theorem nfBelow_concat {o : ONote} {b : Ordinal} (h : NFBelow o b) :
+lemma nfBelow_concat {o : ONote} {b : Ordinal} (h : NFBelow o b) :
     o = 0 ∨ ∀ e' n' a', o = oadd e' n' a' → e'.repr < b := by
   cases o with
   | zero => left; rfl
@@ -283,17 +269,14 @@ with `δ` lying strictly below `γ`'s least exponent (so `γ + δ` is genuine Ca
 concatenation, no coefficient merge / absorption), the Hardy hierarchy composes:
 `H_{γ+δ}(x) = H_γ(H_δ(x))`. Generalizes `hardy_oadd_tail` (single leading term) by induction
 on `γ`. -/
-theorem hardy_add_comp : ∀ (γ : ONote), γ.NF → ∀ (δ : ONote), δ.NF →
-    (δ = 0 ∨ δ.repr < ω ^ (lastExp γ).repr) → ∀ x,
+theorem hardy_add_comp (γ : ONote) (hγ : γ.NF) (δ : ONote) (hδ : δ.NF)
+    (hcond : δ = 0 ∨ δ.repr < ω ^ (lastExp γ).repr) (x : ℕ) :
     hardy (γ + δ) x = hardy γ (hardy δ x) := by
-  intro γ
-  induction γ with
+  induction γ generalizing δ x with
   | zero =>
-    intro _ δ _ _ x
     show hardy ((0 : ONote) + δ) x = hardy (0 : ONote) (hardy δ x)
     rw [ONote.zero_add, hardy_zero]; rfl
   | oadd e n a _ iha =>
-    intro hγ δ hδ hcond x
     haveI := hγ
     rcases eq_or_ne δ 0 with hδ0 | hδ0
     · subst hδ0
@@ -335,49 +318,47 @@ theorem hardy_add_collapse {e α : ONote} (he : e.NF) (hα : α.NF)
     hardy (e + α) x = hardy e (hardy α x) :=
   hardy_add_comp e he α hα hbelow x
 
-/-! ### The additive-Hardy INEQUALITY (P1 raised-control bridge)
+/-! ### The additive-Hardy INEQUALITY
 
-Lap 178 kernel-refuted the additive-Hardy *equality* `H_{e+β}=H_e∘H_β` (false under absorption,
-`1+ω=ω`). The **inequality** `H_{e+β}(x) ≤ H_e(H_β(x))` survives absorption and is the exact bridge
-the raised control `raise e α = e + ω^α` needs: with `β = ω^α` it bounds `H_{e+ω^α}` by
-`H_e(H_{ω^α}(·))`, and `hardy_omega_pow_lt_fastGrowing` gives `H_{ω^α} < f_α`. Unlike the equality,
-this holds for **every** NF `e, β`.  Proof: induction on `e` matching ONote `+`'s `addAux` recursion;
-with `s = a₁ + β = oadd e' n' a'` the case split on `cmp e₁ e'` is lt (e absorbed) / gt (concat) /
+The additive-Hardy *equality* `H_{e+β}=H_e∘H_β` is false under absorption (`1+ω=ω`). The
+**inequality** `H_{e+β}(x) ≤ H_e(H_β(x))` survives absorption and is the bridge a raised
+control `raise e α = e + ω^α` needs: with `β = ω^α` it bounds `H_{e+ω^α}` by `H_e(H_{ω^α}(·))`,
+and `hardy_omega_pow_lt_fastGrowing` gives `H_{ω^α} < f_α`. Unlike the equality, this holds for
+**every** NF `e, β`. Proof: induction on `e` matching ONote `+`'s `addAux` recursion; with
+`s = a₁ + β = oadd e' n' a'` the case split on `cmp e₁ e'` is lt (e absorbed) / gt (concat) /
 eq (coefficient merge), each closed by the tail-peel `hardy_oadd_tail` + IH + `le_hardy`/monotonicity,
 the eq case additionally by coefficient additivity. -/
 
 /-- Single finite term: `H_{ω^0·p}(y) = y + p` (via `oadd 0 p 0 = ofNat p`). -/
-theorem hardy_oadd0 (p : ℕ+) (y : ℕ) : hardy (oadd 0 p 0) y = y + (p : ℕ) := by
+lemma hardy_oadd0 (p : ℕ+) (y : ℕ) : hardy (oadd 0 p 0) y = y + (p : ℕ) := by
   obtain ⟨k, rfl⟩ : ∃ k : ℕ, p = k.succPNat := ⟨p.natPred, (PNat.succPNat_natPred p).symm⟩
   rw [show oadd 0 k.succPNat 0 = ofNat (k + 1) from (ofNat_succ k).symm, hardy_ofNat,
     Nat.succPNat_coe]
 
 /-- Coefficient-as-iterate, restated for a `ℕ+` coefficient (`e ≠ 0`):
 `H_{ω^e·p}(x) = (H_{ω^e})^[p](x)`. -/
-theorem hardy_single_coeff (e : ONote) (he : e ≠ 0) (p : ℕ+) (x : ℕ) :
+lemma hardy_single_coeff (e : ONote) (he : e ≠ 0) (p : ℕ+) (x : ℕ) :
     hardy (oadd e p 0) x = (hardy (oadd e 1 0))^[(p : ℕ)] x := by
   obtain ⟨k, rfl⟩ : ∃ k : ℕ, p = k.succPNat := ⟨p.natPred, (PNat.succPNat_natPred p).symm⟩
   rw [hardy_oadd_coeff e he k x, Nat.succPNat_coe]
 
 /-- Coefficient additivity at a single term (`e ≠ 0`):
 `H_{ω^e·(m+n)}(x) = H_{ω^e·m}(H_{ω^e·n}(x))`. -/
-theorem hardy_coeff_add (e : ONote) (he : e ≠ 0) (m n : ℕ+) (x : ℕ) :
+lemma hardy_coeff_add (e : ONote) (he : e ≠ 0) (m n : ℕ+) (x : ℕ) :
     hardy (oadd e (m + n) 0) x = hardy (oadd e m 0) (hardy (oadd e n 0) x) := by
   rw [hardy_single_coeff e he (m + n) x, hardy_single_coeff e he m,
     hardy_single_coeff e he n x, PNat.add_coe, Function.iterate_add_apply]
 
-/-- **The additive-Hardy inequality** — for NF `e, β`: `H_{e+β}(x) ≤ H_e(H_β(x))`.
-Lap 178 refuted the equality; this `≤` survives absorption and is P1's raised-control bridge
-(`raise e α = e + ω^α`, then `hardy_omega_pow_lt_fastGrowing`). -/
-theorem hardy_add_le_comp : ∀ (e : ONote), e.NF → ∀ (β : ONote), β.NF → ∀ x,
+/-- **The additive-Hardy inequality** — for NF `e, β`: `H_{e+β}(x) ≤ H_e(H_β(x))`. Unlike the
+additive equality (which is false under absorption, e.g. `1+ω=ω`), this `≤` survives
+absorption and is the raised-control bridge (`raise e α = e + ω^α`, then
+`hardy_omega_pow_lt_fastGrowing`). -/
+theorem hardy_add_le_comp (e : ONote) (he : e.NF) (β : ONote) (hβ : β.NF) (x : ℕ) :
     hardy (e + β) x ≤ hardy e (hardy β x) := by
-  intro e
-  induction e with
+  induction e generalizing β x with
   | zero =>
-    intro _ β _ x
     simp [ONote.zero_add, hardy_zero]
   | oadd e₁ n₁ a₁ _ihe₁ iha₁ =>
-    intro he β hβ x
     rcases eq_or_ne β 0 with rfl | hβ0
     · rw [show oadd e₁ n₁ a₁ + 0 = oadd e₁ n₁ a₁ from
           repr_inj.mp (by rw [repr_add, repr_zero, add_zero])]
@@ -451,8 +432,8 @@ theorem hardy_add_le_comp : ∀ (e : ONote), e.NF → ∀ (β : ONote), β.NF �
             _ ≤ hardy (oadd e₁ n₁ 0) (hardy a₁ (hardy β x)) := hardy_monotone _ (iha₁ ha₁ β hβ x)
             _ = hardy (oadd e₁ n₁ a₁) (hardy β x) := (hardy_oadd_tail e₁ n₁ a₁ (hardy β x)).symm
 
-/-- **The additive-Hardy inequality at a principal raise** (`β = ω^α = oadd α 1 0`) — the exact P1
-shape: `H_{e + ω^α}(x) ≤ H_e(H_{ω^α}(x))`. -/
+/-- **The additive-Hardy inequality at a principal raise** (`β = ω^α = oadd α 1 0`):
+`H_{e + ω^α}(x) ≤ H_e(H_{ω^α}(x))`. -/
 theorem hardy_add_omega_pow_le {e α : ONote} (he : e.NF) (hα : α.NF) (x : ℕ) :
     hardy (e + oadd α 1 0) x ≤ hardy e (hardy (oadd α 1 0) x) :=
   hardy_add_le_comp e he (oadd α 1 0) (NF.oadd hα 1 NFBelow.zero) x
