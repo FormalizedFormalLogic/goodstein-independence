@@ -40,34 +40,32 @@ namespace ONote
 from `GoodsteinPA.ToMathlib.Ordinal.Epsilon0`. -/
 
 /-- `encodeONote` and `decodeONote` are mutually inverse: `encode` is a bijection `ONote ≃ ℕ`. -/
-lemma encodeONote_decodeONote : ∀ n : ℕ, encodeONote (decodeONote n) = n := by
-  intro n
-  induction' n using Nat.strongRecOn with n ih
-  generalize_proofs at *;
-  rcases n with ( _ | m );
+lemma encodeONote_decodeONote (n : ℕ) : encodeONote (decodeONote n) = n := by
+  induction n using Nat.strongRecOn with
+  | ind n ih =>
+  rcases n with (_ | m);
   · simp [decodeONote, encodeONote];
   · unfold decodeONote;
-    simp +arith +decide [ encodeONote, ih _ ( Nat.lt_succ_of_le ( Nat.unpair_left_le _ ) ), ih _ ( Nat.lt_succ_of_le ( Nat.unpair_right_le _ |> le_trans <| Nat.unpair_right_le _ ) ) ]
+    simp +arith +decide [encodeONote, ih _ (Nat.lt_succ_of_le (Nat.unpair_left_le _)),
+      ih _ (Nat.lt_succ_of_le (Nat.unpair_right_le _ |> le_trans <| Nat.unpair_right_le _))]
 
 /-- The structural `Encodable ONote` decodes via `decodeONote` (never failing). -/
-lemma decode_eq (n : ℕ) : (Encodable.decode n : Option ONote) = some (decodeONote n) := by
+@[simp] lemma decode_eq (n : ℕ) : (Encodable.decode n : Option ONote) = some (decodeONote n) := by
   rfl
 
 /-- The structural `Encodable ONote` encodes via `encodeONote`. -/
-lemma encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
+@[simp] lemma encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
   rfl
 
 lemma encode_decode_eq (n : ℕ) :
     Encodable.encode (Encodable.decode n : Option ONote) = n + 1 := by
-  rw [ decode_eq ];
-  simp +decide [ Encodable.encode, encodeONote_decodeONote ]
+  rw [decode_eq];
+  simp +decide [Encodable.encode, encodeONote_decodeONote]
 
+/-- `encode ∘ decode` is `Nat.succ` up to the `+ 1` shift, so it is primitive recursive. -/
 lemma primrec_encode_decode :
     Nat.Primrec (fun n => Encodable.encode (Encodable.decode n : Option ONote)) := by
-  -- Since `Nat.succ` is primitive recursive, and `encode` and `decode` are inverses, the function `n => encode (decode n)` is also primitive recursive.
-  have h_succ : Nat.Primrec Nat.succ := by
-    exact Nat.Primrec.succ;
-  convert h_succ using 1;
+  convert Nat.Primrec.succ using 1;
   exact funext fun n => by simpa using encode_decode_eq n;
 
 /-- **Structural `Primcodable ONote`.** Built from the structural `Encodable ONote` above. -/
@@ -76,38 +74,31 @@ instance instPrimcodableONote : Primcodable ONote :=
     prim := primrec_encode_decode }
 
 lemma computable_decodeONote : Computable decodeONote := by
-  have h_decodeONote_computable : Computable (fun n => (Encodable.decode n : Option ONote)) := by
-    convert Computable.decode ( α := ONote ) using 1;
-  exact Computable.option_getD ( h_decodeONote_computable ) ( Computable.const ONote.zero )
+  have h_decodeONote_computable : Computable (fun n => (Encodable.decode n : Option ONote)) :=
+    Computable.decode (α := ONote)
+  exact Computable.option_getD h_decodeONote_computable (Computable.const ONote.zero)
 
 /-! ### Ordering encoded as `ℕ` (lt = 0, eq = 1, gt = 2) -/
 
 /-- Encode an `Ordering` as a natural number. -/
-def ordCode : Ordering → ℕ
+@[grind =] def ordCode : Ordering → ℕ
   | Ordering.lt => 0
   | Ordering.eq => 1
   | Ordering.gt => 2
 
 /-- `ℕ`-level version of `Ordering.then`. -/
-def thenNat (a b : ℕ) : ℕ := if a = 1 then b else a
+@[grind =] def thenNat (a b : ℕ) : ℕ := if a = 1 then b else a
 
 /-- `ℕ`-level version of `_root_.cmp` on `ℕ`, returning an `ordCode`. -/
-def cmpNat (a b : ℕ) : ℕ := if a < b then 0 else if a = b then 1 else 2
+@[grind =] def cmpNat (a b : ℕ) : ℕ := if a < b then 0 else if a = b then 1 else 2
 
 lemma ordCode_then (o p : Ordering) : ordCode (o.then p) = thenNat (ordCode o) (ordCode p) := by
   cases o <;> cases p <;> rfl
 
 lemma ordCode_cmp (a b : ℕ) : ordCode (_root_.cmp a b) = cmpNat a b := by
-  rcases lt_trichotomy a b with h | h | h
-  · have hc : _root_.cmp a b = Ordering.lt := by simp [_root_.cmp, cmpUsing, h]
-    rw [hc]; simp [ordCode, cmpNat, h]
-  · subst h
-    have hc : _root_.cmp a a = Ordering.eq := by simp [_root_.cmp, cmpUsing]
-    rw [hc]; simp [ordCode, cmpNat]
-  · have hab : ¬ a < b := Nat.not_lt.mpr h.le
-    have hne : a ≠ b := (ne_of_lt h).symm
-    have hc : _root_.cmp a b = Ordering.gt := by simp [_root_.cmp, cmpUsing, hab, h]
-    rw [hc]; simp [ordCode, cmpNat, hab, hne]
+  unfold _root_.cmp cmpUsing ordCode cmpNat
+  split_ifs <;> simp_all
+  omega
 
 /-- Index (paired code) of the `e`-subterms, given the paired code `m = pair cx cy`. -/
 def cmpIdxE (m : ℕ) : ℕ :=
@@ -125,16 +116,10 @@ def cmpNV (m : ℕ) : ℕ :=
          ((Nat.unpair (Nat.unpair ((Nat.unpair m).2 - 1)).2).1 + 1)
 
 lemma primrec_cmpIdxE : Primrec cmpIdxE := by
-  have h_id : Primrec (fun x : ℕ => x) := by
-    exact Primrec.id
-  have h_fst : Primrec (fun x : ℕ => (Nat.unpair x).1) := by
-    exact Primrec.fst.comp ( Primrec.unpair )
-  have h_snd : Primrec (fun x : ℕ => (Nat.unpair x).2) := by
-    exact Primrec.snd.comp ( Primrec.unpair.comp h_id )
-  have h_sub : Primrec (fun x : ℕ => x - 1) := by
-    exact Primrec.nat_sub.comp ( h_id ) ( Primrec.const 1 )
-  have h_pair : Primrec₂ (fun x y : ℕ => Nat.pair x y) := Primrec₂.natPair
-  exact h_pair.comp ( h_fst.comp ( h_sub.comp h_fst ) ) ( h_fst.comp ( h_sub.comp h_snd ) )
+  have h_fst : Primrec (fun x : ℕ => (Nat.unpair x).1) := Primrec.fst.comp Primrec.unpair
+  have h_snd : Primrec (fun x : ℕ => (Nat.unpair x).2) := Primrec.snd.comp Primrec.unpair
+  have h_sub : Primrec (fun x : ℕ => x - 1) := Primrec.nat_sub.comp Primrec.id (Primrec.const 1)
+  exact Primrec₂.natPair.comp (h_fst.comp (h_sub.comp h_fst)) (h_fst.comp (h_sub.comp h_snd))
 
 lemma primrec_cmpIdxA : Primrec cmpIdxA := by
   have h_fst : Primrec (fun x : ℕ => (Nat.unpair x).1) := Primrec.fst.comp Primrec.unpair
@@ -219,21 +204,21 @@ lemma computable_cmpStep : Computable cmpStep := by
 
 lemma cmpStep_spec (m : ℕ) : cmpStep ((List.range m).map Cnat) = some (Cnat m) := by
   unfold cmpStep;
-  simp +decide [ cmpIdxE, cmpIdxA, cmpNV ];
-  rcases n : Nat.unpair m with ⟨ x, y ⟩ ; rcases x with ( _ | x ) <;> rcases y with ( _ | y ) <;> simp +decide;
-  · rw [ show m = 0 by rw [ ← Nat.pair_unpair m, n ] ; rfl ] ; simp +decide [ Cnat ] ;
+  simp +decide [cmpIdxE, cmpIdxA, cmpNV];
+  rcases n : Nat.unpair m with ⟨x, y⟩; rcases x with (_ | x) <;> rcases y with (_ | y) <;> simp +decide;
+  · rw [show m = 0 by rw [← Nat.pair_unpair m, n]; rfl]; simp +decide [Cnat];
     native_decide;
-  · unfold Cnat; simp +decide [ n ] ;
-    unfold decodeONote; simp +decide [ ONote.cmp ] ;
-  · unfold Cnat; simp +decide [ n ] ;
-    unfold decodeONote; simp +decide [ ONote.cmp ] ;
-  · rw [ List.getElem?_range, List.getElem?_range ] <;> norm_num [ n ];
+  · unfold Cnat; simp +decide [n];
+    unfold decodeONote; simp +decide [ONote.cmp];
+  · unfold Cnat; simp +decide [n];
+    unfold decodeONote; simp +decide [ONote.cmp];
+  · rw [List.getElem?_range, List.getElem?_range] <;> norm_num [n];
     · unfold Cnat;
-      rw [ n ];
-      rw [ decodeONote, decodeONote ];
-      simp +decide [ ONote.cmp, ordCode_then, ordCode_cmp ];
+      rw [n];
+      rw [decodeONote, decodeONote];
+      simp +decide [ONote.cmp, ordCode_then, ordCode_cmp];
       unfold cmpNat; aesop;
-    · rw [ ← Nat.pair_unpair m, n ]
+    · rw [← Nat.pair_unpair m, n]
       have e1 := Nat.unpair_left_le x
       have e2 := Nat.unpair_right_le x
       have e3 := Nat.unpair_left_le y
@@ -241,15 +226,14 @@ lemma cmpStep_spec (m : ℕ) : cmpStep ((List.range m).map Cnat) = some (Cnat m)
       have e5 := Nat.unpair_right_le (Nat.unpair x).2
       have e6 := Nat.unpair_right_le (Nat.unpair y).2
       exact pair_lt_pair (by omega) (by omega)
-    · rw [ ← Nat.pair_unpair m, n ];
-      exact pair_lt_pair ( Nat.unpair_left_le _ |> Nat.lt_succ_of_le ) ( Nat.unpair_left_le _ |> Nat.lt_succ_of_le )
+    · rw [← Nat.pair_unpair m, n];
+      exact pair_lt_pair (Nat.unpair_left_le _ |> Nat.lt_succ_of_le) (Nat.unpair_left_le _ |> Nat.lt_succ_of_le)
 
 theorem computable_Cnat : Computable Cnat := by
-  have h_rec_comp : Computable (fun n => Cnat n) := by
-    have h_step : Computable (fun (L : List ℕ) => cmpStep L) := computable_cmpStep
-    have h_step_spec : ∀ n, cmpStep ((List.range n).map Cnat) = some (Cnat n) := cmpStep_spec
-    exact Computable.nat_strong_rec ( fun ( _ : Unit ) n => Cnat n ) ( h_step.comp Computable.snd |> Computable.to₂ ) ( fun _ n => h_step_spec n ) |> fun h => h.comp ( Computable.const () ) Computable.id
-  exact h_rec_comp
+  have h_step_spec : ∀ n, cmpStep ((List.range n).map Cnat) = some (Cnat n) := cmpStep_spec
+  exact (Computable.nat_strong_rec (fun (_ : Unit) n => Cnat n)
+    (computable_cmpStep.comp Computable.snd |> Computable.to₂)
+    (fun _ n => h_step_spec n)).comp (Computable.const ()) Computable.id
 
 /-! ### Computability of the `NF` predicate (needed to enumerate `NONote`) -/
 
@@ -310,64 +294,64 @@ def nfStep (L : List Bool) : Option Bool :=
         be && ba && nfTB c
 
 lemma computable_nfStep : Computable nfStep := by
-  refine' Computable.of_eq _ _;
-  exact fun L => if L.length = 0 then some true else ( L[nfIdxE L.length]? ).bind fun be => ( L[nfIdxA L.length]? ).map fun ba => be && ba && nfTB L.length;
-  · convert Computable.cond _ _ _ using 1;
-    rotate_left;
-    exact fun L => L.length = 0;
-    exact fun _ => some true;
-    exact fun L => L[nfIdxE L.length]?.bind fun be => Option.map ( fun ba => be && ba && nfTB L.length ) L[nfIdxA L.length]?;
-    · convert Computable.of_eq _ _ using 1;
-      exact fun L => Nat.recOn L.length Bool.true fun _ _ => Bool.false;
-      · exact Computable.nat_casesOn ( Computable.list_length ) ( Computable.const true ) ( Computable.const false );
-      · intro n; cases n <;> simp +decide ;
-    · exact Computable.const ( some true );
-    · refine' Computable.option_bind _ _;
-      · exact Computable.list_getElem?.comp ( Computable.id ) ( ( primrec_nfIdxE.comp ( Primrec.list_length ) ).to_comp );
-      · refine' Computable.option_map _ _;
-        · exact Computable.list_getElem?.comp ( Computable.fst ) ( Primrec.to_comp ( primrec_nfIdxA.comp ( Primrec.list_length.comp ( Primrec.fst ) ) ) );
-        · refine' Computable₂.comp _ _ _;
-          · exact Computable.of_eq ( Computable.cond ( Computable.fst ) ( Computable.snd ) ( Computable.const false ) ) fun p => by cases p.1 <;> cases p.2 <;> rfl;
-          · convert Computable₂.comp _ _ _ using 1;
-            all_goals try infer_instance;
-            · exact Computable.of_eq ( Computable.cond ( Computable.fst ) ( Computable.snd ) ( Computable.const false ) ) fun p => by cases p.1 <;> cases p.2 <;> rfl;
-            · exact Computable.snd.comp ( Computable.fst );
-            · exact Computable.snd;
-          · convert computable_nfTB.comp ( Computable.list_length.comp ( Computable.fst.comp ( Computable.fst ) ) ) using 1;
-    · grind;
-  · unfold nfStep; aesop;
+  have c0 : Computable (fun L : List Bool => decide (L.length = 0)) :=
+    (Primrec.eq.comp Primrec.list_length (Primrec.const 0)).decide.to_comp
+  have f1 : Computable (fun L : List Bool => L[nfIdxE L.length]?) :=
+    (Primrec.list_getElem?.comp Primrec.id (primrec_nfIdxE.comp Primrec.list_length)).to_comp
+  have f2 : Computable (fun p : List Bool × Bool => p.1[nfIdxA p.1.length]?) :=
+    (Primrec.list_getElem?.comp Primrec.fst
+      (primrec_nfIdxA.comp (Primrec.list_length.comp Primrec.fst))).to_comp
+  have g2 : Computable₂ (fun (p : List Bool × Bool) (ba : Bool) => p.2 && ba && nfTB p.1.length) := by
+    have h1 : Computable (fun q : (List Bool × Bool) × Bool => q.1.2 && q.2) :=
+      Computable₂.comp Primrec.and.to_comp (Computable.snd.comp Computable.fst) Computable.snd
+    have h2 : Computable (fun q : (List Bool × Bool) × Bool => nfTB q.1.1.length) :=
+      computable_nfTB.comp (Primrec.list_length.comp (Primrec.fst.comp Primrec.fst)).to_comp
+    exact Computable₂.comp Primrec.and.to_comp h1 h2
+  have g1 : Computable₂ (fun (L : List Bool) (be : Bool) =>
+      (L[nfIdxA L.length]?).map fun ba => be && ba && nfTB L.length) :=
+    Computable.option_map f2 g2
+  have helse : Computable (fun L : List Bool =>
+      (L[nfIdxE L.length]?).bind fun be =>
+        (L[nfIdxA L.length]?).map fun ba => be && ba && nfTB L.length) :=
+    Computable.option_bind f1 g1
+  refine (Computable.cond c0 (Computable.const (some true)) helse).of_eq (fun L => ?_)
+  unfold nfStep
+  by_cases h : L.length = 0 <;> simp [h]
 
 /-- Characterization of `NF` on `oadd` (from mathlib's `decidableNF` argument). -/
 lemma NF_oadd_iff {e : ONote} {n : ℕ+} {a : ONote} :
     (ONote.oadd e n a).NF ↔ ONote.NF e ∧ ONote.NF a ∧ ONote.TopBelow e a := by
-  by_cases h : e.NF <;> simp_all +decide;
-  · convert ONote.nfBelow_iff_topBelow ( b := e ) |> Iff.trans <| ?_ using 1;
-    rotate_left;
-    exact a;
-    · rfl;
-    · exact ⟨ fun h' => h'.snd', fun h' => ONote.NF.oadd h n h' ⟩;
-  · exact fun h' => h <| h'.fst
+  by_cases h : e.NF
+  · haveI := h
+    rw [show (ONote.oadd e n a).NF ↔ ONote.NFBelow a (ONote.repr e) from
+      ⟨fun h' => h'.snd', fun h' => ONote.NF.oadd h n h'⟩, ONote.nfBelow_iff_topBelow]
+    tauto
+  · exact ⟨fun h' => absurd h'.fst h, fun h' => absurd h'.1 h⟩
 
 lemma nfStep_spec (n : ℕ) : nfStep ((List.range n).map Nfb) = some (Nfb n) := by
   unfold nfStep Nfb;
   by_cases hn : n = 0;
-  · rw [ hn ] ; simp +decide [ decodeONote ] ;
-  · rw [ show decodeONote n = ONote.oadd ( decodeONote ( Nat.unpair ( n - 1 ) |>.1 ) ) ⟨ ( Nat.unpair ( Nat.unpair ( n - 1 ) |>.2 ) |>.1 ) + 1, Nat.succ_pos _ ⟩ ( decodeONote ( Nat.unpair ( Nat.unpair ( n - 1 ) |>.2 ) |>.2 ) ) from ?_ ];
+  · rw [hn]; simp +decide [decodeONote];
+  · rw [show decodeONote n = ONote.oadd (decodeONote (Nat.unpair (n - 1) |>.1))
+      ⟨(Nat.unpair (Nat.unpair (n - 1) |>.2) |>.1) + 1, Nat.succ_pos _⟩
+      (decodeONote (Nat.unpair (Nat.unpair (n - 1) |>.2) |>.2)) from ?_];
     · have h_nfTB : nfTB n = decide (ONote.TopBelow (decodeONote (nfIdxE n)) (decodeONote (nfIdxA n))) := by
         unfold nfTB ONote.TopBelow;
-        rcases k : nfIdxA n with ( _ | k ) <;> simp_all +decide [ Cnat_pair_eq_zero ];
-        · unfold decodeONote; simp +decide ;
-        · rw [ decodeONote ];
-      simp_all +decide [ NF_oadd_iff ];
-      rw [ List.getElem?_range, List.getElem?_range ];
-      · simp +decide [ nfIdxE, nfIdxA ];
+        rcases k : nfIdxA n with (_ | k) <;> simp_all +decide [Cnat_pair_eq_zero];
+        · unfold decodeONote; simp +decide;
+        · rw [decodeONote];
+      simp_all +decide [NF_oadd_iff];
+      rw [List.getElem?_range, List.getElem?_range];
+      · simp +decide [nfIdxE, nfIdxA];
         grind;
-      · exact lt_of_le_of_lt ( Nat.unpair_right_le _ ) ( lt_of_le_of_lt ( Nat.unpair_right_le _ ) ( Nat.pred_lt hn ) );
-      · exact Nat.lt_of_le_of_lt ( Nat.unpair_left_le _ ) ( Nat.pred_lt hn );
-    · cases n <;> simp_all +decide [ decodeONote ]
+      · exact lt_of_le_of_lt (Nat.unpair_right_le _) (lt_of_le_of_lt (Nat.unpair_right_le _) (Nat.pred_lt hn));
+      · exact Nat.lt_of_le_of_lt (Nat.unpair_left_le _) (Nat.pred_lt hn);
+    · cases n <;> simp_all +decide [decodeONote]
 
 theorem computable_Nfb : Computable Nfb :=
-  Computable.nat_strong_rec ( fun ( _ : Unit ) n => Nfb n ) ( computable_nfStep.comp Computable.snd |> Computable.to₂ ) ( fun _ n => nfStep_spec n ) |> fun h => h.comp ( Computable.const () ) Computable.id
+  (Computable.nat_strong_rec (fun (_ : Unit) n => Nfb n)
+    (computable_nfStep.comp Computable.snd |> Computable.to₂)
+    (fun _ n => nfStep_spec n)).comp (Computable.const ()) Computable.id
 
 /-! ### Enumeration of normal-form codes -/
 
@@ -383,15 +367,12 @@ lemma nf_decode_enc (a : ℕ) : (decodeONote (enc a)).NF := by
 lemma enc_injective : Function.Injective enc := by
   intro a b hab;
   apply_fun decodeONote at hab;
-  -- Since `decodeONote (enc a) = (natCode a).1` and `decodeONote (enc b) = (natCode b).1`, we have `(natCode a).1 = (natCode b).1`.
   have h_eq : (natCode a).1 = (natCode b).1 := by
     grind +suggestions;
-  exact natCode.injective ( Subtype.ext h_eq )
+  exact natCode.injective (Subtype.ext h_eq)
 
 lemma enc_surjOn {n : ℕ} (h : (decodeONote n).NF) : ∃ a, enc a = n := by
-  -- Since `natCode` is a bijection, there exists `a` such that `natCode a = ⟨decodeONote n, h⟩`.
-  obtain ⟨a, ha⟩ : ∃ a, natCode a = ⟨decodeONote n, h⟩ := by
-    exact natCode.surjective _;
+  obtain ⟨a, ha⟩ := natCode.surjective ⟨decodeONote n, h⟩
   use a
   unfold enc
   simp [ha, encodeONote_decodeONote]
@@ -425,11 +406,11 @@ lemma enc_strictMono : StrictMono enc := by
 /-- Number of NF-codes strictly below `n`. -/
 def countNF (n : ℕ) : ℕ := ((List.range n).filter (fun k => Nfb k)).length
 
-theorem computable_countNF : Computable countNF := by
+lemma computable_countNF : Computable countNF := by
   have h_countNF_eq : countNF = fun n => Nat.recOn n 0 (fun n count => count + if Nfb n then 1 else 0) := by
-    funext n; induction' n with n ih <;> simp_all +decide [ countNF ] ;
-    rw [ List.range_succ, List.filter_append ] ; aesop;
-  rw [ h_countNF_eq ];
+    funext n; induction' n with n ih <;> simp_all +decide [countNF];
+    rw [List.range_succ, List.filter_append]; aesop;
+  rw [h_countNF_eq];
   convert Computable.nat_rec _ _ _ using 1;
   rotate_left;
   exact fun n => n;
@@ -440,13 +421,13 @@ theorem computable_countNF : Computable countNF := by
   · have h_countNF_eq : Computable (fun (p : ℕ × ℕ) => p.2 + (if Nfb p.1 then 1 else 0)) := by
       have h_cond : Computable (fun (p : ℕ × ℕ) => if Nfb p.1 then 1 else 0) := by
         have h_cond : Computable (fun (p : ℕ) => if Nfb p then 1 else 0) := by
-          convert Computable.cond ( computable_Nfb ) ( Computable.const 1 ) ( Computable.const 0 ) using 1;
+          convert Computable.cond computable_Nfb (Computable.const 1) (Computable.const 0) using 1;
           grind;
-        exact h_cond.comp ( Computable.fst )
+        exact h_cond.comp Computable.fst
       have h_add : Computable (fun (p : ℕ × ℕ) => p.1 + p.2) := by
-        exact Primrec.to_comp ( Primrec.nat_add.comp ( Primrec.fst ) ( Primrec.snd ) );
-      convert h_add.comp ( Computable.snd.pair h_cond ) using 1;
-    exact h_countNF_eq.comp ( Computable.snd );
+        exact Primrec.to_comp (Primrec.nat_add.comp Primrec.fst Primrec.snd);
+      convert h_add.comp (Computable.snd.pair h_cond) using 1;
+    exact h_countNF_eq.comp Computable.snd;
   · rfl
 
 lemma Nfb_enc (a : ℕ) : Nfb (enc a) = true := by
@@ -458,45 +439,45 @@ lemma countNF_eq (n : ℕ) :
 
 lemma countNF_enc (a : ℕ) : countNF (enc a) = a := by
   have h_card : ((Finset.range (enc a)).filter (fun k => (decodeONote k).NF)).card = ((Finset.range a).image enc).card := by
-    congr 1 with x ; simp +decide [ Finset.mem_image, Finset.mem_range ];
+    congr 1 with x; simp +decide [Finset.mem_image, Finset.mem_range];
     constructor;
     · intro hx;
-      obtain ⟨ b, hb ⟩ := enc_surjOn hx.2;
-      exact ⟨ b, by simpa [ hb ] using enc_strictMono.lt_iff_lt.mp ( by aesop ), hb ⟩;
-    · rintro ⟨ b, hb, rfl ⟩ ; exact ⟨ enc_strictMono hb, nf_decode_enc _ ⟩;
-  rw [ Finset.card_image_of_injective _ enc_injective ] at h_card ; aesop
+      obtain ⟨b, hb⟩ := enc_surjOn hx.2;
+      exact ⟨b, by simpa [hb] using enc_strictMono.lt_iff_lt.mp (by aesop), hb⟩;
+    · rintro ⟨b, hb, rfl⟩; exact ⟨enc_strictMono hb, nf_decode_enc _⟩;
+  rw [Finset.card_image_of_injective _ enc_injective] at h_card; aesop
 
-lemma countNF_succ (n : ℕ) : countNF (n + 1) = countNF n + (if Nfb n then 1 else 0) := by
+@[grind =] lemma countNF_succ (n : ℕ) : countNF (n + 1) = countNF n + (if Nfb n then 1 else 0) := by
   have h_filter : List.filter (fun k => Nfb k) (List.range (n + 1)) = List.filter (fun k => Nfb k) (List.range n) ++ if Nfb n then [n] else [] := by
-    simp +decide [ List.range_succ ];
+    simp +decide [List.range_succ];
     grind;
   unfold countNF; aesop;
 
-lemma countNF_mono : Monotone countNF := by
-  refine' monotone_nat_of_le_succ _;
-  simp +decide [ countNF_succ ]
+lemma countNF_mono : Monotone countNF :=
+  monotone_nat_of_le_succ (by simp +decide [countNF_succ])
 
 lemma lt_countNF_succ_enc (a : ℕ) : a < countNF (enc a + 1) := by
-  rw [ countNF_succ ];
-  rw [ countNF_enc, if_pos ( Nfb_enc a ) ] ; linarith
+  rw [countNF_succ];
+  rw [countNF_enc, if_pos (Nfb_enc a)]; linarith
 
 lemma exists_count (a : ℕ) : ∃ n, a < countNF (n + 1) := ⟨enc a, lt_countNF_succ_enc a⟩
 
 /-- The `a`-th NF-code, defined by an (always-terminating) search. -/
 noncomputable def nthNF (a : ℕ) : ℕ := Nat.find (exists_count a)
 
-lemma enc_eq_nthNF (a : ℕ) : enc a = nthNF a := by
-  refine' Eq.symm ( Nat.find_eq_iff _ |>.2 _ );
-  exact ⟨ lt_countNF_succ_enc a, fun n hn => not_lt_of_ge <| by linarith [ countNF_mono <| Nat.succ_le_of_lt hn, countNF_enc a ] ⟩
+lemma enc_eq_nthNF (a : ℕ) : enc a = nthNF a :=
+  Eq.symm <| (Nat.find_eq_iff _).2
+    ⟨lt_countNF_succ_enc a, fun n hn => not_lt_of_ge <| by
+      linarith [countNF_mono <| Nat.succ_le_of_lt hn, countNF_enc a]⟩
 
 lemma rfind_nthNF (a : ℕ) :
     Nat.rfind (fun n => (Part.some (decide (a < countNF (n + 1))) : Part Bool)) =
       Part.some (nthNF a) := by
   convert Part.eq_some_iff.mpr _ using 1;
   simp +zetaDelta at *;
-  exact ⟨ Nat.find_spec ( exists_count a ), fun { m } hm => not_lt.1 fun contra => hm.not_ge <| Nat.find_min' _ contra ⟩
+  exact ⟨Nat.find_spec (exists_count a), fun {m} hm => not_lt.1 fun contra => hm.not_ge <| Nat.find_min' _ contra⟩
 
-theorem computable_nthNF : Computable nthNF := by
+lemma computable_nthNF : Computable nthNF := by
   have hp : Partrec₂ (fun (a m : ℕ) =>
       (Part.some (decide (a < countNF (m + 1))) : Part Bool)) :=
     (Primrec.nat_lt.decide.to_comp).comp Computable.fst
@@ -508,17 +489,15 @@ theorem computable_enc : Computable enc :=
 
 /-! ### Assembling the final result -/
 
+lemma cmp_eq_lt_iff_lt (x y : NONote) : x.cmp y = Ordering.lt ↔ x < y := by
+  have h_compares : (x.cmp y).Compares x y := NONote.cmp_compares x y
+  rcases h : x.cmp y with (_ | _ | _) <;> simp_all +decide [Ordering.Compares];
+  exact le_of_lt h_compares
+
 lemma lt_iff_Cnat (a b : ℕ) :
     natCode a < natCode b ↔ Cnat (Nat.pair (enc a) (enc b)) = 0 := by
-  rw [Cnat_pair_eq_zero];
-  have h_dec : (natCode a).1.cmp (natCode b).1 = Ordering.lt ↔ natCode a < natCode b := by
-    have h_linear_order : ∀ x y : NONote, (x.cmp y = Ordering.lt ↔ x < y) := by
-      have h_linear_order : ∀ x y : NONote, (x.cmp y).Compares x y :=
-        fun x y => NONote.cmp_compares x y
-      intro x y; specialize h_linear_order x y; rcases h : x.cmp y with ( _ | _ | _ ) <;> simp_all +decide [ Ordering.Compares ] ;
-      exact le_of_lt h_linear_order;
-    exact h_linear_order _ _;
-  rw [ decodeONote_enc, decodeONote_enc, h_dec ]
+  rw [Cnat_pair_eq_zero, decodeONote_enc, decodeONote_enc]
+  exact (cmp_eq_lt_iff_lt (natCode a) (natCode b)).symm
 
 /-- **Recursive enumerability (in fact computability) of the pulled-back CNF order.** The order
 `natCode a < natCode b` on ℕ-codes is `REPred`. -/
