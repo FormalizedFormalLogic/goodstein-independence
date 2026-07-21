@@ -367,15 +367,12 @@ lemma nf_decode_enc (a : ℕ) : (decodeONote (enc a)).NF := by
 lemma enc_injective : Function.Injective enc := by
   intro a b hab;
   apply_fun decodeONote at hab;
-  -- Since `decodeONote (enc a) = (natCode a).1` and `decodeONote (enc b) = (natCode b).1`, we have `(natCode a).1 = (natCode b).1`.
   have h_eq : (natCode a).1 = (natCode b).1 := by
     grind +suggestions;
-  exact natCode.injective ( Subtype.ext h_eq )
+  exact natCode.injective (Subtype.ext h_eq)
 
 lemma enc_surjOn {n : ℕ} (h : (decodeONote n).NF) : ∃ a, enc a = n := by
-  -- Since `natCode` is a bijection, there exists `a` such that `natCode a = ⟨decodeONote n, h⟩`.
-  obtain ⟨a, ha⟩ : ∃ a, natCode a = ⟨decodeONote n, h⟩ := by
-    exact natCode.surjective _;
+  obtain ⟨a, ha⟩ := natCode.surjective ⟨decodeONote n, h⟩
   use a
   unfold enc
   simp [ha, encodeONote_decodeONote]
@@ -442,43 +439,43 @@ lemma countNF_eq (n : ℕ) :
 
 lemma countNF_enc (a : ℕ) : countNF (enc a) = a := by
   have h_card : ((Finset.range (enc a)).filter (fun k => (decodeONote k).NF)).card = ((Finset.range a).image enc).card := by
-    congr 1 with x ; simp +decide [ Finset.mem_image, Finset.mem_range ];
+    congr 1 with x; simp +decide [Finset.mem_image, Finset.mem_range];
     constructor;
     · intro hx;
-      obtain ⟨ b, hb ⟩ := enc_surjOn hx.2;
-      exact ⟨ b, by simpa [ hb ] using enc_strictMono.lt_iff_lt.mp ( by aesop ), hb ⟩;
-    · rintro ⟨ b, hb, rfl ⟩ ; exact ⟨ enc_strictMono hb, nf_decode_enc _ ⟩;
-  rw [ Finset.card_image_of_injective _ enc_injective ] at h_card ; aesop
+      obtain ⟨b, hb⟩ := enc_surjOn hx.2;
+      exact ⟨b, by simpa [hb] using enc_strictMono.lt_iff_lt.mp (by aesop), hb⟩;
+    · rintro ⟨b, hb, rfl⟩; exact ⟨enc_strictMono hb, nf_decode_enc _⟩;
+  rw [Finset.card_image_of_injective _ enc_injective] at h_card; aesop
 
 lemma countNF_succ (n : ℕ) : countNF (n + 1) = countNF n + (if Nfb n then 1 else 0) := by
   have h_filter : List.filter (fun k => Nfb k) (List.range (n + 1)) = List.filter (fun k => Nfb k) (List.range n) ++ if Nfb n then [n] else [] := by
-    simp +decide [ List.range_succ ];
+    simp +decide [List.range_succ];
     grind;
   unfold countNF; aesop;
 
-lemma countNF_mono : Monotone countNF := by
-  refine' monotone_nat_of_le_succ _;
-  simp +decide [ countNF_succ ]
+lemma countNF_mono : Monotone countNF :=
+  monotone_nat_of_le_succ (by simp +decide [countNF_succ])
 
 lemma lt_countNF_succ_enc (a : ℕ) : a < countNF (enc a + 1) := by
-  rw [ countNF_succ ];
-  rw [ countNF_enc, if_pos ( Nfb_enc a ) ] ; linarith
+  rw [countNF_succ];
+  rw [countNF_enc, if_pos (Nfb_enc a)]; linarith
 
 lemma exists_count (a : ℕ) : ∃ n, a < countNF (n + 1) := ⟨enc a, lt_countNF_succ_enc a⟩
 
 /-- The `a`-th NF-code, defined by an (always-terminating) search. -/
 noncomputable def nthNF (a : ℕ) : ℕ := Nat.find (exists_count a)
 
-lemma enc_eq_nthNF (a : ℕ) : enc a = nthNF a := by
-  refine' Eq.symm ( Nat.find_eq_iff _ |>.2 _ );
-  exact ⟨ lt_countNF_succ_enc a, fun n hn => not_lt_of_ge <| by linarith [ countNF_mono <| Nat.succ_le_of_lt hn, countNF_enc a ] ⟩
+lemma enc_eq_nthNF (a : ℕ) : enc a = nthNF a :=
+  Eq.symm <| (Nat.find_eq_iff _).2
+    ⟨lt_countNF_succ_enc a, fun n hn => not_lt_of_ge <| by
+      linarith [countNF_mono <| Nat.succ_le_of_lt hn, countNF_enc a]⟩
 
 lemma rfind_nthNF (a : ℕ) :
     Nat.rfind (fun n => (Part.some (decide (a < countNF (n + 1))) : Part Bool)) =
       Part.some (nthNF a) := by
   convert Part.eq_some_iff.mpr _ using 1;
   simp +zetaDelta at *;
-  exact ⟨ Nat.find_spec ( exists_count a ), fun { m } hm => not_lt.1 fun contra => hm.not_ge <| Nat.find_min' _ contra ⟩
+  exact ⟨Nat.find_spec (exists_count a), fun {m} hm => not_lt.1 fun contra => hm.not_ge <| Nat.find_min' _ contra⟩
 
 lemma computable_nthNF : Computable nthNF := by
   have hp : Partrec₂ (fun (a m : ℕ) =>
