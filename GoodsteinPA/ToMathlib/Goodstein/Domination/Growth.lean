@@ -12,18 +12,18 @@ namespace Goodstein.Dom
 open ONote Ordinal
 
 /-
-# C2 — the semantic bridge `Engine.toOrdinal` ↔ `ONote.repr`
+# The semantic bridge `toOrdinal` ↔ `ONote.repr`
 
-The Goodstein termination proof (`Logic/Goodstein/Engine.lean`) maps each Goodstein term to
+The Goodstein termination proof (`Sequence.lean`) maps each Goodstein term to
 an ordinal `< ε₀` via `toOrdinal b n` — read `n` in hereditary base `b`, replace `b` by `ω`.
 That ordinal is exactly the `ONote.repr` of the Cantor-normal-form notation of `n` in base
 `b`. This file builds that notation, `toONote b n`, and proves the bridge
 
   `repr (toONote b n) = toOrdinal b n`  (`repr_toONote`)   and   `(toONote b n).NF`.
 
-With the bridge, the engine's ε₀-descent (`Engine.seqOrd_step`) is expressed on the
+With the bridge, the ε₀-descent (`seqOrd_step`) is expressed on the
 *computable* ordinal notations `ONote`, the home of the fast-growing growth theory
-(`Logic/FastGrowing/*`). This is the prerequisite (C2) for the growth theorem C3
+(`ToMathlib/FastGrowing/*`) — the prerequisite for the growth theorem
 (`goodsteinLength` tracks `fastGrowingε₀`).
 -/
 
@@ -47,7 +47,7 @@ decreasing_by
       · exact Nat.pow_pos hbpos
     exact lt_of_lt_of_le (Nat.mod_lt _ hb) (Nat.pow_log_le_self b h)
 
-@[simp] theorem toONote_zero (b : ℕ) : toONote b 0 = 0 := by rw [toONote]; simp
+@[simp] lemma toONote_zero (b : ℕ) : toONote b 0 = 0 := by rw [toONote]; simp
 
 /-- **The bridge (repr side).** `repr (toONote b n) = toOrdinal b n`: the notation really does
 represent the engine's ordinal. Structural induction mirroring `toOrdinal_pos`. -/
@@ -99,32 +99,32 @@ theorem toONote_NF (b : ℕ) (hb : 2 ≤ b) : ∀ n, (toONote b n).NF := by
 
 /-! ### The Goodstein descent, expressed on `ONote`
 
-With the bridge in hand, the engine's ordinal value `Engine.seqOrd m k` becomes a computable
-notation `seqONote m k`, and the strict ε₀-descent `Engine.seqOrd_step` becomes a strict
-`ONote` `<`-descent. This is the C2 deliverable: the Goodstein termination descent now lives
-on the same `ONote` where the fast-growing growth theory (`Logic/FastGrowing/*`, A4) does —
-the bridge that C3 (the growth theorem) will cross. -/
+With the bridge in hand, the ordinal value `seqOrd m k` (`Sequence.lean`) becomes a computable
+notation `seqONote m k`, and the strict ε₀-descent `seqOrd_step` becomes a strict
+`ONote` `<`-descent. The Goodstein termination descent now lives on the same `ONote` where the
+fast-growing growth theory (`ToMathlib/FastGrowing/*`) does — the bridge that the growth
+theorem below crosses. -/
 
 /-- The `k`-th Goodstein term as an ordinal **notation** (read in its base `k+2`). -/
 def seqONote (m k : ℕ) : ONote := toONote (k + 2) (goodsteinSeq m k)
 
-theorem seqONote_NF (m k : ℕ) : (seqONote m k).NF := toONote_NF (k + 2) (by omega) _
+lemma seqONote_NF (m k : ℕ) : (seqONote m k).NF := toONote_NF (k + 2) (by omega) _
 
 /-- `repr (seqONote m k) = Engine.seqOrd m k`: the notation carries the engine's ordinal. -/
-theorem repr_seqONote (m k : ℕ) : (seqONote m k).repr = seqOrd m k :=
+lemma repr_seqONote (m k : ℕ) : (seqONote m k).repr = seqOrd m k :=
   repr_toONote (k + 2) (by omega) _
 
 /-- **The Goodstein descent on `ONote`.** While the term is nonzero, one Goodstein step
 strictly lowers the notation: `seqONote m (k+1) < seqONote m k`. Transported from
 `Engine.seqOrd_step` through the `repr` bridge. -/
-theorem seqONote_lt (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
+lemma seqONote_lt (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
     seqONote m (k + 1) < seqONote m k := by
   rw [lt_def, repr_seqONote, repr_seqONote]
   exact seqOrd_step m k h
 
 /-- `toONote b n = 0 ↔ n = 0`: the notation vanishes exactly when its argument does (a
 nonzero argument produces an `oadd`, which is positive). -/
-theorem toONote_eq_zero_iff (b n : ℕ) : toONote b n = 0 ↔ n = 0 := by
+lemma toONote_eq_zero_iff (b n : ℕ) : toONote b n = 0 ↔ n = 0 := by
   refine ⟨fun h => ?_, fun h => by rw [h, toONote_zero]⟩
   by_contra hn
   rw [toONote, dif_neg hn] at h
@@ -132,22 +132,23 @@ theorem toONote_eq_zero_iff (b n : ℕ) : toONote b n = 0 ↔ n = 0 := by
 
 /-- `seqONote m k = 0 ↔ goodsteinSeq m k = 0`: the notation hits `0` exactly at termination.
 Hence the ONote descent `seqONote m 0 > seqONote m 1 > …` has length `goodsteinLength m` —
-the connection `goodsteinLength` ↔ ε₀-descent that C3 will turn into a Hardy growth bound. -/
-theorem seqONote_eq_zero_iff (m k : ℕ) : seqONote m k = 0 ↔ goodsteinSeq m k = 0 :=
+the connection `goodsteinLength` ↔ ε₀-descent that the growth theorem below turns into a
+Hardy growth bound. -/
+lemma seqONote_eq_zero_iff (m k : ℕ) : seqONote m k = 0 ↔ goodsteinSeq m k = 0 :=
   toONote_eq_zero_iff (k + 2) (goodsteinSeq m k)
 
 /-- The ONote descent reaches `0` exactly at index `goodsteinLength m`. -/
-theorem seqONote_goodsteinLength (m : ℕ) : seqONote m (goodsteinLength m) = 0 :=
+lemma seqONote_goodsteinLength (m : ℕ) : seqONote m (goodsteinLength m) = 0 :=
   (seqONote_eq_zero_iff m (goodsteinLength m)).2 (goodsteinSeq_goodsteinLength m)
 
 /-- Before `goodsteinLength m` the descent is strictly positive. So `goodsteinLength m` is
 *precisely* the length of the strict `ONote` descent `seqONote m 0 > … > 0` — the quantity
-C3 must identify with a Hardy value of `seqONote m 0`. -/
-theorem seqONote_ne_zero_of_lt (m : ℕ) {k : ℕ} (h : k < goodsteinLength m) :
+the growth theorem below identifies with a Hardy value of `seqONote m 0`. -/
+lemma seqONote_ne_zero_of_lt (m : ℕ) {k : ℕ} (h : k < goodsteinLength m) :
     seqONote m k ≠ 0 :=
   fun hz => goodsteinSeq_ne_zero_of_lt h ((seqONote_eq_zero_iff m k).1 hz)
 
-/-! ## C3 — the growth theorem: `goodsteinLength m = H_{seqONote m 0}(2) − 2`
+/-! ## The growth theorem: `goodsteinLength m = H_{seqONote m 0}(2) − 2`
 
 The crown jewel. The Hardy hierarchy "counts the steps" of a unit-decrement ordinal descent
 where the *argument* (= the Goodstein base) grows by one at each step. The bridge is the
@@ -159,19 +160,20 @@ where the *argument* (= the Goodstein base) grows by one at each step. The bridg
 i.e. "descend the fundamental-sequence tree of `p`'s notation once at argument `b`" equals
 "bump the base `b ↦ b+1` and subtract one" — the operation the Goodstein step performs.
 Combined with the intrinsic Hardy step invariant `hardy_hstep` (`H_o(n) = H_{hstep o n}(n+1)`,
-proved in `FastGrowing/Hardy.lean`), the Hardy value `H_{seqONote m k}(k+2)` is **constant**
-along the whole Goodstein descent, so telescoping from `k = 0` to `k = goodsteinLength m`
-(where the notation is `0` and `H_0(N) = N`) yields `H_{seqONote m 0}(2) = goodsteinLength m + 2`.
+proved in `ToMathlib/Hardy/Structure.lean`), the Hardy value `H_{seqONote m k}(k+2)` is
+**constant** along the whole Goodstein descent, so telescoping from `k = 0` to
+`k = goodsteinLength m` (where the notation is `0` and `H_0(N) = N`) yields
+`H_{seqONote m 0}(2) = goodsteinLength m + 2`.
 
 This is the formal "Goodstein grows like the Hardy/fast-growing hierarchy" — the growth
-content behind Kirby–Paris independence (the abstract domination `f_o < f_{ε₀}` is A4
-in `FastGrowing/Domination.lean`; this file pins the Goodstein length itself to a Hardy value). -/
+content behind Kirby–Paris independence; this file pins the Goodstein length itself to a
+Hardy value. -/
 
 /-- **Notation invariance under `bump`.** The ordinal *notation* of `n` is unchanged by a
 hereditary base bump: `toONote (b+1) (bump b n) = toONote b n`. Both are normal-form notations
 with the same `repr` (the bump invariance `toOrdinal_bump` at the ordinal level), so they are
 equal by `repr_inj`. This is the notation-level companion of `Engine.toOrdinal_bump`. -/
-theorem toONote_bump (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
+lemma toONote_bump (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
     toONote (b + 1) (bump b n) = toONote b n := by
   haveI := toONote_NF (b + 1) (by omega) (bump b n)
   haveI := toONote_NF b hb n
@@ -180,7 +182,7 @@ theorem toONote_bump (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
 /-- **Constructor form of `toONote`.** When `1 ≤ c < b` and `s < b^e`, the base-`b` notation
 of `c·b^e + s` is `oadd (toONote b e) c (toONote b s)` — `c·b^e + s` already presents the
 leading Cantor term, so `log`, `div`, `mod` read off `e`, `c`, `s`. -/
-theorem toONote_oadd (b : ℕ) (hb : 2 ≤ b) {c e s : ℕ} (hc : 1 ≤ c) (hcb : c < b)
+lemma toONote_oadd (b : ℕ) (hb : 2 ≤ b) {c e s : ℕ} (hc : 1 ≤ c) (hcb : c < b)
     (hs : s < b ^ e) : toONote b (c * b ^ e + s) = oadd (toONote b e) ⟨c, hc⟩ (toONote b s) := by
   have hbe_pos : 0 < b ^ e := Nat.pow_pos (by omega)
   have hn0 : c * b ^ e + s ≠ 0 := by positivity
@@ -202,13 +204,13 @@ theorem toONote_oadd (b : ℕ) (hb : 2 ≤ b) {c e s : ℕ} (hc : 1 ≤ c) (hcb 
 
 /-- Single-digit notation: for `1 ≤ d < b`, `toONote b d = oadd 0 ⟨d,_⟩ 0` (the finite
 ordinal `d`). Special case of `toONote_oadd` with exponent and remainder zero. -/
-theorem toONote_single (b : ℕ) (hb : 2 ≤ b) {d : ℕ} (hd1 : 1 ≤ d) (hdb : d < b) :
+lemma toONote_single (b : ℕ) (hb : 2 ≤ b) {d : ℕ} (hd1 : 1 ≤ d) (hdb : d < b) :
     toONote b d = oadd 0 ⟨d, hd1⟩ 0 := by
   simpa using toONote_oadd b hb hd1 hdb (show (0 : ℕ) < b ^ 0 by simp)
 
 /-- `fundamentalSequence` of `oadd 0 C 0` (a finite ordinal `C`): always a successor —
 predecessor `0` when `C = 1`, else `oadd 0 (C-1) 0`. Read off the definition's nested match. -/
-theorem fundamentalSequence_oadd_zero_zero (C : ℕ+) :
+lemma fundamentalSequence_oadd_zero_zero (C : ℕ+) :
     fundamentalSequence (oadd 0 C 0) =
       match C.natPred with
       | 0 => Sum.inl (some 0)
@@ -221,7 +223,7 @@ theorem fundamentalSequence_oadd_zero_zero (C : ℕ+) :
 `1 ≤ c < b`, one Hardy step on `oadd 0 c 0` (the finite ordinal `c`) is the finite notation
 of `c − 1` in base `b+1`: `hstep (oadd 0 c 0) b = toONote (b+1) (c−1)`. `oadd 0 c 0` is a
 successor, so the step is a single decrement. -/
-theorem hstep_oadd_zero_zero (b : ℕ) (hb : 2 ≤ b) (c : ℕ) (hc1 : 1 ≤ c) (hcb : c < b) :
+lemma hstep_oadd_zero_zero (b : ℕ) (hb : 2 ≤ b) (c : ℕ) (hc1 : 1 ≤ c) (hcb : c < b) :
     hstep (oadd 0 ⟨c, hc1⟩ 0) b = toONote (b + 1) (c - 1) := by
   have hnp : PNat.natPred ⟨c, hc1⟩ = c - 1 := PNat.natPred_eq_pred hc1
   rcases eq_or_ne c 1 with rfl | hc2
@@ -240,7 +242,7 @@ theorem hstep_oadd_zero_zero (b : ℕ) (hb : 2 ≤ b) (c : ℕ) (hc1 : 1 ≤ c) 
 is some `inr g`, and that of `oadd E ⟨k+2⟩ 0` wraps it as `fun i => oadd E ⟨k+1⟩ (g i)`.
 Read off the two non-`inl none` branches of `fundamentalSequence (oadd E · 0)` (tail `0`,
 `natPred` `0` resp. `k+1`). -/
-theorem fundSeq_oadd_coeff (E : ONote) (hE : E ≠ 0) (k : ℕ) :
+lemma fundSeq_oadd_coeff (E : ONote) (hE : E ≠ 0) (k : ℕ) :
     ∃ g, fundamentalSequence (oadd E 1 0) = Sum.inr g ∧
       fundamentalSequence (oadd E ⟨k + 2, by omega⟩ 0)
         = Sum.inr (fun i => oadd E k.succPNat (g i)) := by
@@ -260,7 +262,7 @@ peels the coefficient to `c-1` and leaves a Hardy step on `oadd E 1 0`:
 `hstep (oadd E ⟨c⟩ 0) b = oadd E ⟨c-1⟩ (hstep (oadd E 1 0) b)`. The descent through the
 limit `oadd E ⟨c⟩ 0` lands on `oadd E ⟨c-1⟩ (g b)`, whose nonzero tail `g b` peels off
 (`hstep_oadd_tail`) leaving exactly `hstep (oadd E 1 0) b = hstep (g b) b`. -/
-theorem hstep_oadd_coeff (b : ℕ) {E : ONote} (hE : E ≠ 0) {c : ℕ} (hc : 2 ≤ c)
+lemma hstep_oadd_coeff (b : ℕ) {E : ONote} (hE : E ≠ 0) {c : ℕ} (hc : 2 ≤ c)
     (hc1 : 1 ≤ c) :
     hstep (oadd E ⟨c, hc1⟩ 0) b = oadd E ⟨c - 1, by omega⟩ (hstep (oadd E 1 0) b) := by
   obtain ⟨k, rfl⟩ : ∃ k, c = k + 2 := ⟨c - 2, by omega⟩
@@ -280,16 +282,16 @@ def evalNat (b : ℕ) : ONote → ℕ
   | 0 => 0
   | oadd e n r => (n : ℕ) * (b + 1) ^ evalNat b e + evalNat b r
 
-@[simp] theorem evalNat_zero (b : ℕ) : evalNat b 0 = 0 := rfl
+@[simp] lemma evalNat_zero (b : ℕ) : evalNat b 0 = 0 := rfl
 
-theorem evalNat_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
+lemma evalNat_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
     evalNat b (oadd e n r) = (n : ℕ) * (b + 1) ^ evalNat b e + evalNat b r := rfl
 
 /-- **`evalNat` reconstructs `bump`.** Evaluating the base-`b` notation `toONote b L` at
 `ω ↦ b+1` gives exactly the hereditary base-bump `bump b L`. Strong induction on `L`,
 mirroring `bump`'s own recursion. Hence the borrowing answer for `E = toONote b L`,
 `(b+1)^(evalNat b E) − 1`, is exactly `(b+1)^(bump b L) − 1`. -/
-theorem evalNat_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, evalNat b (toONote b L) = bump b L := by
+lemma evalNat_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, evalNat b (toONote b L) = bump b L := by
   intro L
   induction L using Nat.strong_induction_on with
   | _ L ih =>
@@ -308,7 +310,7 @@ theorem evalNat_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, evalNat b (toONote b L
 /-- **`evalNat` tracks a successor step.** If `fundamentalSequence E = some E'` (i.e. `E` is the
 successor of `E'`), then `evalNat b E = evalNat b E' + 1`. Structural recursion on `E`, casing
 the `fundamentalSequence` successor branches. -/
-theorem evalNat_succ (b : ℕ) : ∀ {E E' : ONote}, fundamentalSequence E = Sum.inl (some E') →
+lemma evalNat_succ (b : ℕ) : ∀ {E E' : ONote}, fundamentalSequence E = Sum.inl (some E') →
     evalNat b E = evalNat b E' + 1 := by
   intro E
   induction E with
@@ -358,7 +360,7 @@ theorem evalNat_succ (b : ℕ) : ∀ {E E' : ONote}, fundamentalSequence E = Sum
 `fundamentalSequence E = inr f`, then `evalNat b (f b) = evalNat b E`. The descent's coefficient
 `b+1` (from `(b).succPNat`) is exactly what makes the base-`(b+1)` evaluation land back on
 `evalNat b E`. Structural recursion on `E`; the successor sub-branches use `evalNat_succ`. -/
-theorem evalNat_fundSeq (b : ℕ) : ∀ {E : ONote} {f : ℕ → ONote},
+lemma evalNat_fundSeq (b : ℕ) : ∀ {E : ONote} {f : ℕ → ONote},
     fundamentalSequence E = Sum.inr f → evalNat b (f b) = evalNat b E := by
   intro E
   induction E with
@@ -425,7 +427,7 @@ theorem evalNat_fundSeq (b : ℕ) : ∀ {E : ONote} {f : ℕ → ONote},
 
 /-- Predecessor of a finite successor `oadd 0 ⟨c⟩ 0` (= the ordinal `c`) at any argument:
 for `c ≥ 2`, `hstep (oadd 0 ⟨c⟩ 0) n = oadd 0 ⟨c-1⟩ 0`. -/
-theorem hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) :
+lemma hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) :
     hstep (oadd 0 ⟨c, by omega⟩ 0) n = oadd 0 ⟨c - 1, by omega⟩ 0 := by
   obtain ⟨e, rfl⟩ : ∃ e, c = e + 2 := ⟨c - 2, by omega⟩
   have hfs : fundamentalSequence (oadd 0 ⟨e + 2, by omega⟩ 0)
@@ -435,13 +437,13 @@ theorem hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) :
   rfl
 
 /-- The `c = 1` fundamental sequence when `E` is a **successor** (`fundamentalSequence E = some E'`). -/
-theorem fundSeq_oadd_one_of_succ {E E' : ONote} (h : fundamentalSequence E = Sum.inl (some E')) :
+lemma fundSeq_oadd_one_of_succ {E E' : ONote} (h : fundamentalSequence E = Sum.inl (some E')) :
     fundamentalSequence (oadd E 1 0) = Sum.inr (fun i => oadd E' i.succPNat 0) := by
   rw [fundamentalSequence]
   simp only [show fundamentalSequence (0 : ONote) = Sum.inl none from rfl, h]; rfl
 
 /-- The `c = 1` fundamental sequence when `E` is a **limit** (`fundamentalSequence E = inr f`). -/
-theorem fundSeq_oadd_one_of_limit {E : ONote} {f : ℕ → ONote}
+lemma fundSeq_oadd_one_of_limit {E : ONote} {f : ℕ → ONote}
     (h : fundamentalSequence E = Sum.inr f) :
     fundamentalSequence (oadd E 1 0) = Sum.inr (fun i => oadd (f i) 1 0) := by
   rw [fundamentalSequence]
@@ -449,20 +451,20 @@ theorem fundSeq_oadd_one_of_limit {E : ONote} {f : ℕ → ONote}
 
 /-- One Hardy step on `oadd E 1 0` when `E` is a **successor** with predecessor `E'`: the
 descent lands on `oadd E' ⟨b+1⟩ 0`. -/
-theorem hstep_oadd_one_of_succ {E E' : ONote} (h : fundamentalSequence E = Sum.inl (some E'))
+lemma hstep_oadd_one_of_succ {E E' : ONote} (h : fundamentalSequence E = Sum.inl (some E'))
     (b : ℕ) : hstep (oadd E 1 0) b = hstep (oadd E' b.succPNat 0) b := by
   rw [hstep_limit _ (fundSeq_oadd_one_of_succ h)]
 
 /-- One Hardy step on `oadd E 1 0` when `E` is a **limit** with fundamental sequence `f`: the
 descent passes to `oadd (f b) 1 0`. -/
-theorem hstep_oadd_one_of_limit {E : ONote} {f : ℕ → ONote}
+lemma hstep_oadd_one_of_limit {E : ONote} {f : ℕ → ONote}
     (h : fundamentalSequence E = Sum.inr f) (b : ℕ) :
     hstep (oadd E 1 0) b = hstep (oadd (f b) 1 0) b := by
   rw [hstep_limit _ (fundSeq_oadd_one_of_limit h)]
 
 /-- Fundamental sequence of the finite ordinal `oadd 0 ⟨c⟩ 0` (`c ≥ 2`): the successor of
 `oadd 0 ⟨c-1⟩ 0`. -/
-theorem fundSeq_finite_succ (c : ℕ) (hc : 2 ≤ c) :
+lemma fundSeq_finite_succ (c : ℕ) (hc : 2 ≤ c) :
     fundamentalSequence (oadd 0 ⟨c, by omega⟩ 0) = Sum.inl (some (oadd 0 ⟨c - 1, by omega⟩ 0)) := by
   obtain ⟨e, rfl⟩ : ∃ e, c = e + 2 := ⟨c - 2, by omega⟩
   rw [fundamentalSequence_oadd_zero_zero]; rfl
@@ -474,7 +476,7 @@ produces (`hstep_oadd_coeff`), recurses (`ih`), and the leading exponent reconst
 single base-`(b+1)` digit (`toONote (b+1) d = finite d`, valid since `d ≤ b < b+1`). This is
 the base case of the general `hstep_oadd_one_zero` and validates the full borrowing recursion
 (descent → coefficient peel → IH → reconstruct) end-to-end. -/
-theorem hstep_oadd_one_zero_finite (b : ℕ) (hb : 2 ≤ b) :
+lemma hstep_oadd_one_zero_finite (b : ℕ) (hb : 2 ≤ b) :
     ∀ d, d ≤ b →
       hstep (oadd (oadd 0 d.succPNat 0) 1 0) b = toONote (b + 1) ((b + 1) ^ (d + 1) - 1) := by
   intro d
@@ -524,7 +526,7 @@ Invariant: throughout the `fundamentalSequence` descent the notation is *canonic
 (`canon_round_trip : toONote (b+1) (evalNat b E) = E`) — exactly the successor reconstruction. -/
 
 /-- `toOrdinal B (B^k) = ω^(toOrdinal B k)`: a pure power is a single leading `ω`-power. -/
-theorem toOrdinal_pow (B : ℕ) (hB : 2 ≤ B) (k : ℕ) :
+lemma toOrdinal_pow (B : ℕ) (hB : 2 ≤ B) (k : ℕ) :
     toOrdinal B (B ^ k) = ω ^ toOrdinal B k := by
   have hBk : B ^ k ≠ 0 := pow_ne_zero _ (by omega)
   rw [toOrdinal_pos B _ hBk, Nat.log_pow (by omega), Nat.div_self (Nat.pow_pos (by omega)),
@@ -532,7 +534,7 @@ theorem toOrdinal_pow (B : ℕ) (hB : 2 ≤ B) (k : ℕ) :
 
 /-- Constructor form of `toOrdinal` (the ordinal twin of `toONote_oadd`): for `1 ≤ c < B` and
 `s < B^k`, `toOrdinal B (c·B^k + s) = ω^(toOrdinal B k)·c + toOrdinal B s`. -/
-theorem toOrdinal_oadd (B : ℕ) (hB : 2 ≤ B) {c k s : ℕ} (hc : 1 ≤ c) (hcB : c < B)
+lemma toOrdinal_oadd (B : ℕ) (hB : 2 ≤ B) {c k s : ℕ} (hc : 1 ≤ c) (hcB : c < B)
     (hs : s < B ^ k) :
     toOrdinal B (c * B ^ k + s) = ω ^ toOrdinal B k * (c : Ordinal) + toOrdinal B s := by
   have hBk_pos : 0 < B ^ k := Nat.pow_pos (by omega)
@@ -557,18 +559,17 @@ def Canon (b : ℕ) : ONote → Prop
   | 0 => True
   | oadd e n r => (n : ℕ) ≤ b ∧ Canon b e ∧ Canon b r
 
-theorem Canon_zero (b : ℕ) : Canon b 0 := trivial
+lemma Canon_zero (b : ℕ) : Canon b 0 := trivial
 
-theorem Canon_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
+lemma Canon_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
     Canon b (oadd e n r) ↔ (n : ℕ) ≤ b ∧ Canon b e ∧ Canon b r := Iff.rfl
 
 /-- A `Canon` NF notation is recovered by reading `evalNat` back at the ordinal level:
 `toOrdinal (b+1) (evalNat b E) = repr E`. Structural induction; the leading-term remainder
 bound for `toOrdinal_oadd` comes from `NF` via the engine's strict monotonicity. -/
-theorem canon_repr (b : ℕ) (hb : 1 ≤ b) :
+lemma canon_repr (b : ℕ) (hb : 1 ≤ b) :
     ∀ E : ONote, Canon b E → E.NF → toOrdinal (b + 1) (evalNat b E) = E.repr := by
-  have hSM : StrictMono (toOrdinal (b + 1)) := fun a c hac =>
-    (toOrdinal_mono_and_bound (b + 1) (by omega) c).1 a hac
+  have hSM : StrictMono (toOrdinal (b + 1)) := toOrdinal_strictMono (b + 1) (by omega)
   intro E
   induction E with
   | zero => intro _ _; simp
@@ -588,7 +589,7 @@ theorem canon_repr (b : ℕ) (hb : 1 ≤ b) :
     simp
 
 /-- A `Canon` NF notation round-trips through `evalNat`: `toONote (b+1) (evalNat b E) = E`. -/
-theorem canon_round_trip (b : ℕ) (hb : 2 ≤ b) (E : ONote) (hcanon : Canon b E) (hNF : E.NF) :
+lemma canon_round_trip (b : ℕ) (hb : 2 ≤ b) (E : ONote) (hcanon : Canon b E) (hNF : E.NF) :
     toONote (b + 1) (evalNat b E) = E := by
   haveI : (toONote (b + 1) (evalNat b E)).NF := toONote_NF (b + 1) (by omega) (evalNat b E)
   haveI : E.NF := hNF
@@ -604,15 +605,15 @@ def Good (b : ℕ) : ONote → Prop
       (Canon b e ∧ (n : ℕ) = b + 1 ∧ r = 0) ∨
       ((n : ℕ) = 1 ∧ r = 0 ∧ Good b e)
 
-theorem Good_zero (b : ℕ) : Good b 0 := trivial
+lemma Good_zero (b : ℕ) : Good b 0 := trivial
 
-theorem Good_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
+lemma Good_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
     Good b (oadd e n r) ↔
       (Canon b e ∧ (n : ℕ) ≤ b ∧ Good b r) ∨
       (Canon b e ∧ (n : ℕ) = b + 1 ∧ r = 0) ∨
       ((n : ℕ) = 1 ∧ r = 0 ∧ Good b e) := Iff.rfl
 
-theorem Good_of_Canon (b : ℕ) : ∀ E, Canon b E → Good b E := by
+lemma Good_of_Canon (b : ℕ) : ∀ E, Canon b E → Good b E := by
   intro E
   induction E with
   | zero => intro _; exact trivial
@@ -621,7 +622,7 @@ theorem Good_of_Canon (b : ℕ) : ∀ E, Canon b E → Good b E := by
     obtain ⟨hn, hce, hcr⟩ := (Canon_oadd b e n r).1 hc
     exact (Good_oadd b e n r).2 (Or.inl ⟨hce, hn, ihr hcr⟩)
 
-theorem Canon_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, Canon b (toONote b L) := by
+lemma Canon_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, Canon b (toONote b L) := by
   intro L
   induction L using Nat.strong_induction_on with
   | _ L ih =>
@@ -642,7 +643,7 @@ theorem Canon_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ L, Canon b (toONote b L) :=
 
 /-- For a `Good` *successor* notation, the predecessor is fully `Canon`: the parked `b+1`
 coefficient (if any) is forced into the finite lowest term, which `pred` decrements to `≤ b`. -/
-theorem Canon_pred (b : ℕ) : ∀ E E', Good b E → fundamentalSequence E = Sum.inl (some E') →
+lemma Canon_pred (b : ℕ) : ∀ E E', Good b E → fundamentalSequence E = Sum.inl (some E') →
     Canon b E' := by
   intro E
   induction E with
@@ -694,7 +695,7 @@ theorem Canon_pred (b : ℕ) : ∀ E E', Good b E → fundamentalSequence E = Su
 
 /-- `Good` is preserved by one step of the limit descent at the working index `b`:
 if `Good b E` and `fundamentalSequence E = inr f`, then `Good b (f b)`. -/
-theorem Good_fundSeq (b : ℕ) : ∀ E f, Good b E → fundamentalSequence E = Sum.inr f →
+lemma Good_fundSeq (b : ℕ) : ∀ E f, Good b E → fundamentalSequence E = Sum.inr f →
     Good b (f b) := by
   intro E
   induction E with
@@ -787,7 +788,7 @@ all-digits-`b` base-`(b+1)` notation of `(b+1)^(evalNat b E) − 1`. Well-founde
 `repr E`: the limit case closes via the IH on `f b` and `evalNat_fundSeq`; the successor case
 peels the coefficient (`hstep_oadd_coeff`), applies the IH to the predecessor `E'`, and
 reconstructs `E'` via `canon_round_trip` (valid since `Canon_pred` makes `E'` canonical). -/
-theorem hstep_pred_pow (b : ℕ) (hb : 2 ≤ b) :
+lemma hstep_pred_pow (b : ℕ) (hb : 2 ≤ b) :
     ∀ E : ONote, E.NF → E ≠ 0 → Good b E →
       hstep (oadd E 1 0) b = toONote (b + 1) ((b + 1) ^ evalNat b E - 1) := by
   suffices H : ∀ o : Ordinal, ∀ E : ONote, E.repr = o → E.NF → E ≠ 0 → Good b E →
@@ -836,63 +837,37 @@ theorem hstep_pred_pow (b : ℕ) (hb : 2 ≤ b) :
         ih (f b).repr hltfb (f b) rfl hNFfb hfbne (Good_fundSeq b E f hgood hfs),
         evalNat_fundSeq b hfs]
 
-/-- **Lemma B (the `c = 1` predecessor — the borrowing core of C3, FULLY PROVED lap 5).** One Hardy
-step on `oadd (toONote b L) 1 0` (i.e. `ω^E` for `E = toONote b L`, `L ≥ 1`) at argument `b` is the
-base-`(b+1)` notation of `(b+1)^(bump b L) − 1` — the fully-filled (all-digits-`b`) expansion
-produced by the borrowing descent through `fundamentalSequence`.
-
-**PROVED + `#print axioms` clean** — this was the last disclosed `sorry` of C3 and it is discharged.
-The proof closes via `hstep_pred_pow` (WF recursion on `repr E`, using the `Good`/`Canon` coefficient-
-bound frontier invariant) + `evalNat_toONote`. The plan below is the historical close-out record.
-
-**Supporting engine** (all axiom-clean, this file):
-* **finite base case** `hstep_oadd_one_zero_finite` (`E = finite (d+1)`, `d ≤ b`) — exercises
-  the whole engine end-to-end (descent `hstep_oadd_one_of_succ` → peel `hstep_oadd_coeff` →
-  IH → reconstruct `toONote_oadd`);
-* the **answer characterization** `evalNat` + `evalNat_toONote : evalNat b (toONote b L) =
-  bump b L` (so the general answer `toONote (b+1) ((b+1)^(evalNat b E) − 1)` is the target);
-* both **descent identities**: `evalNat_succ` (`fundamentalSequence E = some E' ⟹
-  evalNat b E = evalNat b E' + 1`) and `evalNat_fundSeq` (`fundamentalSequence E = inr f ⟹
-  evalNat b (f b) = evalNat b E`).
-
-**Plan to close** — prove the general `∀ NF E ≠ 0, hstep (oadd E 1 0) b =
-toONote (b+1) ((b+1)^(evalNat b E) − 1)` by well-founded recursion on `repr E`:
-* **limit case CLOSES** outright: `hstep_oadd_one_of_limit` → IH on `f b` → `evalNat_fundSeq`.
-* **successor case** needs `evalNat_succ` (done) plus the reconstruction
-  `toONote (b+1) (evalNat b E') = E'` for `E' = pred E`. This is the LONE remaining piece: it
-  requires a coefficient-bound invariant `Good b E` (all coeffs ≤ b+1, and every coeff-`(b+1)`
-  term has tail `0`) carried through the recursion — `Good` holds at the start `toONote b L`
-  (coeffs `< b`), is preserved by `f b` (the new `b+1` coeff sits on a tail-`0` term) and by
-  `pred`, and for a *successor* `E` forces any `b+1` coeff into the finite lowest term, which
-  `pred` then removes — so `pred E` has all coeffs `< b+1` and reconstructs. Then
-  `hstep_oadd_one_zero` is the `E = toONote b L` instance (with `evalNat_toONote`).
-Verified syntactically by `native_decide` on small cases (see anchors). -/
-theorem hstep_oadd_one_zero (b : ℕ) (hb : 2 ≤ b) (L : ℕ) (hL : 1 ≤ L) :
+/-- **The `c = 1` predecessor.** One Hardy step on `oadd (toONote b L) 1 0` (i.e. `ω^E` for
+`E = toONote b L`, `L ≥ 1`) at argument `b` is the base-`(b+1)` notation of
+`(b+1)^(bump b L) − 1` — the fully-filled (all-digits-`b`) expansion produced by the borrowing
+descent through `fundamentalSequence`. This is the `E = toONote b L` instance of
+`hstep_pred_pow` (via `evalNat_toONote`). -/
+lemma hstep_oadd_one_zero (b : ℕ) (hb : 2 ≤ b) (L : ℕ) (hL : 1 ≤ L) :
     hstep (oadd (toONote b L) 1 0) b = toONote (b + 1) ((b + 1) ^ bump b L - 1) := by
   have hE : toONote b L ≠ 0 := by rw [Ne, toONote_eq_zero_iff]; omega
   have hNF : (toONote b L).NF := toONote_NF b hb L
   have hgood : Good b (toONote b L) := Good_of_Canon b _ (Canon_toONote b hb L)
   rw [hstep_pred_pow b hb (toONote b L) hNF hE hgood, evalNat_toONote b hb L]
 
-/-- **The Cichoń step (THE C3 CRUX).** One budget-incrementing Hardy step on the base-`b`
+/-- **The Cichoń step.** One budget-incrementing Hardy step on the base-`b`
 notation of `p ≠ 0`, at argument `b`, equals the notation (in base `b+1`) of the
 Goodstein operation `bump b p − 1`:
 
   `hstep (toONote b p) b = toONote (b+1) (bump b p − 1)`.
 
-This is the heart of Cichoń's theorem (1983) identifying the Goodstein descent with the
+This is the heart of Cichoń's theorem identifying the Goodstein descent with the
 Hardy descent. Strong induction on `p`, writing `p = c·b^L + r` (leading Cantor term):
 
-* **`r ≠ 0` (FULLY PROVED).** The leading term is preserved and the step happens in the tail:
+* **`r ≠ 0`.** The leading term is preserved and the step happens in the tail:
   `hstep (oadd E C R) b = oadd E C (hstep R b)` (`hstep_oadd_tail`), then the IH on `r < p`
   and the reconstruction `toONote_oadd` + bump-invariance `toONote_bump` close it.
 * **`r = 0`.** Here `p = c·b^L` and the step computes the *predecessor* of `c·(b+1)^(bump b L)`.
-  - `L = 0` (single digit, FULLY PROVED): `oadd 0 c 0` is a successor (`hstep_oadd_zero_zero`).
-  - `L ≥ 1` (**FULLY PROVED**, lap 5, via `hstep_oadd_one_zero`): the genuine **borrowing** case —
-    a nested `fundamentalSequence` descent producing the filled `(b+1)`-ary expansion of
-    `(b+1)^(bump b L) − 1`. This was the borrowing core of C3; now discharged, `#print axioms` clean.
+  - `L = 0` (single digit): `oadd 0 c 0` is a successor (`hstep_oadd_zero_zero`).
+  - `L ≥ 1` (via `hstep_oadd_one_zero`): the genuine **borrowing** case — a nested
+    `fundamentalSequence` descent producing the filled `(b+1)`-ary expansion of
+    `(b+1)^(bump b L) − 1`.
 
-This theorem is now FULLY PROVED for all `p` (`r ≠ 0`, `r = 0 ∧ L = 0`, and `r = 0 ∧ L ≥ 1`). -/
+- [Cic83]. -/
 theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ p, p ≠ 0 →
     hstep (toONote b p) b = toONote (b + 1) (bump b p - 1) := by
   intro p
@@ -967,7 +942,7 @@ theorem hstep_toONote (b : ℕ) (hb : 2 ≤ b) : ∀ p, p ≠ 0 →
 /-- The Cichoń step, specialised to the Goodstein descent: one Goodstein step is one
 budget-incrementing Hardy step on the notation. `seqONote m (k+1) = hstep (seqONote m k) (k+2)`
 whenever the term is nonzero. -/
-theorem hstep_seqONote (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
+lemma hstep_seqONote (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
     hstep (seqONote m k) (k + 2) = seqONote m (k + 1) := by
   show hstep (toONote (k + 2) (goodsteinSeq m k)) (k + 2) = toONote (k + 1 + 2) (goodsteinSeq m (k + 1))
   rw [hstep_toONote (k + 2) (by omega) (goodsteinSeq m k) h]
@@ -976,7 +951,7 @@ theorem hstep_seqONote (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
 /-- **The per-step Hardy invariant.** Along the Goodstein descent (while nonzero) the Hardy
 value `H_{seqONote m k}(k+2)` is unchanged: `H_{seqONote m k}(k+2) = H_{seqONote m (k+1)}((k+1)+2)`.
 Combines the intrinsic step invariant `hardy_hstep` with the Cichoń step `hstep_seqONote`. -/
-theorem hardy_seqONote_step (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
+lemma hardy_seqONote_step (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
     hardy (seqONote m k) (k + 2) = hardy (seqONote m (k + 1)) (k + 1 + 2) := by
   have ho : seqONote m k ≠ 0 := fun hz => h ((seqONote_eq_zero_iff m k).1 hz)
   rw [hardy_hstep (seqONote m k) (k + 2) ho, hstep_seqONote m k h]
@@ -984,7 +959,7 @@ theorem hardy_seqONote_step (m k : ℕ) (h : goodsteinSeq m k ≠ 0) :
 /-- **Telescoping.** For every `j ≤ goodsteinLength m`, the Hardy value at the start equals
 the Hardy value `j` steps in: `H_{seqONote m 0}(2) = H_{seqONote m j}(j+2)`. Induction on `j`
 using `hardy_seqONote_step` (valid since `j < goodsteinLength m` ⟹ the `j`-th term is nonzero). -/
-theorem hardy_seqONote_telescope (m : ℕ) :
+lemma hardy_seqONote_telescope (m : ℕ) :
     ∀ j, j ≤ goodsteinLength m → hardy (seqONote m 0) 2 = hardy (seqONote m j) (j + 2) := by
   intro j
   induction j with
@@ -994,22 +969,23 @@ theorem hardy_seqONote_telescope (m : ℕ) :
     have hk : k < goodsteinLength m := Nat.lt_of_succ_le hj
     rw [ih (Nat.le_of_lt hk), hardy_seqONote_step m k (goodsteinSeq_ne_zero_of_lt hk)]
 
-/-- **C3 — the growth theorem (Hardy form).** The Hardy value of the starting notation at the
+/-- **The growth theorem (Hardy form).** The Hardy value of the starting notation at the
 starting base is the Goodstein length plus two: `H_{seqONote m 0}(2) = goodsteinLength m + 2`.
 At `j = goodsteinLength m` the descent reaches the zero notation, where `H_0(N) = N`. -/
-theorem hardy_seqONote_zero (m : ℕ) : hardy (seqONote m 0) 2 = goodsteinLength m + 2 := by
+lemma hardy_seqONote_zero (m : ℕ) : hardy (seqONote m 0) 2 = goodsteinLength m + 2 := by
   rw [hardy_seqONote_telescope m (goodsteinLength m) le_rfl, seqONote_goodsteinLength, hardy_zero]
   rfl
 
-/-- **C3 — the growth theorem (length form).** The Goodstein length of `m` is exactly the
+/-- **The growth theorem (length form).** The Goodstein length of `m` is exactly the
 Hardy value of its starting notation (read in base 2) at argument 2, minus 2:
 
   `goodsteinLength m = H_{seqONote m 0}(2) − 2`.
 
 This is Cichoń's identity formalised: the Goodstein length function *is* a Hardy function of
-the starting ordinal notation. Since the Hardy/fast-growing hierarchy reaches `ε₀`
-(`FastGrowing/Domination.lean`, A4), this pins `goodsteinLength`'s growth at the `ε₀` level —
-the growth content of Kirby–Paris independence. -/
+the starting ordinal notation. Since the Hardy/fast-growing hierarchy reaches `ε₀`, this pins
+`goodsteinLength`'s growth at the `ε₀` level — the growth content of Kirby–Paris independence.
+
+- [Cic83]. -/
 theorem goodsteinLength_eq_hardy (m : ℕ) : goodsteinLength m = hardy (seqONote m 0) 2 - 2 := by
   rw [hardy_seqONote_zero]; omega
 
