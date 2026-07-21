@@ -489,17 +489,15 @@ theorem computable_enc : Computable enc :=
 
 /-! ### Assembling the final result -/
 
+lemma cmp_eq_lt_iff_lt (x y : NONote) : x.cmp y = Ordering.lt ↔ x < y := by
+  have h_compares : (x.cmp y).Compares x y := NONote.cmp_compares x y
+  rcases h : x.cmp y with (_ | _ | _) <;> simp_all +decide [Ordering.Compares];
+  exact le_of_lt h_compares
+
 lemma lt_iff_Cnat (a b : ℕ) :
     natCode a < natCode b ↔ Cnat (Nat.pair (enc a) (enc b)) = 0 := by
-  rw [Cnat_pair_eq_zero];
-  have h_dec : (natCode a).1.cmp (natCode b).1 = Ordering.lt ↔ natCode a < natCode b := by
-    have h_linear_order : ∀ x y : NONote, (x.cmp y = Ordering.lt ↔ x < y) := by
-      have h_linear_order : ∀ x y : NONote, (x.cmp y).Compares x y :=
-        fun x y => NONote.cmp_compares x y
-      intro x y; specialize h_linear_order x y; rcases h : x.cmp y with ( _ | _ | _ ) <;> simp_all +decide [ Ordering.Compares ] ;
-      exact le_of_lt h_linear_order;
-    exact h_linear_order _ _;
-  rw [ decodeONote_enc, decodeONote_enc, h_dec ]
+  rw [Cnat_pair_eq_zero, decodeONote_enc, decodeONote_enc]
+  exact (cmp_eq_lt_iff_lt (natCode a) (natCode b)).symm
 
 /-- **Recursive enumerability (in fact computability) of the pulled-back CNF order.** The order
 `natCode a < natCode b` on ℕ-codes is `REPred`. -/
