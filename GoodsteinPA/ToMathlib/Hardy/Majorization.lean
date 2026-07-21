@@ -5,11 +5,10 @@ public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 @[expose] public section
 
 /-!
-# 2b growth conversion — `ewIter` → `hardy` majorization (lap 207 start)
+# `ewIter` → `hardy` majorization
 
-The route-(c) splice's LAST piece: dominate the read-off's master bound
-`ewIter S γ (S (max m C))` by `fastGrowing o` at ONE fixed NF `o`, eventually.  Design
-(PENDING_WORK lap-207 2b analysis):
+Dominate the read-off's master bound `ewIter S γ (S (max m C))` by `fastGrowing o` at ONE
+fixed NF `o`, eventually.
 
 * the naive Nlog-gated hardy ordinal-monotonicity is FALSE (coefficient `2^x` vs argument `x`);
   the banked `hardy_le_of_lt` gates on the LINEAR `norm`;
@@ -18,8 +17,6 @@ The route-(c) splice's LAST piece: dominate the read-off's master bound
   keeps the argument pre-inflated past that;
 * per level the two-fold branch composes by `hardy_add_comp` (EXACT when no absorption) and
   the ordinal assignment `g α ≈ h·ω^(1+α)` leaves room: `g β · 2 + corrections < g α`.
-
-This file banks the majorization prerequisites, starting with THE bridge.
 -/
 
 namespace ONote
@@ -28,7 +25,7 @@ open Ordinal
 
 /-- **The norm/Nlog bridge**: the linear norm is at most one binary order above the log-norm.
 (Sharp shape: `norm ≤ 2^Nlog` FAILS at coefficient 5 — `clog 5 = 2`, `2^2 = 4 < 5`.) -/
-theorem norm_lt_two_pow_Nlog : ∀ (β : ONote), norm β < 2 ^ (Nlog β + 1)
+lemma norm_lt_two_pow_Nlog : ∀ (β : ONote), norm β < 2 ^ (Nlog β + 1)
   | 0 => by simp [norm]
   | oadd e n a => by
       have he := norm_lt_two_pow_Nlog e
@@ -50,7 +47,7 @@ theorem norm_lt_two_pow_Nlog : ∀ (β : ONote), norm β < 2 ^ (Nlog β + 1)
 
 /-- The ball-membership corollary the master induction consumes: a branch ordinal passing the
 `Nlog β ≤ K` gate has linear norm `< 2^(K+1)`. -/
-theorem norm_lt_of_Nlog_le {β : ONote} {K : ℕ} (h : Nlog β ≤ K) :
+lemma norm_lt_of_Nlog_le {β : ONote} {K : ℕ} (h : Nlog β ≤ K) :
     norm β < 2 ^ (K + 1) :=
   lt_of_lt_of_le (norm_lt_two_pow_Nlog β)
     (Nat.pow_le_pow_right (by norm_num) (by omega))
@@ -64,21 +61,74 @@ then raises to `H_{ω^α'}(z)` by the LINEAR-norm-gated `hardy_le_of_lt` — the
 by the pre-inflated seed via the bridge above. -/
 
 /-- `ω^x` as a notation. -/
-noncomputable def Wpow (x : ONote) : ONote := oadd x 1 0
+def Wpow (x : ONote) : ONote := oadd x 1 0
 
-theorem Wpow_NF {x : ONote} (hx : x.NF) : (Wpow x).NF :=
+lemma Wpow_NF {x : ONote} (hx : x.NF) : (Wpow x).NF :=
   NF.oadd hx 1 NFBelow.zero
 
-/-- The ONote sum `ω^β'·2 + ω^e'` in normal form. -/
-noncomputable def stepOrd (β' e' : ONote) : ONote := oadd β' 2 (Wpow e')
+/-- `Wpow`'s repr is a genuine `ω`-power. -/
+lemma repr_Wpow (x : ONote) : (Wpow x).repr = ω ^ x.repr := by
+  show ω ^ x.repr * (1 : ℕ) + 0 = ω ^ x.repr; simp
 
-theorem stepOrd_NF {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hlt : e' < β') :
+/-- Adding a finite `1` shifts the repr by exactly `1`. -/
+lemma repr_add_one {β : ONote} (hβ : β.NF) : (β + 1).repr = β.repr + 1 := by
+  haveI := hβ
+  rw [ONote.repr_add, ONote.repr_one]; norm_num
+
+/-- Every NF notation is strictly below its successor `β + 1`. -/
+lemma lt_add_one_self {β : ONote} (hβ : β.NF) : β < β + 1 := by
+  rw [lt_def, repr_add_one hβ]; exact lt_add_one _
+
+/-- `β + 1` is never `0`. -/
+lemma add_one_ne_zero {β : ONote} (hβ : β.NF) : β + 1 ≠ 0 := by
+  intro h
+  have hh := congrArg ONote.repr h
+  rw [repr_add_one hβ, repr_zero] at hh
+  exact (lt_of_lt_of_le zero_lt_one le_add_self).ne' hh
+
+/-- General `ω^A + ω^B < ω^{A+1}` for `B < A` (the tower-collapse raise, generalizing a single
+`ω`-power step to arbitrary ordered exponents). -/
+lemma Wpow_add_lt_Wpow_succ {A B : ONote} (hA : A.NF) (hB : B.NF) (hBA : B < A) :
+    Wpow A + Wpow B < Wpow (A + 1) := by
+  haveI : (Wpow A).NF := Wpow_NF hA
+  haveI : (Wpow B).NF := Wpow_NF hB
+  rw [lt_def, ONote.repr_add]
+  show (Wpow A).repr + (Wpow B).repr < ω ^ (A + 1).repr * (1 : ℕ) + 0
+  rw [repr_Wpow, repr_Wpow, repr_add_one hA]
+  have hBltA : B.repr < A.repr := by rw [lt_def] at hBA; exact hBA
+  have hstep : ω ^ B.repr < ω ^ A.repr :=
+    (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr hBltA
+  calc ω ^ A.repr + ω ^ B.repr
+      < ω ^ A.repr + ω ^ A.repr := (add_lt_add_iff_left _).2 hstep
+    _ = ω ^ A.repr * 2 := by rw [show (2 : Ordinal) = 1 + 1 by norm_num, mul_add, mul_one]
+    _ < ω ^ A.repr * ω := mul_lt_mul_of_pos_left (by simpa using Ordinal.natCast_lt_omega0 2)
+        (Ordinal.opow_pos _ omega0_pos)
+    _ = ω ^ (A.repr + 1) := by
+        have h := (Ordinal.opow_add ω A.repr 1).symm
+        rw [Ordinal.opow_one] at h; exact h
+    _ ≤ ω ^ (A.repr + 1) * (1 : ℕ) + 0 := by simp
+
+/-- **Double-Hardy collapse** for ordered `ω`-power levels — `H_{ω^A}(H_{ω^B}(y)) = H_{ω^A+ω^B}(y)`
+when `B < A`. -/
+lemma hardy_double_collapse {A B : ONote} (hA : A.NF) (hB : B.NF) (hBA : B < A) (y : ℕ) :
+    hardy (Wpow A) (hardy (Wpow B) y) = hardy (Wpow A + Wpow B) y := by
+  refine (hardy_add_comp _ (Wpow_NF hA) _ (Wpow_NF hB) (Or.inr ?_) y).symm
+  show (Wpow B).repr < ω ^ (lastExp (Wpow A)).repr
+  have hlast : lastExp (Wpow A) = A := rfl
+  rw [hlast, repr_Wpow]
+  have hBltA : B.repr < A.repr := by rw [lt_def] at hBA; exact hBA
+  exact (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr hBltA
+
+/-- The ONote sum `ω^β'·2 + ω^e'` in normal form. -/
+def stepOrd (β' e' : ONote) : ONote := oadd β' 2 (Wpow e')
+
+lemma stepOrd_NF {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hlt : e' < β') :
     (stepOrd β' e').NF :=
   NF.oadd hβ' 2 (NFBelow.oadd he' NFBelow.zero (lt_def.mp hlt))
 
 /-- **The chain identity**: two same-level principal applications over one engine application
 compose exactly. -/
-theorem hardy_chain_eq {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF)
+lemma hardy_chain_eq {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF)
     (hβ0 : β' ≠ 0) (hlt : e' < β') (z : ℕ) :
     hardy (Wpow β') (hardy (Wpow β') (hardy (Wpow e') z))
       = hardy (stepOrd β' e') z := by
@@ -110,7 +160,7 @@ theorem hardy_chain_eq {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF)
 
 /-- **The raise**: the composed step ordinal fits under the next `ω`-power, gated on the
 linear norm of the BRANCH data only. -/
-theorem hardy_step_raise {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hα' : α'.NF)
+lemma hardy_step_raise {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hα' : α'.NF)
     (hlt : e' < β') (hβα : β' < α') {z : ℕ}
     (hnorm : max (norm β') (max 2 (max (norm e') 1)) ≤ z) :
     hardy (stepOrd β' e') z ≤ hardy (Wpow α') z := by
@@ -128,7 +178,7 @@ theorem hardy_step_raise {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hα
     simpa [norm, Wpow] using hnorm
 
 /-- **The step engine, assembled**: the master induction's branch case in one move. -/
-theorem hardy_step {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hα' : α'.NF)
+lemma hardy_step {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hα' : α'.NF)
     (hβ0 : β' ≠ 0) (hlt : e' < β') (hβα : β' < α') {z : ℕ}
     (hnorm : max (norm β') (max 2 (max (norm e') 1)) ≤ z) :
     hardy (Wpow β') (hardy (Wpow β') (hardy (Wpow e') z)) ≤ hardy (Wpow α') z := by
@@ -136,14 +186,14 @@ theorem hardy_step {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hα' : α
   exact hardy_step_raise hβ' he' hα' hlt hβα hnorm
 
 
-/-! ## Argument super-additivity of `hardy` (lap 208)
+/-! ## Argument super-additivity of `hardy`
 
 `H_o(n) + c ≤ H_o(n + c)` — the commuting engine that pushes the branch's additive
 `Nlog β + ·` costs INSIDE the composed Hardy stack (so all principal applications
 compose exactly, engines innermost).  Successor form mirrors `hardy_monotone`'s
 WF recursion; limit case pays one `hardy_fundSeq_step`. -/
 
-theorem hardy_succ_ge (o : ONote) (n : ℕ) : hardy o n + 1 ≤ hardy o (n + 1) := by
+lemma hardy_succ_ge (o : ONote) (n : ℕ) : hardy o n + 1 ≤ hardy o (n + 1) := by
   rcases e : fundamentalSequence o with (_ | a) | f
   · rw [hardy_zero' o e]; simp
   · have hlt : a < o := by
@@ -161,7 +211,7 @@ decreasing_by
   · exact hlt
   · exact hlt
 
-theorem hardy_arg_add (o : ONote) (n c : ℕ) : hardy o n + c ≤ hardy o (n + c) := by
+lemma hardy_arg_add (o : ONote) (n c : ℕ) : hardy o n + c ≤ hardy o (n + c) := by
   induction c with
   | zero => simp
   | succ c ih =>
@@ -171,7 +221,7 @@ theorem hardy_arg_add (o : ONote) (n c : ℕ) : hardy o n + c ≤ hardy o (n + c
         _ = hardy o (n + (c + 1)) := by ring_nf
 
 /-- Exponent-strict-monotonicity of `Wpow` (repr-level). -/
-theorem Wpow_lt {x y : ONote} (h : x < y) : Wpow x < Wpow y := by
+lemma Wpow_lt {x y : ONote} (h : x < y) : Wpow x < Wpow y := by
   rw [lt_def]
   show ω ^ x.repr * (1 : ℕ) + 0 < ω ^ y.repr * (1 : ℕ) + 0
   simpa using (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr
@@ -189,7 +239,7 @@ def normSum : ONote → ℕ
   | 0 => 0
   | oadd e n a => max (norm e) (n : ℕ) + normSum a
 
-theorem norm_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
+lemma norm_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
     norm (addAux e n o) ≤ max (norm e) (n : ℕ) + norm o := by
   cases o with
   | zero =>
@@ -214,7 +264,7 @@ theorem norm_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
           omega
       | gt => simp only [norm_oadd]; omega
 
-theorem norm_add_le : ∀ (x y : ONote), norm (x + y) ≤ normSum x + norm y
+lemma norm_add_le : ∀ (x y : ONote), norm (x + y) ≤ normSum x + norm y
   | 0, y => by simp [normSum]
   | oadd e n a, y => by
       rw [oadd_add]
@@ -231,15 +281,15 @@ middle engine) over one innermost engine: `H_{ω^β'}³(H_{ω^e'}(z)) = H_{ω^β
 then the composed ordinal raises under `ω^α'` exactly as in `hardy_step_raise`. -/
 
 /-- `ω^β'·3 + ω^e'` in normal form. -/
-noncomputable def stepOrd3 (β' e' : ONote) : ONote := oadd β' 3 (Wpow e')
+def stepOrd3 (β' e' : ONote) : ONote := oadd β' 3 (Wpow e')
 
-theorem stepOrd3_NF {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hlt : e' < β') :
+lemma stepOrd3_NF {β' e' : ONote} (hβ' : β'.NF) (he' : e'.NF) (hlt : e' < β') :
     (stepOrd3 β' e').NF :=
   NF.oadd hβ' 3 (NFBelow.oadd he' NFBelow.zero (lt_def.mp hlt))
 
 /-- Three same-level principals over one engine compose exactly (tail-peel + coefficient
 additivity — no repr arithmetic needed). -/
-theorem hardy_chain3_eq {β' e' : ONote} (hβ0 : β' ≠ 0) (z : ℕ) :
+lemma hardy_chain3_eq {β' e' : ONote} (hβ0 : β' ≠ 0) (z : ℕ) :
     hardy (Wpow β') (hardy (Wpow β') (hardy (Wpow β') (hardy (Wpow e') z)))
       = hardy (stepOrd3 β' e') z := by
   rw [show stepOrd3 β' e' = oadd β' 3 (Wpow e') from rfl,
@@ -249,7 +299,7 @@ theorem hardy_chain3_eq {β' e' : ONote} (hβ0 : β' ≠ 0) (z : ℕ) :
   rfl
 
 /-- The composed branch ordinal sits strictly below the next `ω`-power. -/
-theorem stepOrd3_lt_Wpow {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF)
+lemma stepOrd3_lt_Wpow {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF)
     (hlt : e' < β') (hβα : β' < α') : stepOrd3 β' e' < Wpow α' := by
   rw [lt_def]
   calc (stepOrd3 β' e').repr
@@ -260,9 +310,9 @@ theorem stepOrd3_lt_Wpow {β' e' α' : ONote} (hβ' : β'.NF) (he' : e'.NF)
         simp
 
 
-/-! ## THE MASTER MAJORIZATION (lap 208) — `ewIter f α m ≤ H_{ω^{e'+1+α}}(H_{ω^{e'}}(Nlog α + m + p))`
+/-! ## THE MASTER MAJORIZATION — `ewIter f α m ≤ H_{ω^{e'+1+α}}(H_{ω^{e'}}(Nlog α + m + p))`
 
-The 2b growth-conversion crux.  Assignment exponent `g α := e' + 1 + α` (ONote add — strictly
+Assignment exponent `g α := e' + 1 + α` (ONote add — strictly
 monotone, always above the engine `e'`).  WF induction on `α`; the branch (a ball member
 `δ < α`, `Nlog δ ≤ K := f (Nlog α + m)`) pays:
 
@@ -425,13 +475,14 @@ From a plain Hardy domination `f ≤ H_{ω^{e₀}}` (`e₀ ≠ 0`, NF): the engi
 composition `H_{ω^{e₀+1}}∘H_{ω^{e₀}} = H_{ω^{e₀+1}+ω^{e₀}}`, and a final raise under
 `ω^{e₀+2}`.  All norm gates are `e₀`-constants absorbed by the pad `p`. -/
 
-/-- Closed form at `ω²`: `H_{ω²}(y) + 1 = 2^{y+1}·(y+1)` (finite B4 + `fastGrowing_two`). -/
-theorem hardy_omega_sq (y : ℕ) :
+/-- Closed form at `ω²`: `H_{ω²}(y) + 1 = 2^{y+1}·(y+1)` (finite Hardy/fast-growing identity +
+`fastGrowing_two`). -/
+lemma hardy_omega_sq (y : ℕ) :
     hardy (oadd (ofNat 2) 1 0) y + 1 = 2 ^ (y + 1) * (y + 1) := by
   rw [hardy_omega_pow_ofNat 2 y, show (ofNat 2 : ONote) = 2 from rfl, fastGrowing_two]
 
 /-- The engine arithmetic: anything below `5y + 2^{y+1}` fits under `H_{ω²}(y)` (`y ≥ 2`). -/
-theorem engine_arith {L y : ℕ} (h2 : 2 ≤ y) (hL : L ≤ 5 * y + 2 ^ (y + 1)) :
+lemma engine_arith {L y : ℕ} (h2 : 2 ≤ y) (hL : L ≤ 5 * y + 2 ^ (y + 1)) :
     L ≤ hardy (oadd (ofNat 2) 1 0) y := by
   have hcf := hardy_omega_sq y
   have hP : 8 ≤ 2 ^ (y + 1) := by
@@ -444,138 +495,10 @@ theorem engine_arith {L y : ℕ} (h2 : 2 ≤ y) (hL : L ≤ 5 * y + 2 ^ (y + 1))
   generalize 2 ^ (y + 1) = Q at hcf hL
   omega
 
-/-- **The concrete engine.**  `e' := e₀ + 2` discharges `ewIter_hardy_le`'s `hEng` from the
-domination `∀ z, f z ≤ H_{ω^{e₀}}(z)`, for any pad `p` above the `e₀`-norm constants. -/
-theorem hEng_of_dom {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
-    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
-    (hdom : ∀ z, f z ≤ hardy (Wpow e₀) z)
-    (hp : norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 ≤ p) :
-    ∀ x, x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
-        ≤ hardy (Wpow (e₀ + 2)) (x + p) := by
-  intro x
-  haveI := he₀
-  haveI hNF1 : (1 : ONote).NF := NF.oadd NF.zero 1 NFBelow.zero
-  haveI hNF2 : (2 : ONote).NF := nf_ofNat 2
-  haveI hNFe1 : (e₀ + 1).NF := ONote.add_nf e₀ 1
-  haveI hNFe2 : (e₀ + 2).NF := ONote.add_nf e₀ 2
-  have hrepr1 : (e₀ + 1).repr = e₀.repr + 1 := by
-    rw [ONote.repr_add, ONote.repr_one]; norm_num
-  have hrepr2 : (e₀ + 2).repr = e₀.repr + 2 := by
-    rw [ONote.repr_add, show ((2 : ONote)).repr = ((2 : ℕ) : Ordinal) from repr_ofNat 2]
-    norm_num
-  haveI hWe1 : (Wpow (e₀ + 1)).NF := Wpow_NF hNFe1
-  haveI hWe0 : (Wpow e₀).NF := Wpow_NF he₀
-  have he₀pos : (1 : Ordinal) ≤ e₀.repr :=
-    Order.one_le_iff_ne_zero.mpr
-      (fun h0 => he₀0 (repr_inj.mp (by rw [h0, repr_zero])))
-  -- the inflated engine argument
-  have hy1 : x + p ≤ hardy (Wpow e₀) (x + p) := le_hardy _ _
-  have hy2 : 2 * (x + p) ≤ hardy (Wpow e₀) (x + p) :=
-    two_mul_le_hardy_pow he₀0 he₀ (by omega)
-  have hfx : f x ≤ hardy (Wpow e₀) (x + p) :=
-    le_trans (hdom x) (hardy_monotone _ (by omega))
-  have hpow : 2 ^ (f x + 1) ≤ 2 ^ (hardy (Wpow e₀) (x + p) + 1) :=
-    Nat.pow_le_pow_right (by norm_num) (by omega)
-  -- step A: everything fits under H_{ω²} at the inflated argument
-  have hA : x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
-      ≤ hardy (oadd (ofNat 2) 1 0) (hardy (Wpow e₀) (x + p)) := by
-    apply engine_arith (by omega)
-    generalize hQ : 2 ^ (hardy (Wpow e₀) (x + p) + 1) = Q at hpow
-    generalize 2 ^ (f x + 1) = A at hpow ⊢
-    omega
-  -- step B: raise ω² to ω^{e₀+1} (equality possible at e₀ = 1)
-  have hB : hardy (oadd (ofNat 2) 1 0) (hardy (Wpow e₀) (x + p))
-      ≤ hardy (Wpow (e₀ + 1)) (hardy (Wpow e₀) (x + p)) := by
-    have hle : ((ofNat 2 : ONote)).repr ≤ (e₀ + 1).repr := by
-      rw [repr_ofNat, hrepr1]
-      have : ((2 : ℕ) : Ordinal) = 1 + 1 := by norm_num
-      rw [this]
-      exact add_le_add he₀pos le_rfl
-    rcases eq_or_lt_of_le hle with heq | hlt
-    · rw [show (oadd (ofNat 2) 1 0 : ONote) = Wpow (e₀ + 1) by
-        show Wpow (ofNat 2) = Wpow (e₀ + 1)
-        rw [repr_inj.mp heq]]
-    · apply hardy_le_of_lt (Wpow_NF (nf_ofNat 2)) (Wpow_NF hNFe1)
-        (Wpow_lt (lt_def.mpr hlt))
-      have hn2 : norm (Wpow (ofNat 2)) = 2 := by
-        simp [Wpow, ofNat_succ, norm_oadd]
-      show norm (Wpow (ofNat 2)) ≤ _
-      rw [hn2]
-      omega
-  -- step C: exact composition H_{ω^{e₀+1}} ∘ H_{ω^{e₀}} = H_{ω^{e₀+1}+ω^{e₀}}
-  have hC : hardy (Wpow (e₀ + 1)) (hardy (Wpow e₀) (x + p))
-      = hardy (Wpow (e₀ + 1) + Wpow e₀) (x + p) := by
-    refine (hardy_add_comp _ (Wpow_NF hNFe1) _ (Wpow_NF he₀) (Or.inr ?_) (x + p)).symm
-    have hlast : lastExp (Wpow (e₀ + 1)) = e₀ + 1 := rfl
-    rw [hlast, hrepr1]
-    show ω ^ e₀.repr * (1 : ℕ) + 0 < ω ^ (e₀.repr + 1)
-    simpa using (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr
-      (lt_add_of_pos_right _ zero_lt_one)
-  -- step D: final raise under ω^{e₀+2}
-  haveI hDNF : (Wpow (e₀ + 1) + Wpow e₀).NF := ONote.add_nf _ _
-  have hDlt : Wpow (e₀ + 1) + Wpow e₀ < Wpow (e₀ + 2) := by
-    rw [lt_def, ONote.repr_add]
-    show (Wpow (e₀ + 1)).repr + (Wpow e₀).repr < ω ^ (e₀ + 2).repr * (1 : ℕ) + 0
-    have h1 : (Wpow (e₀ + 1)).repr = ω ^ (e₀.repr + 1) := by
-      show ω ^ (e₀ + 1).repr * (1 : ℕ) + 0 = ω ^ (e₀.repr + 1)
-      rw [hrepr1]; simp
-    have h0 : (Wpow e₀).repr = ω ^ e₀.repr := by
-      show ω ^ e₀.repr * (1 : ℕ) + 0 = ω ^ e₀.repr
-      simp
-    rw [h1, h0, hrepr2]
-    have hstep : ω ^ e₀.repr < ω ^ (e₀.repr + 1) :=
-      (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr
-        (lt_add_of_pos_right _ zero_lt_one)
-    calc ω ^ (e₀.repr + 1) + ω ^ e₀.repr
-        < ω ^ (e₀.repr + 1) + ω ^ (e₀.repr + 1) := (add_lt_add_iff_left _).2 hstep
-      _ = ω ^ (e₀.repr + 1) * 2 := by
-          rw [show (2 : Ordinal) = 1 + 1 by norm_num, mul_add, mul_one]
-      _ < ω ^ (e₀.repr + 1) * ω :=
-          mul_lt_mul_of_pos_left (by simpa using Ordinal.natCast_lt_omega0 2)
-            (Ordinal.opow_pos _ omega0_pos)
-      _ = ω ^ (e₀.repr + 2) := by
-          have hpow2 : ω ^ (e₀.repr + 2) = ω ^ (e₀.repr + 1) * ω := by
-            rw [show e₀.repr + 2 = (e₀.repr + 1) + 1 by rw [add_assoc]; norm_num]
-            conv_lhs => rw [Ordinal.opow_add, Ordinal.opow_one]
-          exact hpow2.symm
-      _ ≤ ω ^ (e₀.repr + 2) * (1 : ℕ) + 0 := by simp
-  have hDnorm : norm (Wpow (e₀ + 1) + Wpow e₀) ≤ x + p := by
-    have h := norm_add_le (Wpow (e₀ + 1)) (Wpow e₀)
-    have h1 : normSum (Wpow (e₀ + 1)) = max (norm (e₀ + 1)) 1 := by
-      show max (norm (e₀ + 1)) ((1 : ℕ+) : ℕ) + normSum 0 = max (norm (e₀ + 1)) 1
-      simp [normSum]
-    have h2 : norm (Wpow e₀) = max (norm e₀) (max 1 0) := rfl
-    rw [h1, h2] at h
-    have hm1 := le_max_left (norm (e₀ + 1)) 1
-    have hm2 := le_max_left (norm e₀) (max 1 0)
-    have hmm1 : max (norm (e₀ + 1)) 1 ≤ norm (e₀ + 1) + 1 := by omega
-    have hmm2 : max (norm e₀) (max 1 0) ≤ norm e₀ + 1 := by omega
-    omega
-  calc x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
-      ≤ hardy (oadd (ofNat 2) 1 0) (hardy (Wpow e₀) (x + p)) := hA
-    _ ≤ hardy (Wpow (e₀ + 1)) (hardy (Wpow e₀) (x + p)) := hB
-    _ = hardy (Wpow (e₀ + 1) + Wpow e₀) (x + p) := hC
-    _ ≤ hardy (Wpow (e₀ + 2)) (x + p) :=
-        hardy_le_of_lt hDNF (Wpow_NF hNFe2) hDlt hDnorm
-
-/-- **The end-to-end majorization at a concrete engine**: from `f ≤ H_{ω^{e₀}}`,
-`ewIter f α m ≤ H_{ω^{e₀+3+α}}(H_{ω^{e₀+2}}(Nlog α + m + p))` at the explicit pad. -/
-theorem ewIter_hardy_le_of_dom {f : ℕ → ℕ} {e₀ : ONote}
-    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
-    (hdom : ∀ z, f z ≤ hardy (Wpow e₀) z)
-    (α : ONote) (hα : α.NF) (m : ℕ) :
-    ewIter f α m ≤ hardy (Wpow (e₀ + 2 + 1 + α))
-      (hardy (Wpow (e₀ + 2))
-        (Nlog α + m + (norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8))) := by
-  haveI := he₀
-  haveI hNF2 : (2 : ONote).NF := nf_ofNat 2
-  haveI hNFe2 : (e₀ + 2).NF := ONote.add_nf e₀ 2
-  exact ewIter_hardy_le hNFe2 (by omega)
-    (hEng_of_dom he₀ he₀0 hdom le_rfl) α hα m
-
-/-- **Abstract engine core** — `hEng_of_dom`'s proof parameterized by the RAISED-argument
-domination `hfxp : ∀x, f x ≤ H_{ω^{e₀}}(x + p)` (the only way `hdom` is used).  Both the bare
-`hEng_of_dom` and the padded `hEng_of_dom_pad` factor through this. -/
+/-- **Abstract engine core**, parameterized by the RAISED-argument domination
+`hfxp : ∀ x, f x ≤ H_{ω^{e₀}}(x + p)` — the only way the plain domination is ever used.
+Both `hEng_of_dom` (bare domination) and `hEng_of_dom_pad` (padded domination) factor
+through this. -/
 theorem hEng_of_fx {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
     (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
     (hfxp : ∀ x, f x ≤ hardy (Wpow e₀) (x + p))
@@ -588,8 +511,7 @@ theorem hEng_of_fx {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
   haveI hNF2 : (2 : ONote).NF := nf_ofNat 2
   haveI hNFe1 : (e₀ + 1).NF := ONote.add_nf e₀ 1
   haveI hNFe2 : (e₀ + 2).NF := ONote.add_nf e₀ 2
-  have hrepr1 : (e₀ + 1).repr = e₀.repr + 1 := by
-    rw [ONote.repr_add, ONote.repr_one]; norm_num
+  have hrepr1 : (e₀ + 1).repr = e₀.repr + 1 := repr_add_one he₀
   have hrepr2 : (e₀ + 2).repr = e₀.repr + 2 := by
     rw [ONote.repr_add, show ((2 : ONote)).repr = ((2 : ℕ) : Ordinal) from repr_ofNat 2]
     norm_num
@@ -633,41 +555,16 @@ theorem hEng_of_fx {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
       omega
   -- step C: exact composition H_{ω^{e₀+1}} ∘ H_{ω^{e₀}} = H_{ω^{e₀+1}+ω^{e₀}}
   have hC : hardy (Wpow (e₀ + 1)) (hardy (Wpow e₀) (x + p))
-      = hardy (Wpow (e₀ + 1) + Wpow e₀) (x + p) := by
-    refine (hardy_add_comp _ (Wpow_NF hNFe1) _ (Wpow_NF he₀) (Or.inr ?_) (x + p)).symm
-    have hlast : lastExp (Wpow (e₀ + 1)) = e₀ + 1 := rfl
-    rw [hlast, hrepr1]
-    show ω ^ e₀.repr * (1 : ℕ) + 0 < ω ^ (e₀.repr + 1)
-    simpa using (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr
-      (lt_add_of_pos_right _ zero_lt_one)
+      = hardy (Wpow (e₀ + 1) + Wpow e₀) (x + p) :=
+    hardy_double_collapse hNFe1 he₀ (lt_add_one_self he₀) (x + p)
   -- step D: final raise under ω^{e₀+2}
   haveI hDNF : (Wpow (e₀ + 1) + Wpow e₀).NF := ONote.add_nf _ _
   have hDlt : Wpow (e₀ + 1) + Wpow e₀ < Wpow (e₀ + 2) := by
-    rw [lt_def, ONote.repr_add]
-    show (Wpow (e₀ + 1)).repr + (Wpow e₀).repr < ω ^ (e₀ + 2).repr * (1 : ℕ) + 0
-    have h1 : (Wpow (e₀ + 1)).repr = ω ^ (e₀.repr + 1) := by
-      show ω ^ (e₀ + 1).repr * (1 : ℕ) + 0 = ω ^ (e₀.repr + 1)
-      rw [hrepr1]; simp
-    have h0 : (Wpow e₀).repr = ω ^ e₀.repr := by
-      show ω ^ e₀.repr * (1 : ℕ) + 0 = ω ^ e₀.repr
-      simp
-    rw [h1, h0, hrepr2]
-    have hstep : ω ^ e₀.repr < ω ^ (e₀.repr + 1) :=
-      (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr
-        (lt_add_of_pos_right _ zero_lt_one)
-    calc ω ^ (e₀.repr + 1) + ω ^ e₀.repr
-        < ω ^ (e₀.repr + 1) + ω ^ (e₀.repr + 1) := (add_lt_add_iff_left _).2 hstep
-      _ = ω ^ (e₀.repr + 1) * 2 := by
-          rw [show (2 : Ordinal) = 1 + 1 by norm_num, mul_add, mul_one]
-      _ < ω ^ (e₀.repr + 1) * ω :=
-          mul_lt_mul_of_pos_left (by simpa using Ordinal.natCast_lt_omega0 2)
-            (Ordinal.opow_pos _ omega0_pos)
-      _ = ω ^ (e₀.repr + 2) := by
-          have hpow2 : ω ^ (e₀.repr + 2) = ω ^ (e₀.repr + 1) * ω := by
-            rw [show e₀.repr + 2 = (e₀.repr + 1) + 1 by rw [add_assoc]; norm_num]
-            conv_lhs => rw [Ordinal.opow_add, Ordinal.opow_one]
-          exact hpow2.symm
-      _ ≤ ω ^ (e₀.repr + 2) * (1 : ℕ) + 0 := by simp
+    haveI : (e₀ + 1 + 1).NF := ONote.add_nf (e₀ + 1) 1
+    have heq : (e₀ + 1 + 1 : ONote) = e₀ + 2 :=
+      repr_inj.mp (by rw [repr_add_one hNFe1, repr_add_one he₀, hrepr2, add_assoc, one_add_one_eq_two])
+    rw [← heq]
+    exact Wpow_add_lt_Wpow_succ hNFe1 he₀ (lt_add_one_self he₀)
   have hDnorm : norm (Wpow (e₀ + 1) + Wpow e₀) ≤ x + p := by
     have h := norm_add_le (Wpow (e₀ + 1)) (Wpow e₀)
     have h1 : normSum (Wpow (e₀ + 1)) = max (norm (e₀ + 1)) 1 := by
@@ -686,6 +583,32 @@ theorem hEng_of_fx {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
     _ = hardy (Wpow (e₀ + 1) + Wpow e₀) (x + p) := hC
     _ ≤ hardy (Wpow (e₀ + 2)) (x + p) :=
         hardy_le_of_lt hDNF (Wpow_NF hNFe2) hDlt hDnorm
+
+/-- **The concrete engine.**  `e' := e₀ + 2` discharges `ewIter_hardy_le`'s `hEng` from the
+domination `∀ z, f z ≤ H_{ω^{e₀}}(z)`, for any pad `p` above the `e₀`-norm constants. A
+corollary of `hEng_of_fx`, raising the plain domination to the argument `x + p`. -/
+theorem hEng_of_dom {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
+    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
+    (hdom : ∀ z, f z ≤ hardy (Wpow e₀) z)
+    (hp : norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 ≤ p) :
+    ∀ x, x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
+        ≤ hardy (Wpow (e₀ + 2)) (x + p) :=
+  hEng_of_fx he₀ he₀0 (fun x => le_trans (hdom x) (hardy_monotone _ (by omega))) hp
+
+/-- **The end-to-end majorization at a concrete engine**: from `f ≤ H_{ω^{e₀}}`,
+`ewIter f α m ≤ H_{ω^{e₀+3+α}}(H_{ω^{e₀+2}}(Nlog α + m + p))` at the explicit pad. -/
+theorem ewIter_hardy_le_of_dom {f : ℕ → ℕ} {e₀ : ONote}
+    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
+    (hdom : ∀ z, f z ≤ hardy (Wpow e₀) z)
+    (α : ONote) (hα : α.NF) (m : ℕ) :
+    ewIter f α m ≤ hardy (Wpow (e₀ + 2 + 1 + α))
+      (hardy (Wpow (e₀ + 2))
+        (Nlog α + m + (norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8))) := by
+  haveI := he₀
+  haveI hNF2 : (2 : ONote).NF := nf_ofNat 2
+  haveI hNFe2 : (e₀ + 2).NF := ONote.add_nf e₀ 2
+  exact ewIter_hardy_le hNFe2 (by omega)
+    (hEng_of_dom he₀ he₀0 hdom le_rfl) α hα m
 
 /-- **The engine at a PADDED pointwise domination** — `f z ≤ H_{ω^{e₀}}(z + c)`.  The pad `c`
 absorbs a CONSTANT FLOOR in `f` (e.g. `ewRootSlot`'s `+3`, or the pipeline slot `S*`'s big
@@ -715,7 +638,7 @@ theorem ewIter_hardy_le_of_dom_pad {f : ℕ → ℕ} {e₀ : ONote} {c : ℕ}
   exact ewIter_hardy_le hNFe2 (by omega)
     (hEng_of_dom_pad he₀ he₀0 hdom le_rfl) α hα m
 
-/-! ## `S*`-domination bricks (lap 209) — the concrete pipeline slot is padded-Hardy-dominable
+/-! ## `S*`-domination bricks — the concrete pipeline slot is padded-Hardy-dominable
 
 The read-off hands `n ≤ ewIter (Sslot (ewIterTower (rel1 (ewRootSlot e B) K) d α) P) α' (…)`.  To
 feed `ewIter_hardy_le_of_dom_pad`, the slot must be padded-dominated by a FIXED Hardy level.  These
@@ -723,15 +646,10 @@ bricks build that from the base up: `ewRootSlot` → the tower `ewIterTower` (d-
 majorization ITSELF) → `Sslot` (max with `P`).  The pad absorbs the constant floor. -/
 
 /-- Any NF `e` sits strictly below `ω^{e+1}` — the level needed to Hardy-dominate `hardy e`. -/
-theorem e_lt_Wpow_succ (e : ONote) (he : e.NF) : e < Wpow (e + 1) := by
+lemma e_lt_Wpow_succ (e : ONote) (he : e.NF) : e < Wpow (e + 1) := by
   rw [lt_def]
   show e.repr < (Wpow (e + 1)).repr
-  have hr : (Wpow (e + 1)).repr = ω ^ (e + 1).repr := by
-    show ω ^ (e + 1).repr * (1 : ℕ) + 0 = ω ^ (e + 1).repr
-    simp
-  rw [hr]
-  have hrepr1 : (e + 1).repr = e.repr + 1 := by rw [ONote.repr_add, ONote.repr_one]; norm_num
-  rw [hrepr1]
+  rw [repr_Wpow, repr_add_one he]
   calc e.repr ≤ ω ^ e.repr := Ordinal.right_le_opow _ (by exact_mod_cast Ordinal.one_lt_omega0)
     _ < ω ^ (e.repr + 1) :=
         (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr (lt_add_one _)
@@ -739,9 +657,8 @@ theorem e_lt_Wpow_succ (e : ONote) (he : e.NF) : e < Wpow (e + 1) := by
 /-- **`hardy e` at a `max`-shifted argument is padded-dominated by `H_{ω^{e+1}}`.**  Uniform in `z`
 (no `norm e ≤ z` gate leaks): the pad `m + norm e` both shifts past the `max m` and pays the
 `hardy_le_of_lt` norm gate at `z = 0`. -/
-theorem hardy_maxpad (e : ONote) (he : e.NF) (m : ℕ) :
-    ∀ z, hardy e (max m z) ≤ hardy (Wpow (e + 1)) (z + (m + norm e)) := by
-  intro z
+lemma hardy_maxpad (e : ONote) (he : e.NF) (m z : ℕ) :
+    hardy e (max m z) ≤ hardy (Wpow (e + 1)) (z + (m + norm e)) := by
   have he1 : (e + 1).NF := ONote.add_nf e 1
   have hlt : e < Wpow (e + 1) := e_lt_Wpow_succ e he
   have hmono : hardy e (max m z) ≤ hardy e (z + (m + norm e)) :=
@@ -754,19 +671,13 @@ theorem hardy_maxpad (e : ONote) (he : e.NF) (m : ℕ) :
 + 3` fits under `H_{ω^{(e+1)+2}}` at a padded argument: take `f z := hardy e (max m z)` (padded-dom
 by `hardy_maxpad`), feed `hEng_of_dom_pad`, and note `2x + 2 f x + 3 ≤` the engine LHS since
 `x ≤ f x ≤ 2^{f x + 1}`. -/
-theorem ewRootSlot_dom_pad (e : ONote) (he : e.NF) (m : ℕ) :
-    ∀ x, ewRootSlot e m x
+theorem ewRootSlot_dom_pad (e : ONote) (he : e.NF) (m x : ℕ) :
+    ewRootSlot e m x
         ≤ hardy (Wpow ((e + 1) + 2))
             (x + (norm ((e + 1) + 1) + norm (e + 1) + normSum ((e + 1) + 2 + 1)
                     + norm ((e + 1) + 2) + 8 + (m + norm e))) := by
-  intro x
   have he₀ : (e + 1).NF := ONote.add_nf e 1
-  have he₀0 : e + 1 ≠ 0 := by
-    intro h
-    have hh := congrArg ONote.repr h
-    rw [ONote.repr_add, ONote.repr_one, repr_zero] at hh
-    push_cast at hh
-    exact (lt_of_lt_of_le zero_lt_one le_add_self).ne' hh
+  have he₀0 : e + 1 ≠ 0 := add_one_ne_zero he
   have hfdom : ∀ z, hardy e (max m z) ≤ hardy (Wpow (e + 1)) (z + (m + norm e)) :=
     hardy_maxpad e he m
   have hEng := hEng_of_dom_pad (f := fun z => hardy e (max m z)) (c := m + norm e)
@@ -782,53 +693,12 @@ theorem ewRootSlot_dom_pad (e : ONote) (he : e.NF) (m : ℕ) :
   omega
 
 /-- `rel1` shift preserves padded domination — the `max K` folds into the pad. -/
-theorem rel1_dom_pad {g : ℕ → ℕ} {E : ONote} {c : ℕ}
-    (hg : ∀ x, g x ≤ hardy (Wpow E) (x + c)) (K : ℕ) :
-    ∀ z, rel1 g K z ≤ hardy (Wpow E) (z + (K + c)) := by
-  intro z
+lemma rel1_dom_pad {g : ℕ → ℕ} {E : ONote} {c : ℕ}
+    (hg : ∀ x, g x ≤ hardy (Wpow E) (x + c)) (K z : ℕ) :
+    rel1 g K z ≤ hardy (Wpow E) (z + (K + c)) := by
   show g (max K z) ≤ hardy (Wpow E) (z + (K + c))
   exact le_trans (hg (max K z)) (hardy_monotone _ (by omega))
 
-/-- General `ω^A + ω^B < ω^{A+1}` for `B < A` (the tower-collapse raise; generalizes the
-`hEng_of_dom` `hDlt` step to arbitrary ordered exponents). -/
-theorem Wpow_add_lt_Wpow_succ {A B : ONote} (hA : A.NF) (hB : B.NF) (hBA : B < A) :
-    Wpow A + Wpow B < Wpow (A + 1) := by
-  haveI : (Wpow A).NF := Wpow_NF hA
-  haveI : (Wpow B).NF := Wpow_NF hB
-  rw [lt_def, ONote.repr_add]
-  show (Wpow A).repr + (Wpow B).repr < ω ^ (A + 1).repr * (1 : ℕ) + 0
-  have hrA : (Wpow A).repr = ω ^ A.repr := by
-    show ω ^ A.repr * (1 : ℕ) + 0 = ω ^ A.repr; simp
-  have hrB : (Wpow B).repr = ω ^ B.repr := by
-    show ω ^ B.repr * (1 : ℕ) + 0 = ω ^ B.repr; simp
-  have hrA1 : (A + 1).repr = A.repr + 1 := by rw [ONote.repr_add, ONote.repr_one]; norm_num
-  rw [hrA, hrB, hrA1]
-  have hBltA : B.repr < A.repr := by rw [lt_def] at hBA; exact hBA
-  have hstep : ω ^ B.repr < ω ^ A.repr :=
-    (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr hBltA
-  calc ω ^ A.repr + ω ^ B.repr
-      < ω ^ A.repr + ω ^ A.repr := (add_lt_add_iff_left _).2 hstep
-    _ = ω ^ A.repr * 2 := by rw [show (2 : Ordinal) = 1 + 1 by norm_num, mul_add, mul_one]
-    _ < ω ^ A.repr * ω := mul_lt_mul_of_pos_left (by simpa using Ordinal.natCast_lt_omega0 2)
-        (Ordinal.opow_pos _ omega0_pos)
-    _ = ω ^ (A.repr + 1) := by
-        have h := (Ordinal.opow_add ω A.repr 1).symm
-        rw [Ordinal.opow_one] at h; exact h
-    _ ≤ ω ^ (A.repr + 1) * (1 : ℕ) + 0 := by simp
-
-/-- **Double-Hardy collapse** for ordered `ω`-power levels — `H_{ω^A}(H_{ω^B}(y)) = H_{ω^A+ω^B}(y)`
-when `B < A` (generalizes `hEng_of_dom`'s `hC` step). -/
-theorem hardy_double_collapse {A B : ONote} (hA : A.NF) (hB : B.NF) (hBA : B < A) (y : ℕ) :
-    hardy (Wpow A) (hardy (Wpow B) y) = hardy (Wpow A + Wpow B) y := by
-  refine (hardy_add_comp _ (Wpow_NF hA) _ (Wpow_NF hB) (Or.inr ?_) y).symm
-  show (Wpow B).repr < ω ^ (lastExp (Wpow A)).repr
-  have hlast : lastExp (Wpow A) = A := rfl
-  rw [hlast]
-  have hrB : (Wpow B).repr = ω ^ B.repr := by
-    show ω ^ B.repr * (1 : ℕ) + 0 = ω ^ B.repr; simp
-  rw [hrB]
-  have hBltA : B.repr < A.repr := by rw [lt_def] at hBA; exact hBA
-  exact (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr hBltA
 
 /-- **The tower is padded-Hardy-dominated** (existential level/pad).  Each `ewIter` pass raises
 the level to a double Hardy `H_{ω^A}(H_{ω^B}(·))` with `B < A`; `hardy_double_collapse` folds it
@@ -836,10 +706,9 @@ to `H_{ω^A+ω^B}` and one `Wpow_add_lt_Wpow_succ` raise brings it back to a SIN
 `ω^{A+1}` at a bigger pad — so induction on `d` keeps the single-hardy-at-padded-arg shape.  The
 gate `norm (ω^A + ω^B) ≤ x + c'` is paid by putting that norm INTO `c'` (it is not in `p_d`). -/
 theorem ewIterTower_dom_pad {g : ℕ → ℕ} {E : ONote} {c : ℕ} (hE : E.NF) (hE0 : E ≠ 0)
-    (hg : ∀ x, g x ≤ hardy (Wpow E) (x + c)) (α : ONote) (hα : α.NF) :
-    ∀ d, ∃ (E' : ONote) (c' : ℕ), E'.NF ∧ E' ≠ 0 ∧
+    (hg : ∀ x, g x ≤ hardy (Wpow E) (x + c)) (α : ONote) (hα : α.NF) (d : ℕ) :
+    ∃ (E' : ONote) (c' : ℕ), E'.NF ∧ E' ≠ 0 ∧
       ∀ x, ewIterTower g d α x ≤ hardy (Wpow E') (x + c') := by
-  intro d
   induction d with
   | zero => exact ⟨E, c, hE, hE0, hg⟩
   | succ d ih =>
@@ -866,12 +735,7 @@ theorem ewIterTower_dom_pad {g : ℕ → ℕ} {E : ONote} {c : ℕ} (hE : E.NF) 
     haveI hWB : (Wpow (Ed + 2)).NF := Wpow_NF hB
     haveI hA1 : (Ed + 2 + 1 + collapseIter d α + 1).NF :=
       ONote.add_nf (Ed + 2 + 1 + collapseIter d α) 1
-    have hA10 : Ed + 2 + 1 + collapseIter d α + 1 ≠ 0 := by
-      intro h
-      have hh := congrArg ONote.repr h
-      rw [ONote.repr_add, ONote.repr_one, repr_zero] at hh
-      push_cast at hh
-      exact (lt_of_lt_of_le zero_lt_one le_add_self).ne' hh
+    have hA10 : Ed + 2 + 1 + collapseIter d α + 1 ≠ 0 := add_one_ne_zero hA
     refine ⟨Ed + 2 + 1 + collapseIter d α + 1,
       Nlog (collapseIter d α)
         + (norm (Ed + 1) + norm Ed + normSum (Ed + 2 + 1) + norm (Ed + 2) + 8 + cd)
@@ -902,30 +766,15 @@ theorem ewIterTower_dom_pad {g : ℕ → ℕ} {E : ONote} {c : ℕ} (hE : E.NF) 
 level/pad, carrying `E₀ < E` so the collapse stays ordered).  Mirror of `ewIterTower_dom_pad`:
 `G^[k+1] z = G^[k] (G z)`, the IH + `hardy_arg_add` absorb the pad, `hardy_double_collapse` +
 `Wpow_add_lt_Wpow_succ` fold the double Hardy back to a single level.  Instantiated at
-`G = Gexp = hardy (Wpow 2)` for the `P*` (`gvb`) half of the `S*`-domination (SERIES-4 S-2). -/
-theorem hardy_Wpow_iter_dom_pad (E₀ : ONote) (hE₀ : E₀.NF) :
-    ∀ k, ∃ (E : ONote) (c : ℕ), E.NF ∧ E ≠ 0 ∧ E₀ < E ∧
+`G = Gexp = hardy (Wpow 2)` for the `P*` (`gvb`) half of the `S*`-domination. -/
+theorem hardy_Wpow_iter_dom_pad (E₀ : ONote) (hE₀ : E₀.NF) (k : ℕ) :
+    ∃ (E : ONote) (c : ℕ), E.NF ∧ E ≠ 0 ∧ E₀ < E ∧
       ∀ z, (hardy (Wpow E₀))^[k] z ≤ hardy (Wpow E) (z + c) := by
   haveI := hE₀
-  have hsucc_lt : ∀ (β : ONote), β.NF → β < β + 1 := by
-    intro β hβ
-    haveI := hβ
-    rw [lt_def, ONote.repr_add, ONote.repr_one]
-    push_cast
-    exact lt_add_one _
-  have hsucc_nf : ∀ (β : ONote), β.NF → (β + 1).NF := by
-    intro β hβ; haveI := hβ; exact ONote.add_nf β 1
-  have hsucc_ne : ∀ (β : ONote), β.NF → β + 1 ≠ 0 := by
-    intro β hβ h
-    haveI := hβ
-    have hh := congrArg ONote.repr h
-    rw [ONote.repr_add, ONote.repr_one, repr_zero] at hh
-    push_cast at hh
-    exact (lt_of_lt_of_le zero_lt_one le_add_self).ne' hh
-  intro k
   induction k with
   | zero =>
-      refine ⟨E₀ + 1, 0, hsucc_nf E₀ hE₀, hsucc_ne E₀ hE₀, hsucc_lt E₀ hE₀, fun z => ?_⟩
+      refine ⟨E₀ + 1, 0, ONote.add_nf E₀ 1, add_one_ne_zero hE₀, lt_add_one_self hE₀, ?_⟩
+      intro z
       simpa using le_hardy (Wpow (E₀ + 1)) z
   | succ k ih =>
       obtain ⟨Ek, ck, hEk, hEk0, hE₀Ek, hdom⟩ := ih
@@ -933,8 +782,9 @@ theorem hardy_Wpow_iter_dom_pad (E₀ : ONote) (hE₀ : E₀.NF) :
       haveI hWEk : (Wpow Ek).NF := Wpow_NF hEk
       haveI hWE₀ : (Wpow E₀).NF := Wpow_NF hE₀
       haveI hsum : (Wpow Ek + Wpow E₀).NF := ONote.add_nf _ _
-      refine ⟨Ek + 1, ck + norm (Wpow Ek + Wpow E₀), hsucc_nf Ek hEk, hsucc_ne Ek hEk,
-        lt_trans hE₀Ek (hsucc_lt Ek hEk), fun z => ?_⟩
+      refine ⟨Ek + 1, ck + norm (Wpow Ek + Wpow E₀), ONote.add_nf Ek 1, add_one_ne_zero hEk,
+        lt_trans hE₀Ek (lt_add_one_self hEk), ?_⟩
+      intro z
       have h1 : (hardy (Wpow E₀))^[k + 1] z = (hardy (Wpow E₀))^[k] (hardy (Wpow E₀) z) :=
         Function.iterate_succ_apply _ _ _
       rw [h1]
@@ -952,7 +802,7 @@ theorem hardy_Wpow_iter_dom_pad (E₀ : ONote) (hE₀ : E₀.NF) :
         _ ≤ hardy (Wpow Ek + Wpow E₀) (z + (ck + norm (Wpow Ek + Wpow E₀))) :=
             hardy_monotone _ harg
         _ ≤ hardy (Wpow (Ek + 1)) (z + (ck + norm (Wpow Ek + Wpow E₀))) :=
-            hardy_le_of_lt hsum (Wpow_NF (hsucc_nf Ek hEk))
+            hardy_le_of_lt hsum (Wpow_NF (ONote.add_nf Ek 1))
               (Wpow_add_lt_Wpow_succ hEk hE₀ hE₀Ek) hgate
 
 /-- **Padded-domination max-combiner** — two padded Hardy bounds at (possibly different) levels
@@ -969,9 +819,7 @@ theorem dom_pad_max {f g : ℕ → ℕ} {E₁ E₂ : ONote} {c₁ c₂ : ℕ}
   haveI h12 : (E₁ + E₂).NF := ONote.add_nf E₁ E₂
   haveI hE : (E₁ + E₂ + 1).NF := ONote.add_nf (E₁ + E₂) 1
   have hrepr : (E₁ + E₂ + 1).repr = E₁.repr + E₂.repr + 1 := by
-    rw [ONote.repr_add (E₁ + E₂) 1, ONote.repr_add E₁ E₂, ONote.repr_one]
-    push_cast
-    rfl
+    rw [repr_add_one h12, ONote.repr_add E₁ E₂]
   have hlt₁ : E₁ < E₁ + E₂ + 1 := by
     rw [lt_def, hrepr]
     calc E₁.repr ≤ E₁.repr + E₂.repr := le_self_add
@@ -980,14 +828,9 @@ theorem dom_pad_max {f g : ℕ → ℕ} {E₁ E₂ : ONote} {c₁ c₂ : ℕ}
     rw [lt_def, hrepr]
     calc E₂.repr ≤ E₁.repr + E₂.repr := le_add_self
       _ < E₁.repr + E₂.repr + 1 := lt_add_one _
-  have hne : E₁ + E₂ + 1 ≠ 0 := by
-    intro h
-    have hh := congrArg ONote.repr h
-    rw [hrepr, repr_zero] at hh
-    exact (lt_of_lt_of_le zero_lt_one le_add_self).ne'
-      (by exact_mod_cast hh)
-  refine ⟨E₁ + E₂ + 1, max c₁ c₂ + norm (Wpow E₁) + norm (Wpow E₂), hE, hne, hlt₁, hlt₂,
-    fun z => ?_⟩
+  have hne : E₁ + E₂ + 1 ≠ 0 := add_one_ne_zero h12
+  refine ⟨E₁ + E₂ + 1, max c₁ c₂ + norm (Wpow E₁) + norm (Wpow E₂), hE, hne, hlt₁, hlt₂, ?_⟩
+  intro z
   have harg₁ : z + c₁ ≤ z + (max c₁ c₂ + norm (Wpow E₁) + norm (Wpow E₂)) := by omega
   have harg₂ : z + c₂ ≤ z + (max c₁ c₂ + norm (Wpow E₁) + norm (Wpow E₂)) := by omega
   have hgate₁ : norm (Wpow E₁)
@@ -1004,7 +847,7 @@ theorem dom_pad_max {f g : ℕ → ℕ} {E₁ E₂ : ONote} {c₁ c₂ : ℕ}
       (hardy_le_of_lt (Wpow_NF hE₂) (Wpow_NF hE) (Wpow_lt hlt₂) hgate₂))
   exact max_le hb₁ hb₂
 
-/-- **THE `S*`-domination** (SERIES-4 S-2 capstone) — the concrete pipeline slot
+/-- **THE `S*`-domination** — the concrete pipeline slot
 `S* z = max (ewIterTower (rel1 (ewRootSlot e m) K) d α z) (P z)` (`Sslot` unfolded; tower over
 the embedding's base root slot, `P` any `Gexp`-iterate-bounded value function — the
 `gvb_le_iter` shape, taken as a hypothesis because `gvb` lives in `wip/ReadoffValueGate.lean`)
@@ -1057,9 +900,7 @@ theorem dom_pad_comp {f g : ℕ → ℕ} {E₁ E₂ : ONote} {c₁ c₂ : ℕ}
   haveI hWE₂ : (Wpow E₂).NF := Wpow_NF hE₂
   haveI hsum : (Wpow (E₁ + E₂ + 1) + Wpow E₂).NF := ONote.add_nf _ _
   have hrepr : (E₁ + E₂ + 1).repr = E₁.repr + E₂.repr + 1 := by
-    rw [ONote.repr_add (E₁ + E₂) 1, ONote.repr_add E₁ E₂, ONote.repr_one]
-    push_cast
-    rfl
+    rw [repr_add_one h12, ONote.repr_add E₁ E₂]
   have hlt₁ : E₁ < E₁ + E₂ + 1 := by
     rw [lt_def, hrepr]
     calc E₁.repr ≤ E₁.repr + E₂.repr := le_self_add
@@ -1068,15 +909,11 @@ theorem dom_pad_comp {f g : ℕ → ℕ} {E₁ E₂ : ONote} {c₁ c₂ : ℕ}
     rw [lt_def, hrepr]
     calc E₂.repr ≤ E₁.repr + E₂.repr := le_add_self
       _ < E₁.repr + E₂.repr + 1 := lt_add_one _
-  have hne : E₁ + E₂ + 1 + 1 ≠ 0 := by
-    intro h
-    have hh := congrArg ONote.repr h
-    rw [ONote.repr_add (E₁ + E₂ + 1) 1, ONote.repr_one, repr_zero] at hh
-    push_cast at hh
-    exact (lt_of_lt_of_le zero_lt_one le_add_self).ne' hh
+  have hne : E₁ + E₂ + 1 + 1 ≠ 0 := add_one_ne_zero hA
   refine ⟨E₁ + E₂ + 1 + 1,
     c₁ + c₂ + norm (Wpow E₁) + norm (Wpow (E₁ + E₂ + 1) + Wpow E₂),
-    hE, hne, fun z => ?_⟩
+    hE, hne, ?_⟩
+  intro z
   have h1 : f (g z) ≤ hardy (Wpow E₁) (g z + c₁) := hf (g z)
   have h2 : g z + c₁ ≤ hardy (Wpow E₂) (z + c₂) + c₁ := by
     have := hg z
@@ -1113,7 +950,7 @@ theorem dom_pad_comp {f g : ℕ → ℕ} {E₁ E₂ : ONote} {c₁ c₂ : ℕ}
 
 /-- `2^x` sits under `H_{ω²}` — the floor fact that lets an `Nlog` certificate pay a linear
 `norm` gate (via `norm < 2^{Nlog+1}`). -/
-theorem two_pow_le_hardy_Wpow2 (x : ℕ) : 2 ^ x ≤ hardy (Wpow (ofNat 2)) x := by
+lemma two_pow_le_hardy_Wpow2 (x : ℕ) : 2 ^ x ≤ hardy (Wpow (ofNat 2)) x := by
   have h := hardy_omega_pow_ofNat 2 x
   have h2 : fastGrowing (ofNat 2) (x + 1) = 2 ^ (x + 1) * (x + 1) := by
     rw [show (ofNat 2 : ONote) = 2 from rfl, ONote.fastGrowing_two]
@@ -1126,7 +963,7 @@ theorem two_pow_le_hardy_Wpow2 (x : ℕ) : 2 ^ x ≤ hardy (Wpow (ofNat 2)) x :=
   rw [hexp] at h
   omega
 
-/-- **The `α'`-uniform level cap** (SERIES-4 S-3 brick).  The read-off hands a per-`m`
+/-- **The `α'`-uniform level cap.**  The read-off hands a per-`m`
 ordinal `α' ≤ γ` together with its `Nlog α'` certificate; the double-Hardy bound of
 `ewIter_hardy_le_of_dom_pad` then caps at the FIXED level `ω^{e₀+2+1+γ+1}`: the outer
 norm-gate `norm(ω^{e₀+2+1+α'}) ≤ normSum(e₀+2+1) + norm α' + 1` with `norm α' < 2^{Nlog α'+1}`
@@ -1151,7 +988,8 @@ theorem ewIter_dom_pad_levelcap {f : ℕ → ℕ} {e₀ γ : ONote} {c : ℕ}
     Order.one_le_iff_ne_zero.mpr
       (fun h0 => he₀0 (repr_inj.mp (by rw [h0, repr_zero])))
   refine ⟨(norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 + c)
-      + (normSum (e₀ + 2 + 1) + 1) + 2, fun α' hα' hle x => ?_⟩
+      + (normSum (e₀ + 2 + 1) + 1) + 2, ?_⟩
+  intro α' hα' hle x
   haveI := hα'
   haveI hNFA : (e₀ + 2 + 1 + α').NF := ONote.add_nf (e₀ + 2 + 1) α'
   have h0 := ewIter_hardy_le_of_dom_pad he₀ he₀0 hdom α' hα' x
@@ -1250,13 +1088,10 @@ theorem ewIter_dom_pad_levelcap {f : ℕ → ℕ} {e₀ γ : ONote} {c : ℕ}
         _ < (e₀ + 2 + 1).repr + γ.repr + 1 := lt_add_one _))
     hgate)
 
-/-- **Padded Hardy eventually under ONE fastGrowing level** (SERIES-4 S-4 brick):
-`H_{ω^L}(m+C) < f_{osucc L}(m)` for `m ≥ C+3`.  Route: `hardy_omega_pow_lt_fastGrowing` into
-the successor level's iterate stack — each `f_L` application gains `≥ 1`, so `C+2` of them
-absorb the pad, and `monotone_iterate_of_id_le` climbs to the full `m`-stack. -/
-theorem hardy_pad_lt_fastGrowing_osucc (L : ONote) (hL : L.NF) (C : ℕ) :
-    ∀ m, C + 3 ≤ m → hardy (Wpow L) (m + C) < fastGrowing (osucc L) m := by
-  intro m hm
+/-- **Padded Hardy eventually under ONE fastGrowing level:**
+`H_{ω^L}(m+C) < f_{osucc L}(m)` for `m ≥ C+3`. -/
+theorem hardy_pad_lt_fastGrowing_osucc (L : ONote) (hL : L.NF) (C m : ℕ) (hm : C + 3 ≤ m) :
+    hardy (Wpow L) (m + C) < fastGrowing (osucc L) m := by
   have h1 : hardy (Wpow L) (m + C) < fastGrowing L (m + C + 1) :=
     hardy_omega_pow_lt_fastGrowing L (m + C)
   have hA : ∀ j, m + j ≤ (fastGrowing L)^[j] m := by
@@ -1313,7 +1148,7 @@ theorem Scirc_dom_pad (e : ONote) (he : e.NF) (Bb d k : ℕ) (α : ONote) (hα :
   exact ⟨E, c, hE, hE0, hmax⟩
 
 /-- `2y + q` sits under `H_{ω²}(y)` once `y ≥ max(q,1)` (the Hardy value is `≥ 4y+3`). -/
-theorem two_mul_add_le_hardy_omega_sq {y q : ℕ} (hq : q ≤ y) (hy : 1 ≤ y) :
+lemma two_mul_add_le_hardy_omega_sq {y q : ℕ} (hq : q ≤ y) (hy : 1 ≤ y) :
     2 * y + q ≤ hardy (oadd (ofNat 2) 1 0) y := by
   have h := hardy_omega_pow_ofNat 2 y
   have h2 : fastGrowing (ofNat 2) (y + 1) = 2 ^ (y + 1) * (y + 1) := by
@@ -1325,13 +1160,10 @@ theorem two_mul_add_le_hardy_omega_sq {y q : ℕ} (hq : q ≤ y) (hy : 1 ≤ y) 
   have hmul : 4 * (y + 1) ≤ 2 ^ (y + 1) * (y + 1) := Nat.mul_le_mul_right _ h4
   omega
 
-/-- **THE MASTER CONVERSION** (SERIES-4 S-3 capstone, slot-abstract form).  Given ANY slot `S`
+/-- **THE MASTER CONVERSION** (slot-abstract form).  Given ANY slot `S`
 padded-Hardy-dominated and inflationary, ONE fixed `fastGrowing o` eventually dominates every
 value `n` the uniformized read-off produces: `n ≤ ewIter S α' (S (max K₀ m))` at any per-`m`
-`α' ≤ γ` carrying its `Nlog` certificate.  Chain: `ewIter_dom_pad_levelcap` (fixed level, α'
-absorbed) → the `Nlog` certificate + `two_mul_add_le_hardy_omega_sq` absorb the inner argument
-into `Gexp(S(max K₀ m))` (eventually, `m ≥ q`) → three `dom_pad_comp`s collapse the
-Hardy stack to ONE `H_{E₅}(m+c₅)` → `hardy_pad_lt_fastGrowing_osucc`. -/
+`α' ≤ γ` carrying its `Nlog` certificate. -/
 theorem master_conversion {S : ℕ → ℕ} {E_S γ : ONote} {c_S : ℕ}
     (hES : E_S.NF) (hES0 : E_S ≠ 0) (hγ : γ.NF)
     (hSdom : ∀ z, S z ≤ hardy (oadd E_S 1 0) (z + c_S))
@@ -1363,7 +1195,8 @@ theorem master_conversion {S : ℕ → ℕ} {E_S γ : ONote} {c_S : ℕ}
     dom_pad_comp (f := hardy (Wpow (E_S + 2 + 1 + γ + 1))) (g := fun z => hardy (Wpow E₄) (z + c₄))
       (c₁ := 0) (c₂ := c₄)
       hNFL hE₄ (fun z => by simp) (fun z => le_rfl)
-  refine ⟨osucc E₅, osucc_NF hE₅, q + c₅ + 3, fun m hm α' hα' hle n hNcert hn => ?_⟩
+  refine ⟨osucc E₅, osucc_NF hE₅, q + c₅ + 3, ?_⟩
+  intro m hm α' hα' hle n hNcert hn
   -- the m-side value x := S (max K₀ m)
   have hx_ge : max K₀ m ≤ S (max K₀ m) := hSinfl _
   have hx_ge_m : m ≤ S (max K₀ m) := le_trans (le_max_right _ _) hx_ge
