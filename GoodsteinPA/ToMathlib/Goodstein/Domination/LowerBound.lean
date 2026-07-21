@@ -584,8 +584,7 @@ lemma goodsteinSeq_ge_init (m k : ℕ) (hk : k + 1 ≤ m) : m ≤ goodsteinSeq m
 `toOrdinal_pos`: the leading Cantor term is `ω ^ (…) · c` with digit `c ≥ 1`. The bridge from the
 **leading exponent** (a natural number, controlled by `leadExp_ge_sub`) to the **descent ordinal**
 (`seqOrd`), needed to turn `leadExp ≥ k` into `seqOrd ≥ ω^k`. -/
-lemma opow_toOrdinal_log_le (b : ℕ) (hb : 2 ≤ b) {v : ℕ} (hv : v ≠ 0) :
-    ω ^ toOrdinal b (Nat.log b v) ≤ toOrdinal b v := by
+lemma opow_toOrdinal_log_le (b : ℕ) (hb : 2 ≤ b) {v : ℕ} (hv : v ≠ 0) : ω ^ toOrdinal b (Nat.log b v) ≤ toOrdinal b v := by
   rw [toOrdinal_pos b v hv]
   have hc : (1 : Ordinal) ≤ (v / b ^ Nat.log b v : ℕ) := by
     have h0 : 0 < v / b ^ Nat.log b v :=
@@ -686,8 +685,7 @@ induction step. **This is Cichoń's lower bound in miniature**: it reduces the `
 (`leadExp_k ≥ 2` for `k ≤ m`) to the *one-level-smaller* length statement
 `m + 2 ≤ goodsteinLength (Nat.log 2 m)` (see `two_le_leadExp_of_log_length`) — a clean self-reference
 that powers a strong induction on `m`, replacing the `ppCount` sparsity bound as the frontier. -/
-lemma leadExp_ge_goodsteinSeq_log (m : ℕ) :
-    ∀ k, goodsteinSeq (Nat.log 2 m) k ≤ Nat.log (base k) (goodsteinSeq m k) := by
+lemma leadExp_ge_goodsteinSeq_log (m : ℕ) : ∀ k, goodsteinSeq (Nat.log 2 m) k ≤ Nat.log (base k) (goodsteinSeq m k) := by
   intro k
   induction k with
   | zero =>

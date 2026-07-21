@@ -422,8 +422,7 @@ lemma evalNat_fundSeq (b : ℕ) {E : ONote} {f : ℕ → ONote}
 
 /-- Predecessor of a finite successor `oadd 0 ⟨c⟩ 0` (= the ordinal `c`) at any argument:
 for `c ≥ 2`, `hstep (oadd 0 ⟨c⟩ 0) n = oadd 0 ⟨c-1⟩ 0`. -/
-lemma hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) :
-    hstep (oadd 0 ⟨c, by omega⟩ 0) n = oadd 0 ⟨c - 1, by omega⟩ 0 := by
+lemma hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) : hstep (oadd 0 ⟨c, by omega⟩ 0) n = oadd 0 ⟨c - 1, by omega⟩ 0 := by
   obtain ⟨e, rfl⟩ : ∃ e, c = e + 2 := ⟨c - 2, by omega⟩
   have hfs : fundamentalSequence (oadd 0 ⟨e + 2, by omega⟩ 0)
       = Sum.inl (some (oadd 0 ⟨e + 1, by omega⟩ 0)) := by
