@@ -191,6 +191,19 @@ theorem toOrdinal_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
               mul_le_mul_right (by rw [← Nat.cast_add_one]; exact (natCast_lt_omega0 _).le) _
         _ = ω ^ (toOrdinal b (Nat.log b n) + 1) := by rw [← opow_succ, Order.succ_eq_add_one]
 
+/-- **Strict monotonicity of `toOrdinal b`, for `b ≥ 2`.** -/
+lemma toOrdinal_strictMono (b : ℕ) (hb : 2 ≤ b) : StrictMono (toOrdinal b) :=
+  fun m n hmn => (toOrdinal_mono_and_bound b hb n).1 m hmn
+
+/-- Monotonicity of `toOrdinal b`, for `b ≥ 2`. -/
+lemma toOrdinal_mono (b : ℕ) (hb : 2 ≤ b) : Monotone (toOrdinal b) :=
+  (toOrdinal_strictMono b hb).monotone
+
+/-- The order on `toOrdinal b` matches the order on `ℕ`, for `b ≥ 2`. -/
+lemma toOrdinal_le_iff (b : ℕ) (hb : 2 ≤ b) {m n : ℕ} :
+    toOrdinal b m ≤ toOrdinal b n ↔ m ≤ n :=
+  (toOrdinal_strictMono b hb).le_iff_le
+
 /-- **Crux (ℕ side).** The exact analog of `toOrdinal_mono_and_bound` for `bump`:
 `bump b` is strictly monotone with leading bound `(b+1)^(bump b (log b n) + 1)`.
 Same proof, with `(b+1)` in place of `ω`. Used to read off the base-`(b+1)`
