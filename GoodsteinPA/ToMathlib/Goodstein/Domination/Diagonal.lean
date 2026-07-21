@@ -347,8 +347,7 @@ theorem goodsteinLength_exp_lower
       have hlen : m + 2 ≤ goodsteinLength L := by omega
       exact exp_le_goodsteinLength_step (by omega) hlen
 
-/-- `norm (ofNat n) = n`: a finite notation `ofNat (k+1) = oadd 0 ⟨k+1⟩ 0` has CNF norm its single
-coefficient. -/
+/-- `norm (ofNat n) = n`: a finite notation `ofNat (k+1) = oadd 0 ⟨k+1⟩ 0` has CNF norm its single coefficient. -/
 lemma norm_ofNat (n : ℕ) : norm (ONote.ofNat n) = n := by
   cases n with
   | zero => rfl

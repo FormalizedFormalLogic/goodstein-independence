@@ -83,8 +83,7 @@ lemma logSeq_iterate_zero (a : ℕ → ℕ) (j : ℕ) : (logSeq^[j] a) 0 = (Nat.
 
 /-- The self-similarity tower: the `j`-fold iterated leading exponent dominates the Goodstein
 sequence seeded at the `j`-fold logarithm. -/
-theorem iterLeadExp_dominates (m j k : ℕ) :
-    goodsteinSeq ((Nat.log 2)^[j] m) k ≤ (logSeq^[j] (goodsteinSeq m)) k := by
+theorem iterLeadExp_dominates (m j k : ℕ) : goodsteinSeq ((Nat.log 2)^[j] m) k ≤ (logSeq^[j] (goodsteinSeq m)) k := by
   have hgl : GoodsteinLike (logSeq^[j] (goodsteinSeq m)) :=
     goodsteinLike_iterate (goodsteinSeq_goodsteinLike m) j
   have hgz : goodsteinSeq m 0 = m := rfl

@@ -275,8 +275,7 @@ theorem fastGrowing_le_of_lt (hx : 1 ≤ x) (hd : d.NF) (ho : o.NF) (hdo : d < o
   fastGrowing_le_of_reaches hx (reaches_of_lt o ho d hd hdo hnorm)
 
 /-- A normal-form `oadd 0 n a` (leading exponent `0`) has a zero tail: `NF` forces `a.repr < ω^0 = 1`, hence `a = 0`. -/
-lemma tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF) :
-    a = 0 := by
+lemma tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF) : a = 0 := by
   have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
   rw [repr_zero, opow_zero] at hlt
   exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact Order.lt_one_iff.1 hlt)

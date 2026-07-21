@@ -413,8 +413,7 @@ count per the discharge doctrine. There are **no math axioms** and **no `sorry`*
 `o < ε₀` (every normal-form `ONote`), `goodsteinLength` eventually dominates `f_o`:
 `∃ N, ∀ m ≥ N, fastGrowing o m ≤ goodsteinLength m + 2`. The thin, faithful audit statement;
 the proof is `goodsteinLength_eventually_dominates_fastGrowing`. -/
-theorem goodsteinLength_dominates_fastGrowing (ho : o.NF) :
-    ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2 :=
+theorem goodsteinLength_dominates_fastGrowing (ho : o.NF) : ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2 :=
   goodsteinLength_eventually_dominates_fastGrowing ho
 
 /-- `towerO` is mathlib's `ε₀` fundamental sequence: `(fun a => oadd a 1 0)^[k+1] 0 = towerO k`. -/

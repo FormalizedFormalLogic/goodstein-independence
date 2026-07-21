@@ -307,8 +307,7 @@ theorem bump_mono_and_bound (hb : 2 ≤ b) (n : ℕ) :
 
 /-- Remainder bound for `bump`: if `r < b^e` then `bump b r < (b+1)^(bump b e)`.
 The base-`(b+1)` analog of the leading bound. -/
-lemma bump_lt_pow (hb : 2 ≤ b) {r e : ℕ} (h : r < b ^ e) :
-    bump b r < (b + 1) ^ bump b e := by
+lemma bump_lt_pow (hb : 2 ≤ b) {r e : ℕ} (h : r < b ^ e) : bump b r < (b + 1) ^ bump b e := by
   rcases eq_or_ne r 0 with rfl | hr0
   · simp
   · have hb1 : 1 < b := by omega
@@ -322,8 +321,7 @@ lemma bump_lt_pow (hb : 2 ≤ b) {r e : ℕ} (h : r < b ^ e) :
 proof reads off the base-`(b+1)` digit structure of `bump b n` (leading exponent
 `bump b (log b n)`, leading digit `n / b^(log b n)`, remainder `bump b (n % …)`)
 and recurses. -/
-lemma toOrdinal_bump (hb : 2 ≤ b) (n : ℕ) :
-    toOrdinal (b + 1) (bump b n) = toOrdinal b n := by
+lemma toOrdinal_bump (hb : 2 ≤ b) (n : ℕ) : toOrdinal (b + 1) (bump b n) = toOrdinal b n := by
   induction n using Nat.strong_induction_on with
   | _ n ih =>
     rcases eq_or_ne n 0 with rfl | hn0
@@ -473,18 +471,15 @@ sequence seeded at `m` reaches `0`. Total by `goodstein_terminates`. -/
 def goodsteinLength (m : ℕ) : ℕ := Nat.find (goodstein_terminates m)
 
 /-- Defining property: the sequence is `0` at its length. -/
-lemma goodsteinSeq_goodsteinLength (m : ℕ) :
-    goodsteinSeq m (goodsteinLength m) = 0 :=
+lemma goodsteinSeq_goodsteinLength (m : ℕ) : goodsteinSeq m (goodsteinLength m) = 0 :=
   Nat.find_spec (goodstein_terminates m)
 
 /-- The length is the *least* zero: any zero step is `≥ goodsteinLength m`. -/
-lemma goodsteinLength_le {m N : ℕ} (h : goodsteinSeq m N = 0) :
-    goodsteinLength m ≤ N :=
+lemma goodsteinLength_le {m N : ℕ} (h : goodsteinSeq m N = 0) : goodsteinLength m ≤ N :=
   Nat.find_le h
 
 /-- Before the length, the sequence is nonzero. -/
-lemma goodsteinSeq_ne_zero_of_lt {m N : ℕ} (h : N < goodsteinLength m) :
-    goodsteinSeq m N ≠ 0 :=
+lemma goodsteinSeq_ne_zero_of_lt {m N : ℕ} (h : N < goodsteinLength m) : goodsteinSeq m N ≠ 0 :=
   Nat.find_min (goodstein_terminates m) h
 
 end Goodstein.Dom
