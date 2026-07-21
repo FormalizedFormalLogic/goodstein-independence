@@ -15,7 +15,8 @@ namespace ONote
 open Ordinal
 
 /-- **The norm/Nlog bridge:** `norm b < 2^(Nlog b + 1)`. -/
-lemma norm_lt_two_pow_Nlog : ∀ (b : ONote), norm b < 2 ^ (Nlog b + 1)
+lemma norm_lt_two_pow_Nlog (b : ONote) : norm b < 2 ^ (Nlog b + 1) :=
+  match b with
   | 0 => by simp [norm]
   | oadd e n a => by
       have he := norm_lt_two_pow_Nlog e
@@ -37,8 +38,7 @@ lemma norm_lt_two_pow_Nlog : ∀ (b : ONote), norm b < 2 ^ (Nlog b + 1)
 
 /-- A branch ordinal passing the `Nlog b ≤ K` gate has linear norm `< 2^(K+1)`. -/
 @[grind →]
-lemma norm_lt_of_Nlog_le {b : ONote} {K : ℕ} (h : Nlog b ≤ K) :
-    norm b < 2 ^ (K + 1) :=
+lemma norm_lt_of_Nlog_le {b : ONote} {K : ℕ} (h : Nlog b ≤ K) : norm b < 2 ^ (K + 1) :=
   lt_of_lt_of_le (norm_lt_two_pow_Nlog b)
     (Nat.pow_le_pow_right (by norm_num) (by omega))
 
@@ -114,8 +114,7 @@ lemma hardy_double_collapse {A B : ONote} (hA : A.NF) (hB : B.NF) (hBA : B < A) 
 /-- The ONote sum `ω^b'·2 + ω^e'` in normal form. -/
 def stepOrd (b' e' : ONote) : ONote := oadd b' 2 (Wpow e')
 
-lemma stepOrd_NF {b' e' : ONote} (hb' : b'.NF) (he' : e'.NF) (hlt : e' < b') :
-    (stepOrd b' e').NF :=
+lemma stepOrd_NF {b' e' : ONote} (hb' : b'.NF) (he' : e'.NF) (hlt : e' < b') : (stepOrd b' e').NF :=
   NF.oadd hb' 2 (NFBelow.oadd he' NFBelow.zero (lt_def.mp hlt))
 
 /-- **The chain identity:** Two same-level principals over one engine compose exactly. -/
@@ -227,8 +226,7 @@ def normSum : ONote → ℕ
   | 0 => 0
   | oadd e n a => max (norm e) (n : ℕ) + normSum a
 
-lemma norm_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
-    norm (addAux e n o) ≤ max (norm e) (n : ℕ) + norm o := by
+lemma norm_addAux_le (e : ONote) (n : ℕ+) (o : ONote) : norm (addAux e n o) ≤ max (norm e) (n : ℕ) + norm o := by
   cases o with
   | zero =>
       show norm (oadd e n 0) ≤ _
@@ -252,7 +250,8 @@ lemma norm_addAux_le (e : ONote) (n : ℕ+) (o : ONote) :
           omega
       | gt => simp only [norm_oadd]; omega
 
-lemma norm_add_le : ∀ (x y : ONote), norm (x + y) ≤ normSum x + norm y
+lemma norm_add_le (x y : ONote) : norm (x + y) ≤ normSum x + norm y :=
+  match x, y with
   | 0, y => by simp [normSum]
   | oadd e n a, y => by
       rw [oadd_add]
@@ -270,8 +269,7 @@ lemma norm_add_le : ∀ (x y : ONote), norm (x + y) ≤ normSum x + norm y
 /-- `ω^b'·3 + ω^e'` in normal form. -/
 def stepOrd3 (b' e' : ONote) : ONote := oadd b' 3 (Wpow e')
 
-lemma stepOrd3_NF {b' e' : ONote} (hb' : b'.NF) (he' : e'.NF) (hlt : e' < b') :
-    (stepOrd3 b' e').NF :=
+lemma stepOrd3_NF {b' e' : ONote} (hb' : b'.NF) (he' : e'.NF) (hlt : e' < b') : (stepOrd3 b' e').NF :=
   NF.oadd hb' 3 (NFBelow.oadd he' NFBelow.zero (lt_def.mp hlt))
 
 /-- Three same-level principals over one engine compose exactly. -/
@@ -463,13 +461,11 @@ lemma engine_arith {L y : ℕ} (h2 : 2 ≤ y) (hL : L ≤ 5 * y + 2 ^ (y + 1)) :
   omega
 
 /-- **Abstract engine core**, parameterized by the raised-argument domination `hfxp`. -/
-theorem hEng_of_fx {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
-    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
+theorem hEng_of_fx {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ} (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
     (hfxp : ∀ x, f x ≤ hardy (Wpow e₀) (x + p))
-    (hp : norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 ≤ p) :
-    ∀ x, x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
+    (hp : norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 ≤ p) (x : ℕ) :
+    x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
         ≤ hardy (Wpow (e₀ + 2)) (x + p) := by
-  intro x
   haveI := he₀
   haveI hNF1 : (1 : ONote).NF := NF.oadd NF.zero 1 NFBelow.zero
   haveI hNF2 : (2 : ONote).NF := nf_ofNat 2
@@ -549,17 +545,15 @@ theorem hEng_of_fx {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
         hardy_le_of_lt hDNF (Wpow_NF hNFe2) hDlt hDnorm
 
 /-- **The concrete engine:** `e' := e₀ + 2` discharges `ewIter_hardy_le`'s `hEng` from plain domination. -/
-theorem hEng_of_dom {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ}
-    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
+theorem hEng_of_dom {f : ℕ → ℕ} {e₀ : ONote} {p : ℕ} (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
     (hdom : ∀ z, f z ≤ hardy (Wpow e₀) z)
-    (hp : norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 ≤ p) :
-    ∀ x, x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
+    (hp : norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 ≤ p) (x : ℕ) :
+    x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
         ≤ hardy (Wpow (e₀ + 2)) (x + p) :=
-  hEng_of_fx he₀ he₀0 (fun x => le_trans (hdom x) (hardy_monotone _ (by omega))) hp
+  hEng_of_fx he₀ he₀0 (fun x => le_trans (hdom x) (hardy_monotone _ (by omega))) hp x
 
 /-- **The end-to-end majorization at a concrete engine:** From `f ≤ H_{ω^{e₀}}` with explicit pad. -/
-theorem ewIter_hardy_le_of_dom {f : ℕ → ℕ} {e₀ : ONote}
-    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
+theorem ewIter_hardy_le_of_dom {f : ℕ → ℕ} {e₀ : ONote} (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
     (hdom : ∀ z, f z ≤ hardy (Wpow e₀) z)
     (α : ONote) (hα : α.NF) (m : ℕ) :
     ewIter f α m ≤ hardy (Wpow (e₀ + 2 + 1 + α))
@@ -572,18 +566,16 @@ theorem ewIter_hardy_le_of_dom {f : ℕ → ℕ} {e₀ : ONote}
     (hEng_of_dom he₀ he₀0 hdom le_rfl) α hα m
 
 /-- **The engine at a padded pointwise domination:** `f z ≤ H_{ω^{e₀}}(z + c)`, absorbing constant floor. -/
-theorem hEng_of_dom_pad {f : ℕ → ℕ} {e₀ : ONote} {p c : ℕ}
-    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
+theorem hEng_of_dom_pad {f : ℕ → ℕ} {e₀ : ONote} {p c : ℕ} (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
     (hdom : ∀ z, f z ≤ hardy (Wpow e₀) (z + c))
-    (hp : norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 + c ≤ p) :
-    ∀ x, x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
+    (hp : norm (e₀ + 1) + norm e₀ + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 8 + c ≤ p) (x : ℕ) :
+    x + 2 * f x + 2 ^ (f x + 1) + normSum (e₀ + 2 + 1) + norm (e₀ + 2) + 2 * p + 4
         ≤ hardy (Wpow (e₀ + 2)) (x + p) :=
   hEng_of_fx he₀ he₀0
-    (fun x => le_trans (hdom x) (hardy_monotone _ (by omega))) (by omega)
+    (fun x => le_trans (hdom x) (hardy_monotone _ (by omega))) (by omega) x
 
 /-- **The padded end-to-end majorization:** From `f ≤ H_{ω^{e₀}}(· + c)`. -/
-theorem ewIter_hardy_le_of_dom_pad {f : ℕ → ℕ} {e₀ : ONote} {c : ℕ}
-    (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
+theorem ewIter_hardy_le_of_dom_pad {f : ℕ → ℕ} {e₀ : ONote} {c : ℕ} (he₀ : e₀.NF) (he₀0 : e₀ ≠ 0)
     (hdom : ∀ z, f z ≤ hardy (Wpow e₀) (z + c))
     (α : ONote) (hα : α.NF) (m : ℕ) :
     ewIter f α m ≤ hardy (Wpow (e₀ + 2 + 1 + α))
@@ -611,8 +603,7 @@ lemma e_lt_Wpow_succ (e : ONote) (he : e.NF) : e < Wpow (e + 1) := by
         (Ordinal.opow_lt_opow_iff_right (by norm_num : (1 : Ordinal) < ω)).mpr (lt_add_one _)
 
 /-- **`hardy e` at a `max`-shifted argument is padded-dominated by `H_{ω^{e+1}}`** uniformly in `z`. -/
-lemma hardy_maxpad (e : ONote) (he : e.NF) (m z : ℕ) :
-    hardy e (max m z) ≤ hardy (Wpow (e + 1)) (z + (m + norm e)) := by
+lemma hardy_maxpad (e : ONote) (he : e.NF) (m z : ℕ) : hardy e (max m z) ≤ hardy (Wpow (e + 1)) (z + (m + norm e)) := by
   have he1 : (e + 1).NF := ONote.add_nf e 1
   have hlt : e < Wpow (e + 1) := e_lt_Wpow_succ e he
   have hmono : hardy e (max m z) ≤ hardy e (z + (m + norm e)) :=
@@ -1069,8 +1060,7 @@ theorem Scirc_dom_pad (e : ONote) (he : e.NF) (Bb d k : ℕ) (α : ONote) (hα :
   exact ⟨E, c, hE, hE0, hmax⟩
 
 /-- `2y + q` sits under `H_{ω²}(y)` once `y ≥ max(q,1)` (the Hardy value is `≥ 4y+3`). -/
-lemma two_mul_add_le_hardy_omega_sq {y q : ℕ} (hq : q ≤ y) (hy : 1 ≤ y) :
-    2 * y + q ≤ hardy (oadd (ofNat 2) 1 0) y := by
+lemma two_mul_add_le_hardy_omega_sq {y q : ℕ} (hq : q ≤ y) (hy : 1 ≤ y) : 2 * y + q ≤ hardy (oadd (ofNat 2) 1 0) y := by
   have h := hardy_omega_pow_ofNat 2 y
   have h2 : fastGrowing (ofNat 2) (y + 1) = 2 ^ (y + 1) * (y + 1) := by
     rw [show (ofNat 2 : ONote) = 2 from rfl, ONote.fastGrowing_two]

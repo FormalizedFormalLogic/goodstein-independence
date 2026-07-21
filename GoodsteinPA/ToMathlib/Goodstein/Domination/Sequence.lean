@@ -13,6 +13,8 @@ namespace Goodstein.Dom
 
 open ONote Ordinal
 
+variable (b : ℕ)
+
 /-
 # Goodstein — proof engine (ordinal descent)
 
@@ -43,7 +45,7 @@ strong induction; `bump` gets the parallel pair over `ℕ`.
 /-- **Ordinal interpretation.** Read `n` in hereditary base `b`, replacing `b` by
 `ω`. Same top-power peeling as `bump`: with `e = log b n`, `c = n / b^e`,
 `r = n % b^e`, `toOrdinal b n = ω^(toOrdinal b e) * c + toOrdinal b r`. -/
-noncomputable def toOrdinal (b : ℕ) (n : ℕ) : Ordinal.{0} :=
+noncomputable def toOrdinal (b n : ℕ) : Ordinal.{0} :=
   if h : n = 0 then 0
   else
     have _hn : n ≠ 0 := h
@@ -58,21 +60,21 @@ decreasing_by
       · exact Nat.pow_pos hbpos
     exact lt_of_lt_of_le (Nat.mod_lt _ hb) (Nat.pow_log_le_self b h)
 
-@[simp] lemma toOrdinal_zero (b : ℕ) : toOrdinal b 0 = 0 := by
+@[simp] lemma toOrdinal_zero : toOrdinal b 0 = 0 := by
   rw [toOrdinal]; simp
 
-@[simp] lemma bump_zero (b : ℕ) : bump b 0 = 0 := by
+@[simp] lemma bump_zero : bump b 0 = 0 := by
   rw [bump]; simp
 
 /-- Unfolding `toOrdinal` at a nonzero argument (peel the top power). -/
-lemma toOrdinal_pos (b n : ℕ) (h : n ≠ 0) :
+lemma toOrdinal_pos (n : ℕ) (h : n ≠ 0) :
     toOrdinal b n =
       ω ^ toOrdinal b (Nat.log b n) * (n / b ^ Nat.log b n : ℕ)
         + toOrdinal b (n % b ^ Nat.log b n) := by
   rw [toOrdinal]; simp [h]
 
 /-- Unfolding `bump` at a nonzero argument (peel the top power). -/
-lemma bump_pos (b n : ℕ) (h : n ≠ 0) :
+lemma bump_pos (n : ℕ) (h : n ≠ 0) :
     bump b n =
       n / b ^ Nat.log b n * (b + 1) ^ bump b (Nat.log b n) + bump b (n % b ^ Nat.log b n) := by
   rw [bump]; simp [h]
@@ -81,7 +83,7 @@ lemma bump_pos (b n : ℕ) (h : n ≠ 0) :
 monotone, and each value is bounded by `ω^(toOrdinal b (log b n) + 1)`. Both halves
 are proved together by strong induction, because each needs the other on smaller
 arguments. -/
-theorem toOrdinal_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
+theorem toOrdinal_mono_and_bound (hb : 2 ≤ b) (n : ℕ) :
     (∀ m, m < n → toOrdinal b m < toOrdinal b n) ∧
       (n ≠ 0 → toOrdinal b n < ω ^ (toOrdinal b (Nat.log b n) + 1)) := by
   have hb1 : 1 < b := by omega
@@ -192,23 +194,22 @@ theorem toOrdinal_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
         _ = ω ^ (toOrdinal b (Nat.log b n) + 1) := by rw [← opow_succ, Order.succ_eq_add_one]
 
 /-- **Strict monotonicity of `toOrdinal b`, for `b ≥ 2`.** -/
-lemma toOrdinal_strictMono (b : ℕ) (hb : 2 ≤ b) : StrictMono (toOrdinal b) :=
+lemma toOrdinal_strictMono (hb : 2 ≤ b) : StrictMono (toOrdinal b) :=
   fun m n hmn => (toOrdinal_mono_and_bound b hb n).1 m hmn
 
 /-- Monotonicity of `toOrdinal b`, for `b ≥ 2`. -/
-lemma toOrdinal_mono (b : ℕ) (hb : 2 ≤ b) : Monotone (toOrdinal b) :=
+lemma toOrdinal_mono (hb : 2 ≤ b) : Monotone (toOrdinal b) :=
   (toOrdinal_strictMono b hb).monotone
 
 /-- The order on `toOrdinal b` matches the order on `ℕ`, for `b ≥ 2`. -/
-lemma toOrdinal_le_iff (b : ℕ) (hb : 2 ≤ b) {m n : ℕ} :
-    toOrdinal b m ≤ toOrdinal b n ↔ m ≤ n :=
+lemma toOrdinal_le_iff (hb : 2 ≤ b) {m n : ℕ} : toOrdinal b m ≤ toOrdinal b n ↔ m ≤ n :=
   (toOrdinal_strictMono b hb).le_iff_le
 
 /-- **Crux (ℕ side).** The exact analog of `toOrdinal_mono_and_bound` for `bump`:
 `bump b` is strictly monotone with leading bound `(b+1)^(bump b (log b n) + 1)`.
 Same proof, with `(b+1)` in place of `ω`. Used to read off the base-`(b+1)`
 digit structure of `bump b n` in the invariance lemma. -/
-theorem bump_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
+theorem bump_mono_and_bound (hb : 2 ≤ b) (n : ℕ) :
     (∀ m, m < n → bump b m < bump b n) ∧
       (n ≠ 0 → bump b n < (b + 1) ^ (bump b (Nat.log b n) + 1)) := by
   have hb1 : 1 < b := by omega
@@ -306,7 +307,7 @@ theorem bump_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
 
 /-- Remainder bound for `bump`: if `r < b^e` then `bump b r < (b+1)^(bump b e)`.
 The base-`(b+1)` analog of the leading bound. -/
-lemma bump_lt_pow (b : ℕ) (hb : 2 ≤ b) {r e : ℕ} (h : r < b ^ e) :
+lemma bump_lt_pow (hb : 2 ≤ b) {r e : ℕ} (h : r < b ^ e) :
     bump b r < (b + 1) ^ bump b e := by
   rcases eq_or_ne r 0 with rfl | hr0
   · simp
@@ -321,7 +322,7 @@ lemma bump_lt_pow (b : ℕ) (hb : 2 ≤ b) {r e : ℕ} (h : r < b ^ e) :
 proof reads off the base-`(b+1)` digit structure of `bump b n` (leading exponent
 `bump b (log b n)`, leading digit `n / b^(log b n)`, remainder `bump b (n % …)`)
 and recurses. -/
-lemma toOrdinal_bump (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
+lemma toOrdinal_bump (hb : 2 ≤ b) (n : ℕ) :
     toOrdinal (b + 1) (bump b n) = toOrdinal b n := by
   induction n using Nat.strong_induction_on with
   | _ n ih =>
@@ -370,13 +371,15 @@ lemma toOrdinal_bump (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
       rw [key, ih e he_lt_n, ih (n % b ^ e) hr_lt_n]
       exact (toOrdinal_pos b n hn0).symm
 
+variable (m k : ℕ)
+
 /-- Ordinal value assigned to the `k`-th Goodstein term, read in its base `k+2`. -/
-noncomputable def seqOrd (m k : ℕ) : Ordinal.{0} := toOrdinal (k + 2) (goodsteinSeq m k)
+noncomputable def seqOrd : Ordinal.{0} := toOrdinal (k + 2) (goodsteinSeq m k)
 
 /-- **Descent.** While the term is nonzero, one Goodstein step strictly lowers the
 ordinal value: the base-bump preserves it (invariance) and the subtract-one
 strictly drops it (monotonicity). -/
-lemma seqOrd_step (m k : ℕ) (h : goodsteinSeq m k ≠ 0) : seqOrd m (k + 1) < seqOrd m k := by
+lemma seqOrd_step (h : goodsteinSeq m k ≠ 0) : seqOrd m (k + 1) < seqOrd m k := by
   have hb : 2 ≤ k + 2 := by omega
   have hstep : goodsteinSeq m (k + 1) = bump (k + 2) (goodsteinSeq m k) - 1 := rfl
   have hMpos : 0 < bump (k + 2) (goodsteinSeq m k) := by
@@ -397,7 +400,7 @@ lemma seqOrd_step (m k : ℕ) (h : goodsteinSeq m k ≠ 0) : seqOrd m (k + 1) < 
 /-- Every Goodstein sequence reaches `0` (engine form). If it never did, `seqOrd`
 would be an infinite strictly-decreasing sequence of ordinals, contradicting
 well-foundedness of `<` on `Ordinal`. -/
-theorem goodstein_terminates_engine (m : ℕ) : ∃ N, goodsteinSeq m N = 0 := by
+theorem goodstein_terminates_engine : ∃ N, goodsteinSeq m N = 0 := by
   by_contra hcon
   rw [not_exists] at hcon
   have hdec : ∀ k, seqOrd m (k + 1) < seqOrd m k := fun k => seqOrd_step m k (hcon k)
