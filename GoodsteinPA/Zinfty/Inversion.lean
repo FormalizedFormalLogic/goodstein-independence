@@ -12,7 +12,7 @@ public import GoodsteinPA.Zinfty.Basic
 
 @[expose] public section
 
-namespace GoodsteinPA.ZinftyF
+namespace GoodsteinPA.Zinfty
 
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
 open Derivation
@@ -365,4 +365,4 @@ end InversionAnd
 
 end Provable
 
-end GoodsteinPA.ZinftyF
+end GoodsteinPA.Zinfty

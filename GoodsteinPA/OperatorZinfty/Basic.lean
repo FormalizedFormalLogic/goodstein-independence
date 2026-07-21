@@ -42,7 +42,7 @@ namespace GoodsteinPA.OperatorZinfty
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 
 noncomputable def atomTrue (φ : ArithmeticFormula ℕ) : Prop :=
-  GoodsteinPA.Compat.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
+  Semiformula.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
 
 /-- **The witness-bounded `Z_∞` refinement** `Provable ⊢^{α,e}_{k,d,c} Γ`.
 Derivation ordinal `α`; **control ordinal `e`** (governs the witness bound, raised by cut-elim);

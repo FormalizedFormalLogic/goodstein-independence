@@ -37,7 +37,6 @@ image are CLOSED — which is what lets the numeral-only `exI`/ω-rule `allω` f
 -/
 module
 
-public import GoodsteinPA.Zinfty.Basic
 public import GoodsteinPA.Zinfty.Cut
 public import GoodsteinPA.ToFoundation.Subst
 

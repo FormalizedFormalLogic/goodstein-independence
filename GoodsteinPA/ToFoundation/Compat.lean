@@ -68,51 +68,45 @@ variable {L : Language} {ξ : Type*} {M : Type*} {n : ℕ} [Structure L M]
     Semiterm.val e ε (o.operator ![t, u]) = o.val ![Semiterm.val e ε t, Semiterm.val e ε u] := by
   simp [Semiterm.val_operator, Matrix.fun_eq_vec_two]
 
-end Semiterm
-
-end LO.FirstOrder
-
-namespace GoodsteinPA.Compat
-
-section Eval
-variable {L : Language} {ξ : Type*} {M : Type*} {n : ℕ}
-
-/-- Fork `Semiformula.Eval` — the `Structure` passed **explicitly** (upstream made it an instance). -/
-abbrev gEval (s : Structure L M) (e : Fin n → M) (ε : ξ → M) : Semiformula L ξ n →ˡᶜ Prop :=
-  letI := s; Semiformula.Eval e ε
-
-/-- Fork `Semiterm.val` — the `Structure` passed **explicitly**. -/
+/-- Fork `Semiterm.val` — the `Structure` passed **explicitly** (upstream made it an instance). -/
 abbrev gVal (s : Structure L M) (e : Fin n → M) (ε : ξ → M) : Semiterm L ξ n → M :=
   letI := s; Semiterm.val e ε
-
-/-- Fork `Semiformula.Evalm` — evaluate in `M`'s registered structure, `M` named explicitly.
-Upstream removed this. -/
-abbrev gEvalm (M : Type*) [Structure L M] {n} (e : Fin n → M) (ε : ξ → M) :
-    Semiformula L ξ n →ˡᶜ Prop := Semiformula.Eval e ε
 
 /-- Fork `Semiterm.valm` — evaluate a term in `M`'s registered structure, `M` named explicitly.
 Upstream removed this. -/
 abbrev gValm (M : Type*) [Structure L M] {n} (e : Fin n → M) (ε : ξ → M) :
     Semiterm L ξ n → M := Semiterm.val e ε
 
-end Eval
+end Semiterm
+
+namespace Semiformula
+
+variable {L : Language} {ξ : Type*} {M : Type*} {n : ℕ}
+
+/-- Fork `Semiformula.Eval` — the `Structure` passed **explicitly** (upstream made it an instance). -/
+abbrev gEval (s : Structure L M) (e : Fin n → M) (ε : ξ → M) : Semiformula L ξ n →ˡᶜ Prop :=
+  letI := s; Semiformula.Eval e ε
+
+/-- Fork `Semiformula.Evalm` — evaluate in `M`'s registered structure, `M` named explicitly.
+Upstream removed this. -/
+abbrev gEvalm (M : Type*) [Structure L M] {n} (e : Fin n → M) (ε : ξ → M) :
+    Semiformula L ξ n →ˡᶜ Prop := Semiformula.Eval e ε
 
 section RelLemmas
-variable {L : Language} {ξ : Type*} {M : Type*} {n : ℕ}
-  (s : Structure L M) (e : Fin n → M) (ε : ξ → M)
+variable (s : Structure L M) (e : Fin n → M) (ε : ξ → M)
 
 @[simp] lemma eval_rel₀ {r : L.Rel 0} : gEval s e ε (Semiformula.rel r ![]) ↔ s.rel r ![] := by
   simp [gEval, Semiformula.eval_rel, Matrix.empty_eq]
 
 @[simp] lemma eval_rel₁ {r : L.Rel 1} (t : Semiterm L ξ n) :
-    gEval s e ε (Semiformula.rel r ![t]) ↔ s.rel r ![gVal s e ε t] := by
-  simp only [gEval, gVal, Semiformula.eval_rel]
+    gEval s e ε (Semiformula.rel r ![t]) ↔ s.rel r ![Semiterm.gVal s e ε t] := by
+  simp only [gEval, Semiterm.gVal, Semiformula.eval_rel]
   refine Iff.of_eq (congrArg (s.rel r) ?_)
   funext i; cases' i using Fin.cases with i <;> simp
 
 @[simp] lemma eval_rel₂ {r : L.Rel 2} (t₁ t₂ : Semiterm L ξ n) :
-    gEval s e ε (Semiformula.rel r ![t₁, t₂]) ↔ s.rel r ![gVal s e ε t₁, gVal s e ε t₂] := by
-  simp only [gEval, gVal, Semiformula.eval_rel]
+    gEval s e ε (Semiformula.rel r ![t₁, t₂]) ↔ s.rel r ![Semiterm.gVal s e ε t₁, Semiterm.gVal s e ε t₂] := by
+  simp only [gEval, Semiterm.gVal, Semiformula.eval_rel]
   refine Iff.of_eq (congrArg (s.rel r) ?_)
   funext i; cases' i using Fin.cases with i <;> simp
 
@@ -120,17 +114,19 @@ variable {L : Language} {ξ : Type*} {M : Type*} {n : ℕ}
   simp [gEval, Semiformula.eval_nrel, Matrix.empty_eq]
 
 @[simp] lemma eval_nrel₁ {r : L.Rel 1} (t : Semiterm L ξ n) :
-    gEval s e ε (Semiformula.nrel r ![t]) ↔ ¬s.rel r ![gVal s e ε t] := by
-  simp only [gEval, gVal, Semiformula.eval_nrel]
+    gEval s e ε (Semiformula.nrel r ![t]) ↔ ¬s.rel r ![Semiterm.gVal s e ε t] := by
+  simp only [gEval, Semiterm.gVal, Semiformula.eval_nrel]
   refine Iff.of_eq (congrArg (¬ s.rel r ·) ?_)
   funext i; cases' i using Fin.cases with i <;> simp
 
 @[simp] lemma eval_nrel₂ {r : L.Rel 2} (t₁ t₂ : Semiterm L ξ n) :
-    gEval s e ε (Semiformula.nrel r ![t₁, t₂]) ↔ ¬s.rel r ![gVal s e ε t₁, gVal s e ε t₂] := by
-  simp only [gEval, gVal, Semiformula.eval_nrel]
+    gEval s e ε (Semiformula.nrel r ![t₁, t₂]) ↔ ¬s.rel r ![Semiterm.gVal s e ε t₁, Semiterm.gVal s e ε t₂] := by
+  simp only [gEval, Semiterm.gVal, Semiformula.eval_nrel]
   refine Iff.of_eq (congrArg (¬ s.rel r ·) ?_)
   funext i; cases' i using Fin.cases with i <;> simp
 
 end RelLemmas
 
-end GoodsteinPA.Compat
+end Semiformula
+
+end LO.FirstOrder
