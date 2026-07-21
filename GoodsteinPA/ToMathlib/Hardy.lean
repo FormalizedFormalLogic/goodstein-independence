@@ -66,11 +66,7 @@ private lemma hardy_omega_pow_ofNat_succ (k x : ℕ) :
     rw [hardy_oadd_coeff (ofNat (k + 1)) (ofNat_succ_ne_zero k) x x]
     exact iterate_offset ih (x + 1) x
 
-/-- **The Hardy/fast-growing identity at finite levels: `H_{ω^k}(n) + 1 = f_k(n+1)`** for every
-`k : ℕ`. The classical identity `H_{ω^α} = f_α`, made precise under mathlib's `ω[n]=n+1`
-fundamental-sequence convention — which shifts it by the `+1`/argument-bump seen here. (NB: the
-clean identity is special to *finite/successor* exponents; at limit `α` the convention makes
-`H_{ω^α}` and `f_α` pick different levels — e.g. `H_{ω^ω}(1)+1 = 8 ≠ f_ω(2) = 2048`.) -/
+/-- **The Hardy/fast-growing identity at finite levels:** `H_{ω^k}(n) + 1 = f_k(n+1)` for every `k : ℕ`. -/
 lemma hardy_omega_pow_ofNat (k x : ℕ) :
     hardy (oadd (ofNat k) 1 0) x + 1 = fastGrowing (ofNat k) (x + 1) := by
   cases k with
@@ -79,11 +75,8 @@ lemma hardy_omega_pow_ofNat (k x : ℕ) :
     rw [show (oadd 0 1 0 : ONote) = 1 from rfl, hardy_one, fastGrowing_zero]
   | succ k => exact hardy_omega_pow_ofNat_succ k x
 
-/-- **The Hardy/fast-growing identity at the first LIMIT level `ω^ω`:**
-`H_{ω^ω}(n) + 1 = f_{n+1}(n+1)`. Unlike finite `α`, the clean `H_{ω^α}(n)+1 = f_α(n+1)` is FALSE
-at limit `α` (the `ω[n]=n+1` convention makes `H` and `f` pick different tower levels); the TRUE
-limit form reads off the fundamental sequence `(ω^ω)[n] = ω^{n+1}`. Note the diagonal `n+1`
-argument — this is `f_{ε₀}`-flavoured (cf. `fastGrowingε₀`). -/
+/-- **The Hardy/fast-growing identity at the first limit level `ω^ω`:**
+`H_{ω^ω}(n) + 1 = f_{n+1}(n+1)`. -/
 lemma hardy_omega_pow_omega (n : ℕ) :
     hardy (oadd (oadd 1 1 0) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1) := by
   have hω : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ONote.ofNat (i + 1)) := rfl
@@ -91,10 +84,7 @@ lemma hardy_omega_pow_omega (n : ℕ) :
   show hardy (oadd (ofNat (n + 1)) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1)
   exact hardy_omega_pow_ofNat (n + 1) n
 
-/-- **Hardy is dominated by fast-growing at the same index.** For `n ≥ 2`,
-`hardy o n ≤ fastGrowing o n` (no `NF` needed). The Hardy hierarchy (the Goodstein-length side,
-via the Cichoń identity `goodsteinLength m = H_{o_m}(2) − 2`) never outruns the fast-growing
-hierarchy at the same ordinal index. -/
+/-- **Hardy is dominated by fast-growing at the same index:** For `n ≥ 2`, `hardy o n ≤ fastGrowing o n`. -/
 theorem hardy_le_fastGrowing (o : ONote) (n : ℕ) (hn : 2 ≤ n) :
     hardy o n ≤ fastGrowing o n := by
   rcases e : fundamentalSequence o with (_ | a) | f
@@ -122,20 +112,12 @@ decreasing_by all_goals exact hlt
 /-- Anti-vacuity for `hardy_le_fastGrowing` at a genuine limit: `H_ω(2) = 5 ≤ f_ω(2) = 2048`. -/
 example : hardy (oadd 1 1 0) 2 ≤ fastGrowing (oadd 1 1 0) 2 := hardy_le_fastGrowing _ _ (by norm_num)
 
-/-! ### Hardy vs. fast-growing at an ARBITRARY (transfinite) exponent
+/-! ### Hardy vs. fast-growing at an arbitrary exponent
 
-`hardy_omega_pow_ofNat`/`_omega` above give the Hardy/fast-growing identity as an *equality*
-at finite/successor exponents; at a LIMIT exponent the equality degrades (the `ω[n]=n+1`
-convention makes `H` and `f` pick different tower levels — e.g. `H_{ω^ω}(1)+1 = 8 ≠ f_ω(2) =
-2048`). The unconditional truth, proven here for *every* `α : ONote`, is the **inequality**
-
-    hardy (oadd α 1 0) n + 1 ≤ fastGrowing α (n + 1)              -- H_{ω^α}(n) < f_α(n+1)
+At arbitrary `α : ONote`, `H_{ω^α}(n) + 1 ≤ f_α(n+1)` unconditionally.
 -/
 
-/-- **Coefficient composition, unconditional in `β`** (the non-absorbing equal-exponent additive
-core): `H_{ω^β·(k+2)}(n) = H_{ω^β·(k+1)}(H_{ω^β}(n))`. For `β ≠ 0` this is the banked
-`hardy_oadd_coeff_step`; for `β = 0` everything is finite (`oadd 0 m.succPNat 0 = ofNat (m+1)`,
-`H_{ofNat c}(x) = x + c`). -/
+/-- **Coefficient composition:** `H_{ω^β·(k+2)}(n) = H_{ω^β·(k+1)}(H_{ω^β}(n))`, unconditional in `β`. -/
 lemma hardy_omega_pow_coeff_comp (β : ONote) (k n : ℕ) :
     hardy (oadd β (Nat.succPNat (k + 1)) 0) n
       = hardy (oadd β (Nat.succPNat k) 0) (hardy (oadd β 1 0) n) := by
@@ -149,10 +131,7 @@ lemma hardy_omega_pow_coeff_comp (β : ONote) (k n : ℕ) :
     omega
   · exact hardy_oadd_coeff_step β hβ k n
 
-/-- **The coefficient intermediate** (the classical Cichoń–Wainer core), parametrized by the
-exponent-`β` base bound `hbase` (supplied by the outer IH in the successor case):
-`H_{ω^β·(m+1)}(n) + 1 ≤ f_β^{[m+1]}(n+1)`. Induction on the coefficient `m`: base `m=0` is `hbase`;
-the step composes via `hardy_omega_pow_coeff_comp` + the IH + iterate-monotonicity. -/
+/-- **The coefficient intermediate:** `H_{ω^β·(m+1)}(n) + 1 ≤ f_β^{[m+1]}(n+1)`. -/
 lemma hardy_omega_pow_coeff_le {β : ONote}
     (hbase : ∀ n, hardy (oadd β 1 0) n + 1 ≤ fastGrowing β (n + 1)) :
     ∀ (m n : ℕ), hardy (oadd β (Nat.succPNat m) 0) n + 1 ≤ (fastGrowing β)^[m + 1] (n + 1) := by
@@ -173,8 +152,7 @@ lemma hardy_omega_pow_coeff_le {β : ONote}
         _ = (fastGrowing β)^[m + 1 + 1] (n + 1) :=
             (Function.iterate_succ_apply (fastGrowing β) (m + 1) (n + 1)).symm
 
-/-- **Hardy/fast-growing upper bound at an arbitrary exponent `α`:** `H_{ω^α}(n) + 1 ≤ f_α(n+1)`,
-unconditional. -/
+/-- **Hardy/fast-growing upper bound at an arbitrary exponent:** `H_{ω^α}(n) + 1 ≤ f_α(n+1)`. -/
 theorem hardy_omega_pow_add_one_le (α : ONote) (n : ℕ) :
     hardy (oadd α 1 0) n + 1 ≤ fastGrowing α (n + 1) := by
   induction α using WellFoundedLT.induction generalizing n with
@@ -219,10 +197,7 @@ private lemma iterate_le_iterate_of_le {F g : ℕ → ℕ} (hFg : ∀ y, F y ≤
       rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
       exact le_trans (ih (F x)) (hg.iterate m (hFg x))
 
-/-- **The matching LOWER bound at an arbitrary exponent `α`:** `f_α(n) ≤ H_{ω^α}(n)`,
-unconditional. Together with `hardy_omega_pow_add_one_le` this brackets
-`f_α(n) ≤ H_{ω^α}(n) < f_α(n+1)` (see `hardy_omega_pow_bracket`), sandwiching the Hardy
-hierarchy by the fast-growing hierarchy at `ω^α`. -/
+/-- **The matching lower bound at an arbitrary exponent:** `f_α(n) ≤ H_{ω^α}(n)`. -/
 theorem fastGrowing_le_hardy_omega_pow (α : ONote) (n : ℕ) :
     fastGrowing α n ≤ hardy (oadd α 1 0) n := by
   induction α using WellFoundedLT.induction generalizing n with
@@ -256,17 +231,12 @@ theorem fastGrowing_le_hardy_omega_pow (α : ONote) (n : ℕ) :
       rw [fastGrowing_limit α hα, hardy_limit (oadd α 1 0) hlim]
       exact ih (f n) hlt n
 
-/-- **The two-sided E–W Lemma 19 bracket at `ω^α`:** `f_α(n) ≤ H_{ω^α}(n) < f_α(n+1)`, unconditional
-over every `α : ONote`. The Hardy hierarchy is sandwiched between consecutive fast-growing values —
-`H_{ω^α}` sits within one `f_α`-step of `f_α`. Combines `fastGrowing_le_hardy_omega_pow` (lower) and
-`hardy_omega_pow_lt_fastGrowing` (upper). -/
+/-- **The two-sided bracket at `ω^α`:** `f_α(n) ≤ H_{ω^α}(n) < f_α(n+1)`, unconditional. -/
 theorem hardy_omega_pow_bracket (α : ONote) (n : ℕ) :
     fastGrowing α n ≤ hardy (oadd α 1 0) n ∧ hardy (oadd α 1 0) n < fastGrowing α (n + 1) :=
   ⟨fastGrowing_le_hardy_omega_pow α n, hardy_omega_pow_lt_fastGrowing α n⟩
 
-/-- **Coefficient-general lower bound:** `(f_α)^[k+1](n) ≤ H_{ω^α·(k+1)}(n)` (for `α ≠ 0`).
-The `hardy_oadd_coeff` companion of the `ω^α` lower bracket: `H_{ω^α·(k+1)} = (H_{ω^α})^[k+1]`
-dominates `(f_α)^[k+1]` because `f_α ≤ H_{ω^α}` pointwise and `H_{ω^α}` is monotone. -/
+/-- **Coefficient-general lower bound:** `(f_α)^[k+1](n) ≤ H_{ω^α·(k+1)}(n)` for `α ≠ 0`. -/
 theorem fastGrowing_iterate_le_hardy_coeff (α : ONote) (hα : α ≠ 0) (k n : ℕ) :
     (fastGrowing α)^[k + 1] n ≤ hardy (oadd α k.succPNat 0) n := by
   rw [hardy_oadd_coeff α hα k n]
@@ -283,17 +253,13 @@ private lemma iterate_offset_le {g F : ℕ → ℕ} (hF : Monotone F) (h : ∀ y
       rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
       exact le_trans (ih (g y)) (hF.iterate m (h y))
 
-/-- **Coefficient-general upper bound:** `H_{ω^α·(k+1)}(n) + 1 ≤ (f_α)^[k+1](n+1)` (for `α ≠ 0`).
-The `hardy_oadd_coeff` companion of the `ω^α` upper bound: `H_{ω^α·(k+1)} = (H_{ω^α})^[k+1]`, and the
-`+1` shift `H_{ω^α}(y)+1 ≤ f_α(y+1)` carries through `k+1` iterations via `iterate_offset_le`. -/
+/-- **Coefficient-general upper bound:** `H_{ω^α·(k+1)}(n) + 1 ≤ (f_α)^[k+1](n+1)` for `α ≠ 0`. -/
 theorem hardy_coeff_add_one_le (α : ONote) (hα : α ≠ 0) (k n : ℕ) :
     hardy (oadd α k.succPNat 0) n + 1 ≤ (fastGrowing α)^[k + 1] (n + 1) := by
   rw [hardy_oadd_coeff α hα k n]
   exact iterate_offset_le (fastGrowing_monotone α) (hardy_omega_pow_add_one_le α) (k + 1) n
 
-/-- **The coefficient-general two-sided bracket:** `(f_α)^[k+1](n) ≤ H_{ω^α·(k+1)}(n) < (f_α)^[k+1](n+1)`
-(for `α ≠ 0`). The `hardy_oadd_coeff`-lifted form of `hardy_omega_pow_bracket`: the Hardy hierarchy at
-`ω^α·(k+1)` is sandwiched between consecutive values of the `(k+1)`-fold iterate of `f_α`. -/
+/-- **The coefficient-general two-sided bracket:** `(f_α)^[k+1](n) ≤ H_{ω^α·(k+1)}(n) < (f_α)^[k+1](n+1)` for `α ≠ 0`. -/
 theorem hardy_omega_pow_coeff_bracket (α : ONote) (hα : α ≠ 0) (k n : ℕ) :
     (fastGrowing α)^[k + 1] n ≤ hardy (oadd α k.succPNat 0) n
       ∧ hardy (oadd α k.succPNat 0) n < (fastGrowing α)^[k + 1] (n + 1) :=
@@ -307,8 +273,7 @@ bracket at `α = tower i`, argument `i`, pins the ε₀-diagonal against the Har
 tower level. This is the `ε₀`-tier reading of the E–W Lemma 19 comparison — the level at which the
 Goodstein length function itself lives (`goodsteinLength` tracks `H_{ε₀}`). -/
 
-/-- **The ε₀ diagonal is dominated by Hardy at the tower:** `fastGrowingε₀ i ≤ H_{tower(i+1)}(i)`.
-Directly the lower `ω^α` bracket at `α = tower i`, argument `i`, using `tower(i+1) = ω^{tower i}`. -/
+/-- **The ε₀ diagonal is dominated by Hardy at the tower:** `fastGrowingε₀ i ≤ H_{tower(i+1)}(i)`. -/
 theorem fastGrowingε₀_le_hardy_tower_succ (i : ℕ) :
     fastGrowingε₀ i ≤ hardy (tower (i + 1)) i := by
   have h : fastGrowing (tower i) i ≤ hardy (oadd (tower i) 1 0) i :=
@@ -316,10 +281,7 @@ theorem fastGrowingε₀_le_hardy_tower_succ (i : ℕ) :
   rw [← tower_succ] at h
   exact h
 
-/-- **The matching ε₀-diagonal upper bound:** `H_{tower(i+1)}(i) < f_{tower i}(i+1)` — Hardy at the
-next tower level is under the previous diagonal level at the bumped argument. The upper `ω^α` bracket
-at `α = tower i`. Together with `fastGrowingε₀_le_hardy_tower_succ` this brackets `H_{tower(i+1)}(i)`
-strictly between `fastGrowingε₀ i` and `f_{tower i}(i+1)`. -/
+/-- **The matching ε₀-diagonal upper bound:** `H_{tower(i+1)}(i) < f_{tower i}(i+1)`. -/
 theorem hardy_tower_succ_lt_fastGrowing (i : ℕ) :
     hardy (tower (i + 1)) i < fastGrowing (tower i) (i + 1) := by
   have h := (hardy_omega_pow_bracket (tower i) i).2
