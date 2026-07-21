@@ -4,11 +4,11 @@
 Standalone `native_decide` witnesses, off any headline axiom path, that a wrong definition
 of `hardy`, `hstep`, `fastGrowing`, `fastGrowingε₀`, or `tower` would fail to satisfy.
 Kept apart from the (Mathlib-bound) bodies in `FastGrowing/Epsilon0.lean`, `Hardy/Structure.lean`,
-and `Hardy.lean` so that those files stay free of `meta` imports.
+and `Hardy/Comparison.lean` so that those files stay free of `meta` imports.
 -/
 module
 
-public import GoodsteinPA.ToMathlib.Hardy
+public import GoodsteinPA.ToMathlib.Hardy.Comparison
 public meta import GoodsteinPA.ToMathlib.Hardy.Structure  -- shake: keep
 
 @[expose] public section
@@ -51,7 +51,7 @@ example : hstep (oadd 1 1 0) 3 = 3 := by native_decide
 -- the step invariant in action: `H_ω(3) = H_{hstep ω 3}(4) = H_3(4)`
 example : hardy (oadd 1 1 0) 3 = hardy (hstep (oadd 1 1 0) 3) 4 := by native_decide
 
-/-! ### From `Hardy.lean` -/
+/-! ### From `Hardy/Comparison.lean` -/
 
 -- anti-vacuity: B4 at `ω^2` — `H_{ω^2}(2) + 1 = 23 + 1 = 24 = f_2(3)`
 example : hardy (oadd (ofNat 2) 1 0) 2 + 1 = fastGrowing (ofNat 2) 3 := by native_decide

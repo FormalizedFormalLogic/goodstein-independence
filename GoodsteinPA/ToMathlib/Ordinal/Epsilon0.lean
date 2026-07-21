@@ -21,8 +21,7 @@ open Ordinal ONote WellFoundedRank
 open scoped Ordinal
 
 /-- For `0 ≠ o < ε₀`, the leading CNF exponent `log ω o` is strictly below `o`. -/
-lemma log_omega0_lt_self {o : Ordinal} (ho : o ≠ 0) (hε : o < ε₀) :
-    log ω o < o := by
+lemma log_omega0_lt_self {o : Ordinal} (ho : o ≠ 0) (hε : o < ε₀) : log ω o < o := by
   have h1 : ω ^ log ω o ≤ o := opow_log_le_self ω ho
   have h2 : log ω o ≤ ω ^ log ω o :=
     (isNormal_opow one_lt_omega0).strictMono.le_apply
@@ -112,8 +111,7 @@ instance ltPull_wf : IsWellFounded ℕ (ltPull e) :=
   ⟨InvImage.wf e NONote.lt_wf⟩
 
 /-- The `≺`-rank of `n` in the pullback order is the ordinal `NONote.repr (e n)`. -/
-lemma rk_ltPull_eq_repr (n : ℕ) :
-    rk (ltPull e) n = NONote.repr (e n) := by
+lemma rk_ltPull_eq_repr (n : ℕ) : rk (ltPull e) n = NONote.repr (e n) := by
   refine IsWellFounded.induction
     (motive := fun k => rk (ltPull e) k = NONote.repr (e k)) (ltPull e) n ?_
   intro n IH
@@ -139,8 +137,7 @@ lemma rk_ltPull_eq_repr (n : ℕ) :
 
 /-- **Order type of a `NONote`-pullback.** For any coding `e : ℕ ≃ NONote`, the pullback order on `ℕ`
 has order type at least `ε₀`. -/
-theorem epsilon0_le_orderType_ltPull :
-    ε₀ ≤ orderType (ltPull e) := by
+theorem epsilon0_le_orderType_ltPull : ε₀ ≤ orderType (ltPull e) := by
   by_contra! hlt
   -- name `orderType` itself as some `repr (e n₀)`, then `succ` of it exceeds the sup — contradiction.
   obtain ⟨x, hxNF, hxo⟩ := exists_NF_repr_eq (orderType (ltPull e)) hlt
@@ -202,8 +199,7 @@ instance : Denumerable NONote :=
 def natCode : ℕ ≃ NONote := (Denumerable.eqv NONote).symm
 
 /-- **A concrete `ℕ`-order of order type ≥ ε₀.** -/
-theorem epsilon0_le_orderType_natCode :
-    ε₀ ≤ orderType (ltPull natCode) :=
+theorem epsilon0_le_orderType_natCode : ε₀ ≤ orderType (ltPull natCode) :=
   epsilon0_le_orderType_ltPull natCode
 
 end ONote

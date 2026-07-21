@@ -81,7 +81,7 @@ lemma passAux (c) (heNF : e.NF) {f}
             cases α with
             | zero => exact (h0 rfl).elim
             | oadd e n a => exact oadd_pos e n a
-          have := ewIter_le_of_lt (f := f) hinfl (β := 0) (α := α) (m := 0) NF.zero h0α (Nat.zero_le _)
+          have := ewIter_le_of_lt (f := f) hinfl (b := 0) (a := α) (m := 0) NF.zero h0α (Nat.zero_le _)
           simpa [ewIter_zero] using this
       have hbound' : n ≤ ewIter f α 0 := le_trans hbound hf0
       refine Zef2Prov.of (collapse_NF hαNF) (Cl_of_NF (collapse_NF hαNF)) hg ?_
@@ -96,7 +96,7 @@ lemma passAux (c) (heNF : e.NF) {f}
             cases α with
             | zero => exact (h0 rfl).elim
             | oadd e n a => exact oadd_pos e n a
-          have := ewIter_le_of_lt (f := f) hinfl (β := 0) (α := α) (m := 0) NF.zero h0α (Nat.zero_le _)
+          have := ewIter_le_of_lt (f := f) hinfl (b := 0) (a := α) (m := 0) NF.zero h0α (Nat.zero_le _)
           simpa [ewIter_zero] using this
       by_cases hc : χ.complexity < c
       · -- SUB-RANK cut: cut formula below the pass's max rank — keep the cut, rebuild at rank `c`

@@ -65,16 +65,13 @@ lemma towerN_two_pow_le (k x : ℕ) : towerN k (2 ^ x) ≤ 2 ^ towerN k x := by
 IH applied twice — the inner application keeps the argument `≥ 2`, the outer lifts a tower height.
 This is the engine that makes the *already proved* `o = ω` domination strong enough at every depth:
 no deeper fast-growing bound is needed. -/
-lemma towerN_le_fastGrowing (k : ℕ) : ∀ t, 2 ≤ t →
-    towerN (k + 1) (t + 1) ≤ fastGrowing (ONote.ofNat (k + 2)) t := by
-  induction k with
+lemma towerN_le_fastGrowing (k t : ℕ) (ht : 2 ≤ t) : towerN (k + 1) (t + 1) ≤ fastGrowing (ONote.ofNat (k + 2)) t := by
+  induction k generalizing t with
   | zero =>
-    intro t ht
     rw [show (0 + 2) = 2 from rfl, fastGrowing_ofNat_two, towerN_succ, towerN_zero]
     calc 2 ^ (t + 1) = 2 ^ t * 2 := by rw [pow_succ]
       _ ≤ 2 ^ t * t := by gcongr
   | succ k ih =>
-    intro t ht
     have hfs : fastGrowing (ONote.ofNat (k + 1 + 2))
         = fun i => (fastGrowing (ONote.ofNat (k + 2)))^[i] i := by
       rw [show (k + 1 + 2) = (k + 2) + 1 from rfl,
@@ -104,8 +101,7 @@ lemma towerN_le_fastGrowing (k : ℕ) : ∀ t, 2 ≤ t →
 /-- **The tower upper bound on the seed.** `m + 1 ≤ towerN k ((log₂)^[k] m + 1)`: the seed
 `m` is below a `k`-fold tower of its own `k`-fold logarithm. By induction on `k`, using
 `Nat.lt_pow_succ_log_self` and `towerN_two_pow_le`. -/
-lemma succ_le_towerN_log_iter (k m : ℕ) :
-    m + 1 ≤ towerN k ((Nat.log 2)^[k] m + 1) := by
+lemma succ_le_towerN_log_iter (k m : ℕ) : m + 1 ≤ towerN k ((Nat.log 2)^[k] m + 1) := by
   induction k with
   | zero => simp
   | succ k ih =>
@@ -173,14 +169,11 @@ term `ω^{repr e}·n` is `< ω^{omegaTower ke} = ω↑↑(ke+1)` (`mul_lt_omega0
 tail is `< ω↑↑ka` (IH for `a`), and both are absorbed below the next tower level, which is additively
 principal (`isPrincipal_add_omega0_opow`). This is what turns the per-level diagonal domination into
 the literal "for every `o < ε₀`" statement. -/
-lemma exists_repr_lt_omegaTower : ∀ (o : ONote), o.NF → ∃ k, o.repr < omegaTower k := by
-  intro o
+lemma exists_repr_lt_omegaTower (o : ONote) (hNF : o.NF) : ∃ k, o.repr < omegaTower k := by
   induction o with
   | zero =>
-    intro _
     exact ⟨0, by show (0 : Ordinal) < omegaTower 0; rw [show omegaTower 0 = 1 from rfl]; exact one_pos⟩
   | oadd e n a ihe iha =>
-    intro hNF
     obtain ⟨ke, hke⟩ := ihe hNF.fst
     obtain ⟨ka, hka⟩ := iha hNF.snd
     set K := max (ke + 1) ka with hK
@@ -238,22 +231,19 @@ lemma iterLog_zero (b k : ℕ) : (Nat.log b)^[k] 0 = 0 := by
 /-- **The general `toOrdinal` core.** If the `k`-fold base-`b` logarithm of `w` is still `≥ b`, then
 `toOrdinal b w ≥ omegaTower (k+1) = ω↑↑(k+1)`. By induction on `k`, peeling one `Nat.log` from the
 inside per step. Generalizes `omega_omega_le_toOrdinal` (k=1) and the finite `opow_le_toOrdinal`. -/
-lemma omegaTower_le_toOrdinal (b : ℕ) (hb : 2 ≤ b) :
-    ∀ (k w : ℕ), b ≤ (Nat.log b)^[k] w → omegaTower (k + 1) ≤ toOrdinal b w := by
+lemma omegaTower_le_toOrdinal (b : ℕ) (hb : 2 ≤ b) (k w : ℕ) (hw : b ≤ (Nat.log b)^[k] w) :
+    omegaTower (k + 1) ≤ toOrdinal b w := by
   have h1 : toOrdinal b 1 = 1 := by have h := toOrdinal_pow b hb 0; simpa using h
   have hbb : toOrdinal b b = ω := by
     have h := toOrdinal_pow b hb 1; rw [pow_one, h1, opow_one] at h; exact h
   have hSM : StrictMono (toOrdinal b) := fun a c hac => (toOrdinal_mono_and_bound b hb c).1 a hac
-  intro k
-  induction k with
+  induction k generalizing w with
   | zero =>
-    intro w hw
     simp only [Function.iterate_zero, id_eq] at hw
     show (ω : Ordinal) ^ omegaTower 0 ≤ toOrdinal b w
     rw [show omegaTower 0 = 1 from rfl, opow_one, ← hbb]
     exact hSM.monotone hw
   | succ k ih =>
-    intro w hw
     rw [Function.iterate_succ_apply] at hw
     have hwne : w ≠ 0 := by
       intro h0; rw [h0, Nat.log_zero_right, iterLog_zero] at hw; omega
@@ -277,8 +267,7 @@ reading at a fixed index `i` is the same as iterating `Nat.log (base i)` on `a i
 application reads the same `base i`). This is what lets the self-similarity tower
 `iterLeadExp_dominates` (stated with `logSeq^[k]`) talk about the `k`-fold *fixed-base* leading
 exponent that the ordinal bridge needs. -/
-lemma logSeq_iterate_apply (a : ℕ → ℕ) (k i : ℕ) :
-    (logSeq^[k] a) i = (Nat.log (base i))^[k] (a i) := by
+lemma logSeq_iterate_apply (a : ℕ → ℕ) (k i : ℕ) : (logSeq^[k] a) i = (Nat.log (base i))^[k] (a i) := by
   induction k with
   | zero => simp
   | succ k ih =>
@@ -288,9 +277,11 @@ lemma logSeq_iterate_apply (a : ℕ → ℕ) (k i : ℕ) :
 
 /-! ## The general diagonal domination — Cichoń's lower bound up to ε₀ -/
 
+variable {o : ONote} {m k : ℕ}
+
 /-- General diagonal domination at ω-tower levels: `fastGrowing o m ≤ goodsteinLength m + 2`
 for every NF `o` with `repr o ≤ ω↑↑k`. -/
-lemma fastGrowing_le_goodsteinLength_of_repr_le_tower {o : ONote} (ho : o.NF) {m k : ℕ}
+lemma fastGrowing_le_goodsteinLength_of_repr_le_tower (ho : o.NF)
     (ht : 2 ^ 16 ≤ (Nat.log 2)^[k] m) (hk : k + 1 ≤ (Nat.log 2)^[k] m)
     (hrepr : o.repr ≤ omegaTower k) (hnorm : norm o ≤ m) :
     fastGrowing o m ≤ goodsteinLength m + 2 := by
@@ -320,7 +311,7 @@ lemma fastGrowing_le_goodsteinLength_of_repr_le_tower {o : ONote} (ho : o.NF) {m
   exact goodstein_dominates_of_index_le ho hgl (by omega) (by omega) hidx
 
 /-- Tower-level diagonal domination: `fastGrowing (towerO k) m ≤ goodsteinLength m + 2` for every `k`. -/
-lemma fastGrowing_towerO_le_goodsteinLength {m k : ℕ}
+lemma fastGrowing_towerO_le_goodsteinLength
     (ht : 2 ^ 16 ≤ (Nat.log 2)^[k] m) (hk : k + 1 ≤ (Nat.log 2)^[k] m) :
     fastGrowing (towerO k) m ≤ goodsteinLength m + 2 := by
   have hmge : 4 ≤ m := le_trans (by norm_num) (le_trans ht (iterLog2_le_self k m))
@@ -341,7 +332,7 @@ lemma threshold_le_iterLog (k N m : ℕ) (hm : towerN k N ≤ m) : N ≤ (Nat.lo
     exact ih (Nat.log 2 m) (Nat.le_log_of_pow_le Nat.one_lt_two hm)
 
 /-- Explicit threshold form: for `m ≥ towerN k (2^16 + k)`, `fastGrowing (towerO k) m ≤ goodsteinLength m + 2`. -/
-lemma goodsteinLength_dominates_fastGrowing_towerO {m k : ℕ}
+lemma goodsteinLength_dominates_fastGrowing_towerO
     (hm : towerN k (2 ^ 16 + k) ≤ m) :
     fastGrowing (towerO k) m ≤ goodsteinLength m + 2 := by
   have h := threshold_le_iterLog k (2 ^ 16 + k) m hm
@@ -354,7 +345,7 @@ lemma goodsteinLength_eventually_dominates_fastGrowing_towerO (k : ℕ) :
 
 /-- Cichoń's lower bound for every ordinal `< ε₀`: for every NF `ONote` `o`, `goodsteinLength`
 eventually dominates `f_o`. -/
-theorem goodsteinLength_eventually_dominates_fastGrowing {o : ONote} (ho : o.NF) :
+theorem goodsteinLength_eventually_dominates_fastGrowing (ho : o.NF) :
     ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2 := by
   obtain ⟨k, hk⟩ := exists_repr_lt_omegaTower o ho
   refine ⟨max (towerN k (2 ^ 16 + k)) (norm o), fun m hm => ?_⟩
@@ -422,8 +413,7 @@ count per the discharge doctrine. There are **no math axioms** and **no `sorry`*
 `o < ε₀` (every normal-form `ONote`), `goodsteinLength` eventually dominates `f_o`:
 `∃ N, ∀ m ≥ N, fastGrowing o m ≤ goodsteinLength m + 2`. The thin, faithful audit statement;
 the proof is `goodsteinLength_eventually_dominates_fastGrowing`. -/
-theorem goodsteinLength_dominates_fastGrowing {o : ONote} (ho : o.NF) :
-    ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2 :=
+theorem goodsteinLength_dominates_fastGrowing (ho : o.NF) : ∃ N, ∀ m, N ≤ m → fastGrowing o m ≤ goodsteinLength m + 2 :=
   goodsteinLength_eventually_dominates_fastGrowing ho
 
 /-- `towerO` is mathlib's `ε₀` fundamental sequence: `(fun a => oadd a 1 0)^[k+1] 0 = towerO k`. -/
@@ -435,13 +425,11 @@ lemma iterate_oadd_eq_towerO (k : ℕ) : (fun a => ONote.oadd a 1 0)^[k + 1] 0 =
     rfl
 
 /-- `fastGrowingε₀ (k+1) = fastGrowing (towerO k) (k+1)`: mathlib's `ε₀`-level function is the diagonal. -/
-lemma fastGrowingε₀_eq_towerO (k : ℕ) :
-    ONote.fastGrowingε₀ (k + 1) = fastGrowing (towerO k) (k + 1) := by
+lemma fastGrowingε₀_eq_towerO (k : ℕ) : ONote.fastGrowingε₀ (k + 1) = fastGrowing (towerO k) (k + 1) := by
   rw [ONote.fastGrowingε₀, iterate_oadd_eq_towerO]
 
 /-- Upper bound: `goodsteinLength m + 2 ≤ f_{o_m}(2)` where `o_m = seqONote m 0`. -/
-theorem goodsteinLength_le_fastGrowing_ordinal (m : ℕ) :
-    goodsteinLength m + 2 ≤ fastGrowing (seqONote m 0) 2 := by
+theorem goodsteinLength_le_fastGrowing_ordinal (m : ℕ) : goodsteinLength m + 2 ≤ fastGrowing (seqONote m 0) 2 := by
   rw [← hardy_seqONote_zero m]
   exact hardy_le_fastGrowing (seqONote m 0) 2 (by norm_num)
 
