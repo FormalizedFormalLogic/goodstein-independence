@@ -34,13 +34,11 @@ def hardy : ONote → ℕ → ℕ
   termination_by o => o
 
 /-- If `fundamentalSequence o = Sum.inl none`, then `o = 0`. -/
-lemma eq_zero_of_fundamentalSequence_inl_none {o : ONote} (e : fundamentalSequence o = Sum.inl none) :
-    o = 0 := by
+lemma eq_zero_of_fundamentalSequence_inl_none {o : ONote} (e : fundamentalSequence o = Sum.inl none) : o = 0 := by
   have hp := fundamentalSequence_has_prop o; rw [e] at hp; exact hp
 
 /-- If `fundamentalSequence o = Sum.inl (some a)`, then `a < o`. -/
-lemma lt_of_fundamentalSequence_inl_some {o a : ONote}
-    (e : fundamentalSequence o = Sum.inl (some a)) : a < o := by
+lemma lt_of_fundamentalSequence_inl_some {o a : ONote} (e : fundamentalSequence o = Sum.inl (some a)) : a < o := by
   have hp := fundamentalSequence_has_prop o; rw [e] at hp
   rw [lt_def, hp.1]; exact Order.lt_succ _
 
@@ -64,20 +62,17 @@ lemma hardy_def {o : ONote} {x} (e : fundamentalSequence o = x) :
 
 /-- `H_o = id` when `o = 0` (the `inl none` branch). -/
 @[grind =]
-lemma hardy_zero' (o : ONote) (h : fundamentalSequence o = Sum.inl none) :
-    hardy o = id := by
+lemma hardy_zero' (o : ONote) (h : fundamentalSequence o = Sum.inl none) : hardy o = id := by
   rw [hardy_def h]
 
 /-- `H_o(n) = H_a(n+1)` when `o` is the successor of `a`. -/
 @[grind =>]
-lemma hardy_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) :
-    hardy o = fun n => hardy a (n + 1) := by
+lemma hardy_succ (o) {a} (h : fundamentalSequence o = Sum.inl (some a)) : hardy o = fun n => hardy a (n + 1) := by
   rw [hardy_def h]
 
 /-- `H_o(n) = H_{o[n]}(n)` when `o` is a limit with fundamental sequence `f`. -/
 @[grind =>]
-lemma hardy_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) :
-    hardy o = fun n => hardy (f n) n := by
+lemma hardy_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) : hardy o = fun n => hardy (f n) n := by
   rw [hardy_def h]
 
 /-- `H₀ = id`. -/
@@ -169,8 +164,7 @@ private lemma add_ofNat_zero {a : ONote} (ha : a.NF) : a + ofNat 0 = a := by
   apply repr_inj.mp
   rw [repr_add, repr_zero, add_zero]
 
-private lemma add_ofNat_succ {a : ONote} (ha : a.NF) (c : ℕ) :
-    a + ofNat (c + 1) = osucc (a + ofNat c) := by
+private lemma add_ofNat_succ {a : ONote} (ha : a.NF) (c : ℕ) : a + ofNat (c + 1) = osucc (a + ofNat c) := by
   haveI := ha
   haveI hac : (a + ofNat c).NF := ONote.add_nf a (ofNat c)
   haveI : (a + ofNat (c + 1)).NF := ONote.add_nf a (ofNat (c + 1))
@@ -180,8 +174,7 @@ private lemma add_ofNat_succ {a : ONote} (ha : a.NF) (c : ℕ) :
     Nat.cast_add, Nat.cast_one, ← add_assoc]
 
 /-- **Hardy argument-shift / finite-tail additivity:** `H_{a+c}(n) = H_a(n+c)`. -/
-theorem hardy_add_ofNat {a : ONote} (ha : a.NF) (c n : ℕ) :
-    hardy (a + ofNat c) n = hardy a (n + c) := by
+theorem hardy_add_ofNat {a : ONote} (ha : a.NF) (c n : ℕ) : hardy (a + ofNat c) n = hardy a (n + c) := by
   induction c generalizing n with
   | zero => rw [add_ofNat_zero ha]; simp
   | succ c ih =>
@@ -210,8 +203,7 @@ lemma hardy_ofNat_monotone (k : ℕ) : Monotone (hardy (ofNat k)) := by
 
 /-- **Finite-level index monotonicity for Hardy:** For `m ≤ n`, `H_m(x) ≤ H_n(x)`. -/
 @[grind .]
-lemma hardy_ofNat_mono {m n : ℕ} (hmn : m ≤ n) (x : ℕ) :
-    hardy (ofNat m) x ≤ hardy (ofNat n) x := by
+lemma hardy_ofNat_mono {m n : ℕ} (hmn : m ≤ n) (x : ℕ) : hardy (ofNat m) x ≤ hardy (ofNat n) x := by
   induction n, hmn using Nat.le_induction with
   | base => exact le_rfl
   | succ n _ ih =>

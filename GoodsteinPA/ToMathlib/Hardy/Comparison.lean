@@ -29,8 +29,7 @@ lemma lead_NF {o : ONote} (ho : o.NF) : (lead o).NF := by
 
 /-- A notation is below `ω^(E+1)` whenever its leading exponent is `≤ E`. The basic
 domination brick: any `a` sits below `ω^(osucc (lead a))`. -/
-lemma repr_lt_omega_opow_succ {o E : ONote} (ho : o.NF) (hle : (lead o).repr ≤ E.repr) :
-    o.repr < ω ^ (E.repr + 1) := by
+lemma repr_lt_omega_opow_succ {o E : ONote} (ho : o.NF) (hle : (lead o).repr ≤ E.repr) : o.repr < ω ^ (E.repr + 1) := by
   cases o with
   | zero => show (0 : ONote).repr < ω ^ (E.repr + 1); rw [repr_zero]; exact opow_pos _ omega0_pos
   | oadd e' c R =>
@@ -41,8 +40,7 @@ lemma repr_lt_omega_opow_succ {o E : ONote} (ho : o.NF) (hle : (lead o).repr ≤
     exact Order.succ_le_succ hle'
 
 /-- Iterate-offset transfer: if `g y + 1 = F (y+1)` for all `y`, then `g^[m] y + 1 = F^[m] (y+1)`. -/
-lemma iterate_offset {g F : ℕ → ℕ} (h : ∀ y, g y + 1 = F (y + 1)) (m y : ℕ) :
-    g^[m] y + 1 = F^[m] (y + 1) := by
+lemma iterate_offset {g F : ℕ → ℕ} (h : ∀ y, g y + 1 = F (y + 1)) (m y : ℕ) : g^[m] y + 1 = F^[m] (y + 1) := by
   induction m generalizing y with
   | zero => rfl
   | succ m ih =>
@@ -67,29 +65,23 @@ private lemma hardy_omega_pow_ofNat_succ (k x : ℕ) :
     rw [hardy_oadd_coeff (ofNat (k + 1)) (ofNat_succ_ne_zero k) x x]
     exact iterate_offset ih (x + 1) x
 
-/-- **The Hardy/fast-growing identity at finite levels:** `H_{ω^k}(n) + 1 = f_k(n+1)` for every
-`k : ℕ`. -/
-lemma hardy_omega_pow_ofNat (k x : ℕ) :
-    hardy (oadd (ofNat k) 1 0) x + 1 = fastGrowing (ofNat k) (x + 1) := by
+/-- **The Hardy/fast-growing identity at finite levels:** `H_{ω^k}(n) + 1 = f_k(n+1)` for every `k : ℕ`. -/
+lemma hardy_omega_pow_ofNat (k x : ℕ) : hardy (oadd (ofNat k) 1 0) x + 1 = fastGrowing (ofNat k) (x + 1) := by
   cases k with
   | zero =>
     show hardy (oadd 0 1 0) x + 1 = fastGrowing 0 (x + 1)
     rw [show (oadd 0 1 0 : ONote) = 1 from rfl, hardy_one, fastGrowing_zero]
   | succ k => exact hardy_omega_pow_ofNat_succ k x
 
-/-- **The Hardy/fast-growing identity at the first limit level `ω^ω`:**
-`H_{ω^ω}(n) + 1 = f_{n+1}(n+1)`. -/
-lemma hardy_omega_pow_omega (n : ℕ) :
-    hardy (oadd (oadd 1 1 0) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1) := by
+/-- **The Hardy/fast-growing identity at the first limit level `ω^ω`:** `H_{ω^ω}(n) + 1 = f_{n+1}(n+1)`. -/
+lemma hardy_omega_pow_omega (n : ℕ) : hardy (oadd (oadd 1 1 0) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1) := by
   have hω : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ONote.ofNat (i + 1)) := rfl
   rw [hardy_limit _ (fundamentalSequence_omega_pow_limit hω)]
   show hardy (oadd (ofNat (n + 1)) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1)
   exact hardy_omega_pow_ofNat (n + 1) n
 
-/-- **Hardy is dominated by fast-growing at the same index:** For `n ≥ 2`,
-`hardy o n ≤ fastGrowing o n`. -/
-theorem hardy_le_fastGrowing (o : ONote) (n : ℕ) (hn : 2 ≤ n) :
-    hardy o n ≤ fastGrowing o n := by
+/-- **Hardy is dominated by fast-growing at the same index:** For `n ≥ 2`, `hardy o n ≤ fastGrowing o n`. -/
+theorem hardy_le_fastGrowing (o : ONote) (n : ℕ) (hn : 2 ≤ n) : hardy o n ≤ fastGrowing o n := by
   rcases e : fundamentalSequence o with (_ | a) | f
   · rw [hardy_zero' o e, fastGrowing_zero' o e]; simp
   · have hlt : a < o := lt_of_fundamentalSequence_inl_some e
@@ -120,8 +112,7 @@ example : hardy (oadd 1 1 0) 2 ≤ fastGrowing (oadd 1 1 0) 2 := hardy_le_fastGr
 At arbitrary `a : ONote`, `H_{ω^a}(n) + 1 ≤ f_a(n+1)` unconditionally.
 -/
 
-/-- **Coefficient composition:** `H_{ω^b·(k+2)}(n) = H_{ω^b·(k+1)}(H_{ω^b}(n))`, unconditional
-in `b`. -/
+/-- **Coefficient composition:** `H_{ω^b·(k+2)}(n) = H_{ω^b·(k+1)}(H_{ω^b}(n))`, unconditional in `b`. -/
 lemma hardy_omega_pow_coeff_comp (b : ONote) (k n : ℕ) :
     hardy (oadd b (Nat.succPNat (k + 1)) 0) n
       = hardy (oadd b (Nat.succPNat k) 0) (hardy (oadd b 1 0) n) := by
@@ -137,16 +128,13 @@ lemma hardy_omega_pow_coeff_comp (b : ONote) (k n : ℕ) :
 
 /-- **The coefficient intermediate:** `H_{ω^b·(m+1)}(n) + 1 ≤ f_b^{[m+1]}(n+1)`. -/
 lemma hardy_omega_pow_coeff_le {b : ONote}
-    (hbase : ∀ n, hardy (oadd b 1 0) n + 1 ≤ fastGrowing b (n + 1)) :
-    ∀ (m n : ℕ), hardy (oadd b (Nat.succPNat m) 0) n + 1 ≤ (fastGrowing b)^[m + 1] (n + 1) := by
-  intro m
-  induction m with
+    (hbase : ∀ n, hardy (oadd b 1 0) n + 1 ≤ fastGrowing b (n + 1)) (m n : ℕ) :
+    hardy (oadd b (Nat.succPNat m) 0) n + 1 ≤ (fastGrowing b)^[m + 1] (n + 1) := by
+  induction m generalizing n with
   | zero =>
-      intro n
       show hardy (oadd b 1 0) n + 1 ≤ fastGrowing b (n + 1)
       exact hbase n
   | succ m ih =>
-      intro n
       rw [hardy_omega_pow_coeff_comp b m n]
       have h2 : hardy (oadd b 1 0) n + 1 ≤ fastGrowing b (n + 1) := hbase n
       calc hardy (oadd b (Nat.succPNat m) 0) (hardy (oadd b 1 0) n) + 1
@@ -156,9 +144,11 @@ lemma hardy_omega_pow_coeff_le {b : ONote}
         _ = (fastGrowing b)^[m + 1 + 1] (n + 1) :=
             (Function.iterate_succ_apply (fastGrowing b) (m + 1) (n + 1)).symm
 
+section
+variable (a : ONote) (n : ℕ)
+
 /-- **Hardy/fast-growing upper bound at an arbitrary exponent:** `H_{ω^a}(n) + 1 ≤ f_a(n+1)`. -/
-theorem hardy_omega_pow_add_one_le (a : ONote) (n : ℕ) :
-    hardy (oadd a 1 0) n + 1 ≤ fastGrowing a (n + 1) := by
+theorem hardy_omega_pow_add_one_le : hardy (oadd a 1 0) n + 1 ≤ fastGrowing a (n + 1) := by
   induction a using WellFoundedLT.induction generalizing n with
   | _ a ih =>
     rcases ha : fundamentalSequence a with (_ | b) | f
@@ -183,8 +173,7 @@ theorem hardy_omega_pow_add_one_le (a : ONote) (n : ℕ) :
               (fastGrowing_bachmann_reach ha n)
 
 /-- **The strict form:** `H_{ω^a}(n) < f_a(n+1)`, from the `+1 ≤` form. -/
-theorem hardy_omega_pow_lt_fastGrowing (a : ONote) (n : ℕ) :
-    hardy (oadd a 1 0) n < fastGrowing a (n + 1) := by
+theorem hardy_omega_pow_lt_fastGrowing : hardy (oadd a 1 0) n < fastGrowing a (n + 1) := by
   have h := hardy_omega_pow_add_one_le a n
   omega
 
@@ -203,8 +192,7 @@ private lemma iterate_le_iterate_of_le {F g : ℕ → ℕ} (hFg : ∀ y, F y ≤
       exact le_trans (ih (F x)) (hg.iterate m (hFg x))
 
 /-- **The matching lower bound at an arbitrary exponent:** `f_a(n) ≤ H_{ω^a}(n)`. -/
-theorem fastGrowing_le_hardy_omega_pow (a : ONote) (n : ℕ) :
-    fastGrowing a n ≤ hardy (oadd a 1 0) n := by
+theorem fastGrowing_le_hardy_omega_pow : fastGrowing a n ≤ hardy (oadd a 1 0) n := by
   induction a using WellFoundedLT.induction generalizing n with
   | _ a ih =>
     rcases ha : fundamentalSequence a with (_ | b) | f
@@ -237,9 +225,11 @@ theorem fastGrowing_le_hardy_omega_pow (a : ONote) (n : ℕ) :
       exact ih (f n) hlt n
 
 /-- **The two-sided bracket at `ω^a`:** `f_a(n) ≤ H_{ω^a}(n) < f_a(n+1)`, unconditional. -/
-theorem hardy_omega_pow_bracket (a : ONote) (n : ℕ) :
+theorem hardy_omega_pow_bracket :
     fastGrowing a n ≤ hardy (oadd a 1 0) n ∧ hardy (oadd a 1 0) n < fastGrowing a (n + 1) :=
   ⟨fastGrowing_le_hardy_omega_pow a n, hardy_omega_pow_lt_fastGrowing a n⟩
+
+end
 
 /-- **Coefficient-general lower bound:** `(f_a)^[k+1](n) ≤ H_{ω^a·(k+1)}(n)` for `a ≠ 0`. -/
 theorem fastGrowing_iterate_le_hardy_coeff (a : ONote) (ha : a ≠ 0) (k n : ℕ) :
@@ -280,16 +270,14 @@ tower level. This is the `ε₀`-tier reading of the E–W Lemma 19 comparison �
 Goodstein length function itself lives (`goodsteinLength` tracks `H_{ε₀}`). -/
 
 /-- **The ε₀ diagonal is dominated by Hardy at the tower:** `fastGrowingε₀ i ≤ H_{tower(i+1)}(i)`. -/
-theorem fastGrowingε₀_le_hardy_tower_succ (i : ℕ) :
-    fastGrowingε₀ i ≤ hardy (tower (i + 1)) i := by
+theorem fastGrowingε₀_le_hardy_tower_succ (i : ℕ) : fastGrowingε₀ i ≤ hardy (tower (i + 1)) i := by
   have h : fastGrowing (tower i) i ≤ hardy (oadd (tower i) 1 0) i :=
     (hardy_omega_pow_bracket (tower i) i).1
   rw [← tower_succ] at h
   exact h
 
 /-- **The matching ε₀-diagonal upper bound:** `H_{tower(i+1)}(i) < f_{tower i}(i+1)`. -/
-theorem hardy_tower_succ_lt_fastGrowing (i : ℕ) :
-    hardy (tower (i + 1)) i < fastGrowing (tower i) (i + 1) := by
+theorem hardy_tower_succ_lt_fastGrowing (i : ℕ) : hardy (tower (i + 1)) i < fastGrowing (tower i) (i + 1) := by
   have h := (hardy_omega_pow_bracket (tower i) i).2
   rw [← tower_succ] at h
   exact h

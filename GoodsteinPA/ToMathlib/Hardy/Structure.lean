@@ -91,8 +91,7 @@ lemma hstep_limit (o) {f} (h : fundamentalSequence o = Sum.inr f) :
     hstep o = fun n => hstep (f n) n := by rw [hstep_def h]
 
 /-- **Intrinsic Hardy step invariant:** For a nonzero notation, `H_o(n) = H_{hstep o n}(n+1)`. -/
-theorem hardy_hstep (o : ONote) (n : ℕ) (h : o ≠ 0) :
-    hardy o n = hardy (hstep o n) (n + 1) := by
+theorem hardy_hstep (o : ONote) (n : ℕ) (h : o ≠ 0) : hardy o n = hardy (hstep o n) (n + 1) := by
   rcases e : fundamentalSequence o with (_ | a) | f
   · exact absurd (eq_zero_of_fundamentalSequence_inl_none e) h
   · rw [hardy_succ o e, hstep_succ o e]
@@ -186,14 +185,12 @@ def lastExp : ONote → ONote
 @[simp] theorem lastExp_oadd_zero (e n) : lastExp (oadd e n 0) = e := rfl
 
 @[grind =]
-lemma lastExp_oadd_ne {e : ONote} {n : ℕ+} {a : ONote} (h : a ≠ 0) :
-    lastExp (oadd e n a) = lastExp a := by
+lemma lastExp_oadd_ne {e : ONote} {n : ℕ+} {a : ONote} (h : a ≠ 0) : lastExp (oadd e n a) = lastExp a := by
   cases a with
   | zero => exact absurd rfl h
   | oadd e' n' a' => rfl
 
-/-- `addAux` concatenates (no merge/absorb) when the right operand's leading exponent is
-strictly below `e`. -/
+/-- `addAux` concatenates (no merge/absorb) when the right operand's leading exponent is strictly below `e`. -/
 lemma addAux_concat {e : ONote} (he : e.NF) {n : ℕ+} {o : ONote} (ho : o.NF)
     (h : o = 0 ∨ ∀ e' n' a', o = oadd e' n' a' → e'.repr < e.repr) :
     addAux e n o = oadd e n o := by
@@ -209,8 +206,7 @@ lemma addAux_concat {e : ONote} (he : e.NF) {n : ℕ+} {o : ONote} (ho : o.NF)
     simp only [addAux, hee']
 
 /-- The least exponent of a nonzero notation lies below any bound it is `NFBelow`. -/
-lemma lastExp_repr_lt {o : ONote} {b : Ordinal} (hb : NFBelow o b) (h : o ≠ 0) :
-    (lastExp o).repr < b := by
+lemma lastExp_repr_lt {o : ONote} {b : Ordinal} (hb : NFBelow o b) (h : o ≠ 0) : (lastExp o).repr < b := by
   induction o generalizing b with
   | zero => exact absurd rfl h
   | oadd e n a _ iha =>
@@ -284,15 +280,13 @@ lemma hardy_oadd0 (p : ℕ+) (y : ℕ) : hardy (oadd 0 p 0) y = y + (p : ℕ) :=
   rw [show oadd 0 k.succPNat 0 = ofNat (k + 1) from (ofNat_succ k).symm, hardy_ofNat,
     Nat.succPNat_coe]
 
-/-- Coefficient-as-iterate, restated for a `ℕ+` coefficient (`e ≠ 0`):
-`H_{ω^e·p}(x) = (H_{ω^e})^[p](x)`. -/
+/-- Coefficient-as-iterate, restated for a `ℕ+` coefficient (`e ≠ 0`): `H_{ω^e·p}(x) = (H_{ω^e})^[p](x)`. -/
 lemma hardy_single_coeff (e : ONote) (he : e ≠ 0) (p : ℕ+) (x : ℕ) :
     hardy (oadd e p 0) x = (hardy (oadd e 1 0))^[(p : ℕ)] x := by
   obtain ⟨k, rfl⟩ : ∃ k : ℕ, p = k.succPNat := ⟨p.natPred, (PNat.succPNat_natPred p).symm⟩
   rw [hardy_oadd_coeff e he k x, Nat.succPNat_coe]
 
-/-- Coefficient additivity at a single term (`e ≠ 0`):
-`H_{ω^e·(m+n)}(x) = H_{ω^e·m}(H_{ω^e·n}(x))`. -/
+/-- Coefficient additivity at a single term (`e ≠ 0`): `H_{ω^e·(m+n)}(x) = H_{ω^e·m}(H_{ω^e·n}(x))`. -/
 lemma hardy_coeff_add (e : ONote) (he : e ≠ 0) (m n : ℕ+) (x : ℕ) :
     hardy (oadd e (m + n) 0) x = hardy (oadd e m 0) (hardy (oadd e n 0) x) := by
   rw [hardy_single_coeff e he (m + n) x, hardy_single_coeff e he m,
