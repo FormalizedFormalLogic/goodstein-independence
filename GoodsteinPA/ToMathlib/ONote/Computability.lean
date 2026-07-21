@@ -50,11 +50,11 @@ lemma encodeONote_decodeONote (n : ℕ) : encodeONote (decodeONote n) = n := by
       ih _ (Nat.lt_succ_of_le (Nat.unpair_right_le _ |> le_trans <| Nat.unpair_right_le _))]
 
 /-- The structural `Encodable ONote` decodes via `decodeONote` (never failing). -/
-lemma decode_eq (n : ℕ) : (Encodable.decode n : Option ONote) = some (decodeONote n) := by
+@[simp] lemma decode_eq (n : ℕ) : (Encodable.decode n : Option ONote) = some (decodeONote n) := by
   rfl
 
 /-- The structural `Encodable ONote` encodes via `encodeONote`. -/
-lemma encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
+@[simp] lemma encode_eq (x : ONote) : Encodable.encode x = encodeONote x := by
   rfl
 
 lemma encode_decode_eq (n : ℕ) :
@@ -81,16 +81,16 @@ lemma computable_decodeONote : Computable decodeONote := by
 /-! ### Ordering encoded as `ℕ` (lt = 0, eq = 1, gt = 2) -/
 
 /-- Encode an `Ordering` as a natural number. -/
-def ordCode : Ordering → ℕ
+@[grind =] def ordCode : Ordering → ℕ
   | Ordering.lt => 0
   | Ordering.eq => 1
   | Ordering.gt => 2
 
 /-- `ℕ`-level version of `Ordering.then`. -/
-def thenNat (a b : ℕ) : ℕ := if a = 1 then b else a
+@[grind =] def thenNat (a b : ℕ) : ℕ := if a = 1 then b else a
 
 /-- `ℕ`-level version of `_root_.cmp` on `ℕ`, returning an `ordCode`. -/
-def cmpNat (a b : ℕ) : ℕ := if a < b then 0 else if a = b then 1 else 2
+@[grind =] def cmpNat (a b : ℕ) : ℕ := if a < b then 0 else if a = b then 1 else 2
 
 lemma ordCode_then (o p : Ordering) : ordCode (o.then p) = thenNat (ordCode o) (ordCode p) := by
   cases o <;> cases p <;> rfl
@@ -447,7 +447,7 @@ lemma countNF_enc (a : ℕ) : countNF (enc a) = a := by
     · rintro ⟨b, hb, rfl⟩; exact ⟨enc_strictMono hb, nf_decode_enc _⟩;
   rw [Finset.card_image_of_injective _ enc_injective] at h_card; aesop
 
-lemma countNF_succ (n : ℕ) : countNF (n + 1) = countNF n + (if Nfb n then 1 else 0) := by
+@[grind =] lemma countNF_succ (n : ℕ) : countNF (n + 1) = countNF n + (if Nfb n then 1 else 0) := by
   have h_filter : List.filter (fun k => Nfb k) (List.range (n + 1)) = List.filter (fun k => Nfb k) (List.range n) ++ if Nfb n then [n] else [] := by
     simp +decide [List.range_succ];
     grind;
