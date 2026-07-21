@@ -20,7 +20,7 @@ open Ordinal
 
 set_option linter.unnecessarySimpa false
 
-/-- `ω^α` as an explicit `ONote` (`oadd α 1 0`) — SPIKE-W4's ordinal transform. -/
+/-- `ω^α` as an explicit `ONote` (`oadd α 1 0`). -/
 def expTower (α : ONote) : ONote := oadd α 1 0
 
 theorem expTower_NF {α : ONote} (hα : α.NF) : (expTower α).NF :=
@@ -30,12 +30,12 @@ theorem expTower_lt_expTower {β α : ONote} (hβ : β.NF) (h : β < α) :
     expTower β < expTower α :=
   oadd_lt_oadd_1 (expTower_NF hβ) h
 
-/-- The Eguchi–Weiermann max-relativization of a number-theoretic operator (spike §6). -/
+/-- The Eguchi–Weiermann max-relativization of a number-theoretic operator. -/
 def rel1 (f : ℕ → ℕ) (n : ℕ) : ℕ → ℕ := fun x => f (max n x)
 
-/-- **The reassembly algebra (E–W Lemma 25's commutation):** max-relativization commutes
-with composition definitionally — a composed (cut-reduced) slot re-enters the ω-rule's
-premise form with no residue. -/
+/-- **The reassembly algebra:** max-relativization commutes with composition
+definitionally — a composed (cut-reduced) slot re-enters the ω-rule's premise form with
+no residue. -/
 theorem rel1_comp (f g : ℕ → ℕ) (n : ℕ) : rel1 (f ∘ g) n = f ∘ rel1 g n := rfl
 
 /-- `rel1` is monotone in the slot (feeds `NormControlled.mono` at ω-nodes). -/
@@ -50,11 +50,9 @@ theorem rel1_monotone {f : ℕ → ℕ} (hf : Monotone f) (n : ℕ) : Monotone (
 theorem rel1_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) (n : ℕ) : ∀ x, x ≤ rel1 f n x :=
   fun x => le_trans (le_max_right n x) (hf (max n x))
 
-/-- **`rel1` preserves the `2m+1` lower bound** (lap-10 SERIES-3 pass prep) — the property the
-pass's per-node gate (`ewN_collapse_le`) needs.  Unlike strict monotonicity (the `EwF1` first
-component, which `rel1`'s `max`-plateau destroys), the `EwF1` SECOND component `2m+1 ≤ f m` is
-inherited: `(rel1 f n) m = f (max n m) ≥ f m ≥ 2m+1`.  This is what lets the pass thread its
-invariants through `allω` branches (slot `rel1 f n`) with NO `EwF1`-of-relativized-slot demand. -/
+/-- **`rel1` preserves the `2m+1` lower bound.** Unlike strict monotonicity (the `EwF1`
+first component, which `rel1`'s `max`-plateau destroys), the `EwF1` second component
+`2m+1 ≤ f m` is inherited: `(rel1 f n) m = f (max n m) ≥ f m ≥ 2m+1`. -/
 theorem rel1_low {f : ℕ → ℕ} (hmono : Monotone f) (hlow : ∀ m, 2 * m + 1 ≤ f m) (n : ℕ) :
     ∀ m, 2 * m + 1 ≤ rel1 f n m :=
   fun m => le_trans (hlow m) (hmono (le_max_right n m))
@@ -66,27 +64,23 @@ theorem rel1_rel1 (f : ℕ → ℕ) (m n : ℕ) : rel1 (rel1 f m) n = rel1 f (ma
   simp only [rel1]
   rw [max_assoc]
 
-/-- **`collapse`** — the single-rank predicative height map `α ↦ ω^α` (E–W Lemma 27's Ω-free
-shadow; iterated it is the rank-lowering tower). -/
+/-- **`collapse`** — the single-rank predicative height map `α ↦ ω^α`; iterated, it is the
+rank-lowering tower. -/
 def collapse (α : ONote) : ONote := expTower α
 
-/-- **C5: `collapse` is NF-preserving** (so the assembly can splice at NF ordinals). -/
+/-- `collapse` is NF-preserving (so the assembly can splice at NF ordinals). -/
 theorem collapse_NF {α : ONote} (hα : α.NF) : (collapse α).NF := expTower_NF hα
 
-/-- **C5: `collapse` is strictly monotone** (`β < α → collapse β < collapse α`) — the descent the
+/-- `collapse` is strictly monotone (`β < α → collapse β < collapse α`) — the descent the
 rank-lowering induction needs (the `ONote.add_osucc_descent`-class compatibility). -/
 theorem collapse_strictMono {β α : ONote} (hβ : β.NF) (h : β < α) : collapse β < collapse α :=
   expTower_lt_expTower hβ h
 
 /-!
-# The Eguchi–Weiermann controlled iterate (`ewIter`), ported to `src` (lap 8)
+# The Eguchi–Weiermann controlled iterate `ewIter`
 
-Port of the ratified lap-7 wip layer (`wip/EwIter.lean`, freeze reference).  The source `norm`
-is the CNF max-coefficient norm, whose fibers are infinite on the tower spine, so the gated max
-below uses `ewN`, a constructor norm with finite fibers.
-
-The P2/P3 native-decide instance probes stay in `wip/EwIter.lean` (evidence artifacts); `src`
-stays anchor-free.  Everything below is the reusable iterate machinery + the P1 lift lemma.
+The CNF max-coefficient norm `Norm.lean`'s `norm` has infinite fibers on the tower spine, so
+the gated max below uses `ewN`, a constructor norm with finite fibers.
 -/
 
 /-- Constructor norm for finite E-W gates on `ONote`.  Numerals keep their usual size, while
@@ -100,13 +94,12 @@ def ewN : ONote → ℕ
 @[simp] theorem ewN_oadd (e : ONote) (n : ℕ+) (a : ONote) :
     ewN (oadd e n a) = ewN e + (n : ℕ) + ewN a := rfl
 
-/-! ## The absorbing norm `Nlog` (SERIES-3 N-1 promotion; ruling (1) `ewN → Nlog`)
+/-! ## The absorbing norm `Nlog`
 
-Promoted from `wip/AbsorbingNormProbe.lean` (Stage D-1, kernel-clean there) +
-`wip/NlogGateProbe.lean` (N-0 gate, T-S3 PASS).  `Nlog` is max-over-terms with a logarithmic
-coefficient charge: finite-fibered on NF notations (`Nlog_finite_fiber`) AND absorbing
-(`Nlog_add_le_max_succ`), which is what dissolves the top-rank-cut node gate
-(`absorbing_closes_gate`) without the kernel-refuted base-additivity `hg_base`. -/
+`Nlog` is max-over-terms with a logarithmic coefficient charge: finite-fibered on NF
+notations (`Nlog_finite_fiber`) and absorbing (`Nlog_add_le_max_succ`), which is what
+dissolves the top-rank-cut node gate (`absorbing_closes_gate`) without needing
+base-additivity. -/
 
 /-- Logarithmic coefficient charge: `clog n = ⌊log₂ (n+1)⌋`.  `clog 0 = 0`, `clog 1 = 1`;
 finite fibers and sub-max-additive. -/
@@ -194,12 +187,11 @@ theorem finite_pnat_coe_lt (B : ℕ) : {n : ℕ+ | (n : ℕ) < B}.Finite := by
   rw [h]
   exact (Set.finite_Iio B).preimage PNat.coe_injective.injOn
 
-/-- **Finite fibers of `Nlog` on NF notations** (ruling (1) property (i); the NF restriction is
-forced — non-NF flat chains give an infinite `Nlog ≤ 1` ball, see the D-1 probe).  Induction on
-`K` with an inner well-founded induction on the `NFBelow` bound ordinal; NF's strict exponent
-descent is exactly what the inner induction consumes. -/
-theorem Nlog_finite_fiber : ∀ K : ℕ, {α : ONote | NF α ∧ Nlog α ≤ K}.Finite := by
-  intro K
+/-- **Finite fibers of `Nlog` on NF notations.** The NF restriction is forced — non-NF flat
+chains give an infinite `Nlog ≤ 1` ball. Induction on `K` with an inner well-founded induction
+on the `NFBelow` bound ordinal; NF's strict exponent descent is exactly what the inner
+induction consumes. -/
+theorem Nlog_finite_fiber (K : ℕ) : {α : ONote | NF α ∧ Nlog α ≤ K}.Finite := by
   induction K with
   | zero =>
       apply Set.Finite.subset (Set.finite_singleton (0 : ONote))
@@ -265,21 +257,18 @@ theorem add_eq_right_of_repr {x γ : ONote} [NF x] [NF γ]
   haveI : NF (x + γ) := inferInstance
   exact repr_inj.1 (by rw [repr_add]; exact h)
 
-/-- **The general absorbing theorem** (ruling (1) property (ii)):
+/-- **The general absorbing theorem**:
 `Nlog (α+γ) ≤ max (Nlog α) (Nlog γ) + 1` for all NF `α, γ`.  Induct on `α`, trichotomy on the
 two leading exponents; the merge case's two `+1`s never compound because `a + γ = γ` absorbs
 (`a`'s exponents sit strictly below the shared head). -/
-theorem Nlog_add_le_max_succ : ∀ (α : ONote), NF α → ∀ (γ : ONote), NF γ →
+theorem Nlog_add_le_max_succ (α : ONote) (hα : NF α) (γ : ONote) (hγ : NF γ) :
     Nlog (α + γ) ≤ max (Nlog α) (Nlog γ) + 1 := by
-  intro α
-  induction α with
+  induction α generalizing γ with
   | zero =>
-      intro _ γ _
       show Nlog γ ≤ max (Nlog ONote.zero) (Nlog γ) + 1
       have : Nlog γ ≤ max (Nlog ONote.zero) (Nlog γ) := le_max_right _ _
       omega
   | oadd e n a _ihe iha =>
-      intro hα γ hγ
       haveI := hα
       haveI := hγ
       haveI hNFe : NF e := hα.fst
@@ -375,10 +364,9 @@ theorem Nlog_add_le_max_succ : ∀ (α : ONote), NF α → ∀ (γ : ONote), NF 
                 le_max_right _ _
               omega
 
-/-- **The absorbing node gate** (ruling (1)'s `absorbing_closes_gate`, promoted verbatim from
-the D-1 probe): with an absorbing norm the fresh-root gate `N (α+γ) ≤ g (f 0)` closes from the
-two premise gates and the weak slack `max (g 0) (f 0) + c ≤ g (f 0)` — NO base-additivity
-`hg_base`. -/
+/-- **The absorbing node gate**: with an absorbing norm the fresh-root gate
+`N (α+γ) ≤ g (f 0)` closes from the two premise gates and the weak slack
+`max (g 0) (f 0) + c ≤ g (f 0)`, without needing base-additivity. -/
 theorem absorbing_closes_gate {N : ONote → ℕ} {g f : ℕ → ℕ} (c : ℕ)
     (habs : ∀ α γ, N (α + γ) ≤ max (N α) (N γ) + c)
     (hslack : max (g 0) (f 0) + c ≤ g (f 0))
@@ -503,18 +491,16 @@ theorem EwF1.monotone {f : ℕ → ℕ} (hf : EwF1 f) : Monotone f :=
 theorem EwF1.infl {f : ℕ → ℕ} (hf : EwF1 f) : ∀ m, m ≤ f m :=
   fun m => le_trans (by omega) (hf.2 m)
 
-/-- **Base-additive composite** (lap-10 SERIES-1 R-0(ii), the `noOsucc_closes` pattern).  With the
-judge's `α + γ` reduction output (no successor `+1`), a per-step growth floor `g 0 + k ≤ g k` on the
-`∀`-side slot converts the two additive input gates into the composed-slot base gate: any
-`a ≤ g 0`, `b ≤ f 0` give `a + b ≤ g (f 0)`.  Kernel-checked in `wip/Lap10SeamProbe.lean`; the
-`ewN`-level composite `ewN (α+γ) ≤ g (f 0)` (via `ewN_add_le`) is `OperatorZef2.ewN_add_le_comp`. -/
+/-- **Base-additive composite.** A per-step growth floor `g 0 + k ≤ g k` on the `∀`-side
+slot converts the two additive input gates into the composed-slot base gate: any
+`a ≤ g 0`, `b ≤ f 0` give `a + b ≤ g (f 0)`. The `ewN`-level composite
+`ewN (α+γ) ≤ g (f 0)` (via `ewN_add_le`) is `OperatorZef2.ewN_add_le_comp`. -/
 theorem base_add_le_comp {f g : ℕ → ℕ} (hg_base : ∀ k, g 0 + k ≤ g k) {a b : ℕ}
     (ha : a ≤ g 0) (hb : b ≤ f 0) : a + b ≤ g (f 0) := by
   have := hg_base (f 0); omega
 
-/-- **The controlled step, post-swap (N-1)**: the branch ball is the NF `Nlog`-ball (the
-`ewN → Nlog` substitution image of the ratified `ewStep`; the ball's NF restriction is forced
-by `Nlog`'s fiber structure and is the population the calculus feeds anyway). -/
+/-- **The controlled step**: the branch ball is the NF `Nlog`-ball, whose NF restriction is
+forced by `Nlog`'s fiber structure and is the population the calculus feeds anyway. -/
 noncomputable def ewStep (f : ℕ → ℕ) (α : ONote) (rec : (β : ONote) → β < α → ℕ → ℕ)
     (m : ℕ) : ℕ :=
   if hα : α = 0 then
@@ -587,12 +573,10 @@ theorem ewIter_infl {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (α : ONote) 
       simpa [ewIter_zero] using hlow
     exact le_trans (hf_infl m) (le_trans (hf_infl (f m)) hlow')
 
-/-- **`ewIter` inherits the `2m+1` lower bound** (lap-11 SERIES-1 Stage-4 rung-R prep).  The pass
-threads `Monotone ∧ inflationary ∧ (2m+1 ≤ f m)` (`EwLow`, all `rel1`-stable); rung R ITERATES the
-pass, so the output slot `ewIter f α` must ITSELF satisfy the same invariant to feed the next pass.
-Monotonicity/inflationarity are `ewIter_monotone`/`ewIter_infl`; here is the `2m+1` component —
-unlike `EwF1`'s STRICT monotonicity (which `ewIter` does NOT inherit, cf. the trap-8/plateau seam),
-the lower-bound floor DOES carry: for `α ≠ 0`, `ewIter f α m ≥ f (f m) ≥ 2·f m + 1 ≥ 2m+1`. -/
+/-- **`ewIter` inherits the `2m+1` lower bound.** Monotonicity/inflationarity are
+`ewIter_monotone`/`ewIter_infl`; here is the `2m+1` component — unlike `EwF1`'s strict
+monotonicity (which `ewIter` does not inherit, due to its plateaus), the lower-bound floor
+does carry: for `α ≠ 0`, `ewIter f α m ≥ f (f m) ≥ 2·f m + 1 ≥ 2m+1`. -/
 theorem ewIter_low {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (hf_low : ∀ m, 2 * m + 1 ≤ f m)
     (α : ONote) (m : ℕ) : 2 * m + 1 ≤ ewIter f α m := by
   by_cases hα : α = 0
@@ -630,33 +614,31 @@ termination_by α
 decreasing_by
   exact hδlt
 
-/-- **Gated ordinal-monotonicity of `ewIter`** (lap-10 SERIES-1 Stage-3 pass prep).  The property
-trap-8 refuted for the bare `iterSlot` but which the ewN GATE restores for `ewIter`: for `β < α`
-with the ball gate `ewN β ≤ f (ewN α + m)`, the smaller-ordinal iterate is dominated by the larger,
-`ewIter f β m ≤ ewIter f α m` (inflate once, then `ewIter_lower`).  This is what un-walls the pass's
-slot side — the cut-elimination step composes iterates at DIFFERENT ordinals `< α`, and this lemma
-lifts each to the common `α`.  Kernel-checked in `wip/Lap10PassProbe.lean`. -/
+/-- **Gated ordinal-monotonicity of `ewIter`.** For `β < α` with the ball gate
+`Nlog β ≤ f (Nlog α + m)`, the smaller-ordinal iterate is dominated by the larger,
+`ewIter f β m ≤ ewIter f α m` (inflate once, then `ewIter_lower`). This lets the
+cut-elimination step compose iterates at different ordinals `< α`, lifting each to
+the common `α`. -/
 theorem ewIter_le_of_lt {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) {β α : ONote} {m : ℕ}
     (hβNF : β.NF) (hβα : β < α) (hgate : Nlog β ≤ f (Nlog α + m)) :
     ewIter f β m ≤ ewIter f α m :=
   le_trans (ewIter_infl hf_infl β (ewIter f β m)) (ewIter_lower hβNF hβα hgate)
 
-/-- **Pointwise slot-lift** (lap-10 SERIES-3 pass prep) — at internal pass nodes the IH slot
-`ewIter f β` (`β < α`) must be raised to the node slot `ewIter f α` via `Zef2.mono_f`; gated
-ordinal-monotonicity gives it pointwise from the base gate `ewN β ≤ f 0`. -/
+/-- **Pointwise slot-lift.** At internal pass nodes the IH slot `ewIter f β` (`β < α`) must
+be raised to the node slot `ewIter f α` via `Zef2.mono_f`; gated ordinal-monotonicity gives
+it pointwise from the base gate `Nlog β ≤ f 0`. -/
 theorem ewIter_slot_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
     {β α : ONote} (hβNF : β.NF) (hβα : β < α) (g : Nlog β ≤ f 0) :
     ∀ x, ewIter f β x ≤ ewIter f α x :=
   fun x => ewIter_le_of_lt (m := x) hf_infl hβNF hβα
     (le_trans g (hf_mono (Nat.zero_le _)))
 
-/-- **Slot-composition containment** (lap-10 SERIES-3 pass prep) — the cut-elimination step merges
-two IH-reduced premises' slots `ewIter f α₀ ∘ ewIter f α₁` (`α₀,α₁ < α`) and must fit under the
-declared output `ewIter f α`.  Pick δ = the larger of α₀,α₁ (< α); lift both iterates to δ by gated
-ordinal-monotonicity (`ewIter_le_of_lt`), giving the two-fold `ewIter f δ (ewIter f δ m)`; then
-`ewIter_lower` at δ < α collapses it to the one-fold `ewIter f α m`.  All ball gates follow from the
-base gates `ewN αᵢ ≤ f 0` + monotonicity.  CLOSES the slot side of the cut step — no
-`EwF1`-of-`rel1` escalation needed.  Kernel-checked in `wip/Lap10PassProbe.lean`. -/
+/-- **Slot-composition containment.** The cut-elimination step merges two IH-reduced
+premises' slots `ewIter f α₀ ∘ ewIter f α₁` (`α₀,α₁ < α`) and must fit under the declared
+output `ewIter f α`. Pick δ = the larger of α₀,α₁ (< α); lift both iterates to δ by gated
+ordinal-monotonicity (`ewIter_le_of_lt`), giving the two-fold `ewIter f δ (ewIter f δ m)`;
+then `ewIter_lower` at δ < α collapses it to the one-fold `ewIter f α m`. All ball gates
+follow from the base gates `Nlog αᵢ ≤ f 0` plus monotonicity. -/
 theorem ewIter_comp_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
     {α₀ α₁ α : ONote} (hα₀ : α₀.NF) (hα₁ : α₁.NF)
     (h0 : α₀ < α) (h1 : α₁ < α) (g0 : Nlog α₀ ≤ f 0) (g1 : Nlog α₁ ≤ f 0) (m : ℕ) :
@@ -757,10 +739,10 @@ theorem ewIter_attained {f : ℕ → ℕ} {α : ONote} (hα : α ≠ 0) (x : ℕ
   refine ⟨δ.1, (mem_NlogBall.mp hδfilter.1).1, hδfilter.2.1, hδfilter.2.2, ?_⟩
   rw [hunf, ← hδval]
 
-/-- **THE SWAP LEMMA** (N-0's structural insight): `ewIter` commutes one-sidedly with its own
-slot, `s (ewIter s α x) ≤ ewIter s α (s x)`, for every Monotone + inflationary `s` and EVERY
-`α`.  An argument bump BY A SLOT APPLICATION always gains a slot application on the value —
-even across `ewIter`'s plateaus (this is what replaces the kernel-refuted `hg_base`). -/
+/-- **The swap lemma:** `ewIter` commutes one-sidedly with its own slot,
+`s (ewIter s α x) ≤ ewIter s α (s x)`, for every monotone, inflationary `s` and every `α`.
+An argument bump by a slot application always gains a slot application on the value —
+even across `ewIter`'s plateaus. -/
 theorem ewIter_swap {s : ℕ → ℕ} (hmono : Monotone s) (hinfl : ∀ m, m ≤ s m)
     (α : ONote) (x : ℕ) : s (ewIter s α x) ≤ ewIter s α (s x) := by
   by_cases hα : α = 0
@@ -791,11 +773,10 @@ theorem ewIter_base_le {s : ℕ → ℕ} (hinfl : ∀ m, m ≤ s m) (β : ONote)
     have hss : s (s 0) ≤ ewIter s β 0 := by simpa [ewIter_zero] using hlow
     exact le_trans (hinfl (s 0)) hss
 
-/-- **The slot-threaded slack** (the reduction's replacement for the kernel-refuted
-`hg_base`): the T-S3 slack holds not just at `f 0` but at every `k ≥ f 0` — this is the
-form the running-family reduction threads down its `rel1` re-entries (slot bases only grow).
-Same three ingredients: `ewIter_low` for the `k`-arm, monotone + swap + EwLow for the
-`g`-arm. -/
+/-- **The slot-threaded slack:** the cut-node slack holds not just at `f 0` but at every
+`k ≥ f 0` — the form the running-family reduction threads down its `rel1` re-entries (slot
+bases only grow). Same three ingredients: `ewIter_low` for the `k`-arm, monotone + swap +
+`EwF1` for the `g`-arm. -/
 theorem hslack_kit_ge {s : ℕ → ℕ} (hmono : Monotone s) (hinfl : ∀ m, m ≤ s m)
     (hlow : ∀ m, 2 * m + 1 ≤ s m) (βφ βψ : ONote) :
     ∀ k, ewIter s βψ 0 ≤ k →
