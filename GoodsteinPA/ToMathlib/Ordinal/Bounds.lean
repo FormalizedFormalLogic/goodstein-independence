@@ -45,8 +45,7 @@ lemma one_lt_opow_succ : 1 < ω ^ (a + 1) := by
     _ ≤ ω ^ (a + 1) := opow_le_opow_right omega0_pos (CanonicallyOrderedAdd.le_add_self 1 a)
 
 /-- Any `x ≤ max (ω^a) (ω^b)` is bounded by `ω^(max a b + 1)`. -/
-lemma opow_lt_opow_succ_of_le_max {a b x : Ordinal} (hx : x ≤ max (ω ^ a) (ω ^ b)) :
-    x < ω ^ (max a b + 1) :=
+lemma opow_lt_opow_succ_of_le_max {a b x : Ordinal} (hx : x ≤ max (ω ^ a) (ω ^ b)) : x < ω ^ (max a b + 1) :=
   hx.trans_lt (max_lt
     ((opow_lt_opow_iff_right one_lt_omega0).mpr
       ((le_max_left a b).trans_lt (lt_add_of_pos_right _ one_pos)))

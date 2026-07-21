@@ -21,8 +21,7 @@ noncomputable def rk (a : α) : Ordinal := IsWellFounded.rank lt a
 lemma rk_lt_of_rel {a b : α} (h : lt a b) : rk lt a < rk lt b :=
   IsWellFounded.rank_lt_of_rel h
 
-/-- `|a|_lt ≤ b` whenever every `lt`-predecessor has rank `< b` (the rank recursion
-`|a|_lt = sup{|c|_lt+1 : c lt a}`). -/
+/-- `|a|_lt ≤ b` whenever every `lt`-predecessor has rank `< b` (the rank recursion `|a|_lt = sup{|c|_lt+1 : c lt a}`). -/
 lemma rk_le_of_forall {b : Ordinal} {a : α} (h : ∀ c, lt c a → rk lt c < b) :
     rk lt a ≤ b := by
   rw [rk, IsWellFounded.rank_eq]

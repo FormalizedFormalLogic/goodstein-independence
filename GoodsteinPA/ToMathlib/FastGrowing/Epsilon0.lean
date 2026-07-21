@@ -46,8 +46,7 @@ theorem fastGrowing_lt_of_lt_tower {o : ONote} (ho : o.NF) (n : ℕ)
 
 /-- **Domination (the headline result):** every fixed level of the fast-growing hierarchy
 is eventually strictly dominated by `fastGrowingε₀`. -/
-theorem fastGrowing_lt_fastGrowingε₀ (o : ONote) (ho : o.NF) :
-    ∃ N, ∀ n ≥ N, fastGrowing o n < fastGrowingε₀ n := by
+theorem fastGrowing_lt_fastGrowingε₀ (o : ONote) (ho : o.NF) : ∃ N, ∀ n ≥ N, fastGrowing o n < fastGrowingε₀ n := by
   obtain ⟨k, hk⟩ := tower_cofinal o ho
   refine ⟨max (max k (norm o + 1)) 2, ?_⟩
   intro n hn

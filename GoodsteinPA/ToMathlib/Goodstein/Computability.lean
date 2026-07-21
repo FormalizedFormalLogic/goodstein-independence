@@ -24,14 +24,12 @@ namespace Goodstein
 
 open Primrec
 
-/-- `Nat.pow` as a binary primitive-recursive function (mathlib only ships the low-level
-`Nat.Primrec.pow`). -/
+/-- `Nat.pow` as a binary primitive-recursive function (mathlib only ships the low-level `Nat.Primrec.pow`). -/
 theorem primrec_natPow : Primrec₂ ((· ^ ·) : ℕ → ℕ → ℕ) :=
   Primrec₂.unpaired'.1 Nat.Primrec.pow
 
 /-- Single defining equation for `Nat.log` covering all cases, suitable for strong recursion. -/
-theorem natLog_rec (b n : ℕ) :
-    Nat.log b n = if 1 < b ∧ b ≤ n then Nat.log b (n / b) + 1 else 0 := by
+theorem natLog_rec (b n : ℕ) : Nat.log b n = if 1 < b ∧ b ≤ n then Nat.log b (n / b) + 1 else 0 := by
   split
   · rename_i h; exact Nat.log_of_one_lt_of_le h.1 h.2
   · rename_i h
