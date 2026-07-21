@@ -13,12 +13,14 @@ namespace ONote
 
 open ONote Ordinal
 
+variable {x : ℕ} {α β γ γ' o a b c : ONote}
+
 /-- **No `ω`-fixed points below `ε₀`, elementarily.** For every normal-form notation,
 `repr o < ω ^ repr o`. Proved by *structural induction* on `o` — the inductive hypothesis
 at the leading exponent `e` gives `repr e < ω ^ repr e ≤ repr o`, hence `repr e < repr o`,
 so `repr o < ω ^ (repr e + 1) ≤ ω ^ repr o` (`NFBelow.repr_lt` + monotonicity). No `ε₀`
 fixed-point machinery needed. The key strictness fact underlying the tower's growth. -/
-theorem repr_lt_opow_repr : ∀ (o : ONote), o.NF → o.repr < ω ^ o.repr
+lemma repr_lt_opow_repr : ∀ (o : ONote), o.NF → o.repr < ω ^ o.repr
   | 0, _ => by simp
   | oadd e n a, h => by
       have hIH : e.repr < ω ^ e.repr := repr_lt_opow_repr e h.fst
@@ -54,7 +56,7 @@ def norm : ONote → ℕ
 
 /-- **Trichotomy decomposition of `<` on `oadd`.** For normal-form notations, `α < β`
 splits into the three lexicographic cases on (exponent, coefficient, tail). -/
-theorem lt_oadd_cases {ea : ONote} {na : ℕ+} {ba e : ONote} {m : ℕ+} {b : ONote}
+lemma lt_oadd_cases {ea : ONote} {na : ℕ+} {ba e : ONote} {m : ℕ+} {b : ONote}
     (hα : NF (oadd ea na ba)) (hβ : NF (oadd e m b)) (h : oadd ea na ba < oadd e m b) :
     ea < e ∨ (ea = e ∧ (na : ℕ) < (m : ℕ)) ∨ (ea = e ∧ na = m ∧ ba < b) := by
   rcases lt_trichotomy ea.repr e.repr with he | he | he
@@ -77,7 +79,7 @@ theorem lt_oadd_cases {ea : ONote} {na : ℕ+} {ba e : ONote} {m : ℕ+} {b : ON
 `≤ c` (i.e. `repr δ < ω^(repr c)·ω`) and norm `≤ x`, then `δ < ω^(repr c)·(x+1) =
 oadd c (x+1) 0`. The workhorse for the limit cases of the key lemma: a small-norm notation
 can't reach past the `(x+1)`-th rung `ω^c·(x+1)` of the relevant fundamental sequence. -/
-theorem lt_oadd_of_lead_le {x : ℕ} {c : ONote} (hc : c.NF) {δ : ONote} (hδ : δ.NF)
+lemma lt_oadd_of_lead_le (hc : c.NF) {δ : ONote} (hδ : δ.NF)
     (hlead : δ.repr < ω ^ c.repr * ω) (hnorm : norm δ ≤ x) :
     δ < oadd c x.succPNat 0 := by
   cases δ with
@@ -106,9 +108,9 @@ Proved by structural induction on `β`, following the six branches of
 `ONote.fundamentalSequence` exactly. The successor-producing branches contradict the limit
 hypothesis. The five limit-producing branches each reduce, after decomposing `α`'s leading
 CNF term (`lt_oadd_cases`), to either the inductive hypothesis on the exponent/tail or the
-single-level norm bound `lt_oadd_of_lead_le`. This is the one genuinely new theorem of the
-A4 development; once it holds, all of general reachability and index domination follow. -/
-theorem lt_fundamentalSequence_of_norm_le {x : ℕ} (β : ONote) (hβ : β.NF) (g : ℕ → ONote)
+single-level norm bound `lt_oadd_of_lead_le`. Once this holds, general reachability and
+index domination follow. -/
+theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ → ONote)
     (hg : fundamentalSequence β = Sum.inr g) (α : ONote) (hα : α.NF) (hαβ : α < β)
     (hnorm : norm α ≤ x) : α < g x := by
   induction β generalizing g α with
@@ -242,7 +244,7 @@ least `norm α`, the standard fundamental-sequence descent of `β` reaches `α`:
 and recurse (or stop); at a limit the key cofinality bound `lt_fundamentalSequence_of_norm_le`
 guarantees `α < g x`, so we step to `g x` and recurse with the same budget. This is the
 general engine `fastGrowing_bachmann_reach` only handled for consecutive indices. -/
-theorem reaches_of_lt {x : ℕ} (β : ONote) (hβ : β.NF) (α : ONote) (hα : α.NF) (hαβ : α < β)
+theorem reaches_of_lt (β : ONote) (hβ : β.NF) (α : ONote) (hα : α.NF) (hαβ : α < β)
     (hnorm : norm α ≤ x) : Reaches x β α := by
   rcases e : fundamentalSequence β with (_ | γ) | g
   · exfalso
@@ -271,7 +273,7 @@ value strictly increases for arguments `≥ 2`: `f_a(n) < f_o(n)`. Indeed
 `f_o n = (f_a)^[n] n ≥ (f_a)^[2] n = f_a (f_a n) > f_a n`, the last step by strict
 expansiveness (`lt_fastGrowing`) since `f_a n ≥ n ≥ 1`. (The `≤`-version is
 `fastGrowing_le_succ_index`; strictness needs `2 ≤ n` to fit two iterations in.) -/
-theorem fastGrowing_lt_succ_index {o a : ONote}
+lemma fastGrowing_lt_succ_index
     (h : fundamentalSequence o = Sum.inl (some a)) {n : ℕ} (hn : 2 ≤ n) :
     fastGrowing a n < fastGrowing o n := by
   rw [fastGrowing_succ o h]
@@ -288,19 +290,19 @@ theorem fastGrowing_lt_succ_index {o a : ONote}
     _ = (fastGrowing a)^[2] n := h2eq.symm
     _ ≤ (fastGrowing a)^[n] n := hstep2
 
-/-- **General index monotonicity of the fast-growing hierarchy** (the full A3, lifted off
-the consecutive-index restriction of `fastGrowing_bachmann_reach`). For normal-form `α < β`
+/-- **General index monotonicity of the fast-growing hierarchy**, lifted off the
+consecutive-index restriction of `fastGrowing_bachmann_reach`. For normal-form `α < β`
 and budget `x ≥ norm α` (with `1 ≤ x`), `f_α(x) ≤ f_β(x)`. Immediate from general
 reachability (`reaches_of_lt`) and value transfer (`fastGrowing_le_of_reaches`). The budget
 condition `norm α ≤ x` is essential: below it the inequality can fail (small-`n` index
 reversal). -/
-theorem fastGrowing_le_of_lt {x : ℕ} (hx : 1 ≤ x) {α β : ONote} (hα : α.NF) (hβ : β.NF)
+theorem fastGrowing_le_of_lt (hx : 1 ≤ x) (hα : α.NF) (hβ : β.NF)
     (hαβ : α < β) (hnorm : norm α ≤ x) : fastGrowing α x ≤ fastGrowing β x :=
   fastGrowing_le_of_reaches hx (reaches_of_lt β hβ α hα hαβ hnorm)
 
 /-- A normal-form `oadd 0 n a` (leading exponent `0`) has a zero tail: `NF` forces
 `a.repr < ω^0 = 1`, hence `a = 0`. -/
-theorem tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF) :
+lemma tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF) :
     a = 0 := by
   have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
   rw [repr_zero, opow_zero] at hlt
@@ -321,7 +323,7 @@ def osucc : ONote → ONote
   | oadd 0 n _ => oadd 0 (n + 1) 0
   | oadd (oadd e' n' a') m b => oadd (oadd e' n' a') m (osucc b)
 
-theorem repr_osucc : ∀ {o : ONote}, o.NF → (osucc o).repr = o.repr + 1
+lemma repr_osucc : ∀ {o : ONote}, o.NF → (osucc o).repr = o.repr + 1
   | 0, _ => by simp [osucc]
   | oadd 0 n a, h => by
       have ha0 := tail_eq_zero_of_zero_exponent h
@@ -334,7 +336,7 @@ theorem repr_osucc : ∀ {o : ONote}, o.NF → (osucc o).repr = o.repr + 1
       simp only [ONote.repr]
       rw [repr_osucc h.snd, ← add_assoc]
 
-theorem osucc_NF : ∀ {o : ONote}, o.NF → (osucc o).NF
+lemma osucc_NF : ∀ {o : ONote}, o.NF → (osucc o).NF
   | 0, _ => NF.oadd_zero 0 1
   | oadd 0 n _, _ => NF.oadd_zero 0 (n + 1)
   | oadd (oadd e' n' a') m b, h => by
@@ -347,7 +349,7 @@ theorem osucc_NF : ∀ {o : ONote}, o.NF → (osucc o).NF
         exact hpos.ne'
       exact hElim.succ_lt h.snd'.repr_lt
 
-theorem fundamentalSequence_osucc : ∀ {o : ONote}, o.NF →
+lemma fundamentalSequence_osucc : ∀ {o : ONote}, o.NF →
     fundamentalSequence (osucc o) = Sum.inl (some o)
   | 0, _ => rfl
   | oadd 0 n a, h => by
@@ -358,7 +360,7 @@ theorem fundamentalSequence_osucc : ∀ {o : ONote}, o.NF →
   | oadd (oadd e' n' a') m b, h =>
       fundamentalSequence_oadd_succ (fundamentalSequence_osucc h.snd)
 
-theorem norm_osucc_le : ∀ {o : ONote}, norm (osucc o) ≤ norm o + 1
+lemma norm_osucc_le : ∀ {o : ONote}, norm (osucc o) ≤ norm o + 1
   | 0 => by simp [osucc, norm]
   | oadd 0 n _ => by
       simp only [osucc, norm_oadd, norm_zero, PNat.add_coe, PNat.one_coe]; omega
@@ -373,17 +375,17 @@ def tower (i : ℕ) : ONote := (fun a => oadd a 1 0)^[i] 0
 @[simp] theorem tower_zero : tower 0 = 0 := rfl
 
 /-- `tower (i+1) = ω^{tower i}`. -/
-theorem tower_succ (i : ℕ) : tower (i + 1) = oadd (tower i) 1 0 := by
+lemma tower_succ (i : ℕ) : tower (i + 1) = oadd (tower i) 1 0 := by
   rw [tower, tower, Function.iterate_succ_apply']
 
 /-- Every tower level is a normal-form notation. -/
-theorem tower_NF : ∀ i, (tower i).NF
+lemma tower_NF : ∀ i, (tower i).NF
   | 0 => by rw [tower_zero]; exact NF.zero
   | i + 1 => by rw [tower_succ]; haveI := tower_NF i; exact NF.oadd_zero _ _
 
 /-- The tower is **strictly increasing**: `tower i < tower (i+1) = ω^{tower i}`. The
 strictness is exactly `repr_lt_opow_repr` at `tower i`. -/
-theorem tower_lt_succ (i : ℕ) : tower i < tower (i + 1) := by
+lemma tower_lt_succ (i : ℕ) : tower i < tower (i + 1) := by
   rw [tower_succ, lt_def]
   have hrepr : ((tower i).oadd 1 0).repr = ω ^ (tower i).repr := by
     simp only [ONote.repr, PNat.one_coe, Nat.cast_one, mul_one, add_zero]
@@ -391,11 +393,11 @@ theorem tower_lt_succ (i : ℕ) : tower i < tower (i + 1) := by
   exact repr_lt_opow_repr _ (tower_NF i)
 
 /-- The tower is monotone in its index. -/
-theorem tower_strictMono : StrictMono tower :=
+lemma tower_strictMono : StrictMono tower :=
   strictMono_nat_of_lt_succ tower_lt_succ
 
 /-- `repr (tower (i+1)) = ω ^ repr (tower i)`. -/
-theorem repr_tower_succ (i : ℕ) : (tower (i + 1)).repr = ω ^ (tower i).repr := by
+lemma repr_tower_succ (i : ℕ) : (tower (i + 1)).repr = ω ^ (tower i).repr := by
   rw [tower_succ]
   simp only [ONote.repr, PNat.one_coe, Nat.cast_one, mul_one, add_zero]
 
@@ -418,38 +420,38 @@ theorem tower_cofinal : ∀ (o : ONote), o.NF → ∃ k, o < tower k
 
 /-! ### `osucc` strict order facts -/
 
-theorem lt_osucc {o : ONote} (h : o.NF) : o < osucc o :=
+lemma lt_osucc (h : o.NF) : o < osucc o :=
   lt_def.mpr (by rw [repr_osucc h]; exact lt_add_one _)
 
 /-- `osucc` is strictly monotone on normal-form notations. -/
-theorem osucc_lt_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x < y) : osucc x < osucc y := by
+lemma osucc_lt_osucc {x y : ONote} (hx : x.NF) (hy : y.NF) (h : x < y) : osucc x < osucc y := by
   refine lt_def.mpr ?_
   rw [repr_osucc hx, repr_osucc hy, ← Order.succ_eq_add_one, ← Order.succ_eq_add_one]
   exact Order.succ_lt_succ (lt_def.mp h)
 
 /-- `x < y ⟹ x < osucc y` (NF). -/
-theorem lt_osucc_of_lt {x y : ONote} (hy : y.NF) (h : x < y) : x < osucc y :=
+lemma lt_osucc_of_lt {x y : ONote} (hy : y.NF) (h : x < y) : x < osucc y :=
   lt_trans h (lt_osucc hy)
 
 /-! ### Ordinal addition and `norm` bookkeeping on normal forms -/
 
 /-- Strict monotonicity of `+` in the right summand, on normal-form notations. -/
-theorem add_lt_add_left_NF {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
+lemma add_lt_add_left_NF (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
     (h : γ' < γ) : α + γ' < α + γ := by
   haveI := hαNF; haveI := hγ'NF; haveI := hγNF
   exact lt_def.mpr (by rw [repr_add, repr_add]; exact (add_lt_add_iff_left _).mpr (lt_def.mp h))
 
-theorem le_add_left_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ α + γ := by
+lemma le_add_left_NF (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ α + γ := by
   haveI := hαNF; haveI := hγNF
   exact le_def.mpr (by rw [repr_add]; exact le_add_self)
 
-theorem le_add_right_NF {α γ : ONote} (hαNF : α.NF) (hγNF : γ.NF) : α ≤ α + γ := by
+lemma le_add_right_NF (hαNF : α.NF) (hγNF : γ.NF) : α ≤ α + γ := by
   haveI := hαNF; haveI := hγNF
   exact le_def.mpr (by rw [repr_add]; exact le_self_add)
 
 /-- Combines `add_lt_add_left_NF` and `osucc_lt_osucc`: `osucc (α + γ') < osucc (α + γ)`
 whenever `γ' < γ`. -/
-theorem add_osucc_descent {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
+lemma add_osucc_descent (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
     (h : γ' < γ) : osucc (α + γ') < osucc (α + γ) :=
   osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ) (add_lt_add_left_NF hαNF hγ'NF hγNF h)
 
@@ -459,7 +461,7 @@ theorem add_osucc_descent {α γ' γ : ONote} (hαNF : α.NF) (hγ'NF : γ'.NF) 
 /-- Additive bound for `norm` under `+` on normal-form arguments. Sharper than the
 unconditional `norm_add_le` (which bounds the left summand's contribution by `normSum`
 rather than `norm`), at the cost of requiring both arguments to be normal forms. -/
-theorem norm_add_le_of_nf {α : ONote} (hα : α.NF) {γ : ONote} (hγ : γ.NF) :
+lemma norm_add_le_of_nf (hα : α.NF) (hγ : γ.NF) :
     norm (α + γ) ≤ norm α + norm γ := by
   induction α generalizing γ with
   | zero => simp
