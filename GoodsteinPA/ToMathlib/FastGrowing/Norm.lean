@@ -108,14 +108,12 @@ hypothesis. The five limit-producing branches each reduce, after decomposing `α
 CNF term (`lt_oadd_cases`), to either the inductive hypothesis on the exponent/tail or the
 single-level norm bound `lt_oadd_of_lead_le`. This is the one genuinely new theorem of the
 A4 development; once it holds, all of general reachability and index domination follow. -/
-theorem lt_fundamentalSequence_of_norm_le {x : ℕ} :
-    ∀ (β : ONote), β.NF → ∀ (g : ℕ → ONote), fundamentalSequence β = Sum.inr g →
-      ∀ (α : ONote), α.NF → α < β → norm α ≤ x → α < g x := by
-  intro β
-  induction β with
-  | zero => intro _ g hg _ _ _ _; exact (Sum.inl_ne_inr hg).elim
+theorem lt_fundamentalSequence_of_norm_le {x : ℕ} (β : ONote) (hβ : β.NF) (g : ℕ → ONote)
+    (hg : fundamentalSequence β = Sum.inr g) (α : ONote) (hα : α.NF) (hαβ : α < β)
+    (hnorm : norm α ≤ x) : α < g x := by
+  induction β generalizing g α with
+  | zero => exact (Sum.inl_ne_inr hg).elim
   | oadd a m b iha ihb =>
-    intro hβ g hg α hα hαβ hnorm
     rcases hb : fundamentalSequence b with (_ | b') | hbf
     · -- b = 0 : leading-term cases
       rcases ha : fundamentalSequence a with (_ | a') | p
@@ -244,9 +242,8 @@ least `norm α`, the standard fundamental-sequence descent of `β` reaches `α`:
 and recurse (or stop); at a limit the key cofinality bound `lt_fundamentalSequence_of_norm_le`
 guarantees `α < g x`, so we step to `g x` and recurse with the same budget. This is the
 general engine `fastGrowing_bachmann_reach` only handled for consecutive indices. -/
-theorem reaches_of_lt {x : ℕ} :
-    ∀ (β : ONote), β.NF → ∀ (α : ONote), α.NF → α < β → norm α ≤ x → Reaches x β α := by
-  intro β hβ α hα hαβ hnorm
+theorem reaches_of_lt {x : ℕ} (β : ONote) (hβ : β.NF) (α : ONote) (hα : α.NF) (hαβ : α < β)
+    (hnorm : norm α ≤ x) : Reaches x β α := by
   rcases e : fundamentalSequence β with (_ | γ) | g
   · exfalso
     have hβ0 : β = 0 := by have hp := fundamentalSequence_has_prop β; rwa [e] at hp
@@ -266,7 +263,7 @@ theorem reaches_of_lt {x : ℕ} :
     have hgxlt : g x < β := (hp.2.1 x).2.1
     have hαgx : α < g x := lt_fundamentalSequence_of_norm_le β hβ g e α hα hαβ hnorm
     exact Reaches.limit e (reaches_of_lt (g x) hgxNF α hα hαgx hnorm)
-termination_by β => β
+termination_by β
 decreasing_by all_goals assumption
 
 /-- **Strict successor index step.** At a notation-successor `o` (predecessor `a`), the
@@ -301,6 +298,14 @@ theorem fastGrowing_le_of_lt {x : ℕ} (hx : 1 ≤ x) {α β : ONote} (hα : α.
     (hαβ : α < β) (hnorm : norm α ≤ x) : fastGrowing α x ≤ fastGrowing β x :=
   fastGrowing_le_of_reaches hx (reaches_of_lt β hβ α hα hαβ hnorm)
 
+/-- A normal-form `oadd 0 n a` (leading exponent `0`) has a zero tail: `NF` forces
+`a.repr < ω^0 = 1`, hence `a = 0`. -/
+theorem tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF) :
+    a = 0 := by
+  have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
+  rw [repr_zero, opow_zero] at hlt
+  exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact Order.lt_one_iff.1 hlt)
+
 /-! ### The notation successor `osucc` (for the strict step in index domination)
 
 To bump the `≤` from `Reaches` to a strict `<` we route the descent through the
@@ -319,10 +324,7 @@ def osucc : ONote → ONote
 theorem repr_osucc : ∀ {o : ONote}, o.NF → (osucc o).repr = o.repr + 1
   | 0, _ => by simp [osucc]
   | oadd 0 n a, h => by
-      have ha0 : a = 0 := by
-        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
-        rw [repr_zero, opow_zero] at hlt
-        exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact Order.lt_one_iff.1 hlt)
+      have ha0 := tail_eq_zero_of_zero_exponent h
       subst ha0
       show (oadd 0 (n + 1) 0).repr = (oadd 0 n 0).repr + 1
       simp only [ONote.repr, opow_zero, one_mul, add_zero, PNat.add_coe,
@@ -349,10 +351,7 @@ theorem fundamentalSequence_osucc : ∀ {o : ONote}, o.NF →
     fundamentalSequence (osucc o) = Sum.inl (some o)
   | 0, _ => rfl
   | oadd 0 n a, h => by
-      have ha0 : a = 0 := by
-        have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
-        rw [repr_zero, opow_zero] at hlt
-        exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact Order.lt_one_iff.1 hlt)
+      have ha0 := tail_eq_zero_of_zero_exponent h
       subst ha0
       obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k.succPNat := ⟨n.natPred, (PNat.succPNat_natPred n).symm⟩
       rfl
