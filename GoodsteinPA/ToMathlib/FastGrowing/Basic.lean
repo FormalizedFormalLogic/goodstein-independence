@@ -41,6 +41,22 @@ proof needs it; the `fundamentalSequence` correctness lemmas
 
 
 
+/-- If `fundamentalSequence o = inl (some a)` (`o` is the notation-successor of `a`),
+then `a < o`. -/
+theorem lt_of_fundamentalSequence_succ {o a : ONote}
+    (h : fundamentalSequence o = Sum.inl (some a)) : a < o := by
+  have hp := fundamentalSequence_has_prop o
+  rw [h] at hp
+  rw [lt_def, hp.1]; exact Order.lt_succ _
+
+/-- If `fundamentalSequence o = inr g` (`o` is a limit with fundamental sequence `g`),
+then every `g n < o`. -/
+theorem fundamentalSequence_lt_of_limit {o : ONote} {g : ℕ → ONote}
+    (h : fundamentalSequence o = Sum.inr g) (n : ℕ) : g n < o := by
+  have hp := fundamentalSequence_has_prop o
+  rw [h] at hp
+  exact (hp.2.1 n).2.1
+
 /-- **Expansiveness.** Every level of the fast-growing hierarchy dominates the
 identity: `n ≤ f_o(n)` for every notation `o` (no normal-form hypothesis needed —
 `fundamentalSequence_has_prop` holds for all `o`).
@@ -57,22 +73,19 @@ theorem le_fastGrowing (o : ONote) (n : ℕ) : n ≤ fastGrowing o n := by
     rw [fastGrowing_zero' o e]
     exact Nat.le_succ n
   · -- successor: `fastGrowing o n = (fastGrowing a)^[n] n`, `a < o`
-    have hlt : a < o := by
-      have hp := fundamentalSequence_has_prop o
-      rw [e] at hp
-      rw [lt_def, hp.1]; exact Order.lt_succ _
+    have hlt : a < o := lt_of_fundamentalSequence_succ e
     rw [fastGrowing_succ o e]
-    have ih : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
-    exact Function.id_le_iterate_of_id_le ih n n
+    exact Function.id_le_iterate_of_id_le (fun m => le_fastGrowing a m) n n
   · -- limit: `fastGrowing o n = fastGrowing (f n) n`, `f n < o`
-    have hlt : f n < o := by
-      have hp := fundamentalSequence_has_prop o
-      rw [e] at hp
-      exact (hp.2.1 n).2.1
+    have hlt : f n < o := fundamentalSequence_lt_of_limit e n
     rw [fastGrowing_limit o e]
     exact le_fastGrowing (f n) n
 termination_by o
 decreasing_by all_goals exact hlt
+
+/-- `id ≤ fastGrowing o`, i.e. `fastGrowing o` dominates the identity pointwise. -/
+theorem id_le_fastGrowing (o : ONote) : (id : ℕ → ℕ) ≤ fastGrowing o :=
+  fun m => le_fastGrowing o m
 
 /-- **Strict expansiveness for positive input.** For `n ≥ 1` every level strictly
 exceeds the identity, `n < f_o(n)`.
@@ -86,21 +99,14 @@ theorem lt_fastGrowing (o : ONote) {n : ℕ} (hn : 1 ≤ n) : n < fastGrowing o 
   rcases e : fundamentalSequence o with (_ | a) | f
   · rw [fastGrowing_zero' o e]
     exact Nat.lt_succ_self n
-  · have hlt : a < o := by
-      have hp := fundamentalSequence_has_prop o
-      rw [e] at hp
-      rw [lt_def, hp.1]; exact Order.lt_succ _
+  · have hlt : a < o := lt_of_fundamentalSequence_succ e
     rw [fastGrowing_succ o e]
     -- `n < f_a n = (f_a)^[1] n ≤ (f_a)^[n] n`
-    have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
     have hstep : fastGrowing a n ≤ (fastGrowing a)^[n] n := by
-      have hmono := Function.monotone_iterate_of_id_le hexp hn
+      have hmono := Function.monotone_iterate_of_id_le (id_le_fastGrowing a) hn
       simpa using hmono n
     exact lt_of_lt_of_le (lt_fastGrowing a hn) hstep
-  · have hlt : f n < o := by
-      have hp := fundamentalSequence_has_prop o
-      rw [e] at hp
-      exact (hp.2.1 n).2.1
+  · have hlt : f n < o := fundamentalSequence_lt_of_limit e n
     rw [fastGrowing_limit o e]
     exact lt_fastGrowing (f n) hn
 termination_by o
@@ -114,8 +120,7 @@ theorem fastGrowing_le_succ_index {o a : ONote}
     (h : fundamentalSequence o = Sum.inl (some a)) {n : ℕ} (hn : 1 ≤ n) :
     fastGrowing a n ≤ fastGrowing o n := by
   rw [fastGrowing_succ o h]
-  have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
-  simpa using (Function.monotone_iterate_of_id_le hexp hn) n
+  simpa using (Function.monotone_iterate_of_id_le (id_le_fastGrowing a) hn) n
 
 /-- **Structural descent relation** `Reaches x β α`: from `β` one can step down to `α`
 through `fundamentalSequence`, using *predecessor* steps at successor notations and
@@ -154,15 +159,9 @@ theorem reaches_le {x : ℕ} {β α : ONote} (h : Reaches x β α) : α ≤ β :
   induction h with
   | refl a => exact le_rfl
   | @succ β γ α hb _ ih =>
-      have hlt : γ < β := by
-        have hp := fundamentalSequence_has_prop β; rw [hb] at hp
-        rw [lt_def, hp.1]; exact Order.lt_succ _
-      exact le_trans ih (le_of_lt hlt)
+      exact le_trans ih (lt_of_fundamentalSequence_succ hb).le
   | @limit β α g hb _ ih =>
-      have hlt : g x < β := by
-        have hp := fundamentalSequence_has_prop β; rw [hb] at hp
-        exact (hp.2.1 x).2.1
-      exact le_trans ih (le_of_lt hlt)
+      exact le_trans ih (fundamentalSequence_lt_of_limit hb x).le
 
 /-! ### Structural Bachmann reachability — the A3 crux, fully proved
 
@@ -202,13 +201,9 @@ theorem reaches_zero (o : ONote) (x : ℕ) : Reaches x o 0 := by
   rcases e : fundamentalSequence o with (_ | a) | g
   · have ho : o = 0 := by have hp := fundamentalSequence_has_prop o; rw [e] at hp; exact hp
     rw [ho]; exact Reaches.refl 0
-  · have hlt : a < o := by
-      have hp := fundamentalSequence_has_prop o; rw [e] at hp
-      rw [lt_def, hp.1]; exact Order.lt_succ _
+  · have hlt : a < o := lt_of_fundamentalSequence_succ e
     exact Reaches.succ e (reaches_zero a x)
-  · have hlt : g x < o := by
-      have hp := fundamentalSequence_has_prop o; rw [e] at hp
-      exact (hp.2.1 x).2.1
+  · have hlt : g x < o := fundamentalSequence_lt_of_limit e x
     exact Reaches.limit e (reaches_zero (g x) x)
 termination_by o
 decreasing_by all_goals exact hlt
@@ -313,27 +308,11 @@ theorem fastGrowing_ofNat_monotone (k : ℕ) : Monotone (fastGrowing (ofNat k)) 
       exact fun a b h => Nat.succ_le_succ h
   | succ k ih =>
       rw [fastGrowing_succ _ (fundamentalSequence_ofNat_succ k)]
-      have hexp : (id : ℕ → ℕ) ≤ fastGrowing (ofNat k) := fun m => le_fastGrowing _ m
       intro a b hab
       calc (fastGrowing (ofNat k))^[a] a
           ≤ (fastGrowing (ofNat k))^[a] b := ih.iterate a hab
-        _ ≤ (fastGrowing (ofNat k))^[b] b := (Function.monotone_iterate_of_id_le hexp hab) b
-
-/-- **Monotonicity of `f_ω`, fully proved (axiom-clean).** The first nontrivial limit
-level is monotone — discharging the limit case *without* the general crux, using only
-finite-level facts (`ω[n] = n+1`, both finite). This is the concrete witness that the
-reduction machinery is sound on a genuine limit ordinal.
-
-`f_ω(n) = f_{ofNat(n+1)}(n) ≤ f_{ofNat(n+1)}(n+1) ≤ f_{ofNat(n+2)}(n+1) = f_ω(n+1)`. -/
-theorem fastGrowing_monotone_omega : Monotone (fastGrowing (oadd 1 1 0)) := by
-  have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ofNat (i + 1)) := rfl
-  refine monotone_nat_of_le_succ (fun n => ?_)
-  rw [fastGrowing_limit _ hfs]
-  -- goal: f_{ofNat(n+1)}(n) ≤ f_{ofNat(n+2)}(n+1)
-  calc fastGrowing (ofNat (n + 1)) n
-      ≤ fastGrowing (ofNat (n + 1)) (n + 1) := fastGrowing_ofNat_monotone (n + 1) (Nat.le_succ n)
-    _ ≤ fastGrowing (ofNat (n + 2)) (n + 1) :=
-        fastGrowing_ofNat_mono (Nat.le_succ (n + 1)) (Nat.succ_le_succ (Nat.zero_le n))
+        _ ≤ (fastGrowing (ofNat k))^[b] b :=
+              (Function.monotone_iterate_of_id_le (id_le_fastGrowing (ofNat k)) hab) b
 
 /-- **The Bachmann reachability crux (A3, structural form) — PROVEN, axiom-clean**
 (`[propext, choice, Quot.sound]`; body below is a complete structural recursion on `o`, no `sorry`).
@@ -421,11 +400,11 @@ theorem fastGrowing_monotone_succ {o a : ONote}
     (h : fundamentalSequence o = Sum.inl (some a)) (ha : Monotone (fastGrowing a)) :
     Monotone (fastGrowing o) := by
   rw [fastGrowing_succ o h]
-  have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
   intro p q hpq
   calc (fastGrowing a)^[p] p
       ≤ (fastGrowing a)^[p] q := ha.iterate p hpq
-    _ ≤ (fastGrowing a)^[q] q := (Function.monotone_iterate_of_id_le hexp hpq) q
+    _ ≤ (fastGrowing a)^[q] q :=
+          (Function.monotone_iterate_of_id_le (id_le_fastGrowing a) hpq) q
 
 /-- **Monotonicity for successor-chain limits — the general engine, axiom-clean.**
 If `o` is a limit whose fundamental sequence `f` is a *successor chain*
@@ -454,11 +433,10 @@ theorem fastGrowing_monotone_of_succ_chain_limit {o : ONote} {f : ℕ → ONote}
       ≤ fastGrowing (f n) (n + 1) := hmono n (Nat.le_succ n)
     _ ≤ fastGrowing (f (n + 1)) (n + 1) := fastGrowing_fundSeq_step_of_succ hlim hchain n
 
-/-- **`f_ω` is monotone, re-derived cleanly from the general engine.** `ω`'s fundamental
-sequence is the successor chain `n ↦ ofNat (n+1)`, whose bottom level `f_{ofNat 1}` is
-monotone (`fastGrowing_ofNat_monotone`). Compare `fastGrowing_monotone_omega`, which proved
-the same fact by hand; this routes through `fastGrowing_monotone_of_succ_chain_limit`. -/
-theorem fastGrowing_monotone_omega' : Monotone (fastGrowing (oadd 1 1 0)) := by
+/-- **`f_ω` is monotone, axiom-clean.** `ω`'s fundamental sequence is the successor chain
+`n ↦ ofNat (n+1)`, whose bottom level `f_{ofNat 1}` is monotone (`fastGrowing_ofNat_monotone`);
+this routes through the general engine `fastGrowing_monotone_of_succ_chain_limit`. -/
+theorem fastGrowing_monotone_omega : Monotone (fastGrowing (oadd 1 1 0)) := by
   have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ofNat (i + 1)) := rfl
   exact fastGrowing_monotone_of_succ_chain_limit hfs
     (fun k => fundamentalSequence_ofNat_succ (k + 1)) (fastGrowing_ofNat_monotone 1)
@@ -466,14 +444,14 @@ theorem fastGrowing_monotone_omega' : Monotone (fastGrowing (oadd 1 1 0)) := by
 /-- **`f_{ω·(j+1)}` is monotone, for every `j` — the whole `ω·k` family.** Each `ω·(j+1)`
 (`= oadd 1 j.succPNat 0`) is a successor-chain limit whose bottom level is `ω·j + 1`, a
 notation-successor of `ω·j`; so monotonicity propagates up the `ω·k` ladder by induction
-on `k`, with `ω·1 = ω` (`fastGrowing_monotone_omega'`) as the base. This is the first
+on `k`, with `ω·1 = ω` (`fastGrowing_monotone_omega`) as the base. This is the first
 *infinite family* of limit levels proved monotone — still all `β+ω`-type, but it exercises
 the successor-chain engine on genuinely varying notations and is the lemma the `ω^2`
 index step consumes. -/
 theorem fastGrowing_monotone_omega_mul (j : ℕ) :
     Monotone (fastGrowing (oadd 1 j.succPNat 0)) := by
   induction j with
-  | zero => exact fastGrowing_monotone_omega'
+  | zero => exact fastGrowing_monotone_omega
   | succ j ih =>
       have hlim : fundamentalSequence (oadd 1 (j + 1).succPNat 0)
           = Sum.inr (fun i => oadd 1 j.succPNat (ofNat (i + 1))) := rfl
@@ -533,10 +511,7 @@ theorem fastGrowing_le_succ (o : ONote) (n : ℕ) :
   · rw [fastGrowing_zero' o e]
     exact Nat.le_succ _
   · -- successor: `(f_a)^[n] n ≤ (f_a)^[n+1] (n+1)`
-    have hlt : a < o := by
-      have hp := fundamentalSequence_has_prop o
-      rw [e] at hp
-      rw [lt_def, hp.1]; exact Order.lt_succ _
+    have hlt : a < o := lt_of_fundamentalSequence_succ e
     rw [fastGrowing_succ o e]
     have hmono_a : Monotone (fastGrowing a) :=
       monotone_nat_of_le_succ fun k => fastGrowing_le_succ a k
@@ -546,10 +521,7 @@ theorem fastGrowing_le_succ (o : ONote) (n : ℕ) :
             rw [Function.iterate_succ_apply']
             exact le_fastGrowing a _
   · -- limit: `f_{g n}(n) ≤ f_{g (n+1)}(n+1)`
-    have hlt : g n < o := by
-      have hp := fundamentalSequence_has_prop o
-      rw [e] at hp
-      exact (hp.2.1 n).2.1
+    have hlt : g n < o := fundamentalSequence_lt_of_limit e n
     rw [fastGrowing_limit o e]
     have hmono_gn : Monotone (fastGrowing (g n)) :=
       monotone_nat_of_le_succ fun k => fastGrowing_le_succ (g n) k
