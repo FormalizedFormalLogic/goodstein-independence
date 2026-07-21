@@ -31,8 +31,7 @@ def expTower (a : ONote) : ONote := oadd a 1 0
 lemma expTower_NF {a : ONote} (ha : a.NF) : (expTower a).NF :=
   ha.oadd 1 NFBelow.zero
 
-lemma expTower_lt_expTower {b a : ONote} (hb : b.NF) (h : b < a) :
-    expTower b < expTower a :=
+lemma expTower_lt_expTower {b a : ONote} (hb : b.NF) (h : b < a) : expTower b < expTower a :=
   oadd_lt_oadd_1 (expTower_NF hb) h
 
 /-- The Eguchi–Weiermann max-relativization of a number-theoretic operator. -/
@@ -43,22 +42,20 @@ def rel1 (f : ℕ → ℕ) (n : ℕ) : ℕ → ℕ := fun x => f (max n x)
 lemma rel1_comp (f g : ℕ → ℕ) (n : ℕ) : rel1 (f ∘ g) n = f ∘ rel1 g n := rfl
 
 /-- `rel1` is monotone in the slot (feeds `NormControlled.mono` at ω-nodes). -/
-lemma rel1_mono {f f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) (n : ℕ) :
-    ∀ x, rel1 f n x ≤ rel1 f' n x := fun x => hff' (max n x)
+lemma rel1_mono {f f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) (n x : ℕ) : rel1 f n x ≤ rel1 f' n x :=
+  hff' (max n x)
 
 /-- `rel1 f n` inherits monotonicity from `f`. -/
 lemma rel1_monotone {f : ℕ → ℕ} (hf : Monotone f) (n : ℕ) : Monotone (rel1 f n) :=
   fun _ _ h => hf (max_le_max (le_refl n) h)
 
 /-- `rel1 f n` inherits inflationarity from `f` (`x ≤ rel1 f n x`). -/
-lemma rel1_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) (n : ℕ) : ∀ x, x ≤ rel1 f n x :=
-  fun x => le_trans (le_max_right n x) (hf (max n x))
+lemma rel1_infl {f : ℕ → ℕ} (hf : ∀ x, x ≤ f x) (n x : ℕ) : x ≤ rel1 f n x :=
+  le_trans (le_max_right n x) (hf (max n x))
 
-/-- **`rel1` preserves the `2m+1` lower bound:** `2·m + 1 ≤ rel1 f n m` whenever
-`2·m + 1 ≤ f m`. -/
-lemma rel1_low {f : ℕ → ℕ} (hmono : Monotone f) (hlow : ∀ m, 2 * m + 1 ≤ f m) (n : ℕ) :
-    ∀ m, 2 * m + 1 ≤ rel1 f n m :=
-  fun m => le_trans (hlow m) (hmono (le_max_right n m))
+/-- **`rel1` preserves the `2m+1` lower bound:** `2·m + 1 ≤ rel1 f n m` whenever `2·m + 1 ≤ f m`. -/
+lemma rel1_low {f : ℕ → ℕ} (hmono : Monotone f) (hlow : ∀ m, 2 * m + 1 ≤ f m) (n m : ℕ) : 2 * m + 1 ≤ rel1 f n m :=
+  le_trans (hlow m) (hmono (le_max_right n m))
 
 /-- **Max-associativity:** `rel1 (rel1 f m) n = rel1 f (max m n)`. -/
 lemma rel1_rel1 (f : ℕ → ℕ) (m n : ℕ) : rel1 (rel1 f m) n = rel1 f (max m n) := by
@@ -357,10 +354,8 @@ theorem Nlog_add_le_max_succ (o : ONote) (ho : NF o) (c : ONote) (hc : NF c) :
 
 /-- **The absorbing node gate:** with an absorbing norm, `N (a+d) ≤ g (f 0)` closes
 from the two premise gates and the slack condition without base-additivity. -/
-lemma absorbing_closes_gate {N : ONote → ℕ} {g f : ℕ → ℕ} (c : ℕ)
-    (habs : ∀ a d, N (a + d) ≤ max (N a) (N d) + c)
-    (hslack : max (g 0) (f 0) + c ≤ g (f 0))
-    {a d : ONote} (ha : N a ≤ g 0) (hd : N d ≤ f 0) :
+lemma absorbing_closes_gate {N : ONote → ℕ} {g f : ℕ → ℕ} (c : ℕ) (habs : ∀ a d, N (a + d) ≤ max (N a) (N d) + c)
+    (hslack : max (g 0) (f 0) + c ≤ g (f 0)) {a d : ONote} (ha : N a ≤ g 0) (hd : N d ≤ f 0) :
     N (a + d) ≤ g (f 0) := by
   have h1 : N (a + d) ≤ max (N a) (N d) + c := habs a d
   have h2 : max (N a) (N d) ≤ max (g 0) (f 0) := by
@@ -369,13 +364,9 @@ lemma absorbing_closes_gate {N : ONote → ℕ} {g f : ℕ → ℕ} (c : ℕ)
     · exact le_trans hd (le_max_right _ _)
   omega
 
-/-- **Instance for fresh roots:** `Nlog`'s absorbing inequality and the slack close
-the composed gate. -/
-lemma Nlog_add_le_comp {a c : ONote} {f g : ℕ → ℕ}
-    (haNF : a.NF) (hcNF : c.NF)
-    (ha : Nlog a ≤ g 0) (hc : Nlog c ≤ f 0)
-    (hslack : max (g 0) (f 0) + 1 ≤ g (f 0)) :
-    Nlog (a + c) ≤ g (f 0) := by
+/-- **Instance for fresh roots:** `Nlog`'s absorbing inequality and the slack close the composed gate. -/
+lemma Nlog_add_le_comp {a c : ONote} {f g : ℕ → ℕ} (haNF : a.NF) (hcNF : c.NF) (ha : Nlog a ≤ g 0)
+    (hc : Nlog c ≤ f 0) (hslack : max (g 0) (f 0) + 1 ≤ g (f 0)) : Nlog (a + c) ≤ g (f 0) := by
   have habs := Nlog_add_le_max_succ a haNF c hcNF
   have hmm : max (Nlog a) (Nlog c) ≤ max (g 0) (f 0) := max_le_max ha hc
   omega
@@ -406,7 +397,8 @@ lemma Nlog_omega : Nlog ONote.omega = 2 := by
 /-! ## `osucc` interaction with `Nlog` and `collapse` -/
 
 /-- `Nlog` is near-stable under `osucc` (mirror of `ewN_osucc_le`). -/
-lemma Nlog_osucc_le : ∀ {o : ONote}, o.NF → Nlog (osucc o) ≤ Nlog o + 1
+lemma Nlog_osucc_le {o : ONote} (h : o.NF) : Nlog (osucc o) ≤ Nlog o + 1 :=
+  match o, h with
   | 0, _ => by
       show Nlog (oadd 0 1 0) ≤ Nlog 0 + 1
       simp only [Nlog_oadd, Nlog_zero, PNat.one_coe]
@@ -436,16 +428,19 @@ def osuccs (a : ONote) : ℕ → ONote
   | 0 => a
   | n + 1 => osucc (osuccs a n)
 
-lemma osuccs_NF {a : ONote} (h : a.NF) : ∀ n, (osuccs a n).NF
+lemma osuccs_NF {a : ONote} (h : a.NF) (n : ℕ) : (osuccs a n).NF :=
+  match n with
   | 0 => h
   | n + 1 => osucc_NF (osuccs_NF h n)
 
 @[simp, grind =]
-lemma osuccs_succ_shift (a : ONote) : ∀ n, osuccs (osucc a) n = osucc (osuccs a n)
+lemma osuccs_succ_shift (a : ONote) (n : ℕ) : osuccs (osucc a) n = osucc (osuccs a n) :=
+  match n with
   | 0 => rfl
   | n + 1 => by simp only [osuccs, osuccs_succ_shift a n]
 
-lemma Nlog_osuccs_le {a : ONote} (h : a.NF) : ∀ n, Nlog (osuccs a n) ≤ Nlog a + n
+lemma Nlog_osuccs_le {a : ONote} (h : a.NF) (n : ℕ) : Nlog (osuccs a n) ≤ Nlog a + n :=
+  match n with
   | 0 => le_refl _
   | n + 1 => by
       have h1 := Nlog_osucc_le (osuccs_NF h n)
@@ -479,8 +474,8 @@ def EwF2 (f : ℕ → ℕ) : Prop :=
 lemma EwF1.monotone {f : ℕ → ℕ} (hf : EwF1 f) : Monotone f :=
   hf.1.monotone
 
-lemma EwF1.infl {f : ℕ → ℕ} (hf : EwF1 f) : ∀ m, m ≤ f m :=
-  fun m => le_trans (by omega) (hf.2 m)
+lemma EwF1.infl {f : ℕ → ℕ} (hf : EwF1 f) (m : ℕ) : m ≤ f m :=
+  le_trans (by omega) (hf.2 m)
 
 /-- **Base-additive composite.** A per-step growth floor `g 0 + k ≤ g k` on the `∀`-side
 slot converts the two additive input gates into the composed-slot base gate: any
@@ -519,8 +514,7 @@ termination_by a => a
 decreasing_by
   exact ‹_›
 
-lemma ewIter_unfold (f : ℕ → ℕ) (a : ONote) (m : ℕ) :
-    ewIter f a m = ewStep f a (fun b _ => ewIter f b) m := by
+lemma ewIter_unfold (f : ℕ → ℕ) (a : ONote) (m : ℕ) : ewIter f a m = ewStep f a (fun b _ => ewIter f b) m := by
   rw [ewIter]
 
 @[simp, grind =] theorem ewIter_zero (f : ℕ → ℕ) : ewIter f 0 = f := by
@@ -548,8 +542,7 @@ lemma ewIter_lower (hbNF : b.NF)
   simp only [Finset.mem_filter]
   exact ⟨mem_NlogBall.mpr ⟨hbNF, hgate⟩, hba, hgate⟩
 
-lemma ewIter_infl {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (a : ONote) (m : ℕ) :
-    m ≤ ewIter f a m := by
+lemma ewIter_infl (hf_infl : ∀ m, m ≤ f m) (a : ONote) (m : ℕ) : m ≤ ewIter f a m := by
   by_cases ha : a = 0
   · subst ha
     simp [ewIter_zero, hf_infl]
@@ -560,9 +553,8 @@ lemma ewIter_infl {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (a : ONote) (m 
       simpa [ewIter_zero] using hlow
     exact le_trans (hf_infl m) (le_trans (hf_infl (f m)) hlow')
 
-/-- **`ewIter` inherits the `2m+1` lower bound:** `2·m + 1 ≤ ewIter f a m` when
-`2·m + 1 ≤ f m`. -/
-lemma ewIter_low {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (hf_low : ∀ m, 2 * m + 1 ≤ f m)
+/-- **`ewIter` inherits the `2m+1` lower bound:** `2·m + 1 ≤ ewIter f a m` when `2·m + 1 ≤ f m`. -/
+lemma ewIter_low (hf_infl : ∀ m, m ≤ f m) (hf_low : ∀ m, 2 * m + 1 ≤ f m)
     (a : ONote) (m : ℕ) : 2 * m + 1 ≤ ewIter f a m := by
   by_cases ha : a = 0
   · subst ha; simpa [ewIter_zero] using hf_low m
@@ -573,8 +565,7 @@ lemma ewIter_low {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (hf_low : ∀ m,
     have hlf : 2 * f m + 1 ≤ f (f m) := hf_low (f m)
     omega
 
-theorem ewIter_monotone {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
-    (a : ONote) : Monotone (ewIter f a) := by
+theorem ewIter_monotone (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m) (a : ONote) : Monotone (ewIter f a) := by
   intro m m' hmm'
   by_cases ha : a = 0
   · subst ha
@@ -613,7 +604,7 @@ lemma ewIter_slot_le (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
 
 /-- **Slot-composition containment:** merging two IH-reduced premises' slots to fit under
 the declared output slot via gated ordinal-monotonicity and the lower bound. -/
-theorem ewIter_comp_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
+theorem ewIter_comp_le (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
     {a₀ a₁ a : ONote} (ha₀ : a₀.NF) (ha₁ : a₁.NF)
     (h0 : a₀ < a) (h1 : a₁ < a) (g0 : Nlog a₀ ≤ f 0) (g1 : Nlog a₁ ≤ f 0) (m : ℕ) :
     ewIter f a₀ (ewIter f a₁ m) ≤ ewIter f a m := by
@@ -632,7 +623,7 @@ theorem ewIter_comp_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m
     have hinner : ewIter f a₁ m ≤ ewIter f a₀ m := ewIter_le_of_lt hf_infl ha₁ ha₁a₀ g10
     exact le_trans (ewIter_monotone hf_mono hf_infl a₀ hinner) (ewIter_lower ha₀ h0 (gate0 m))
 
-lemma ewIter_rel1_le {f : ℕ → ℕ} (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
+lemma ewIter_rel1_le (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m)
     (b : ONote) (n x : ℕ) :
     ewIter (rel1 f n) b x ≤ ewIter f b (max n x) := by
   by_cases hb : b = 0
@@ -670,25 +661,21 @@ termination_by b
 decreasing_by
   all_goals exact hdlt
 
-lemma ewIter_lift_of_mono_infl (hf_mono : Monotone f)
-    (hf_infl : ∀ m, m ≤ f m) (hbNF : b.NF)
-    (hba : b < a) (hbN : Nlog b ≤ f 0) :
-    ∀ x, ewIter f b x ≤ ewIter f a x := by
-  intro x
+lemma ewIter_lift_of_mono_infl (hf_mono : Monotone f) (hf_infl : ∀ m, m ≤ f m) (hbNF : b.NF)
+    (hba : b < a) (hbN : Nlog b ≤ f 0) (x : ℕ) : ewIter f b x ≤ ewIter f a x := by
   have hgate : Nlog b ≤ f (Nlog a + x) :=
     le_trans hbN (hf_mono (Nat.zero_le _))
   exact le_trans (ewIter_infl hf_infl b (ewIter f b x))
     (ewIter_lower (f := f) hbNF hba hgate)
 
-lemma ewIter_lift (hf : EwF1 f) (hbNF : b.NF)
-    (hba : b < a) (hbN : Nlog b ≤ f 0) :
-    ∀ x, ewIter f b x ≤ ewIter f a x :=
-  ewIter_lift_of_mono_infl (EwF1.monotone hf) (EwF1.infl hf) hbNF hba hbN
+lemma ewIter_lift (hf : EwF1 f) (hbNF : b.NF) (hba : b < a) (hbN : Nlog b ≤ f 0) (x : ℕ) :
+    ewIter f b x ≤ ewIter f a x :=
+  ewIter_lift_of_mono_infl (EwF1.monotone hf) (EwF1.infl hf) hbNF hba hbN x
 
 /-! ## Attainment, swap lemma, base floor, cut-node slack -/
 
 /-- **Max-attainment for `ewIter`:** the iterate's value is realized by some NF branch `b < a`. -/
-lemma ewIter_attained {f : ℕ → ℕ} {a : ONote} (ha : a ≠ 0) (x : ℕ) :
+lemma ewIter_attained (ha : a ≠ 0) (x : ℕ) :
     ∃ b : ONote, b.NF ∧ b < a ∧ Nlog b ≤ f (Nlog a + x) ∧
       ewIter f a x = ewIter f b (ewIter f b x) := by
   have hunf := ewIter_unfold f a x
@@ -709,9 +696,11 @@ lemma ewIter_attained {f : ℕ → ℕ} {a : ONote} (ha : a ≠ 0) (x : ℕ) :
   refine ⟨d.1, (mem_NlogBall.mp hdfilter.1).1, hdfilter.2.1, hdfilter.2.2, ?_⟩
   rw [hunf, ← hdval]
 
+variable {s : ℕ → ℕ}
+
 /-- **The swap lemma:** `s (ewIter s a x) ≤ ewIter s a (s x)` for monotone, inflationary `s`. -/
-theorem ewIter_swap {s : ℕ → ℕ} (hmono : Monotone s) (hinfl : ∀ m, m ≤ s m)
-    (a : ONote) (x : ℕ) : s (ewIter s a x) ≤ ewIter s a (s x) := by
+theorem ewIter_swap (hmono : Monotone s) (hinfl : ∀ m, m ≤ s m) (a : ONote) (x : ℕ) :
+    s (ewIter s a x) ≤ ewIter s a (s x) := by
   by_cases ha : a = 0
   · subst ha; simp [ewIter_zero]
   · obtain ⟨b, hbNF, hblt, hbgate, heq⟩ := ewIter_attained ha x
@@ -728,8 +717,7 @@ termination_by a
 decreasing_by all_goals exact hblt
 
 /-- **Base floor:** `s 0 ≤ ewIter s b 0` for all `b`. -/
-lemma ewIter_base_le {s : ℕ → ℕ} (hinfl : ∀ m, m ≤ s m) (b : ONote) :
-    s 0 ≤ ewIter s b 0 := by
+lemma ewIter_base_le (hinfl : ∀ m, m ≤ s m) (b : ONote) : s 0 ≤ ewIter s b 0 := by
   by_cases hb : b = 0
   · subst hb; simp [ewIter_zero]
   · have h0b : (0 : ONote) < b := pos_of_ne_zero hb
@@ -738,7 +726,7 @@ lemma ewIter_base_le {s : ℕ → ℕ} (hinfl : ∀ m, m ≤ s m) (b : ONote) :
     exact le_trans (hinfl (s 0)) hss
 
 /-- **The slot-threaded slack:** the cut-node slack holds at every `k ≥ f 0`. -/
-lemma hslack_kit_ge {s : ℕ → ℕ} (hmono : Monotone s) (hinfl : ∀ m, m ≤ s m)
+lemma hslack_kit_ge (hmono : Monotone s) (hinfl : ∀ m, m ≤ s m)
     (hlow : ∀ m, 2 * m + 1 ≤ s m) (b₁ b₂ : ONote) :
     ∀ k, ewIter s b₂ 0 ≤ k →
       max (ewIter s b₁ 0) k + 1 ≤ ewIter s b₁ k := by
@@ -777,7 +765,8 @@ def collapseIter : ℕ → ONote → ONote
   | (d + 1), a => collapse (collapseIter d a)
 
 /-- NF preservation for the collapse tower (real content, not a pin). -/
-lemma collapseIter_NF {a : ONote} (ha : a.NF) : ∀ d, (collapseIter d a).NF
+lemma collapseIter_NF {a : ONote} (ha : a.NF) (d : ℕ) : (collapseIter d a).NF :=
+  match d with
   | 0 => ha
   | (d + 1) => expTower_NF (collapseIter_NF ha d)
 
@@ -790,8 +779,8 @@ noncomputable def ewIterTower : (ℕ → ℕ) → ℕ → ONote → (ℕ → ℕ
 /-- **Collapse-tower shift** — `collapseIter d (collapse a) = collapse (collapseIter d a)`
 (`= collapseIter (d+1) a`).  Lets the rung-R induction stay on EXACT ordinals: one pass promotes
 `a → collapse a`, and the remaining `d` passes commute the outer `collapse` through. -/
-lemma collapseIter_collapse (a : ONote) :
-    ∀ d, collapseIter d (collapse a) = collapse (collapseIter d a)
+lemma collapseIter_collapse (a : ONote) (d : ℕ) : collapseIter d (collapse a) = collapse (collapseIter d a) :=
+  match d with
   | 0 => rfl
   | (d + 1) => by
       show collapse (collapseIter d (collapse a)) = collapse (collapse (collapseIter d a))
@@ -800,8 +789,9 @@ lemma collapseIter_collapse (a : ONote) :
 /-- **Slot-tower shift** — `ewIterTower (ewIter f a) d (collapse a) = ewIterTower f (d+1) a`.  The
 companion of `collapseIter_collapse` for the slot side: `d` passes starting from the once-passed
 `(ewIter f a, collapse a)` equal `d+1` passes from `(f, a)`. -/
-lemma ewIterTower_collapse (f : ℕ → ℕ) (a : ONote) :
-    ∀ d, ewIterTower (ewIter f a) d (collapse a) = ewIterTower f (d + 1) a
+lemma ewIterTower_collapse (f : ℕ → ℕ) (a : ONote) (d : ℕ) :
+    ewIterTower (ewIter f a) d (collapse a) = ewIterTower f (d + 1) a :=
+  match d with
   | 0 => rfl
   | (d + 1) => by
       show ewIter (ewIterTower (ewIter f a) d (collapse a)) (collapseIter d (collapse a))
@@ -810,14 +800,15 @@ lemma ewIterTower_collapse (f : ℕ → ℕ) (a : ONote) :
 
 /-- The `d`-fold slot tower inherits inflationarity from its base slot (each pass is `ewIter`,
 inflationary by `ewIter_infl`). -/
-lemma ewIterTower_infl {f : ℕ → ℕ} (hinfl : ∀ m, m ≤ f m) (a : ONote) :
-    ∀ (d : ℕ) (m : ℕ), m ≤ ewIterTower f d a m
+lemma ewIterTower_infl (hinfl : ∀ m, m ≤ f m) (a : ONote) (d m : ℕ) : m ≤ ewIterTower f d a m :=
+  match d, m with
   | 0, m => hinfl m
   | (d + 1), m => ewIter_infl (ewIterTower_infl hinfl a d) (collapseIter d a) m
 
 /-- The tower slot `ewIterTower f d a` preserves monotonicity. -/
-lemma ewIterTower_monotone {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
-    (a : ONote) : ∀ d, Monotone (ewIterTower f d a)
+lemma ewIterTower_monotone (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m) (a : ONote) (d : ℕ) :
+    Monotone (ewIterTower f d a) :=
+  match d with
   | 0 => hmono
   | (d + 1) => ewIter_monotone (ewIterTower_monotone hmono hinfl a d)
       (ewIterTower_infl hinfl a d) _
@@ -825,9 +816,8 @@ lemma ewIterTower_monotone {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m
 /-- A pointwise-dominated slot yields a pointwise-dominated `ewIter`: if `f x ≤ g x` for all `x`
 (with `g` monotone and inflationary), then `ewIter f a m ≤ ewIter g a m`. -/
 lemma ewIter_mono_slot {f g : ℕ → ℕ} (hfg : ∀ x, f x ≤ g x)
-    (hg_mono : Monotone g) (hg_infl : ∀ m, m ≤ g m) :
-    ∀ (a : ONote) (m : ℕ), ewIter f a m ≤ ewIter g a m := by
-  intro a m
+    (hg_mono : Monotone g) (hg_infl : ∀ m, m ≤ g m) (a : ONote) (m : ℕ) :
+    ewIter f a m ≤ ewIter g a m := by
   by_cases ha : a = 0
   · subst ha
     simpa [ewIter_zero] using hfg m
@@ -848,15 +838,15 @@ lemma ewIter_mono_slot {f g : ℕ → ℕ} (hfg : ∀ x, f x ≤ g x)
       le_trans (ewIter_mono_slot hfg hg_mono hg_infl d _)
         (ewIter_monotone hg_mono hg_infl (d : ONote) ih1)
     exact le_trans ih2 (ewIter_lower hdNF hdlt hdgate')
-termination_by a _ => a
+termination_by a
 decreasing_by
   all_goals exact hdlt
 
 /-- The slot-stage pre-max `K` commutes out of the whole `d`-fold tower into the argument: one
 fixed tower dominates all stages. -/
-theorem ewIterTower_rel1_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
-    (K : ℕ) (a : ONote) : ∀ (d : ℕ) (x : ℕ),
-    ewIterTower (rel1 f K) d a x ≤ ewIterTower f d a (max K x)
+theorem ewIterTower_rel1_le (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m) (K : ℕ) (a : ONote)
+    (d x : ℕ) : ewIterTower (rel1 f K) d a x ≤ ewIterTower f d a (max K x) :=
+  match d, x with
   | 0, x => le_of_eq (by simp [ewIterTower, rel1])
   | (d + 1), x => by
       have hTmono : Monotone (ewIterTower f d a) := ewIterTower_monotone hmono hinfl a d
@@ -871,18 +861,15 @@ theorem ewIterTower_rel1_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ 
             ewIter_rel1_le hTmono hTinfl (collapseIter d a) K x
 
 /-- One-step absorption at a nonzero ordinal: `S (S x) ≤ ewIter S b x` for `b ≠ 0`. -/
-lemma SS_le_ewIter' {S : ℕ → ℕ} {b : ONote} (hb : b ≠ 0) (x : ℕ) :
-    S (S x) ≤ ewIter S b x := by
+lemma SS_le_ewIter' {S : ℕ → ℕ} (hb : b ≠ 0) (x : ℕ) : S (S x) ≤ ewIter S b x := by
   have h0b : (0 : ONote) < b := pos_of_ne_zero hb
   have h := ewIter_lower (f := S) (b := 0) (a := b) (m := x) NF.zero h0b (Nat.zero_le _)
   simpa [ewIter_zero] using h
 
 /-- **Descent inequality**: a premise at `b < a` with any bumped budget `V' ≤ S V` has its
 master bound absorbed by the node's `ewIter S a (S V)`. -/
-lemma T3_descent' {S : ℕ → ℕ} (hS_mono : Monotone S) (hS_infl : ∀ m, m ≤ S m)
-    {b a : ONote} (hbNF : b.NF) (hba : b < a)
-    {V V' : ℕ} (hV' : V' ≤ S V)
-    (hgate : Nlog b ≤ S (S V)) :
+lemma T3_descent' {S : ℕ → ℕ} (hS_mono : Monotone S) (hS_infl : ∀ m, m ≤ S m) (hbNF : b.NF)
+    (hba : b < a) {V V' : ℕ} (hV' : V' ≤ S V) (hgate : Nlog b ≤ S (S V)) :
     ewIter S b (S V') ≤ ewIter S a (S V) := by
   have ha : ewIter S b (S V') ≤ ewIter S b (S (S V)) :=
     ewIter_monotone hS_mono hS_infl b (hS_mono hV')
