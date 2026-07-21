@@ -294,64 +294,64 @@ def nfStep (L : List Bool) : Option Bool :=
         be && ba && nfTB c
 
 lemma computable_nfStep : Computable nfStep := by
-  refine' Computable.of_eq _ _;
-  exact fun L => if L.length = 0 then some true else ( L[nfIdxE L.length]? ).bind fun be => ( L[nfIdxA L.length]? ).map fun ba => be && ba && nfTB L.length;
-  · convert Computable.cond _ _ _ using 1;
-    rotate_left;
-    exact fun L => L.length = 0;
-    exact fun _ => some true;
-    exact fun L => L[nfIdxE L.length]?.bind fun be => Option.map ( fun ba => be && ba && nfTB L.length ) L[nfIdxA L.length]?;
-    · convert Computable.of_eq _ _ using 1;
-      exact fun L => Nat.recOn L.length Bool.true fun _ _ => Bool.false;
-      · exact Computable.nat_casesOn ( Computable.list_length ) ( Computable.const true ) ( Computable.const false );
-      · intro n; cases n <;> simp +decide ;
-    · exact Computable.const ( some true );
-    · refine' Computable.option_bind _ _;
-      · exact Computable.list_getElem?.comp ( Computable.id ) ( ( primrec_nfIdxE.comp ( Primrec.list_length ) ).to_comp );
-      · refine' Computable.option_map _ _;
-        · exact Computable.list_getElem?.comp ( Computable.fst ) ( Primrec.to_comp ( primrec_nfIdxA.comp ( Primrec.list_length.comp ( Primrec.fst ) ) ) );
-        · refine' Computable₂.comp _ _ _;
-          · exact Computable.of_eq ( Computable.cond ( Computable.fst ) ( Computable.snd ) ( Computable.const false ) ) fun p => by cases p.1 <;> cases p.2 <;> rfl;
-          · convert Computable₂.comp _ _ _ using 1;
-            all_goals try infer_instance;
-            · exact Computable.of_eq ( Computable.cond ( Computable.fst ) ( Computable.snd ) ( Computable.const false ) ) fun p => by cases p.1 <;> cases p.2 <;> rfl;
-            · exact Computable.snd.comp ( Computable.fst );
-            · exact Computable.snd;
-          · convert computable_nfTB.comp ( Computable.list_length.comp ( Computable.fst.comp ( Computable.fst ) ) ) using 1;
-    · grind;
-  · unfold nfStep; aesop;
+  have c0 : Computable (fun L : List Bool => decide (L.length = 0)) :=
+    (Primrec.eq.comp Primrec.list_length (Primrec.const 0)).decide.to_comp
+  have f1 : Computable (fun L : List Bool => L[nfIdxE L.length]?) :=
+    (Primrec.list_getElem?.comp Primrec.id (primrec_nfIdxE.comp Primrec.list_length)).to_comp
+  have f2 : Computable (fun p : List Bool × Bool => p.1[nfIdxA p.1.length]?) :=
+    (Primrec.list_getElem?.comp Primrec.fst
+      (primrec_nfIdxA.comp (Primrec.list_length.comp Primrec.fst))).to_comp
+  have g2 : Computable₂ (fun (p : List Bool × Bool) (ba : Bool) => p.2 && ba && nfTB p.1.length) := by
+    have h1 : Computable (fun q : (List Bool × Bool) × Bool => q.1.2 && q.2) :=
+      Computable₂.comp Primrec.and.to_comp (Computable.snd.comp Computable.fst) Computable.snd
+    have h2 : Computable (fun q : (List Bool × Bool) × Bool => nfTB q.1.1.length) :=
+      computable_nfTB.comp (Primrec.list_length.comp (Primrec.fst.comp Primrec.fst)).to_comp
+    exact Computable₂.comp Primrec.and.to_comp h1 h2
+  have g1 : Computable₂ (fun (L : List Bool) (be : Bool) =>
+      (L[nfIdxA L.length]?).map fun ba => be && ba && nfTB L.length) :=
+    Computable.option_map f2 g2
+  have helse : Computable (fun L : List Bool =>
+      (L[nfIdxE L.length]?).bind fun be =>
+        (L[nfIdxA L.length]?).map fun ba => be && ba && nfTB L.length) :=
+    Computable.option_bind f1 g1
+  refine (Computable.cond c0 (Computable.const (some true)) helse).of_eq (fun L => ?_)
+  unfold nfStep
+  by_cases h : L.length = 0 <;> simp [h]
 
 /-- Characterization of `NF` on `oadd` (from mathlib's `decidableNF` argument). -/
 lemma NF_oadd_iff {e : ONote} {n : ℕ+} {a : ONote} :
     (ONote.oadd e n a).NF ↔ ONote.NF e ∧ ONote.NF a ∧ ONote.TopBelow e a := by
-  by_cases h : e.NF <;> simp_all +decide;
-  · convert ONote.nfBelow_iff_topBelow ( b := e ) |> Iff.trans <| ?_ using 1;
-    rotate_left;
-    exact a;
-    · rfl;
-    · exact ⟨ fun h' => h'.snd', fun h' => ONote.NF.oadd h n h' ⟩;
-  · exact fun h' => h <| h'.fst
+  by_cases h : e.NF
+  · haveI := h
+    rw [show (ONote.oadd e n a).NF ↔ ONote.NFBelow a (ONote.repr e) from
+      ⟨fun h' => h'.snd', fun h' => ONote.NF.oadd h n h'⟩, ONote.nfBelow_iff_topBelow]
+    tauto
+  · exact ⟨fun h' => absurd h'.fst h, fun h' => absurd h'.1 h⟩
 
 lemma nfStep_spec (n : ℕ) : nfStep ((List.range n).map Nfb) = some (Nfb n) := by
   unfold nfStep Nfb;
   by_cases hn : n = 0;
-  · rw [ hn ] ; simp +decide [ decodeONote ] ;
-  · rw [ show decodeONote n = ONote.oadd ( decodeONote ( Nat.unpair ( n - 1 ) |>.1 ) ) ⟨ ( Nat.unpair ( Nat.unpair ( n - 1 ) |>.2 ) |>.1 ) + 1, Nat.succ_pos _ ⟩ ( decodeONote ( Nat.unpair ( Nat.unpair ( n - 1 ) |>.2 ) |>.2 ) ) from ?_ ];
+  · rw [hn]; simp +decide [decodeONote];
+  · rw [show decodeONote n = ONote.oadd (decodeONote (Nat.unpair (n - 1) |>.1))
+      ⟨(Nat.unpair (Nat.unpair (n - 1) |>.2) |>.1) + 1, Nat.succ_pos _⟩
+      (decodeONote (Nat.unpair (Nat.unpair (n - 1) |>.2) |>.2)) from ?_];
     · have h_nfTB : nfTB n = decide (ONote.TopBelow (decodeONote (nfIdxE n)) (decodeONote (nfIdxA n))) := by
         unfold nfTB ONote.TopBelow;
-        rcases k : nfIdxA n with ( _ | k ) <;> simp_all +decide [ Cnat_pair_eq_zero ];
-        · unfold decodeONote; simp +decide ;
-        · rw [ decodeONote ];
-      simp_all +decide [ NF_oadd_iff ];
-      rw [ List.getElem?_range, List.getElem?_range ];
-      · simp +decide [ nfIdxE, nfIdxA ];
+        rcases k : nfIdxA n with (_ | k) <;> simp_all +decide [Cnat_pair_eq_zero];
+        · unfold decodeONote; simp +decide;
+        · rw [decodeONote];
+      simp_all +decide [NF_oadd_iff];
+      rw [List.getElem?_range, List.getElem?_range];
+      · simp +decide [nfIdxE, nfIdxA];
         grind;
-      · exact lt_of_le_of_lt ( Nat.unpair_right_le _ ) ( lt_of_le_of_lt ( Nat.unpair_right_le _ ) ( Nat.pred_lt hn ) );
-      · exact Nat.lt_of_le_of_lt ( Nat.unpair_left_le _ ) ( Nat.pred_lt hn );
-    · cases n <;> simp_all +decide [ decodeONote ]
+      · exact lt_of_le_of_lt (Nat.unpair_right_le _) (lt_of_le_of_lt (Nat.unpair_right_le _) (Nat.pred_lt hn));
+      · exact Nat.lt_of_le_of_lt (Nat.unpair_left_le _) (Nat.pred_lt hn);
+    · cases n <;> simp_all +decide [decodeONote]
 
 theorem computable_Nfb : Computable Nfb :=
-  Computable.nat_strong_rec ( fun ( _ : Unit ) n => Nfb n ) ( computable_nfStep.comp Computable.snd |> Computable.to₂ ) ( fun _ n => nfStep_spec n ) |> fun h => h.comp ( Computable.const () ) Computable.id
+  (Computable.nat_strong_rec (fun (_ : Unit) n => Nfb n)
+    (computable_nfStep.comp Computable.snd |> Computable.to₂)
+    (fun _ n => nfStep_spec n)).comp (Computable.const ()) Computable.id
 
 /-! ### Enumeration of normal-form codes -/
 
