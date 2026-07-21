@@ -18,8 +18,6 @@ namespace ONote
 
 open Ordinal
 
-set_option linter.unnecessarySimpa false
-
 /-- A nonzero `ONote` is positive. -/
 lemma pos_of_ne_zero {α : ONote} (h : α ≠ 0) : (0 : ONote) < α := by
   cases α with
