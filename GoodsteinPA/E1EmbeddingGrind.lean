@@ -2,7 +2,7 @@ module
 
 public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.Encoding
-public import GoodsteinPA.Embedding
+public import GoodsteinPA.Zinfty.Embedding
 public import GoodsteinPA.ReadoffValueGate
 import Std.Tactic.BVDecide.Normalize.Prop
 
@@ -451,7 +451,7 @@ obligation is `Cl.base trivial`, and `∃ H, Cl H α ∧ …` follows). -/
 def BudgetedEmbedsTC (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ B d : ℕ, ∃ e : ONote, e.NF ∧ ∀ env : ℕ → ℕ, ∃ K : ℕ, ∃ α : ONote, α.NF ∧
     Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) K) d
-      (Γ.image (fun φ => Embedding.asg env ▹ φ))
+      (Γ.image (fun φ => asg env ▹ φ))
 
 /-- Every `Cl (⊤)` obligation is free. -/
 theorem clT (β : ONote) : Cl (fun _ : ONote => True) β := Cl.base trivial
@@ -462,27 +462,27 @@ theorem budgetedEmbedsTC_closed {Γ}
     (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     BudgetedEmbedsTC Γ := by
   refine ⟨clog (2 * φ.complexity + 1), 0, 0, ONote.NF.zero, fun env => ?_⟩
-  refine ⟨0, ONote.ofNat (2 * (Embedding.asg env ▹ φ).complexity + 1), ONote.nf_ofNat _, ?_⟩
+  refine ⟨0, ONote.ofNat (2 * (asg env ▹ φ).complexity + 1), ONote.nf_ofNat _, ?_⟩
   have hf1 := ewRootSlot_f1 0 (clog (2 * φ.complexity + 1))
   have hmono : Monotone (rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) 0) :=
     rel1_monotone hf1.1.monotone 0
   have hinfl : ∀ m, m ≤ rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) 0 m :=
     rel1_infl (fun m => by have := hf1.2 m; omega) 0
-  have hgate : clog (2 * (Embedding.asg env ▹ φ).complexity + 1)
+  have hgate : clog (2 * (asg env ▹ φ).complexity + 1)
       ≤ rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) 0 0 := by
     simp only [Semiformula.complexity_rew]
     exact le_relSlot_zero 0 _ 0
-  exact em_Zef2TC' (Embedding.asg env ▹ φ) hmono hinfl hgate
+  exact em_Zef2TC' (asg env ▹ φ) hmono hinfl hgate
     (Finset.mem_image_of_mem _ hp)
-    (by simpa using Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) hn)
+    (by simpa using Finset.mem_image_of_mem (fun ψ => asg env ▹ ψ) hn)
 
 /-- **`verum`** — `verumR` at ordinal `0`. -/
 theorem budgetedEmbedsTC_verum {Γ}
     (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsTC Γ := by
   refine ⟨0, 0, 0, ONote.NF.zero, fun env => ⟨0, 0, ONote.NF.zero, ?_⟩⟩
-  have hmem : (⊤ : ArithmeticFormula ℕ) ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
-    have := Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) h
+  have hmem : (⊤ : ArithmeticFormula ℕ) ∈ Γ.image (fun ψ => asg env ▹ ψ) := by
+    have := Finset.mem_image_of_mem (fun ψ => asg env ▹ ψ) h
     simpa using this
   exact Zef2TC.verumR (by simp) hmem
 
@@ -505,16 +505,16 @@ theorem budgetedEmbedsTC_shift {Γ}
   obtain ⟨K, α, hαNF, D⟩ := ih (fun x => env (x + 1))
   refine ⟨K, α, hαNF, ?_⟩
   have himg : (Γ.image (Rewriting.shift : ArithmeticFormula ℕ → ArithmeticFormula ℕ)).image
-        (fun φ => Embedding.asg env ▹ φ)
-      = Γ.image (fun φ => Embedding.asg (fun x => env (x + 1)) ▹ φ) := by
-    have hcompB : (Embedding.asg env).comp Rew.shift
-        = Embedding.asg (fun x => env (x + 1)) := by
+        (fun φ => asg env ▹ φ)
+      = Γ.image (fun φ => asg (fun x => env (x + 1)) ▹ φ) := by
+    have hcompB : (asg env).comp Rew.shift
+        = asg (fun x => env (x + 1)) := by
       ext x
       · exact Fin.elim0 x
-      · simp [Embedding.asg, Rew.comp_app]
+      · simp [asg, Rew.comp_app]
     rw [Finset.image_image]
     refine Finset.image_congr (fun ψ _ => ?_)
-    show Embedding.asg env ▹ (Rew.shift ▹ ψ) = Embedding.asg (fun x => env (x + 1)) ▹ ψ
+    show asg env ▹ (Rew.shift ▹ ψ) = asg (fun x => env (x + 1)) ▹ ψ
     rw [← TransitiveRewriting.comp_app, hcompB]
   rwa [himg]
 
@@ -535,11 +535,11 @@ theorem budgetedEmbedsTC_or {Γ}
     have hgap := relSlot_succ_gap e B K
     omega
   have hor := Zef2TC.orI (α := osucc α) hg
-    (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
+    (asg env ▹ φ) (asg env ▹ ψ)
     (lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
-  have hmem : (Embedding.asg env ▹ φ ⋎ Embedding.asg env ▹ ψ)
-      ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
-    have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
+  have hmem : (asg env ▹ φ ⋎ asg env ▹ ψ)
+      ∈ Γ.image (fun χ => asg env ▹ χ) := by
+    have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h
     simpa using this
   rwa [Finset.insert_eq_self.mpr hmem] at hor
 
@@ -590,13 +590,13 @@ theorem budgetedEmbedsTC_and {Γ}
     have hgap := relSlot_succ_gap (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂) (max K₁ K₂)
     omega
   have hand := Zef2TC.andI (α := osucc (α₁ + α₂)) hg
-    (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
+    (asg env ▹ φ) (asg env ▹ ψ)
     (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
-  have hmem : (Embedding.asg env ▹ φ ⋏ Embedding.asg env ▹ ψ)
-      ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
-    have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
+  have hmem : (asg env ▹ φ ⋏ asg env ▹ ψ)
+      ∈ Γ.image (fun χ => asg env ▹ χ) := by
+    have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h
     simpa using this
   rwa [Finset.insert_eq_self.mpr hmem] at hand
 
@@ -638,7 +638,7 @@ theorem budgetedEmbedsTC_cut {Γ}
   have D₂' := ((D₂.change_e (osucc (e₁ + e₂))).mono_f hff₂).mono_c
     (c' := max (max d₁ d₂) (φ.complexity + 1))
     (le_trans (le_max_right d₁ d₂) (le_max_left _ _))
-  rw [show Embedding.asg env ▹ (∼φ) = ∼(Embedding.asg env ▹ φ) by simp] at D₂'
+  rw [show asg env ▹ (∼φ) = ∼(asg env ▹ φ) by simp] at D₂'
   have hg : Nlog (osucc (α₁ + α₂))
       ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity))
           (max K₁ K₂ + 1) 0 := by
@@ -655,15 +655,15 @@ theorem budgetedEmbedsTC_cut {Γ}
     have hgap := relSlot_succ_gap (osucc (e₁ + e₂))
       (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity) (max K₁ K₂)
     omega
-  have hread : (Embedding.asg env ▹ φ).complexity
+  have hread : (asg env ▹ φ).complexity
       ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) (B₁ + B₂ + norm e₁ + norm e₂ + φ.complexity))
           (max K₁ K₂ + 1) 0 := by
     simp only [Semiformula.complexity_rew]
     exact le_trans (by omega) (le_relSlot_zero _ _ _)
-  have hcompl : (Embedding.asg env ▹ φ).complexity < max (max d₁ d₂) (φ.complexity + 1) := by
+  have hcompl : (asg env ▹ φ).complexity < max (max d₁ d₂) (φ.complexity + 1) := by
     simp only [Semiformula.complexity_rew]
     omega
-  exact Zef2TC.cut hg (Embedding.asg env ▹ φ) hcompl hread
+  exact Zef2TC.cut hg (asg env ▹ φ) hcompl hread
     (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
@@ -918,8 +918,8 @@ theorem budgetedEmbedsTC_exs {Γ}
   set d : ℕ := max d₁ (φ.complexity + 1) with hd
   obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
   -- the closed witness and its standard value
-  set ψ' : ArithmeticSemiformula ℕ 1 := (Embedding.asg env).q ▹ φ with hψ'
-  set s : ArithmeticTerm ℕ := Embedding.asg env t with hs
+  set ψ' : ArithmeticSemiformula ℕ 1 := (asg env).q ▹ φ with hψ'
+  set s : ArithmeticTerm ℕ := asg env t with hs
   set m : ℕ := stdClosedVal s with hm
   set K : ℕ := max K₁ m + 3 with hK
   set F : ℕ → ℕ := rel1 (ewRootSlot e₁ B) K with hF
@@ -929,13 +929,13 @@ theorem budgetedEmbedsTC_exs {Γ}
   have hFinfl : ∀ x, x ≤ F x := rel1_infl (fun x => by have := hf1.2 x; omega) K
   -- the IH derivation, re-based to the joined budget and rewritten to the substituted head
   have hg₁ := D₁.gate
-  rw [Finset.image_insert, Embedding.rew_subst_term (Embedding.asg env) φ t] at D₁
+  rw [Finset.image_insert, rew_subst_term (asg env) φ t] at D₁
   have D₁' := (D₁.mono_f (relSlot_mono (show B₁ ≤ B by omega) (show K₁ ≤ K by omega))).mono_c
     (c' := d) (le_max_left _ _)
   -- left cut premise: add ψ'/[nm m] to the context
   have Dsrc : Zef2TC α₁ e₁ (fun _ => True) F d
       (insert (ψ'/[s]) (insert (ψ'/[nm m])
-        (Γ.image (fun χ => Embedding.asg env ▹ χ)))) :=
+        (Γ.image (fun χ => asg env ▹ χ)))) :=
     D₁'.wk D₁'.gate (Finset.insert_subset_insert _ (Finset.subset_insert _ _))
   -- right cut premise: value-congruent EM at the pair (nm m, s)
   have hgateEM : clog (2 * ψ'.complexity + 1) ≤ F 0 := by
@@ -943,7 +943,7 @@ theorem budgetedEmbedsTC_exs {Γ}
     exact le_trans (by omega) (le_relSlot_zero e₁ B K)
   have Dcong : Zef2TC (ONote.ofNat (2 * ψ'.complexity + 1)) e₁ (fun _ => True) F 0
       (insert (∼(ψ'/[s])) (insert (ψ'/[nm m])
-        (Γ.image (fun χ => Embedding.asg env ▹ χ)))) := by
+        (Γ.image (fun χ => asg env ▹ χ)))) := by
     refine em_cong1_Zef2TC (nm m) s (by simp [hm]) ψ' hFmono hFinfl hgateEM ?_ ?_
     · exact Finset.mem_insert_of_mem (Finset.mem_insert_self _ _)
     · exact Finset.mem_insert_self _ _
@@ -980,7 +980,7 @@ theorem budgetedEmbedsTC_exs {Γ}
     rw [hc]
     exact le_trans (by omega) (le_relSlot_zero e₁ B K)
   have Dnum : Zef2TC (osucc (α₁ + ONote.ofNat (2 * ψ'.complexity + 1))) e₁ (fun _ => True) F d
-      (insert (ψ'/[nm m]) (Γ.image (fun χ => Embedding.asg env ▹ χ))) :=
+      (insert (ψ'/[nm m]) (Γ.image (fun χ => asg env ▹ χ))) :=
     Zef2TC.cut hgcut (ψ'/[s]) hcompl hread
       (lt_of_le_of_lt (le_add_right_NF hα₁NF hofNF) (lt_osucc haddNF))
       (lt_of_le_of_lt (le_add_left_NF hα₁NF hofNF) (lt_osucc haddNF))
@@ -1009,8 +1009,8 @@ theorem budgetedEmbedsTC_exs {Γ}
     hgout ψ' m
     (lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
     (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
-  have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
-    have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
+  have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => asg env ▹ χ) := by
+    have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h
     simpa [hψ'] using this
   rwa [Finset.insert_eq_self.mpr hmem] at hexI
 
@@ -1148,7 +1148,7 @@ many `Gexp`-iterates of the env-sup over a structural fv bound.  Induction on th
 witness budgets reduce to (E–W: the control tower pays for term growth). -/
 theorem term_val_le_Gexp_iter (t : ArithmeticTerm ℕ) :
     ∃ c N : ℕ, ∀ env : ℕ → ℕ,
-      GoodsteinPA.Compat.gValm ℕ ![] env t ≤ Gexp^[c] (envSup env N) := by
+      Semiterm.gValm ℕ ![] env t ≤ Gexp^[c] (envSup env N) := by
   induction t with
   | bvar x => exact x.elim0
   | fvar x =>
@@ -1158,35 +1158,35 @@ theorem term_val_le_Gexp_iter (t : ArithmeticTerm ℕ) :
       match f, v with
       | LO.FirstOrder.Language.ORing.Func.zero, v =>
           refine ⟨0, 0, fun env => ?_⟩
-          have hv : GoodsteinPA.Compat.gValm ℕ ![] env (Semiterm.func
+          have hv : Semiterm.gValm ℕ ![] env (Semiterm.func
               LO.FirstOrder.Language.ORing.Func.zero v) = 0 := by
-            simp only [GoodsteinPA.Compat.gValm, Semiterm.val_func]; rfl
+            simp only [Semiterm.gValm, Semiterm.val_func]; rfl
           simp [hv]
       | LO.FirstOrder.Language.ORing.Func.one, v =>
           refine ⟨1, 0, fun env => ?_⟩
           have h1 := iter_le_Gexp_iter 1 (envSup env 0)
-          have hv : GoodsteinPA.Compat.gValm ℕ ![] env (Semiterm.func
+          have hv : Semiterm.gValm ℕ ![] env (Semiterm.func
               LO.FirstOrder.Language.ORing.Func.one v) = 1 := by
-            simp only [GoodsteinPA.Compat.gValm, Semiterm.val_func]; rfl
+            simp only [Semiterm.gValm, Semiterm.val_func]; rfl
           omega
       | LO.FirstOrder.Language.ORing.Func.add, v =>
           obtain ⟨c₀, N₀, h₀⟩ := ih 0
           obtain ⟨c₁, N₁, h₁⟩ := ih 1
           refine ⟨max c₀ c₁ + 1, max N₀ N₁, fun env => ?_⟩
-          have hb₀ : GoodsteinPA.Compat.gValm ℕ ![] env (v 0)
+          have hb₀ : Semiterm.gValm ℕ ![] env (v 0)
               ≤ Gexp^[max c₀ c₁] (envSup env (max N₀ N₁)) :=
             le_trans (h₀ env) (le_trans
               (Gexp_iter_le_iter (le_max_left c₀ c₁) _)
               (Gexp_iter_monotone _ (envSup_mono_N env (le_max_left N₀ N₁))))
-          have hb₁ : GoodsteinPA.Compat.gValm ℕ ![] env (v 1)
+          have hb₁ : Semiterm.gValm ℕ ![] env (v 1)
               ≤ Gexp^[max c₀ c₁] (envSup env (max N₀ N₁)) :=
             le_trans (h₁ env) (le_trans
               (Gexp_iter_le_iter (le_max_right c₀ c₁) _)
               (Gexp_iter_monotone _ (envSup_mono_N env (le_max_right N₀ N₁))))
-          have hadd : GoodsteinPA.Compat.gValm ℕ ![] env (Semiterm.func
+          have hadd : Semiterm.gValm ℕ ![] env (Semiterm.func
               LO.FirstOrder.Language.ORing.Func.add v)
-              = GoodsteinPA.Compat.gValm ℕ ![] env (v 0) + GoodsteinPA.Compat.gValm ℕ ![] env (v 1) := by
-            simp only [GoodsteinPA.Compat.gValm, Semiterm.val_func]; rfl
+              = Semiterm.gValm ℕ ![] env (v 0) + Semiterm.gValm ℕ ![] env (v 1) := by
+            simp only [Semiterm.gValm, Semiterm.val_func]; rfl
           rw [hadd, Function.iterate_succ_apply']
           refine le_trans (add_le_Gexp_max _ _) (Gexp_monotone ?_)
           exact max_le hb₀ hb₁
@@ -1194,20 +1194,20 @@ theorem term_val_le_Gexp_iter (t : ArithmeticTerm ℕ) :
           obtain ⟨c₀, N₀, h₀⟩ := ih 0
           obtain ⟨c₁, N₁, h₁⟩ := ih 1
           refine ⟨max c₀ c₁ + 1, max N₀ N₁, fun env => ?_⟩
-          have hb₀ : GoodsteinPA.Compat.gValm ℕ ![] env (v 0)
+          have hb₀ : Semiterm.gValm ℕ ![] env (v 0)
               ≤ Gexp^[max c₀ c₁] (envSup env (max N₀ N₁)) :=
             le_trans (h₀ env) (le_trans
               (Gexp_iter_le_iter (le_max_left c₀ c₁) _)
               (Gexp_iter_monotone _ (envSup_mono_N env (le_max_left N₀ N₁))))
-          have hb₁ : GoodsteinPA.Compat.gValm ℕ ![] env (v 1)
+          have hb₁ : Semiterm.gValm ℕ ![] env (v 1)
               ≤ Gexp^[max c₀ c₁] (envSup env (max N₀ N₁)) :=
             le_trans (h₁ env) (le_trans
               (Gexp_iter_le_iter (le_max_right c₀ c₁) _)
               (Gexp_iter_monotone _ (envSup_mono_N env (le_max_right N₀ N₁))))
-          have hmul : GoodsteinPA.Compat.gValm ℕ ![] env (Semiterm.func
+          have hmul : Semiterm.gValm ℕ ![] env (Semiterm.func
               LO.FirstOrder.Language.ORing.Func.mul v)
-              = GoodsteinPA.Compat.gValm ℕ ![] env (v 0) * GoodsteinPA.Compat.gValm ℕ ![] env (v 1) := by
-            simp only [GoodsteinPA.Compat.gValm, Semiterm.val_func]; rfl
+              = Semiterm.gValm ℕ ![] env (v 0) * Semiterm.gValm ℕ ![] env (v 1) := by
+            simp only [Semiterm.gValm, Semiterm.val_func]; rfl
           rw [hmul, Function.iterate_succ_apply']
           refine le_trans (mul_le_Gexp_max _ _) (Gexp_monotone ?_)
           exact max_le hb₀ hb₁
@@ -1215,24 +1215,24 @@ theorem term_val_le_Gexp_iter (t : ArithmeticTerm ℕ) :
 /-- Bridge: the `atomTrue`-evaluator value of the `asg`-closed term is the direct
 `env`-valuation. -/
 theorem stdClosedVal_asg (env : ℕ → ℕ) (t : ArithmeticTerm ℕ) :
-    stdClosedVal (Embedding.asg env t) = GoodsteinPA.Compat.gValm ℕ ![] env t := by
-  show GoodsteinPA.Compat.gVal _ (fun _ => 0) (fun _ => 0) (Rew.rewrite (fun x => nm (env x)) t) = _
+    stdClosedVal (asg env t) = Semiterm.gValm ℕ ![] env t := by
+  show Semiterm.gVal _ (fun _ => 0) (fun _ => 0) (Rew.rewrite (fun x => nm (env x)) t) = _
   -- unfold the `gVal`/`gValm` shims so `rw` sees `Semiterm.val`; upstream's `val_rewrite` now emits
   -- the free-var assignment in `∘`-composition form, so normalize it back with `Function.comp_def`
-  unfold GoodsteinPA.Compat.gVal GoodsteinPA.Compat.gValm
+  unfold Semiterm.gVal Semiterm.gValm
   rw [Semiterm.val_rewrite]
   simp only [Function.comp_def]
   have he : (fun _ => 0 : Fin 0 → ℕ) = ![] := funext (fun x => x.elim0)
   rw [he]
   congr 1
   funext x
-  exact ZinftyF.valm_nm (env x) (fun _ => 0)
+  exact ArithmeticTerm.valm_nm (env x) (fun _ => 0)
 
 /-- **The `exs`/V3 witness gate**: the closed witness's standard value is dominated by
 structurally many `Gexp`-iterates of the env-sup. -/
 theorem stdClosedVal_asg_le_Gexp_iter (t : ArithmeticTerm ℕ) :
     ∃ c N : ℕ, ∀ env : ℕ → ℕ,
-      stdClosedVal (Embedding.asg env t) ≤ Gexp^[c] (envSup env N) := by
+      stdClosedVal (asg env t) ≤ Gexp^[c] (envSup env N) := by
   obtain ⟨c, N, h⟩ := term_val_le_Gexp_iter t
   exact ⟨c, N, fun env => by rw [stdClosedVal_asg]; exact h env⟩
 
@@ -1255,7 +1255,7 @@ def BudgetedEmbedsV3 (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ B d N : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ Nlog α ≤ B ∧
     ∀ env : ℕ → ℕ,
       Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) (envSup env N)) d
-        (Γ.image (fun φ => Embedding.asg env ▹ φ))
+        (Γ.image (fun φ => asg env ▹ φ))
 
 /-- `ewRootSlot` is monotone in the structural budget `B`. -/
 theorem ewRootSlot_mono_B (e : ONote) {B B' : ℕ} (h : B ≤ B') (x : ℕ) :
@@ -1283,24 +1283,24 @@ theorem budgetedEmbedsV3_closed {Γ}
     rel1_monotone hf1.1.monotone (envSup env 0)
   have hinfl : ∀ m, m ≤ rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) (envSup env 0) m :=
     rel1_infl (fun m => by have := hf1.2 m; omega) (envSup env 0)
-  have hgate : clog (2 * (Embedding.asg env ▹ φ).complexity + 1)
+  have hgate : clog (2 * (asg env ▹ φ).complexity + 1)
       ≤ rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) (envSup env 0) 0 := by
     simp only [Semiformula.complexity_rew]
     exact le_relSlot_zero 0 _ _
-  have hem : Zef2TC (ONote.ofNat (2 * (Embedding.asg env ▹ φ).complexity + 1)) (0 : ONote)
+  have hem : Zef2TC (ONote.ofNat (2 * (asg env ▹ φ).complexity + 1)) (0 : ONote)
       (fun _ : ONote => True) (rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) (envSup env 0)) 0
-      (Γ.image (fun ψ => Embedding.asg env ▹ ψ)) :=
-    em_Zef2TC' (Embedding.asg env ▹ φ) hmono hinfl hgate
+      (Γ.image (fun ψ => asg env ▹ ψ)) :=
+    em_Zef2TC' (asg env ▹ φ) hmono hinfl hgate
       (Finset.mem_image_of_mem _ hp)
-      (by simpa using Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) hn)
-  rwa [show (Embedding.asg env ▹ φ).complexity = φ.complexity from by simp] at hem
+      (by simpa using Finset.mem_image_of_mem (fun ψ => asg env ▹ ψ) hn)
+  rwa [show (asg env ▹ φ).complexity = φ.complexity from by simp] at hem
 
 /-- **V3 `verum`** — `verumR` at `α = 0`. -/
 theorem budgetedEmbedsV3_verum {Γ}
     (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
   refine ⟨0, 0, 0, 0, 0, ONote.NF.zero, ONote.NF.zero, by simp, fun env => ?_⟩
-  have hmem : (⊤ : ArithmeticFormula ℕ) ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
-    have := Finset.mem_image_of_mem (fun ψ => Embedding.asg env ▹ ψ) h; simpa using this
+  have hmem : (⊤ : ArithmeticFormula ℕ) ∈ Γ.image (fun ψ => asg env ▹ ψ) := by
+    have := Finset.mem_image_of_mem (fun ψ => asg env ▹ ψ) h; simpa using this
   exact Zef2TC.verumR (by simp) hmem
 
 /-- **V3 `wk`** — image weakening; all structural budgets carried. -/
@@ -1325,11 +1325,11 @@ theorem budgetedEmbedsV3_or {Γ}
       have hb := le_relSlot_zero e (B + 1) (envSup env N)
       omega
     have hor := Zef2TC.orI (α := osucc α) hg
-      (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
+      (asg env ▹ φ) (asg env ▹ ψ)
       (lt_osucc hαNF) hαNF (osucc_NF hαNF) (clT α) D'
-    have hmem : (Embedding.asg env ▹ φ ⋎ Embedding.asg env ▹ ψ)
-        ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
-      have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h; simpa using this
+    have hmem : (asg env ▹ φ ⋎ asg env ▹ ψ)
+        ∈ Γ.image (fun χ => asg env ▹ χ) := by
+      have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h; simpa using this
     rwa [Finset.insert_eq_self.mpr hmem] at hor
 
 /-- **V3 `shift`** — the shifted assignment `fun x => env (x+1)`; the index absorbs into `N+1`
@@ -1340,15 +1340,15 @@ theorem budgetedEmbedsV3_shift {Γ}
   refine ⟨B, d, N + 1, e, α, he, hαNF, hNlogB, fun env => ?_⟩
   have D := ih (fun x => env (x + 1))
   have himg : (Γ.image (Rewriting.shift : ArithmeticFormula ℕ → ArithmeticFormula ℕ)).image
-        (fun φ => Embedding.asg env ▹ φ)
-      = Γ.image (fun φ => Embedding.asg (fun x => env (x + 1)) ▹ φ) := by
-    have hcompB : (Embedding.asg env).comp Rew.shift = Embedding.asg (fun x => env (x + 1)) := by
+        (fun φ => asg env ▹ φ)
+      = Γ.image (fun φ => asg (fun x => env (x + 1)) ▹ φ) := by
+    have hcompB : (asg env).comp Rew.shift = asg (fun x => env (x + 1)) := by
       ext x
       · exact Fin.elim0 x
-      · simp [Embedding.asg, Rew.comp_app]
+      · simp [asg, Rew.comp_app]
     rw [Finset.image_image]
     refine Finset.image_congr (fun ψ _ => ?_)
-    show Embedding.asg env ▹ (Rew.shift ▹ ψ) = Embedding.asg (fun x => env (x + 1)) ▹ ψ
+    show asg env ▹ (Rew.shift ▹ ψ) = asg (fun x => env (x + 1)) ▹ ψ
     rw [← TransitiveRewriting.comp_app, hcompB]
   rw [himg]
   exact D.mono_f (fun x => relSlot_mono (le_refl B) (envSup_shift_le env N) x)
@@ -1368,31 +1368,31 @@ theorem budgetedEmbedsV3_all {Γ}
   · -- the ω-family: each branch is the IH at `n :>ₙ env`, transported to the branch slot/operator
     have hfam : ∀ n, Zef2TC α e (adjoin (fun _ : ONote => True) n)
         (rel1 (rel1 (ewRootSlot e (B + 1)) (envSup env N)) n) d
-        (insert (((Embedding.asg env).q ▹ φ)/[nm n])
-          (Γ.image (fun ψ => Embedding.asg env ▹ ψ))) := by
+        (insert (((asg env).q ▹ φ)/[nm n])
+          (Γ.image (fun ψ => asg env ▹ ψ))) := by
       intro n
       have Dn := ih (n :>ₙ env)
       rw [Finset.image_insert] at Dn
-      have hA : Embedding.asg (n :>ₙ env) ▹ (Rewriting.free φ)
-          = ((Embedding.asg env).q ▹ φ)/[nm n] := by
-        have hRew : (Embedding.asg (n :>ₙ env)).comp Rew.free
-            = (Rew.subst ![nm n]).comp (Embedding.asg env).q := by
+      have hA : asg (n :>ₙ env) ▹ (Rewriting.free φ)
+          = ((asg env).q ▹ φ)/[nm n] := by
+        have hRew : (asg (n :>ₙ env)).comp Rew.free
+            = (Rew.subst ![nm n]).comp (asg env).q := by
           ext x
           · refine Fin.cases ?_ (fun i => Fin.elim0 i) x
-            simp [Embedding.asg, Rew.comp_app, nm]
-          · simp [Embedding.asg, Rew.comp_app, nm]
-        show Embedding.asg (n :>ₙ env) ▹ (Rew.free ▹ φ)
-            = Rew.subst ![nm n] ▹ ((Embedding.asg env).q ▹ φ)
+            simp [asg, Rew.comp_app, nm]
+          · simp [asg, Rew.comp_app, nm]
+        show asg (n :>ₙ env) ▹ (Rew.free ▹ φ)
+            = Rew.subst ![nm n] ▹ ((asg env).q ▹ φ)
         rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, hRew]
-      have hB : (Γ.image Rewriting.shift).image (fun ψ => Embedding.asg (n :>ₙ env) ▹ ψ)
-          = Γ.image (fun ψ => Embedding.asg env ▹ ψ) := by
-        have hcompB : (Embedding.asg (n :>ₙ env)).comp Rew.shift = Embedding.asg env := by
+      have hB : (Γ.image Rewriting.shift).image (fun ψ => asg (n :>ₙ env) ▹ ψ)
+          = Γ.image (fun ψ => asg env ▹ ψ) := by
+        have hcompB : (asg (n :>ₙ env)).comp Rew.shift = asg env := by
           ext x
           · exact Fin.elim0 x
-          · simp [Embedding.asg, Rew.comp_app]
+          · simp [asg, Rew.comp_app]
         rw [Finset.image_image]
         refine Finset.image_congr (fun ψ _ => ?_)
-        show Embedding.asg (n :>ₙ env) ▹ (Rew.shift ▹ ψ) = Embedding.asg env ▹ ψ
+        show asg (n :>ₙ env) ▹ (Rew.shift ▹ ψ) = asg env ▹ ψ
         rw [← TransitiveRewriting.comp_app, hcompB]
       rw [hA, hB] at Dn
       have hK : envSup (n :>ₙ env) N ≤ max (envSup env N) n :=
@@ -1416,11 +1416,11 @@ theorem budgetedEmbedsV3_all {Γ}
       fun n => Cl.base (Or.inl trivial)
     have hall := Zef2TC.allω (α := osucc α)
       (f := rel1 (ewRootSlot e (B + 1)) (envSup env N)) hgate
-      ((Embedding.asg env).q ▹ φ) (fun _ => α)
+      ((asg env).q ▹ φ) (fun _ => α)
       (fun _ => lt_osucc hαNF) (fun _ => hαNF) (osucc_NF hαNF) hrel hfam
-    have hmem : (Embedding.asg env ▹ (∀⁰ φ))
-        ∈ Γ.image (fun ψ => Embedding.asg env ▹ ψ) := Finset.mem_image_of_mem _ h
-    rw [show (Embedding.asg env ▹ (∀⁰ φ)) = ∀⁰ ((Embedding.asg env).q ▹ φ) by simp] at hmem
+    have hmem : (asg env ▹ (∀⁰ φ))
+        ∈ Γ.image (fun ψ => asg env ▹ ψ) := Finset.mem_image_of_mem _ h
+    rw [show (asg env ▹ (∀⁰ φ)) = ∀⁰ ((asg env).q ▹ φ) by simp] at hmem
     rw [Finset.insert_eq_self.mpr hmem] at hall
     exact hall
 
@@ -1467,13 +1467,13 @@ theorem budgetedEmbedsV3_and {Γ}
       have hb := le_relSlot_zero (osucc (e₁ + e₂)) B (envSup env (max N₁ N₂))
       omega
     have hand := Zef2TC.andI (α := osucc (α₁ + α₂)) hg
-      (Embedding.asg env ▹ φ) (Embedding.asg env ▹ ψ)
+      (asg env ▹ φ) (asg env ▹ ψ)
       (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
-    have hmem : (Embedding.asg env ▹ φ ⋏ Embedding.asg env ▹ ψ)
-        ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
-      have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
+    have hmem : (asg env ▹ φ ⋏ asg env ▹ ψ)
+        ∈ Γ.image (fun χ => asg env ▹ χ) := by
+      have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h
       simpa using this
     rwa [Finset.insert_eq_self.mpr hmem] at hand
 
@@ -1516,22 +1516,22 @@ theorem budgetedEmbedsV3_cut {Γ}
     have D₂' := ((D₂.change_e (osucc (e₁ + e₂))).mono_f hff₂).mono_c
       (c' := max (max d₁ d₂) (φ.complexity + 1))
       (le_trans (le_max_right d₁ d₂) (le_max_left _ _))
-    rw [show Embedding.asg env ▹ (∼φ) = ∼(Embedding.asg env ▹ φ) by simp] at D₂'
+    rw [show asg env ▹ (∼φ) = ∼(asg env ▹ φ) by simp] at D₂'
     have hb := le_relSlot_zero (osucc (e₁ + e₂)) B (envSup env (max N₁ N₂))
     have hg : Nlog (osucc (α₁ + α₂))
         ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) B) (envSup env (max N₁ N₂)) 0 := by
       have hs := Nlog_osucc_le haddNF
       have ha := Nlog_add_le_max_succ α₁ hα₁NF α₂ hα₂NF
       omega
-    have hread : (Embedding.asg env ▹ φ).complexity
+    have hread : (asg env ▹ φ).complexity
         ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) B) (envSup env (max N₁ N₂)) 0 := by
       simp only [Semiformula.complexity_rew]
       omega
-    have hcompl : (Embedding.asg env ▹ φ).complexity
+    have hcompl : (asg env ▹ φ).complexity
         < max (max d₁ d₂) (φ.complexity + 1) := by
       simp only [Semiformula.complexity_rew]
       omega
-    exact Zef2TC.cut hg (Embedding.asg env ▹ φ) hcompl hread
+    exact Zef2TC.cut hg (asg env ▹ φ) hcompl hread
       (lt_of_le_of_lt (le_add_right_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
@@ -1577,8 +1577,8 @@ theorem budgetedEmbedsV3_exs {Γ}
     omega
   · set M : ℕ := envSup env N with hM
     set F : ℕ → ℕ := rel1 (ewRootSlot e B) M with hF
-    set ψ' : ArithmeticSemiformula ℕ 1 := (Embedding.asg env).q ▹ φ with hψ'
-    set s : ArithmeticTerm ℕ := Embedding.asg env t with hs
+    set ψ' : ArithmeticSemiformula ℕ 1 := (asg env).q ▹ φ with hψ'
+    set s : ArithmeticTerm ℕ := asg env t with hs
     set m : ℕ := stdClosedVal s with hm
     have hψc : ψ'.complexity = φ.complexity := by simp [hψ']
     have hf1 := ewRootSlot_f1 e B
@@ -1587,7 +1587,7 @@ theorem budgetedEmbedsV3_exs {Γ}
     have hBF : B ≤ F 0 := le_relSlot_zero e B M
     -- the IH derivation, re-based to the joined control/budgets
     have D₁ := ih₁ env
-    rw [Finset.image_insert, Embedding.rew_subst_term (Embedding.asg env) φ t] at D₁
+    rw [Finset.image_insert, rew_subst_term (asg env) φ t] at D₁
     have hff : ∀ x, rel1 (ewRootSlot e₁ B₁) (envSup env N₁) x ≤ F x :=
       relSlot_le he₁ heNF hlt₁ (by omega)
         (envSup_mono_N env (le_max_left N₁ Nt)) (by omega)
@@ -1595,13 +1595,13 @@ theorem budgetedEmbedsV3_exs {Γ}
     -- left cut premise: add ψ'/[nm m] to the context
     have Dsrc : Zef2TC α₁ e (fun _ => True) F d
         (insert (ψ'/[s]) (insert (ψ'/[nm m])
-          (Γ.image (fun χ => Embedding.asg env ▹ χ)))) :=
+          (Γ.image (fun χ => asg env ▹ χ)))) :=
       D₁'.wk D₁'.gate (Finset.insert_subset_insert _ (Finset.subset_insert _ _))
     -- right cut premise: value-congruent EM at the pair (nm m, s)
     have hgateEM : clog (2 * ψ'.complexity + 1) ≤ F 0 := by rw [hψc]; omega
     have Dcong : Zef2TC (ONote.ofNat (2 * ψ'.complexity + 1)) e (fun _ => True) F 0
         (insert (∼(ψ'/[s])) (insert (ψ'/[nm m])
-          (Γ.image (fun χ => Embedding.asg env ▹ χ)))) := by
+          (Γ.image (fun χ => asg env ▹ χ)))) := by
       refine em_cong1_Zef2TC (nm m) s (by simp [hm]) ψ' hFmono hFinfl hgateEM ?_ ?_
       · exact Finset.mem_insert_of_mem (Finset.mem_insert_self _ _)
       · exact Finset.mem_insert_self _ _
@@ -1623,7 +1623,7 @@ theorem budgetedEmbedsV3_exs {Γ}
     rw [hψof] at Dcong'
     have Dnum : Zef2TC (osucc (α₁ + ONote.ofNat (2 * φ.complexity + 1))) e
         (fun _ => True) F d
-        (insert (ψ'/[nm m]) (Γ.image (fun χ => Embedding.asg env ▹ χ))) :=
+        (insert (ψ'/[nm m]) (Γ.image (fun χ => asg env ▹ χ))) :=
       Zef2TC.cut hgcut (ψ'/[s]) hcompl hread
         (lt_of_le_of_lt (le_add_right_NF hα₁NF hofNF) (lt_osucc haddNF))
         (lt_of_le_of_lt (le_add_left_NF hα₁NF hofNF) (lt_osucc haddNF))
@@ -1655,8 +1655,8 @@ theorem budgetedEmbedsV3_exs {Γ}
       hgout ψ' m
       (lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
       (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
-    have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => Embedding.asg env ▹ χ) := by
-      have := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) h
+    have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => asg env ▹ χ) := by
+      have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h
       simpa [hψ'] using this
     rwa [Finset.insert_eq_self.mpr hmem] at hexI
 
@@ -1787,9 +1787,9 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
             omega
           have hsex : ExFree (a/[nm m]) := hex.rew a (Rew.subst ![nm m])
           have hstrue : atomTrue (a/[nm m]) := by
-            have hall : ∀ x : ℕ, GoodsteinPA.Compat.gEvalm ℕ ![x] (fun _ => 0) a := by
+            have hall : ∀ x : ℕ, Semiformula.gEvalm ℕ ![x] (fun _ => 0) a := by
               simpa [atomTrue, Matrix.constant_eq_singleton, Matrix.empty_eq] using htrue
-            simpa [atomTrue, Semiformula.eval_substs, ZinftyF.valm_nm,
+            simpa [atomTrue, Semiformula.eval_substs, ArithmeticTerm.valm_nm,
               Matrix.constant_eq_singleton, Matrix.empty_eq] using hall m
           exact ih (a/[nm m]) hsk hsex hstrue
             (rel1_monotone hmono m) (rel1_infl hinfl m) (le_trans hg1 hf0m)
@@ -1808,19 +1808,19 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
 
 /-- The closing assignment fixes embedded sentences (no fvars to rewrite). -/
 theorem asg_emb_fix (env : ℕ → ℕ) (σ : ArithmeticSentence) :
-    Embedding.asg env ▹ (↑σ : ArithmeticFormula ℕ) = ↑σ := by
-  have hc : (Embedding.asg env).comp Rew.emb = (Rew.emb : Rew ℒₒᵣ Empty 0 ℕ 0) := by
+    asg env ▹ (↑σ : ArithmeticFormula ℕ) = ↑σ := by
+  have hc : (asg env).comp Rew.emb = (Rew.emb : Rew ℒₒᵣ Empty 0 ℕ 0) := by
     ext x
     · exact x.elim0
     · exact x.elim
-  show Embedding.asg env ▹ (Rew.emb ▹ σ) = Rew.emb ▹ σ
+  show asg env ▹ (Rew.emb ▹ σ) = Rew.emb ▹ σ
   rw [← TransitiveRewriting.comp_app, hc]
 
 /-- Truth transfer: a sentence true in `ℕ` stays `atomTrue` after embedding + any closing
 assignment (`asg env` fixes the fvar-free embed; mirrors `embedC`'s `axm` truth step). -/
 theorem atomTrue_asg_emb {σ : ArithmeticSentence} (h : ℕ ⊧ₘ σ) (env : ℕ → ℕ) :
-    atomTrue (Embedding.asg env ▹ (↑σ : ArithmeticFormula ℕ)) := by
-  simp only [atomTrue, Embedding.asg, Semiformula.eval_rewrite, Semiformula.eval_emb]
+    atomTrue (asg env ▹ (↑σ : ArithmeticFormula ℕ)) := by
+  simp only [atomTrue, asg, Semiformula.eval_rewrite, Semiformula.eval_emb]
   rw [models_iff] at h
   simpa [Matrix.empty_eq] using h
 
@@ -1840,7 +1840,7 @@ theorem budgetedEmbedsV3_of_exFree_true {Γ}
   have hgate : clog (2 * k + 1)
       ≤ rel1 (ewRootSlot 0 (clog (2 * k + 1))) (envSup env 0) 0 :=
     le_relSlot_zero 0 _ _
-  have hcompl : (Embedding.asg env ▹ (↑σ : ArithmeticFormula ℕ)).complexity ≤ k := by
+  have hcompl : (asg env ▹ (↑σ : ArithmeticFormula ℕ)).complexity ≤ k := by
     simp [hk]
   exact truth_exFree_Zef2TC k _ hcompl (hex.rew _ _) (atomTrue_asg_emb htrue env)
     hmono hinfl hgate (Finset.mem_image_of_mem _ hΓ)
@@ -1865,7 +1865,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
   have hgate : clog 11 ≤ f 0 := le_relSlot_zero 0 B (envSup env 0)
   have hNF : ∀ m : ℕ, (ONote.ofNat m).NF := fun m => ONote.nf_ofNat m
   -- normalize the image formula to constructor form
-  have himg : Embedding.asg env ▹ (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt)
+  have himg : asg env ▹ (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt)
         : ArithmeticFormula ℕ)
       = ∀⁰ ∀⁰ ((∼(Semiformula.rel Language.LT.lt ![#1, #0]))
           ⋎ (∃⁰ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]))) := by
@@ -1874,12 +1874,12 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
       Semiformula.Operator.lt_def, Semiformula.imp_eq]
     simp [Function.comp_def]
     constructor <;> simp [Matrix.comp_vecCons]
-  have hmem := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) hΓ
+  have hmem := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) hΓ
   rw [himg] at hmem
   set M : ArithmeticSemiformula ℕ 2 :=
     (∼(Semiformula.rel Language.LT.lt ![#1, #0]))
       ⋎ (∃⁰ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1])) with hM
-  set Γ' : Finset (ArithmeticFormula ℕ) := Γ.image (fun χ => Embedding.asg env ▹ χ) with hΓ'
+  set Γ' : Finset (ArithmeticFormula ℕ) := Γ.image (fun χ => asg env ▹ χ) with hΓ'
   have hlt12 : ONote.ofNat 1 < ONote.ofNat 2 := ofNat_lt_ofNat (by omega)
   have hlt23 : ONote.ofNat 2 < ONote.ofNat 3 := ofNat_lt_ofNat (by omega)
   have hlt34 : ONote.ofNat 3 < ONote.ofNat 4 := ofNat_lt_ofNat (by omega)
@@ -2176,7 +2176,7 @@ theorem rew_succInd' (g : SyntacticRew ℒₒᵣ 0 0) (ψ : Semiformula ℒₒ�
     LogicalConnective.HomClass.map_imply, Rewriting.app_all, Semiformula.imp_inj,
     Semiformula.all_inj, true_and, and_true]
   refine ⟨?_, ?_⟩
-  · rw [Embedding.rew_subst_term g ψ (↑(0 : ℕ))]
+  · rw [rew_subst_term g ψ (↑(0 : ℕ))]
     congr 1
     simp
   · rw [rew_subst1_comm_q' g ψ (‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1) (by simp)]
@@ -2385,7 +2385,7 @@ theorem budgetedEmbedsV3_succInd {Γ}
   refine ⟨B, φ.complexity + 1, 0, 0, osuccs α₀ (0 + ℓ), ONote.NF.zero,
     osuccs_NF hα₀NF (0 + ℓ), ?_, fun env => ?_⟩
   · exact le_trans (Nlog_osuccs_le hα₀NF (0 + ℓ)) (by omega)
-  · have hmem := Finset.mem_image_of_mem (fun χ => Embedding.asg env ▹ χ) hΓ
+  · have hmem := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) hΓ
     rw [asg_emb_fix] at hmem
     have hcoe : (↑(Semiformula.univCl (Arithmetic.succInd φ)) : ArithmeticFormula ℕ)
         = ∀⁰* (Rew.fixitr 0 ℓ ▹ (Arithmetic.succInd φ)) := by
@@ -2401,7 +2401,7 @@ theorem budgetedEmbedsV3_succInd {Γ}
         (∀ m, m ≤ f m) → (fun _ : ℕ => B) 0 ≤ f 0 →
         Zef2TC α₀ 0 H f (φ.complexity + 1)
           (insert (Rew.subst (fun i => nm (w i)) ▹ (Rew.fixitr 0 ℓ ▹ (Arithmetic.succInd φ)))
-            (Γ.image (fun χ => Embedding.asg env ▹ χ))) := by
+            (Γ.image (fun χ => asg env ▹ χ))) := by
       intro w H f hmono' hinfl' hf0'
       rw [← TransitiveRewriting.comp_app, rew_succInd']
       set ψw : ArithmeticSemiformula ℕ 1 :=
@@ -2409,13 +2409,13 @@ theorem budgetedEmbedsV3_succInd {Γ}
       have hcx : ψw.complexity = φ.complexity := by simp [hψw]
       have hBle : B ≤ f 0 := hf0'
       have h := succInd_shape_Zef2TC ψw (e := 0) (H := H)
-        (Γ := Γ.image (fun χ => Embedding.asg env ▹ χ)) hmono' hinfl'
+        (Γ := Γ.image (fun χ => asg env ▹ χ)) hmono' hinfl'
         (by rw [hcx]; exact le_trans (by rw [hB]; omega) hBle)
         (by rw [hcx]; exact le_trans (by rw [hB]; omega) hBle)
       rwa [hcx] at h
     have hpeel := allClosure_peel (f₀ := fun _ => B) (0 + ℓ) α₀ hα₀NF hα₀Cl
       (Rew.fixitr 0 ℓ ▹ (Arithmetic.succInd φ))
-      (Γ.image (fun χ => Embedding.asg env ▹ χ)) hinst
+      (Γ.image (fun χ => asg env ▹ χ)) hinst
       (fun k hk => by
         have h1 := Nlog_osuccs_le hα₀NF k
         have h2 := hNlogα₀
@@ -2612,7 +2612,7 @@ theorem embedding_Zef2TC_V3 :
   have hD0 := hD (fun _ => 0)
   have himg : ({(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} :
         Finset (ArithmeticFormula ℕ)).image
-        (fun φ => Embedding.asg (fun _ => 0) ▹ φ)
+        (fun φ => asg (fun _ => 0) ▹ φ)
       = {(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} := by
     rw [Finset.image_singleton, asg_emb_fix]
   rw [himg, coe_goodsteinSentence_eq] at hD0
@@ -4338,9 +4338,9 @@ theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ
   rw [← GoodsteinPA.InternalPow.igoodstein_nat]
   simp only [atomTrue, Semiformula.eval_rew, Function.comp_def] at h'
   have hcast : ∀ (E : Fin 3 → ℕ) (ε₁ ε₂ : Empty → ℕ),
-      GoodsteinPA.Compat.gEval (Arithmetic.standardModel ℕ) E ε₁
+      Semiformula.gEval (Arithmetic.standardModel ℕ) E ε₁
         (↑(LO.FirstOrder.Arithmetic.igoodsteinDef)) →
-      GoodsteinPA.Compat.gEval (Arithmetic.standardModel ℕ) E ε₂
+      Semiformula.gEval (Arithmetic.standardModel ℕ) E ε₂
         (↑(LO.FirstOrder.Arithmetic.igoodsteinDef)) := by
     intro E ε₁ ε₂ hh
     rwa [show ε₂ = ε₁ from funext fun a => a.elim]
@@ -4409,7 +4409,7 @@ theorem embedding_Zef2TC_V3_linearK :
   have hD0 := hD (fun _ => 0)
   have himg : ({(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} :
         Finset (ArithmeticFormula ℕ)).image
-        (fun φ => Embedding.asg (fun _ => 0) ▹ φ)
+        (fun φ => asg (fun _ => 0) ▹ φ)
       = {(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} := by
     rw [Finset.image_singleton, asg_emb_fix]
   rw [himg, coe_goodsteinSentence_eq] at hD0

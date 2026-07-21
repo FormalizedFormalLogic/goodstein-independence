@@ -55,27 +55,25 @@ decreasing_by
 
 /-! ## Accessors — the shapes the read-off induction's cases consume -/
 
-theorem Gated_and_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : ArithmeticFormula ℕ} :
-    Gated P V (χ₁ ⋏ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
+variable {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : ArithmeticFormula ℕ} {φ₀ : ArithmeticSemiformula ℕ 1} {k : ℕ}
+
+theorem Gated_and_iff : Gated P V (χ₁ ⋏ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
   rw [show (χ₁ ⋏ χ₂) = Semiformula.and χ₁ χ₂ from rfl, Gated]
 
-theorem Gated_or_iff {P : ℕ → ℕ} {V : ℕ} {χ₁ χ₂ : ArithmeticFormula ℕ} :
-    Gated P V (χ₁ ⋎ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
+theorem Gated_or_iff : Gated P V (χ₁ ⋎ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
   rw [show (χ₁ ⋎ χ₂) = Semiformula.or χ₁ χ₂ from rfl, Gated]
 
-theorem Gated_all_iff {P : ℕ → ℕ} {V : ℕ} {χ : ArithmeticSemiformula ℕ 1} :
-    Gated P V (∀⁰ χ) ↔
-      ((¬ atomTrue (∀⁰ χ) → ∃ k, k ≤ P V ∧ ¬ atomTrue (χ/[nm k])) ∧
-        ∀ k, Gated P (max V k) (χ/[nm k])) := by
-  rw [show (∀⁰ χ) = Semiformula.all χ from rfl, Gated]
+theorem Gated_all_iff : Gated P V (∀⁰ φ₀) ↔
+  ((¬ atomTrue (∀⁰ φ₀) → ∃ k, k ≤ P V ∧ ¬ atomTrue (φ₀/[nm k])) ∧
+  ∀ k, Gated P (max V k) (φ₀/[nm k])) := by
+  rw [show (∀⁰ φ₀) = Semiformula.all φ₀ from rfl, Gated]
 
-theorem Gated_exs_iff {P : ℕ → ℕ} {V : ℕ} {χ : ArithmeticSemiformula ℕ 1} :
-    Gated P V (∃⁰ χ) ↔ ∀ n, Gated P (max V n) (χ/[nm n]) := by
-  rw [show (∃⁰ χ) = Semiformula.exs χ from rfl, Gated]
+theorem Gated_exs_iff : Gated P V (∃⁰ φ₀) ↔ ∀ n, Gated P (max V n) (φ₀/[nm n]) := by
+  rw [show (∃⁰ φ₀) = Semiformula.exs φ₀ from rfl, Gated]
 
 /-! ## Budget monotonicity — old members stay gated when the budget bumps -/
 
-theorem Gated_mono {P : ℕ → ℕ} (hP : Monotone P) :
+theorem Gated_mono (hP : Monotone P) :
     ∀ (φ : ArithmeticFormula ℕ) (V V' : ℕ), V ≤ V' → Gated P V φ → Gated P V' φ
   | Semiformula.rel _ _, _, _, _, _ => by rw [Gated]; trivial
   | Semiformula.nrel _ _, _, _, _, _ => by rw [Gated]; trivial
@@ -111,7 +109,7 @@ value of every numeral instance of `t` whose numerals are `≤ B` (monotonicity 
 /-- Standard-model `ℒₒᵣ` term values are monotone in both environments (0/1/+/· are monotone). -/
 theorem valm_mono : ∀ {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) {e e' : Fin m → ℕ} {ε ε' : ℕ → ℕ},
     (∀ i, e i ≤ e' i) → (∀ x, ε x ≤ ε' x) →
-    GoodsteinPA.Compat.gValm ℕ e ε t ≤ GoodsteinPA.Compat.gValm ℕ e' ε' t := by
+    Semiterm.gValm ℕ e ε t ≤ Semiterm.gValm ℕ e' ε' t := by
   intro m t
   induction t with
   | bvar x => intro e e' ε ε' he _; simpa using he x
@@ -120,23 +118,23 @@ theorem valm_mono : ∀ {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) {e e' : Fin m �
       intro e e' ε ε' he hε
       cases f with
       | zero =>
-          show GoodsteinPA.Compat.gValm ℕ e ε (Semiterm.func Language.Zero.zero v)
-            ≤ GoodsteinPA.Compat.gValm ℕ e' ε' (Semiterm.func Language.Zero.zero v)
+          show Semiterm.gValm ℕ e ε (Semiterm.func Language.Zero.zero v)
+            ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.Zero.zero v)
           simp
       | one =>
-          show GoodsteinPA.Compat.gValm ℕ e ε (Semiterm.func Language.One.one v)
-            ≤ GoodsteinPA.Compat.gValm ℕ e' ε' (Semiterm.func Language.One.one v)
+          show Semiterm.gValm ℕ e ε (Semiterm.func Language.One.one v)
+            ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.One.one v)
           simp
       | add =>
-          show GoodsteinPA.Compat.gValm ℕ e ε (Semiterm.func Language.Add.add v)
-            ≤ GoodsteinPA.Compat.gValm ℕ e' ε' (Semiterm.func Language.Add.add v)
+          show Semiterm.gValm ℕ e ε (Semiterm.func Language.Add.add v)
+            ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.Add.add v)
           simp only [Semiterm.val_func, Structure.add_eq_of_lang]
           have h0 := ih 0 he hε
           have h1 := ih 1 he hε
           exact Nat.add_le_add h0 h1
       | mul =>
-          show GoodsteinPA.Compat.gValm ℕ e ε (Semiterm.func Language.Mul.mul v)
-            ≤ GoodsteinPA.Compat.gValm ℕ e' ε' (Semiterm.func Language.Mul.mul v)
+          show Semiterm.gValm ℕ e ε (Semiterm.func Language.Mul.mul v)
+            ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.Mul.mul v)
           simp only [Semiterm.val_func, Structure.mul_eq_of_lang]
           have h0 := ih 0 he hε
           have h1 := ih 1 he hε
@@ -144,7 +142,7 @@ theorem valm_mono : ∀ {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) {e e' : Fin m �
 
 /-- `tvB t B` — the value of `t` with every bounded variable at `B` and every free name at `0`. -/
 noncomputable def tvB {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) (B : ℕ) : ℕ :=
-  GoodsteinPA.Compat.gValm ℕ (fun _ => B) (fun _ => 0) t
+  Semiterm.gValm ℕ (fun _ => B) (fun _ => 0) t
 
 theorem tvB_mono {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) : Monotone (tvB t) :=
   fun _ _ h => valm_mono t (fun _ => h) (fun _ => le_rfl)
@@ -189,7 +187,7 @@ theorem tvB_rew_le {K : ℕ} {n₁ n₂ : ℕ} (t : Semiterm ℒₒᵣ ℕ n₁)
     (hb : ∀ i B, tvB (ω #i) B ≤ max B K) (hf : ∀ x, ω &x = &x) (B : ℕ) :
     tvB (ω t) B ≤ tvB t (max B K) := by
   have h1 : tvB (ω t) B
-      = GoodsteinPA.Compat.gValm ℕ (fun i => tvB (ω #i) B) (fun x => tvB (ω &x) B) t :=
+      = Semiterm.gValm ℕ (fun i => tvB (ω #i) B) (fun x => tvB (ω &x) B) t :=
     Semiterm.val_rew ω t
   rw [h1]
   apply valm_mono t
@@ -272,7 +270,7 @@ theorem gvb_rew_le {K : ℕ} :
 theorem tvB_nm (k B : ℕ) : tvB (nm k) B = k := by
   have he : (fun _ => B : Fin 0 → ℕ) = ![] := by funext i; exact i.elim0
   simp only [tvB, he]
-  exact valm_nm k (fun _ => 0)
+  exact ArithmeticTerm.valm_nm k (fun _ => 0)
 
 /-- **The numeral-instance law** — the exact shape the master induction threads at `allω`/`exs`
 descents: instantiating the head variable by `nm k` contracts `gvb` into the `max B k` frame. -/
@@ -318,7 +316,7 @@ V-threaded read-off invariant needs at the pipeline root. -/
 environment. -/
 theorem valm_env_irrel_of_positive : ∀ (t : Semiterm ℒₒᵣ ℕ 1), t.Positive →
     ∀ (e e' : Fin 1 → ℕ) (ε : ℕ → ℕ),
-      GoodsteinPA.Compat.gValm ℕ e ε t = GoodsteinPA.Compat.gValm ℕ e' ε t := by
+      Semiterm.gValm ℕ e ε t = Semiterm.gValm ℕ e' ε t := by
   intro t
   induction t with
   | bvar x =>
@@ -343,11 +341,11 @@ theorem gate_extract {t : Semiterm ℒₒᵣ ℕ 1} (hpos : t.Positive)
     k < tvB t 0 ∧ ¬ atomTrue (φ/[nm k]) := by
   simp [atomTrue, Semiformula.imp_eq, Semiformula.Operator.lt_def] at h
   refine ⟨?_, by
-    simpa [atomTrue, Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton]
+    simpa [atomTrue, Semiformula.eval_substs, ArithmeticTerm.valm_nm, Matrix.constant_eq_singleton]
       using h.2⟩
   have he : (fun _ => (0:ℕ) : Fin 0 → ℕ) = ![] := by funext i; exact i.elim0
   have h1 : Semiterm.val (fun _ => 0) (fun _ => 0)
-      ((Rew.subst ![nm k]) t) = GoodsteinPA.Compat.gValm ℕ ![k] (fun _ => 0) t := by
+      ((Rew.subst ![nm k]) t) = Semiterm.gValm ℕ ![k] (fun _ => 0) t := by
     rw [Semiterm.val_rew]
     congr 1
     funext i
@@ -355,7 +353,7 @@ theorem gate_extract {t : Semiterm ℒₒᵣ ℕ 1} (hpos : t.Positive)
     show Semiterm.val (fun _ => 0) (fun _ => 0)
       ((Rew.subst ![nm k]) #0) = k
     rw [show (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm k]) #0 = nm k by simp, he]
-    exact valm_nm k _
+    exact ArithmeticTerm.valm_nm k _
   rw [h1, valm_env_irrel_of_positive t hpos ![k] (fun _ => 0)] at h
   exact h.1
 
@@ -501,12 +499,12 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
       | LO.FirstOrder.Language.ORing.Func.zero, v =>
           refine ⟨0, fun B => ?_⟩
           have hv : tvB (Semiterm.func LO.FirstOrder.Language.ORing.Func.zero v) B = 0 := by
-            simp only [tvB, GoodsteinPA.Compat.gValm, Semiterm.val_func]; rfl
+            simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
           simp [hv]
       | LO.FirstOrder.Language.ORing.Func.one, v =>
           refine ⟨1, fun B => ?_⟩
           have hv : tvB (Semiterm.func LO.FirstOrder.Language.ORing.Func.one v) B = 1 := by
-            simp only [tvB, GoodsteinPA.Compat.gValm, Semiterm.val_func]; rfl
+            simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
           have h := hG_succ B
           simp only [Function.iterate_one]
           omega
@@ -520,7 +518,7 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
             le_trans (h₁ B) (iter_le_iter_of_succ hG_mono hG_succ (le_max_right c₀ c₁) B)
           have hadd : tvB (Semiterm.func LO.FirstOrder.Language.ORing.Func.add v) B
               = tvB (v 0) B + tvB (v 1) B := by
-            simp only [tvB, GoodsteinPA.Compat.gValm, Semiterm.val_func]; rfl
+            simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
           rw [hadd, Function.iterate_succ_apply']
           exact le_trans (hG_add _ _) (hG_mono (max_le hb₀ hb₁))
       | LO.FirstOrder.Language.ORing.Func.mul, v =>
@@ -533,7 +531,7 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
             le_trans (h₁ B) (iter_le_iter_of_succ hG_mono hG_succ (le_max_right c₀ c₁) B)
           have hmul : tvB (Semiterm.func LO.FirstOrder.Language.ORing.Func.mul v) B
               = tvB (v 0) B * tvB (v 1) B := by
-            simp only [tvB, GoodsteinPA.Compat.gValm, Semiterm.val_func]; rfl
+            simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
           rw [hmul, Function.iterate_succ_apply']
           exact le_trans (hG_mul _ _) (hG_mono (max_le hb₀ hb₁))
 

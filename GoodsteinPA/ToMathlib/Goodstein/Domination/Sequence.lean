@@ -191,6 +191,19 @@ theorem toOrdinal_mono_and_bound (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
               mul_le_mul_right (by rw [← Nat.cast_add_one]; exact (natCast_lt_omega0 _).le) _
         _ = ω ^ (toOrdinal b (Nat.log b n) + 1) := by rw [← opow_succ, Order.succ_eq_add_one]
 
+/-- **Strict monotonicity of `toOrdinal b`, for `b ≥ 2`.** -/
+lemma toOrdinal_strictMono (b : ℕ) (hb : 2 ≤ b) : StrictMono (toOrdinal b) :=
+  fun m n hmn => (toOrdinal_mono_and_bound b hb n).1 m hmn
+
+/-- Monotonicity of `toOrdinal b`, for `b ≥ 2`. -/
+lemma toOrdinal_mono (b : ℕ) (hb : 2 ≤ b) : Monotone (toOrdinal b) :=
+  (toOrdinal_strictMono b hb).monotone
+
+/-- The order on `toOrdinal b` matches the order on `ℕ`, for `b ≥ 2`. -/
+lemma toOrdinal_le_iff (b : ℕ) (hb : 2 ≤ b) {m n : ℕ} :
+    toOrdinal b m ≤ toOrdinal b n ↔ m ≤ n :=
+  (toOrdinal_strictMono b hb).le_iff_le
+
 /-- **Crux (ℕ side).** The exact analog of `toOrdinal_mono_and_bound` for `bump`:
 `bump b` is strictly monotone with leading bound `(b+1)^(bump b (log b n) + 1)`.
 Same proof, with `(b+1)` in place of `ω`. Used to read off the base-`(b+1)`
@@ -423,8 +436,8 @@ SCOPE. See `README.md`.
 
 
 /-- **Goodstein's theorem.** For every starting value `m`, the Goodstein sequence
-seeded at `m` eventually reaches `0`. (The ordinal-descent proof lives in
-`Engine.lean`; this is the thin, faithful audit statement.) -/
+seeded at `m` eventually reaches `0`. (The ordinal-descent proof lives
+above (`goodstein_terminates_engine`); this is the thin, faithful audit statement.) -/
 theorem goodstein_terminates (m : ℕ) : ∃ N, goodsteinSeq m N = 0 :=
   goodstein_terminates_engine m
 
@@ -434,7 +447,7 @@ theorem goodstein_terminates (m : ℕ) : ∃ N, goodsteinSeq m N = 0 :=
 
 The **Goodstein length** `goodsteinLength m` is the step at which the Goodstein
 sequence seeded at `m` first reaches `0`. It is well-defined by `goodstein_terminates`
-(every Goodstein sequence terminates — proved axiom-clean in `Engine.lean`).
+(every Goodstein sequence terminates — proved axiom-clean above).
 
 This function is the bridge to the *independence* story. Its growth rate is
 astronomically fast — it tracks the Hardy function `H_{ε₀}` (equivalently the
@@ -443,8 +456,8 @@ Because every PA-provably-total function is dominated by some `f_α` with `α < 
 and `goodsteinLength` eventually outgrows every such `f_α`, PA cannot prove that
 `goodsteinLength` is total — which is the Kirby–Paris independence result. The
 *growth content* of that argument (the part that lives entirely in mathlib, no
-first-order-logic machinery) is what the `Logic/FastGrowing/` files develop, and
-`Logic/Goodstein/Growth.lean` (to be built) connects this function to it.
+first-order-logic machinery) is what the `ToMathlib/FastGrowing/` files develop, and
+`Growth.lean` connects this function to it.
 
 The PA-syntactic wrapper (`PA ⊬ γ`) is a separate expedition; see the repo
 `~/src/goodstein-independence`. This file builds only the object-level function and
@@ -457,17 +470,17 @@ sequence seeded at `m` reaches `0`. Total by `goodstein_terminates`. -/
 def goodsteinLength (m : ℕ) : ℕ := Nat.find (goodstein_terminates m)
 
 /-- Defining property: the sequence is `0` at its length. -/
-theorem goodsteinSeq_goodsteinLength (m : ℕ) :
+lemma goodsteinSeq_goodsteinLength (m : ℕ) :
     goodsteinSeq m (goodsteinLength m) = 0 :=
   Nat.find_spec (goodstein_terminates m)
 
 /-- The length is the *least* zero: any zero step is `≥ goodsteinLength m`. -/
-theorem goodsteinLength_le {m N : ℕ} (h : goodsteinSeq m N = 0) :
+lemma goodsteinLength_le {m N : ℕ} (h : goodsteinSeq m N = 0) :
     goodsteinLength m ≤ N :=
   Nat.find_le h
 
 /-- Before the length, the sequence is nonzero. -/
-theorem goodsteinSeq_ne_zero_of_lt {m N : ℕ} (h : N < goodsteinLength m) :
+lemma goodsteinSeq_ne_zero_of_lt {m N : ℕ} (h : N < goodsteinLength m) :
     goodsteinSeq m N ≠ 0 :=
   Nat.find_min (goodstein_terminates m) h
 

@@ -1,26 +1,11 @@
 /-
 # ε₀-completeness of CNF notations
 
-Mathlib's `Mathlib/SetTheory/Ordinal/Notation.lean` proves that `ONote.repr` is order-preserving
-and injective on normal forms — an *embedding* `NONote ↪ ε₀` — but it does NOT prove surjectivity
-onto the ordinals `< ε₀`.
-
-This file fills that gap with a pure-mathlib proof (zero project-specific dependency beyond the
-generic well-founded rank machinery):
-
-  `exists_NF_repr_eq : ∀ o < ε₀, ∃ x : ONote, x.NF ∧ x.repr = o`.
-
-The proof is the standard Cantor-normal-form recursion. For `o ≠ 0` write `o = ω^e · c + r` with
-`e = log ω o`, `c = o / ω^e` (a positive natural number, since `1 ≤ c < ω`), `r = o % ω^e < ω^e`.
-Both `e` and `r` are `< o` (the key fact `log ω o < o` for `o < ε₀` is `log_omega0_lt_self`, which
-uses that `ω^·` has no fixed point below ε₀), so well-founded recursion on `o` supplies CNF notations
-`ē, r̄` for them, and `ONote.oadd ē c r̄` is the notation for `o`.
-
-The second half of the file transfers this surjectivity to any `ℕ`-order obtained by pulling the
-`NONote` order back along a bijection `e : ℕ ≃ NONote`: the well-founded rank of `n` in the pullback
-order equals `NONote.repr (e n)`, and since `repr ∘ e` is onto `[0, ε₀)`, the order type of the
-pullback is at least `ε₀`. A concrete computable such bijection (`natCode`) is built at the end from
-a structural `Encodable ONote` instance.
+Mathlib's `Mathlib/SetTheory/Ordinal/Notation.lean` proves that `ONote.repr` is an embedding
+`NONote ↪ ε₀` but does NOT prove surjectivity onto ordinals `< ε₀`. This file supplies a pure-mathlib
+proof of `exists_NF_repr_eq : ∀ o < ε₀, ∃ x : ONote, x.NF ∧ x.repr = o`, and transfers the result
+to any `ℕ`-order obtained by pulling the `NONote` order back along a bijection. A concrete computable
+bijection (`natCode`) is constructed from a structural `Encodable ONote` instance.
 -/
 module
 
@@ -35,30 +20,25 @@ namespace ONote
 open Ordinal ONote WellFoundedRank
 open scoped Ordinal
 
-/-- For `0 ≠ o < ε₀`, the leading CNF exponent `log ω o` is strictly below `o`.
-Equality would force `ω ^ o ≤ o`, i.e. `o` to be an ε-number, contradicting `o < ε₀`. -/
+/-- For `0 ≠ o < ε₀`, the leading CNF exponent `log ω o` is strictly below `o`. -/
 lemma log_omega0_lt_self {o : Ordinal} (ho : o ≠ 0) (hε : o < ε₀) :
-    Ordinal.log ω o < o := by
-  have h1 : ω ^ Ordinal.log ω o ≤ o := opow_log_le_self ω ho
-  have h2 : Ordinal.log ω o ≤ ω ^ Ordinal.log ω o :=
+    log ω o < o := by
+  have h1 : ω ^ log ω o ≤ o := opow_log_le_self ω ho
+  have h2 : log ω o ≤ ω ^ log ω o :=
     (isNormal_opow one_lt_omega0).strictMono.le_apply
   rcases lt_or_eq_of_le (h2.trans h1) with h | h
   · exact h
   · rw [h] at h1
     exact absurd (epsilon_zero_le_of_omega0_opow_le h1) (not_le.2 hε)
 
-/-- **ε₀-completeness of CNF notations.** Every ordinal `< ε₀` is `repr` of some normal-form `ONote`.
-This is the surjectivity direction missing from mathlib's `Ordinal/Notation.lean`. -/
-theorem exists_NF_repr_eq :
-    ∀ o : Ordinal, o < ε₀ → ∃ x : ONote, ONote.NF x ∧ ONote.repr x = o := by
-  intro o
+/-- **ε₀-completeness of CNF notations.** Every ordinal `< ε₀` is `repr` of some normal-form `ONote`. -/
+theorem exists_NF_repr_eq (o : Ordinal) (hε : o < ε₀) : ∃ x : ONote, x.NF ∧ x.repr = o := by
   induction o using WellFoundedLT.induction with
   | _ o IH =>
-    intro hε
-    rcases eq_or_ne o 0 with rfl | ho
-    · exact ⟨0, ONote.NF.zero, ONote.repr_zero⟩
+    obtain rfl | ho := eq_or_ne o 0
+    · exact ⟨0, NF.zero, repr_zero⟩
     · -- leading exponent
-      set e := Ordinal.log ω o with he
+      set e := log ω o with he
       have hee : e < o := log_omega0_lt_self ho hε
       obtain ⟨eN, heNF, heRepr⟩ := IH e hee (hee.trans hε)
       -- remainder
@@ -71,15 +51,14 @@ theorem exists_NF_repr_eq :
       obtain ⟨m, hm⟩ := lt_omega0.1 hclt
       have hmpos : 0 < m := by rw [hm] at hcpos; exact_mod_cast hcpos
       have hωe : ω ^ e ≠ 0 := (opow_pos e omega0_pos).ne'
-      refine ⟨ONote.oadd eN ⟨m, hmpos⟩ rN, ?_, ?_⟩
+      refine ⟨oadd eN ⟨m, hmpos⟩ rN, ?_, ?_⟩
       · -- normal form
-        refine ONote.NF.oadd heNF _ (ONote.NF.below_of_lt' ?_ hrNF)
+        refine NF.oadd heNF _ (NF.below_of_lt' ?_ hrNF)
         rw [hrRepr, heRepr]
         exact mod_lt _ hωe
       · -- value
-        have hval : ONote.repr (ONote.oadd eN ⟨m, hmpos⟩ rN)
-            = ω ^ ONote.repr eN * (m : Ordinal) + ONote.repr rN := by
-          simp [ONote.repr]
+        have hval : repr (oadd eN ⟨m, hmpos⟩ rN) = ω ^ repr eN * (m : Ordinal) + repr rN := by
+          simp [repr]
         rw [hval, heRepr, hrRepr, hr, ← hm]
         exact div_add_mod o (ω ^ e)
 
@@ -88,35 +67,29 @@ lemma isSuccLimit_epsilon0 : Order.IsSuccLimit ε₀ := by
   have h := isSuccLimit_opow_left isSuccLimit_omega0 (epsilon_pos 0).ne'
   rwa [omega0_opow_epsilon] at h
 
-/-- Every normal-form `ONote` represents an ordinal `< ε₀` (the embedding direction; mathlib states
-the type's purpose informally but provides no `repr < ε₀` lemma). -/
-lemma repr_lt_epsilon0 : ∀ x : ONote, x.NF → ONote.repr x < ε₀ := by
-  intro x
+/-- Every normal-form `ONote` represents an ordinal `< ε₀`. -/
+lemma repr_lt_epsilon0 (x : ONote) (h : x.NF) : x.repr < ε₀ := by
   induction x with
-  | zero => intro _; exact epsilon_pos 0
-  | oadd e n a _IHe IHa =>
-    intro h
-    have hee : ONote.repr e < ε₀ := _IHe h.fst
-    have hbelow : ONote.repr a < ω ^ ONote.repr e := h.snd'.repr_lt
-    have hsucc : Order.succ (ONote.repr e) < ε₀ := isSuccLimit_epsilon0.succ_lt hee
-    have key : ONote.repr (ONote.oadd e n a) < ω ^ (Order.succ (ONote.repr e)) := by
+  | zero => exact epsilon_pos 0
+  | oadd e n a IHe IHa =>
+    have hee : e.repr < ε₀ := IHe h.fst
+    have hbelow : a.repr < ω ^ e.repr := h.snd'.repr_lt
+    have hsucc : Order.succ e.repr < ε₀ := isSuccLimit_epsilon0.succ_lt hee
+    have key : (oadd e n a).repr < ω ^ (Order.succ e.repr) := by
       rw [opow_succ]
-      have h1 : ONote.repr (ONote.oadd e n a)
-          = ω ^ ONote.repr e * ((n : ℕ) : Ordinal) + ONote.repr a := by simp [ONote.repr]
+      have h1 : (oadd e n a).repr = ω ^ e.repr * ((n : ℕ) : Ordinal) + a.repr := by simp [repr]
       rw [h1]
-      calc ω ^ ONote.repr e * ((n : ℕ) : Ordinal) + ONote.repr a
-          < ω ^ ONote.repr e * ((n : ℕ) : Ordinal) + ω ^ ONote.repr e :=
-            (add_lt_add_iff_left _).2 hbelow
-        _ = ω ^ ONote.repr e * (((n : ℕ) : Ordinal) + 1) := by rw [mul_add, mul_one]
-        _ ≤ ω ^ ONote.repr e * ω := by
+      calc ω ^ e.repr * ((n : ℕ) : Ordinal) + a.repr
+          < ω ^ e.repr * ((n : ℕ) : Ordinal) + ω ^ e.repr := (add_lt_add_iff_left _).2 hbelow
+        _ = ω ^ e.repr * (((n : ℕ) : Ordinal) + 1) := by rw [mul_add, mul_one]
+        _ ≤ ω ^ e.repr * ω := by
             gcongr
             rw [← Nat.cast_one, ← Nat.cast_add]
             exact (natCast_lt_omega0 _).le
     exact key.trans (((opow_lt_opow_iff_right one_lt_omega0).2 hsucc).trans_eq
       (omega0_opow_epsilon 0))
 
-/-- The range of `NONote.repr` is exactly the ordinals `< ε₀`: the embedding (`repr_lt_epsilon0`)
-together with the new surjectivity (`exists_NF_repr_eq`). -/
+/-- The range of `NONote.repr` is exactly the ordinals `< ε₀`. -/
 theorem range_NONote_repr : Set.range NONote.repr = Set.Iio ε₀ := by
   ext o
   constructor
@@ -126,21 +99,20 @@ theorem range_NONote_repr : Set.range NONote.repr = Set.Iio ε₀ := by
     obtain ⟨x, hx, hxo⟩ := exists_NF_repr_eq o ho
     exact ⟨⟨x, hx⟩, hxo⟩
 
-/-! ## Transfer to an `ℕ`-order: `ε₀ ≤ orderType` of any pullback of the `NONote` order
+/-! ## Transfer to an `ℕ`-order: `ε₀ ≤ orderType` of any pullback of the `NONote` order -/
 
-Pulling the `NONote` order back along *any* bijection `e : ℕ ≃ NONote` yields a well-founded order
-on `ℕ` of order type at least `ε₀`: the rank `rk (ltPull e) n` equals `NONote.repr (e n)`, and since
-`repr ∘ e` is onto `[0, ε₀)`, no ordinal `< ε₀` can bound all the ranks. -/
+section Pullback
+
+variable (e : ℕ ≃ NONote)
 
 /-- The `NONote` order pulled back to `ℕ` along a coding `e`. -/
-def ltPull (e : ℕ ≃ NONote) (a b : ℕ) : Prop := e a < e b
+def ltPull (a b : ℕ) : Prop := e a < e b
 
-instance ltPull_wf (e : ℕ ≃ NONote) : IsWellFounded ℕ (ltPull e) :=
+instance ltPull_wf : IsWellFounded ℕ (ltPull e) :=
   ⟨InvImage.wf e NONote.lt_wf⟩
 
-/-- The `≺`-rank of `n` in the pullback order is the ordinal `NONote.repr (e n)`, true precisely
-because `repr ∘ e` is *onto* `[0, ε₀)`. -/
-lemma rk_ltPull_eq_repr (e : ℕ ≃ NONote) (n : ℕ) :
+/-- The `≺`-rank of `n` in the pullback order is the ordinal `NONote.repr (e n)`. -/
+lemma rk_ltPull_eq_repr (n : ℕ) :
     rk (ltPull e) n = NONote.repr (e n) := by
   refine IsWellFounded.induction
     (motive := fun k => rk (ltPull e) k = NONote.repr (e k)) (ltPull e) n ?_
@@ -149,8 +121,7 @@ lemma rk_ltPull_eq_repr (e : ℕ ≃ NONote) (n : ℕ) :
   · intro m hm
     rw [IH m hm]
     exact hm
-  · by_contra hlt
-    rw [not_le] at hlt
+  · by_contra! hlt
     have hlt' : rk (ltPull e) n < ε₀ :=
       hlt.trans (repr_lt_epsilon0 (e n).1 (e n).2)
     obtain ⟨x, hxNF, hxo⟩ := exists_NF_repr_eq (rk (ltPull e) n) hlt'
@@ -168,10 +139,9 @@ lemma rk_ltPull_eq_repr (e : ℕ ≃ NONote) (n : ℕ) :
 
 /-- **Order type of a `NONote`-pullback.** For any coding `e : ℕ ≃ NONote`, the pullback order on `ℕ`
 has order type at least `ε₀`. -/
-theorem epsilon0_le_orderType_ltPull (e : ℕ ≃ NONote) :
+theorem epsilon0_le_orderType_ltPull :
     ε₀ ≤ orderType (ltPull e) := by
-  by_contra hlt
-  rw [not_le] at hlt
+  by_contra! hlt
   -- name `orderType` itself as some `repr (e n₀)`, then `succ` of it exceeds the sup — contradiction.
   obtain ⟨x, hxNF, hxo⟩ := exists_NF_repr_eq (orderType (ltPull e)) hlt
   set n₀ := e.symm ⟨x, hxNF⟩ with hn₀
@@ -183,12 +153,9 @@ theorem epsilon0_le_orderType_ltPull (e : ℕ ≃ NONote) :
   rw [he] at hle
   exact (Order.lt_succ _).not_ge hle
 
-/-! ## A concrete coding `ℕ ≃ NONote`
+end Pullback
 
-`ONote` derives only `DecidableEq`, so we supply a computable `Encodable ONote` (a structural
-pairing) and `Infinite NONote` (the numerals `ofNat n` are distinct), giving `Denumerable NONote`
-and hence a coding `ℕ ≃ NONote`. Plugged into `epsilon0_le_orderType_ltPull`, this exhibits a
-concrete `ℕ`-order with `ε₀ ≤ orderType`. -/
+/-! ## A concrete coding `ℕ ≃ NONote` -/
 
 /-- Structural encoding `ONote → ℕ`. -/
 def encodeONote : ONote → ℕ
@@ -231,9 +198,7 @@ instance : Encodable NONote :=
 instance : Denumerable NONote :=
   Denumerable.ofEncodableOfInfinite NONote
 
-/-- A concrete **computable** coding of `ℕ` by CNF notations (= `Denumerable.ofNat NONote`). Being
-built from the structural `Encodable ONote` instance above (rather than the classical
-`Encodable.ofCountable`) keeps `natCode` — and hence `ltPull natCode` — computable. -/
+/-- A concrete **computable** coding of `ℕ` by CNF notations, built from the structural `Encodable ONote`. -/
 def natCode : ℕ ≃ NONote := (Denumerable.eqv NONote).symm
 
 /-- **A concrete `ℕ`-order of order type ≥ ε₀.** -/

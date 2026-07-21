@@ -45,7 +45,7 @@ lemma inductionLeaf_exI_runningIndex_probe {α β e} {k d c n} {Γ}
 
 /-- The standard value of a closed arithmetic term, in the evaluator used by `atomTrue`. -/
 noncomputable abbrev stdClosedVal (t : ArithmeticTerm ℕ) : ℕ :=
-  GoodsteinPA.Compat.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) t
+  Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) t
 
 /-- The standard value of the numeral term `nm m` is `m`. -/
 @[simp] lemma stdClosedVal_nm (m : ℕ) : stdClosedVal (nm m) = m := by simp [stdClosedVal, nm]
@@ -89,8 +89,8 @@ lemma atomTrue_rel_congr {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
     (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i)) :
     atomTrue (Semiformula.rel r v) ↔ atomTrue (Semiformula.rel r v') := by
-  have hv : (fun i => GoodsteinPA.Compat.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v i))
-      = (fun i => GoodsteinPA.Compat.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v' i)) := by
+  have hv : (fun i => Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v i))
+      = (fun i => Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v' i)) := by
     funext i; exact hval i
   simp only [atomTrue, Semiformula.eval_rel, hv, Function.comp_def]
 
@@ -99,8 +99,8 @@ lemma atomTrue_nrel_congr {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
     (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i)) :
     atomTrue (Semiformula.nrel r v) ↔ atomTrue (Semiformula.nrel r v') := by
-  have hv : (fun i => GoodsteinPA.Compat.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v i))
-      = (fun i => GoodsteinPA.Compat.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v' i)) := by
+  have hv : (fun i => Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v i))
+      = (fun i => Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v' i)) := by
     funext i; exact hval i
   simp only [atomTrue, Semiformula.eval_nrel, hv, Function.comp_def]
 
