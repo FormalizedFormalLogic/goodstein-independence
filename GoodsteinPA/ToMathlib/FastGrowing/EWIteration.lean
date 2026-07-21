@@ -100,51 +100,6 @@ def ewN : ONote → ℕ
 @[simp] theorem ewN_oadd (e : ONote) (n : ℕ+) (a : ONote) :
     ewN (oadd e n a) = ewN e + (n : ℕ) + ewN a := rfl
 
-/-- All `ONote`s with constructor norm at most `K`. -/
-def ewBall : ℕ → Finset ONote
-  | 0 => {0}
-  | K + 1 =>
-      ewBall K ∪
-        ((ewBall K).product ((Finset.range (K + 1)).product (ewBall K))).image
-          (fun p => oadd p.1 ⟨p.2.1 + 1, Nat.succ_pos _⟩ p.2.2)
-
-theorem mem_ewBall_of_ewN_le : ∀ {K : ℕ} (o : ONote), ewN o ≤ K → o ∈ ewBall K := by
-  intro K
-  induction K with
-  | zero =>
-      intro o ho
-      cases o with
-      | zero => simp [ewBall]
-      | oadd e n a =>
-          simp only [ewN_oadd] at ho
-          have hn : 1 ≤ (n : ℕ) := n.pos
-          omega
-  | succ K ih =>
-      intro o ho
-      by_cases hprev : ewN o ≤ K
-      · exact Finset.mem_union_left _ (ih o hprev)
-      · cases o with
-        | zero =>
-            exact (hprev (by simp [ewN])).elim
-        | oadd e n a =>
-            apply Finset.mem_union_right
-            apply Finset.mem_image.mpr
-            refine ⟨(e, (n.natPred, a)), ?_, ?_⟩
-            · simp [Finset.mem_product]
-              have hsum : ewN e + (n : ℕ) + ewN a ≤ K + 1 := by
-                simpa only [ewN_oadd] using ho
-              have hn : 1 ≤ (n : ℕ) := n.pos
-              constructor
-              · exact ih e (by omega)
-              constructor
-              · have hn_eq : (n : ℕ) = n.natPred + 1 := by
-                  simpa using congrArg (fun q : ℕ+ => (q : ℕ)) (PNat.succPNat_natPred n).symm
-                omega
-              · exact ih a (by omega)
-            · congr 1
-              apply PNat.coe_injective
-              simpa using congrArg (fun q : ℕ+ => (q : ℕ)) (PNat.succPNat_natPred n).symm
-
 /-! ## The absorbing norm `Nlog` (SERIES-3 N-1 promotion; ruling (1) `ewN → Nlog`)
 
 Promoted from `wip/AbsorbingNormProbe.lean` (Stage D-1, kernel-clean there) +
@@ -774,16 +729,7 @@ theorem ewIter_lift {f : ℕ → ℕ} (hf : EwF1 f) {β α : ONote} (hβNF : β.
     ∀ x, ewIter f β x ≤ ewIter f α x :=
   ewIter_lift_of_mono_infl (EwF1.monotone hf) (EwF1.infl hf) hβNF hβα hβN
 
-/-- P1, named as the lap-7 pre-probe. -/
-theorem P1_ewIter_lift {f : ℕ → ℕ} (hf : EwF1 f) {β α : ONote} (hβNF : β.NF)
-    (hβα : β < α) (hβN : Nlog β ≤ f 0) :
-    ∀ x, ewIter f β x ≤ ewIter f α x :=
-  ewIter_lift hf hβNF hβα hβN
-
-/-! ## The N-0 kit promoted (attainment, swap lemma, base floor, T-S3 slack)
-
-Promoted from `wip/NlogGateProbe.lean` (kernel-clean there); statements are the probe texts
-under the in-place `ewN → Nlog` iterate (the ball gate is now `Nlog`-native). -/
+/-! ## Attainment, swap lemma, base floor, cut-node slack -/
 
 /-- **Max-attainment for `ewIter`** (`α ≠ 0`): the iterate's value is realized by some NF
 branch `β < α` inside the ball gate. -/
@@ -844,22 +790,6 @@ theorem ewIter_base_le {s : ℕ → ℕ} (hinfl : ∀ m, m ≤ s m) (β : ONote)
     have hlow := ewIter_lower (f := s) (β := 0) (α := β) (m := 0) NF.zero h0β (Nat.zero_le _)
     have hss : s (s 0) ≤ ewIter s β 0 := by simpa [ewIter_zero] using hlow
     exact le_trans (hinfl (s 0)) hss
-
-/-- **T-S3 (N-0, PASSED): the cut-node slack** — for the threaded kit and ARBITRARY
-`βφ, βψ` (edges included): `max (g 0) (f 0) + 1 ≤ g (f 0)` with `g = ewIter s βφ`,
-`f = ewIter s βψ`.  `f`-arm by `ewIter_low`; `g`-arm by monotone + swap + EwLow. -/
-theorem hslack_kit {s : ℕ → ℕ} (hmono : Monotone s) (hinfl : ∀ m, m ≤ s m)
-    (hlow : ∀ m, 2 * m + 1 ≤ s m) (βφ βψ : ONote) :
-    max (ewIter s βφ 0) (ewIter s βψ 0) + 1
-      ≤ ewIter s βφ (ewIter s βψ 0) := by
-  have hfarm : 2 * ewIter s βψ 0 + 1 ≤ ewIter s βφ (ewIter s βψ 0) :=
-    ewIter_low hinfl hlow βφ (ewIter s βψ 0)
-  have hs0f : s 0 ≤ ewIter s βψ 0 := ewIter_base_le hinfl βψ
-  have hgmono : Monotone (ewIter s βφ) := ewIter_monotone hmono hinfl βφ
-  have hswap : s (ewIter s βφ 0) ≤ ewIter s βφ (s 0) := ewIter_swap hmono hinfl βφ 0
-  have hgarm : 2 * ewIter s βφ 0 + 1 ≤ ewIter s βφ (ewIter s βψ 0) :=
-    le_trans (hlow (ewIter s βφ 0)) (le_trans hswap (hgmono hs0f))
-  omega
 
 /-- **The slot-threaded slack** (the reduction's replacement for the kernel-refuted
 `hg_base`): the T-S3 slack holds not just at `f 0` but at every `k ≥ f 0` — this is the
