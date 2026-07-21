@@ -96,16 +96,9 @@ lemma ordCode_then (o p : Ordering) : ordCode (o.then p) = thenNat (ordCode o) (
   cases o <;> cases p <;> rfl
 
 lemma ordCode_cmp (a b : ℕ) : ordCode (_root_.cmp a b) = cmpNat a b := by
-  rcases lt_trichotomy a b with h | h | h
-  · have hc : _root_.cmp a b = Ordering.lt := by simp [_root_.cmp, cmpUsing, h]
-    rw [hc]; simp [ordCode, cmpNat, h]
-  · subst h
-    have hc : _root_.cmp a a = Ordering.eq := by simp [_root_.cmp, cmpUsing]
-    rw [hc]; simp [ordCode, cmpNat]
-  · have hab : ¬ a < b := Nat.not_lt.mpr h.le
-    have hne : a ≠ b := (ne_of_lt h).symm
-    have hc : _root_.cmp a b = Ordering.gt := by simp [_root_.cmp, cmpUsing, hab, h]
-    rw [hc]; simp [ordCode, cmpNat, hab, hne]
+  unfold _root_.cmp cmpUsing ordCode cmpNat
+  split_ifs <;> simp_all
+  omega
 
 /-- Index (paired code) of the `e`-subterms, given the paired code `m = pair cx cy`. -/
 def cmpIdxE (m : ℕ) : ℕ :=
@@ -123,16 +116,10 @@ def cmpNV (m : ℕ) : ℕ :=
          ((Nat.unpair (Nat.unpair ((Nat.unpair m).2 - 1)).2).1 + 1)
 
 lemma primrec_cmpIdxE : Primrec cmpIdxE := by
-  have h_id : Primrec (fun x : ℕ => x) := by
-    exact Primrec.id
-  have h_fst : Primrec (fun x : ℕ => (Nat.unpair x).1) := by
-    exact Primrec.fst.comp ( Primrec.unpair )
-  have h_snd : Primrec (fun x : ℕ => (Nat.unpair x).2) := by
-    exact Primrec.snd.comp ( Primrec.unpair.comp h_id )
-  have h_sub : Primrec (fun x : ℕ => x - 1) := by
-    exact Primrec.nat_sub.comp ( h_id ) ( Primrec.const 1 )
-  have h_pair : Primrec₂ (fun x y : ℕ => Nat.pair x y) := Primrec₂.natPair
-  exact h_pair.comp ( h_fst.comp ( h_sub.comp h_fst ) ) ( h_fst.comp ( h_sub.comp h_snd ) )
+  have h_fst : Primrec (fun x : ℕ => (Nat.unpair x).1) := Primrec.fst.comp Primrec.unpair
+  have h_snd : Primrec (fun x : ℕ => (Nat.unpair x).2) := Primrec.snd.comp Primrec.unpair
+  have h_sub : Primrec (fun x : ℕ => x - 1) := Primrec.nat_sub.comp Primrec.id (Primrec.const 1)
+  exact Primrec₂.natPair.comp (h_fst.comp (h_sub.comp h_fst)) (h_fst.comp (h_sub.comp h_snd))
 
 lemma primrec_cmpIdxA : Primrec cmpIdxA := by
   have h_fst : Primrec (fun x : ℕ => (Nat.unpair x).1) := Primrec.fst.comp Primrec.unpair
