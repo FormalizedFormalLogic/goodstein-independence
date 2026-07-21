@@ -121,7 +121,7 @@ lemma ewN_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
       cases α with
       | zero => exact (hα rfl).elim
       | oadd e n a => exact oadd_pos e n a
-    have hlow' := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) NF.zero h0α (Nat.zero_le _)
+    have hlow' := ewIter_lower (f := f) (b := 0) (a := α) (m := 0) NF.zero h0α (Nat.zero_le _)
     have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow'
     have hb : 2 * f 0 + 1 ≤ f (f 0) := hlow (f 0)
     exact le_trans (by omega : ewN α + 1 ≤ f (f 0)) hff
@@ -148,7 +148,7 @@ lemma Nlog_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
       cases α with
       | zero => exact (hα rfl).elim
       | oadd e n a => exact oadd_pos e n a
-    have hlow' := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) NF.zero h0α (Nat.zero_le _)
+    have hlow' := ewIter_lower (f := f) (b := 0) (a := α) (m := 0) NF.zero h0α (Nat.zero_le _)
     have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow'
     have hb : 2 * f 0 + 1 ≤ f (f 0) := hlow (f 0)
     omega
