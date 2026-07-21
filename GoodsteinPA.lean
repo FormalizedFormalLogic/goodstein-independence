@@ -57,4 +57,3 @@ public import GoodsteinPA.Zinfty.Basic
 public import GoodsteinPA.Zinfty.Cut
 public import GoodsteinPA.Zinfty.Examples
 public import GoodsteinPA.Zinfty.Inversion
-public import GoodsteinPA.Zinfty.Provable
