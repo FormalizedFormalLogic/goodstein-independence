@@ -20,6 +20,12 @@ open Ordinal
 
 set_option linter.unnecessarySimpa false
 
+/-- A nonzero `ONote` is positive. -/
+theorem pos_of_ne_zero {α : ONote} (h : α ≠ 0) : (0 : ONote) < α := by
+  cases α with
+  | zero => exact (h rfl).elim
+  | oadd e n a => exact oadd_pos e n a
+
 /-- `ω^α` as an explicit `ONote` (`oadd α 1 0`). -/
 def expTower (α : ONote) : ONote := oadd α 1 0
 
@@ -520,9 +526,7 @@ noncomputable def ewStep (f : ℕ → ℕ) (α : ONote) (rec : (β : ONote) → 
       constructor
       · exact mem_NlogBall.mpr ⟨NF.zero, Nat.zero_le _⟩
       · constructor
-        · cases α with
-          | zero => exact (hα rfl).elim
-          | oadd e n a => exact oadd_pos e n a
+        · exact pos_of_ne_zero hα
         · exact Nat.zero_le _)
 
 noncomputable def ewIter (f : ℕ → ℕ) : ONote → ℕ → ℕ
@@ -563,10 +567,7 @@ theorem ewIter_infl {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (α : ONote) 
   by_cases hα : α = 0
   · subst hα
     simp [ewIter_zero, hf_infl]
-  · have h0α : (0 : ONote) < α := by
-      cases α with
-      | zero => exact (hα rfl).elim
-      | oadd e n a => exact oadd_pos e n a
+  · have h0α : (0 : ONote) < α := pos_of_ne_zero hα
     have hgate : Nlog (0 : ONote) ≤ f (Nlog α + m) := Nat.zero_le _
     have hlow := ewIter_lower (f := f) (β := 0) (α := α) (m := m) NF.zero h0α hgate
     have hlow' : f (f m) ≤ ewIter f α m := by
@@ -581,10 +582,7 @@ theorem ewIter_low {f : ℕ → ℕ} (hf_infl : ∀ m, m ≤ f m) (hf_low : ∀ 
     (α : ONote) (m : ℕ) : 2 * m + 1 ≤ ewIter f α m := by
   by_cases hα : α = 0
   · subst hα; simpa [ewIter_zero] using hf_low m
-  · have h0α : (0 : ONote) < α := by
-      cases α with
-      | zero => exact (hα rfl).elim
-      | oadd e n a => exact oadd_pos e n a
+  · have h0α : (0 : ONote) < α := pos_of_ne_zero hα
     have hlow := ewIter_lower (f := f) (β := 0) (α := α) (m := m) NF.zero h0α (Nat.zero_le _)
     have hff : f (f m) ≤ ewIter f α m := by simpa [ewIter_zero] using hlow
     have hfm : m ≤ f m := hf_infl m
@@ -729,10 +727,7 @@ theorem ewIter_attained {f : ℕ → ℕ} {α : ONote} (hα : α ≠ 0) (x : ℕ
     apply Finset.image_nonempty.mpr
     refine ⟨⟨0, ?_⟩, Finset.mem_attach _ _⟩
     simp only [hS, Finset.mem_filter]
-    refine ⟨mem_NlogBall.mpr ⟨NF.zero, Nat.zero_le _⟩, ?_, Nat.zero_le _⟩
-    cases α with
-    | zero => exact (hα rfl).elim
-    | oadd e n a => exact oadd_pos e n a
+    exact ⟨mem_NlogBall.mpr ⟨NF.zero, Nat.zero_le _⟩, pos_of_ne_zero hα, Nat.zero_le _⟩
   have hmem : vals.max' hne ∈ vals := Finset.max'_mem vals hne
   rcases Finset.mem_image.mp hmem with ⟨δ, _, hδval⟩
   have hδfilter := Finset.mem_filter.mp δ.2
@@ -765,10 +760,7 @@ theorem ewIter_base_le {s : ℕ → ℕ} (hinfl : ∀ m, m ≤ s m) (β : ONote)
     s 0 ≤ ewIter s β 0 := by
   by_cases hβ : β = 0
   · subst hβ; simp [ewIter_zero]
-  · have h0β : (0 : ONote) < β := by
-      cases β with
-      | zero => exact (hβ rfl).elim
-      | oadd e n a => exact oadd_pos e n a
+  · have h0β : (0 : ONote) < β := pos_of_ne_zero hβ
     have hlow := ewIter_lower (f := s) (β := 0) (α := β) (m := 0) NF.zero h0β (Nat.zero_le _)
     have hss : s (s 0) ≤ ewIter s β 0 := by simpa [ewIter_zero] using hlow
     exact le_trans (hinfl (s 0)) hss
@@ -913,10 +905,7 @@ theorem ewIterTower_rel1_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ 
 /-- One-step absorption at a nonzero ordinal: `S (S x) ≤ ewIter S β x` for `β ≠ 0`. -/
 theorem SS_le_ewIter' {S : ℕ → ℕ} {β : ONote} (hβ : β ≠ 0) (x : ℕ) :
     S (S x) ≤ ewIter S β x := by
-  have h0β : (0 : ONote) < β := by
-    cases β with
-    | zero => exact (hβ rfl).elim
-    | oadd e n a => exact oadd_pos e n a
+  have h0β : (0 : ONote) < β := pos_of_ne_zero hβ
   have h := ewIter_lower (f := S) (β := 0) (α := β) (m := x) NF.zero h0β (Nat.zero_le _)
   simpa [ewIter_zero] using h
 
