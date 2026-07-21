@@ -23,7 +23,7 @@ variable {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ} (w w' : Fin n → Arith
 
 /-! ## Closed-term existential introduction
 
-Value-congruent excluded middle (`provable_em_cong_gen`, `provable_em_cong`) and closed-term `∃`-intro
+Value-congruent excluded middle (`Provable.em_cong_gen`, `Provable.em_cong`) and closed-term `∃`-intro
 (`Provable.exI_closed`). -/
 
 /-- Literal-truth congruence under value-equal substitutions. -/
@@ -38,7 +38,7 @@ lemma litTrue_subst_congr (hval : ∀ i, Semiterm.gValm ℕ ![] id (w i) = Semit
     simp only [signedLit, LitTrue, Semiformula.eval_rel, Semiformula.eval_nrel, hv, Function.comp_def]
 
 /-- **Value-congruent excluded middle (arity-general).** -/
-theorem provable_em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+theorem Provable.em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (ψ : ArithmeticSemiformula ℕ n), ψ.complexity ≤ k →
     (∀ i, Semiterm.gValm ℕ ![] id (w i)
         = Semiterm.gValm ℕ ![] id (w' i)) →
@@ -159,11 +159,11 @@ where
 
 /-- **Value-congruent excluded middle (single-term form).** For closed terms `s, s'` of equal
 standard value, a sequent containing `ψ/[s]` and `∼(ψ/[s'])` is `Z∞`-derivable cut-free. -/
-theorem provable_em_cong (s s' : ArithmeticTerm ℕ)
+theorem Provable.em_cong (s s' : ArithmeticTerm ℕ)
     (hval : Semiterm.gValm ℕ ![] id s = Semiterm.gValm ℕ ![] id s')
     (ψ : ArithmeticSemiformula ℕ 1)
     (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) : ∃ a, Provable a 0 Γ := by
-  refine provable_em_cong_gen ψ.complexity ![s] ![s'] ψ le_rfl ?_ hp hn
+  refine Provable.em_cong_gen ψ.complexity ![s] ![s'] ψ le_rfl ?_ hp hn
   intro i; cases i using Fin.cases with
   | zero => simpa using hval
   | succ j => exact j.elim0
@@ -182,7 +182,7 @@ theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ}
   have h₁ : Provable α c' (insert (ψ/[s]) (insert (ψ/[nm m]) Γ)) :=
     (h.weakening (Finset.insert_subset_insert _ (Finset.subset_insert _ _))).mono_cutRank
       (le_max_left _ _)
-  obtain ⟨b, h₂⟩ := provable_em_cong (nm m) s hsval ψ
+  obtain ⟨b, h₂⟩ := Provable.em_cong (nm m) s hsval ψ
     (Γ := insert (∼(ψ/[s])) (insert (ψ/[nm m]) Γ)) (by simp) (by simp)
   have hcc : ((ψ/[s]).complexity + 1 : ℕ∞) ≤ (c' : ℕ∞) := by
     rw [show (ψ/[s]).complexity = ψ.complexity by simp]; exact_mod_cast le_max_right _ _
@@ -271,5 +271,14 @@ theorem Provable.of_derivation2 (d : 𝗣𝗔 ⟹₂ Γ) : ∃ c, ∀ e : ℕ �
     exact ⟨_, Provable.cut (asg e ▹ φ)
       (by rw [Semiformula.complexity_rew]; exact_mod_cast Nat.le_max_left _ _)
       (h1.mono_cutRank (by omega)) (h2.mono_cutRank (by omega))⟩
+
+/-- **Cut-free embedding.** Every `Derivation2` from `𝗣𝗔` embeds into `Z_∞` *cut-free* at every
+numeral assignment of its free variables. -/
+theorem Provable.of_derivation2_cutFree (d : 𝗣𝗔 ⟹₂ Γ) :
+    ∀ e : ℕ → ℕ, ∃ α, Provable α 0 (Γ.image (fun φ => asg e ▹ φ)) := by
+  obtain ⟨c, h⟩ := Provable.of_derivation2 d
+  intro e
+  obtain ⟨α, hα⟩ := h e
+  exact ⟨_, cut_elimination hα⟩
 
 end GoodsteinPA.Zinfty
