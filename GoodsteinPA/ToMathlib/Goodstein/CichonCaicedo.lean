@@ -24,18 +24,18 @@ namespace Goodstein
 open ONote
 
 /-- Eventual pointwise domination.  `EventuallyLE f g` means that, from some threshold
-onward, `f n <= g n`. -/
-def EventuallyLE (f g : ℕ -> ℕ) : Prop :=
-  ∃ N, ∀ n, N ≤ n -> f n ≤ g n
+onward, `f n ≤ g n`. -/
+def EventuallyLE (f g : ℕ → ℕ) : Prop :=
+  ∃ N, ∀ n, N ≤ n → f n ≤ g n
 
 /-- Eventual domination with a fixed additive slack on the right. -/
-def EventuallyLEWithSlack (f g : ℕ -> ℕ) (c : ℕ) : Prop :=
-  ∃ N, ∀ n, N ≤ n -> f n ≤ g n + c
+def EventuallyLEWithSlack (f g : ℕ → ℕ) (c : ℕ) : Prop :=
+  ∃ N, ∀ n, N ≤ n → f n ≤ g n + c
 
 /-- The already-machine-checked Cichon/Caicedo lower-bound direction in the shape the
 Wainer route needs first: every fixed fast-growing level below `epsilon_0` is eventually
 bounded by Goodstein length, up to the repo's documented additive slack `2`. -/
-theorem goodsteinLength_eventually_dominates_fixed_fastGrowing (o : ONote) (ho : o.NF) :
+lemma goodsteinLength_eventually_dominates_fixed_fastGrowing (o : ONote) (ho : o.NF) :
     EventuallyLEWithSlack (fun n => fastGrowing o n) Goodstein.Dom.goodsteinLength 2 :=
   Goodstein.Dom.goodsteinLength_dominates_fastGrowing ho
 
@@ -43,35 +43,30 @@ theorem goodsteinLength_eventually_dominates_fixed_fastGrowing (o : ONote) (ho :
 
 This is the elementary arithmetic engine behind the successor-level separation
 `f_o(n) + 2 < f_{o+1}(n)` for large `n`. -/
-theorem add_le_iterate_of_lt {g : ℕ -> ℕ}
-    (hstep : ∀ y, 1 ≤ y -> y + 1 ≤ g y)
-    (hpos : ∀ y, 1 ≤ y -> 1 ≤ g y) :
-    ∀ (j : ℕ) {y : ℕ}, 1 ≤ y -> y + j ≤ g^[j] y := by
-  intro j
-  induction j with
-  | zero =>
-      intro y hy
-      simp
+lemma add_le_iterate_of_lt {g : ℕ → ℕ}
+    (hstep : ∀ y, 1 ≤ y → y + 1 ≤ g y) (hpos : ∀ y, 1 ≤ y → 1 ≤ g y)
+    (j : ℕ) {y : ℕ} (hy : 1 ≤ y) : y + j ≤ g^[j] y := by
+  induction j generalizing y with
+  | zero => simp
   | succ j ih =>
-      intro y hy
-      rw [Function.iterate_succ_apply]
-      have h1 : 1 ≤ g y := hpos y hy
-      have hstepy : y + 1 ≤ g y := hstep y hy
-      have hih := ih (y := g y) h1
-      omega
+    have h1 : 1 ≤ g y := hpos y hy
+    have hstepy : y + 1 ≤ g y := hstep y hy
+    have hih := ih (y := g y) h1
+    rw [Function.iterate_succ_apply]
+    omega
 
 /-- The strict successor gap in the fast-growing hierarchy.
 
-For `m >= 4`, the notation-successor level has already iterated `f_o` long enough to
+For `m ≥ 4`, the notation-successor level has already iterated `f_o` long enough to
 swallow the additive `+2` slack from the Goodstein lower bound:
 `f_o(m) + 2 < f_{osucc o}(m)`. -/
-theorem fastGrowing_fixed_add_two_lt_successor {o : ONote} (ho : o.NF) {m : ℕ}
+lemma fastGrowing_fixed_add_two_lt_successor {o : ONote} (ho : o.NF) {m : ℕ}
     (hm : 4 ≤ m) :
     fastGrowing o m + 2 < fastGrowing (osucc o) m := by
   have hfs : fastGrowing (osucc o) m = (fastGrowing o)^[m] m := by
     rw [fastGrowing_succ (osucc o) (fundamentalSequence_osucc ho)]
-  have hstep : ∀ y, 1 ≤ y -> y + 1 ≤ fastGrowing o y := fun y hy => lt_fastGrowing o hy
-  have hpos : ∀ y, 1 ≤ y -> 1 ≤ fastGrowing o y :=
+  have hstep : ∀ y, 1 ≤ y → y + 1 ≤ fastGrowing o y := fun y hy => lt_fastGrowing o hy
+  have hpos : ∀ y, 1 ≤ y → 1 ≤ fastGrowing o y :=
     fun y hy => le_trans hy (le_fastGrowing o y)
   have hsplit : (fastGrowing o)^[m] m = (fastGrowing o)^[m - 1] (fastGrowing o m) := by
     obtain ⟨n, hn⟩ : ∃ n, m = n + 1 := ⟨m - 1, by omega⟩
@@ -85,13 +80,13 @@ theorem fastGrowing_fixed_add_two_lt_successor {o : ONote} (ho : o.NF) {m : ℕ}
 
 /-- Cichon/Caicedo in the exact no-fixed-bound form needed by Wainer.
 
-The repo's existing lower bound gives `f_{osucc o}(m) <= goodsteinLength m + 2`
+The repo's existing lower bound gives `f_{osucc o}(m) ≤ goodsteinLength m + 2`
 eventually.  The successor-gap lemma above gives `f_o(m) + 2 < f_{osucc o}(m)` for
-`m >= 4`.  Together they imply `f_o(m) < goodsteinLength m` eventually, so no fixed
+`m ≥ 4`.  Together they imply `f_o(m) < goodsteinLength m` eventually, so no fixed
 `f_o` can eventually bound the Goodstein length function from above. -/
 theorem goodsteinLength_eventually_strictly_dominates_fixed_fastGrowing (o : ONote)
     (ho : o.NF) :
-    ∃ N, ∀ m, N ≤ m -> fastGrowing o m < Goodstein.Dom.goodsteinLength m := by
+    ∃ N, ∀ m, N ≤ m → fastGrowing o m < Goodstein.Dom.goodsteinLength m := by
   obtain ⟨N, hN⟩ :=
     Goodstein.Dom.goodsteinLength_dominates_fastGrowing (osucc_NF ho)
   refine ⟨max N 4, fun m hm => ?_⟩
@@ -107,7 +102,7 @@ This is now proved from existing machine-checked growth assets plus the successo
 lemma above.  It is the exact growth-route contradiction against Wainer's fixed
 `f_o` upper bound. -/
 theorem cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing :
-    ∀ o : ONote, o.NF ->
+    ∀ o : ONote, o.NF →
       ¬ EventuallyLE Goodstein.Dom.goodsteinLength (fun n => fastGrowing o n) := by
   intro o ho hbound
   obtain ⟨N, hN⟩ := hbound
