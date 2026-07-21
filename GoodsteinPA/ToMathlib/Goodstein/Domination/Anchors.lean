@@ -36,11 +36,11 @@ example : toONote 2 4 = oadd (oadd (oadd 0 1 0) 1 0) 1 0 := by native_decide -- 
 example : toONote 3 5 = oadd (oadd 0 1 0) 1 (oadd 0 2 0) := by native_decide  -- `5 = 1·3^1 + 2`
 -- the descent: `goodsteinSeq 3` starts `3 ↦ 3 ↦ 3 ↦ 2 ↦ …`, notations strictly drop
 example : seqONote 3 0 = oadd (oadd 0 1 0) 1 (oadd 0 1 0) := by native_decide -- `G₀=3` in base 2 ↦ `ω+1`
--- the Cichoń step `hstep_toONote` (now FULLY PROVED) holds; here anchored on computable cases:
+-- the Cichoń step `hstep_toONote` holds; here anchored on computable cases:
 example : hstep (toONote 2 3) 2 = toONote 3 (bump 2 3 - 1) := by native_decide
 example : hstep (toONote 3 5) 3 = toONote 4 (bump 3 5 - 1) := by native_decide
 example : hstep (seqONote 3 0) 2 = seqONote 3 1 := by native_decide
--- C3, witnessed on a computable case: `goodsteinLength 3 = H_{seqONote 3 0}(2) − 2 = 7 − 2 = 5`
+-- the growth theorem, witnessed on a computable case: `goodsteinLength 3 = H_{seqONote 3 0}(2) − 2 = 7 − 2 = 5`
 example : hardy (seqONote 3 0) 2 = goodsteinLength 3 + 2 := by native_decide
 
 /-! ### From `Domination/Diagonal.lean` (off any headline axiom path) -/

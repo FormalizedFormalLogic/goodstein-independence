@@ -14,14 +14,10 @@ namespace ONote
 open ONote Ordinal
 
 /-- `fastGrowingε₀ i = f_{tower i}(i)` — the definitional unfolding, as a named lemma. -/
-theorem fastGrowingε₀_eq (i : ℕ) : fastGrowingε₀ i = fastGrowing (tower i) i := rfl
+lemma fastGrowingε₀_eq (i : ℕ) : fastGrowingε₀ i = fastGrowing (tower i) i := rfl
 
-/-- **Index domination — the A4 core, proved axiom-clean.** Once a tower level has overtaken
-`o` (`o < tower n`), it strictly dominates `o` at the diagonal argument:
-`f_o(n) < f_{tower n}(n)`, for `n ≥ 2` past `norm o`. The full Bachmann reachability strength
-(`reaches_of_lt`: `tower n` reaches the successor of `o` with budget `n`, generalizing
-`fastGrowing_bachmann_reach` from consecutive indices to arbitrary `α < β`) plus one strict
-successor step (`fastGrowing_lt_succ_index`). The growth gap of Kirby–Paris independence. -/
+/-- **Index domination (axiom-clean):** once a tower level overtakes `o` (`o < tower n`),
+it strictly dominates `o` at the diagonal, `f_o(n) < f_{tower n}(n)` for `n ≥ 2` past `norm o`. -/
 theorem fastGrowing_lt_of_lt_tower {o : ONote} (ho : o.NF) (n : ℕ)
     (hn : norm o < n) (h2 : 2 ≤ n) (h : o < tower n) :
     fastGrowing o n < fastGrowing (tower n) n := by
@@ -48,15 +44,13 @@ theorem fastGrowing_lt_of_lt_tower {o : ONote} (ho : o.NF) (n : ℕ)
     fastGrowing_lt_succ_index (fundamentalSequence_osucc ho) h2
   exact lt_of_lt_of_le hstrict hle
 
-/-- **A4 — domination (the headline crux).** Every fixed level of the fast-growing
-hierarchy is eventually strictly dominated by `fastGrowingε₀`. Reduced (axiom-clean modulo
-the index-domination core) to `tower_cofinal` + `fastGrowing_lt_of_lt_tower`: pick `k` with
-`o < tower k`; for `n ≥ max k 1`, `o < tower k ≤ tower n`, so `f_o(n) < f_{tower n}(n) =
-fastGrowingε₀ n`. -/
+/-- **Domination (the headline result):** every fixed level of the fast-growing hierarchy
+is eventually strictly dominated by `fastGrowingε₀`. -/
 theorem fastGrowing_lt_fastGrowingε₀ (o : ONote) (ho : o.NF) :
     ∃ N, ∀ n ≥ N, fastGrowing o n < fastGrowingε₀ n := by
   obtain ⟨k, hk⟩ := tower_cofinal o ho
-  refine ⟨max (max k (norm o + 1)) 2, fun n hn => ?_⟩
+  refine ⟨max (max k (norm o + 1)) 2, ?_⟩
+  intro n hn
   simp only [ge_iff_le, max_le_iff] at hn
   obtain ⟨⟨hkn, hnormn⟩, h2n⟩ := hn
   have hlt : o < tower n := lt_of_lt_of_le hk (tower_strictMono.monotone hkn)
