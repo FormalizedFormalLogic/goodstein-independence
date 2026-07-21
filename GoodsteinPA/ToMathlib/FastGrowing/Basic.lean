@@ -18,27 +18,9 @@ variable {o a b α β γ : ONote} {f g : ℕ → ONote} {m n x : ℕ}
 /-
 # Growth theory of the fast-growing hierarchy
 
-`Mathlib.SetTheory.Ordinal.Notation` already provides the **fast-growing hierarchy**
-on ordinal notations below `ε₀`:
-
-* `ONote.fastGrowing : ONote → ℕ → ℕ`  with `f₀ = succ`, `f_{α+1} = fun n => f_α^[n] n`,
-  `f_λ = fun n => f_{λ[n]} n` (limit `λ`, via `ONote.fundamentalSequence`);
-* `ONote.fastGrowingε₀ : ℕ → ℕ`, the one-step extension to `ε₀` itself.
-
-mathlib proves the *small values* (`fastGrowing_one = (2 * ·)`, `fastGrowing_two = fun n => 2^n * n`,
-`fastGrowingε₀_zero = 1`, `fastGrowingε₀_one = 2`) but **none of the growth theory**:
-no expansiveness, no monotonicity, no domination. Those are exactly the facts the
-Kirby–Paris growth argument needs, and they are the targets here.
-
-These lemmas are mathlib-PR-shaped (they belong next to `ONote.fastGrowing`); developing
-them here both serves the Goodstein-independence growth content and is independently useful.
-
-## Normal-form hypotheses
-`fastGrowing` is total on all of `ONote`, but the intended (and provable) statements
-hold for **normal-form** notations (`ONote.NF`). Carry `[o.NF]`/`(h : o.NF)` where the
-proof needs it; the `fundamentalSequence` correctness lemmas
-(`ONote.fundamentalSequence_has_prop`, `ONote.FundamentalSequenceProp`) and the
-`fastGrowing_zero'/_succ/_limit` characterizations are the entry points.
+Core monotonicity and expansiveness of the fast-growing hierarchy on ordinal notations below `ε₀`,
+the structural `Reaches` descent relation, and the Bachmann reachability result (proved axiom-clean
+via CNF fundamental sequences). — Targets for mathlib.
 -/
 
 
@@ -59,16 +41,8 @@ lemma fundamentalSequence_lt_of_limit
   rw [h] at hp
   exact (hp.2.1 n).2.1
 
-/-- **Expansiveness.** Every level of the fast-growing hierarchy dominates the
-identity: `n ≤ f_o(n)` for every notation `o` (no normal-form hypothesis needed —
-`fundamentalSequence_has_prop` holds for all `o`).
-
-Proof by well-founded recursion on `o` (the same `<`-recursion that *defines*
-`fastGrowing`), via the three characterizations `fastGrowing_zero'/_succ/_limit`:
-* `o = 0`: `f_o = Nat.succ`, so `n ≤ n+1`.
-* successor `o = a+1`: `f_o n = (f_a)^[n] n`; by IH `id ≤ f_a`, and iterating a
-  function that dominates the identity stays `≥ id` (`id_le_iterate_of_id_le`).
-* limit: `f_o n = f_{o[n]} n` with `o[n] < o`, so the IH applies directly. -/
+/-- **Expansiveness:** every level of the fast-growing hierarchy dominates the identity,
+`n ≤ f_o(n)`. -/
 theorem le_fastGrowing (o : ONote) (n : ℕ) : n ≤ fastGrowing o n := by
   rcases e : fundamentalSequence o with (_ | a) | f
   · -- `o = 0`: `fastGrowing o = Nat.succ`
@@ -89,14 +63,7 @@ decreasing_by all_goals exact hlt
 lemma id_le_fastGrowing (o : ONote) : (id : ℕ → ℕ) ≤ fastGrowing o :=
   fun m => le_fastGrowing o m
 
-/-- **Strict expansiveness for positive input.** For `n ≥ 1` every level strictly
-exceeds the identity, `n < f_o(n)`.
-
-Same well-founded recursion as `le_fastGrowing`:
-* `o = 0`: `f_o n = n+1 > n`.
-* successor: `n < f_a n` (strict IH) and `f_a n = (f_a)^[1] n ≤ (f_a)^[n] n`
-  (iterate count is monotone for `id ≤ f_a`, and `1 ≤ n`).
-* limit: `n < f_{o[n]} n` directly by the strict IH at `o[n] < o`. -/
+/-- **Strict expansiveness for positive input:** for `n ≥ 1`, `n < f_o(n)`. -/
 theorem lt_fastGrowing (o : ONote) (hn : 1 ≤ n) : n < fastGrowing o n := by
   rcases e : fundamentalSequence o with (_ | a) | f
   · rw [fastGrowing_zero' o e]
@@ -144,11 +111,8 @@ lemma Reaches.trans {x : ℕ} {a b c : ONote} (h1 : Reaches x a b) (h2 : Reaches
   | succ h _ ih => exact Reaches.succ h (ih h2)
   | limit h _ ih => exact Reaches.limit h (ih h2)
 
-/-- **Value transfer (the analytic side, fully proved axiom-clean).** If `β` reaches `α`
-structurally with positive budget `x`, then `f_α(x) ≤ f_β(x)`. Each step is justified:
-a predecessor step by `fastGrowing_le_succ_index` (iterating an expansive map), a
-limit-`x` step by `fastGrowing_limit` (definitional equality). This reduces *all* index
-monotonicity of the fast-growing hierarchy to the structural `Reaches` relation. -/
+/-- **Value transfer:** if `β` reaches `α` structurally with positive budget `x`,
+then `f_α(x) ≤ f_β(x)`. -/
 theorem fastGrowing_le_of_reaches (hx : 1 ≤ x)
     (h : Reaches x β α) : fastGrowing α x ≤ fastGrowing β x := by
   induction h with
@@ -186,9 +150,7 @@ lemma fundamentalSequence_oadd_limit {m : ℕ+} {h : ℕ → ONote}
     fundamentalSequence (oadd a m b) = Sum.inr (fun i => oadd a m (h i)) := by
   conv_lhs => rw [fundamentalSequence]; rw [hb]
 
-/-- **Descend a fixed prefix's tail.** A structural reach on the tail lifts to the whole
-`oadd a m ·`: every non-`refl` step's source has a non-`inl none` fundamental sequence, so
-it lifts via `fundamentalSequence_oadd_succ`/`fundamentalSequence_oadd_limit`. -/
+/-- A structural reach on the tail lifts to the whole `oadd a m ·`. -/
 lemma Reaches.oadd_tail {m : ℕ+} {δ' δ : ONote}
     (h : Reaches x δ' δ) : Reaches x (oadd a m δ') (oadd a m δ) := by
   induction h with
@@ -196,9 +158,7 @@ lemma Reaches.oadd_tail {m : ℕ+} {δ' δ : ONote}
   | succ hb _ ih => exact Reaches.succ (fundamentalSequence_oadd_succ hb) ih
   | limit hb _ ih => exact Reaches.limit (fundamentalSequence_oadd_limit hb) ih
 
-/-- **Every notation descends to 0.** The fixed-budget descent terminates (well-founded
-recursion on `o`, since `fundamentalSequence` always yields a strictly smaller notation),
-and it can only terminate at `0`. -/
+/-- Every notation descends to 0 via fixed-budget fundamental-sequence descent. -/
 lemma reaches_zero (o : ONote) (x : ℕ) : Reaches x o 0 := by
   rcases e : fundamentalSequence o with (_ | a) | g
   · have ho : o = 0 := by have hp := fundamentalSequence_has_prop o; rw [e] at hp; exact hp
@@ -210,10 +170,7 @@ lemma reaches_zero (o : ONote) (x : ℕ) : Reaches x o 0 := by
 termination_by o
 decreasing_by all_goals exact hlt
 
-/-- **Coefficient step** (any budget): `ω^e·(j+2)` descends exactly to `ω^e·(j+1)`. The
-descent strips one coefficient, leaving a tail that runs to `0` via `reaches_zero`. Holds
-for every exponent `e` (zero ⇒ a finite successor step; successor/limit ⇒ a limit step
-plus a tail descent). -/
+/-- **Coefficient step:** `ω^e·(j+2)` descends to `ω^e·(j+1)` with any budget. -/
 lemma reaches_coeff_step' (e : ONote) (j x : ℕ) :
     Reaches x (oadd e (j + 1).succPNat 0) (oadd e j.succPNat 0) := by
   rcases he : fundamentalSequence e with (_ | e') | p
@@ -254,10 +211,7 @@ lemma fundamentalSequence_omega_pow_limit {γ' : ONote} {q : ℕ → ONote}
   conv_lhs => rw [fundamentalSequence]
   rw [he]; rfl
 
-/-- **Exponent lifting.** A structural reach on exponents lifts through `ω^·`. Limit
-exponent steps lift directly (`ω^λ[i] = (ω^λ)[i]`); a successor exponent step `δ+1 → δ`
-expands into a coefficient chain `ω^δ·(x+1) → ω^δ`. This is the one place the difficulty
-of limits-of-limits is actually discharged. -/
+/-- **Exponent lifting:** a structural reach on exponents lifts through `ω^·`. -/
 lemma reaches_omega_pow_lift {x : ℕ} {γ' γ : ONote}
     (h : Reaches x γ' γ) : Reaches x (oadd γ' 1 0) (oadd γ 1 0) := by
   induction h with
@@ -276,15 +230,8 @@ lemma fundamentalSequence_ofNat_succ (k : ℕ) :
   | zero => rfl
   | succ k' => rfl
 
-/-- **Telescoping index monotonicity along a successor chain** — the general engine.
-If `g : ℕ → ONote` is a *successor chain* (`g (k+1) = g k + 1` notation-wise, i.e.
-`fundamentalSequence (g (k+1)) = inl (some (g k))`), then for `m ≤ n` and positive
-argument, `f_{g m}(x) ≤ f_{g n}(x)`: just telescope `fastGrowing_le_succ_index`.
-
-This is the reusable core behind every "successor-chain" index comparison —
-finite levels (`g = ofNat`), `β+ω` limits, and the *finite slices* `β, β+1, β+2, …`
-of a limit's own fundamental sequence (which is how the limit-of-limits residue is
-attacked: each `o[n+1]` is reached from `o[n]` by finitely many successor steps). -/
+/-- **Telescoping index monotonicity along a successor chain:** if `g` is a successor chain,
+then `f_{g m}(x) ≤ f_{g n}(x)` for `m ≤ n` and `1 ≤ x`. -/
 lemma fastGrowing_succ_chain_mono
     (hchain : ∀ k, fundamentalSequence (g (k + 1)) = Sum.inl (some (g k)))
     (hmn : m ≤ n) (hx : 1 ≤ x) :
@@ -299,10 +246,7 @@ lemma fastGrowing_ofNat_mono (hmn : m ≤ n) (hx : 1 ≤ x) :
     fastGrowing (ofNat m) x ≤ fastGrowing (ofNat n) x :=
   fastGrowing_succ_chain_mono fundamentalSequence_ofNat_succ hmn hx
 
-/-- **Finite-level argument monotonicity**, proved *cleanly* (no limit crux needed,
-since finite levels never enter the limit branch). `Monotone (f_k)` for `k : ℕ`, by
-induction on `k`: the successor step is `(f_{k})^[a] a ≤ (f_k)^[b] b` for `a ≤ b`,
-from the IH (`f_k` monotone) and `le_fastGrowing` (`id ≤ f_k`). -/
+/-- **Finite-level argument monotonicity:** each `f_k` is monotone in its argument. -/
 lemma fastGrowing_ofNat_monotone (k : ℕ) : Monotone (fastGrowing (ofNat k)) := by
   induction k with
   | zero =>
@@ -316,23 +260,8 @@ lemma fastGrowing_ofNat_monotone (k : ℕ) : Monotone (fastGrowing (ofNat k)) :=
         _ ≤ (fastGrowing (ofNat k))^[b] b :=
               (Function.monotone_iterate_of_id_le (id_le_fastGrowing (ofNat k)) hab) b
 
-/-- **The Bachmann reachability crux, structural form — proved, axiom-clean**
-(`[propext, choice, Quot.sound]`; body below is a complete structural recursion on `o`, no `sorry`).
-
-For a limit notation `o` with fundamental sequence `f`, the *next* index `f (n+1)`
-structurally reaches the *current* index `f n` with budget `n+1`:
-`Reaches (n+1) (f (n+1)) (f n)`.
-
-This is the **Bachmann property** of the standard CNF fundamental sequences: the descent
-of `f (n+1)` (at the fixed index `n+1`) passes *exactly* through `f n` — because the
-`ONote` fundamental sequence descends tails first and the coefficients pass through every
-integer value, so no tail "overshoots". From it, *all* index monotonicity of the
-fast-growing hierarchy follows via `fastGrowing_le_of_reaches` (see `fastGrowing_fundSeq_step`).
-
-The proof is a structural recursion on `o` (leading-term cases via `reaches_coeff_step'`;
-`ω^{limit}` residue via `reaches_omega_pow_lift`; limit-tail via `Reaches.oadd_tail`). This
-replaced the old analytic `sorry`; the successor-chain and `ω^2` cases are the specialisations
-`fastGrowing_fundSeq_step_of_succ` / `fastGrowing_omega_sq_…`. -/
+/-- **The Bachmann reachability property (axiom-clean):** for a limit `o` with fundamental sequence `f`,
+the next index `f (n+1)` reaches the current index `f n` with budget `n+1`. -/
 theorem fastGrowing_bachmann_reach {o : ONote} {f : ℕ → ONote}
     (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
     Reaches (n + 1) (f (n + 1)) (f n) := by
@@ -370,34 +299,23 @@ theorem fastGrowing_bachmann_reach {o : ONote} {f : ℕ → ONote}
         rw [fundamentalSequence_oadd_limit hb] at h; exact (Sum.inr.inj h).symm
       rw [hf]; exact Reaches.oadd_tail (fastGrowing_bachmann_reach hb n)
 
-/-- **The index-monotonicity crux, limit step** — now a corollary of the structural
-Bachmann reachability via the value-transfer lemma. For a limit `o` with fundamental
-sequence `f`, `f_{o[n]}(n+1) ≤ f_{o[n+1]}(n+1)`. -/
+/-- **The index-monotonicity limit step:** for a limit `o` with fundamental sequence `f`,
+`f_{o[n]}(n+1) ≤ f_{o[n+1]}(n+1)`. -/
 lemma fastGrowing_fundSeq_step
     (h : fundamentalSequence o = Sum.inr f) (n : ℕ) :
     fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) :=
   fastGrowing_le_of_reaches (Nat.succ_le_succ (Nat.zero_le n)) (fastGrowing_bachmann_reach h n)
 
-/-- **The crux for "successor-chain" limits** — proved in full (axiom-clean).
-Whenever the fundamental sequence of `o` is a *successor chain*, i.e. each `f (n+1)`
-is the notation-successor of `f n` (`fundamentalSequence (f (n+1)) = inl (some (f n))`),
-the index step is just `fastGrowing_le_succ_index`. This covers every limit of the form
-`β + ω` (e.g. `ω, ω·k, ω+k`), whose fundamental sequence increments a finite tail.
-
-Consequently the remaining genuine difficulty in `fastGrowing_fundSeq_step` lives
-*only* at limits-of-limits (`ω^ω`, `ω^(ω+1)`, …), where `f n` is itself a limit and the
-chain is not successor-stepwise — that is the sharp residue of index monotonicity. -/
+/-- **Index-monotonicity for successor-chain limits:** if the fundamental sequence is a
+successor chain, the index step reduces to `fastGrowing_le_succ_index`. -/
 lemma fastGrowing_fundSeq_step_of_succ
     (_h : fundamentalSequence o = Sum.inr f)
     (hsucc : ∀ k, fundamentalSequence (f (k + 1)) = Sum.inl (some (f k))) (n : ℕ) :
     fastGrowing (f n) (n + 1) ≤ fastGrowing (f (n + 1)) (n + 1) :=
   fastGrowing_le_succ_index (hsucc n) (Nat.succ_le_succ (Nat.zero_le n))
 
-/-- **Monotonicity propagates across a successor step.** If `o` is the notation-successor
-of `a` (`fundamentalSequence o = inl (some a)`) and `f_a` is monotone, then so is `f_o`:
-`f_o n = (f_a)^[n] n`, and iterating a monotone, `≥ id` map preserves monotonicity in the
-diagonal `n ↦ (f_a)^[n] n`. (The successor companion of `fastGrowing_le_succ_index`, at the
-level of the whole `Monotone` predicate.) -/
+/-- **Monotonicity propagates across a successor step:** if `o` is the notation-successor of `a`
+and `f_a` is monotone, then so is `f_o`. -/
 lemma fastGrowing_monotone_succ
     (h : fundamentalSequence o = Sum.inl (some a)) (ha : Monotone (fastGrowing a)) :
     Monotone (fastGrowing o) := by
@@ -408,17 +326,8 @@ lemma fastGrowing_monotone_succ
     _ ≤ (fastGrowing a)^[q] q :=
           (Function.monotone_iterate_of_id_le (id_le_fastGrowing a) hpq) q
 
-/-- **Monotonicity for successor-chain limits — the general engine, axiom-clean.**
-If `o` is a limit whose fundamental sequence `f` is a *successor chain*
-(`fundamentalSequence (f (k+1)) = inl (some (f k))`), then `f_o` is monotone *provided
-only the bottom level `f 0` is monotone*: monotonicity of every `f k` then follows from
-`fastGrowing_monotone_succ` along the chain, and the limit step is discharged by
-`fastGrowing_fundSeq_step_of_succ`.
-
-This is the clean companion to `fastGrowing_fundSeq_step_of_succ`: it lifts the *index
-step* to the whole `Monotone` predicate, and covers every `β + ω`-type limit (`ω`, `ω·k`,
-`β+ω`) in one stroke. The genuinely hard residue (`ω^ω`, `ω^(ω+1)`, …) — where the
-fundamental sequence is not a successor chain — remains in `fastGrowing_fundSeq_step`. -/
+/-- **Monotonicity for successor-chain limits:** if the fundamental sequence is a successor chain
+and the bottom level is monotone, then `f_o` is monotone. -/
 lemma fastGrowing_monotone_of_succ_chain_limit
     (hlim : fundamentalSequence o = Sum.inr f)
     (hchain : ∀ k, fundamentalSequence (f (k + 1)) = Sum.inl (some (f k)))
@@ -436,21 +345,13 @@ lemma fastGrowing_monotone_of_succ_chain_limit
       ≤ fastGrowing (f n) (n + 1) := hmono n (Nat.le_succ n)
     _ ≤ fastGrowing (f (n + 1)) (n + 1) := fastGrowing_fundSeq_step_of_succ hlim hchain n
 
-/-- **`f_ω` is monotone, axiom-clean.** `ω`'s fundamental sequence is the successor chain
-`n ↦ ofNat (n+1)`, whose bottom level `f_{ofNat 1}` is monotone (`fastGrowing_ofNat_monotone`);
-this routes through the general engine `fastGrowing_monotone_of_succ_chain_limit`. -/
+/-- **`f_ω` is monotone (axiom-clean).** -/
 lemma fastGrowing_monotone_omega : Monotone (fastGrowing (oadd 1 1 0)) := by
   have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ofNat (i + 1)) := rfl
   exact fastGrowing_monotone_of_succ_chain_limit hfs
     (fun k => fundamentalSequence_ofNat_succ (k + 1)) (fastGrowing_ofNat_monotone 1)
 
-/-- **`f_{ω·(j+1)}` is monotone, for every `j` — the whole `ω·k` family.** Each `ω·(j+1)`
-(`= oadd 1 j.succPNat 0`) is a successor-chain limit whose bottom level is `ω·j + 1`, a
-notation-successor of `ω·j`; so monotonicity propagates up the `ω·k` ladder by induction
-on `k`, with `ω·1 = ω` (`fastGrowing_monotone_omega`) as the base. This is the first
-*infinite family* of limit levels proved monotone — still all `β+ω`-type, but it exercises
-the successor-chain engine on genuinely varying notations and is the lemma the `ω^2`
-index step consumes. -/
+/-- **`f_{ω·(j+1)}` is monotone for every `j` — the whole `ω·k` family (axiom-clean).** -/
 lemma fastGrowing_monotone_omega_mul (j : ℕ) :
     Monotone (fastGrowing (oadd 1 j.succPNat 0)) := by
   induction j with
@@ -470,13 +371,7 @@ lemma fundamentalSequence_oadd_ofNat_succ (a : ONote) (m : ℕ+) (t : ℕ) :
     fundamentalSequence (oadd a m (ofNat (t + 1))) = Sum.inl (some (oadd a m (ofNat t))) := by
   cases t <;> rfl
 
-/-- **The `ω^2` index step — the first genuine instance outside the successor-chain
-class, proved axiom-clean.** `ω^2`'s fundamental sequence `i ↦ ω·(i+1)` is *not* a
-successor chain (consecutive `ω·(i+1)`, `ω·(i+2)` are both limits). The classical trick:
-`ω·(n+2)` descends *at index `n+1`* to `ω·(n+1) + (n+2)`, which **is** reachable from
-`ω·(n+1)` by a finite successor chain of length `n+2`. So the index step collapses to
-`fastGrowing_succ_chain_mono` after one limit unfolding — the concrete realization of the
-Bachmann "descent connects the two indices" property. -/
+/-- **The `ω^2` index step (first instance outside the successor-chain class, axiom-clean).** -/
 lemma fastGrowing_omega_sq_index_step (n : ℕ) :
     fastGrowing (oadd 1 n.succPNat 0) (n + 1)
       ≤ fastGrowing (oadd 1 (n + 1).succPNat 0) (n + 1) := by
@@ -490,11 +385,7 @@ lemma fastGrowing_omega_sq_index_step (n : ℕ) :
     hchain (m := 0) (n := n + 2) (Nat.zero_le _) (x := n + 1) (Nat.succ_le_succ (Nat.zero_le n))
   simpa using key
 
-/-- **`f_{ω^2}` is monotone, axiom-clean.** The first limit level *outside* the
-`β+ω` (successor-chain) class proved monotone — a real step into the harder regime.
-The limit step `f_{ω·(n+1)}(n) ≤ f_{ω·(n+2)}(n+1)` is `fastGrowing_monotone_omega_mul`
-(argument monotonicity at the fixed index `ω·(n+1)`) followed by
-`fastGrowing_omega_sq_index_step` (the genuine index increment). -/
+/-- **`f_{ω^2}` is monotone (axiom-clean).** The first limit level outside the successor-chain class. -/
 lemma fastGrowing_monotone_omega_sq : Monotone (fastGrowing (oadd (ofNat 2) 1 0)) := by
   have hlim : fundamentalSequence (oadd (ofNat 2) 1 0)
       = Sum.inr (fun i => oadd 1 i.succPNat 0) := rfl
@@ -506,9 +397,7 @@ lemma fastGrowing_monotone_omega_sq : Monotone (fastGrowing (oadd (ofNat 2) 1 0)
         fastGrowing_monotone_omega_mul n (Nat.le_succ n)
     _ ≤ fastGrowing (oadd 1 (n + 1).succPNat 0) (n + 1) := fastGrowing_omega_sq_index_step n
 
-/-- **Monotonicity in the argument, successor form** `f_o(n) ≤ f_o(n+1)`.
-Well-founded recursion on `o`; the limit case is reduced to the single crux
-`fastGrowing_fundSeq_step`, everything else is `le_fastGrowing` + iterate monotonicity. -/
+/-- **Monotonicity in the argument, successor form:** `f_o(n) ≤ f_o(n+1)`. -/
 lemma fastGrowing_le_succ (o : ONote) (n : ℕ) :
     fastGrowing o n ≤ fastGrowing o (n + 1) := by
   rcases e : fundamentalSequence o with (_ | a) | g
@@ -535,8 +424,7 @@ lemma fastGrowing_le_succ (o : ONote) (n : ℕ) :
 termination_by o
 decreasing_by all_goals exact hlt
 
-/-- **Monotonicity in the argument.** Each level `f_o` is a monotone function of `n`.
-Immediate from `fastGrowing_le_succ` via `monotone_nat_of_le_succ`. -/
+/-- **Monotonicity in the argument:** each level `f_o` is monotone. -/
 theorem fastGrowing_monotone (o : ONote) : Monotone (fastGrowing o) :=
   monotone_nat_of_le_succ (fastGrowing_le_succ o)
 
@@ -544,20 +432,8 @@ theorem fastGrowing_monotone (o : ONote) : Monotone (fastGrowing o) :=
 /-
 # Toward `fastGrowingε₀` dominating every fixed level
 
-The unboundedness that *is* the Goodstein/Kirby–Paris independence content:
-
-> For every notation `o < ε₀`, eventually `fastGrowing o n < fastGrowingε₀ n`.
-
-`fastGrowingε₀` is `mathlib`'s one-step extension of the fast-growing hierarchy to `ε₀`,
-built on the *diagonal tower* fundamental sequence `0, 1, ω, ω^ω, ω^ω^ω, …` converging to
-`ε₀`: `fastGrowingε₀ i = fastGrowing (tower i) i`, where `tower i = (fun a => ω^a)^[i] 0`.
-
-With expansiveness (`le_fastGrowing`), argument monotonicity (`fastGrowing_monotone`), and
-Bachmann reachability (`fastGrowing_bachmann_reach`) proved above, the remaining content is
-an **index domination** fact: each fixed `o` is eventually outgrown because the tower indices
-climb past it. This is worked out in `Norm.lean` (the tower and its `norm`-based general
-reachability `reaches_of_lt`) and `Epsilon0.lean` (the headline
-`fastGrowing_lt_fastGrowingε₀`), fully proved with no `sorry`.
+The technical content for establishing index domination that enables the Goodstein/Kirby–Paris
+independence result. Continued in `Norm.lean` and `Epsilon0.lean`.
 -/
 
 end ONote
