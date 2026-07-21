@@ -10,7 +10,7 @@ public import Mathlib.Data.Finset.Max
 public import Mathlib.Data.Set.Finite.Lattice
 public import Mathlib.Order.Interval.Finset.Nat
 public import Mathlib.Tactic.Ring
-public import GoodsteinPA.ToMathlib.Hardy
+public import GoodsteinPA.ToMathlib.Hardy.Comparison
 
 @[expose] public section
 

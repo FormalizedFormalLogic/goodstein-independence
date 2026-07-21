@@ -66,7 +66,8 @@ private lemma hardy_omega_pow_ofNat_succ (k x : ℕ) :
     rw [hardy_oadd_coeff (ofNat (k + 1)) (ofNat_succ_ne_zero k) x x]
     exact iterate_offset ih (x + 1) x
 
-/-- **The Hardy/fast-growing identity at finite levels:** `H_{ω^k}(n) + 1 = f_k(n+1)` for every `k : ℕ`. -/
+/-- **The Hardy/fast-growing identity at finite levels:** `H_{ω^k}(n) + 1 = f_k(n+1)` for every
+`k : ℕ`. -/
 lemma hardy_omega_pow_ofNat (k x : ℕ) :
     hardy (oadd (ofNat k) 1 0) x + 1 = fastGrowing (ofNat k) (x + 1) := by
   cases k with
@@ -84,7 +85,8 @@ lemma hardy_omega_pow_omega (n : ℕ) :
   show hardy (oadd (ofNat (n + 1)) 1 0) n + 1 = fastGrowing (ofNat (n + 1)) (n + 1)
   exact hardy_omega_pow_ofNat (n + 1) n
 
-/-- **Hardy is dominated by fast-growing at the same index:** For `n ≥ 2`, `hardy o n ≤ fastGrowing o n`. -/
+/-- **Hardy is dominated by fast-growing at the same index:** For `n ≥ 2`,
+`hardy o n ≤ fastGrowing o n`. -/
 theorem hardy_le_fastGrowing (o : ONote) (n : ℕ) (hn : 2 ≤ n) :
     hardy o n ≤ fastGrowing o n := by
   rcases e : fundamentalSequence o with (_ | a) | f
@@ -117,7 +119,8 @@ example : hardy (oadd 1 1 0) 2 ≤ fastGrowing (oadd 1 1 0) 2 := hardy_le_fastGr
 At arbitrary `α : ONote`, `H_{ω^α}(n) + 1 ≤ f_α(n+1)` unconditionally.
 -/
 
-/-- **Coefficient composition:** `H_{ω^β·(k+2)}(n) = H_{ω^β·(k+1)}(H_{ω^β}(n))`, unconditional in `β`. -/
+/-- **Coefficient composition:** `H_{ω^β·(k+2)}(n) = H_{ω^β·(k+1)}(H_{ω^β}(n))`, unconditional
+in `β`. -/
 lemma hardy_omega_pow_coeff_comp (β : ONote) (k n : ℕ) :
     hardy (oadd β (Nat.succPNat (k + 1)) 0) n
       = hardy (oadd β (Nat.succPNat k) 0) (hardy (oadd β 1 0) n) := by
@@ -184,7 +187,8 @@ theorem hardy_omega_pow_lt_fastGrowing (α : ONote) (n : ℕ) :
   have h := hardy_omega_pow_add_one_le α n
   omega
 
--- anti-vacuity at a genuine LIMIT exponent (where the bare equality is false): `H_{ω^ω}(1) = 7 < f_ω(2)`.
+-- anti-vacuity at a genuine LIMIT exponent (where the bare equality is false):
+-- `H_{ω^ω}(1) = 7 < f_ω(2)`.
 example : hardy (oadd (oadd 1 1 0) 1 0) 1 < fastGrowing (oadd 1 1 0) 2 :=
   hardy_omega_pow_lt_fastGrowing (oadd 1 1 0) 1
 
@@ -259,7 +263,8 @@ theorem hardy_coeff_add_one_le (α : ONote) (hα : α ≠ 0) (k n : ℕ) :
   rw [hardy_oadd_coeff α hα k n]
   exact iterate_offset_le (fastGrowing_monotone α) (hardy_omega_pow_add_one_le α) (k + 1) n
 
-/-- **The coefficient-general two-sided bracket:** `(f_α)^[k+1](n) ≤ H_{ω^α·(k+1)}(n) < (f_α)^[k+1](n+1)` for `α ≠ 0`. -/
+/-- **The coefficient-general two-sided bracket:**
+`(f_α)^[k+1](n) ≤ H_{ω^α·(k+1)}(n) < (f_α)^[k+1](n+1)` for `α ≠ 0`. -/
 theorem hardy_omega_pow_coeff_bracket (α : ONote) (hα : α ≠ 0) (k n : ℕ) :
     (fastGrowing α)^[k + 1] n ≤ hardy (oadd α k.succPNat 0) n
       ∧ hardy (oadd α k.succPNat 0) n < (fastGrowing α)^[k + 1] (n + 1) :=

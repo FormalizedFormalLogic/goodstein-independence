@@ -21,20 +21,20 @@ noncomputable def rk (a : α) : Ordinal := IsWellFounded.rank lt a
 lemma rk_lt_of_rel {a b : α} (h : lt a b) : rk lt a < rk lt b :=
   IsWellFounded.rank_lt_of_rel h
 
-/-- `|a|_lt ≤ γ` whenever every `lt`-predecessor has rank `< γ` (the rank recursion
-`|a|_lt = sup{|b|_lt+1 : b lt a}`). -/
-lemma rk_le_of_forall {γ : Ordinal} {a : α} (h : ∀ b, lt b a → rk lt b < γ) :
-    rk lt a ≤ γ := by
+/-- `|a|_lt ≤ b` whenever every `lt`-predecessor has rank `< b` (the rank recursion
+`|a|_lt = sup{|c|_lt+1 : c lt a}`). -/
+lemma rk_le_of_forall {b : Ordinal} {a : α} (h : ∀ c, lt c a → rk lt c < b) :
+    rk lt a ≤ b := by
   rw [rk, IsWellFounded.rank_eq]
   apply Ordinal.iSup_le
-  intro ⟨b, hb⟩
-  exact Order.succ_le_of_lt (h b hb)
+  intro ⟨c, hc⟩
+  exact Order.succ_le_of_lt (h c hc)
 
 /-- `‖lt‖` — the order type, `sup{|a|_lt + 1}`. -/
 noncomputable def orderType : Ordinal := ⨆ a : α, Order.succ (rk lt a)
 
-/-- Every rank is `< ‖lt‖.succ`; more usefully, `|a|_lt < γ` for all `a` forces `‖lt‖ ≤ γ`. -/
-lemma orderType_le_of_forall {γ : Ordinal} (h : ∀ a, rk lt a < γ) : orderType lt ≤ γ :=
+/-- Every rank is `< ‖lt‖.succ`; more usefully, `|a|_lt < b` for all `a` forces `‖lt‖ ≤ b`. -/
+lemma orderType_le_of_forall {b : Ordinal} (h : ∀ a, rk lt a < b) : orderType lt ≤ b :=
   Ordinal.iSup_le fun a => Order.succ_le_of_lt (h a)
 
 end WellFoundedRank
