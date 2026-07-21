@@ -676,7 +676,7 @@ clean pipeline; deleted together (below) to reach `src` sorry-free. -/
 
 /-! ### The value-congruent EM engine + the closed-term collapse (the `exs` kit)
 
-Mirror of `provable_em_cong_gen`/`Provable.exI_closed` (`Embedding.lean`) with the `Zef2TC`
+Mirror of `Provable.em_cong_gen`/`Provable.exI_closed` (`Embedding.lean`) with the `Zef2TC`
 budget bookkeeping of `em_Zef2TC`; the atomic cases split on `atomTrue` and close by
 `trueRel`/`trueNrel` — this is exactly where (Ax2) is load-bearing (in `Z∞` the split used
 `axTrue`; `Zef2` alone has no true-literal leaf).  The congruence kit
