@@ -37,8 +37,10 @@ lemma litTrue_subst_congr (hval : ∀ i, Semiterm.gValm ℕ ![] id (w i) = Semit
   cases b <;>
     simp only [signedLit, LitTrue, Semiformula.eval_rel, Semiformula.eval_nrel, hv, Function.comp_def]
 
+namespace Provable
+
 /-- **Value-congruent excluded middle (arity-general).** -/
-theorem Provable.em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+theorem em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (ψ : ArithmeticSemiformula ℕ n), ψ.complexity ≤ k →
     (∀ i, Semiterm.gValm ℕ ![] id (w i)
         = Semiterm.gValm ℕ ![] id (w' i)) →
@@ -159,11 +161,11 @@ where
 
 /-- **Value-congruent excluded middle (single-term form).** For closed terms `s, s'` of equal
 standard value, a sequent containing `ψ/[s]` and `∼(ψ/[s'])` is `Z∞`-derivable cut-free. -/
-theorem Provable.em_cong (s s' : ArithmeticTerm ℕ)
+theorem em_cong (s s' : ArithmeticTerm ℕ)
     (hval : Semiterm.gValm ℕ ![] id s = Semiterm.gValm ℕ ![] id s')
     (ψ : ArithmeticSemiformula ℕ 1)
     (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) : ∃ a, Provable a 0 Γ := by
-  refine Provable.em_cong_gen ψ.complexity ![s] ![s'] ψ le_rfl ?_ hp hn
+  refine em_cong_gen ψ.complexity ![s] ![s'] ψ le_rfl ?_ hp hn
   intro i; cases i using Fin.cases with
   | zero => simpa using hval
   | succ j => exact j.elim0
@@ -171,7 +173,7 @@ theorem Provable.em_cong (s s' : ArithmeticTerm ℕ)
 /-- **Closed-term existential introduction.** From a derivation of `insert (ψ/[s]) Γ` for ANY
 (closed) witness term `s` (not necessarily a numeral), conclude `insert (∃⁰ψ) Γ`, at the raised
 cut-rank bound `max c (ψ.complexity + 1)`. -/
-theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ}
+theorem exI_closed {α : Ordinal.{0}} {c : ℕ}
     (ψ : ArithmeticSemiformula ℕ 1) (s : ArithmeticTerm ℕ)
     (h : Provable α c (insert (ψ/[s]) Γ)) :
     ∃ β, Provable β (max c (ψ.complexity + 1)) (insert (∃⁰ ψ) Γ) := by
@@ -182,7 +184,7 @@ theorem Provable.exI_closed {α : Ordinal.{0}} {c : ℕ}
   have h₁ : Provable α c' (insert (ψ/[s]) (insert (ψ/[nm m]) Γ)) :=
     (h.weakening (Finset.insert_subset_insert _ (Finset.subset_insert _ _))).mono_cutRank
       (le_max_left _ _)
-  obtain ⟨b, h₂⟩ := Provable.em_cong (nm m) s hsval ψ
+  obtain ⟨b, h₂⟩ := em_cong (nm m) s hsval ψ
     (Γ := insert (∼(ψ/[s])) (insert (ψ/[nm m]) Γ)) (by simp) (by simp)
   have hcc : ((ψ/[s]).complexity + 1 : ℕ∞) ≤ (c' : ℕ∞) := by
     rw [show (ψ/[s]).complexity = ψ.complexity by simp]; exact_mod_cast le_max_right _ _
@@ -198,7 +200,7 @@ The main theorem carries a numeral assignment `asg e` to close all free variable
 
 /-- **The embedding, assignment-carrying form.** Every `Derivation2` from `𝗣𝗔` embeds into `Z_∞`
 *at every numeral assignment of its free variables* (all sequents closed). -/
-theorem Provable.of_derivation2 (d : 𝗣𝗔 ⟹₂ Γ) : ∃ c, ∀ e : ℕ → ℕ, ∃ α, Provable α c (Γ.image (fun φ => asg e ▹ φ)) := by
+theorem of_derivation2 (d : 𝗣𝗔 ⟹₂ Γ) : ∃ c, ∀ e : ℕ → ℕ, ∃ α, Provable α c (Γ.image (fun φ => asg e ▹ φ)) := by
   induction d with
   | closed Γ φ hp hn =>
     exact ⟨0, fun _ => Provable.lem (Finset.mem_image_of_mem _ hp) (by grind)⟩
@@ -274,11 +276,12 @@ theorem Provable.of_derivation2 (d : 𝗣𝗔 ⟹₂ Γ) : ∃ c, ∀ e : ℕ �
 
 /-- **Cut-free embedding.** Every `Derivation2` from `𝗣𝗔` embeds into `Z_∞` *cut-free* at every
 numeral assignment of its free variables. -/
-theorem Provable.of_derivation2_cutFree (d : 𝗣𝗔 ⟹₂ Γ) :
-    ∀ e : ℕ → ℕ, ∃ α, Provable α 0 (Γ.image (fun φ => asg e ▹ φ)) := by
-  obtain ⟨c, h⟩ := Provable.of_derivation2 d
-  intro e
+theorem of_derivation2_cutFree (d : 𝗣𝗔 ⟹₂ Γ) (e : ℕ → ℕ) :
+    ∃ α, Provable α 0 (Γ.image (fun φ => asg e ▹ φ)) := by
+  obtain ⟨c, h⟩ := of_derivation2 d
   obtain ⟨α, hα⟩ := h e
   exact ⟨_, cut_elimination hα⟩
+
+end Provable
 
 end GoodsteinPA.Zinfty
