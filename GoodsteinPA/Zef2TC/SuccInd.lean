@@ -9,29 +9,26 @@ namespace GoodsteinPA.E1EmbeddingGrind
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
-/-! ### The induction-schema kit, part 1 — `osuccs` + the ∀-closure peel -/
+/-! ### `osuccs` closure and the ∀-closure peel -/
 
-theorem Cl_osuccs {S : ONote → Prop} {α} (h : Cl S α) : ∀ n, Cl S (osuccs α n)
+lemma Cl_osuccs {S : ONote → Prop} {α} (h : Cl S α) (n : ℕ) : Cl S (osuccs α n) :=
+  match n with
   | 0 => h
   | n + 1 => Cl.osucc (Cl_osuccs h n)
 
 /-- **∀-closure peel**: if every numeral instance of the `ℓ`-ary matrix is derivable at `α`
-(uniformly in the operator/slot, `em_cong`-style stability), the universal closure is
-derivable at `osuccs α ℓ`.  Instances feed through `embedding_subst_q_cons_app`; the
-`Cl`-in-every-operator hypothesis pays every `relOp` side condition. -/
-theorem allClosure_peel {e} {d} {f₀ : ℕ → ℕ} :
-    ∀ (ℓ : ℕ) (α : ONote), α.NF → (∀ S : ONote → Prop, Cl S α) →
-      ∀ (χ : ArithmeticSemiformula ℕ ℓ) (Γ : Finset (ArithmeticFormula ℕ)),
-      (∀ (w : Fin ℓ → ℕ) (H : ONote → Prop) (f : ℕ → ℕ), Monotone f → (∀ m, m ≤ f m) →
-          f₀ 0 ≤ f 0 →
-          Zef2TC α e H f d (insert (Rew.subst (fun i => nm (w i)) ▹ χ) Γ)) →
-      (∀ k, k ≤ ℓ → Nlog (osuccs α k) ≤ f₀ 0) →
-      ∀ (H : ONote → Prop) (f : ℕ → ℕ), Monotone f → (∀ m, m ≤ f m) → f₀ 0 ≤ f 0 →
-      Zef2TC (osuccs α ℓ) e H f d (insert (∀⁰* χ) Γ) := by
-  intro ℓ
-  induction ℓ with
+(uniformly in the operator/slot), the universal closure is derivable at `osuccs α ℓ`. -/
+lemma allClosure_peel {e} {d} {f₀ : ℕ → ℕ} (ℓ : ℕ) (α : ONote) (hNF : α.NF)
+    (hCl : ∀ S : ONote → Prop, Cl S α) (χ : ArithmeticSemiformula ℕ ℓ)
+    (Γ : Finset (ArithmeticFormula ℕ))
+    (hinst : ∀ (w : Fin ℓ → ℕ) (H : ONote → Prop) (f : ℕ → ℕ), Monotone f → (∀ m, m ≤ f m) →
+        f₀ 0 ≤ f 0 → Zef2TC α e H f d (insert (Rew.subst (fun i => nm (w i)) ▹ χ) Γ))
+    (hg : ∀ k, k ≤ ℓ → Nlog (osuccs α k) ≤ f₀ 0)
+    (H : ONote → Prop) (f : ℕ → ℕ) (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (hf0 : f₀ 0 ≤ f 0) :
+    Zef2TC (osuccs α ℓ) e H f d (insert (∀⁰* χ) Γ) := by
+  induction ℓ generalizing α hNF hCl with
   | zero =>
-      intro α hNF hCl χ Γ hinst hg H f hmono hinfl hf0
       have h := hinst ![] H f hmono hinfl hf0
       have hs : Rew.subst (fun i => nm ((![] : Fin 0 → ℕ) i)) ▹ χ = χ := by
         have : (Rew.subst (fun i => nm ((![] : Fin 0 → ℕ) i)) : Rew ℒₒᵣ ℕ 0 ℕ 0)
@@ -40,7 +37,6 @@ theorem allClosure_peel {e} {d} {f₀ : ℕ → ℕ} :
         simp
       rwa [hs] at h
   | succ n ih =>
-      intro α hNF hCl χ Γ hinst hg H f hmono hinfl hf0
       have step : ∀ (w : Fin n → ℕ) (H' : ONote → Prop) (f' : ℕ → ℕ), Monotone f' →
           (∀ m, m ≤ f' m) → f₀ 0 ≤ f' 0 →
           Zef2TC (osucc α) e H' f' d
@@ -64,21 +60,19 @@ theorem allClosure_peel {e} {d} {f₀ : ℕ → ℕ} :
         have hgd : Nlog (osucc α) ≤ f' 0 := le_trans (hg 1 (by omega)) hf0'
         exact Zef2TC.allω hgd _ (fun _ => α) (fun _ => lt_osucc hNF) (fun _ => hNF)
           (osucc_NF hNF) (fun m => hCl (adjoin H' m)) fam
-      have h := ih (osucc α) (osucc_NF hNF) (fun S => Cl.osucc (hCl S)) (∀⁰ χ) Γ step
+      have h := ih (osucc α) (osucc_NF hNF) (fun S => Cl.osucc (hCl S)) (∀⁰ χ) step
         (fun k hk => by
           rw [osuccs_succ_shift]
           exact hg (k + 1) (by omega))
-        H f hmono hinfl hf0
       rw [osuccs_succ_shift] at h
       exact h
 
-
-/-! ### The induction-schema kit, part 2 — `clog` gate arithmetic + the ω-root -/
+/-! ### `clog` gate arithmetic for the `ofNat` tower, and `ω`'s closure -/
 
 /-- **The tower-gate bound**: linear-in-`k` `ofNat` towers have `clog`-gates dominated by
 `max n C` for the constant `C = 2·clog a + 12` — exactly what an arbitrary
 monotone+inflationary slot pays at branch `n`. -/
-theorem clog_tower_gate (a : ℕ) {k n : ℕ} (hk : k ≤ n) :
+lemma clog_tower_gate (a : ℕ) {k n : ℕ} (hk : k ≤ n) :
     clog (a * (k + 1)) ≤ max n (2 * clog a + 12) := by
   have h1 := clog_mul_le a (k + 1)
   have h2 : clog (k + 1) ≤ clog (n + 1) := clog_mono (by omega)
@@ -86,22 +80,26 @@ theorem clog_tower_gate (a : ℕ) {k n : ℕ} (hk : k ≤ n) :
   omega
 
 /-- `ω` is in the closure of any generating set `S`. -/
-theorem Cl_omega (S : ONote → Prop) : Cl S ONote.omega := by
+@[grind .]
+lemma Cl_omega (S : ONote → Prop) : Cl S ONote.omega := by
   rw [omega_eq_expTower]; exact Cl.expTower (Cl.ofNat 1)
 
-/-! ### The induction-schema kit, part 3 — `succInd` rewriting naturality over `ℒₒᵣ`
-(ports of `EmbeddingX.subst1_comp_bShift` / `rew_subst1_comm_q` / `rew_succInd` /
-`succInd_nnf` off `LX`). -/
+/-! ### `succInd` rewriting naturality over `ℒₒᵣ`
+
+`ℒₒᵣ` ports of `EmbeddingX.subst1_comp_bShift` / `rew_subst1_comm_q` / `rew_succInd` /
+`succInd_nnf` (originally over the language `LX`). -/
 
 /-- A degree-1 substitution fixes a `bShift`ed term. -/
-theorem subst1_comp_bShift' (t : Semiterm ℒₒᵣ ℕ 1) :
+@[grind =]
+lemma subst1_comp_bShift' (t : Semiterm ℒₒᵣ ℕ 1) :
     (Rew.subst ![t]).comp Rew.bShift = (Rew.bShift : Rew ℒₒᵣ ℕ 0 ℕ 1) := by
   ext y
   · exact Fin.elim0 y
   · simp [Rew.comp_app]
 
 /-- `g.q` commutes with substituting a `g.q`-fixed term for the leading bvar. -/
-theorem rew_subst1_comm_q' (g : SyntacticRew ℒₒᵣ 0 0) (φ : ArithmeticSemiformula ℕ 1)
+@[grind =]
+lemma rew_subst1_comm_q' (g : SyntacticRew ℒₒᵣ 0 0) (φ : ArithmeticSemiformula ℕ 1)
     (t : Semiterm ℒₒᵣ ℕ 1) (ht : g.q t = t) :
     g.q ▹ (φ/[t]) = (g.q ▹ φ)/[t] := by
   show g.q ▹ (Rew.subst ![t] ▹ φ) = Rew.subst ![t] ▹ (g.q ▹ φ)
@@ -116,7 +114,8 @@ theorem rew_subst1_comm_q' (g : SyntacticRew ℒₒᵣ 0 0) (φ : ArithmeticSemi
   rw [← TransitiveRewriting.comp_app, ← TransitiveRewriting.comp_app, heq]
 
 /-- **`succInd` commutes with a closed rewriting** (`ℒₒᵣ` port of `EmbeddingX.rew_succInd`). -/
-theorem rew_succInd' (g : SyntacticRew ℒₒᵣ 0 0) (ψ : Semiformula ℒₒᵣ ℕ 1) :
+@[grind =]
+lemma rew_succInd' (g : SyntacticRew ℒₒᵣ 0 0) (ψ : Semiformula ℒₒᵣ ℕ 1) :
     g ▹ (Arithmetic.succInd ψ) = Arithmetic.succInd (g.q ▹ ψ) := by
   unfold Arithmetic.succInd
   simp only [Nat.reduceAdd, Fin.Fin1.eq_one, Fin.isValue, Rewriting.subst1_bvar0_eq,
@@ -129,30 +128,25 @@ theorem rew_succInd' (g : SyntacticRew ℒₒᵣ 0 0) (ψ : Semiformula ℒₒ�
   · rw [rew_subst1_comm_q' g ψ (‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1) (by simp)]
 
 /-- The NNF of `succInd ψ` — the three Tait components. -/
-theorem succInd_nnf' (ψ : Semiformula ℒₒᵣ ℕ 1) :
+@[grind =]
+lemma succInd_nnf' (ψ : Semiformula ℒₒᵣ ℕ 1) :
     Arithmetic.succInd ψ = (∼ψ/[(↑(0 : ℕ) : Semiterm ℒₒᵣ ℕ 0)]) ⋎
       ((∃⁰ ∼((∼ψ/[(#0 : Semiterm ℒₒᵣ ℕ 1)]) ⋎ ψ/[(‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1)])) ⋎
         (∀⁰ ψ/[(#0 : Semiterm ℒₒᵣ ℕ 1)])) := by
   conv_lhs => unfold Arithmetic.succInd
   simp only [Semiformula.imp_eq, Semiformula.neg_all]
 
-/-! ### The induction-schema kit, part 4 — the succInd cut-tower at root `ω`
+/-! ### The `succInd` cut-tower at root `ω` -/
 
-Per numeral branch `n`, a `≤ n`-long chain of cuts `D_k ⊢ ψ(k), Δ` climbs the linear `ofNat`
-ladder `a·(k+1)` (`a := 2·complexity+4`): `D_0` is the value-congruent EM at `(nm 0, t0)`,
-`D_{k+1}` cuts `ψ(nm k)` against the fired step disjunct (`exI` at witness `k`, `andI`, EM +
-value-congruent EM at `(nm (k+1), succT k)`).  The branch ordinals are UNBOUNDED but all
-`< ω`, and their `Nlog ≈ clog(a·(k+1))` gates are paid by the branch slot `rel1 f n`
-via `clog_tower_gate` (`max n C`-domination — log beats linear).  The `allω` root is `ω`. -/
+variable {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+  (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
 
-set_option maxHeartbeats 1000000 in
-theorem metaInduction_Zef2TC (ψ step : ArithmeticSemiformula ℕ 1)
+include hmono hinfl in
+lemma metaInduction_Zef2TC (ψ step : ArithmeticSemiformula ℕ 1)
     (t0 : ArithmeticTerm ℕ) (succT : ℕ → ArithmeticTerm ℕ)
     (hval0 : stdClosedVal t0 = 0)
     (hsval : ∀ n, stdClosedVal (succT n) = n + 1)
     (hstep : ∀ n, (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT n]))
-    {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
-    (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
     (hg1 : 2 * clog (2 * ψ.complexity + 4) + 12 ≤ f 0)
     (hg2 : ψ.complexity ≤ f 0) :
     Zef2TC ONote.omega e H f (ψ.complexity + 1)
@@ -161,6 +155,11 @@ theorem metaInduction_Zef2TC (ψ step : ArithmeticSemiformula ℕ 1)
   set a : ℕ := 2 * ψ.complexity + 4 with ha
   set Δ : Finset (ArithmeticFormula ℕ) := insert (∼(ψ/[t0])) (insert (∃⁰ (∼step)) Γ) with hΔ
   have hNF : ∀ m : ℕ, (ONote.ofNat m).NF := fun m => ONote.nf_ofNat m
+  -- per numeral branch `n`, a `≤ n`-long chain of cuts climbs the linear `ofNat` ladder
+  -- `a·(k+1)`: the base case is the value-congruent EM at `(nm 0, t0)`, and the step cuts
+  -- `ψ(nm k)` against the fired step disjunct (`exI` at witness `k`, `andI`, EM +
+  -- value-congruent EM at `(nm (k+1), succT k)`); `clog_tower_gate` (`max n C`-domination)
+  -- pays the `Nlog ≈ clog (a·(k+1))` gate from the branch slot `rel1 f n`
   have chain : ∀ n k, k ≤ n →
       Zef2TC (ONote.ofNat (a * (k + 1))) e (adjoin H n) (rel1 f n) c
         (insert (ψ/[nm k]) Δ) := by
@@ -255,21 +254,19 @@ theorem metaInduction_Zef2TC (ψ step : ArithmeticSemiformula ℕ 1)
     (fun n => ofNat_lt_omega _) (fun n => hNF _) omega_NF
     (fun n => Cl.ofNat _) (fun n => chain n n le_rfl)
 
-/-! ### The induction-schema kit, part 5 — the per-instance succInd shape, and the V3 case -/
+/-! ### The per-instance `succInd` shape, and the V3 induction-schema `axm` case -/
 
 /-- The successor term of the induction step, at numeral `n`. -/
 noncomputable def succTerm (n : ℕ) : ArithmeticTerm ℕ :=
   Rew.subst ![nm n] (‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1)
 
-theorem stdClosedVal_succTerm (n : ℕ) : stdClosedVal (succTerm n) = n + 1 := by
+lemma stdClosedVal_succTerm (n : ℕ) : stdClosedVal (succTerm n) = n + 1 := by
   simp [succTerm, stdClosedVal, Matrix.empty_eq, nm]
 
-/-- **The succInd instance shape**: any (rewritten) induction-axiom instance
-`succInd ψw` is `Zef2TC`-derivable at the FIXED structural root `osucc² ω` — the ω-root
-cut-tower `metaInduction_Zef2TC` plus the two `orI` peels of the NNF. -/
-theorem succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
-    {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
-    (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+include hmono hinfl in
+/-- Any (rewritten) induction-axiom instance `succInd ψw` is `Zef2TC`-derivable at the fixed
+structural root `osucc² ω`. -/
+lemma succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
     (hg1 : 2 * clog (2 * ψw.complexity + 4) + 12 ≤ f 0)
     (hg2 : ψw.complexity ≤ f 0) :
     Zef2TC (osucc (osucc ONote.omega)) e H f (ψw.complexity + 1)
@@ -283,8 +280,8 @@ theorem succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
     intro n
     simp only [hstepw, succTerm]
     simp [← TransitiveRewriting.comp_app, Rew.subst_comp_subst]
-  have ht := metaInduction_Zef2TC ψw stepw t0 succTerm hval0 stdClosedVal_succTerm hstep
-    (e := e) (H := H) (Γ := Γ) hmono hinfl hg1 hg2
+  have ht := metaInduction_Zef2TC (hmono := hmono) (hinfl := hinfl) ψw stepw t0 succTerm
+    hval0 stdClosedVal_succTerm hstep (e := e) (H := H) (Γ := Γ) hg1 hg2
   have hb : ψw/[(#0 : Semiterm ℒₒᵣ ℕ 1)] = ψw := by simp
   -- gates for the two orI peels
   have hNs : Nlog (osucc ONote.omega) ≤ 3 := by
@@ -310,10 +307,8 @@ theorem succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
   rw [hb]
   exact horI₁
 
-/-- **V3 `axm`, the induction schema** — the LAST V3 ladder rung.  The `univCl (succInd φ)`
-sentence is env-fixed (`asg_emb_fix`), coerces to `∀⁰* (fixitr ▹ succInd φ)`, and peels by
-`allClosure_peel` into numeral instances `succInd ψw` handled by `succInd_shape_Zef2TC` at the
-uniform root `osucc² ω` — total root `osuccs (osucc² ω) fvSup`, all budgets structural. -/
+/-- **V3 `axm`, the induction schema**: any `univCl (succInd φ)` sentence in `Γ` is
+budgeted-embeddable, via `allClosure_peel` on the numeral instances of `succInd_shape_Zef2TC`. -/
 theorem budgetedEmbedsV3_succInd {Γ}
     (φ : Semiformula ℒₒᵣ ℕ 1)
     (hΓ : (↑(Semiformula.univCl (Arithmetic.succInd φ)) : ArithmeticFormula ℕ) ∈ Γ) :
@@ -355,8 +350,8 @@ theorem budgetedEmbedsV3_succInd {Γ}
         ((Rew.subst fun i => nm (w i)).comp (Rew.fixitr 0 ℓ)).q ▹ φ with hψw
       have hcx : ψw.complexity = φ.complexity := by simp [hψw]
       have hBle : B ≤ f 0 := hf0'
-      have h := succInd_shape_Zef2TC ψw (e := 0) (H := H)
-        (Γ := Γ.image (fun χ => asg env ▹ χ)) hmono' hinfl'
+      have h := succInd_shape_Zef2TC (hmono := hmono') (hinfl := hinfl') ψw (e := 0) (H := H)
+        (Γ := Γ.image (fun χ => asg env ▹ χ))
         (by rw [hcx]; exact le_trans (by rw [hB]; omega) hBle)
         (by rw [hcx]; exact le_trans (by rw [hB]; omega) hBle)
       rwa [hcx] at h
