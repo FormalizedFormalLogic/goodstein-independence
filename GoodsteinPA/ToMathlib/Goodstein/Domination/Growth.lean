@@ -4,6 +4,7 @@
 module
 
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Sequence
+public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 
 @[expose] public section
 
@@ -553,6 +554,12 @@ lemma Canon_zero (b : ℕ) : Canon b 0 := trivial
 lemma Canon_oadd (b : ℕ) (e : ONote) (n : ℕ+) (r : ONote) :
     Canon b (oadd e n r) ↔ (n : ℕ) ≤ b ∧ Canon b e ∧ Canon b r := Iff.rfl
 
+/-- `Canon b o` (every coefficient of `o` is `≤ b`) holds iff the CNF norm `norm o ≤ b`. -/
+theorem Canon_iff_norm_le (b : ℕ) (o : ONote) : Canon b o ↔ norm o ≤ b := by
+  induction o with
+  | zero => exact iff_of_true (Canon_zero b) (by simp)
+  | oadd e n r ihe ihr => rw [Canon_oadd, norm_oadd, ihe, ihr]; omega
+
 /-- A `Canon` NF notation is recovered by reading `evalNat` back at the ordinal level:
 `toOrdinal (b+1) (evalNat b E) = repr E`. Structural induction; the leading-term remainder
 bound for `toOrdinal_oadd` comes from `NF` via the engine's strict monotonicity. -/
@@ -581,6 +588,35 @@ lemma canon_round_trip (b : ℕ) (hb : 2 ≤ b) (E : ONote) (hcanon : Canon b E)
   haveI : (toONote (b + 1) (evalNat b E)).NF := toONote_NF (b + 1) (by omega) (evalNat b E)
   haveI : E.NF := hNF
   rw [← repr_inj, repr_toONote (b + 1) (by omega), canon_repr b (by omega) E hcanon hNF]
+
+/-- **`evalNat` order-reflects `<` on `Canon`/`NF` notations:** `evalNat b o < evalNat b p ↔
+o.repr < p.repr`. Immediate from the round-trip `canon_repr` plus strict monotonicity of
+`toOrdinal (b+1)`. -/
+theorem evalNat_lt_iff (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
+    (hco : Canon b o) (hcp : Canon b p) (hno : o.NF) (hnp : p.NF) :
+    evalNat b o < evalNat b p ↔ o.repr < p.repr := by
+  rw [← canon_repr b (by omega) o hco hno, ← canon_repr b (by omega) p hcp hnp]
+  exact (toOrdinal_strictMono (b + 1) (by omega)).lt_iff_lt.symm
+
+/-- `evalNat b` order-reflects `≤` on the `Canon`/`NF` domain. -/
+theorem evalNat_le_iff (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
+    (hco : Canon b o) (hcp : Canon b p) (hno : o.NF) (hnp : p.NF) :
+    evalNat b o ≤ evalNat b p ↔ o.repr ≤ p.repr := by
+  rw [← not_lt, ← not_lt, evalNat_lt_iff b hb hcp hco hnp hno]
+
+/-- `evalNat` is strictly monotone in the notation order on the `Canon`/`NF` domain. -/
+theorem evalNat_lt_of_lt (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
+    (hco : Canon b o) (hcp : Canon b p) (hno : o.NF) (hnp : p.NF) (h : o < p) :
+    evalNat b o < evalNat b p :=
+  (evalNat_lt_iff b hb hco hcp hno hnp).2 (lt_def.1 h)
+
+/-- **`evalNat`'s base-bump law:** raising the evaluation base by one is exactly the hereditary
+numeric base-change `bump (b+1)` applied to the value: `evalNat (b+1) o = bump (b+1) (evalNat b o)`
+for a `Canon b`/`NF` notation. -/
+theorem evalNat_succ_base (b : ℕ) (hb : 2 ≤ b) {o : ONote} (hco : Canon b o) (hno : o.NF) :
+    evalNat (b + 1) o = bump (b + 1) (evalNat b o) := by
+  conv_lhs => rw [← canon_round_trip b hb o hco hno]
+  exact evalNat_toONote (b + 1) (by omega) (evalNat b o)
 
 /-- `Good b o`: `o` is `Canon` except for at most one coefficient `= b+1`, parked at the active
 frontier of the descent — the lowest term, deeper in the tail, or (when `o = ω^e`) inside the
