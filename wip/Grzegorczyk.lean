@@ -140,15 +140,6 @@ theorem repr_blk_boundary (k : ℕ) {c c' : ℕ+} {x x' : ONote}
         mul_le_mul_right (by exact_mod_cast Nat.succ_le_of_lt hc) _
     _ ≤ (ω : Ordinal) ^ (k : ℕ) * (c : ℕ) + x.repr := le_self_add
 
-/-- **General cross-block ordinal descent** (Cor 3.4's across-block step, `δ = ω^ω`): if `a < b` and
-`x' < δ`, then `δ·a + x' < δ·b + x`. The lower block sits entirely below `δ·(a+1) ≤ δ·b`. -/
-theorem mul_add_lt {δ a b x x' : Ordinal} (hab : a < b) (hx' : x' < δ) :
-    δ * a + x' < δ * b + x := by
-  calc δ * a + x' < δ * a + δ := (add_lt_add_iff_left _).2 hx'
-    _ = δ * (a + 1) := by rw [mul_add, mul_one]
-    _ ≤ δ * b := mul_le_mul_right (by exact_mod_cast Order.succ_le_of_lt hab) δ
-    _ ≤ δ * b + x := le_self_add
-
 /-! ## General width-based block decomposition (for the descent/β side of Cor 3.4)
 
 Cor 3.4 carves the index `j` into blocks whose widths are `W_n = C(β_{n+1})` (not iterates), so we need
@@ -560,36 +551,6 @@ theorem AllExpAbove_of_MinExpGe {b : ONote} {k : ℕ} (hb : b.repr < (ω : Ordin
 theorem AllExpAbove_bigMul {b β : ONote} (hβ : β.NF) {k : ℕ}
     (hb : b.repr < (ω : Ordinal) ^ (k : ℕ)) : AllExpAbove b (bigMul k β) :=
   AllExpAbove_of_MinExpGe hb (MinExpGe_bigMul k hβ)
-
-/-- **Clean-append bound.** If every exponent of `a` dominates `b`, then `a + b` is `a` with `b`
-grafted as its tail, so `C (a + b) ≤ max (C a) (C b)`. -/
-theorem C_add_clean : ∀ {a : ONote}, a.NF → ∀ {b : ONote}, b.NF → AllExpAbove b a →
-    C (a + b) ≤ max (C a) (C b)
-  | 0, _, b, _, _ => by rw [ONote.zero_add, C_zero]; exact le_max_right _ _
-  | ONote.oadd e n a', hNF, b, hb, hab => by
-    obtain ⟨hbe, hab'⟩ := hab
-    have hNFe : e.NF := hNF.fst
-    have hNFa' : a'.NF := hNF.snd
-    have ih := C_add_clean hNFa' hb hab'
-    have hbelow : ONote.NFBelow (a' + b) (ONote.repr e) :=
-      ONote.add_nfBelow hNF.snd' (ONote.NF.below_of_lt' hbe hb)
-    have hadd : ONote.oadd e n a' + b = ONote.oadd e n (a' + b) := by
-      rw [ONote.oadd_add]
-      cases h : a' + b with
-      | zero => simp [ONote.addAux]
-      | oadd e'' n'' a'' =>
-        have hbXo := h ▸ hbelow
-        have hNFe'' : e''.NF := hbXo.fst
-        have hlt : ONote.repr e'' < ONote.repr e := hbXo.lt
-        have hcmp : ONote.cmp e e'' = Ordering.gt := by
-          have hc := @ONote.cmp_compares e e'' hNFe hNFe''
-          rcases hco : ONote.cmp e e'' with _ | _ | _
-          · rw [hco] at hc; exact absurd (ONote.lt_def.1 hc) (not_lt.2 hlt.le)
-          · rw [hco] at hc; exact absurd (congrArg ONote.repr hc) (ne_of_gt hlt)
-          · rfl
-        simp [ONote.addAux, hcmp]
-    rw [hadd, C_oadd, C_oadd]
-    omega
 
 /-- **Lemma 3.3(1) — descent.** `g l n (m+1) ≺ g l n m` whenever `m < F l n`. Base: `g₀_desc`.
 Step (`l+1`): decompose `m`'s block `i, j`; the increment `m ↦ m+1` either stays in block `i`
