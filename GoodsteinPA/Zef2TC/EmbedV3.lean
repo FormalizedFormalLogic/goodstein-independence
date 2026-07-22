@@ -10,36 +10,31 @@ namespace GoodsteinPA.E1EmbeddingGrind
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
-/-! ### V3 — the structural-budget master predicate (block 6)
+/-! ### V3 — the structural-budget master predicate
 
-The block-8 predicate `BudgetedEmbedsTC` existentially bound the node ordinal `α` AND the
-witness index `K` *per assignment*, which made the ω-rule `all` case demand a uniform root over
-unbounded per-branch `(K_n, α_n)`.  **V3 dissolves both**: the node ordinal `α` and the budgets
-`B,d,N,c` all live OUTSIDE `∀ env` (env-independent — as, in fact, every landed case builds them,
-since rewriting preserves `complexity`), and the ONLY env-dependence is the slot's relativization
-index, fixed as the canonical assignment sup `envSup env N`.  Then:
-* **ordinal uniformization is free** — `β n := α` (structural, uniform over branches), root `osucc α`;
-* **budget uniformization is `envSup_cons_le`** — the branch index `envSup (n:>ₙenv) N` is dominated
-  by `max (envSup env N) n`, which is exactly the `allω` branch relativization `rel1 · n` (via
-  `rel1_rel1`).  No unbounded `K_n`.
-The absorbing-norm gate `Nlog α ≤ f 0` is maintained by the structural invariant `Nlog α ≤ B`
-(`Nlog` absorbing under `osucc`/`+`), and the `Gexp`-domination field pays the `exs`/atomic witness
-budgets (control tower absorbs term growth). -/
+`BudgetedEmbedsV3` refines `BudgetedEmbedsTC` (`GoodsteinPA/Zef2TC/EmbedTC.lean`) by choosing the
+node ordinal `α` and the budgets `B, d, N, c` outside `∀ env` (uniform over assignments), with the
+only env-dependence being the relativization index, fixed as the canonical assignment sup
+`envSup env N`. -/
 def BudgetedEmbedsV3 (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ B d N : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ Nlog α ≤ B ∧
     ∀ env : ℕ → ℕ,
       Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) (envSup env N)) d
         (Γ.image (fun φ => asg env ▹ φ))
 
+variable {Γ : Finset (ArithmeticFormula ℕ)}
+
 /-- `ewRootSlot` is monotone in the structural budget `B`. -/
-theorem ewRootSlot_mono_B (e : ONote) {B B' : ℕ} (h : B ≤ B') (x : ℕ) :
+@[grind =>]
+lemma ewRootSlot_mono_B (e : ONote) {B B' : ℕ} (h : B ≤ B') (x : ℕ) :
     ewRootSlot e B x ≤ ewRootSlot e B' x := by
   simp only [ewRootSlot, rel1]
   have := hardy_monotone e (max_le_max h (le_refl x))
   omega
 
 /-- The shifted-down assignment's sup is absorbed by one extra `N`. -/
-theorem envSup_shift_le (env : ℕ → ℕ) (N : ℕ) :
+@[grind .]
+lemma envSup_shift_le (env : ℕ → ℕ) (N : ℕ) :
     envSup (fun x => env (x + 1)) N ≤ envSup env (N + 1) := by
   refine Finset.sup_le fun x hx => ?_
   simp only [Finset.mem_range] at hx
@@ -47,11 +42,11 @@ theorem envSup_shift_le (env : ℕ → ℕ) (N : ℕ) :
 
 /-- **V3 `closed`** — the deterministic-complexity EM leaf (structural `α = ofNat (2·complexity+1)`,
 budget `clog`; `envSup env 0 = 0`). -/
-theorem budgetedEmbedsV3_closed {Γ}
-    (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+lemma budgetedEmbedsV3_closed (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
   refine ⟨clog (2 * φ.complexity + 1), 0, 0, 0, ONote.ofNat (2 * φ.complexity + 1),
-    ONote.NF.zero, ONote.nf_ofNat _, Nlog_ofNat_le _, fun env => ?_⟩
+    ONote.NF.zero, ONote.nf_ofNat _, Nlog_ofNat_le _, ?_⟩
+  intro env
   have hf1 := ewRootSlot_f1 (0 : ONote) (clog (2 * φ.complexity + 1))
   have hmono : Monotone (rel1 (ewRootSlot 0 (clog (2 * φ.complexity + 1))) (envSup env 0)) :=
     rel1_monotone hf1.1.monotone (envSup env 0)
@@ -70,28 +65,29 @@ theorem budgetedEmbedsV3_closed {Γ}
   rwa [show (asg env ▹ φ).complexity = φ.complexity from by simp] at hem
 
 /-- **V3 `verum`** — `verumR` at `α = 0`. -/
-theorem budgetedEmbedsV3_verum {Γ}
-    (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
-  refine ⟨0, 0, 0, 0, 0, ONote.NF.zero, ONote.NF.zero, by simp, fun env => ?_⟩
+lemma budgetedEmbedsV3_verum (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
+  refine ⟨0, 0, 0, 0, 0, ONote.NF.zero, ONote.NF.zero, by simp, ?_⟩
+  intro env
   have hmem : (⊤ : ArithmeticFormula ℕ) ∈ Γ.image (fun ψ => asg env ▹ ψ) := by
     have := Finset.mem_image_of_mem (fun ψ => asg env ▹ ψ) h; simpa using this
   exact Zef2TC.verumR (by simp) hmem
 
 /-- **V3 `wk`** — image weakening; all structural budgets carried. -/
-theorem budgetedEmbedsV3_wk {Δ Γ}
-    (hsub : Δ ⊆ Γ) (ih : BudgetedEmbedsV3 Δ) : BudgetedEmbedsV3 Γ := by
+lemma budgetedEmbedsV3_wk {Δ} (hsub : Δ ⊆ Γ) (ih : BudgetedEmbedsV3 Δ) : BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
-  refine ⟨B, d, N, e, α, he, hαNF, hNlogB, fun env => ?_⟩
+  refine ⟨B, d, N, e, α, he, hαNF, hNlogB, ?_⟩
+  intro env
   exact (ih env).wk (ih env).gate (Finset.image_subset_image hsub)
 
-/-- **V3 `or`** — single premise; `osucc` root, `B+1` for the `Nlog`/gate slack. -/
-theorem budgetedEmbedsV3_or {Γ}
-    {φ ψ : ArithmeticFormula ℕ} (h : φ ⋎ ψ ∈ Γ)
+/-- **V3 `or`** — closes `BudgetedEmbedsV3` under `⋎`-introduction from a single premise. -/
+lemma budgetedEmbedsV3_or {φ ψ : ArithmeticFormula ℕ} (h : φ ⋎ ψ ∈ Γ)
     (ih : BudgetedEmbedsV3 (insert φ (insert ψ Γ))) : BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
-  refine ⟨B + 1, d, N, e, osucc α, he, osucc_NF hαNF, ?_, fun env => ?_⟩
+  -- `osucc` root, `B + 1` for the `Nlog`/gate slack
+  refine ⟨B + 1, d, N, e, osucc α, he, osucc_NF hαNF, ?_, ?_⟩
   · have := Nlog_osucc_le hαNF; omega
-  · have D := ih env
+  · intro env
+    have D := ih env
     rw [Finset.image_insert, Finset.image_insert] at D
     have D' := D.mono_f (fun x => relSlot_mono (Nat.le_succ B) (le_refl (envSup env N)) x)
     have hg : Nlog (osucc α) ≤ rel1 (ewRootSlot e (B + 1)) (envSup env N) 0 := by
@@ -106,12 +102,12 @@ theorem budgetedEmbedsV3_or {Γ}
       have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h; simpa using this
     rwa [Finset.insert_eq_self.mpr hmem] at hor
 
-/-- **V3 `shift`** — the shifted assignment `fun x => env (x+1)`; the index absorbs into `N+1`
-(`envSup_shift_le`).  Budgets and derivation carried. -/
-theorem budgetedEmbedsV3_shift {Γ}
-    (ih : BudgetedEmbedsV3 Γ) : BudgetedEmbedsV3 (Γ.image Rewriting.shift) := by
+/-- **V3 `shift`** — closes `BudgetedEmbedsV3` under `Rewriting.shift`. -/
+lemma budgetedEmbedsV3_shift (ih : BudgetedEmbedsV3 Γ) : BudgetedEmbedsV3 (Γ.image Rewriting.shift) := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
-  refine ⟨B, d, N + 1, e, α, he, hαNF, hNlogB, fun env => ?_⟩
+  refine ⟨B, d, N + 1, e, α, he, hαNF, hNlogB, ?_⟩
+  intro env
+  -- the shifted assignment's index absorbs into `N + 1` via `envSup_shift_le`
   have D := ih (fun x => env (x + 1))
   have himg : (Γ.image (Rewriting.shift : ArithmeticFormula ℕ → ArithmeticFormula ℕ)).image
         (fun φ => asg env ▹ φ)
@@ -127,19 +123,17 @@ theorem budgetedEmbedsV3_shift {Γ}
   rw [himg]
   exact D.mono_f (fun x => relSlot_mono (le_refl B) (envSup_shift_le env N) x)
 
-/-- **V3 `all` — THE DECISIVE CASE (block-6 probe).**  The ω-rule closes under the structural-budget
-predicate: the node ordinal is uniform (`β n := α`, root `osucc α`), and the env-local budget index
-`envSup env N` is paid by the branch relativization `rel1 · n` via `envSup_cons_le`.  This validates
-the V3 design — the block-8 `all` obstruction (unbounded per-branch `K_n, α_n`) is a predicate-shape
-artifact, dissolved by moving `α`/budgets outside `∀ env`. -/
-theorem budgetedEmbedsV3_all {Γ}
-    {φ : ArithmeticSemiformula ℕ 1} (h : ∀⁰ φ ∈ Γ)
+/-- **V3 `all`** — closes `BudgetedEmbedsV3` under the ω-rule for `∀⁰ φ`. -/
+lemma budgetedEmbedsV3_all {φ : ArithmeticSemiformula ℕ 1} (h : ∀⁰ φ ∈ Γ)
     (ih : BudgetedEmbedsV3 (insert (Rewriting.free φ) (Γ.image Rewriting.shift))) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
-  refine ⟨B + 1, d, N, e, osucc α, he, osucc_NF hαNF, ?_, fun env => ?_⟩
+  -- the node ordinal is uniform over branches (`β n := α`, root `osucc α`); the env-local budget
+  -- index `envSup env N` is paid by the branch relativization `rel1 · n` via `envSup_cons_le`
+  refine ⟨B + 1, d, N, e, osucc α, he, osucc_NF hαNF, ?_, ?_⟩
   · have := Nlog_osucc_le hαNF; omega
-  · -- the ω-family: each branch is the IH at `n :>ₙ env`, transported to the branch slot/operator
+  · intro env
+    -- the ω-family: each branch is the IH at `n :>ₙ env`, transported to the branch slot/operator
     have hfam : ∀ n, Zef2TC α e (adjoin (fun _ : ONote => True) n)
         (rel1 (rel1 (ewRootSlot e (B + 1)) (envSup env N)) n) d
         (insert (((asg env).q ▹ φ)/[nm n])
@@ -198,12 +192,8 @@ theorem budgetedEmbedsV3_all {Γ}
     rw [Finset.insert_eq_self.mpr hmem] at hall
     exact hall
 
-/-- **V3 `and`** — two-premise join, all structural: control `osucc (e₁ + e₂)`, root
-`osucc (α₁ + α₂)`, `B := max B₁ B₂ + norm e₁ + norm e₂ + 2` (covers the `Nlog` invariant AND
-the `relSlot_le` norm gates), `N := max N₁ N₂`, `d := max d₁ d₂`.  Unlike block-8, the root
-gate is FREE from the structural invariant (`Nlog root ≤ B ≤ slot 0`) — no succ-gap rung. -/
-theorem budgetedEmbedsV3_and {Γ}
-    {φ ψ : ArithmeticFormula ℕ} (h : φ ⋏ ψ ∈ Γ)
+/-- **V3 `and`** — closes `BudgetedEmbedsV3` under `⋏`-introduction from two premises. -/
+lemma budgetedEmbedsV3_and {φ ψ : ArithmeticFormula ℕ} (h : φ ⋏ ψ ∈ Γ)
     (ihp : BudgetedEmbedsV3 (insert φ Γ)) (ihq : BudgetedEmbedsV3 (insert ψ Γ)) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B₁, d₁, N₁, e₁, α₁, he₁, hα₁NF, hN₁, ih₁⟩ := ihp
@@ -215,13 +205,16 @@ theorem budgetedEmbedsV3_and {Γ}
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
     lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   have haddNF : (α₁ + α₂).NF := by haveI := hα₁NF; haveI := hα₂NF; exact ONote.add_nf α₁ α₂
+  -- control `osucc (e₁ + e₂)`, root `osucc (α₁ + α₂)`; `B` covers both the `Nlog` invariant and
+  -- the `relSlot_le` norm gates, so the root gate is free from the structural invariant
   set B := max B₁ B₂ + norm e₁ + norm e₂ + 2 with hB
   refine ⟨B, max d₁ d₂, max N₁ N₂, osucc (e₁ + e₂), osucc (α₁ + α₂),
-    heNF, osucc_NF haddNF, ?_, fun env => ?_⟩
+    heNF, osucc_NF haddNF, ?_, ?_⟩
   · have hs := Nlog_osucc_le haddNF
     have ha := Nlog_add_le_max_succ α₁ hα₁NF α₂ hα₂NF
     omega
-  · have hff₁ : ∀ x, rel1 (ewRootSlot e₁ B₁) (envSup env N₁) x
+  · intro env
+    have hff₁ : ∀ x, rel1 (ewRootSlot e₁ B₁) (envSup env N₁) x
         ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) B) (envSup env (max N₁ N₂)) x :=
       relSlot_le he₁ heNF hlt₁ (by omega)
         (envSup_mono_N env (le_max_left N₁ N₂)) (by omega)
@@ -251,11 +244,8 @@ theorem budgetedEmbedsV3_and {Γ}
       simpa using this
     rwa [Finset.insert_eq_self.mpr hmem] at hand
 
-/-- **V3 `cut`** — the two-premise join of `and` with the cut rank `max`ed against
-`φ.complexity + 1` and the read gate paid by absorbing `φ.complexity` into `B`
-(rewriting preserves `complexity`, so this stays env-independent). -/
-theorem budgetedEmbedsV3_cut {Γ}
-    {φ : ArithmeticFormula ℕ}
+/-- **V3 `cut`** — closes `BudgetedEmbedsV3` under the cut rule for `φ` and `∼φ`. -/
+lemma budgetedEmbedsV3_cut {φ : ArithmeticFormula ℕ}
     (ihp : BudgetedEmbedsV3 (insert φ Γ)) (ihn : BudgetedEmbedsV3 (insert (∼φ) Γ)) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B₁, d₁, N₁, e₁, α₁, he₁, hα₁NF, hN₁, ih₁⟩ := ihp
@@ -267,13 +257,16 @@ theorem budgetedEmbedsV3_cut {Γ}
   have hlt₂ : e₂ < osucc (e₁ + e₂) :=
     lt_of_le_of_lt (le_add_left_NF he₁ he₂) (lt_osucc headdNF)
   have haddNF : (α₁ + α₂).NF := by haveI := hα₁NF; haveI := hα₂NF; exact ONote.add_nf α₁ α₂
+  -- the `and` join, with the cut rank `max`ed against `φ.complexity + 1` and the read gate paid
+  -- by absorbing `φ.complexity` into `B` (rewriting preserves `complexity`)
   set B := max B₁ B₂ + norm e₁ + norm e₂ + φ.complexity + 2 with hB
   refine ⟨B, max (max d₁ d₂) (φ.complexity + 1), max N₁ N₂, osucc (e₁ + e₂),
-    osucc (α₁ + α₂), heNF, osucc_NF haddNF, ?_, fun env => ?_⟩
+    osucc (α₁ + α₂), heNF, osucc_NF haddNF, ?_, ?_⟩
   · have hs := Nlog_osucc_le haddNF
     have ha := Nlog_add_le_max_succ α₁ hα₁NF α₂ hα₂NF
     omega
-  · have hff₁ : ∀ x, rel1 (ewRootSlot e₁ B₁) (envSup env N₁) x
+  · intro env
+    have hff₁ : ∀ x, rel1 (ewRootSlot e₁ B₁) (envSup env N₁) x
         ≤ rel1 (ewRootSlot (osucc (e₁ + e₂)) B) (envSup env (max N₁ N₂)) x :=
       relSlot_le he₁ heNF hlt₁ (by omega)
         (envSup_mono_N env (le_max_left N₁ N₂)) (by omega)
@@ -310,20 +303,16 @@ theorem budgetedEmbedsV3_cut {Γ}
       (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
 
-/-- **V3 `exs`** — the closed-term collapse with a STRUCTURAL witness budget.  The witness
-`m = stdClosedVal (asg env t)` is env-dependent, but `stdClosedVal_asg_le_Gexp_iter` bounds it
-by `Gexp^[c] (envSup env Nt)` with STRUCTURAL `(c, Nt)`; raising the control tower to
-`e := osucc (e₁ + ω²·(c+1))` absorbs the iterate into a single Hardy value
-(`Gexp_iter_eq_hardy`) dominated by the root slot (`hardy_le_of_lt`, `norm` gate paid by `B`).
-The value-congruent EM + cut + `exI` assembly ports from block-8; the ordinal-join gates are
-free from the structural `Nlog ≤ B` invariant. -/
-theorem budgetedEmbedsV3_exs {Γ}
-    {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
+/-- **V3 `exs`** — closes `BudgetedEmbedsV3` under ∃-introduction for `∃⁰ φ` with a structural
+witness budget. -/
+lemma budgetedEmbedsV3_exs {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
     (ih : BudgetedEmbedsV3 (insert (φ/[t]) Γ)) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B₁, d₁, N₁, e₁, α₁, he₁, hα₁NF, hN₁, ih₁⟩ := ih
   obtain ⟨c, Nt, hdom⟩ := stdClosedVal_asg_le_Gexp_iter t
-  -- the Gexp control tower `ω²·(c+1)` and the joined control `e`
+  -- the witness `m = stdClosedVal (asg env t)` is env-dependent, but bounded by
+  -- `Gexp^[c] (envSup env Nt)` with structural `(c, Nt)`; the Gexp control tower `ω²·(c+1)` and
+  -- the joined control `e` absorb the iterate into a single Hardy value dominated by the root slot
   set c' : ℕ+ := ⟨c + 1, Nat.succ_pos c⟩ with hc'
   set eG : ONote := ONote.oadd (ONote.ofNat 2) c' 0 with heG
   have heGNF : eG.NF := (ONote.nf_ofNat 2).oadd c' ONote.NFBelow.zero
@@ -342,14 +331,15 @@ theorem budgetedEmbedsV3_exs {Γ}
   have haddNF : (α₁ + ONote.ofNat (2 * φ.complexity + 1)).NF := by
     haveI := hα₁NF; haveI := hofNF; exact ONote.add_nf _ _
   refine ⟨B, d, N, e, osucc (osucc (α₁ + ONote.ofNat (2 * φ.complexity + 1))),
-    heNF, osucc_NF (osucc_NF haddNF), ?_, fun env => ?_⟩
+    heNF, osucc_NF (osucc_NF haddNF), ?_, ?_⟩
   · -- the structural `Nlog` invariant at the doubled-osucc root
     have h1 := Nlog_osucc_le (osucc_NF haddNF)
     have h2 := Nlog_osucc_le haddNF
     have h3 := Nlog_add_le_max_succ α₁ hα₁NF _ hofNF
     have h4 := Nlog_ofNat_le (2 * φ.complexity + 1)
     omega
-  · set M : ℕ := envSup env N with hM
+  · intro env
+    set M : ℕ := envSup env N with hM
     set F : ℕ → ℕ := rel1 (ewRootSlot e B) M with hF
     set ψ' : ArithmeticSemiformula ℕ 1 := (asg env).q ▹ φ with hψ'
     set s : ArithmeticTerm ℕ := asg env t with hs
