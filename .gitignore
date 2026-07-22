@@ -23,9 +23,6 @@ docbuild/.lake/
 # junk
 f.txt
 
-# Claude
-.claude/plans
-
 # env
 .envrc
 
