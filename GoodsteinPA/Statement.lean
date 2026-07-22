@@ -48,12 +48,6 @@ theorem wainer_bound_of_pa_proves_goodstein :
     ReadoffValueGate.gated_certificate_uniform
     Scirc_dom_pad master_conversion h
 
-attribute [goodstein_blueprint 14 clean "wainer_axiom" "0" 100 wainer_bound_of_pa_proves_goodstein
-  []
-  ["Discharged axiom → theorem: wainer_bound_witness applied at the axiom's verbatim type; the three hypotheses gated_certificate_uniform (ReadoffValueGate) / Scirc_dom_pad + master_conversion (Hardy majorization) are all kernel-clean."]
-  "The specialized Wainer classification, discharged by the wainer ladder over the Z^e operator calculus (embed → pass → rank-0 → Δ₀ read-off → splice)."]
-  wainer_bound_of_pa_proves_goodstein
-
 /-- **Kirby–Paris (1982).** Peano Arithmetic does not prove that every Goodstein sequence
 terminates. If PA proved Goodstein, Wainer would put the Goodstein length below a fixed `f_o`
 (`wainer_bound_of_pa_proves_goodstein`); Cichon/Caicedo says no fixed `f_o` bounds it
@@ -63,12 +57,6 @@ theorem peano_not_proves_goodstein : 𝗣𝗔 ⊬ ↑goodsteinSentence := by
   intro hpa
   obtain ⟨o, ho, hbound⟩ := wainer_bound_of_pa_proves_goodstein hpa
   exact cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing o ho hbound
-
-attribute [goodstein_blueprint 16 clean "pa_not_proves_goodstein" "0" 100 peano_not_proves_goodstein
-  []
-  ["Crown: PA ⊬ Goodstein assembled from the discharged Wainer bound vs the Cichon/Caicedo no-fixed-bound theorem."]
-  "Crown: the PA ⊬ Goodstein summit, proved from wainer_bound_of_pa_proves_goodstein and Goodstein.cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing; footprint [propext, Classical.choice, Quot.sound]."]
-  peano_not_proves_goodstein
 
 /-- PA cannot refute the Goodstein sentence either: `ℕ` satisfies `goodsteinSentence`
 (every genuine Goodstein sequence terminates) and PA is sound with respect to `ℕ`, so no

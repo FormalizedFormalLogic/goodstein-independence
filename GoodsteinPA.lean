@@ -1,6 +1,5 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
-public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
