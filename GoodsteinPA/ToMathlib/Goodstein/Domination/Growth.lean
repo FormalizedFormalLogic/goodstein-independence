@@ -4,7 +4,6 @@
 module
 
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Sequence
-public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 
 @[expose] public section
 
