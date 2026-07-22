@@ -47,6 +47,7 @@ public import GoodsteinPA.ToMathlib.Goodstein.Domination.Sequence
 public import GoodsteinPA.ToMathlib.Hardy.Anchors
 public import GoodsteinPA.ToMathlib.Hardy.Basic
 public import GoodsteinPA.ToMathlib.Hardy.Comparison
+public import GoodsteinPA.ToMathlib.Hardy.Gexp
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 public import GoodsteinPA.ToMathlib.Hardy.Structure
 public import GoodsteinPA.ToMathlib.ONote.Computability
