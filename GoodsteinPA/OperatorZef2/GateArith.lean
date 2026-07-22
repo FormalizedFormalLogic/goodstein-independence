@@ -126,31 +126,4 @@ lemma ewN_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
     have hb : 2 * f 0 + 1 ≤ f (f 0) := hlow (f 0)
     exact le_trans (by omega : ewN α + 1 ≤ f (f 0)) hff
 
-/-- `Nlog (collapse α) = Nlog α + 1` (`collapse α = oadd α 1 0`, `clog 1 = 1`) — the `Nlog`
-analog of `ewN_collapse`. -/
-lemma Nlog_collapse (α) : Nlog (collapse α) = Nlog α + 1 := by
-  show Nlog (oadd α 1 0) = Nlog α + 1
-  have hc : clog 1 = 1 := by decide
-  simp [Nlog_oadd, hc]
-
-/-- **Per-node gate for the pass over `Nlog`** — the analog of `ewN_collapse_le`: the rebuilt
-node at `collapse α` with slot `ewIter f α` closes its `Nlog` gate from the derivation's base
-gate `Nlog α ≤ f 0` + the EwLow floor.  Same `f (f 0)` mechanism; only `hlow`, no strictness,
-so it survives the `allω` branches' `rel1 f n` slots. -/
-lemma Nlog_collapse_le (hlow : ∀ m, 2 * m + 1 ≤ f m)
-    (hgate : Nlog α ≤ f 0) : Nlog (collapse α) ≤ ewIter f α 0 := by
-  rw [Nlog_collapse]
-  by_cases hα : α = 0
-  · subst hα
-    simp only [Nlog_zero, ewIter_zero]
-    have := hlow 0; omega
-  · have h0α : (0 : ONote) < α := by
-      cases α with
-      | zero => exact (hα rfl).elim
-      | oadd e n a => exact oadd_pos e n a
-    have hlow' := ewIter_lower (f := f) (b := 0) (a := α) (m := 0) NF.zero h0α (Nat.zero_le _)
-    have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow'
-    have hb : 2 * f 0 + 1 ≤ f (f 0) := hlow (f 0)
-    omega
-
 end GoodsteinPA.OperatorZeh

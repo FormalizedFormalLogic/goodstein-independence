@@ -812,6 +812,46 @@ lemma ewIterTower_monotone (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m) (a : 
   | (d + 1) => ewIter_monotone (ewIterTower_monotone hmono hinfl a d)
       (ewIterTower_infl hinfl a d) _
 
+/-- `Nlog (collapse a) = Nlog a + 1` (`collapse a = oadd a 1 0`, `clog 1 = 1`). -/
+@[grind =]
+theorem Nlog_collapse (a : ONote) : Nlog (collapse a) = Nlog a + 1 := by
+  show Nlog (oadd a 1 0) = Nlog a + 1
+  have hc : clog 1 = 1 := by decide
+  simp [Nlog_oadd, hc]
+
+/-- **Per-node gate over `Nlog`:** the rebuilt node at `collapse a` with slot `ewIter f a` closes
+its `Nlog` gate from the derivation's base gate `Nlog a ≤ f 0` plus the `2m+1` floor. -/
+theorem Nlog_collapse_le {f : ℕ → ℕ} (hlow : ∀ m, 2 * m + 1 ≤ f m) {a : ONote}
+    (hgate : Nlog a ≤ f 0) : Nlog (collapse a) ≤ ewIter f a 0 := by
+  rw [Nlog_collapse]
+  by_cases ha : a = 0
+  · subst ha
+    simp only [Nlog_zero, ewIter_zero]
+    have := hlow 0; omega
+  · have h0a : (0 : ONote) < a := pos_of_ne_zero ha
+    have hlow' := ewIter_lower (f := f) (b := 0) (a := a) (m := 0) NF.zero h0a (Nat.zero_le _)
+    have hff : f (f 0) ≤ ewIter f a 0 := by simpa [ewIter_zero] using hlow'
+    have hb : 2 * f 0 + 1 ≤ f (f 0) := hlow (f 0)
+    omega
+
+/-- The tower slot preserves the `2m+1` lower bound. -/
+theorem ewIterTower_low {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (hlow : ∀ m, 2 * m + 1 ≤ f m) (a : ONote) (d m : ℕ) : 2 * m + 1 ≤ ewIterTower f d a m :=
+  match d, m with
+  | 0, m => hlow m
+  | (d + 1), m => ewIter_low (ewIterTower_infl hinfl a d) (ewIterTower_low hmono hinfl hlow a d)
+      (collapseIter d a) m
+
+/-- **The Def-16 tower gate over `Nlog`:** `d` passes carry the base gate `Nlog a ≤ f 0` to
+`Nlog (collapseIter d a) ≤ ewIterTower f d a 0`. -/
+theorem Nlog_collapseIter_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (hlow : ∀ m, 2 * m + 1 ≤ f m) {a : ONote} (hgate : Nlog a ≤ f 0) :
+    ∀ d, Nlog (collapseIter d a) ≤ ewIterTower f d a 0
+  | 0 => hgate
+  | (d + 1) =>
+      Nlog_collapse_le (ewIterTower_low hmono hinfl hlow a d)
+        (Nlog_collapseIter_le hmono hinfl hlow hgate d)
+
 /-- A pointwise-dominated slot yields a pointwise-dominated `ewIter`: if `f x ≤ g x` for all `x`
 (with `g` monotone and inflationary), then `ewIter f a m ≤ ewIter g a m`. -/
 lemma ewIter_mono_slot {f g : ℕ → ℕ} (hfg : ∀ x, f x ≤ g x)
