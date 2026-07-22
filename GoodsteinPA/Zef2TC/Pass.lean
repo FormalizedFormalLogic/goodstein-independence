@@ -9,14 +9,7 @@ namespace GoodsteinPA.E1EmbeddingGrind
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
-/-! ### Block 12d — `Zef2TCProv` + the TC running-family ∀/∃ cut-reduction + `stepAllωTC_bnd`
-
-The last reduction the TC pass needs: the port of `cutReduceAllAuxRunning_Zf2` (the Towsner
-§19.6 running-family reduction, fresh root `α + γ`, output slot `g ∘ f`) to the full `Zef2TC`
-rule set.  The five NEW rules are all head-inert for the erased `∃⁰ ∼φ` (truth leaves survive
-the erasure; `andI`/`orI` rebuild at the fresh root exactly like `allω`), so the port is
-mechanical; the live cases (`exI` principal, `cut`) are verbatim.  `stepAllωTC_bnd` then
-mirrors `stepAllω_Zf2_bnd` via the banked `allω_inversion`. -/
+variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
 /-- The `≤`-slack wrapper over `Zef2TC` (mirror of `Zef2Prov`). -/
 def Zef2TCProv (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
@@ -24,31 +17,29 @@ def Zef2TCProv (α e : ONote) (H : ONote → Prop) (f : ℕ → ℕ) (c : ℕ) (
 
 namespace Zef2TCProv
 
-theorem of {α e} {H} {f} {c} {Γ}
-    (hNF : α.NF) (hH : Cl H α) (hN : Nlog α ≤ f 0) (D : Zef2TC α e H f c Γ) :
+lemma of (hNF : α.NF) (hH : Cl H α) (hN : Nlog α ≤ f 0) (D : Zef2TC α e H f c Γ) :
     Zef2TCProv α e H f c Γ :=
   ⟨α, le_refl _, hNF, hH, hN, D⟩
 
-theorem mono {α β e} {H} {f} {c} {Γ}
-    (hα : α ≤ β) : Zef2TCProv α e H f c Γ → Zef2TCProv β e H f c Γ := by
+lemma mono {β} (hα : α ≤ β) : Zef2TCProv α e H f c Γ → Zef2TCProv β e H f c Γ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', le_trans hα' hα, hNF, hH, hN, D⟩
 
-theorem weakening {α e} {H} {f} {c} {Γ Δ}
-    (h : Γ ⊆ Δ) : Zef2TCProv α e H f c Γ → Zef2TCProv α e H f c Δ := by
+lemma weakening {Δ} (h : Γ ⊆ Δ) : Zef2TCProv α e H f c Γ → Zef2TCProv α e H f c Δ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', hα', hNF, hH, hN, Zef2TC.wk hN h D⟩
 
-theorem mono_f {α e} {H} {f f'} {c} {Γ}
-    (h : ∀ x, f x ≤ f' x) : Zef2TCProv α e H f c Γ → Zef2TCProv α e H f' c Γ := by
+lemma mono_f {f'} (h : ∀ x, f x ≤ f' x) : Zef2TCProv α e H f c Γ → Zef2TCProv α e H f' c Γ := by
   rintro ⟨α', hα', hNF, hH, hN, D⟩
   exact ⟨α', hα', hNF, hH, le_trans hN (h 0), D.mono_f h⟩
 
 end Zef2TCProv
 
 set_option maxHeartbeats 1000000 in
-/-- **`cutReduceAllAuxRunning_TC`** — the running-family ∀/∃ cut-reduction over `Zef2TC`
-(port of `cutReduceAllAuxRunning_Zf2`; fresh root `α + γ`, output slot `g ∘ f`). -/
+/-- The running-family ∀/∃ cut-reduction over `Zef2TC`: given a running family of proofs of
+`φ/[n]` at a fixed root `α` and a proof `D` of `Δ` containing `∃⁰ ∼φ`, produces a proof of
+`(Δ.erase (∃⁰ ∼φ)) ∪ Γ` at the fresh root `α + γ` and output slot `g ∘ f`.
+- [Tow20, §19.6] -/
 theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c} {α e}
     {Γ : Finset (ArithmeticFormula ℕ)} {g : ℕ → ℕ} (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
@@ -292,9 +283,9 @@ theorem cutReduceAllAuxRunning_TC {φ : ArithmeticSemiformula ℕ 1} {c} {α e}
         (lt_of_le_of_lt ha₂le (add_lt_add_left_NF hαNF hβψNF hγNF hβψ))
         ha₁NF ha₂NF haddNF ha₁H ha₂H D₁' D₂'
 
-/-- **`stepAllωTC_bnd`** — the bound-exposing principal ∀/∃ cut-reduction step over `Zef2TC`
-(mirror of `stepAllω_Zf2_bnd`): invert the ∀-side via `allω_inversion`, feed the running
-reduction; output witness ordinal bounded by `P₁ + P₂`. -/
+/-- The bound-exposing principal ∀/∃ cut-reduction step over `Zef2TC`: inverts the ∀-side proof
+via `allω_inversion`, feeds `cutReduceAllAuxRunning_TC`, and bounds the output witness by `P₁ + P₂`.
+- [Tow20, §19.6] -/
 theorem stepAllωTC_bnd {E} {H} {c} {Γ}
     {χ : ArithmeticSemiformula ℕ 1} {P₁ P₂ : ONote} {f g : ℕ → ℕ}
     (hP₁ : P₁.NF) (hP₂ : P₂.NF)
@@ -322,20 +313,11 @@ theorem stepAllωTC_bnd {E} {H} {c} {Γ}
   exact ((hred.weakening
     (Finset.union_subset (Finset.erase_insert_subset _ _) (Finset.Subset.refl Γ))).mono hbnd)
 
-/-! ### Block 12e — `passAuxTC`: the cut-elimination pass over `Zef2TC`
-
-The port of `passAux` to the full rule set.  New leaves (`trueRel`/`trueNrel`/`verumR`) rebuild
-at `collapse α` like `axL`; `andI`/`orI` rebuild like `exI` (two/one premises, slot-lifted).
-The top-rank cut dispatches by cut-formula shape to the four banked reductions:
-∀/∃ → `stepAllωTC_bnd`; ⋏/⋎ → `stepAnd_Zef2TC`; ⊤/⊥ → `stepVerum_Zef2TC`; atoms →
-`stepAtom_Zef2TC`.  The finite steps' `osucc` roots sit under `collapse α = ω^α` by additive
-principality + limit headroom (`osucc_lt_collapse`), and their `Nlog … + 2` gates are paid by
-one extra threaded base-slack conjunct `3 ≤ f 0` (preserved by `rel1`, satisfied by every real
-root slot: `ewRootSlot … 0 ≥ 3`). -/
-
 set_option maxHeartbeats 3200000 in
-/-- **`passAuxTC`** — one cut-elimination pass over `Zef2TC` (port of `passAux`): the ordinal
-collapses (`collapse α`), the slot iterates (`ewIter f α`), the rank drops `c+1 → c`. -/
+/-- One cut-elimination pass over `Zef2TC`: given a proof at rank `r = c + 1`, produces a proof
+at rank `c` whose ordinal is the collapse `collapse α` and whose witness slot iterates to
+`ewIter f α`. The top-rank cut dispatches by cut-formula shape to `stepAllωTC_bnd` (∀/∃),
+`stepAnd_Zef2TC` (⋏/⋎), `stepVerum_Zef2TC` (⊤/⊥), and `stepAtom_Zef2TC` (atoms). -/
 theorem passAuxTC (c : ℕ) {e} (heNF : e.NF)
     {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {r : ℕ}
     (D : Zef2TC α e H f r Γ) : r = c + 1 → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
