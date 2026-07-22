@@ -1,29 +1,24 @@
 /-
-# `FvSubst.lean` — free-variable substitution on coded terms/formulas (the `zsubst` substrate)
+# Free-variable substitution on coded terms/formulas
 
-The genuine internalized cut-elimination reduct (`RedSound`, crux-2's last wall) needs
-**eigenvariable substitution on Z-derivations**: replace a free variable `^&a` throughout a
-derivation by a numeral `n`. Foundation's `subst`/`substs1` substitute the *bound* variables
-`^#i` only (`termSubst_fvar : termSubst L w ^&x = ^&x` is the identity on free vars), so they
-cannot realize `^&a ↦ t`. This file builds the missing operation from scratch, mirroring
+Foundation's `termSubst`/`substs1` substitute *bound* variables `^#i` only
+(`termSubst_fvar : termSubst L w ^&x = ^&x` is the identity on free variables), so they cannot
+express `^&a ↦ t` for a free variable `a`. This file supplies that missing operation, mirroring
 Foundation's `TermSubst`/`TermShift`/`Substs` `Language.TermRec`/`UformulaRec1` recursions:
 
 * `termFvSubst a t u` — replace `^&a` by term `t` in coded term `u` (identity on `^&x`, `x ≠ a`).
 * `fvSubst a t p`     — the same on a coded formula `p` (rewrites the atom term-vectors).
 
-Both are `𝚺₁`-definable and preserve `IsSemiterm`/`IsSemiformula`. The derivation-level
-`zsubst` (rung 1 of the lap-70 ladder) recurses these over a Z-derivation tree.
+Both are `𝚺₁`-definable and preserve `IsSemiterm`/`IsSemiformula`/`IsUFormula`.
 -/
 module
 
-public import Foundation.FirstOrder.Incompleteness.Second
+public import Foundation.FirstOrder.Bootstrapping.Syntax.Formula.Functions
 
 @[expose] public section
 
 namespace LO.FirstOrder.Arithmetic.Bootstrapping
 
--- NB: this is a Lean `module` file and cannot import the non-module `GoodsteinPA.Compat` shim,
--- so it uses upstream's current spelling directly (`↓[ℒₒᵣ] ⊧*` for the old `⊧ₘ*`).
 variable {V : Type*} [ORingStructure V] [V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁]
 
 section
@@ -140,13 +135,11 @@ lemma termFvSubstVec_cons {kk u us : V} (hu : IsUTerm L u) (hus : IsUTermVec L k
   ⟨by simp [hv.isUTerm], fun i hi ↦ by
     rw [nth_termFvSubstVec hv.isUTerm hi]; exact IsSemitermVec.termFvSubst ht (hv.nth hi)⟩
 
-/-- Bound-variable-depth weakening: a semiterm in context `n` is a semiterm in any wider context. -/
-lemma isSemiterm_weaken {n m u : V} (h : IsSemiterm L n u) (hnm : n ≤ m) : IsSemiterm L m u :=
+/-- A semiterm in bound-variable context `n` is also a semiterm in any wider context `m ≥ n`. -/
+lemma IsSemiterm.weaken {n m u : V} (h : IsSemiterm L n u) (hnm : n ≤ m) : IsSemiterm L m u :=
   IsSemiterm.def.mpr ⟨(IsSemiterm.def.mp h).1, le_trans (IsSemiterm.def.mp h).2 hnm⟩
 
-/-- **`termFvSubst` preserves `IsUTerm`** (for an `IsUTerm` replacement `t`). The `IsUTerm` analog of
-`IsSemitermVec.termFvSubst`, needed for the constructor-commutation lemmas (`fvSubst_neg`) that work at
-the `IsUFormula`/`IsUTerm` level. -/
+/-- `termFvSubst` preserves `IsUTerm` for an `IsUTerm` replacement `t`. -/
 lemma IsUTerm.termFvSubst (ht : IsUTerm L t) {u} (hu : IsUTerm L u) :
     IsUTerm L (termFvSubst L a t u) := by
   apply IsUTerm.induction 𝚺 ?_ ?_ ?_ ?_ u hu
@@ -158,17 +151,14 @@ lemma IsUTerm.termFvSubst (ht : IsUTerm L t) {u} (hu : IsUTerm L u) :
     refine IsUTerm.mk (Or.inr (Or.inr ⟨k, f, _, hkf, ⟨(len_termFvSubstVec hv).symm, ?_⟩, rfl⟩))
     intro i hi; rw [nth_termFvSubstVec hv hi]; exact ih i hi
 
-/-- **`termFvSubstVec` preserves `IsUTermVec`** (for an `IsUTerm` replacement `t`). -/
+/-- `termFvSubstVec` preserves `IsUTermVec` for an `IsUTerm` replacement `t`. -/
 lemma IsUTermVec.termFvSubst (ht : IsUTerm L t) {kk v} (hv : IsUTermVec L kk v) :
     IsUTermVec L kk (termFvSubstVec L a t kk v) :=
   ⟨(len_termFvSubstVec hv).symm, fun i hi ↦ by
     rw [nth_termFvSubstVec hv hi]; exact IsUTerm.termFvSubst ht (hv.2 i hi)⟩
 
-/-- **Term-level substitution lemma**: free-variable substitution `^&a ↦ t` (closed `t`) commutes with
-bound-variable substitution `termSubst w`. The bound-var substitution image of the renamed vector
-`termFvSubstVec a t n w` is applied to the renamed term. The freshness/closedness enters in the `fvar`
-case: substituting `^&a ↦ t` on a free var `x = a` yields the closed `t`, which `termSubst` then leaves
-fixed (`termSubst_eq_self`, valid because `t` is closed). -/
+/-- Free-variable substitution `^&a ↦ t` (for a closed replacement `t`) commutes with bound-variable
+substitution `termSubst w`. -/
 lemma termFvSubst_termSubst (ht : IsSemiterm L 0 t) {n m w u : V}
     (hw : IsSemitermVec L n m w) (hu : IsSemiterm L n u) :
     termFvSubst L a t (termSubst L w u) =
@@ -185,7 +175,7 @@ lemma termFvSubst_termSubst (ht : IsSemiterm L 0 t) {n m w u : V}
     · rw [termFvSubst_fvar_ne h, termSubst_fvar]
   · intro k f ts hf hts ih
     have htsf : IsSemitermVec L k n (termFvSubstVec L a t k ts) :=
-      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hts
+      IsSemitermVec.termFvSubstVec (ht.weaken (by simp)) hts
     rw [termSubst_func hf hts.isUTerm,
       termFvSubst_func hf (hw.termSubstVec hts).isUTerm,
       termFvSubst_func hf hts.isUTerm,
@@ -200,8 +190,8 @@ lemma termFvSubst_termSubst (ht : IsSemiterm L 0 t) {n m w u : V}
       nth_termSubstVec htsf.isUTerm hi,
       nth_termFvSubstVec hts.isUTerm hi, ih i hi]
 
-/-- A **closed term is fixed by bound-variable shifting** (`termBShift` raises bound vars; a closed term
-has none). Needed for the binder case of the formula substitution lemma. -/
+/-- A closed term is fixed by bound-variable shifting (`termBShift` raises bound variables, and a
+closed term has none). -/
 lemma termBShift_eq_self_of_closed (ht : IsSemiterm L 0 t) : termBShift L t = t := by
   apply IsSemiterm.induction 𝚺 ?_ ?_ ?_ ?_ t ht
   · definability
@@ -214,9 +204,7 @@ lemma termBShift_eq_self_of_closed (ht : IsSemiterm L 0 t) : termBShift L t = t 
     intro i hi
     rw [nth_termBShiftVec hv.isUTerm hi, ih i hi]
 
-/-- **`termFvSubst` commutes with bound-variable shift `termBShift`** (closed `t`). The binder-traversal
-input to the formula substitution lemma: under a quantifier `subst` applies `qVec` (= `^#0 ∷ bShift`),
-and `fvSubst`'s identity-`allChanges` must agree with that shift. -/
+/-- `termFvSubst` commutes with the bound-variable shift `termBShift`, for a closed replacement `t`. -/
 lemma termFvSubst_termBShift (ht : IsSemiterm L 0 t) {n u : V} (hu : IsSemiterm L n u) :
     termFvSubst L a t (termBShift L u) = termBShift L (termFvSubst L a t u) := by
   apply IsSemiterm.induction 𝚺 ?_ ?_ ?_ ?_ u hu
@@ -228,7 +216,7 @@ lemma termFvSubst_termBShift (ht : IsSemiterm L 0 t) {n u : V} (hu : IsSemiterm 
     · simp [h]
   · intro k f v hf hv ih
     have hvf : IsSemitermVec L k n (termFvSubstVec L a t k v) :=
-      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hv
+      IsSemitermVec.termFvSubstVec (ht.weaken (by simp)) hv
     rw [termBShift_func hf hv.isUTerm,
       termFvSubst_func hf hv.termBShiftVec.isUTerm,
       termFvSubst_func hf hv.isUTerm,
@@ -243,13 +231,11 @@ lemma termFvSubst_termBShift (ht : IsSemiterm L 0 t) {n u : V} (hu : IsSemiterm 
       nth_termBShiftVec hvf.isUTerm hi,
       nth_termFvSubstVec hv.isUTerm hi, ih i hi]
 
-/-- **`termFvSubstVec` commutes with `qVec`** (closed `t`): the cons of `^#0` survives, and the shifted
-tail commutes by `termFvSubst_termBShift`. This is the equation the binder case of the formula
-substitution lemma `fvSubst_subst` reduces to. -/
+/-- `termFvSubstVec` commutes with `qVec`, for a closed replacement `t`. -/
 lemma termFvSubstVec_qVec (ht : IsSemiterm L 0 t) {n m w : V} (hw : IsSemitermVec L n m w) :
     termFvSubstVec L a t (n + 1) (qVec L w) = qVec L (termFvSubstVec L a t n w) := by
   have hfw : IsSemitermVec L n m (termFvSubstVec L a t n w) :=
-    IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hw
+    IsSemitermVec.termFvSubstVec (ht.weaken (by simp)) hw
   have hqw : IsUTermVec L (n + 1) (qVec L w) := hw.qVec.isUTerm
   apply nth_ext' (n + 1)
     (by rw [len_termFvSubstVec hqw])
@@ -266,12 +252,10 @@ lemma termFvSubstVec_qVec (ht : IsSemiterm L 0 t) {n m w : V} (hw : IsSemitermVe
 /-! ### Freshness: `^&a ↦ t` is the identity on codes bounded by `a`
 
 A free-variable code dominates its index (`x < ^&x`, `var_lt_qqFvar`), so a term/term-vector whose
-code is `≤ a` cannot contain `^&a` and is fixed by the substitution. This is the structural reason the
-`d ≤ a` bound in `ZDerivation_zsubst` makes the substitution vacuous: every component of `d ≤ a` is
-`< a`, hence `a`-free. -/
+code is `≤ a` cannot contain `^&a` and is fixed by the substitution. -/
 
-/-- **`termFvSubst` is the identity on terms bounded by `a`.** If `u ≤ a` then `^&a` cannot occur in
-`u` (its code `^&a > a ≥ u`), so the substitution `^&a ↦ t` fixes `u`. -/
+/-- `termFvSubst` is the identity on terms bounded by `a`: if `u ≤ a` then `^&a` cannot occur in `u`
+(its code `^&a > a ≥ u`), so the substitution `^&a ↦ t` fixes `u`. -/
 lemma termFvSubst_eq_self_of_le {a u : V} (hu : IsUTerm L u) (hua : u ≤ a) :
     termFvSubst L a t u = u := by
   revert hua
@@ -289,7 +273,7 @@ lemma termFvSubst_eq_self_of_le {a u : V} (hu : IsUTerm L u) (hua : u ≤ a) :
     rw [nth_termFvSubstVec hv hi]
     exact ih i hi (le_trans (le_of_lt (nth_lt_qqFunc_of_lt (lt_of_lt_of_le hi (le_of_eq hv.left)))) hle)
 
-/-- **`termFvSubstVec` is the identity on term-vectors bounded by `a`.** -/
+/-- `termFvSubstVec` is the identity on term-vectors bounded by `a`. -/
 lemma termFvSubstVec_eq_self_of_le {a k v : V} (hv : IsUTermVec L k v) (hva : v ≤ a) :
     termFvSubstVec L a t k v = v := by
   apply nth_ext' k (len_termFvSubstVec hv) hv.left.symm
@@ -303,9 +287,8 @@ end termFvSubst
 /-! ## Formula-level free-variable substitution `^&a ↦ t`
 
 The recursion parameter bundles the eigenvariable index and the replacement term as a pair
-`⟪a, t⟫` (projected by `π₁`/`π₂` inside the atom case). The replacement `t` in our use is always a
-*closed* term (a numeral), so going under a quantifier leaves it unchanged — `allChanges`/
-`exsChanges` are the identity. (A general `t` would need `termBShift` here; we don't need it.) -/
+`⟪a, t⟫` (projected by `π₁`/`π₂` inside the atom case). Since the replacement `t` is assumed closed,
+going under a quantifier leaves it unchanged, so `allChanges`/`exsChanges` are the identity. -/
 
 namespace FvSubst
 
@@ -404,9 +387,7 @@ instance fvSubst.definable' : Γ-[m + 1]-Function₃[V] (fvSubst L) := fvSubst.d
     fvSubst L a t (^∃ p) = ^∃ (fvSubst L a t p) := by
   simp [fvSubst, construction, hp]
 
-/-- **`fvSubst` preserves `IsSemiformula`** (for a closed replacement `t`). Order-induction over the
-formula, mirroring Foundation's `IsSemiformula.subst`; under a quantifier the bound-var context grows
-`n → n+1`, harmless since `t` is closed so `IsSemiterm L 0 t` weakens to every level. -/
+/-- `fvSubst` preserves `IsSemiformula`, for a closed replacement `t`. -/
 lemma fvSubst_isSemiformula (ht : IsSemiterm L 0 t) {n p : V} (hp : IsSemiformula L n p) :
     IsSemiformula L n (fvSubst L a t p) := by
   let f : V → V → V := fun _ n ↦ n + 1
@@ -420,10 +401,10 @@ lemma fvSubst_isSemiformula (ht : IsSemiterm L 0 t) {n p : V} (hp : IsSemiformul
     (⟨k, R, v, hR, hv, rfl⟩ | ⟨k, R, v, hR, hv, rfl⟩ | rfl | rfl |
       ⟨p₁, p₂, h₁, h₂, rfl⟩ | ⟨p₁, p₂, h₁, h₂, rfl⟩ | ⟨p₁, h₁, rfl⟩ | ⟨p₁, h₁, rfl⟩)
   · have : IsSemitermVec L k n (termFvSubstVec L a t k v) :=
-      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hv
+      IsSemitermVec.termFvSubstVec (ht.weaken (by simp)) hv
     simp [hR, hv.isUTerm, this]
   · have : IsSemitermVec L k n (termFvSubstVec L a t k v) :=
-      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hv
+      IsSemitermVec.termFvSubstVec (ht.weaken (by simp)) hv
     simp [hR, hv.isUTerm, this]
   · simp
   · simp
@@ -438,9 +419,8 @@ lemma fvSubst_isSemiformula (ht : IsSemiterm L 0 t) {n p : V} (hp : IsSemiformul
   · have ih₁ : IsSemiformula L (n + 1) (fvSubst L a t p₁) := ih p₁ (by simp) (n + 1) (by simp [f]) h₁
     simpa [h₁.isUFormula] using ih₁
 
-/-- **`fvSubst` is the identity on formulas bounded by `a`.** If `p ≤ a`, then `^&a` (code `> a`)
-cannot occur in `p`, so the substitution `^&a ↦ t` fixes `p`. Every atom term-vector and every
-subformula is `< p ≤ a`, so the term-level `termFvSubstVec_eq_self_of_le` applies at the leaves. -/
+/-- `fvSubst` is the identity on formulas bounded by `a`: if `p ≤ a`, then `^&a` (code `> a`)
+cannot occur in `p`, so the substitution `^&a ↦ t` fixes `p`. -/
 lemma fvSubst_eq_self_of_le {a p : V} (hp : IsUFormula L p) (hpa : p ≤ a) :
     fvSubst L a t p = p := by
   revert hpa
@@ -466,7 +446,7 @@ lemma fvSubst_eq_self_of_le {a p : V} (hp : IsUFormula L p) (hpa : p ≤ a) :
   · intro p hp ihp hle
     rw [fvSubst_ex hp, ihp (le_trans (le_of_lt (lt_exists p)) hle)]
 
-/-- **`fvSubst` preserves `IsUFormula`** (for an `IsUTerm` replacement `t`). Mirrors `IsUFormula.neg`. -/
+/-- `fvSubst` preserves `IsUFormula`, for an `IsUTerm` replacement `t`. -/
 lemma IsUFormula.fvSubst (ht : IsUTerm L t) {p} (hp : IsUFormula L p) :
     IsUFormula L (fvSubst L a t p) := by
   apply IsUFormula.ISigma1.sigma1_succ_induction ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ p hp
@@ -480,10 +460,8 @@ lemma IsUFormula.fvSubst (ht : IsUTerm L t) {p} (hp : IsUFormula L p) :
   · intro p hp ihp; simp [hp, ihp]
   · intro p hp ihp; simp [hp, ihp]
 
-/-- **`fvSubst` commutes with coded negation** (`fvSubst a t (∼p) = ∼(fvSubst a t p)`, for an `IsUTerm`
-replacement `t`). Both are `UformulaRec1` structural recursions that touch only the atom term-vectors
-(identically on `rel`/`nrel`); the rule needed to transfer the `zIneg` succedent `inegF p` under
-substitution. -/
+/-- `fvSubst` commutes with coded negation, for an `IsUTerm` replacement `t`. Both `fvSubst` and
+`neg` are `UformulaRec1` structural recursions that touch only the atom term-vectors. -/
 lemma fvSubst_neg (ht : IsUTerm L t) {p} (hp : IsUFormula L p) :
     fvSubst L a t (neg L p) = neg L (fvSubst L a t p) := by
   apply IsUFormula.ISigma1.sigma1_succ_induction ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ p hp
@@ -499,10 +477,8 @@ lemma fvSubst_neg (ht : IsUTerm L t) {p} (hp : IsUFormula L p) :
   · intro p hp ihp; simp [hp, hp.neg, IsUFormula.fvSubst ht hp, ihp]
   · intro p hp ihp; simp [hp, hp.neg, IsUFormula.fvSubst ht hp, ihp]
 
-/-- **Formula-level substitution lemma**: free-variable substitution `^&a ↦ t` (closed `t`) commutes
-with bound-variable substitution `subst w`. The renamed vector `termFvSubstVec a t n w` is applied to
-the renamed formula. The atom cases reduce to the term-level `termFvSubst_termSubst`; the binder cases
-to `termFvSubstVec_qVec`. Proved by `IsSemiformula.pi1_structural_induction`, mirror of `substs_substs`. -/
+/-- Free-variable substitution `^&a ↦ t` (for a closed replacement `t`) commutes with bound-variable
+substitution `subst w`. -/
 lemma fvSubst_subst (ht : IsSemiterm L 0 t) {n m w p : V}
     (hp : IsSemiformula L n p) (hw : IsSemitermVec L n m w) :
     fvSubst L a t (subst L w p) = subst L (termFvSubstVec L a t n w) (fvSubst L a t p) := by
@@ -513,7 +489,7 @@ lemma fvSubst_subst (ht : IsSemiterm L 0 t) {n m w p : V}
   · definability
   · intro n k R v hR hv m w hw
     have hvf : IsSemitermVec L k n (termFvSubstVec L a t k v) :=
-      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hv
+      IsSemitermVec.termFvSubstVec (ht.weaken (by simp)) hv
     rw [substs_rel hR hv.isUTerm, fvSubst_rel hR (hw.termSubstVec hv).isUTerm,
       fvSubst_rel hR hv.isUTerm, substs_rel hR hvf.isUTerm]
     simp only [qqRel_inj, true_and]
@@ -526,7 +502,7 @@ lemma fvSubst_subst (ht : IsSemiterm L 0 t) {n m w p : V}
       termFvSubst_termSubst ht hw (hv.nth hi)]
   · intro n k R v hR hv m w hw
     have hvf : IsSemitermVec L k n (termFvSubstVec L a t k v) :=
-      IsSemitermVec.termFvSubstVec (isSemiterm_weaken ht (by simp)) hv
+      IsSemitermVec.termFvSubstVec (ht.weaken (by simp)) hv
     rw [substs_nrel hR hv.isUTerm, fvSubst_nrel hR (hw.termSubstVec hv).isUTerm,
       fvSubst_nrel hR hv.isUTerm, substs_nrel hR hvf.isUTerm]
     simp only [qqNRel_inj, true_and]
@@ -564,9 +540,8 @@ lemma fvSubst_subst (ht : IsSemiterm L 0 t) {n m w p : V}
       substs_ex (IsUFormula.fvSubst ht.isUTerm hp.isUFormula),
       termFvSubstVec_qVec ht hw]
 
-/-- **`fvSubst` commutes with `substs1` by a fresh free variable** (`a' ≠ a`, closed `t`): the key
-freshness-gated rule. The `zIall`/`zInd` premise succedents `substs1 (^&a') p` (eigenvariable `a'`)
-transfer under `^&a ↦ t` iff `a` differs from the eigenvariable `a'` — Buchholz's regularity. -/
+/-- `fvSubst` commutes with `substs1` by a distinct free variable `a'` (`a' ≠ a`), for a closed
+replacement `t`. -/
 lemma fvSubst_substs1_fvar (ht : IsSemiterm L 0 t) {a' p : V} (haa : a' ≠ a)
     (hp : IsSemiformula L 1 p) :
     fvSubst L a t (substs1 L ^&a' p) = substs1 L ^&a' (fvSubst L a t p) := by
@@ -577,10 +552,8 @@ lemma fvSubst_substs1_fvar (ht : IsSemiterm L 0 t) {a' p : V} (haa : a' ≠ a)
   unfold substs1
   rw [fvSubst_subst ht hp hw, hvec]
 
-/-- **`fvSubst` commutes with `substs1` by an arbitrary closed term `v`** (closed `t`): the general form
-of `fvSubst_substs1_fvar`, where the substituted term `v` is itself renamed by `termFvSubst a t`. The
-`zInd` premise/conclusion succedents `substs1 (numeral 0) p`, `substs1 (Sa) p`, `substs1 (t_ind) p`
-transfer through this (each `v` here is closed in bound variables). -/
+/-- `fvSubst` commutes with `substs1` by an arbitrary closed term `v`, for a closed replacement
+`t` — the substituted term `v` is itself renamed by `termFvSubst a t`. -/
 lemma fvSubst_substs1 (ht : IsSemiterm L 0 t) {v p : V} (hv : IsSemiterm L 0 v)
     (hp : IsSemiformula L 1 p) :
     fvSubst L a t (substs1 L v p) = substs1 L (termFvSubst L a t v) (fvSubst L a t p) := by

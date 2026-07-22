@@ -25,10 +25,6 @@ FILE fail to elaborate. On success the guards consume their messages, so a clean
 CI (`.github/workflows/ci.yml`, the build job's axiom-clean gate) runs exactly that and gates on the
 exit code. This is the single source of truth for the headline set — no count to bump, renames caught
 automatically. `whitespace := lax` tolerates the pretty-printer wrapping a long qualified name.
-
-Expedition scope: this pins the CLEAN summit + its ℕ-truth/faithfulness anchors. The named-axiom
-blueprint LEDGER (open Path-B milestones) is a *separate*, machine-verified gate — `blueprint_audit`
-reconciles each `@[goodstein_blueprint]` node's `collectAxioms` footprint against its category claim.
 -/
 
 -- The summit: `𝗣𝗔 ⊬ ↑goodsteinSentence` (Kirby–Paris), re-pointed to the axiom-clean route-B headline.

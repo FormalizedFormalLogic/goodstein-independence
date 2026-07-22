@@ -1,6 +1,5 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
-public import GoodsteinPA.BlueprintAttr
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2.Basic
@@ -27,6 +26,7 @@ public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Result.ConsistencyPA
 public import GoodsteinPA.Statement
 public import GoodsteinPA.ToFoundation.Compat
+public import GoodsteinPA.ToFoundation.FvSubst
 public import GoodsteinPA.ToFoundation.Numeral
 public import GoodsteinPA.ToFoundation.Subst
 public import GoodsteinPA.ToMathlib.FastGrowing.Basic

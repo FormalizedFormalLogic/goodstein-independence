@@ -1,7 +1,6 @@
 module
 
 public import GoodsteinPA.OperatorZeh.Zef
-public import GoodsteinPA.BlueprintAttr
 import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
@@ -107,19 +106,6 @@ lemma allInv_Zeh {φ₀} (n₀ : ℕ)
       have P₂ := Zeh.wk (inv1Push (∀⁰ φ₀) _ (∼χ) Γ₀) (ih₂ (Finset.mem_insert_of_mem hmem))
       exact Zeh.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_mono (adjoin_le H n₀) hβφH) (Cl_mono (adjoin_le H n₀) hβψH) P₁ P₂
-
-/-! ## Kernel-footprint attributes
-
-Only nodes with a real (sorry-free) proof carry a kernel-footprint attribute; `cutElimPass_Zf`
-is still `sorryAx`-bearing and is not eligible. -/
-
-attribute [goodstein_blueprint 10 clean "zeh_inversion_suite" "0" 100 allInv_Zeh
-  []
-  ["∀-inversion, mirrors the banked Provable.allInv; [Tow20, Theorem 19.4]",
-   "GoodsteinPA.OperatorZeh.orInv_Zeh / andInvL_Zeh / andInvR_Zeh: complete propositional companions, axiom-clean",
-   "Suite completeness: the minimal core admits no fifth inversion"]
-  "The Zeh inversion suite: control-preserving inversions (∀ at the relativization + running stage) feeding the fixed-control reduction and the cut-elimination assembly."]
-  allInv_Zeh
 
 /-! ## Companion inversions
 
