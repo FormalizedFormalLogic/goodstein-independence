@@ -1,7 +1,6 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
 public import GoodsteinPA.BlueprintAttr
-public import GoodsteinPA.E1EmbeddingGrind
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
 public import GoodsteinPA.OperatorZef2.Basic
@@ -55,6 +54,20 @@ public import GoodsteinPA.ToMathlib.OmegaTower
 public import GoodsteinPA.ToMathlib.Ordinal.Bounds
 public import GoodsteinPA.ToMathlib.Ordinal.Epsilon0
 public import GoodsteinPA.ToMathlib.Ordinal.WellFoundedRank
+public import GoodsteinPA.Zef2TC.Axm
+public import GoodsteinPA.Zef2TC.Basic
+public import GoodsteinPA.Zef2TC.CutStep
+public import GoodsteinPA.Zef2TC.Em
+public import GoodsteinPA.Zef2TC.EmbedTC
+public import GoodsteinPA.Zef2TC.EmbedV3
+public import GoodsteinPA.Zef2TC.Embedding
+public import GoodsteinPA.Zef2TC.Inversion
+public import GoodsteinPA.Zef2TC.Pass
+public import GoodsteinPA.Zef2TC.Rank0
+public import GoodsteinPA.Zef2TC.Readoff
+public import GoodsteinPA.Zef2TC.SuccInd
+public import GoodsteinPA.Zef2TC.TermBound
+public import GoodsteinPA.Zef2TC.Wainer
 public import GoodsteinPA.Zinfty.Basic
 public import GoodsteinPA.Zinfty.Cut
 public import GoodsteinPA.Zinfty.Embedding
