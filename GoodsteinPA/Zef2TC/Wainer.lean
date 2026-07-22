@@ -11,23 +11,10 @@ open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 open GoodsteinPA.ReadoffValueGate (Gated Gated_and_iff Gated_or_iff Gated_all_iff Gated_exs_iff
   Gated_mono)
 
-/-! ### 2b prep — m-uniformization of the pipeline bound
-
-The read-off bound's `m`-dependence enters ONLY through (i) the slot stage `K_m` (a `rel1`
-pre-max on the tower base) and (ii) the instance value bound `P_m` (a `gvb` numeral
-contraction).  The two lemmas here collapse (i): `ewIter` is pointwise monotone in the SLOT
-(bigger slot ⟹ bigger ball and bigger branches), hence the `rel1` pre-max commutes out of the
-whole tower — `ewIterTower (rel1 f K) d α x ≤ ewIterTower f d α (max K x)` — leaving ONE fixed
-tower with the `m`-dependence pushed into the argument. -/
-
-/-! ### 2b item (d) — the semantic link (igoodstein faithfulness)
-
-A true numeral instance of the pipeline matrix at witness `n` bounds the REAL Goodstein
-length: `atomTrue (χ/[nm n]) → goodsteinLength m ≤ n`.  The matrix is extracted from the
-`∃⁰`-shape equality by constructor injectivity (whnf), then the Bridge-style eval recipe
-(`igoodstein_defined.iff` + `igoodstein_nat`) lands on `goodsteinSeq m n = 0`. -/
-
-theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ 1}
+/-- If the read-off pipeline's instance body `goodsteinBodyE/[nm m]` unfolds to `∃⁰ χ` and
+`χ/[nm n]` is a true numeral instance, then `n` bounds the actual Goodstein sequence length
+`goodsteinLength m`. -/
+lemma goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ 1}
     (hχ : goodsteinBodyE/[nm m] = (∃⁰ χ)) (h : atomTrue (χ/[nm n])) :
     Goodstein.Dom.goodsteinLength m ≤ n := by
   have hbody := Semiformula.exs.inj hχ
@@ -63,15 +50,10 @@ theorem goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ
   rw [hval] at hkey
   simpa using hkey.symm
 
-/-! ### Lap 210 (SERIES-4 S-3) — the Nlog-PRIMED pipeline
-
-`Zef2TCProv` carries `Nlog α' ≤ f 0`; `readoff_value_pipeline` discarded it, but the α'-uniform
-Hardy conversion (`ewIter_dom_pad_levelcap`, `wip/HardyMajorization.lean`) needs it — `Nlog α'`
-appears in the converted bound's ARGUMENT and must itself be bounded (it is: by the tower slot
-at `0`, which the `S°`-uniformization makes Hardy-in-`m`).  Same proofs, keeping the conjunct. -/
-
-/-- `readoff_value_pipeline` + the `Nlog α'` certificate. -/
-theorem readoff_value_pipeline' {φ : ArithmeticSemiformula ℕ 1} {P : ℕ → ℕ}
+/-- `readoff_value_pipeline` strengthened with a `Nlog α'` certificate: the collapsed ordinal
+`α'` produced by a `Zef2TC` derivation of a singleton `{(∃⁰ φ)}` has `Nlog α'` bounded by the
+tower value at `0`, together with the usual read-off witness `n`. -/
+lemma readoff_value_pipeline' {φ : ArithmeticSemiformula ℕ 1} {P : ℕ → ℕ}
     (hP_mono : Monotone P)
     {α e : ONote} {H : ONote → Prop} {B K d : ℕ}
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
@@ -93,10 +75,9 @@ theorem readoff_value_pipeline' {φ : ArithmeticSemiformula ℕ 1} {P : ℕ → 
     hP_mono D0 V hroot
   exact ⟨α', hα'le, hα'NF, hα'N, n, hn, htn⟩
 
-/-- The per-`m` stage `K_m` of `embedding_Zef2TC_V3` is `max K₀ m` for a UNIFORM `K₀` — the
-m-uniformization's linear-stage certificate, extracted by re-running the embedding's own proof
-(the stage is `max (envSup (fun _ => 0) N) m`). -/
-theorem embedding_Zef2TC_V3_linearK :
+/-- The per-`m` slot stage `K_m` of `embedding_Zef2TC_V3` can be taken as `max K₀ m` for a
+single `m`-independent `K₀`. -/
+lemma embedding_Zef2TC_V3_linearK :
     (𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) →
       ∃ B d K₀ : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ ∀ m : ℕ,
         ∃ H : ONote → Prop, Cl H α ∧
@@ -107,7 +88,8 @@ theorem embedding_Zef2TC_V3_linearK :
     obtain ⟨d2⟩ := (provable_iff_derivable2 (L := ℒₒᵣ)).mp h
     exact budgetedEmbeddingV3 d2
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, hD⟩ := hV3
-  refine ⟨B, d, envSup (fun _ => 0) N, e, α, he, hαNF, fun m => ?_⟩
+  use B, d, envSup (fun _ => 0) N, e, α, he, hαNF
+  intro m
   have hD0 := hD (fun _ => 0)
   have himg : ({(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} :
         Finset (ArithmeticFormula ℕ)).image
@@ -120,7 +102,7 @@ theorem embedding_Zef2TC_V3_linearK :
     rel1_monotone hf1.1.monotone _
   have hinv := allω_inversion (φ := goodsteinBodyE) m hD0 hmono
   rw [rel1_rel1] at hinv
-  refine ⟨fun _ => True, Cl_of_NF hαNF, ?_⟩
+  use fun _ => True, Cl_of_NF hαNF
   have hctx : insert (goodsteinBodyE/[nm m])
         (({(∀⁰ goodsteinBodyE : ArithmeticFormula ℕ)} :
           Finset (ArithmeticFormula ℕ)).erase (∀⁰ goodsteinBodyE))
@@ -130,9 +112,9 @@ theorem embedding_Zef2TC_V3_linearK :
   rw [hctx] at hinv
   exact hinv.change_H
 
-/-- `readoff_value_goodstein` + the `Nlog α'` certificate + the LINEAR stage `max K₀ m` —
-the m-uniformization-ready read-off. -/
-theorem readoff_value_goodstein'
+/-- `readoff_value_goodstein` strengthened with the `Nlog α'` certificate and the linear slot
+stage `max K₀ m` for a single `m`-independent `K₀`. -/
+lemma readoff_value_goodstein'
     (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) :
     ∃ B d K₀ : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ ∀ m : ℕ,
       ∃ χ : ArithmeticSemiformula ℕ 1,
@@ -144,24 +126,25 @@ theorem readoff_value_goodstein'
                     α' (Sslot (ewIterTower (rel1 (ewRootSlot e B) (max K₀ m)) d α) P V) ∧
               atomTrue (χ/[nm n]) := by
   obtain ⟨B, d, K₀, e, α, heNF, hαNF, hall⟩ := embedding_Zef2TC_V3_linearK h
-  refine ⟨B, d, K₀, e, α, heNF, hαNF, fun m => ?_⟩
+  use B, d, K₀, e, α, heNF, hαNF
+  intro m
   obtain ⟨H, hαH, D⟩ := hall m
   obtain ⟨χ, hχeq, hchiS⟩ := goodsteinBodyE_inst_shape m
   rw [hχeq] at D
-  refine ⟨χ, hχeq, hchiS, fun P V hP_mono hroot => ?_⟩
+  use χ, hχeq, hchiS
+  intro P V hP_mono hroot
   exact readoff_value_pipeline' hP_mono heNF hαNF hαH D V hroot
 
-/-! ### Lap 210 (SERIES-4 S-5) — the EventuallyLE package at the axiom's VERBATIM type
-
-Hypothesis-passing across the sibling wip modules (they cannot import each other; each
-hypothesis is the VERBATIM statement of a theorem proven kernel-clean in its module):
-- `Hcert` = `GoodsteinPA.ReadoffValueGate.gated_certificate_uniform` (`Gated` is this file's
-  duplicate of the same definition),
-- `HSdom` = `ONote.Scirc_dom_pad`,
-- `Hconv` = `ONote.master_conversion`.
-The read-off (`readoff_value_goodstein'`), the m-uniformization, and the semantic link are
-discharged HERE.  The conclusion is the exact type of the sole route axiom
-`wainer_bound_of_pa_proves_goodstein` (`GoodsteinPA/Statement.lean`). -/
+/-- **Wainer classification, specialized to the Goodstein embedding route.** If PA proves the
+Goodstein sentence, the Goodstein length function is eventually bounded by a fixed
+fast-growing `fastGrowing o` for some `o < ε₀`. The three explicit hypotheses `Hcert`, `HSdom`,
+`Hconv` are the verbatim statements of theorems proven independently in sibling modules
+(`GoodsteinPA.ReadoffValueGate.gated_certificate_uniform`, `ONote.Scirc_dom_pad`,
+`ONote.master_conversion`) that cannot import each other; discharging them here — together
+with the read-off pipeline (`readoff_value_goodstein'`), the `m`-uniformization of its slot
+stage, and the semantic link (`goodsteinBodyE_semantic_link`) — completes the Wainer bound at
+the exact type consumed as `wainer_bound_of_pa_proves_goodstein` in `GoodsteinPA/Statement.lean`.
+- [BW87, Theorem I] -/
 theorem wainer_bound_witness
     (Hcert : ∀ {G : ℕ → ℕ}, Monotone G → (∀ x, x + 1 ≤ G x) →
       (∀ a b, a + b ≤ G (max a b)) → (∀ a b, a * b ≤ G (max a b)) →
@@ -207,7 +190,8 @@ theorem wainer_bound_witness
     fun x => le_trans (le_Gexp_iter k x) (le_max_right _ _)
   have hγNF : (collapseIter d α).NF := collapseIter_NF hαNF d
   obtain ⟨o, hoNF, N, hN⟩ := Hconv hES hES0 hγNF hSdom hSinfl K₀
-  refine ⟨o, hoNF, N, fun m hm => ?_⟩
+  use o, hoNF, N
+  intro m hm
   obtain ⟨χ, hχeq, hSig, hmain⟩ := hall m
   have hχB : χ = (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q ▹
       ((Rew.emb : Rew ℒₒᵣ Empty 1 ℕ 1).q ▹
