@@ -16,9 +16,11 @@ open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ## `Zef2TC` — the full-rule-set target calculus -/
 
-/-- **`Zef2TC`** — `Zef2` (verbatim, `Nlog` gates) + E–W (Ax2) (`trueRel`/`trueNrel`) + the
-finite connective rules `verumR`/`andI`/`orI` (`Provable` shapes; ordinal-descending premises with
-the `weak`-style NF/`Cl` side conditions; slot UNCHANGED — E–W relativizes only the ω-rule). -/
+/-- `Zef2TC` extends `Zef2` (verbatim, `Nlog`-gated) with the E–W-style excluded-middle rules
+`trueRel`/`trueNrel` and the finite connective rules `verumR`/`andI`/`orI`; the slot arithmetic is
+otherwise unchanged, since E–W only relativizes the ω-rule.
+
+- [EW12, Definition 5] -/
 inductive Zef2TC : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ → Finset (ArithmeticFormula ℕ) → Prop
   | axL {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)} {ar : ℕ}
       (hαN : Nlog α ≤ f 0)
@@ -78,11 +80,11 @@ namespace Zef2TC
 
 variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
-theorem gate (dd : Zef2TC α e H f c Γ) : Nlog α ≤ f 0 := by
+@[grind →] lemma gate (dd : Zef2TC α e H f c Γ) : Nlog α ≤ f 0 := by
   cases dd <;> assumption
 
 /-- `Zef2 ⊆ Zef2TC`. -/
-theorem ofZef2 (dd : Zef2 α e H f c Γ) : Zef2TC α e H f c Γ := by
+@[grind →] lemma ofZef2 (dd : Zef2 α e H f c Γ) : Zef2TC α e H f c Γ := by
   induction dd with
   | axL hαN r v hp hn => exact Zef2TC.axL hαN r v hp hn
   | wk hαN hsub _ ih => exact Zef2TC.wk hαN hsub ih
@@ -93,115 +95,90 @@ theorem ofZef2 (dd : Zef2 α e H f c Γ) : Zef2TC α e H f c Γ := by
   | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
       exact Zef2TC.cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH ih₁ ih₂
 
-end Zef2TC
-namespace Zef2TC
-
-variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
-
 /-- Slot monotonicity (port of `Zef2.mono_f` over the full rule set). -/
-theorem mono_f (dd : Zef2TC α e H f c Γ) : ∀ {f' : ℕ → ℕ}, (∀ x, f x ≤ f' x) → Zef2TC α e H f' c Γ := by
-  induction dd with
-  | axL hαN r v hp hn =>
-      intro f' hff'; exact .axL (le_trans hαN (hff' 0)) r v hp hn
-  | trueRel hαN r v htrue hmem =>
-      intro f' hff'; exact .trueRel (le_trans hαN (hff' 0)) r v htrue hmem
-  | trueNrel hαN r v htrue hmem =>
-      intro f' hff'; exact .trueNrel (le_trans hαN (hff' 0)) r v htrue hmem
-  | verumR hαN h => intro f' hff'; exact .verumR (le_trans hαN (hff' 0)) h
-  | wk hαN hsub _ ih => intro f' hff'; exact .wk (le_trans hαN (hff' 0)) hsub (ih hff')
+lemma mono_f (dd : Zef2TC α e H f c Γ) {f' : ℕ → ℕ} (hff' : ∀ x, f x ≤ f' x) :
+    Zef2TC α e H f' c Γ := by
+  induction dd generalizing f' with
+  | axL hαN r v hp hn => exact .axL (le_trans hαN (hff' 0)) r v hp hn
+  | trueRel hαN r v htrue hmem => exact .trueRel (le_trans hαN (hff' 0)) r v htrue hmem
+  | trueNrel hαN r v htrue hmem => exact .trueNrel (le_trans hαN (hff' 0)) r v htrue hmem
+  | verumR hαN h => exact .verumR (le_trans hαN (hff' 0)) h
+  | wk hαN hsub _ ih => exact .wk (le_trans hαN (hff' 0)) hsub (ih hff')
   | weak hαN hβ hβNF hαNF hβH hsub _ ih =>
-      intro f' hff'; exact .weak (le_trans hαN (hff' 0)) hβ hβNF hαNF hβH hsub (ih hff')
+      exact .weak (le_trans hαN (hff' 0)) hβ hβNF hαNF hβH hsub (ih hff')
   | andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro f' hff'
       exact .andI (le_trans hαN (hff' 0)) φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH
         (ih₁ hff') (ih₂ hff')
   | orI hαN φ ψ hβ hβNF hαNF hβH _ ih =>
-      intro f' hff'; exact .orI (le_trans hαN (hff' 0)) φ ψ hβ hβNF hαNF hβH (ih hff')
+      exact .orI (le_trans hαN (hff' 0)) φ ψ hβ hβNF hαNF hβH (ih hff')
   | allω hαN φ β hβ hβNF hαNF hβH _ ih =>
-      intro f' hff'
       exact .allω (le_trans hαN (hff' 0)) φ β hβ hβNF hαNF hβH
         (fun n => ih n (rel1_mono hff' n))
   | exI hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro f' hff'
       exact .exI (le_trans hαN (hff' 0)) φ n hβ hβNF hαNF hβH
         (le_trans hbound (hff' 0)) (ih hff')
   | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro f' hff'
       exact .cut (le_trans hαN (hff' 0)) φ hcompl (le_trans hcutRead (hff' 0))
         hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hff') (ih₂ hff')
 
 /-- Cut-rank monotonicity (only `cut` mentions `c`). -/
-theorem mono_c (dd : Zef2TC α e H f c Γ) : ∀ {c'}, c ≤ c' → Zef2TC α e H f c' Γ := by
-  induction dd with
-  | axL hαN r v hp hn => intro c' _; exact .axL hαN r v hp hn
-  | trueRel hαN r v htrue hmem => intro c' _; exact .trueRel hαN r v htrue hmem
-  | trueNrel hαN r v htrue hmem => intro c' _; exact .trueNrel hαN r v htrue hmem
-  | verumR hαN h => intro c' _; exact .verumR hαN h
-  | wk hαN hsub _ ih => intro c' hcc; exact .wk hαN hsub (ih hcc)
-  | weak hαN hβ hβNF hαNF hβH hsub _ ih =>
-      intro c' hcc; exact .weak hαN hβ hβNF hαNF hβH hsub (ih hcc)
+lemma mono_c (dd : Zef2TC α e H f c Γ) {c' : ℕ} (hcc : c ≤ c') : Zef2TC α e H f c' Γ := by
+  induction dd generalizing c' with
+  | axL hαN r v hp hn => exact .axL hαN r v hp hn
+  | trueRel hαN r v htrue hmem => exact .trueRel hαN r v htrue hmem
+  | trueNrel hαN r v htrue hmem => exact .trueNrel hαN r v htrue hmem
+  | verumR hαN h => exact .verumR hαN h
+  | wk hαN hsub _ ih => exact .wk hαN hsub (ih hcc)
+  | weak hαN hβ hβNF hαNF hβH hsub _ ih => exact .weak hαN hβ hβNF hαNF hβH hsub (ih hcc)
   | andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro c' hcc
       exact .andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ hcc) (ih₂ hcc)
-  | orI hαN φ ψ hβ hβNF hαNF hβH _ ih =>
-      intro c' hcc; exact .orI hαN φ ψ hβ hβNF hαNF hβH (ih hcc)
-  | allω hαN φ β hβ hβNF hαNF hβH _ ih =>
-      intro c' hcc; exact .allω hαN φ β hβ hβNF hαNF hβH (fun n => ih n hcc)
+  | orI hαN φ ψ hβ hβNF hαNF hβH _ ih => exact .orI hαN φ ψ hβ hβNF hαNF hβH (ih hcc)
+  | allω hαN φ β hβ hβNF hαNF hβH _ ih => exact .allω hαN φ β hβ hβNF hαNF hβH (fun n => ih n hcc)
   | exI hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro c' hcc; exact .exI hαN φ n hβ hβNF hαNF hβH hbound (ih hcc)
+      exact .exI hαN φ n hβ hβNF hαNF hβH hbound (ih hcc)
   | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro c' hcc
       exact .cut hαN φ (lt_of_lt_of_le hcompl hcc) hcutRead hβφ hβψ hβφNF hβψNF hαNF
         hβφH hβψH (ih₁ hcc) (ih₂ hcc)
 
 /-- Operator swap (port of `Zef2.change_H`; `Cl_of_NF` supplies every `Cl` obligation). -/
-theorem change_H (dd : Zef2TC α e H f c Γ) : ∀ {H' : ONote → Prop}, Zef2TC α e H' f c Γ := by
-  induction dd with
-  | axL hαN r v hp hn => intro H'; exact .axL hαN r v hp hn
-  | trueRel hαN r v htrue hmem => intro H'; exact .trueRel hαN r v htrue hmem
-  | trueNrel hαN r v htrue hmem => intro H'; exact .trueNrel hαN r v htrue hmem
-  | verumR hαN h => intro H'; exact .verumR hαN h
-  | wk hαN hsub _ ih => intro H'; exact .wk hαN hsub ih
+lemma change_H (dd : Zef2TC α e H f c Γ) {H' : ONote → Prop} : Zef2TC α e H' f c Γ := by
+  induction dd generalizing H' with
+  | axL hαN r v hp hn => exact .axL hαN r v hp hn
+  | trueRel hαN r v htrue hmem => exact .trueRel hαN r v htrue hmem
+  | trueNrel hαN r v htrue hmem => exact .trueNrel hαN r v htrue hmem
+  | verumR hαN h => exact .verumR hαN h
+  | wk hαN hsub _ ih => exact .wk hαN hsub (ih (H' := H'))
   | weak hαN hβ hβNF hαNF _ hsub _ ih =>
-      intro H'; exact .weak hαN hβ hβNF hαNF (Cl_of_NF hβNF) hsub ih
+      exact .weak hαN hβ hβNF hαNF (Cl_of_NF hβNF) hsub (ih (H' := H'))
   | andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF _ _ _ _ ih₁ ih₂ =>
-      intro H'
-      exact .andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
-  | orI hαN φ ψ hβ hβNF hαNF _ _ ih =>
-      intro H'; exact .orI hαN φ ψ hβ hβNF hαNF (Cl_of_NF hβNF) ih
+      exact .andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF (Cl_of_NF hβφNF) (Cl_of_NF hβψNF)
+        (ih₁ (H' := H')) (ih₂ (H' := H'))
+  | orI hαN φ ψ hβ hβNF hαNF _ _ ih => exact .orI hαN φ ψ hβ hβNF hαNF (Cl_of_NF hβNF) (ih (H' := H'))
   | allω hαN φ β hβ hβNF hαNF _ _ ih =>
-      intro H'
-      exact .allω hαN φ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n)) (fun n => ih n)
+      exact .allω hαN φ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n))
+        (fun n => ih n (H' := adjoin H' n))
   | exI hαN φ n hβ hβNF hαNF _ hbound _ ih =>
-      intro H'; exact .exI hαN φ n hβ hβNF hαNF (Cl_of_NF hβNF) hbound ih
+      exact .exI hαN φ n hβ hβNF hαNF (Cl_of_NF hβNF) hbound (ih (H' := H'))
   | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF _ _ _ _ ih₁ ih₂ =>
-      intro H'
       exact .cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF
-        (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) ih₁ ih₂
+        (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) (ih₁ (H' := H')) (ih₂ (H' := H'))
 
-/-- Control-ordinal swap: `e` is a phantom index of the derivation relation (no rule inspects
-it), so a derivation transports to ANY control ordinal.  (The control ordinal only acquires
-meaning in the cut-elimination pass, where it drives the `ewIter`/`hardy` slot arithmetic.) -/
-theorem change_e (dd : Zef2TC α e H f c Γ) : ∀ (e' : ONote), Zef2TC α e' H f c Γ := by
-  induction dd with
-  | axL hαN r v hp hn => intro e'; exact .axL hαN r v hp hn
-  | trueRel hαN r v htrue hmem => intro e'; exact .trueRel hαN r v htrue hmem
-  | trueNrel hαN r v htrue hmem => intro e'; exact .trueNrel hαN r v htrue hmem
-  | verumR hαN h => intro e'; exact .verumR hαN h
-  | wk hαN hsub _ ih => intro e'; exact .wk hαN hsub (ih e')
-  | weak hαN hβ hβNF hαNF hβH hsub _ ih =>
-      intro e'; exact .weak hαN hβ hβNF hαNF hβH hsub (ih e')
+/-- Control-ordinal swap: `e` is a phantom index of the derivation relation (no rule inspects it),
+so a derivation transports to any control ordinal. -/
+lemma change_e (dd : Zef2TC α e H f c Γ) (e' : ONote) : Zef2TC α e' H f c Γ := by
+  induction dd generalizing e' with
+  | axL hαN r v hp hn => exact .axL hαN r v hp hn
+  | trueRel hαN r v htrue hmem => exact .trueRel hαN r v htrue hmem
+  | trueNrel hαN r v htrue hmem => exact .trueNrel hαN r v htrue hmem
+  | verumR hαN h => exact .verumR hαN h
+  | wk hαN hsub _ ih => exact .wk hαN hsub (ih e')
+  | weak hαN hβ hβNF hαNF hβH hsub _ ih => exact .weak hαN hβ hβNF hαNF hβH hsub (ih e')
   | andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro e'
       exact .andI hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ e') (ih₂ e')
-  | orI hαN φ ψ hβ hβNF hαNF hβH _ ih =>
-      intro e'; exact .orI hαN φ ψ hβ hβNF hαNF hβH (ih e')
-  | allω hαN φ β hβ hβNF hαNF hβH _ ih =>
-      intro e'; exact .allω hαN φ β hβ hβNF hαNF hβH (fun n => ih n e')
-  | exI hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro e'; exact .exI hαN φ n hβ hβNF hαNF hβH hbound (ih e')
+  | orI hαN φ ψ hβ hβNF hαNF hβH _ ih => exact .orI hαN φ ψ hβ hβNF hαNF hβH (ih e')
+  | allω hαN φ β hβ hβNF hαNF hβH _ ih => exact .allω hαN φ β hβ hβNF hαNF hβH (fun n => ih n e')
+  | exI hαN φ n hβ hβNF hαNF hβH hbound _ ih => exact .exI hαN φ n hβ hβNF hαNF hβH hbound (ih e')
   | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro e'
       exact .cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH (ih₁ e') (ih₂ e')
 
 end Zef2TC
@@ -211,7 +188,7 @@ end Zef2TC
 /-- The `K`-relativized root slot dominates a smaller-budget one: `e₁ < e` (with
 `norm e₁ ≤ B`), `B₁ ≤ B`, `K₁ ≤ K` give pointwise domination.  The `norm e₁ ≤ B`
 side condition is exactly `hardy_le_of_lt`'s budget gate, absorbed into the structural `B`. -/
-theorem relSlot_le {e₁ e} (he₁ : e₁.NF) (he : e.NF) (hlt : e₁ < e)
+lemma relSlot_le {e₁ e} (he₁ : e₁.NF) (he : e.NF) (hlt : e₁ < e)
     {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ K) (hnorm : norm e₁ ≤ B) (x : ℕ) :
     rel1 (ewRootSlot e₁ B₁) K₁ x ≤ rel1 (ewRootSlot e B) K x := by
   simp only [rel1, ewRootSlot]
@@ -225,7 +202,7 @@ theorem relSlot_le {e₁ e} (he₁ : e₁.NF) (he : e.NF) (hlt : e₁ < e)
   omega
 
 /-- Same-`e` slot monotonicity in `(B, K)`. -/
-theorem relSlot_mono {e} {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ K) (x : ℕ) :
+lemma relSlot_mono {e} {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ K) (x : ℕ) :
     rel1 (ewRootSlot e B₁) K₁ x ≤ rel1 (ewRootSlot e B) K x := by
   simp only [rel1, ewRootSlot]
   have h1 : hardy e (max B₁ (max K₁ x)) ≤ hardy e (max B (max K x)) :=
@@ -234,7 +211,7 @@ theorem relSlot_mono {e} {B₁ B K₁ K : ℕ} (hB : B₁ ≤ B) (hK : K₁ ≤ 
   omega
 
 /-- One `K`-rung buys `+2` of root-gate slack (the `2·(x + …)` slot shape). -/
-theorem relSlot_succ_gap (e : ONote) (B M : ℕ) :
+@[grind .] lemma relSlot_succ_gap (e : ONote) (B M : ℕ) :
     rel1 (ewRootSlot e B) M 0 + 2 ≤ rel1 (ewRootSlot e B) (M + 1) 0 := by
   simp only [rel1, ewRootSlot]
   have h1 : hardy e (max B (max M 0)) ≤ hardy e (max B (max (M + 1) 0)) :=
@@ -243,15 +220,17 @@ theorem relSlot_succ_gap (e : ONote) (B M : ℕ) :
   omega
 
 /-- The structural budget `B` is readable off the slot at `0`. -/
-theorem le_relSlot_zero (e : ONote) (B K : ℕ) : B ≤ rel1 (ewRootSlot e B) K 0 := by
+@[grind .] lemma le_relSlot_zero (e : ONote) (B K : ℕ) : B ≤ rel1 (ewRootSlot e B) K 0 := by
   simp only [rel1, ewRootSlot]
   have h1 := le_hardy e (max B (max K 0))
   have h2 : B ≤ max B (max K 0) := le_max_left _ _
   omega
+
 /-- Every `Cl (⊤)` obligation is free. -/
-theorem clT (β : ONote) : Cl (fun _ : ONote => True) β := Cl.base trivial
+@[grind .] lemma clT (β : ONote) : Cl (fun _ : ONote => True) β := Cl.base trivial
+
 /-- The relativization index is readable off the slot at `0`. -/
-theorem index_le_relSlot_zero (e : ONote) (B K : ℕ) : K ≤ rel1 (ewRootSlot e B) K 0 := by
+@[grind .] lemma index_le_relSlot_zero (e : ONote) (B K : ℕ) : K ≤ rel1 (ewRootSlot e B) K 0 := by
   simp only [rel1, ewRootSlot]
   omega
 
