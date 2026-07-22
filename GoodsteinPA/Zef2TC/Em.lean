@@ -9,20 +9,21 @@ namespace GoodsteinPA.E1EmbeddingGrind
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
-/-! ## The budgeted excluded middle (E–W Lemma 32 / the W3 `closed`-case engine) -/
+variable {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
-/-- **Budgeted EM**: a sequent containing `φ, ∼φ` is cut-free `Zef2TC`-derivable at the
-deterministic ordinal rung `ofNat (2k+1)` (`k ≥ complexity φ`), for ANY slot `f` monotone +
-inflationary with `clog (2k+1) ≤ f 0`.  All hypotheses are `rel1`-stable, so the ω-cases
-recurse at the relativized slots.  Mirrors `provable_em` (`Embedding.lean:71`). -/
-theorem em_Zef2TC (k : ℕ) :
-    ∀ (φ : ArithmeticFormula ℕ), φ.complexity ≤ k →
-    ∀ {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Monotone f → (∀ m, m ≤ f m) → clog (2 * k + 1) ≤ f 0 →
-      φ ∈ Γ → ∼φ ∈ Γ → Zef2TC (ONote.ofNat (2 * k + 1)) e H f 0 Γ := by
-  induction k with
+/-! ## Budgeted excluded middle -/
+
+/-- A sequent containing `φ, ∼φ` is cut-free `Zef2TC`-derivable at the deterministic ordinal
+rung `ofNat (2k+1)` (`k ≥ φ.complexity`), for any slot `f` monotone and inflationary with
+`clog (2k+1) ≤ f 0`.  Mirrors `Provable.em_cong_gen` in `GoodsteinPA/Zinfty/Embedding.lean`.
+
+- [EW12, Lemma 32] -/
+theorem em_Zef2TC (k : ℕ) (φ : ArithmeticFormula ℕ) (hk : φ.complexity ≤ k)
+    (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m) (hgate : clog (2 * k + 1) ≤ f 0)
+    (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
+    Zef2TC (ONote.ofNat (2 * k + 1)) e H f 0 Γ := by
+  induction k generalizing φ e H f Γ with
   | zero =>
-    intro φ hk e H f Γ hmono hinfl hgate hp hn
     have hgate' : Nlog (ONote.ofNat 1) ≤ f 0 := le_trans (Nlog_ofNat_le 1) hgate
     cases φ using Semiformula.cases' with
     | hverum => exact Zef2TC.verumR hgate' hp
@@ -34,7 +35,6 @@ theorem em_Zef2TC (k : ℕ) :
     | hall φ => simp at hk
     | hexs φ => simp at hk
   | succ k ih =>
-    intro φ hk e H f Γ hmono hinfl hgate hp hn
     -- rungs: IH at `ofNat (2k+1)`, connective/witness node at `ofNat (2k+2)`,
     -- root at `ofNat (2k+3) = ofNat (2·(k+1)+1)`
     rw [show 2 * (k + 1) + 1 = 2 * k + 3 by ring] at hgate ⊢
@@ -135,18 +135,18 @@ theorem em_Zef2TC (k : ℕ) :
           (fun _ => Cl.ofNat _) fam
         rwa [Finset.insert_eq_self.mpr hall'] at hall
 
-
 /-- Non-`k`-indexed corollary: EM at the formula's own complexity rung. -/
-theorem em_Zef2TC' (φ : ArithmeticFormula ℕ) {e} {H} {f} {Γ}
+theorem em_Zef2TC' (φ : ArithmeticFormula ℕ)
     (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
     (hgate : clog (2 * φ.complexity + 1) ≤ f 0)
     (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     Zef2TC (ONote.ofNat (2 * φ.complexity + 1)) e H f 0 Γ :=
   em_Zef2TC φ.complexity φ le_rfl hmono hinfl hgate hp hn
-private theorem em_cong_atomic_rel {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+
+private lemma em_cong_atomic_rel {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
     {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticSemiterm ℕ n)
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    {α : ONote} {c : ℕ}
     (hαN : Nlog α ≤ f 0)
     (hp : (Rew.subst w ▹ Semiformula.rel r v) ∈ Γ)
     (hn : (∼(Rew.subst w' ▹ Semiformula.rel r v)) ∈ Γ) :
@@ -164,10 +164,10 @@ private theorem em_cong_atomic_rel {n : ℕ} (w w' : Fin n → ArithmeticTerm �
         (fun i => embedding_valm_subst_congr w w' hval (v i))).mp htn
     exact Zef2TC.trueNrel hαN r _ htn' hn'
 
-private theorem em_cong_atomic_nrel {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+private lemma em_cong_atomic_nrel {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
     {ar : ℕ} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticSemiterm ℕ n)
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    {α : ONote} {c : ℕ}
     (hαN : Nlog α ≤ f 0)
     (hp : (Rew.subst w ▹ Semiformula.nrel r v) ∈ Γ)
     (hn : (∼(Rew.subst w' ▹ Semiformula.nrel r v)) ∈ Γ) :
@@ -186,23 +186,19 @@ private theorem em_cong_atomic_nrel {n : ℕ} (w w' : Fin n → ArithmeticTerm �
         (fun i => embedding_valm_subst_congr w w' hval (v i))).mp htn
     exact Zef2TC.trueRel hαN r _ htn' hn'
 
-/-- **Value-congruent budgeted EM** (arity-general; the `exs`-case engine): for pointwise
-value-equal closed substitutions `w, w'`, any sequent containing `Rew.subst w ▹ ψ` and
-`∼(Rew.subst w' ▹ ψ)` is cut-free `Zef2TC`-derivable at the deterministic rung
-`ofNat (2k+1)`.  Same budget discipline as `em_Zef2TC` (all hypotheses `rel1`-stable);
-atomic cases via `trueRel`/`trueNrel` + `stdClosedVal` congruence — the (Ax2)-load-bearing
-step. -/
-theorem em_cong_Zef2TC (k : ℕ) :
-    ∀ {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ) (ψ : ArithmeticSemiformula ℕ n),
-      ψ.complexity ≤ k →
-      (∀ i, stdClosedVal (w i) = stdClosedVal (w' i)) →
-      ∀ {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-        Monotone f → (∀ m, m ≤ f m) → clog (2 * k + 1) ≤ f 0 →
-        (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ →
-        Zef2TC (ONote.ofNat (2 * k + 1)) e H f 0 Γ := by
-  induction k with
+/-- **Value-congruent budgeted EM** (arity-general): for pointwise value-equal closed
+substitutions `w, w'`, any sequent containing `Rew.subst w ▹ ψ` and `∼(Rew.subst w' ▹ ψ)` is
+cut-free `Zef2TC`-derivable at the deterministic rung `ofNat (2k+1)`.
+
+- [EW12, Lemma 32] -/
+theorem em_cong_Zef2TC (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
+    (ψ : ArithmeticSemiformula ℕ n) (hk : ψ.complexity ≤ k)
+    (hval : ∀ i, stdClosedVal (w i) = stdClosedVal (w' i))
+    (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m) (hgate : clog (2 * k + 1) ≤ f 0)
+    (hp : (Rew.subst w ▹ ψ) ∈ Γ) (hn : (∼(Rew.subst w' ▹ ψ)) ∈ Γ) :
+    Zef2TC (ONote.ofNat (2 * k + 1)) e H f 0 Γ := by
+  induction k generalizing n w w' ψ e H f Γ with
   | zero =>
-    intro n w w' ψ hk hval e H f Γ hmono hinfl hgate hp hn
     have hgate' : Nlog (ONote.ofNat 1) ≤ f 0 := le_trans (Nlog_ofNat_le 1) hgate
     cases ψ using Semiformula.cases' with
     | hverum => exact Zef2TC.verumR hgate' (by simpa using hp)
@@ -214,7 +210,6 @@ theorem em_cong_Zef2TC (k : ℕ) :
     | hall φ => simp at hk
     | hexs φ => simp at hk
   | succ k ih =>
-    intro n w w' ψ hk hval e H f Γ hmono hinfl hgate hp hn
     rw [show 2 * (k + 1) + 1 = 2 * k + 3 by ring] at hgate ⊢
     have hNF : ∀ m : ℕ, (ONote.ofNat m).NF := fun m => ONote.nf_ofNat m
     have hlt12 : ONote.ofNat (2 * k + 1) < ONote.ofNat (2 * k + 2) := ofNat_lt_ofNat (by omega)
@@ -345,7 +340,7 @@ theorem em_cong_Zef2TC (k : ℕ) :
 /-- Single-term wrapper: closed terms `s, s'` of equal standard value. -/
 theorem em_cong1_Zef2TC (s s' : ArithmeticTerm ℕ)
     (hval : stdClosedVal s = stdClosedVal s')
-    (ψ : ArithmeticSemiformula ℕ 1) {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+    (ψ : ArithmeticSemiformula ℕ 1)
     (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
     (hgate : clog (2 * ψ.complexity + 1) ≤ f 0)
     (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) :
