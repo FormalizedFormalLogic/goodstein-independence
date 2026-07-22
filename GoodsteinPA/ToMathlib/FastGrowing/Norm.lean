@@ -479,14 +479,15 @@ def AllExpAbove (b : ONote) : ONote → Prop
 /-- **Clean-append refinement of `norm_add_le_of_nf`:** if every exponent of `a` dominates `b`
 (`AllExpAbove b a`), addition appends `b` as a tail without merging coefficients, so
 `norm (a + b) ≤ max (norm a) (norm b)`. -/
-theorem norm_add_clean : ∀ {a : ONote}, a.NF → ∀ {b : ONote}, b.NF → AllExpAbove b a →
-    norm (a + b) ≤ max (norm a) (norm b)
-  | 0, _, b, _, _ => by rw [zero_add]; exact le_max_right _ _
-  | oadd e n a', hNF, b, hb, hab => by
+@[grind →]
+lemma norm_add_clean {b : ONote} (hb : b.NF) :
+    ∀ {a : ONote}, a.NF → AllExpAbove b a → norm (a + b) ≤ max (norm a) (norm b)
+  | 0, _, _ => by rw [zero_add]; exact le_max_right _ _
+  | oadd e n a', hNF, hab => by
       obtain ⟨hbe, hab'⟩ := hab
       have hNFe : e.NF := hNF.fst
       have hNFa' : a'.NF := hNF.snd
-      have ih := norm_add_clean hNFa' hb hab'
+      have ih := norm_add_clean hb hNFa' hab'
       have hbelow : NFBelow (a' + b) e.repr := add_nfBelow hNF.snd' (NF.below_of_lt' hbe hb)
       have hadd : oadd e n a' + b = oadd e n (a' + b) := by
         rw [oadd_add]
