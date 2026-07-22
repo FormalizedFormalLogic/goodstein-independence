@@ -9,11 +9,11 @@ namespace GoodsteinPA.E1EmbeddingGrind
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
-/-! ### The W1 kit — bounded truth for ∃-free formulas (the `axm` engine)
+/-! ### Bounded truth for ∃-free formulas (the `axm` engine)
 
 All PA⁻/EQ axioms except `addEqOfLt` are (∀-closures of) ∃-free matrices; a TRUE closed
 ∃-free formula is cut-free `Zef2TC`-derivable at the deterministic rung `ofNat (2k+1)` —
-no witness budget at all (`exI` never fires).  `addEqOfLt` (witness `z = y - x ≤ y`, paid by
+no witness budget at all (`exI` never fires). `addEqOfLt` (witness `z = y - x ≤ y`, paid by
 the branch slot) and the induction schema (cut-tower over `em_Zef2TC`) are the two bespoke
 residues. -/
 
@@ -29,23 +29,25 @@ def ExFree : ∀ {n : ℕ}, ArithmeticSemiformula ℕ n → Prop
   | _, Semiformula.all φ => ExFree φ
   | _, Semiformula.exs _ => False
 
-@[simp] theorem exFree_verum {n : ℕ} : ExFree (⊤ : ArithmeticSemiformula ℕ n) := trivial
-@[simp] theorem exFree_falsum {n : ℕ} : ExFree (⊥ : ArithmeticSemiformula ℕ n) := trivial
-@[simp] theorem exFree_rel {n k : ℕ} (r : (ℒₒᵣ).Rel k) (v) :
+variable {n : ℕ}
+
+@[simp, grind .] lemma exFree_verum : ExFree (⊤ : ArithmeticSemiformula ℕ n) := trivial
+@[simp, grind .] lemma exFree_falsum : ExFree (⊥ : ArithmeticSemiformula ℕ n) := trivial
+@[simp, grind .] lemma exFree_rel {k : ℕ} (r : (ℒₒᵣ).Rel k) (v) :
     ExFree (Semiformula.rel (n := n) r v) := trivial
-@[simp] theorem exFree_nrel {n k : ℕ} (r : (ℒₒᵣ).Rel k) (v) :
+@[simp, grind .] lemma exFree_nrel {k : ℕ} (r : (ℒₒᵣ).Rel k) (v) :
     ExFree (Semiformula.nrel (n := n) r v) := trivial
-@[simp] theorem exFree_and {n : ℕ} {φ ψ : ArithmeticSemiformula ℕ n} :
+@[simp, grind =] lemma exFree_and {φ ψ : ArithmeticSemiformula ℕ n} :
     ExFree (φ ⋏ ψ) ↔ ExFree φ ∧ ExFree ψ := Iff.rfl
-@[simp] theorem exFree_or {n : ℕ} {φ ψ : ArithmeticSemiformula ℕ n} :
+@[simp, grind =] lemma exFree_or {φ ψ : ArithmeticSemiformula ℕ n} :
     ExFree (φ ⋎ ψ) ↔ ExFree φ ∧ ExFree ψ := Iff.rfl
-@[simp] theorem exFree_all {n : ℕ} {φ : ArithmeticSemiformula ℕ (n + 1)} :
+@[simp, grind =] lemma exFree_all {φ : ArithmeticSemiformula ℕ (n + 1)} :
     ExFree (∀⁰ φ) ↔ ExFree φ := Iff.rfl
-@[simp] theorem exFree_exs {n : ℕ} {φ : ArithmeticSemiformula ℕ (n + 1)} :
+@[simp, grind =] lemma exFree_exs {φ : ArithmeticSemiformula ℕ (n + 1)} :
     ExFree (∃⁰ φ) ↔ False := Iff.rfl
 
 /-- `ExFree` is stable under every rewriting (rewriting preserves the connective tree). -/
-theorem ExFree.rew {n₁ : ℕ} (ψ : ArithmeticSemiformula ℕ n₁) : ExFree ψ →
+lemma ExFree.rew {n₁ : ℕ} (ψ : ArithmeticSemiformula ℕ n₁) : ExFree ψ →
     ∀ {n₂ : ℕ} (ω : Rew ℒₒᵣ ℕ n₁ ℕ n₂), ExFree (ω ▹ ψ) := by
   induction ψ using Semiformula.rec' with
   | hverum => intro _ n₂ ω; simp
@@ -149,14 +151,14 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
         rwa [Finset.insert_eq_self.mpr hmem] at hall
     | hexs a => exact absurd hex (by simp)
 
-@[simp] theorem exFree_allClosure {n : ℕ} : ∀ {φ : ArithmeticSemiformula ℕ n},
+@[simp, grind =] lemma exFree_allClosure : ∀ {φ : ArithmeticSemiformula ℕ n},
     ExFree (∀⁰* φ) ↔ ExFree φ := by
   induction n with
   | zero => intro φ; rfl
   | succ n ih => intro φ; rw [show (∀⁰* φ) = (∀⁰* (∀⁰ φ)) from rfl, ih]; exact exFree_all
 
 /-- The closing assignment fixes embedded sentences (no fvars to rewrite). -/
-theorem asg_emb_fix (env : ℕ → ℕ) (σ : ArithmeticSentence) :
+lemma asg_emb_fix (env : ℕ → ℕ) (σ : ArithmeticSentence) :
     asg env ▹ (↑σ : ArithmeticFormula ℕ) = ↑σ := by
   have hc : (asg env).comp Rew.emb = (Rew.emb : Rew ℒₒᵣ Empty 0 ℕ 0) := by
     ext x
@@ -167,7 +169,7 @@ theorem asg_emb_fix (env : ℕ → ℕ) (σ : ArithmeticSentence) :
 
 /-- Truth transfer: a sentence true in `ℕ` stays `atomTrue` after embedding + any closing
 assignment (`asg env` fixes the fvar-free embed; mirrors `embedC`'s `axm` truth step). -/
-theorem atomTrue_asg_emb {σ : ArithmeticSentence} (h : ℕ ⊧ₘ σ) (env : ℕ → ℕ) :
+lemma atomTrue_asg_emb {σ : ArithmeticSentence} (h : ℕ ⊧ₘ σ) (env : ℕ → ℕ) :
     atomTrue (asg env ▹ (↑σ : ArithmeticFormula ℕ)) := by
   simp only [atomTrue, asg, Semiformula.eval_rewrite, Semiformula.eval_emb]
   rw [models_iff] at h
@@ -194,13 +196,11 @@ theorem budgetedEmbedsV3_of_exFree_true {Γ}
   exact truth_exFree_Zef2TC k _ hcompl (hex.rew _ _) (atomTrue_asg_emb htrue env)
     hmono hinfl hgate (Finset.mem_image_of_mem _ hΓ)
 
-
 /-! ### The PA⁻ `axm` sweep -/
 
 /-- **`addEqOfLt`** — the SOLE ∃-carrying PA⁻ axiom (`∀ x y, x < y → ∃ z, x + z = y`).
 The witness `z = y - x ≤ y` is dominated by the second ω-branch numeral, hence by the branch
-slot's relativization (`rel1 · y`) — no structural tower needed.  Bespoke `exI` assembly;
-disclosed `sorry`, next E-1 block. -/
+slot's relativization (`rel1 · y`) — no structural tower needed. -/
 theorem budgetedEmbedsV3_addEqOfLt {Γ}
     (hΓ : (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt) : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
