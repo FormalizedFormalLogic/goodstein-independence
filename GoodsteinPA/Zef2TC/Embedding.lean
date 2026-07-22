@@ -1,6 +1,5 @@
 module
 
-public import GoodsteinPA.Zef2TC.Axm
 public import GoodsteinPA.Zef2TC.SuccInd
 public import GoodsteinPA.Zef2TC.Inversion
 

@@ -6,7 +6,7 @@ The growth engine `Gexp := H_{ω²}` and its closure facts under addition, multi
 module
 
 public import GoodsteinPA.ToMathlib.Hardy.Comparison
-import Mathlib.Tactic.Ring
+import Mathlib.Tactic.Ring.RingNF
 
 @[expose] public section
 

@@ -3,7 +3,6 @@ module
 public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.ToMathlib.Hardy.Gexp
 public import GoodsteinPA.Encoding
-public import GoodsteinPA.ToFoundation.Numeral
 public import GoodsteinPA.ToFoundation.Subst
 public import GoodsteinPA.ReadoffValueGate
 
