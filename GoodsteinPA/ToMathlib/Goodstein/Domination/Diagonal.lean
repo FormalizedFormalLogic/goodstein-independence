@@ -19,8 +19,7 @@ open ONote Ordinal
 (for `b ≥ 2`). Strong induction mirroring `toONote`'s peeling recursion: the leading digit
 `n / b^(log b n) < b`, and the exponent `toONote b (log b n)` and tail `toONote b (n % …)`
 recurse on strictly smaller arguments. -/
-lemma norm_toONote_lt (b : ℕ) (hb : 2 ≤ b) : ∀ n, norm (toONote b n) < b := by
-  intro n
+lemma norm_toONote_lt (b : ℕ) (hb : 2 ≤ b) (n : ℕ) : norm (toONote b n) < b := by
   induction n using Nat.strong_induction_on with
   | _ n ih =>
     rcases eq_or_ne n 0 with rfl | hn
@@ -56,8 +55,10 @@ lemma norm_seqONote_le (m j : ℕ) : norm (seqONote m j) ≤ j + 1 := by
 Assembles the full Cichoń pipeline (Hardy telescope, budget satisfaction, bridge to fast-growing)
 modulo one deep input: ordinal domination (`seqONote m m > ω^o`). -/
 
+variable {o : ONote} {m : ℕ}
+
 /-- From ordinal domination, derive diagonal domination. -/
-lemma goodstein_dominates_of_index {o : ONote} (ho : o.NF) {m : ℕ}
+lemma goodstein_dominates_of_index (ho : o.NF)
     (hnorm : norm o ≤ m) (hidx : oadd o 1 0 < seqONote m m) :
     fastGrowing o m ≤ goodsteinLength m + 2 := by
   have hNFidx : (oadd o 1 0).NF := NF.oadd ho 1 NFBelow.zero
@@ -92,8 +93,7 @@ to **ruling out branch (B) for large `m`** — i.e. to the deep fact that the de
 `ω^o` for at least `m` steps; branch (B) says the descent has already dropped
 below `ω^o` by step `m`, which is conjecturally impossible for large `m` but is exactly the
 Cichoń lower-bound content not yet formalized. -/
-lemma goodstein_dominates_or_hardy_bound {o : ONote} (ho : o.NF) {m : ℕ}
-    (hnorm : norm o ≤ m) :
+lemma goodstein_dominates_or_hardy_bound (ho : o.NF) (hnorm : norm o ≤ m) :
     fastGrowing o m ≤ goodsteinLength m + 2 ∨
       goodsteinLength m + 2 ≤ hardy (oadd o 1 0) (m + 2) := by
   have hNFidx : (oadd o 1 0).NF := NF.oadd ho 1 NFBelow.zero
@@ -123,7 +123,7 @@ free (any `j ≤ goodsteinLength m`), and the index hypothesis is non-strict —
 `oadd o 1 0 = seqONote m j` collapses the Hardy comparison to a literal `rfl`, while the strict
 case uses `hardy_le_of_lt` (budget met). This is what lets the `o = 1` level close from the
 non-strict ordinal bound `omega_le_seqONote_repr`. -/
-theorem goodstein_dominates_of_index_le {o : ONote} (ho : o.NF) {m j : ℕ}
+theorem goodstein_dominates_of_index_le (ho : o.NF) {j : ℕ}
     (hj : j ≤ goodsteinLength m) (hmj : m ≤ j + 2) (hnorm : norm o ≤ j + 2)
     (hidx : (oadd o 1 0).repr ≤ (seqONote m j).repr) :
     fastGrowing o m ≤ goodsteinLength m + 2 := by
@@ -153,8 +153,7 @@ Cichoń pipeline — *not* by `native_decide`. The deep input, at `o = 1`, is su
 by `omega_le_seqONote_repr`: at step `j = m − 2` the descent ordinal is still `≥ ω`, so the
 generalized reduction `goodstein_dominates_of_index_le` (budget `j + 2 = m`) applies. Concretely
 `f_1(m) = 2m ≤ goodsteinLength m + 2`. -/
-lemma fastGrowing_one_le_goodsteinLength (n : ℕ) :
-    fastGrowing 1 (n + 2) ≤ goodsteinLength (n + 2) + 2 := by
+lemma fastGrowing_one_le_goodsteinLength (n : ℕ) : fastGrowing 1 (n + 2) ≤ goodsteinLength (n + 2) + 2 := by
   have ho : (1 : ONote).NF := NF.oadd NF.zero 1 NFBelow.zero
   have hlhs : (oadd (1 : ONote) 1 0).repr = ω := by simp [ONote.repr]
   refine goodstein_dominates_of_index_le (o := 1) (m := n + 2) (j := n) ho ?_ ?_ ?_ ?_
@@ -170,7 +169,7 @@ own budget) instead of `fastGrowing o m`. Whenever the descent at step `j` is `�
 length is bounded below by `f_o(j+2)`. This is what converts the early-step ordinal bounds (where
 `j ≈ log₂ m ≪ m`) into a **super-linear lower bound on `goodsteinLength`** (it cannot reach the
 diagonal `f_o(m)`, but it does beat every polynomial). -/
-lemma fastGrowing_step_le_goodsteinLength {o : ONote} (ho : o.NF) {m j : ℕ}
+lemma fastGrowing_step_le_goodsteinLength (ho : o.NF) {j : ℕ}
     (hj : j ≤ goodsteinLength m) (hnorm : norm o ≤ j + 2)
     (hidx : (oadd o 1 0).repr ≤ (seqONote m j).repr) :
     fastGrowing o (j + 2) ≤ goodsteinLength m + 2 := by
@@ -197,7 +196,7 @@ lower bound, the first proof that `goodsteinLength` outgrows the polynomial regi
 the early step `j = log₂ m − 2` the descent ordinal is `≥ ω² = (oadd 2 1 0).repr`
 (`omega_opow_le_seqONote_repr`, leading exponent still `≥ 2`); feed the non-diagonal reduction. The
 budget here is only `log₂ m`, not `m` — closing the gap to `f_2(m)` needs the deeper recursion. -/
-lemma fastGrowing_two_log_le_goodsteinLength {m : ℕ} (hm : 3 ≤ Nat.log 2 m) :
+lemma fastGrowing_two_log_le_goodsteinLength (hm : 3 ≤ Nat.log 2 m) :
     fastGrowing 2 (Nat.log 2 m) ≤ goodsteinLength m + 2 := by
   set L := Nat.log 2 m with hL
   have hLm : L ≤ m := Nat.log_le_self 2 m
@@ -226,7 +225,7 @@ leading exponent `≥ 2` through step `j = m − 2`, so the descent ordinal ther
 self-referential length bound `m + 2 ≤ goodsteinLength (Nat.log 2 m)`** — provable for large `m` by a
 strong induction on `m` (the lower length is astronomically larger than `m` once `Nat.log 2 m ≥ 4`),
 the clean successor to the abandoned `ppCount` sparsity route. -/
-lemma fastGrowing_two_le_goodsteinLength_of_log_length {m : ℕ} (hm : 4 ≤ m)
+lemma fastGrowing_two_le_goodsteinLength_of_log_length (hm : 4 ≤ m)
     (hlen : m + 2 ≤ goodsteinLength (Nat.log 2 m)) :
     fastGrowing 2 m ≤ goodsteinLength m + 2 := by
   have ho : (2 : ONote).NF := by decide
@@ -248,7 +247,7 @@ lemma fastGrowing_two_le_goodsteinLength_of_log_length {m : ℕ} (hm : 4 ≤ m)
 
 /-- `2·m ≤ 2^m` for `m ≥ 2` (elementary; the slack that turns `f_2(m) = 2^m·m` into a clean
 `≥ 2^{m+1}` exponential length bound). -/
-lemma two_mul_le_two_pow {m : ℕ} (h : 2 ≤ m) : 2 * m ≤ 2 ^ m := by
+lemma two_mul_le_two_pow (h : 2 ≤ m) : 2 * m ≤ 2 ^ m := by
   induction m with
   | zero => omega
   | succ n ih =>
@@ -264,7 +263,7 @@ at least `2^{m+1} + m`. Combines the conditional `o = 2` domination
 with the slack `2^m ≥ m + 2`: `2^m·m − 2 ≥ 2^{m+1} + m` for `m ≥ 4`. This is the engine of the strong
 induction in `goodsteinLength_exp_lower`: it converts an exponential length bound at the *small* seed
 `Nat.log 2 m` into one at `m`, the self-reference at the heart of Cichoń's lower bound. -/
-lemma exp_le_goodsteinLength_step {m : ℕ} (hm : 4 ≤ m)
+lemma exp_le_goodsteinLength_step (hm : 4 ≤ m)
     (hlen : m + 2 ≤ goodsteinLength (Nat.log 2 m)) :
     2 ^ (m + 1) + m ≤ goodsteinLength m := by
   have hdom := fastGrowing_two_le_goodsteinLength_of_log_length hm hlen
@@ -295,15 +294,13 @@ def gpos : ℕ → ℕ → ℕ → Bool
 /-- **Soundness of `gpos`:** if the forward pass from `G_k` reports all-nonzero for `fuel` steps, then
 `goodsteinSeq M (k + j) ≠ 0` for every `j < fuel`. Induction on `fuel`, using that the threaded value
 `bump (base k) (G_k) − 1` is exactly `G_{k+1}` (defeq) so the accumulator stays on the real sequence. -/
-lemma gpos_goodstein (M : ℕ) : ∀ fuel k, gpos k (goodsteinSeq M k) fuel = true →
-    ∀ j, j < fuel → goodsteinSeq M (k + j) ≠ 0 := by
-  intro fuel
-  induction fuel with
-  | zero => intro k _ j hj; omega
+lemma gpos_goodstein (M fuel k : ℕ) (h : gpos k (goodsteinSeq M k) fuel = true) (j : ℕ) (hj : j < fuel) :
+    goodsteinSeq M (k + j) ≠ 0 := by
+  induction fuel generalizing k j with
+  | zero => omega
   | succ fuel ih =>
-    intro k hgp j hj
-    rw [gpos, Bool.and_eq_true, decide_eq_true_eq] at hgp
-    obtain ⟨hv0, hrest⟩ := hgp
+    rw [gpos, Bool.and_eq_true, decide_eq_true_eq] at h
+    obtain ⟨hv0, hrest⟩ := h
     have hstep : bump (base k) (goodsteinSeq M k) - 1 = goodsteinSeq M (k + 1) := rfl
     rw [hstep] at hrest
     rcases Nat.eq_zero_or_pos j with hj0 | hjpos
@@ -331,12 +328,10 @@ for `4 ≤ m < 16` it is a base case. **This is Cichoń's lower bound:** the sel
 base hypothesis is purely computational (no deep content) — discharged by `gpos`/`native_decide` in
 `goodsteinLength_exp_lower_uncond`. -/
 theorem goodsteinLength_exp_lower
-    (hbase : ∀ M, 4 ≤ M → M < 16 → 2 ^ (M + 1) + M ≤ goodsteinLength M) :
-    ∀ m, 4 ≤ m → 2 ^ (m + 1) + m ≤ goodsteinLength m := by
-  intro m
+    (hbase : ∀ M, 4 ≤ M → M < 16 → 2 ^ (M + 1) + M ≤ goodsteinLength M) (m : ℕ) (hm : 4 ≤ m) :
+    2 ^ (m + 1) + m ≤ goodsteinLength m := by
   induction m using Nat.strong_induction_on with
   | _ m ih =>
-    intro hm
     rcases Nat.lt_or_ge m 16 with hsmall | hbig
     · exact hbase m hm hsmall
     · set L := Nat.log 2 m with hL
@@ -352,8 +347,7 @@ theorem goodsteinLength_exp_lower
       have hlen : m + 2 ≤ goodsteinLength L := by omega
       exact exp_le_goodsteinLength_step (by omega) hlen
 
-/-- `norm (ofNat n) = n`: a finite notation `ofNat (k+1) = oadd 0 ⟨k+1⟩ 0` has CNF norm its single
-coefficient. -/
+/-- `norm (ofNat n) = n`: a finite notation `ofNat (k+1) = oadd 0 ⟨k+1⟩ 0` has CNF norm its single coefficient. -/
 lemma norm_ofNat (n : ℕ) : norm (ONote.ofNat n) = n := by
   cases n with
   | zero => rfl
@@ -379,13 +373,11 @@ lemma goodsteinSeq_small_step (M k : ℕ) (h : goodsteinSeq M k < base k) :
 /-- **Small-regime termination law:** once a Goodstein value is below its base it decreases by one per
 step (base only grows, so it stays below), reaching `0` within `goodsteinSeq M k` steps. Hence
 `goodsteinLength M ≤ k + goodsteinSeq M k` whenever `goodsteinSeq M k < base k`. -/
-lemma goodsteinLength_le_of_small (M : ℕ) :
-    ∀ v k, goodsteinSeq M k = v → goodsteinSeq M k < base k → goodsteinLength M ≤ k + v := by
-  intro v
-  induction v with
-  | zero => intro k hv _; have := goodsteinLength_le hv; omega
+lemma goodsteinLength_le_of_small (M v k : ℕ) (hv : goodsteinSeq M k = v)
+    (hsmall : goodsteinSeq M k < base k) : goodsteinLength M ≤ k + v := by
+  induction v generalizing k with
+  | zero => have := goodsteinLength_le hv; omega
   | succ v ih =>
-    intro k hv hsmall
     have hstep := goodsteinSeq_small_step M k hsmall
     have hstep' : goodsteinSeq M (k + 1) = v := by omega
     have hsmall' : goodsteinSeq M (k + 1) < base (k + 1) := by
@@ -397,10 +389,8 @@ lemma goodsteinLength_le_of_small (M : ℕ) :
 `n ≤ base k` and `k + n ≤ goodsteinLength M` then `n ≤ goodsteinSeq M k`: were it `< n ≤ base k`, the
 small-regime law would force `goodsteinLength M ≤ k + goodsteinSeq M k < k + n`, contradiction.
 Generalizes `two_le_goodsteinSeq` (the `n = 2` case). -/
-lemma n_le_goodsteinSeq (M k n : ℕ) (hn : n ≤ base k) (hlen : k + n ≤ goodsteinLength M) :
-    n ≤ goodsteinSeq M k := by
-  by_contra hc
-  rw [not_le] at hc
+lemma n_le_goodsteinSeq (M k n : ℕ) (hn : n ≤ base k) (hlen : k + n ≤ goodsteinLength M) : n ≤ goodsteinSeq M k := by
+  by_contra! hc
   have hsmall : goodsteinSeq M k < base k := lt_of_lt_of_le hc hn
   have := goodsteinLength_le_of_small M (goodsteinSeq M k) k rfl hsmall
   omega
@@ -422,7 +412,7 @@ bound. Assembly: `n_le_leadExp_of_log_length` keeps the leading exponent `≥ n`
 `j = m − 2`, so the descent ordinal there dominates `ω^n = (oadd (ofNat n) 1 0).repr`
 (`opow_le_seqONote_repr`); the diagonal reduction `goodstein_dominates_of_index_le` closes it.
 Generalizes `fastGrowing_two_le_goodsteinLength_of_log_length` to all `n`. -/
-theorem fastGrowing_ofNat_le_goodsteinLength_of_log_length {n m : ℕ}
+theorem fastGrowing_ofNat_le_goodsteinLength_of_log_length {n : ℕ}
     (hnm : n ≤ m - 2) (hm : 4 ≤ m)
     (hlen : m + n ≤ goodsteinLength (Nat.log 2 m)) :
     fastGrowing (ONote.ofNat n) m ≤ goodsteinLength m + 2 := by
@@ -450,7 +440,7 @@ budget is `log₂ m − n` (not `m` — leadExp and budget trade off). Taking e.
 the RHS exceed `f_{(log₂ m)/2}(…)` — a tower of exponentials of height `~log₂ m`, hence
 `goodsteinLength` outgrows every elementary function. The diagonal `f_n(m)` (true domination, the
 headline) still needs the steps-between-drops recursion. -/
-theorem fastGrowing_ofNat_log_le_goodsteinLength (n : ℕ) {m : ℕ} (hm : 1 ≤ m)
+theorem fastGrowing_ofNat_log_le_goodsteinLength (n : ℕ) (hm : 1 ≤ m)
     (hn : 2 * n ≤ Nat.log 2 m) :
     fastGrowing (ONote.ofNat n) (Nat.log 2 m - n + 2) ≤ goodsteinLength m + 2 := by
   set L := Nat.log 2 m with hL

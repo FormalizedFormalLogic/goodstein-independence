@@ -13,11 +13,11 @@ namespace ONote
 
 open ONote Ordinal
 
-variable {x : ℕ} {α β γ γ' o a b c : ONote}
+variable {x : ℕ} {o a b c : ONote}
 
-/-- **No `ω`-fixed points below `ε₀`, elementarily:** for every normal-form notation,
-`repr o < ω ^ repr o`. -/
-lemma repr_lt_opow_repr : ∀ (o : ONote), o.NF → o.repr < ω ^ o.repr
+/-- **No `ω`-fixed points below `ε₀`, elementarily:** for every normal-form notation, `repr o < ω ^ repr o`. -/
+lemma repr_lt_opow_repr (o : ONote) (h : o.NF) : o.repr < ω ^ o.repr :=
+  match o, h with
   | 0, _ => by simp
   | oadd e n a, h => by
       have hIH : e.repr < ω ^ e.repr := repr_lt_opow_repr e h.fst
@@ -33,14 +33,14 @@ lemma repr_lt_opow_repr : ∀ (o : ONote), o.NF → o.repr < ω ^ o.repr
 /-! ### The CNF norm and structural comparison helpers (toward general Bachmann reachability)
 
 The general index-domination needs a **budget condition**: the diagonal argument `x` must be
-large enough that the fundamental-sequence descent of `β` actually passes through `α`. The
-right "size of `α`" is its **CNF norm**: the largest finite number (coefficient or finite
-tail) appearing anywhere in `α`'s Cantor normal form. -/
+large enough that the fundamental-sequence descent of `o` actually passes through `d`. The
+right "size of `d`" is its **CNF norm**: the largest finite number (coefficient or finite
+tail) appearing anywhere in `d`'s Cantor normal form. -/
 
 /-- **CNF norm** of a notation: the maximum finite coefficient appearing anywhere in its
 Cantor normal form (recursively through exponents and tails). `norm 0 = 0`,
 `norm (ω^e·n + a) = max (norm e) (max n (norm a))`. This is the budget threshold: if
-`norm α ≤ x` then the standard fundamental-sequence descent of any `β > α` reaches `α` with
+`norm d ≤ x` then the standard fundamental-sequence descent of any `o > d` reaches `d` with
 budget `x` (`reaches_of_lt`). -/
 def norm : ONote → ℕ
   | 0 => 0
@@ -51,14 +51,15 @@ def norm : ONote → ℕ
 @[simp] theorem norm_oadd (e : ONote) (n : ℕ+) (a : ONote) :
     norm (oadd e n a) = max (norm e) (max (n : ℕ) (norm a)) := rfl
 
-/-- **Trichotomy decomposition of `<` on `oadd`.** For normal-form notations, `α < β`
-splits into the three lexicographic cases on (exponent, coefficient, tail). -/
+/-- **Trichotomy decomposition of `<` on `oadd`.** For normal-form notations,
+`oadd ea na ba < oadd e m b` splits into the three lexicographic cases on
+(exponent, coefficient, tail). -/
 lemma lt_oadd_cases {ea : ONote} {na : ℕ+} {ba e : ONote} {m : ℕ+} {b : ONote}
-    (hα : NF (oadd ea na ba)) (hβ : NF (oadd e m b)) (h : oadd ea na ba < oadd e m b) :
+    (h1 : NF (oadd ea na ba)) (h2 : NF (oadd e m b)) (h : oadd ea na ba < oadd e m b) :
     ea < e ∨ (ea = e ∧ (na : ℕ) < (m : ℕ)) ∨ (ea = e ∧ na = m ∧ ba < b) := by
   rcases lt_trichotomy ea.repr e.repr with he | he | he
   · exact Or.inl (lt_def.2 he)
-  · have heq : ea = e := (@repr_inj ea e hα.fst hβ.fst).1 he
+  · have heq : ea = e := (@repr_inj ea e h1.fst h2.fst).1 he
     subst heq
     rcases lt_trichotomy (na : ℕ) (m : ℕ) with hn | hn | hn
     · exact Or.inr (Or.inl ⟨rfl, hn⟩)
@@ -66,18 +67,18 @@ lemma lt_oadd_cases {ea : ONote} {na : ℕ+} {ba e : ONote} {m : ℕ+} {b : ONot
       subst hnm
       rcases lt_trichotomy ba.repr b.repr with hb | hb | hb
       · exact Or.inr (Or.inr ⟨rfl, rfl, lt_def.2 hb⟩)
-      · have hbeq : ba = b := (@repr_inj ba b hα.snd hβ.snd).1 hb
+      · have hbeq : ba = b := (@repr_inj ba b h1.snd h2.snd).1 hb
         subst hbeq; exact absurd h (lt_irrefl _)
       · exact absurd (oadd_lt_oadd_3 (lt_def.2 hb)) (lt_asymm h)
-    · exact absurd (oadd_lt_oadd_2 hβ hn) (lt_asymm h)
-  · exact absurd (oadd_lt_oadd_1 hβ (lt_def.2 he)) (lt_asymm h)
+    · exact absurd (oadd_lt_oadd_2 h2 hn) (lt_asymm h)
+  · exact absurd (oadd_lt_oadd_1 h2 (lt_def.2 he)) (lt_asymm h)
 
-/-- **Norm bound on a single CNF level:** if a normal-form `δ` has leading exponent `≤ c`
-and norm `≤ x`, then `δ < ω^c·(x+1)`. -/
-lemma lt_oadd_of_lead_le (hc : c.NF) {δ : ONote} (hδ : δ.NF)
-    (hlead : δ.repr < ω ^ c.repr * ω) (hnorm : norm δ ≤ x) :
-    δ < oadd c x.succPNat 0 := by
-  cases δ with
+/-- **Norm bound on a single CNF level:** if a normal-form `d` has leading exponent `≤ c`
+and norm `≤ x`, then `d < ω^c·(x+1)`. -/
+lemma lt_oadd_of_lead_le (hc : c.NF) {d : ONote} (hd : d.NF)
+    (hlead : d.repr < ω ^ c.repr * ω) (hnorm : norm d ≤ x) :
+    d < oadd c x.succPNat 0 := by
+  cases d with
   | zero => exact oadd_pos _ _ _
   | oadd ed nd bd =>
     have hpow : ω ^ ed.repr ≤ (oadd ed nd bd).repr := omega0_le_oadd ed nd bd
@@ -86,20 +87,20 @@ lemma lt_oadd_of_lead_le (hc : c.NF) {δ : ONote} (hδ : δ.NF)
     have hed_le : ed.repr ≤ c.repr :=
       Order.lt_succ_iff.1 ((opow_lt_opow_iff_right one_lt_omega0).1 h2)
     rcases lt_or_eq_of_le hed_le with hlt | heq
-    · exact oadd_lt_oadd_1 hδ (lt_def.2 hlt)
-    · have hedc : ed = c := (@repr_inj ed c hδ.fst hc).1 heq
+    · exact oadd_lt_oadd_1 hd (lt_def.2 hlt)
+    · have hedc : ed = c := (@repr_inj ed c hd.fst hc).1 heq
       subst hedc
       rw [norm_oadd] at hnorm
       have hnd : (nd : ℕ) ≤ x := (le_max_of_le_right (le_max_left _ _)).trans hnorm
-      refine oadd_lt_oadd_2 hδ ?_
+      refine oadd_lt_oadd_2 hd ?_
       simpa [Nat.succPNat] using Nat.lt_succ_of_le hnd
 
-/-- **The key cofinality bound (general Bachmann reachability core):** for a normal-form limit `β`
-with fundamental sequence `g`, every `α < β` with norm `≤ x` sits below the `x`-th rung `g x`. -/
-theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ → ONote)
-    (hg : fundamentalSequence β = Sum.inr g) (α : ONote) (hα : α.NF) (hαβ : α < β)
-    (hnorm : norm α ≤ x) : α < g x := by
-  induction β generalizing g α with
+/-- **The key cofinality bound (general Bachmann reachability core):** for a normal-form limit `o`
+with fundamental sequence `g`, every `d < o` with norm `≤ x` sits below the `x`-th rung `g x`. -/
+theorem lt_fundamentalSequence_of_norm_le (o : ONote) (ho : o.NF) (g : ℕ → ONote)
+    (hg : fundamentalSequence o = Sum.inr g) (d : ONote) (hd : d.NF) (hdo : d < o)
+    (hnorm : norm d ≤ x) : d < g x := by
+  induction o generalizing g d with
   | zero => exact (Sum.inl_ne_inr hg).elim
   | oadd a m b iha ihb =>
     rcases hb : fundamentalSequence b with (_ | b') | hbf
@@ -111,7 +112,7 @@ theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ �
         · rw [fundamentalSequence, hb, ha, hm] at hg; exact (Sum.inl_ne_inr hg).elim
       · -- a a successor (predecessor `a'`)
         have hpa := fundamentalSequence_has_prop a; rw [ha] at hpa
-        have ha'NF : a'.NF := hpa.2 hβ.fst
+        have ha'NF : a'.NF := hpa.2 ho.fst
         have harepr : a.repr = Order.succ a'.repr := hpa.1
         have hb0 : b = 0 := by have hpb := fundamentalSequence_has_prop b; rwa [hb] at hpb
         rcases hm : m.natPred with _ | k
@@ -120,8 +121,8 @@ theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ �
             rw [fundamentalSequence, hb, ha, hm] at hg; exact (Sum.inr.inj hg).symm
           have hm1 : m = 1 := by rw [← PNat.succPNat_natPred m, hm]; rfl
           rw [hg']
-          refine lt_oadd_of_lead_le ha'NF hα ?_ hnorm
-          have hlt : α.repr < (oadd a m b).repr := lt_def.1 hαβ
+          refine lt_oadd_of_lead_le ha'NF hd ?_ hnorm
+          have hlt : d.repr < (oadd a m b).repr := lt_def.1 hdo
           rw [hb0, hm1] at hlt
           rw [show (oadd a 1 0).repr = ω ^ a.repr from by
             simp only [ONote.repr, PNat.one_coe, Nat.cast_one, mul_one, add_zero]] at hlt
@@ -132,22 +133,22 @@ theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ �
             rw [fundamentalSequence, hb, ha, hm] at hg; exact (Sum.inr.inj hg).symm
           have hmval : (m : ℕ) = k + 2 := by rw [← PNat.succPNat_natPred m, hm]; rfl
           rw [hg']
-          cases α with
+          cases d with
           | zero => exact oadd_pos _ _ _
           | oadd ea na ba =>
-            rw [hb0] at hαβ
-            rcases lt_oadd_cases hα (hb0 ▸ hβ) hαβ with hlt | ⟨heq, hnlt⟩ | ⟨_, _, hbalt⟩
-            · exact oadd_lt_oadd_1 hα hlt
-            · rw [heq] at hα hnorm ⊢
+            rw [hb0] at hdo
+            rcases lt_oadd_cases hd (hb0 ▸ ho) hdo with hlt | ⟨heq, hnlt⟩ | ⟨_, _, hbalt⟩
+            · exact oadd_lt_oadd_1 hd hlt
+            · rw [heq] at hd hnorm ⊢
               rw [hmval] at hnlt
               rcases Nat.lt_or_ge (na : ℕ) (k + 1) with hna | hna
-              · exact oadd_lt_oadd_2 hα (by simpa [Nat.succPNat] using hna)
+              · exact oadd_lt_oadd_2 hd (by simpa [Nat.succPNat] using hna)
               · have hnak : (na : ℕ) = k + 1 := le_antisymm (by omega) hna
                 have hnaP : na = k.succPNat := PNat.coe_injective (by simpa [Nat.succPNat] using hnak)
                 subst hnaP
                 refine oadd_lt_oadd_3 ?_
-                refine lt_oadd_of_lead_le ha'NF hα.snd ?_ ?_
-                · have hba : ba.repr < ω ^ a.repr := hα.snd'.repr_lt
+                refine lt_oadd_of_lead_le ha'NF hd.snd ?_ ?_
+                · have hba : ba.repr < ω ^ a.repr := hd.snd'.repr_lt
                   rw [harepr, opow_succ] at hba; exact hba
                 · rw [norm_oadd] at hnorm
                   exact (le_max_of_le_right (le_max_right _ _)).trans hnorm
@@ -161,16 +162,16 @@ theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ �
             rw [fundamentalSequence, hb, ha, hm] at hg; exact (Sum.inr.inj hg).symm
           have hm1 : m = 1 := by rw [← PNat.succPNat_natPred m, hm]; rfl
           rw [hg']
-          cases α with
+          cases d with
           | zero => exact oadd_pos _ _ _
           | oadd ea na ba =>
-            rw [hb0, hm1] at hαβ
-            rcases lt_oadd_cases hα ((hb0 ▸ hm1 ▸ hβ : NF (oadd a 1 0))) hαβ
+            rw [hb0, hm1] at hdo
+            rcases lt_oadd_cases hd ((hb0 ▸ hm1 ▸ ho : NF (oadd a 1 0))) hdo
               with hlt | ⟨rfl, hnlt⟩ | ⟨rfl, _, hbalt⟩
             · have hnorm_ea : norm ea ≤ x := by
                 rw [norm_oadd] at hnorm; exact (le_max_left _ _).trans hnorm
-              have hep : ea < p x := iha hβ.fst p ha ea hα.fst hlt hnorm_ea
-              exact oadd_lt_oadd_1 hα hep
+              have hep : ea < p x := iha ho.fst p ha ea hd.fst hlt hnorm_ea
+              exact oadd_lt_oadd_1 hd hep
             · simp only [PNat.one_coe] at hnlt; exact absurd hnlt (by have := na.pos; omega)
             · have hr := lt_def.1 hbalt; rw [repr_zero] at hr
               exact absurd hr not_lt_zero
@@ -179,16 +180,16 @@ theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ �
             rw [fundamentalSequence, hb, ha, hm] at hg; exact (Sum.inr.inj hg).symm
           have hmval : (m : ℕ) = k + 2 := by rw [← PNat.succPNat_natPred m, hm]; rfl
           rw [hg']
-          cases α with
+          cases d with
           | zero => exact oadd_pos _ _ _
           | oadd ea na ba =>
-            rw [hb0] at hαβ
-            rcases lt_oadd_cases hα (hb0 ▸ hβ) hαβ with hlt | ⟨heq, hnlt⟩ | ⟨_, _, hbalt⟩
-            · exact oadd_lt_oadd_1 hα hlt
-            · rw [heq] at hα hnorm ⊢
+            rw [hb0] at hdo
+            rcases lt_oadd_cases hd (hb0 ▸ ho) hdo with hlt | ⟨heq, hnlt⟩ | ⟨_, _, hbalt⟩
+            · exact oadd_lt_oadd_1 hd hlt
+            · rw [heq] at hd hnorm ⊢
               rw [hmval] at hnlt
               rcases Nat.lt_or_ge (na : ℕ) (k + 1) with hna | hna
-              · exact oadd_lt_oadd_2 hα (by simpa [Nat.succPNat] using hna)
+              · exact oadd_lt_oadd_2 hd (by simpa [Nat.succPNat] using hna)
               · have hnak : (na : ℕ) = k + 1 := le_antisymm (by omega) hna
                 have hnaP : na = k.succPNat := PNat.coe_injective (by simpa [Nat.succPNat] using hnak)
                 subst hnaP
@@ -197,14 +198,14 @@ theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ �
                 | zero => exact oadd_pos _ _ _
                 | oadd eb nb bb =>
                   have heb : eb.repr < a.repr := by
-                    have hbb : (oadd eb nb bb).repr < ω ^ a.repr := hα.snd'.repr_lt
+                    have hbb : (oadd eb nb bb).repr < ω ^ a.repr := hd.snd'.repr_lt
                     have hle : ω ^ eb.repr ≤ (oadd eb nb bb).repr := omega0_le_oadd eb nb bb
                     exact (opow_lt_opow_iff_right one_lt_omega0).1 (lt_of_le_of_lt hle hbb)
                   have hnorm_eb : norm eb ≤ x := by
                     rw [norm_oadd, norm_oadd] at hnorm
                     exact (le_max_of_le_right (le_max_of_le_right (le_max_left _ _))).trans hnorm
-                  have hep : eb < p x := iha hβ.fst p ha eb hα.snd.fst (lt_def.2 heb) hnorm_eb
-                  exact oadd_lt_oadd_1 hα.snd hep
+                  have hep : eb < p x := iha ho.fst p ha eb hd.snd.fst (lt_def.2 heb) hnorm_eb
+                  exact oadd_lt_oadd_1 hd.snd hep
             · have hr := lt_def.1 hbalt; rw [repr_zero] at hr
               exact absurd hr not_lt_zero
     · -- b a successor ⟹ `oadd a m b` is a successor → contradicts the limit `hg`
@@ -213,47 +214,45 @@ theorem lt_fundamentalSequence_of_norm_le (β : ONote) (hβ : β.NF) (g : ℕ �
       have hg' : g = fun i => oadd a m (hbf i) := by
         rw [fundamentalSequence_oadd_limit hb] at hg; exact (Sum.inr.inj hg).symm
       rw [hg']
-      cases α with
+      cases d with
       | zero => exact oadd_pos _ _ _
       | oadd ea na ba =>
-        rcases lt_oadd_cases hα hβ hαβ with hlt | ⟨rfl, hnlt⟩ | ⟨rfl, hnm, hbalt⟩
-        · exact oadd_lt_oadd_1 hα hlt
-        · exact oadd_lt_oadd_2 hα hnlt
+        rcases lt_oadd_cases hd ho hdo with hlt | ⟨rfl, hnlt⟩ | ⟨rfl, hnm, hbalt⟩
+        · exact oadd_lt_oadd_1 hd hlt
+        · exact oadd_lt_oadd_2 hd hnlt
         · subst hnm
           have hnorm_ba : norm ba ≤ x := by
             rw [norm_oadd] at hnorm; exact (le_max_of_le_right (le_max_right _ _)).trans hnorm
-          exact oadd_lt_oadd_3 (ihb hβ.snd hbf hb ba hα.snd hbalt hnorm_ba)
+          exact oadd_lt_oadd_3 (ihb ho.snd hbf hb ba hd.snd hbalt hnorm_ba)
 
-/-- **General Bachmann reachability:** for normal-form `α < β` with budget `x ≥ norm α`,
-the standard fundamental-sequence descent of `β` reaches `α`. -/
-theorem reaches_of_lt (β : ONote) (hβ : β.NF) (α : ONote) (hα : α.NF) (hαβ : α < β)
-    (hnorm : norm α ≤ x) : Reaches x β α := by
-  rcases e : fundamentalSequence β with (_ | γ) | g
+/-- **General Bachmann reachability:** for normal-form `d < o` with budget `x ≥ norm d`,
+the standard fundamental-sequence descent of `o` reaches `d`. -/
+theorem reaches_of_lt (o : ONote) (ho : o.NF) (d : ONote) (hd : d.NF) (hdo : d < o) (hnorm : norm d ≤ x) :
+    Reaches x o d := by
+  rcases e : fundamentalSequence o with (_ | c) | g
   · exfalso
-    have hβ0 : β = 0 := by have hp := fundamentalSequence_has_prop β; rwa [e] at hp
-    rw [hβ0] at hαβ
-    have hr : α.repr < 0 := by rw [← repr_zero]; exact lt_def.1 hαβ
+    have ho0 : o = 0 := by have hp := fundamentalSequence_has_prop o; rwa [e] at hp
+    rw [ho0] at hdo
+    have hr : d.repr < 0 := by rw [← repr_zero]; exact lt_def.1 hdo
     exact absurd hr not_lt_zero
-  · have hp := fundamentalSequence_has_prop β; rw [e] at hp
-    have hγNF : γ.NF := hp.2 hβ
-    have hγβ : γ < β := lt_def.2 (by rw [hp.1]; exact Order.lt_succ _)
-    have hαr : α.repr ≤ γ.repr := Order.lt_succ_iff.1 (by rw [← hp.1]; exact lt_def.1 hαβ)
-    rcases eq_or_lt_of_le hαr with heq | hlt
-    · have hαγ : α = γ := (@repr_inj α γ hα hγNF).1 heq
-      subst hαγ; exact Reaches.succ e (Reaches.refl _)
-    · exact Reaches.succ e (reaches_of_lt γ hγNF α hα (lt_def.2 hlt) hnorm)
-  · have hp := fundamentalSequence_has_prop β; rw [e] at hp
-    have hgxNF : (g x).NF := (hp.2.1 x).2.2 hβ
-    have hgxlt : g x < β := (hp.2.1 x).2.1
-    have hαgx : α < g x := lt_fundamentalSequence_of_norm_le β hβ g e α hα hαβ hnorm
-    exact Reaches.limit e (reaches_of_lt (g x) hgxNF α hα hαgx hnorm)
-termination_by β
+  · have hp := fundamentalSequence_has_prop o; rw [e] at hp
+    have hcNF : c.NF := hp.2 ho
+    have hco : c < o := lt_def.2 (by rw [hp.1]; exact Order.lt_succ _)
+    have hdr : d.repr ≤ c.repr := Order.lt_succ_iff.1 (by rw [← hp.1]; exact lt_def.1 hdo)
+    rcases eq_or_lt_of_le hdr with heq | hlt
+    · have hdc : d = c := (@repr_inj d c hd hcNF).1 heq
+      subst hdc; exact Reaches.succ e (Reaches.refl _)
+    · exact Reaches.succ e (reaches_of_lt c hcNF d hd (lt_def.2 hlt) hnorm)
+  · have hp := fundamentalSequence_has_prop o; rw [e] at hp
+    have hgxNF : (g x).NF := (hp.2.1 x).2.2 ho
+    have hgxlt : g x < o := (hp.2.1 x).2.1
+    have hdgx : d < g x := lt_fundamentalSequence_of_norm_le o ho g e d hd hdo hnorm
+    exact Reaches.limit e (reaches_of_lt (g x) hgxNF d hd hdgx hnorm)
+termination_by o
 decreasing_by all_goals assumption
 
-/-- **Strict successor index step:** at a notation-successor `o` (predecessor `a`),
-for `n ≥ 2`, `f_a(n) < f_o(n)`. -/
-lemma fastGrowing_lt_succ_index
-    (h : fundamentalSequence o = Sum.inl (some a)) {n : ℕ} (hn : 2 ≤ n) :
+/-- **Strict successor index step:** at a notation-successor `o` (predecessor `a`), for `n ≥ 2`, `f_a(n) < f_o(n)`. -/
+lemma fastGrowing_lt_succ_index (h : fundamentalSequence o = Sum.inl (some a)) {n : ℕ} (hn : 2 ≤ n) :
     fastGrowing a n < fastGrowing o n := by
   rw [fastGrowing_succ o h]
   have hexp : (id : ℕ → ℕ) ≤ fastGrowing a := fun m => le_fastGrowing a m
@@ -269,16 +268,14 @@ lemma fastGrowing_lt_succ_index
     _ = (fastGrowing a)^[2] n := h2eq.symm
     _ ≤ (fastGrowing a)^[n] n := hstep2
 
-/-- **General index monotonicity of the fast-growing hierarchy:** for normal-form `α < β`
-with `1 ≤ x ≥ norm α`, `f_α(x) ≤ f_β(x)`. -/
-theorem fastGrowing_le_of_lt (hx : 1 ≤ x) (hα : α.NF) (hβ : β.NF)
-    (hαβ : α < β) (hnorm : norm α ≤ x) : fastGrowing α x ≤ fastGrowing β x :=
-  fastGrowing_le_of_reaches hx (reaches_of_lt β hβ α hα hαβ hnorm)
+/-- **General index monotonicity of the fast-growing hierarchy:** for normal-form `d < o`
+with `1 ≤ x ≥ norm d`, `f_d(x) ≤ f_o(x)`. -/
+theorem fastGrowing_le_of_lt (hx : 1 ≤ x) (hd : d.NF) (ho : o.NF) (hdo : d < o) (hnorm : norm d ≤ x) :
+    fastGrowing d x ≤ fastGrowing o x :=
+  fastGrowing_le_of_reaches hx (reaches_of_lt o ho d hd hdo hnorm)
 
-/-- A normal-form `oadd 0 n a` (leading exponent `0`) has a zero tail: `NF` forces
-`a.repr < ω^0 = 1`, hence `a = 0`. -/
-lemma tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF) :
-    a = 0 := by
+/-- A normal-form `oadd 0 n a` (leading exponent `0`) has a zero tail: `NF` forces `a.repr < ω^0 = 1`, hence `a = 0`. -/
+lemma tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF) : a = 0 := by
   have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
   rw [repr_zero, opow_zero] at hlt
   exact (@repr_inj a 0 h.snd NF.zero).1 (by rw [repr_zero]; exact Order.lt_one_iff.1 hlt)
@@ -295,7 +292,9 @@ def osucc : ONote → ONote
   | oadd 0 n _ => oadd 0 (n + 1) 0
   | oadd (oadd e' n' a') m b => oadd (oadd e' n' a') m (osucc b)
 
-lemma repr_osucc : ∀ {o : ONote}, o.NF → (osucc o).repr = o.repr + 1
+@[grind =]
+lemma repr_osucc {o : ONote} (h : o.NF) : (osucc o).repr = o.repr + 1 :=
+  match o, h with
   | 0, _ => by simp [osucc]
   | oadd 0 n a, h => by
       have ha0 := tail_eq_zero_of_zero_exponent h
@@ -308,7 +307,9 @@ lemma repr_osucc : ∀ {o : ONote}, o.NF → (osucc o).repr = o.repr + 1
       simp only [ONote.repr]
       rw [repr_osucc h.snd, ← add_assoc]
 
-lemma osucc_NF : ∀ {o : ONote}, o.NF → (osucc o).NF
+@[grind →]
+lemma osucc_NF {o : ONote} (h : o.NF) : (osucc o).NF :=
+  match o, h with
   | 0, _ => NF.oadd_zero 0 1
   | oadd 0 n _, _ => NF.oadd_zero 0 (n + 1)
   | oadd (oadd e' n' a') m b, h => by
@@ -321,8 +322,9 @@ lemma osucc_NF : ∀ {o : ONote}, o.NF → (osucc o).NF
         exact hpos.ne'
       exact hElim.succ_lt h.snd'.repr_lt
 
-lemma fundamentalSequence_osucc : ∀ {o : ONote}, o.NF →
-    fundamentalSequence (osucc o) = Sum.inl (some o)
+@[grind =]
+lemma fundamentalSequence_osucc {o : ONote} (h : o.NF) : fundamentalSequence (osucc o) = Sum.inl (some o) :=
+  match o, h with
   | 0, _ => rfl
   | oadd 0 n a, h => by
       have ha0 := tail_eq_zero_of_zero_exponent h
@@ -332,7 +334,10 @@ lemma fundamentalSequence_osucc : ∀ {o : ONote}, o.NF →
   | oadd (oadd e' n' a') m b, h =>
       fundamentalSequence_oadd_succ (fundamentalSequence_osucc h.snd)
 
-lemma norm_osucc_le : ∀ {o : ONote}, norm (osucc o) ≤ norm o + 1
+-- No `grind` attribute: `@[grind →]` needs a propositional hypothesis (there is none here),
+-- and `@[grind =]` needs an equality conclusion (this is a `≤`).
+lemma norm_osucc_le {o : ONote} : norm (osucc o) ≤ norm o + 1 :=
+  match o with
   | 0 => by simp [osucc, norm]
   | oadd 0 n _ => by
       simp only [osucc, norm_oadd, norm_zero, PNat.add_coe, PNat.one_coe]; omega
@@ -350,7 +355,8 @@ lemma tower_succ (i : ℕ) : tower (i + 1) = oadd (tower i) 1 0 := by
   rw [tower, tower, Function.iterate_succ_apply']
 
 /-- Every tower level is a normal-form notation. -/
-lemma tower_NF : ∀ i, (tower i).NF
+lemma tower_NF (i : ℕ) : (tower i).NF :=
+  match i with
   | 0 => by rw [tower_zero]; exact NF.zero
   | i + 1 => by rw [tower_succ]; haveI := tower_NF i; exact NF.oadd_zero _ _
 
@@ -372,7 +378,8 @@ lemma repr_tower_succ (i : ℕ) : (tower (i + 1)).repr = ω ^ (tower i).repr := 
   simp only [ONote.repr, PNat.one_coe, Nat.cast_one, mul_one, add_zero]
 
 /-- **Cofinality of the tower in `ε₀`:** every normal-form notation is below some tower level. -/
-theorem tower_cofinal : ∀ (o : ONote), o.NF → ∃ k, o < tower k
+theorem tower_cofinal (o : ONote) (h : o.NF) : ∃ k, o < tower k :=
+  match o, h with
   | 0, _ => ⟨1, by rw [lt_def]; simp [tower_succ]⟩
   | oadd e n a, h => by
       obtain ⟨j, hj⟩ := tower_cofinal e h.fst
@@ -404,40 +411,36 @@ lemma lt_osucc_of_lt {x y : ONote} (hy : y.NF) (h : x < y) : x < osucc y :=
 /-! ### Ordinal addition and `norm` bookkeeping on normal forms -/
 
 /-- Strict monotonicity of `+` in the right summand, on normal-form notations. -/
-lemma add_lt_add_left_NF (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
-    (h : γ' < γ) : α + γ' < α + γ := by
-  haveI := hαNF; haveI := hγ'NF; haveI := hγNF
+lemma add_lt_add_left_NF (haNF : a.NF) (hc'NF : c'.NF) (hcNF : c.NF) (h : c' < c) : a + c' < a + c := by
+  haveI := haNF; haveI := hc'NF; haveI := hcNF
   exact lt_def.mpr (by rw [repr_add, repr_add]; exact (add_lt_add_iff_left _).mpr (lt_def.mp h))
 
-lemma le_add_left_NF (hαNF : α.NF) (hγNF : γ.NF) : γ ≤ α + γ := by
-  haveI := hαNF; haveI := hγNF
+lemma le_add_left_NF (haNF : a.NF) (hcNF : c.NF) : c ≤ a + c := by
+  haveI := haNF; haveI := hcNF
   exact le_def.mpr (by rw [repr_add]; exact le_add_self)
 
-lemma le_add_right_NF (hαNF : α.NF) (hγNF : γ.NF) : α ≤ α + γ := by
-  haveI := hαNF; haveI := hγNF
+lemma le_add_right_NF (haNF : a.NF) (hcNF : c.NF) : a ≤ a + c := by
+  haveI := haNF; haveI := hcNF
   exact le_def.mpr (by rw [repr_add]; exact le_self_add)
 
-/-- Combines `add_lt_add_left_NF` and `osucc_lt_osucc`: `osucc (α + γ') < osucc (α + γ)`
-whenever `γ' < γ`. -/
-lemma add_osucc_descent (hαNF : α.NF) (hγ'NF : γ'.NF) (hγNF : γ.NF)
-    (h : γ' < γ) : osucc (α + γ') < osucc (α + γ) :=
-  osucc_lt_osucc (ONote.add_nf α γ') (ONote.add_nf α γ) (add_lt_add_left_NF hαNF hγ'NF hγNF h)
+/-- Combines `add_lt_add_left_NF` and `osucc_lt_osucc`: `osucc (a + c') < osucc (a + c)` whenever `c' < c`. -/
+lemma add_osucc_descent (haNF : a.NF) (hc'NF : c'.NF) (hcNF : c.NF) (h : c' < c) : osucc (a + c') < osucc (a + c) :=
+  osucc_lt_osucc (ONote.add_nf a c') (ONote.add_nf a c) (add_lt_add_left_NF haNF hc'NF hcNF h)
 
-@[simp] theorem norm_omegaPow {α : ONote} : norm (oadd α 1 0) = max (norm α) 1 := by
+@[simp] theorem norm_omegaPow {a : ONote} : norm (oadd a 1 0) = max (norm a) 1 := by
   simp [norm_oadd]
 
 /-- **Additive bound for `norm` under `+` on normal-form arguments:**
-`norm (α + γ) ≤ norm α + norm γ` when both are NF. -/
-lemma norm_add_le_of_nf (hα : α.NF) (hγ : γ.NF) :
-    norm (α + γ) ≤ norm α + norm γ := by
-  induction α generalizing γ with
+`norm (b + c) ≤ norm b + norm c` when both are NF. -/
+lemma norm_add_le_of_nf (hb : b.NF) (hc : c.NF) : norm (b + c) ≤ norm b + norm c := by
+  induction b generalizing c with
   | zero => simp
   | oadd e n a ihe iha =>
-    have ha : a.NF := hα.snd
-    haveI := ha; haveI := hγ
-    have iha' : norm (a + γ) ≤ norm a + norm γ := iha ha hγ
+    have ha : a.NF := hb.snd
+    haveI := ha; haveI := hc
+    have iha' : norm (a + c) ≤ norm a + norm c := iha ha hc
     rw [oadd_add]
-    rcases hr : a + γ with _ | ⟨e', n', a'⟩
+    rcases hr : a + c with _ | ⟨e', n', a'⟩
     · simp only [addAux, norm_oadd, norm_zero]; omega
     · rw [hr] at iha'
       simp only [norm_oadd] at iha'
@@ -445,21 +448,21 @@ lemma norm_add_le_of_nf (hα : α.NF) (hγ : γ.NF) :
       rcases hcmp : ONote.cmp e e' with _ | _ | _
       · simp only [norm_oadd]; omega
       · have hee : e = e' := eq_of_cmp_eq hcmp
-        have hge : Ordinal.omega0 ^ ONote.repr e ≤ ONote.repr (a + γ) := by
+        have hge : Ordinal.omega0 ^ ONote.repr e ≤ ONote.repr (a + c) := by
           rw [hr, hee]; exact omega0_le_oadd e' n' a'
-        have hra : ONote.repr a < Ordinal.omega0 ^ ONote.repr e := hα.snd'.repr_lt
-        have hgγ : Ordinal.omega0 ^ ONote.repr e ≤ ONote.repr γ := by
+        have hra : ONote.repr a < Ordinal.omega0 ^ ONote.repr e := hb.snd'.repr_lt
+        have hgc : Ordinal.omega0 ^ ONote.repr e ≤ ONote.repr c := by
           by_contra hlt
           push Not at hlt
-          have : ONote.repr a + ONote.repr γ < Ordinal.omega0 ^ ONote.repr e :=
+          have : ONote.repr a + ONote.repr c < Ordinal.omega0 ^ ONote.repr e :=
             (Ordinal.isPrincipal_add_omega0_opow (ONote.repr e)) hra hlt
           rw [repr_add] at hge
           exact absurd (lt_of_le_of_lt hge this) (lt_irrefl _)
-        have habs : a + γ = γ := by
-          have : ONote.repr (a + γ) = ONote.repr γ := by
-            rw [repr_add]; exact Ordinal.add_of_omega0_opow_le hra hgγ
+        have habs : a + c = c := by
+          have : ONote.repr (a + c) = ONote.repr c := by
+            rw [repr_add]; exact Ordinal.add_of_omega0_opow_le hra hgc
           exact repr_inj.mp this
-        have hnγ : norm γ = max (norm e') (max (n':ℕ) (norm a')) := by
+        have hnc : norm c = max (norm e') (max (n':ℕ) (norm a')) := by
           rw [← habs, hr]; simp [norm_oadd]
         simp only [norm_oadd, PNat.add_coe]; omega
       · simp only [norm_oadd]; omega

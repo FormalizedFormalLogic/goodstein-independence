@@ -1,12 +1,12 @@
 /-
 # The ordinal ω-tower `omegaTower`
 
-`omegaTower c α` iterates `ω ^ ·` on `α` `c` times (`omegaTower 0 α = α`,
-`omegaTower (c+1) α = omegaTower c (ω ^ α)`), together with its `ε₀`-closure.
+`omegaTower c a` iterates `ω ^ ·` on `a` `c` times (`omegaTower 0 a = a`,
+`omegaTower (c+1) a = omegaTower c (ω ^ a)`), together with its `ε₀`-closure.
 -/
 module
 
-public import GoodsteinPA.ToMathlib.Ordinal
+public import GoodsteinPA.ToMathlib.Ordinal.Bounds
 
 @[expose] public section
 
@@ -14,22 +14,22 @@ namespace Ordinal
 
 open scoped Ordinal
 
-/-- Towsner **Def 19.8**: `ω`-tower over `α` of height `c` (`ω_c^α`), bottom-up:
-`ω_0^α = α`, `ω_{c+1}^α = ω_c^(ω^α)`. The cut-elimination ordinal blow-up. -/
+/-- Towsner **Def 19.8**: `ω`-tower over `a` of height `c` (`ω_c^a`), bottom-up:
+`ω_0^a = a`, `ω_{c+1}^a = ω_c^(ω^a)`. The cut-elimination ordinal blow-up. -/
 @[grind =]
 noncomputable def omegaTower : ℕ → Ordinal → Ordinal
-  | 0, α => α
-  | c + 1, α => omegaTower c (ω ^ α)
+  | 0, a => a
+  | c + 1, a => omegaTower c (ω ^ a)
 
-variable {α : Ordinal}
+variable {a : Ordinal}
 
-@[simp, grind =] lemma omegaTower_zero : omegaTower 0 α = α := rfl
+@[simp, grind =] lemma omegaTower_zero : omegaTower 0 a = a := rfl
 
-@[simp, grind =] lemma omegaTower_one : omegaTower 1 α = ω ^ α := rfl
+@[simp, grind =] lemma omegaTower_one : omegaTower 1 a = ω ^ a := rfl
 
-/-- The full cut-elimination ordinal `ω_c^α` stays below `ε₀` whenever `α < ε₀`. -/
-lemma omegaTower_lt_epsilon0 (c : ℕ) (h : α < ε₀) : omegaTower c α < ε₀ := by
-  induction c generalizing α with
+/-- The full cut-elimination ordinal `ω_c^a` stays below `ε₀` whenever `a < ε₀`. -/
+lemma omegaTower_lt_epsilon0 (c : ℕ) (h : a < ε₀) : omegaTower c a < ε₀ := by
+  induction c generalizing a with
   | zero => simpa [omegaTower] using h
   | succ c ih => simpa [omegaTower] using ih (omega0_opow_lt_epsilon0 h)
 

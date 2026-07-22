@@ -22,8 +22,7 @@ dominates the Goodstein sequence seeded at the `k`-fold logarithm.
 
 
 /-- Per-step log descent: `bump b (log_b n) − 1 ≤ log_{b+1} (bump b n − 1)`. -/
-lemma log_step_ge (b : ℕ) (hb : 2 ≤ b) (n : ℕ) :
-    bump b (Nat.log b n) - 1 ≤ Nat.log (b + 1) (bump b n - 1) := by
+lemma log_step_ge (b : ℕ) (hb : 2 ≤ b) (n : ℕ) : bump b (Nat.log b n) - 1 ≤ Nat.log (b + 1) (bump b n - 1) := by
   rcases eq_or_ne n 0 with hv0 | hv0
   · rw [hv0]; simp
   · by_cases hpp : b ^ Nat.log b n = n
@@ -46,9 +45,7 @@ lemma goodsteinSeq_goodsteinLike (m : ℕ) : GoodsteinLike (goodsteinSeq m) :=
   fun _ => le_of_eq rfl
 
 /-- Self-similarity: every Goodstein-like `a` dominates `goodsteinSeq (a 0)`. -/
-lemma GoodsteinLike.dominates {a : ℕ → ℕ} (ha : GoodsteinLike a) :
-    ∀ k, goodsteinSeq (a 0) k ≤ a k := by
-  intro k
+lemma GoodsteinLike.dominates {a : ℕ → ℕ} (ha : GoodsteinLike a) (k : ℕ) : goodsteinSeq (a 0) k ≤ a k := by
   induction k with
   | zero => exact Nat.le_of_eq rfl
   | succ k ih =>
@@ -69,16 +66,14 @@ lemma goodsteinLike_logSeq {a : ℕ → ℕ} (ha : GoodsteinLike a) : GoodsteinL
   exact le_trans (log_step_ge (base k) hb (a k)) (Nat.log_mono_right (ha k))
 
 /-- The `j`-fold iterated leading exponent of a Goodstein-like sequence is Goodstein-like. -/
-lemma goodsteinLike_iterate {a : ℕ → ℕ} (ha : GoodsteinLike a) (j : ℕ) :
-    GoodsteinLike (logSeq^[j] a) := by
+lemma goodsteinLike_iterate {a : ℕ → ℕ} (ha : GoodsteinLike a) (j : ℕ) : GoodsteinLike (logSeq^[j] a) := by
   induction j with
   | zero => exact ha
   | succ j ih => rw [Function.iterate_succ_apply']; exact goodsteinLike_logSeq ih
 
 /-- The seed of the `j`-fold iterated leading exponent is the `j`-fold logarithm of the original seed:
 `(logSeq^[j] a) 0 = (log₂)^[j] (a 0)` (each `logSeq` reads `base 0 = 2` at index `0`). -/
-lemma logSeq_iterate_zero (a : ℕ → ℕ) (j : ℕ) :
-    (logSeq^[j] a) 0 = (Nat.log 2)^[j] (a 0) := by
+lemma logSeq_iterate_zero (a : ℕ → ℕ) (j : ℕ) : (logSeq^[j] a) 0 = (Nat.log 2)^[j] (a 0) := by
   induction j with
   | zero => rfl
   | succ j ih =>
@@ -88,20 +83,17 @@ lemma logSeq_iterate_zero (a : ℕ → ℕ) (j : ℕ) :
 
 /-- The self-similarity tower: the `j`-fold iterated leading exponent dominates the Goodstein
 sequence seeded at the `j`-fold logarithm. -/
-theorem iterLeadExp_dominates (m j : ℕ) :
-    ∀ k, goodsteinSeq ((Nat.log 2)^[j] m) k ≤ (logSeq^[j] (goodsteinSeq m)) k := by
+theorem iterLeadExp_dominates (m j k : ℕ) : goodsteinSeq ((Nat.log 2)^[j] m) k ≤ (logSeq^[j] (goodsteinSeq m)) k := by
   have hgl : GoodsteinLike (logSeq^[j] (goodsteinSeq m)) :=
     goodsteinLike_iterate (goodsteinSeq_goodsteinLike m) j
   have hgz : goodsteinSeq m 0 = m := rfl
   have h0 : (logSeq^[j] (goodsteinSeq m)) 0 = (Nat.log 2)^[j] m := by
     rw [logSeq_iterate_zero, hgz]
-  intro k
   have hd := hgl.dominates k
   rwa [h0] at hd
 
 /-- Anti-vacuity: at `j = 1` the tower reproduces the plain self-similarity fact verbatim. -/
-example (m k : ℕ) :
-    goodsteinSeq (Nat.log 2 m) k ≤ Nat.log (base k) (goodsteinSeq m k) :=
+example (m k : ℕ) : goodsteinSeq (Nat.log 2 m) k ≤ Nat.log (base k) (goodsteinSeq m k) :=
   iterLeadExp_dominates m 1 k
 
 
@@ -124,17 +116,14 @@ def bumpF : ℕ → ℕ → ℕ → ℕ
       n / b ^ Nat.log b n * (b + 1) ^ bumpF fuel b (Nat.log b n)
         + bumpF fuel b (n % b ^ Nat.log b n)
 
-lemma bumpF_eq : ∀ fuel n, n ≤ fuel → ∀ b, bumpF fuel b n = bump b n := by
-  intro fuel
-  induction fuel with
+lemma bumpF_eq (fuel n : ℕ) (hn : n ≤ fuel) (b : ℕ) : bumpF fuel b n = bump b n := by
+  induction fuel generalizing n b with
   | zero =>
-    intro n hn b
     have hn0 : n = 0 := by omega
     subst hn0
     rw [bumpF, bump]
     simp
   | succ fuel ih =>
-    intro n hn b
     rw [bumpF, bump]
     by_cases h0 : n = 0
     · simp [h0]
@@ -156,21 +145,17 @@ def gvalF : ℕ → ℕ → ℕ → ℕ
   | _, v, 0 => v
   | k, v, s + 1 => gvalF (k + 1) (bumpF v (base k) v - 1) s
 
-lemma gvalF_goodstein (M : ℕ) : ∀ s k, gvalF k (goodsteinSeq M k) s = goodsteinSeq M (k + s) := by
-  intro s
-  induction s with
-  | zero => intro k; rfl
+lemma gvalF_goodstein (M s k : ℕ) : gvalF k (goodsteinSeq M k) s = goodsteinSeq M (k + s) := by
+  induction s generalizing k with
+  | zero => rfl
   | succ s ih =>
-    intro k
     rw [gvalF, bumpF_eq _ _ le_rfl]
     have hstep : bump (base k) (goodsteinSeq M k) - 1 = goodsteinSeq M (k + 1) := rfl
     rw [hstep, ih (k + 1)]
     congr 1; omega
 
 /-- Zero is absorbing for the Goodstein sequence. -/
-lemma goodsteinSeq_zero_absorb (M : ℕ) {n : ℕ} (h : goodsteinSeq M n = 0) :
-    ∀ i, goodsteinSeq M (n + i) = 0 := by
-  intro i
+lemma goodsteinSeq_zero_absorb (M : ℕ) {n : ℕ} (h : goodsteinSeq M n = 0) (i : ℕ) : goodsteinSeq M (n + i) = 0 := by
   induction i with
   | zero => exact h
   | succ i ih =>
@@ -179,8 +164,7 @@ lemma goodsteinSeq_zero_absorb (M : ℕ) {n : ℕ} (h : goodsteinSeq M n = 0) :
 
 /-- **Survival from any checkpoint**: the sequence drops by at most 1 per step, so a value `v`
 at step `k` certifies `goodsteinLength M ≥ k + v`. -/
-lemma glen_ge_of_seq_value {M k v : ℕ} (hv : 1 ≤ v) (h : goodsteinSeq M k = v) :
-    k + v ≤ goodsteinLength M := by
+lemma glen_ge_of_seq_value {M k v : ℕ} (hv : 1 ≤ v) (h : goodsteinSeq M k = v) : k + v ≤ goodsteinLength M := by
   have hsub : ∀ j, v - j ≤ goodsteinSeq M (k + j) := by
     intro j
     induction j with
@@ -200,8 +184,7 @@ lemma glen_ge_of_seq_value {M k v : ℕ} (hv : 1 ≤ v) (h : goodsteinSeq M k = 
     rw [show k + (n - k) = n from by omega, hzero] at this; omega
 
 /-- Base cases `4 ≤ M < 16` for Cichoń's exponential length bound: `2^{M+1} + M ≤ goodsteinLength M`. -/
-lemma goodsteinLength_base_cases (M : ℕ) (h4 : 4 ≤ M) (h16 : M < 16) :
-    2 ^ (M + 1) + M ≤ goodsteinLength M := by
+lemma goodsteinLength_base_cases (M : ℕ) (h4 : 4 ≤ M) (h16 : M < 16) : 2 ^ (M + 1) + M ≤ goodsteinLength M := by
   have hM : M = 4 ∨ M = 5 ∨ M = 6 ∨ M = 7 ∨ M = 8 ∨ M = 9 ∨ M = 10 ∨ M = 11 ∨ M = 12 ∨
       M = 13 ∨ M = 14 ∨ M = 15 := by omega
   have key : ∀ (m k v : ℕ), 1 ≤ v → gvalF 0 m k = v → 2 ^ (m + 1) + m ≤ k + v →
@@ -224,14 +207,14 @@ lemma goodsteinLength_base_cases (M : ℕ) (h4 : 4 ≤ M) (h16 : M < 16) :
   · exact key 14 4 326591 (by omega) (by decide) (by norm_num)
   · exact key 15 4 326593 (by omega) (by decide) (by norm_num)
 
+variable {m i j n : ℕ}
+
 /-- Cichoń's exponential length lower bound: `2^{m+1} + m ≤ goodsteinLength m` for every `m ≥ 4`. -/
-theorem goodsteinLength_exp_lower_uncond {m : ℕ} (hm : 4 ≤ m) :
-    2 ^ (m + 1) + m ≤ goodsteinLength m :=
+theorem goodsteinLength_exp_lower_uncond (hm : 4 ≤ m) : 2 ^ (m + 1) + m ≤ goodsteinLength m :=
   goodsteinLength_exp_lower goodsteinLength_base_cases m hm
 
 /-- Diagonal domination at level `o = 2`: `fastGrowing 2 m ≤ goodsteinLength m + 2` for every `m ≥ 16`. -/
-lemma fastGrowing_two_le_goodsteinLength {m : ℕ} (hm : 16 ≤ m) :
-    fastGrowing 2 m ≤ goodsteinLength m + 2 := by
+lemma fastGrowing_two_le_goodsteinLength (hm : 16 ≤ m) : fastGrowing 2 m ≤ goodsteinLength m + 2 := by
   have hL4 : 4 ≤ Nat.log 2 m := by
     calc 4 = Nat.log 2 16 := by rw [show (16 : ℕ) = 2 ^ 4 from rfl, Nat.log_pow (by norm_num)]
       _ ≤ Nat.log 2 m := Nat.log_mono_right hm
@@ -243,8 +226,7 @@ lemma fastGrowing_two_le_goodsteinLength {m : ℕ} (hm : 16 ≤ m) :
 
 /-- Diagonal domination at every finite level `n`: `fastGrowing (ofNat n) m ≤ goodsteinLength m + 2`
 for every `m ≥ 16` with `n + 1 ≤ Nat.log 2 m`. -/
-lemma fastGrowing_ofNat_le_goodsteinLength {n m : ℕ} (hm : 16 ≤ m)
-    (hn : n + 1 ≤ Nat.log 2 m) :
+lemma fastGrowing_ofNat_le_goodsteinLength (hm : 16 ≤ m) (hn : n + 1 ≤ Nat.log 2 m) :
     fastGrowing (ONote.ofNat n) m ≤ goodsteinLength m + 2 := by
   have hL4 : 4 ≤ Nat.log 2 m := by
     calc 4 = Nat.log 2 16 := by rw [show (16 : ℕ) = 2 ^ 4 from rfl, Nat.log_pow (by norm_num)]
@@ -277,7 +259,7 @@ dominates `ω^β`: `ω^β ≤ (seqONote m i).repr`. Just `opow_le_opow_right` (m
 with `opow_toOrdinal_log_le` (the leading term `ω^{toOrdinal b (log_b v)}` is `≤ toOrdinal b v`). Every
 level-specific bridge below (`ω^k`, `ω^ω`, `ω^{ω^j}`, `ω^{ω^ω}`) is this lemma fed a `toOrdinal` lower
 bound on the leading exponent — and the next tier (`ε₀`) will be too. -/
-lemma opow_le_seqONote_repr_of_toOrdinal {m i : ℕ} {β : Ordinal}
+lemma opow_le_seqONote_repr_of_toOrdinal {β : Ordinal}
     (hβ : β ≤ toOrdinal (base i) (Nat.log (base i) (goodsteinSeq m i)))
     (hv : goodsteinSeq m i ≠ 0) :
     (ω : Ordinal) ^ β ≤ (seqONote m i).repr := by
@@ -292,7 +274,7 @@ lemma opow_le_seqONote_repr_of_toOrdinal {m i : ℕ} {β : Ordinal}
 (`base i ≤ log_{base i} G_i`), the descent ordinal dominates `ω^ω`: the leading CNF exponent
 `toOrdinal (base i) (leadExp)` is then `≥ toOrdinal (base i) (base i) = ω`, so the leading term is
 `≥ ω^ω`. The `ω`-level analog of `opow_le_seqONote_repr` (which handled finite exponents `ω^k`). -/
-lemma omega_omega_le_seqONote_repr {m i : ℕ}
+lemma omega_omega_le_seqONote_repr
     (hreg : base i ≤ Nat.log (base i) (goodsteinSeq m i)) (hv : goodsteinSeq m i ≠ 0) :
     (ω : Ordinal) ^ (ω : Ordinal) ≤ (seqONote m i).repr := by
   have hb : 2 ≤ base i := Nat.le_add_left 2 i
@@ -308,7 +290,7 @@ lemma omega_omega_le_seqONote_repr {m i : ℕ}
 
 /-- Diagonal domination at `ω`, reduced to large-regime hypothesis: if `base (m−2) ≤ leadExp_{m−2}`
 then `fastGrowing ω m ≤ goodsteinLength m + 2`. -/
-lemma fastGrowing_omega_le_goodsteinLength_of_largeRegime {m : ℕ} (hm : 4 ≤ m)
+lemma fastGrowing_omega_le_goodsteinLength_of_largeRegime (hm : 4 ≤ m)
     (hreg : base (m - 2) ≤ Nat.log (base (m - 2)) (goodsteinSeq m (m - 2))) :
     fastGrowing (oadd 1 1 0) m ≤ goodsteinLength m + 2 := by
   set j := m - 2 with hj
@@ -324,8 +306,7 @@ lemma fastGrowing_omega_le_goodsteinLength_of_largeRegime {m : ℕ} (hm : 4 ≤ 
   exact goodstein_dominates_of_index_le (o := oadd 1 1 0) (m := m) (j := j) ho hgl (by omega) hnorm hidx
 
 /-- Doubly-iterated length bound: `2 * m ≤ goodsteinLength (Nat.log 2 m) + 2` for `m ≥ 2^16`. -/
-lemma two_mul_le_goodsteinLength_log {m : ℕ} (hm : 2 ^ 16 ≤ m) :
-    2 * m ≤ goodsteinLength (Nat.log 2 m) + 2 := by
+lemma two_mul_le_goodsteinLength_log (hm : 2 ^ 16 ≤ m) : 2 * m ≤ goodsteinLength (Nat.log 2 m) + 2 := by
   have hL16 : 16 ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
   have hf2 := fastGrowing_two_le_goodsteinLength (m := Nat.log 2 m) hL16
   simp only [ONote.fastGrowing_two] at hf2
@@ -340,10 +321,8 @@ lemma two_mul_le_goodsteinLength_log {m : ℕ} (hm : 2 ^ 16 ≤ m) :
   -- hf2 : P * L ≤ goodsteinLength L + 2 ;  hmono : P*16 ≤ P*L ;  hpow : m+1 ≤ P*2
   omega
 
-/-- Diagonal domination at the limit ordinal ω: `fastGrowing ω m ≤ goodsteinLength m + 2`
-for every `m ≥ 2^16`. -/
-lemma fastGrowing_omega_le_goodsteinLength {m : ℕ} (hm : 2 ^ 16 ≤ m) :
-    fastGrowing (oadd 1 1 0) m ≤ goodsteinLength m + 2 := by
+/-- Diagonal domination at the limit ordinal ω: `fastGrowing ω m ≤ goodsteinLength m + 2` for every `m ≥ 2^16`. -/
+lemma fastGrowing_omega_le_goodsteinLength (hm : 2 ^ 16 ≤ m) : fastGrowing (oadd 1 1 0) m ≤ goodsteinLength m + 2 := by
   have h4 : 4 ≤ m := le_trans (by norm_num) hm
   apply fastGrowing_omega_le_goodsteinLength_of_largeRegime h4
   -- hreg : base (m - 2) ≤ Nat.log (base (m - 2)) (goodsteinSeq m (m - 2))
@@ -384,7 +363,7 @@ lemma opow_le_toOrdinal (b : ℕ) (hb : 2 ≤ b) {w k : ℕ}
 Goodstein descent ordinal dominates `ω^{ω^j}`. Applies `opow_le_toOrdinal` to the leading exponent
 (`ω^j ≤ toOrdinal (base i)(leadExp)`), then `opow_toOrdinal_log_le` once more. The `ω^j`-flavoured
 analog of `omega_omega_le_seqONote_repr` (the `j` "= base", `ω^ω` case). -/
-lemma omega_pow_pow_le_seqONote_repr {m i j : ℕ}
+lemma omega_pow_pow_le_seqONote_repr
     (hj : j ≤ Nat.log (base i) (Nat.log (base i) (goodsteinSeq m i)))
     (hjb : j < base i) (hv : goodsteinSeq m i ≠ 0)
     (hlead : Nat.log (base i) (goodsteinSeq m i) ≠ 0) :
@@ -398,8 +377,7 @@ leading exponent of the seed-`m` descent is `≥ j` at step `m − 2`, then
 `fastGrowing_omega_le_goodsteinLength_of_largeRegime` one level up: `omega_pow_pow_le_seqONote_repr`
 gives `ω^{ω^j} ≤ descent`; `goodstein_dominates_of_index_le` (budget `m`) closes it. `hreg2` is
 Cichoń's lower bound at the level `ω^j`. -/
-lemma fastGrowing_omega_pow_le_goodsteinLength_of_crux {m j : ℕ} (hm : 4 ≤ m) (hj1 : 1 ≤ j)
-    (hjm : j < m)
+lemma fastGrowing_omega_pow_le_goodsteinLength_of_crux (hm : 4 ≤ m) (hj1 : 1 ≤ j) (hjm : j < m)
     (hreg2 : j ≤ Nat.log (base (m - 2)) (Nat.log (base (m - 2)) (goodsteinSeq m (m - 2)))) :
     fastGrowing (oadd (ONote.ofNat j) 1 0) m ≤ goodsteinLength m + 2 := by
   set i := m - 2 with hi
@@ -429,8 +407,7 @@ doubly-iterated sequence still has `≥ j` steps to run. This is the limit-level
 `fastGrowing_omega_le_goodsteinLength_of_largeRegime` reduced one more scale down: the SOLE remaining
 obligation is the length bound `goodsteinLength ((log₂)^[2] m) ≥ m` — this needs an `f_ω`-strength
 lower bound at the deep seed, bootstrapped from `fastGrowing_omega_le_goodsteinLength` itself. -/
-lemma fastGrowing_omega_pow_le_goodsteinLength_of_length {m j : ℕ} (hm : 4 ≤ m) (hj1 : 1 ≤ j)
-    (hjm : j < m)
+lemma fastGrowing_omega_pow_le_goodsteinLength_of_length (hm : 4 ≤ m) (hj1 : 1 ≤ j) (hjm : j < m)
     (hlen : (m - 2) + j ≤ goodsteinLength ((Nat.log 2)^[2] m)) :
     fastGrowing (oadd (ONote.ofNat j) 1 0) m ≤ goodsteinLength m + 2 := by
   apply fastGrowing_omega_pow_le_goodsteinLength_of_crux hm hj1 hjm
@@ -454,8 +431,7 @@ lemma fastGrowing_ofNat_two (n : ℕ) : fastGrowing (ONote.ofNat 2) n = 2 ^ n * 
 /-- **`f_3` is doubly-exponential:** `2^{2^t · t} ≤ f_3(t)` for `t ≥ 2`. Since `f_3(t) = (f_2)^[t](t)`
 (`fastGrowing_succ`), and `f_2` is expansive, `(f_2)^[t](t) ≥ (f_2)^[2](t) = f_2(f_2(t)) =
 2^{2^t·t}·(2^t·t) ≥ 2^{2^t·t}`. The engine that makes `f_ω` outrun `2^{2^{·}}`. -/
-lemma two_pow_le_fastGrowing_ofNat_three {t : ℕ} (ht : 2 ≤ t) :
-    2 ^ (2 ^ t * t) ≤ fastGrowing (ONote.ofNat 3) t := by
+lemma two_pow_le_fastGrowing_ofNat_three {t : ℕ} (ht : 2 ≤ t) : 2 ^ (2 ^ t * t) ≤ fastGrowing (ONote.ofNat 3) t := by
   have hf3 : fastGrowing (ONote.ofNat 3) t = (fastGrowing (ONote.ofNat 2))^[t] t := by
     rw [show (ONote.ofNat 3 : ONote) = ONote.ofNat (2 + 1) from rfl,
         fastGrowing_succ _ (fundamentalSequence_ofNat_succ 2)]
@@ -474,8 +450,7 @@ lemma two_pow_le_fastGrowing_ofNat_three {t : ℕ} (ht : 2 ≤ t) :
     _ ≤ 2 ^ (2 ^ t * t) * (2 ^ t * t) := by gcongr
 
 /-- `f_ω(t) = f_{t+1}(t)`: the fundamental sequence of `ω = oadd 1 1 0` is `i ↦ ofNat (i+1)`. -/
-lemma fastGrowing_omega_eq (t : ℕ) :
-    fastGrowing (oadd 1 1 0) t = fastGrowing (ONote.ofNat (t + 1)) t := by
+lemma fastGrowing_omega_eq (t : ℕ) : fastGrowing (oadd 1 1 0) t = fastGrowing (ONote.ofNat (t + 1)) t := by
   have hfs : fundamentalSequence (oadd 1 1 0) = Sum.inr (fun i => ONote.ofNat (i + 1)) := rfl
   rw [fastGrowing_limit (oadd 1 1 0) hfs]
 
@@ -485,8 +460,7 @@ against itself: `goodsteinLength t ≥ f_ω(t) − 2 = f_{t+1}(t) − 2 ≥ f_3(
 (`fastGrowing_omega_le_goodsteinLength` ⊕ `fastGrowing_ofNat_mono` ⊕ `two_pow_le_fastGrowing_ofNat_three`),
 while `m < 2^{2^{t+1}}` and `2^t·t ≥ 2^{t+1}+1` (for `t ≥ 3`) give `2^{2^t·t} ≥ 2(m+1)`. The `f_ω`
 length bound carries the finite-base-case `native_decide` axioms (documented split). -/
-lemma two_mul_le_goodsteinLength_loglog {m : ℕ}
-    (ht : 2 ^ 16 ≤ (Nat.log 2)^[2] m) :
+lemma two_mul_le_goodsteinLength_loglog (ht : 2 ^ 16 ≤ (Nat.log 2)^[2] m) :
     2 * m ≤ goodsteinLength ((Nat.log 2)^[2] m) := by
   set t := (Nat.log 2)^[2] m with htdef
   have hteq : t = Nat.log 2 (Nat.log 2 m) := rfl
@@ -518,7 +492,7 @@ Cichoń's lower bound at the limit levels `ω, ω^2, ω^3, …` — fully machin
 length bound `two_mul_le_goodsteinLength_loglog` discharges the `of_length` reduction's hypothesis
 (`(m−2)+j < 2m ≤ goodsteinLength ((log₂)^[2] m)`). Carries the finite-base-case `native_decide` axioms
 (documented split), inherited through the `f_ω` bootstrap. -/
-lemma fastGrowing_omega_pow_le_goodsteinLength {m j : ℕ}
+lemma fastGrowing_omega_pow_le_goodsteinLength
     (ht : 2 ^ 16 ≤ (Nat.log 2)^[2] m) (hj1 : 1 ≤ j) (hjm : j < m) :
     fastGrowing (oadd (ONote.ofNat j) 1 0) m ≤ goodsteinLength m + 2 := by
   have h1' : 1 ≤ (Nat.log 2)^[2] m := le_trans (by norm_num) ht
@@ -560,7 +534,7 @@ lemma omega_omega_le_toOrdinal (b : ℕ) (hb : 2 ≤ b) {w : ℕ}
 regime (`base i ≤ secondLeadExp_i`). Applies `omega_omega_le_toOrdinal` to the leading exponent
 (giving `ω^ω ≤ toOrdinal (base i)(leadExp)`), then `opow_toOrdinal_log_le`. The `ω^ω`-level analog of
 `omega_omega_le_seqONote_repr`. -/
-lemma omega_pow_omega_le_seqONote_repr {m i : ℕ}
+lemma omega_pow_omega_le_seqONote_repr
     (hreg2 : base i ≤ Nat.log (base i) (Nat.log (base i) (goodsteinSeq m i)))
     (hv : goodsteinSeq m i ≠ 0) (hlead : Nat.log (base i) (goodsteinSeq m i) ≠ 0) :
     (ω : Ordinal) ^ ((ω : Ordinal) ^ (ω : Ordinal)) ≤ (seqONote m i).repr := by
@@ -574,8 +548,7 @@ bound at `ω^ω` — fully machine-checked. The crux is the SECOND leading expon
 `n_le_goodsteinSeq` (`n = m`) + the doubly-iterated length bound `goodsteinLength ((log₂)^[2] m) ≥ 2m`
 (`two_mul_le_goodsteinLength_loglog`, budget `(m−2)+m = 2m−2 ≤ 2m`). Carries the finite-base-case
 `native_decide` axioms (documented split). -/
-lemma fastGrowing_omega_pow_omega_le_goodsteinLength {m : ℕ}
-    (ht : 2 ^ 16 ≤ (Nat.log 2)^[2] m) :
+lemma fastGrowing_omega_pow_omega_le_goodsteinLength (ht : 2 ^ 16 ≤ (Nat.log 2)^[2] m) :
     fastGrowing (oadd (oadd 1 1 0) 1 0) m ≤ goodsteinLength m + 2 := by
   have h1' : 1 ≤ (Nat.log 2)^[2] m := le_trans (by norm_num) ht
   have hlm0 : Nat.log 2 m ≠ 0 := by
@@ -618,8 +591,7 @@ lemma fastGrowing_omega_pow_omega_le_goodsteinLength {m : ℕ}
 `fastGrowing (ω^ω) m ≤ goodsteinLength m + 2`. The threshold is the concrete `N` witnessing the
 asymptotic statement "`goodsteinLength` eventually dominates `f_{ω^ω}`": `m ≥ 2^{2^{2^16}}` forces
 `(log₂)^[2] m ≥ 2^16` by two applications of `Nat.le_log_of_pow_le`. -/
-theorem goodsteinLength_dominates_fastGrowing_omega_pow_omega
-    {m : ℕ} (hm : 2 ^ (2 ^ (2 ^ 16)) ≤ m) :
+theorem goodsteinLength_dominates_fastGrowing_omega_pow_omega (hm : 2 ^ (2 ^ (2 ^ 16)) ≤ m) :
     fastGrowing (oadd (oadd 1 1 0) 1 0) m ≤ goodsteinLength m + 2 := by
   apply fastGrowing_omega_pow_omega_le_goodsteinLength
   have h1 : 2 ^ (2 ^ 16) ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
@@ -628,7 +600,7 @@ theorem goodsteinLength_dominates_fastGrowing_omega_pow_omega
 /-- **Explicit-threshold form of the `o = ω^j` domination** (every finite `j ≥ 1`). For `m` with
 `m ≥ 2^{2^{2^16}}` and `j < m`, `fastGrowing (ω^j) m ≤ goodsteinLength m + 2`. The big threshold forces
 `(log₂)^[2] m ≥ 2^16`; the `j < m` is the (mild) requirement that the level fit under the budget. -/
-theorem goodsteinLength_dominates_fastGrowing_omega_pow {m j : ℕ}
+theorem goodsteinLength_dominates_fastGrowing_omega_pow
     (hm : 2 ^ (2 ^ (2 ^ 16)) ≤ m) (hj1 : 1 ≤ j) (hjm : j < m) :
     fastGrowing (oadd (ONote.ofNat j) 1 0) m ≤ goodsteinLength m + 2 := by
   apply fastGrowing_omega_pow_le_goodsteinLength _ hj1 hjm

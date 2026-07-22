@@ -30,15 +30,11 @@ The linchpin is the **Hardy iteration law** `H_{ω^e·(k+1)} = (H_{ω^e})^[k+1]`
 
 
 
-/-- **Iterate domination.** If `f ≤ g` pointwise and `g` is monotone, then `f^[j] ≤ g^[j]`
-pointwise. -/
-lemma iterate_le_iterate {f g : ℕ → ℕ} (hfg : ∀ m, f m ≤ g m) (hg : Monotone g) :
-    ∀ j x, f^[j] x ≤ g^[j] x := by
-  intro j
-  induction j with
-  | zero => intro x; simp
+/-- **Iterate domination.** If `f ≤ g` pointwise and `g` is monotone, then `f^[j] ≤ g^[j]` pointwise. -/
+lemma iterate_le_iterate {f g : ℕ → ℕ} (hfg : ∀ m, f m ≤ g m) (hg : Monotone g) (j x : ℕ) : f^[j] x ≤ g^[j] x := by
+  induction j generalizing x with
+  | zero => simp
   | succ j ih =>
-    intro x
     rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
     exact (ih (f x)).trans ((hg.iterate j) (hfg x))
 
@@ -93,15 +89,12 @@ theorem hardy_split (e : ONote) (c : ℕ+) (R : ONote) (hNF : (oadd e c R).NF) (
       exact ih (g n).repr hgnlt (g n) rfl hNFnew n
 
 /-- Finite Hardy values: `H_{j+1}(n) = n + (j+1)` (the notation `oadd 0 ⟨j+1⟩ 0`). -/
-lemma hardy_finite : ∀ j n, hardy (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0) n = n + (j + 1) := by
-  intro j
-  induction j with
+lemma hardy_finite (j n : ℕ) : hardy (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0) n = n + (j + 1) := by
+  induction j generalizing n with
   | zero =>
-    intro n
     show hardy (oadd 0 1 0) n = n + 1
     rw [show (oadd (0 : ONote) 1 0) = 1 from rfl, hardy_one]
   | succ j ih =>
-    intro n
     have hfs : fundamentalSequence (oadd 0 ⟨j + 2, Nat.succ_pos _⟩ 0)
         = Sum.inl (some (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0)) := by
       rw [fundamentalSequence_oadd_zero_zero]; rfl
@@ -157,8 +150,7 @@ theorem hardy_oadd_iter (e : ONote) (hNFe : e.NF) :
 `f_α ≤ H_{ω^α}`. Well-founded recursion on `repr α`: base/limit are direct; the successor case
 `f_{α'+1}(n) = (f_{α'})^[n](n)` is dominated by `(H_{ω^{α'}})^[n+1](n) = H_{ω^{α'+1}}(n)` via the
 iteration law, the IH lifted through `iterate_le_iterate`, and one extra expansive iterate. -/
-theorem fastGrowing_le_hardy_pow (α : ONote) (hNF : α.NF) (n : ℕ) :
-    fastGrowing α n ≤ hardy (oadd α 1 0) n := by
+theorem fastGrowing_le_hardy_pow (α : ONote) (hNF : α.NF) (n : ℕ) : fastGrowing α n ≤ hardy (oadd α 1 0) n := by
   suffices H : ∀ o : Ordinal, ∀ α : ONote, α.repr = o → α.NF → ∀ n,
       fastGrowing α n ≤ hardy (oadd α 1 0) n by
     exact H α.repr α rfl hNF n
@@ -201,17 +193,14 @@ theorem fastGrowing_le_hardy_pow (α : ONote) (hNF : α.NF) (n : ℕ) :
 `toOrdinal 2 N` — the Goodstein ordinals `repr (toONote 2 m)` reach arbitrarily high below ε₀.
 Structural induction on `β`: for `oadd e c r`, `repr β < ω^(repr e + 1) ≤ ω^(toOrdinal 2 Ne)
 = toOrdinal 2 (2^Ne)` using `toOrdinal_pow` and the IH on the exponent `e`. -/
-lemma toOrdinal_two_cofinal : ∀ β : ONote, β.NF → ∃ N : ℕ, β.repr < toOrdinal 2 N := by
-  intro β
+lemma toOrdinal_two_cofinal (β : ONote) (hNF : β.NF) : ∃ N : ℕ, β.repr < toOrdinal 2 N := by
   induction β with
   | zero =>
-    intro _
     refine ⟨1, ?_⟩
     have h1 : toOrdinal 2 1 = 1 := by have h := toOrdinal_pow 2 le_rfl 0; simpa using h
     have h0 : (ONote.zero : ONote).repr = 0 := rfl
     rw [h0, h1]; exact zero_lt_one
   | oadd e c r ihe _ =>
-    intro hNF
     obtain ⟨Ne, hNe⟩ := ihe hNF.fst
     refine ⟨2 ^ Ne, ?_⟩
     have hbound : (oadd e c r).repr < ω ^ (e.repr + 1) := by
@@ -231,11 +220,14 @@ full domination headline (it makes the high-budget step `j = m-2` of the telesco
 The engine is `le_bump` (the hereditary bump never decreases its argument), which gives
 `G_{k+1} = bump(..) − 1 ≥ G_k − 1`, hence `G_k ≥ m − k`, so `G_k ≠ 0` for `k < m`. -/
 
+section
+variable (b : ℕ) (hb : 2 ≤ b)
+include hb
+
 /-- **The hereditary bump never decreases:** `n ≤ bump b n` for `b ≥ 2`. Reading `n` in
 hereditary base `b` and replacing `b` by `b+1` can only grow each digit's place value. Strong
 induction mirroring `bump`'s recursion: `(b+1)^(bump b L) ≥ b^L` (via the IH `L ≤ bump b L`). -/
-lemma le_bump (b : ℕ) (hb : 2 ≤ b) : ∀ n, n ≤ bump b n := by
-  intro n
+lemma le_bump (n : ℕ) : n ≤ bump b n := by
   induction n using Nat.strong_induction_on with
   | _ n ih =>
     rcases eq_or_ne n 0 with rfl | hn
@@ -264,7 +256,7 @@ toOrdinal (b+1) (bump b a')`, and strict monotonicity of `toOrdinal (b+1)` refle
 `bump b a ≤ bump b a'`. This is the missing comparison lemma behind the **self-similarity recursion**
 (`leadExp_ge_goodsteinSeq_log`): the leading-exponent sequence dominates a lower-level Goodstein
 sequence, the structural heart of Cichoń's lower bound. -/
-lemma bump_mono (b : ℕ) (hb : 2 ≤ b) {a a' : ℕ} (h : a ≤ a') : bump b a ≤ bump b a' := by
+lemma bump_mono {a a' : ℕ} (h : a ≤ a') : bump b a ≤ bump b a' := by
   have hSMb : StrictMono (toOrdinal b) := fun x y hxy =>
     (toOrdinal_mono_and_bound b hb y).1 x hxy
   have hSMb1 : StrictMono (toOrdinal (b + 1)) := fun x y hxy =>
@@ -272,27 +264,6 @@ lemma bump_mono (b : ℕ) (hb : 2 ≤ b) {a a' : ℕ} (h : a ≤ a') : bump b a 
   have hle : toOrdinal (b + 1) (bump b a) ≤ toOrdinal (b + 1) (bump b a') := by
     rw [toOrdinal_bump b hb, toOrdinal_bump b hb]; exact hSMb.monotone h
   exact hSMb1.le_iff_le.1 hle
-
-/-- Each Goodstein term is at least `m − k` (truncated): `m − k ≤ goodsteinSeq m k`. Induction
-on `k` using `le_bump` (`G_{k+1} = bump(base k, G_k) − 1 ≥ G_k − 1`). -/
-lemma goodsteinSeq_ge_sub (m : ℕ) : ∀ k, m - k ≤ goodsteinSeq m k := by
-  intro k
-  induction k with
-  | zero => have h0 : goodsteinSeq m 0 = m := rfl; omega
-  | succ k ih =>
-    have hb : goodsteinSeq m k ≤ bump (base k) (goodsteinSeq m k) :=
-      le_bump (base k) (Nat.le_add_left 2 k) _
-    show m - (k + 1) ≤ bump (base k) (goodsteinSeq m k) - 1
-    omega
-
-/-- **Goodstein length grows at least linearly:** `m ≤ goodsteinLength m`. Since
-`goodsteinSeq m k ≥ m − k ≥ 1` for every `k < m`, the sequence is nonzero before step `m`, so its
-first zero is at step `≥ m`. -/
-lemma le_goodsteinLength (m : ℕ) : m ≤ goodsteinLength m := by
-  rw [goodsteinLength, Nat.le_find_iff]
-  intro k hk
-  have hge := goodsteinSeq_ge_sub m k
-  omega
 
 /-! ### Growth: the Goodstein term stays `≥ m` for the first `m` steps
 
@@ -307,7 +278,7 @@ range, hence stays `≥ m`. Consequently the descent ordinal `seqOrd m j` stays 
 /-- **Strict growth above the base.** For `2 ≤ b` and `b ≤ n`, one bump step strictly increases
 the value: `n + 1 ≤ bump b n`. The leading power `b^L` (with `L = log b n ≥ 1`) is sent to
 `(b+1)^{bump b L} ≥ (b+1)^L > b^L`, so the leading term alone already exceeds `n`. -/
-lemma bump_gt (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : b ≤ n) : n + 1 ≤ bump b n := by
+lemma bump_gt {n : ℕ} (hn : b ≤ n) : n + 1 ≤ bump b n := by
   have hb1 : 1 < b := by omega
   have hn0 : n ≠ 0 := by omega
   set L := Nat.log b n with hL
@@ -335,8 +306,7 @@ reading `bump b n` in the new base `b+1`, its leading exponent is the bump of `n
 exponent. The recursive skeleton behind Goodstein growth — the *exponent* evolves like a
 lower-level Goodstein term, which is why the descent ordinal's leading CNF exponent stays high for
 astronomically many steps. (Extracted from the `hlog` step of `toOrdinal_bump`.) -/
-lemma log_bump (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : n ≠ 0) :
-    Nat.log (b + 1) (bump b n) = bump b (Nat.log b n) := by
+lemma log_bump {n : ℕ} (hn : n ≠ 0) : Nat.log (b + 1) (bump b n) = bump b (Nat.log b n) := by
   have hb1 : 1 < b := by omega
   set e := Nat.log b n with he
   have hbe_pos : 0 < b ^ e := Nat.pow_pos (by omega)
@@ -369,7 +339,7 @@ power boundary. (When `n = b^{log_b n}` is a pure power the log *does* drop by o
 event.) **This is the structural reason leading-exponent drops are RARE** — they occur only at the
 pure-power boundaries — and is the first brick of the steps-between-drops recursion that would upgrade
 the domination budget `log₂ m → m` (closing the diagonal `f_o(m) ≤ goodsteinLength m`). -/
-lemma log_bump_pred_of_not_pow (b : ℕ) (hb : 2 ≤ b) {n : ℕ} (hn : n ≠ 0)
+lemma log_bump_pred_of_not_pow {n : ℕ} (hn : n ≠ 0)
     (hnp : b ^ Nat.log b n < n) :
     Nat.log (b + 1) (bump b n - 1) = bump b (Nat.log b n) := by
   have hb1 : 1 < b := by omega
@@ -425,7 +395,7 @@ Together with `log_bump_pred_of_not_pow` (no drop off the pure-power boundaries)
 per-step behaviour of the leading exponent: it bumps itself and grows everywhere except at the pure
 powers, where it falls by exactly one. The steps-between-drops recursion = the gaps between these
 pure-power events, each itself a sub-Goodstein-length. -/
-lemma log_bump_pred_of_pow (b : ℕ) (hb : 2 ≤ b) {n : ℕ}
+lemma log_bump_pred_of_pow {n : ℕ}
     (he1 : 1 ≤ Nat.log b n) (hnp : n = b ^ Nat.log b n) :
     Nat.log (b + 1) (bump b n - 1) = bump b (Nat.log b n) - 1 := by
   have hb1 : 1 < b := by omega
@@ -447,11 +417,32 @@ lemma log_bump_pred_of_pow (b : ℕ) (hb : 2 ≤ b) {n : ℕ}
   · have hBeq : (B - 1) + 1 = B := by omega
     rw [hBeq]; omega
 
+end
+
+/-- Each Goodstein term is at least `m − k` (truncated): `m − k ≤ goodsteinSeq m k`. Induction
+on `k` using `le_bump` (`G_{k+1} = bump(base k, G_k) − 1 ≥ G_k − 1`). -/
+lemma goodsteinSeq_ge_sub (m k : ℕ) : m - k ≤ goodsteinSeq m k := by
+  induction k with
+  | zero => have h0 : goodsteinSeq m 0 = m := rfl; omega
+  | succ k ih =>
+    have hb : goodsteinSeq m k ≤ bump (base k) (goodsteinSeq m k) :=
+      le_bump (base k) (Nat.le_add_left 2 k) _
+    show m - (k + 1) ≤ bump (base k) (goodsteinSeq m k) - 1
+    omega
+
+/-- **Goodstein length grows at least linearly:** `m ≤ goodsteinLength m`. Since
+`goodsteinSeq m k ≥ m − k ≥ 1` for every `k < m`, the sequence is nonzero before step `m`, so its
+first zero is at step `≥ m`. -/
+lemma le_goodsteinLength (m : ℕ) : m ≤ goodsteinLength m := by
+  rw [goodsteinLength, Nat.le_find_iff]
+  intro k hk
+  have hge := goodsteinSeq_ge_sub m k
+  omega
+
 /-- **Decrementing lowers a logarithm by at most one:** `Nat.log b x ≤ Nat.log b (x − 1) + 1`
 (for `1 < b`). If `L = log b x ≥ 1` then `b^L ≤ x`, so `b^(L−1) < b^L ≤ x`, hence `b^(L−1) ≤ x−1`
 and `L − 1 ≤ log b (x − 1)`. The general fact that a single decrement crosses at most one power. -/
-lemma log_le_log_pred_succ (b : ℕ) (hb : 1 < b) (x : ℕ) :
-    Nat.log b x ≤ Nat.log b (x - 1) + 1 := by
+lemma log_le_log_pred_succ (b : ℕ) (hb : 1 < b) (x : ℕ) : Nat.log b x ≤ Nat.log b (x - 1) + 1 := by
   rcases Nat.eq_zero_or_pos (Nat.log b x) with hL0 | hLpos
   · omega
   · have hx0 : x ≠ 0 := by
@@ -576,12 +567,10 @@ lemma leadExp_small_nonincreasing (m k : ℕ) (hv0 : goodsteinSeq m k ≠ 0)
 /-- **The Goodstein term stays `≥ m` for the first `m` steps:** `m ≤ goodsteinSeq m k` whenever
 `k + 1 ≤ m`. Induction on `k` using `bump_gt`: while `k + 2 ≤ m ≤ goodsteinSeq m k` the value is
 above the base, so `goodsteinSeq m (k+1) = bump (k+2) (goodsteinSeq m k) − 1 ≥ goodsteinSeq m k`. -/
-lemma goodsteinSeq_ge_init (m : ℕ) : ∀ k, k + 1 ≤ m → m ≤ goodsteinSeq m k := by
-  intro k
+lemma goodsteinSeq_ge_init (m k : ℕ) (hk : k + 1 ≤ m) : m ≤ goodsteinSeq m k := by
   induction k with
-  | zero => intro _; exact le_of_eq rfl
+  | zero => exact le_of_eq rfl
   | succ k ih =>
-    intro hk
     have hv : m ≤ goodsteinSeq m k := ih (by omega)
     have hble : k + 2 ≤ goodsteinSeq m k := by omega
     have hgt : goodsteinSeq m k + 1 ≤ bump (k + 2) (goodsteinSeq m k) :=
@@ -595,8 +584,7 @@ lemma goodsteinSeq_ge_init (m : ℕ) : ∀ k, k + 1 ≤ m → m ≤ goodsteinSeq
 `toOrdinal_pos`: the leading Cantor term is `ω ^ (…) · c` with digit `c ≥ 1`. The bridge from the
 **leading exponent** (a natural number, controlled by `leadExp_ge_sub`) to the **descent ordinal**
 (`seqOrd`), needed to turn `leadExp ≥ k` into `seqOrd ≥ ω^k`. -/
-lemma opow_toOrdinal_log_le (b : ℕ) (hb : 2 ≤ b) {v : ℕ} (hv : v ≠ 0) :
-    ω ^ toOrdinal b (Nat.log b v) ≤ toOrdinal b v := by
+lemma opow_toOrdinal_log_le (b : ℕ) (hb : 2 ≤ b) {v : ℕ} (hv : v ≠ 0) : ω ^ toOrdinal b (Nat.log b v) ≤ toOrdinal b v := by
   rw [toOrdinal_pos b v hv]
   have hc : (1 : Ordinal) ≤ (v / b ^ Nat.log b v : ℕ) := by
     have h0 : 0 < v / b ^ Nat.log b v :=
@@ -636,8 +624,7 @@ lemma opow_le_seqONote_repr {m i k : ℕ} (hk : k ≤ Nat.log (base i) (goodstei
 /-- **The descent ordinal stays `≥ ω` for the first `m` steps.** For `m = n + 2` and any step
 `j ≤ n`, the term value is `≥ m ≥ base j = j + 2`, so its ordinal `seqOrd m j` is `≥ ω`: the
 Goodstein notation `seqONote m j` dominates `ω = ω^(repr 1)`. -/
-lemma omega_le_seqONote_repr {n j : ℕ} (hj : j ≤ n) :
-    (ω : Ordinal) ≤ (seqONote (n + 2) j).repr := by
+lemma omega_le_seqONote_repr {n j : ℕ} (hj : j ≤ n) : (ω : Ordinal) ≤ (seqONote (n + 2) j).repr := by
   have hmono_le := toOrdinal_mono (j + 2) (by omega : 2 ≤ j + 2)
   have h1 : toOrdinal (j + 2) 1 = 1 := by
     have h := toOrdinal_pow (j + 2) (by omega) 0; simpa using h
@@ -655,13 +642,10 @@ i.e. `leadExp_i ≥ (log₂ m) − i`. The leading exponent starts at `log₂ m`
 step (`leadExp_drop_le_one`, applicable since the value stays `≥` base over `[0, m)`). So the
 descent ordinal keeps a leading exponent `≥ 2` — hence `seqOrd m i ≥ ω²` — for the first
 `~log₂ m` steps. (The genuine `≫ m`-step persistence needs the steps-between-drops recursion.) -/
-lemma leadExp_ge_sub (m : ℕ) : ∀ i, i + 1 ≤ m →
-    Nat.log 2 m ≤ Nat.log (base i) (goodsteinSeq m i) + i := by
-  intro i
+lemma leadExp_ge_sub (m i : ℕ) (hi : i + 1 ≤ m) : Nat.log 2 m ≤ Nat.log (base i) (goodsteinSeq m i) + i := by
   induction i with
-  | zero => intro _; show Nat.log 2 m ≤ Nat.log 2 m + 0; omega
+  | zero => show Nat.log 2 m ≤ Nat.log 2 m + 0; omega
   | succ i ih =>
-    intro hi
     have hib : base i ≤ goodsteinSeq m i := by
       have := goodsteinSeq_ge_init m i (by omega)
       simp only [base]; omega
@@ -701,8 +685,7 @@ induction step. **This is Cichoń's lower bound in miniature**: it reduces the `
 (`leadExp_k ≥ 2` for `k ≤ m`) to the *one-level-smaller* length statement
 `m + 2 ≤ goodsteinLength (Nat.log 2 m)` (see `two_le_leadExp_of_log_length`) — a clean self-reference
 that powers a strong induction on `m`, replacing the `ppCount` sparsity bound as the frontier. -/
-lemma leadExp_ge_goodsteinSeq_log (m : ℕ) :
-    ∀ k, goodsteinSeq (Nat.log 2 m) k ≤ Nat.log (base k) (goodsteinSeq m k) := by
+lemma leadExp_ge_goodsteinSeq_log (m : ℕ) : ∀ k, goodsteinSeq (Nat.log 2 m) k ≤ Nat.log (base k) (goodsteinSeq m k) := by
   intro k
   induction k with
   | zero =>
@@ -725,8 +708,7 @@ then `2 ≤ goodsteinSeq M k`. The value is nonzero before the length (`goodstei
 it cannot equal `1` there, because `bump b 1 = 1` so a value of `1` at step `k` forces `0` at step
 `k + 1`, i.e. `goodsteinLength M ≤ k + 1` — contradicting `k + 1 < goodsteinLength M`. So the only `1`
 is at step `goodsteinLength M − 1` and the only `0` at `goodsteinLength M`. -/
-lemma two_le_goodsteinSeq (M k : ℕ) (h : k + 1 < goodsteinLength M) :
-    2 ≤ goodsteinSeq M k := by
+lemma two_le_goodsteinSeq (M k : ℕ) (h : k + 1 < goodsteinLength M) : 2 ≤ goodsteinSeq M k := by
   have hne0 : goodsteinSeq M k ≠ 0 := goodsteinSeq_ne_zero_of_lt (by omega)
   rcases Nat.lt_or_ge (goodsteinSeq M k) 2 with hlt | hge
   · exfalso
@@ -759,13 +741,11 @@ def ppCount (m : ℕ) : ℕ → ℕ
 
 /-- The leading exponent only falls at pure-power steps: `leadExp_k ≥ (log₂ m) − ppCount m k`,
 where `ppCount m k` counts the number of pure-power events among the first `k` steps. -/
-lemma leadExp_ge_sub_ppCount (m : ℕ) : ∀ k, k + 1 ≤ m →
+lemma leadExp_ge_sub_ppCount (m k : ℕ) (hk : k + 1 ≤ m) :
     Nat.log 2 m ≤ Nat.log (base k) (goodsteinSeq m k) + ppCount m k := by
-  intro k
   induction k with
-  | zero => intro _; show Nat.log 2 m ≤ Nat.log 2 m + ppCount m 0; simp [ppCount]
+  | zero => show Nat.log 2 m ≤ Nat.log 2 m + ppCount m 0; simp [ppCount]
   | succ k ih =>
-    intro hk
     have hvk : base k ≤ goodsteinSeq m k := by
       have := goodsteinSeq_ge_init m k (by omega); simp only [base]; omega
     have hv0 : goodsteinSeq m k ≠ 0 := by
@@ -801,8 +781,7 @@ lemma omega_opow_le_seqONote_repr {m i k : ℕ} (hi : i + 1 ≤ m)
 /-- The Goodstein value drops by **at most one** per step (`bump b v ≥ v`, so
 `goodsteinSeq m (j+1) = bump _ v − 1 ≥ v − 1`). Telescoped: `goodsteinSeq m j ≤
 goodsteinSeq m (j + i) + i` — the value `i` steps later is at least `(value now) − i`. -/
-lemma goodsteinSeq_sub_le (m j : ℕ) : ∀ i, goodsteinSeq m j ≤ goodsteinSeq m (j + i) + i := by
-  intro i
+lemma goodsteinSeq_sub_le (m j i : ℕ) : goodsteinSeq m j ≤ goodsteinSeq m (j + i) + i := by
   induction i with
   | zero => simp
   | succ i ih =>
@@ -818,8 +797,7 @@ through step `m − 1` (`goodsteinSeq_ge_init`), and thereafter decreases by at 
 (`goodsteinSeq_sub_le`), so it stays positive through step `2m − 2`; its first zero is at `≥ 2m−1`.
 A super-linear-constant lower bound; it also re-derives `f_1`-domination elementarily
 (`2m ≤ (2m−1) + 2`). -/
-lemma two_mul_sub_one_le_goodsteinLength (n : ℕ) :
-    2 * n + 3 ≤ goodsteinLength (n + 2) := by
+lemma two_mul_sub_one_le_goodsteinLength (n : ℕ) : 2 * n + 3 ≤ goodsteinLength (n + 2) := by
   rw [goodsteinLength, Nat.le_find_iff]
   intro k hk
   by_cases hkle : k ≤ n + 1
