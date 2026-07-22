@@ -9,26 +9,22 @@ namespace GoodsteinPA.E1EmbeddingGrind
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
-/-! ### Block 12f — rank descent (`rankToZeroTC`) + the rank-0 truth core (`sound0_TC`)
+/-! ### Rank descent (`rankToZero_TC`) and the rank-0 truth core (`sound0_TC`)
 
 `rankToZeroAuxTC` mirrors `rankToZeroAux` verbatim (the extra `3 ≤ f 0` conjunct survives the
-tower: `ewIter f α 0 ≥ f 0`).  `sound0_TC` extends `sound0` to the full rule set: the truth
-leaves ARE their own witnesses, `verumR` gives `⊤`, and `andI`/`orI` combine premise truths
-through the connective evaluation. -/
+tower: `ewIter f α 0 ≥ f 0`). `sound0_TC` extends `sound0` to the full rule set: the truth leaves
+ARE their own witnesses, `verumR` gives `⊤`, and `andI`/`orI` combine premise truths through the
+connective evaluation. -/
 
 /-- **`rankToZeroAuxTC`** — iterate `passAuxTC` down the cut rank `d → 0`. -/
-theorem rankToZeroAuxTC (e : ONote) (heNF : e.NF) :
-    ∀ (d : ℕ) {α : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)},
-      Zef2TC α e H f d Γ → Monotone f → (∀ x, x ≤ f x) → (∀ m, 2 * m + 1 ≤ f m) →
-      3 ≤ f 0 → α.NF → Cl H α →
-      Zef2TCProv (collapseIter d α) e H (ewIterTower f d α) 0 Γ := by
-  intro d
-  induction d with
-  | zero =>
-      intro α H f Γ D hmono hinfl hlow hbase3 hαNF hαH
-      exact Zef2TCProv.of hαNF hαH (Zef2TC.gate D) D
+theorem rankToZeroAuxTC (e : ONote) (heNF : e.NF) (d : ℕ) {α : ONote} {H : ONote → Prop}
+    {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)} (D : Zef2TC α e H f d Γ) (hmono : Monotone f)
+    (hinfl : ∀ x, x ≤ f x) (hlow : ∀ m, 2 * m + 1 ≤ f m) (hbase3 : 3 ≤ f 0) (hαNF : α.NF)
+    (hαH : Cl H α) :
+    Zef2TCProv (collapseIter d α) e H (ewIterTower f d α) 0 Γ := by
+  induction d generalizing α H f Γ hmono hinfl hlow hbase3 hαNF hαH with
+  | zero => exact Zef2TCProv.of hαNF hαH (Zef2TC.gate D) D
   | succ d ih =>
-      intro α H f Γ D hmono hinfl hlow hbase3 hαNF hαH
       obtain ⟨β, hβle, hβNF, hβH, hβgate, Dβ⟩ :=
         passAuxTC d heNF D rfl hmono hinfl hlow hbase3 hαNF hαH
       have hg := Nlog_collapse_le hlow (Zef2TC.gate D)
@@ -56,36 +52,26 @@ theorem rankToZero_TC {α e} {H} {d} {Γ} (f : ℕ → ℕ)
   rankToZeroAuxTC e heNF d D hf1.monotone hf1.infl hf1.2 hf0 hαNF hαH
 
 /-- **Rank-0 `Zef2TC` soundness** — the truth core over the FULL rule set: a cut-free (rank-0)
-`Zef2TC` derivation has a standard-model-true member.  Truth leaves are their own witnesses;
+`Zef2TC` derivation has a standard-model-true member. Truth leaves are their own witnesses;
 `andI`/`orI` combine premise truths through the connective evaluation. -/
 theorem sound0_TC {α e} {H} {f} {c} {Γ}
-    (dd : Zef2TC α e H f c Γ) : c = 0 → ∃ ψ ∈ Γ, atomTrue ψ := by
+    (dd : Zef2TC α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
-      intro _
       by_cases htrue : atomTrue (Semiformula.rel r v)
       · exact ⟨_, hp, htrue⟩
       · refine ⟨_, hn, ?_⟩
         simpa [atomTrue, Semiformula.eval_nrel, Semiformula.eval_rel, Function.comp_def] using htrue
-  | trueRel hαN r v htrue hmem =>
-      intro _
-      exact ⟨_, hmem, htrue⟩
-  | trueNrel hαN r v htrue hmem =>
-      intro _
-      exact ⟨_, hmem, htrue⟩
-  | verumR hαN h =>
-      intro _
-      exact ⟨⊤, h, by simp [atomTrue]⟩
+  | trueRel hαN r v htrue hmem => exact ⟨_, hmem, htrue⟩
+  | trueNrel hαN r v htrue hmem => exact ⟨_, hmem, htrue⟩
+  | verumR hαN h => exact ⟨⊤, h, by simp [atomTrue]⟩
   | @wk α e H f c Δ Γ hαN hsub _ ih =>
-      intro hc
       obtain ⟨ψ, hψ, htrue⟩ := ih hc
       exact ⟨ψ, hsub hψ, htrue⟩
   | @weak α β e H f c Δ Γ hαN hβ hβNF hαNF hβH hsub _ ih =>
-      intro hc
       obtain ⟨ψ, hψ, htrue⟩ := ih hc
       exact ⟨ψ, hsub hψ, htrue⟩
   | @andI α βφ βψ e H f c Γ hαN φ ψ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      intro hc
       obtain ⟨ψ₁, hψ₁, htrue₁⟩ := ih₁ hc
       obtain ⟨ψ₂, hψ₂, htrue₂⟩ := ih₂ hc
       rcases Finset.mem_insert.mp hψ₁ with rfl | hΓ₁
@@ -96,7 +82,6 @@ theorem sound0_TC {α e} {H} {f} {c} {Γ}
         · exact ⟨ψ₂, Finset.mem_insert_of_mem hΓ₂, htrue₂⟩
       · exact ⟨ψ₁, Finset.mem_insert_of_mem hΓ₁, htrue₁⟩
   | @orI α β e H f c Γ hαN φ ψ hβ hβNF hαNF hβH _ ih =>
-      intro hc
       obtain ⟨ψ', hψ', htrue'⟩ := ih hc
       rcases Finset.mem_insert.mp hψ' with rfl | hψ'2
       · refine ⟨ψ' ⋎ ψ, Finset.mem_insert_self _ _, ?_⟩
@@ -108,7 +93,6 @@ theorem sound0_TC {α e} {H} {f} {c} {Γ}
           simpa [atomTrue] using h1
         · exact ⟨ψ', Finset.mem_insert_of_mem hΓ, htrue'⟩
   | @allω α e H f c Γ hαN φ β hβ hβNF hαNF hβH _ ih =>
-      intro hc
       rcases Classical.em (∃ n : ℕ, ∃ ψ ∈ Γ, atomTrue ψ) with hctx | hctx
       · obtain ⟨n, ψ, hψ, htrue⟩ := hctx
         exact ⟨ψ, Finset.mem_insert_of_mem hψ, htrue⟩
@@ -121,13 +105,12 @@ theorem sound0_TC {α e} {H} {f} {c} {Γ}
           · exact absurd ⟨n, ψ, hψΓ, htrue⟩ hctx
         exact (atomTrue_all_iff φ).mpr hall
   | @exI α β e H f c Γ hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      intro hc
       obtain ⟨ψ, hψ, htrue⟩ := ih hc
       rcases Finset.mem_insert.mp hψ with rfl | hψΓ
       · exact ⟨∃⁰ φ, Finset.mem_insert_self _ _, (atomTrue_ex_iff φ).mpr ⟨n, htrue⟩⟩
       · exact ⟨ψ, Finset.mem_insert_of_mem hψΓ, htrue⟩
   | @cut α βφ βψ e H f c Γ hαN φ hcompl hcutRead _ _ _ _ _ _ _ _ _ _ _ =>
-      intro hc; subst hc
+      subst hc
       exact absurd hcompl (by omega)
 
 end GoodsteinPA.E1EmbeddingGrind
