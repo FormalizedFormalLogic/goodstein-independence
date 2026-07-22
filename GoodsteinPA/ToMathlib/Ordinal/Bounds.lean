@@ -83,6 +83,7 @@ lemma sup_opow_add_one_le : (⨆ n, ω ^ (f n)) + 1 ≤ ω ^ ((⨆ n, f n) + 1) 
 
 /-- **Cross-block descent:** if `a < b` and `x' < d`, then `d*a + x' < d*b + x` for any `x`. The
 lower block sits entirely below `d*(a+1) ≤ d*b`. -/
+@[grind .]
 lemma mul_add_lt {d a b x x' : Ordinal} (hab : a < b) (hx' : x' < d) : d * a + x' < d * b + x := by
   calc d * a + x' < d * a + d := (add_lt_add_iff_left _).2 hx'
     _ = d * (a + 1) := by rw [mul_add, mul_one]
