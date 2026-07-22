@@ -9,11 +9,11 @@ namespace GoodsteinPA.E1EmbeddingGrind
 open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
-/-- **`stepAnd_Zef2TC`** — the ⋏-principal top-rank cut reduction (E–W/Buchholz finite
-reduction).  From `⊢ φ⋏ψ, Γ` and `⊢ ∼φ⋎∼ψ, Γ` (same slot `f`, rank `c`), derive `Γ` at rank
-`c` using two cuts on `ψ` and `φ` (both `complexity < c`), at root `osucc (osucc (βφ + βψ))`. -/
-theorem stepAnd_Zef2TC {φ ψ} {βφ βψ e} {H} {f}
-    {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+variable {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+
+/-- The ⋏-principal top-rank cut reduction: from `⊢ φ⋏ψ, Γ` and `⊢ ∼φ⋎∼ψ, Γ` (same slot `f`, rank
+`c`), derive `Γ` at rank `c` and ordinal `osucc (osucc (βφ + βψ))`. -/
+theorem stepAnd_Zef2TC {φ ψ} {βφ βψ}
     (hβφNF : βφ.NF) (hβψNF : βψ.NF)
     (hφc : φ.complexity < c) (hψc : ψ.complexity < c)
     (hφRead : φ.complexity ≤ f 0) (hψRead : ψ.complexity ≤ f 0)
@@ -66,20 +66,18 @@ theorem stepAnd_Zef2TC {φ ψ} {βφ βψ e} {H} {f}
   exact Zef2TC.cut hα₂N φ hφc hφRead hβφ2 h12 hβφNF hα₁NF hα₂NF
     (Cl_of_NF hβφNF) (Cl_of_NF hα₁NF) PL cutψ
 
-/-! ### Block 12c — atomic truth-leaf surgery: the TC atomic cut needs NO splice
+/-! ### Atomic truth-leaf surgery: the atomic top-rank cut needs no splice
 
-Over `Zef2TC`, exactly one of `rel rr vv` / `nrel rr vv` is `atomTrue`
-(`atomTrue_nrel_iff_not_rel`), so the atomic top-rank cut dissolves WITHOUT `atomCutRun_Zf2`'s
-axL-pair splice: erase the FALSE literal from its own premise.  The only rules where the false
-literal could be "principal" are `axL` (the pair leaf — after erasing the false half, the TRUE
-half remains in context and the leaf collapses to `trueRel`/`trueNrel`) and the matching
-truth leaf itself (kernel-contradicted by exclusivity).  Same ordinal, same slot, no fresh
-root, no composition. -/
+Over `Zef2TC`, exactly one of `rel rr vv` / `nrel rr vv` is `atomTrue` (`atomTrue_nrel_iff_not_rel`),
+so the atomic top-rank cut dissolves by erasing the FALSE literal from its own premise, without the
+`axL`-pair splice `atomCutRun_Zf2` needs. The only rules where the false literal could be
+"principal" are `axL` (the pair leaf collapses to `trueRel`/`trueNrel` on the surviving TRUE half)
+and the matching truth leaf itself (excluded by exclusivity). Same ordinal, same slot. -/
+
+variable {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
 
 /-- Erase a FALSE `nrel` literal (its `rel` is `atomTrue`): never honestly principal. -/
-theorem false_nrel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    (htrue : atomTrue (Semiformula.rel rr vv))
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+lemma false_nrel_erase (htrue : atomTrue (Semiformula.rel rr vv)) {α : ONote}
     (dd : Zef2TC α e H f c Γ) :
       Zef2TC α e H f c (Γ.erase (Semiformula.nrel rr vv)) := by
   have hreshape : ∀ (χ : ArithmeticFormula ℕ) (Γ : Finset (ArithmeticFormula ℕ)),
@@ -140,9 +138,7 @@ theorem false_nrel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → S
       · exact Zef2TC.wk ih₂.gate (hreshape (∼φ) Γ') ih₂
 
 /-- Erase a FALSE `rel` literal (its `nrel` is `atomTrue`): dual of `false_nrel_erase`. -/
-theorem false_rel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    (htrue : atomTrue (Semiformula.nrel rr vv))
-    {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+lemma false_rel_erase (htrue : atomTrue (Semiformula.nrel rr vv)) {α : ONote}
     (dd : Zef2TC α e H f c Γ) :
       Zef2TC α e H f c (Γ.erase (Semiformula.rel rr vv)) := by
   have hreshape : ∀ (χ : ArithmeticFormula ℕ) (Γ : Finset (ArithmeticFormula ℕ)),
@@ -201,10 +197,9 @@ theorem false_rel_erase {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Se
       · exact Zef2TC.wk ih₁.gate (hreshape φ Γ') ih₁
       · exact Zef2TC.wk ih₂.gate (hreshape (∼φ) Γ') ih₂
 
-/-- **`stepAtom_Zef2TC`** — the atomic top-rank cut over `Zef2TC`: splice-FREE.  Erase the
-false literal from its premise; lift to the common root `osucc (βφ + βψ)` via `weak`. -/
-theorem stepAtom_Zef2TC {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Semiterm ℒₒᵣ ℕ 0}
-    {βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
+/-- The atomic top-rank cut reduction over `Zef2TC`: from `⊢ rel rr vv, Γ` and `⊢ nrel rr vv, Γ`
+(same slot `f`, rank `c`), derive `Γ` at rank `c` and ordinal `osucc (βφ + βψ)`. -/
+theorem stepAtom_Zef2TC {βφ βψ : ONote}
     (hβφNF : βφ.NF) (hβψNF : βψ.NF)
     (hgate : Nlog (βφ + βψ) + 1 ≤ f 0)
     (D₁ : Zef2TC βφ e H f c (insert (Semiformula.rel rr vv) Γ))
@@ -232,9 +227,9 @@ theorem stepAtom_Zef2TC {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → Se
       (lt_of_le_of_lt (le_add_right_NF hβφNF hβψNF) (lt_osucc hσNF))
       hβφNF hα₁NF (Cl_of_NF hβφNF) (Finset.Subset.refl _) E'
 
-/-- **`stepVerum_Zef2TC`** — the ⊤-principal top-rank cut is FREE: `∼⊤ = ⊥` and ⊥ is never
-principal, so `falsum_erase` on the ⊥-side premise already derives `Γ` at ITS ordinal `βψ`. -/
-theorem stepVerum_Zef2TC {βψ e} {H} {f} {c} {Γ}
+/-- The ⊤-principal top-rank cut reduction: since `∼⊤ = ⊥` is never principal, `⊢ ⊥, Γ` at
+ordinal `βψ` already derives `Γ` at the same ordinal `βψ`. -/
+theorem stepVerum_Zef2TC {βψ : ONote}
     (D₂ : Zef2TC βψ e H f c (insert (⊥ : ArithmeticFormula ℕ) Γ)) :
     Zef2TC βψ e H f c Γ := by
   have C := falsum_erase D₂
