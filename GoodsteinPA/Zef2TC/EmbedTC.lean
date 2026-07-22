@@ -11,18 +11,17 @@ open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ### The master predicate and the `Derivation2` case ladder -/
 
-/-- **The rung-E master predicate** (block-3 amendment of the W3 shape): structural budgets
-`B` (slot), `d` (cut rank), `e` (control tower) OUTSIDE `∀ env`; per-assignment an env-local
-relativization index `K` (the `SomeK` witness-budget discipline — see the block-3 discovery
-note) and a node ordinal `α`; operator fixed at the full closure `Cl (⊤)` (every `Cl`
-obligation is `Cl.base trivial`, and `∃ H, Cl H α ∧ …` follows). -/
+variable {Γ : Finset (ArithmeticFormula ℕ)}
+
+/-- `Γ` is `Zef2TC`-embeddable at some structural budgets `B` (slot), `d` (cut rank), `e`
+(control tower), with a per-assignment env-local relativization index `K` and node ordinal `α`;
+the operator is fixed at the full closure `Cl (⊤)`. -/
 def BudgetedEmbedsTC (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
   ∃ B d : ℕ, ∃ e : ONote, e.NF ∧ ∀ env : ℕ → ℕ, ∃ K : ℕ, ∃ α : ONote, α.NF ∧
     Zef2TC α e (fun _ => True) (rel1 (ewRootSlot e B) K) d
       (Γ.image (fun φ => asg env ▹ φ))
-/-- **`closed`** — consume `em_Zef2TC'`; the ordinal is the deterministic complexity rung
-(env-independent since rewriting preserves `complexity`), the budget is its `clog` gate. -/
-theorem budgetedEmbedsTC_closed {Γ}
+/-- The `closed` case: `Γ` embeds when it contains both a formula and its negation. -/
+theorem budgetedEmbedsTC_closed
     (φ : ArithmeticFormula ℕ) (hp : φ ∈ Γ) (hn : ∼φ ∈ Γ) :
     BudgetedEmbedsTC Γ := by
   refine ⟨clog (2 * φ.complexity + 1), 0, 0, ONote.NF.zero, fun env => ?_⟩
@@ -40,8 +39,8 @@ theorem budgetedEmbedsTC_closed {Γ}
     (Finset.mem_image_of_mem _ hp)
     (by simpa using Finset.mem_image_of_mem (fun ψ => asg env ▹ ψ) hn)
 
-/-- **`verum`** — `verumR` at ordinal `0`. -/
-theorem budgetedEmbedsTC_verum {Γ}
+/-- The `verum` case: `Γ` embeds when it contains `⊤`. -/
+theorem budgetedEmbedsTC_verum
     (h : (⊤ : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsTC Γ := by
   refine ⟨0, 0, 0, ONote.NF.zero, fun env => ⟨0, 0, ONote.NF.zero, ?_⟩⟩
@@ -50,8 +49,8 @@ theorem budgetedEmbedsTC_verum {Γ}
     simpa using this
   exact Zef2TC.verumR (by simp) hmem
 
-/-- **`wk`** — image weakening; all budgets carried. -/
-theorem budgetedEmbedsTC_wk {Δ Γ}
+/-- The `wk` case: weakening from a subset `Δ` to `Γ`. -/
+theorem budgetedEmbedsTC_wk {Δ}
     (hsub : Δ ⊆ Γ) (ih : BudgetedEmbedsTC Δ) :
     BudgetedEmbedsTC Γ := by
   obtain ⟨B, d, e, he, ih⟩ := ih
@@ -59,9 +58,8 @@ theorem budgetedEmbedsTC_wk {Δ Γ}
   obtain ⟨K, α, hαNF, D⟩ := ih env
   exact ⟨K, α, hαNF, D.wk D.gate (Finset.image_subset_image hsub)⟩
 
-/-- **`shift`** — the image collapses under the shifted assignment (`embedC`'s `hB`
-computation, verbatim); budgets and derivation carried unchanged. -/
-theorem budgetedEmbedsTC_shift {Γ}
+/-- The `shift` case: `Γ` embeds implies its `Rewriting.shift`-image also embeds. -/
+theorem budgetedEmbedsTC_shift
     (ih : BudgetedEmbedsTC Γ) :
     BudgetedEmbedsTC (Γ.image Rewriting.shift) := by
   obtain ⟨B, d, e, he, ih⟩ := ih
@@ -82,8 +80,8 @@ theorem budgetedEmbedsTC_shift {Γ}
     rw [← TransitiveRewriting.comp_app, hcompB]
   rwa [himg]
 
-/-- **`or`** — single premise; `osucc` root, one `K`-rung pays the `Nlog` gate. -/
-theorem budgetedEmbedsTC_or {Γ}
+/-- The `or` case: `φ ⋎ ψ ∈ Γ` and `insert φ (insert ψ Γ)` embeds implies `Γ` embeds. -/
+theorem budgetedEmbedsTC_or
     {φ ψ : ArithmeticFormula ℕ} (h : φ ⋎ ψ ∈ Γ)
     (ih : BudgetedEmbedsTC (insert φ (insert ψ Γ))) :
     BudgetedEmbedsTC Γ := by
@@ -107,10 +105,8 @@ theorem budgetedEmbedsTC_or {Γ}
     simpa using this
   rwa [Finset.insert_eq_self.mpr hmem] at hor
 
-/-- **`and`** — the two-premise join: control tower `osucc (e₁ + e₂)` (both strictly below,
-`hardy_le_of_lt` fed by `norm eᵢ` absorbed into the structural `B`), root `osucc (α₁ + α₂)`
-(`Nlog` absorbing + one `K`-rung of gate slack), budgets aligned by `max`/`mono`. -/
-theorem budgetedEmbedsTC_and {Γ}
+/-- The `and` case: `φ ⋏ ψ ∈ Γ` and both `insert φ Γ`, `insert ψ Γ` embed implies `Γ` embeds. -/
+theorem budgetedEmbedsTC_and
     {φ ψ : ArithmeticFormula ℕ} (h : φ ⋏ ψ ∈ Γ)
     (ihp : BudgetedEmbedsTC (insert φ Γ)) (ihq : BudgetedEmbedsTC (insert ψ Γ)) :
     BudgetedEmbedsTC Γ := by
@@ -164,10 +160,8 @@ theorem budgetedEmbedsTC_and {Γ}
     simpa using this
   rwa [Finset.insert_eq_self.mpr hmem] at hand
 
-/-- **`cut`** — same two-premise join as `and`; the cut rank is `max`ed with
-`φ.complexity + 1` (env-independent: rewriting preserves `complexity`) and the read gate
-`complexity ≤ f 0` is paid by absorbing `φ.complexity` into the structural `B`. -/
-theorem budgetedEmbedsTC_cut {Γ}
+/-- The `cut` case: `insert φ Γ` and `insert (∼φ) Γ` both embed implies `Γ` embeds. -/
+theorem budgetedEmbedsTC_cut
     {φ : ArithmeticFormula ℕ}
     (ihp : BudgetedEmbedsTC (insert φ Γ)) (ihn : BudgetedEmbedsTC (insert (∼φ) Γ)) :
     BudgetedEmbedsTC Γ := by
@@ -232,27 +226,15 @@ theorem budgetedEmbedsTC_cut {Γ}
     (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
     hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
 
-/- **`axm` / `all` leaves of `budgetedEmbedding_Zef2TC` — RETIRED (SERIES-5 Lane C).**  These were
-the two open hard leaves (W1/W2 content) of the `Derivation2`-induction TC master ladder
-`budgetedEmbedding_Zef2TC`, which is itself superseded by the ratified `embedding_Zef2TC_V3`
-(proved sorry-free via `budgetedEmbeddingV3`). The master and both leaves had no consumers on the
-clean pipeline; deleted together (below) to reach `src` sorry-free. -/
-
 /-! ### The value-congruent EM engine + the closed-term collapse (the `exs` kit)
 
 Mirror of `Provable.em_cong_gen`/`Provable.exI_closed` (`Embedding.lean`) with the `Zef2TC`
-budget bookkeeping of `em_Zef2TC`; the atomic cases split on `atomTrue` and close by
-`trueRel`/`trueNrel` — this is exactly where (Ax2) is load-bearing (in `Z∞` the split used
-`axTrue`; `Zef2` alone has no true-literal leaf).  The congruence kit
+budget bookkeeping of `em_Zef2TC`; the congruence kit
 (`stdClosedVal`/`atomTrue_rel_congr`/`embedding_subst_q_cons_app`) is banked in
 `OperatorZinfty`. -/
-/-- **`exs`** — the closed-term collapse, DISCHARGED.  `asg env t` is closed with standard
-value `m`; the value-congruent EM (`em_cong1_Zef2TC`, at pair `(nm m, asg env t)`) + one
-`cut` at rank `complexity+1` convert the IH's `ψ'/[asg env t]` into `ψ'/[nm m]`, and `exI`
-fires at witness `m` — env-dependent, absorbed into the relativization index
-`K := max K₁ m + 3` (the `∃ K` amendment's raison d'être; `n ≤ f 0` paid by
-`index_le_relSlot_zero`, the two ordinal-join gates by `relSlot_succ_gap` rungs). -/
-theorem budgetedEmbedsTC_exs {Γ}
+/-- The `exs` case: `∃⁰ φ ∈ Γ` and `insert (φ/[t]) Γ` embeds implies `Γ` embeds, for any
+witness term `t`. -/
+theorem budgetedEmbedsTC_exs
     {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
     (ih : BudgetedEmbedsTC (insert (φ/[t]) Γ)) :
     BudgetedEmbedsTC Γ := by
@@ -262,7 +244,8 @@ theorem budgetedEmbedsTC_exs {Γ}
   set B : ℕ := B₁ + φ.complexity + clog (2 * φ.complexity + 1) with hB
   set d : ℕ := max d₁ (φ.complexity + 1) with hd
   obtain ⟨K₁, α₁, hα₁NF, D₁⟩ := ih₁ env
-  -- the closed witness and its standard value
+  -- the closed witness (`s`) and its standard value (`m`); the ∃-witness for the goal is `m`,
+  -- absorbed into the relativization index `K := max K₁ m + 3`
   set ψ' : ArithmeticSemiformula ℕ 1 := (asg env).q ▹ φ with hψ'
   set s : ArithmeticTerm ℕ := asg env t with hs
   set m : ℕ := stdClosedVal s with hm
@@ -358,15 +341,5 @@ theorem budgetedEmbedsTC_exs {Γ}
     have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h
     simpa [hψ'] using this
   rwa [Finset.insert_eq_self.mpr hmem] at hexI
-
-/- **`budgetedEmbedding_Zef2TC` (rung-E master ladder via `Derivation2` induction) — RETIRED
-(SERIES-5 Lane C).**  Superseded by the ratified `embedding_Zef2TC_V3` (proved sorry-free via
-`budgetedEmbeddingV3`); had no consumers on the clean pipeline. Deleted with its two open leaves
-(`budgetedEmbedsTC_axm` / `_all`, above) to reach `src` sorry-free. The clean per-case helpers
-(`budgetedEmbedsTC_closed/verum/and/or/exs/wk/shift/cut`) are retained. -/
-
-/- **DRAFT2 (block-3 amendment) — RETIRED (SERIES-5 Lane C).**  The `∃ K`-relativized statement
-was ratified and realized as `embedding_Zef2TC_V3` (proved sorry-free below); this draft placeholder
-had no code consumers and its `sorry` was decorative. Deleted to reach `src` sorry-free. -/
 
 end GoodsteinPA.E1EmbeddingGrind
