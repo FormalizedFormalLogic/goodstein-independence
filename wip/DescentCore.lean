@@ -35,33 +35,6 @@ theorem toOrdinal_le_iff (b : ℕ) (hb : 2 ≤ b) (m n : ℕ) :
     toOrdinal b m ≤ toOrdinal b n ↔ m ≤ n := by
   rw [← not_lt, ← not_lt, toOrdinal_lt_iff b hb]
 
-/-- **Rathjen Lemma 2.3(iii) (`evalNat` form).** On the `Canon`/`NF` domain, `evalNat b`
-order-reflects: `evalNat b o < evalNat b p ↔ o.repr < p.repr` (equivalently `↔ o < p`). Immediate
-from the round-trip `canon_repr` plus strict monotonicity of `toOrdinal (b+1)`. -/
-theorem evalNat_lt_iff (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
-    (hco : Canon b o) (hcp : Canon b p) (hno : o.NF) (hnp : p.NF) :
-    evalNat b o < evalNat b p ↔ o.repr < p.repr := by
-  rw [← canon_repr b (by omega) o hco hno, ← canon_repr b (by omega) p hcp hnp]
-  exact (toOrdinal_lt_iff (b + 1) (by omega) _ _).symm
-
-/-- `evalNat b` order-reflects `≤` on the `Canon`/`NF` domain. -/
-theorem evalNat_le_iff (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
-    (hco : Canon b o) (hcp : Canon b p) (hno : o.NF) (hnp : p.NF) :
-    evalNat b o ≤ evalNat b p ↔ o.repr ≤ p.repr := by
-  rw [← not_lt, ← not_lt, evalNat_lt_iff b hb hcp hco hnp hno]
-
-/-- **`evalNat`'s base-bump law (the substrate bridge).** Raising the evaluation base by one is
-exactly the hereditary numeric base-change `bump (b+1)` applied to the value: for a `Canon b`/`NF`
-notation, `evalNat (b+1) o = bump (b+1) (evalNat b o)`. Hence the §3 tower `T̂^{k+1}_ω(o) =
-evalNat (k+1) o` is the iterated `bump` (`bump (k+1) ∘ ⋯ ∘ bump 2`) of `evalNat 1 o` — the precise
-fact that lets the *internal* `ibump` substrate (`InternalBump`) realize `evalNat` inside a model `M`
-without coding ONote evaluation separately. Two-step: round-trip `o = toONote (b+1) (evalNat b o)`
-(`canon_round_trip`), then `evalNat_toONote`. -/
-theorem evalNat_succ_base (b : ℕ) (hb : 2 ≤ b) {o : ONote} (hco : Canon b o) (hno : o.NF) :
-    evalNat (b + 1) o = bump (b + 1) (evalNat b o) := by
-  conv_lhs => rw [← canon_round_trip b hb o hco hno]
-  exact evalNat_toONote (b + 1) (by omega) (evalNat b o)
-
 /-! ## Rathjen's max-coefficient `C : ONote → ℕ` and its bridge to `Canon`
 
 Rathjen 2014 states §3 in terms of `C(α)` = the highest integer coefficient in the complete CNF of `α`
@@ -80,24 +53,6 @@ def C : ONote → ℕ
 
 @[simp] theorem C_oadd (e : ONote) (n : ℕ+) (r : ONote) :
     C (ONote.oadd e n r) = max (max (C e) (n : ℕ)) (C r) := rfl
-
-/-- **`Canon` is `C ≤ b`.** The repo's coefficient-bound predicate `Canon b o` (every coefficient
-`≤ b`) holds iff the max coefficient `C o ≤ b`. So Rathjen's `C(βₙ) ≤ n+1` is `Canon (n+1) (β n)`. -/
-theorem Canon_iff_C_le (b : ℕ) (o : ONote) : Canon b o ↔ C o ≤ b := by
-  induction o with
-  | zero => exact iff_of_true (Canon_zero b) (by simp)
-  | oadd e n r ihe ihr =>
-    rw [Canon_oadd, C_oadd, ihe, ihr]; omega
-
-/-- `Canon b o` from `C o ≤ b` (the forward bridge, the form §3 lemmas consume). -/
-theorem Canon_of_C_le {b : ℕ} {o : ONote} (h : C o ≤ b) : Canon b o := (Canon_iff_C_le b o).2 h
-
-/-- `evalNat` is strictly monotone in the notation order on the `Canon`/`NF` domain
-(`o < p ⇒ evalNat b o < evalNat b p`). The `T̂` half of Rathjen's order isomorphism. -/
-theorem evalNat_lt_of_lt (b : ℕ) (hb : 2 ≤ b) {o p : ONote}
-    (hco : Canon b o) (hcp : Canon b p) (hno : o.NF) (hnp : p.NF) (h : o < p) :
-    evalNat b o < evalNat b p :=
-  (evalNat_lt_iff b hb hco hcp hno hnp).2 (ONote.lt_def.1 h)
 
 /-! ## Rathjen's `ωₙ` tower (the `T̂ 3.5` slow-down scaffold)
 
