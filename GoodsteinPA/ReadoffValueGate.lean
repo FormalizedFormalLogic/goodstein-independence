@@ -461,8 +461,8 @@ theorem gated_root_of_sigma1 (ψ : ArithmeticFormula ℕ) (h : Arithmetic.Hierar
 
 /-! ## `P*`-domination brick — `gvb` of a FIXED formula is dominated by finitely many iterates of
 ANY engine closed under successor/add/mul.  Abstract in the engine `G` because this module and
-`E1EmbeddingGrind.lean` cannot import each other: instantiate at assembly with `Gexp = hardy ω²`
-(closure facts `succ_le_Gexp`/`add_le_Gexp_max`/`mul_le_Gexp_max`, `E1EmbeddingGrind.lean`), whose
+`Zef2TC/TermBound.lean` cannot import each other: instantiate at assembly with `Gexp = hardy ω²`
+(closure facts `succ_le_Gexp`/`add_le_Gexp_max`/`mul_le_Gexp_max`, `Zef2TC/TermBound.lean`), whose
 iterates are padded-Hardy-dominated by `hardy_Wpow_iter_dom_pad`
 (`ToMathlib.Hardy.Majorization`). -/
 

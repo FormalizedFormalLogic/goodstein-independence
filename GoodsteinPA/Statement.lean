@@ -24,7 +24,7 @@ are LOCKED.
 -/
 module
 
-public import GoodsteinPA.E1EmbeddingGrind
+public import GoodsteinPA.Zef2TC.Wainer
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 
 @[expose] public section
