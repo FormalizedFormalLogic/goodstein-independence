@@ -758,7 +758,8 @@ lemma ewRootSlot_f2 (e : ONote) (m : ℕ) : EwF2 (ewRootSlot e m) := by
   simp [ewRootSlot]
   omega
 
-/-- The `d`-fold ordinal collapse (rung R's ordinal tower).  `collapse = expTower`. -/
+/-- The `d`-fold ordinal collapse tower: `collapseIter 0 a = a` and
+`collapseIter (d+1) a = collapse (collapseIter d a)`. -/
 def collapseIter : ℕ → ONote → ONote
   | 0, a => a
   | (d + 1), a => collapse (collapseIter d a)
@@ -769,15 +770,14 @@ lemma collapseIter_NF {a : ONote} (ha : a.NF) (d : ℕ) : (collapseIter d a).NF 
   | 0 => ha
   | (d + 1) => expTower_NF (collapseIter_NF ha d)
 
-/-- The `d`-fold slot tower (rung R's iterate composite): each pass iterates the current slot at
-the current collapsed ordinal. -/
+/-- The `d`-fold slot tower: each pass iterates the current slot at the current collapsed ordinal. -/
 noncomputable def ewIterTower : (ℕ → ℕ) → ℕ → ONote → (ℕ → ℕ)
   | f, 0, _ => f
   | f, (d + 1), a => ewIter (ewIterTower f d a) (collapseIter d a)
 
 /-- **Collapse-tower shift** — `collapseIter d (collapse a) = collapse (collapseIter d a)`
-(`= collapseIter (d+1) a`).  Lets the rung-R induction stay on EXACT ordinals: one pass promotes
-`a → collapse a`, and the remaining `d` passes commute the outer `collapse` through. -/
+(`= collapseIter (d+1) a`): one pass promotes `a → collapse a`, and the remaining `d` passes
+commute the outer `collapse` through. -/
 lemma collapseIter_collapse (a : ONote) (d : ℕ) : collapseIter d (collapse a) = collapse (collapseIter d a) :=
   match d with
   | 0 => rfl
@@ -811,6 +811,50 @@ lemma ewIterTower_monotone (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m) (a : 
   | 0 => hmono
   | (d + 1) => ewIter_monotone (ewIterTower_monotone hmono hinfl a d)
       (ewIterTower_infl hinfl a d) _
+
+/-- `Nlog (collapse a) = Nlog a + 1` (`collapse a = oadd a 1 0`, `clog 1 = 1`). -/
+@[grind =]
+lemma Nlog_collapse (a : ONote) : Nlog (collapse a) = Nlog a + 1 := by
+  show Nlog (oadd a 1 0) = Nlog a + 1
+  have hc : clog 1 = 1 := by decide
+  simp [Nlog_oadd, hc]
+
+/-- **Per-node gate over `Nlog`:** the rebuilt node at `collapse a` with slot `ewIter f a` closes
+its `Nlog` gate from the base gate `Nlog a ≤ f 0` plus the `2m+1` floor. -/
+@[grind .]
+lemma Nlog_collapse_le {f : ℕ → ℕ} (hlow : ∀ m, 2 * m + 1 ≤ f m) {a : ONote}
+    (hgate : Nlog a ≤ f 0) : Nlog (collapse a) ≤ ewIter f a 0 := by
+  rw [Nlog_collapse]
+  by_cases ha : a = 0
+  · subst ha
+    simp only [Nlog_zero, ewIter_zero]
+    have := hlow 0; omega
+  · have h0a : (0 : ONote) < a := pos_of_ne_zero ha
+    have hlow' := ewIter_lower (f := f) (b := 0) (a := a) (m := 0) NF.zero h0a (Nat.zero_le _)
+    have hff : f (f 0) ≤ ewIter f a 0 := by simpa [ewIter_zero] using hlow'
+    have hb : 2 * f 0 + 1 ≤ f (f 0) := hlow (f 0)
+    omega
+
+/-- The tower slot preserves the `2m+1` lower bound. -/
+@[grind .]
+lemma ewIterTower_low {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (hlow : ∀ m, 2 * m + 1 ≤ f m) (a : ONote) (d m : ℕ) : 2 * m + 1 ≤ ewIterTower f d a m :=
+  match d, m with
+  | 0, m => hlow m
+  | (d + 1), m => ewIter_low (ewIterTower_infl hinfl a d) (ewIterTower_low hmono hinfl hlow a d)
+      (collapseIter d a) m
+
+/-- **The tower gate over `Nlog`:** `d` passes carry the base gate `Nlog a ≤ f 0` to
+`Nlog (collapseIter d a) ≤ ewIterTower f d a 0`. -/
+@[grind .]
+lemma Nlog_collapseIter_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
+    (hlow : ∀ m, 2 * m + 1 ≤ f m) {a : ONote} (hgate : Nlog a ≤ f 0) (d : ℕ) :
+    Nlog (collapseIter d a) ≤ ewIterTower f d a 0 :=
+  match d with
+  | 0 => hgate
+  | (d + 1) =>
+      Nlog_collapse_le (ewIterTower_low hmono hinfl hlow a d)
+        (Nlog_collapseIter_le hmono hinfl hlow hgate d)
 
 /-- A pointwise-dominated slot yields a pointwise-dominated `ewIter`: if `f x ≤ g x` for all `x`
 (with `g` monotone and inflationary), then `ewIter f a m ≤ ewIter g a m`. -/

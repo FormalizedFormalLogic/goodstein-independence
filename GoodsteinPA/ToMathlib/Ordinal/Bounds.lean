@@ -81,6 +81,15 @@ lemma sup_opow_add_one_le : (⨆ n, ω ^ (f n)) + 1 ≤ ω ^ ((⨆ n, f n) + 1) 
     (opow_lt_opow_iff_right one_lt_omega0).mpr (lt_add_of_pos_right _ one_pos)
   exact (isPrincipal_add_omega0_opow _ (hsup.trans_lt hlt) (one_lt_opow_succ _)).le
 
+/-- **Cross-block descent:** if `a < b` and `x' < d`, then `d*a + x' < d*b + x` for any `x`. The
+lower block sits entirely below `d*(a+1) ≤ d*b`. -/
+@[grind .]
+lemma mul_add_lt {d a b x x' : Ordinal} (hab : a < b) (hx' : x' < d) : d * a + x' < d * b + x := by
+  calc d * a + x' < d * a + d := (add_lt_add_iff_left _).2 hx'
+    _ = d * (a + 1) := by rw [mul_add, mul_one]
+    _ ≤ d * b := mul_le_mul_right (by exact_mod_cast Order.succ_le_of_lt hab) d
+    _ ≤ d * b + x := le_self_add
+
 /-- `ε₀` is closed under `ω^·`. -/
 @[grind →]
 lemma omega0_opow_lt_epsilon0 {a : Ordinal} (h : a < ε₀) : ω ^ a < ε₀ := by

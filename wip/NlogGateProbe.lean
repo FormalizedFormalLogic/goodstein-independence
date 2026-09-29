@@ -331,35 +331,6 @@ theorem Nlog_add_le_max_succ : ∀ (α : ONote), NF α → ∀ (γ : ONote), NF 
                 le_max_right _ _
               omega
 
-/-! ### The per-node gates over `Nlog` (analogs of `ewN_collapse`/`ewN_collapse_le`) -/
-
-/-- `Nlog (collapse α) = Nlog α + 1` (`collapse α = oadd α 1 0`, `clog 1 = 1`) — the exact
-analog of `ewN_collapse`. -/
-theorem Nlog_collapse (α : ONote) : Nlog (collapse α) = Nlog α + 1 := by
-  show Nlog (oadd α 1 0) = Nlog α + 1
-  have hc : clog 1 = 1 := by decide
-  simp [Nlog_oadd, hc]
-
-/-- **Per-node gate for the pass over `Nlog`** — the analog of `ewN_collapse_le`: the rebuilt
-node at `collapse α` with slot `ewIter f α` closes its `Nlog` gate from the derivation's base
-gate `Nlog α ≤ f 0` + the EwLow floor.  Same `f (f 0)` mechanism; only `hlow`, no strictness,
-so it survives the `allω` branches' `rel1 f n` slots. -/
-theorem Nlog_collapse_le {f : ℕ → ℕ} (hlow : ∀ m, 2 * m + 1 ≤ f m) {α : ONote}
-    (hgate : Nlog α ≤ f 0) : Nlog (collapse α) ≤ ewIter f α 0 := by
-  rw [Nlog_collapse]
-  by_cases hα : α = 0
-  · subst hα
-    simp only [Nlog_zero, ewIter_zero]
-    have := hlow 0; omega
-  · have h0α : (0 : ONote) < α := by
-      cases α with
-      | zero => exact (hα rfl).elim
-      | oadd e n a => exact oadd_pos e n a
-    have hlow' := ewIter_lower (f := f) (β := 0) (α := α) (m := 0) h0α (Nat.zero_le _)
-    have hff : f (f 0) ≤ ewIter f α 0 := by simpa [ewIter_zero] using hlow'
-    have hb : 2 * f 0 + 1 ≤ f (f 0) := hlow (f 0)
-    omega
-
 /-! ### The Def-16 iterate/tower gate over `Nlog` (rung R's per-pass node gates) -/
 
 /-- The tower slot preserves inflationarity. -/
@@ -374,25 +345,6 @@ theorem ewIterTower_monotone {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀
   | 0 => hmono
   | (d + 1) => ewIter_monotone (ewIterTower_monotone hmono hinfl α d)
       (ewIterTower_infl hmono hinfl α d) _
-
-/-- The tower slot preserves the EwLow floor. -/
-theorem ewIterTower_low {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
-    (hlow : ∀ m, 2 * m + 1 ≤ f m) (α : ONote) :
-    ∀ d, ∀ m, 2 * m + 1 ≤ ewIterTower f d α m
-  | 0 => hlow
-  | (d + 1) => ewIter_low (ewIterTower_infl hmono hinfl α d)
-      (ewIterTower_low hmono hinfl hlow α d) _
-
-/-- **The Def-16 tower gate over `Nlog`** — rung R's per-pass node gate iterates: `d` passes
-carry the base gate `Nlog α ≤ f 0` to `Nlog (collapseIter d α) ≤ ewIterTower f d α 0`
-(each step is one `Nlog_collapse_le` at the current tower slot). -/
-theorem Nlog_collapseIter_le {f : ℕ → ℕ} (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
-    (hlow : ∀ m, 2 * m + 1 ≤ f m) {α : ONote} (hgate : Nlog α ≤ f 0) :
-    ∀ d, Nlog (collapseIter d α) ≤ ewIterTower f d α 0
-  | 0 => hgate
-  | (d + 1) =>
-      Nlog_collapse_le (ewIterTower_low hmono hinfl hlow α d)
-        (Nlog_collapseIter_le hmono hinfl hlow hgate d)
 
 /-! ## Part 3 — the pins-1–2 miniature over `Nlog`: the fresh-root gate closes with the
 absorbing arithmetic alone (NO `hg_base`) -/
