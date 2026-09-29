@@ -10,7 +10,7 @@ public import GoodsteinPA.ReadoffValueGate
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ## `Zef2TC` — the full-rule-set target calculus -/

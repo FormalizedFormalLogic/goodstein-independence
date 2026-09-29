@@ -314,13 +314,18 @@ lemma nfStep_spec (n : ℕ) : nfStep ((List.range n).map Nfb) = some (Nfb n) := 
   by_cases hn : n = 0;
   · rw [hn]; simp +decide [decodeONote];
   · rw [show decodeONote n = ONote.oadd (decodeONote (Nat.unpair (n - 1) |>.1))
-      ⟨(Nat.unpair (Nat.unpair (n - 1) |>.2) |>.1) + 1, Nat.succ_pos _⟩
+      (show ℕ+ from ⟨(Nat.unpair (Nat.unpair (n - 1) |>.2) |>.1) + 1, Nat.succ_pos _⟩)
       (decodeONote (Nat.unpair (Nat.unpair (n - 1) |>.2) |>.2)) from ?_];
     · have h_nfTB : nfTB n = decide (ONote.TopBelow (decodeONote (nfIdxE n)) (decodeONote (nfIdxA n))) := by
         unfold nfTB ONote.TopBelow;
         rcases k : nfIdxA n with (_ | k) <;> simp_all +decide [Cnat_pair_eq_zero];
         · unfold decodeONote; simp +decide;
         · rw [decodeONote];
+      -- Lean 4.34: the `ℕ+` coefficient here is a bare `Subtype.mk`, so `NF_oadd_iff` cannot be
+      -- keyed by `simp`; hand it the instance at exactly this spelling.
+      have h_NF := NF_oadd_iff (e := decodeONote (Nat.unpair (n - 1) |>.1))
+        (n := show ℕ+ from ⟨(Nat.unpair (Nat.unpair (n - 1) |>.2) |>.1) + 1, Nat.succ_pos _⟩)
+        (a := decodeONote (Nat.unpair (Nat.unpair (n - 1) |>.2) |>.2))
       simp_all +decide [NF_oadd_iff];
       rw [List.getElem?_range, List.getElem?_range];
       · simp +decide [nfIdxE, nfIdxA];
@@ -339,7 +344,7 @@ theorem computable_Nfb : Computable Nfb :=
 variable (a : ℕ)
 
 /-- The structural NF-code of the `a`-th notation. -/
-def enc (a : ℕ) : ℕ := encodeONote (natCode a).1
+noncomputable def enc (a : ℕ) : ℕ := encodeONote (natCode a).1
 
 lemma decodeONote_enc : decodeONote (enc a) = (natCode a).1 := by
   rw [enc, decodeONote_encodeONote]
@@ -361,28 +366,15 @@ lemma enc_surjOn {n : ℕ} (h : (decodeONote n).NF) : ∃ a, enc a = n := by
   simp [ha, encodeONote_decodeONote]
 
 lemma enc_strictMono : StrictMono enc := by
-  letI hdec : DecidablePred (· ∈ Set.range (Encodable.encode : NONote → ℕ)) :=
-    Encodable.decidableRangeEncode NONote
-  letI hinf : Infinite (Set.range (Encodable.encode : NONote → ℕ)) :=
-    Infinite.of_injective _ (Equiv.ofInjective _ Encodable.encode_injective).injective
-  have key : ∀ a, enc a =
-      ((Nat.Subtype.ofNat (Set.range (Encodable.encode : NONote → ℕ)) a :
-          Set.range (Encodable.encode : NONote → ℕ)) : ℕ) := by
+  have key : ∀ a, enc a = ((codeEnum a : Set.range (Encodable.encode : NONote → ℕ)) : ℕ) := by
     intro a
-    have h2 : (natCode a) = (Encodable.equivRangeEncode NONote).symm
-        (Nat.Subtype.ofNat (Set.range (Encodable.encode : NONote → ℕ)) a) := by
-      show Denumerable.ofNat NONote a = _
-      simp only [Denumerable.ofEquiv_ofNat, Denumerable.ofNat_nat, Equiv.coe_fn_symm_mk]
-    unfold enc
-    rw [h2]
+    show encodeONote (natCode a).1 = _
+    rw [natCode_apply]
     exact congrArg Subtype.val
-      (Equiv.apply_symm_apply (Encodable.equivRangeEncode NONote)
-        (Nat.Subtype.ofNat (Set.range (Encodable.encode : NONote → ℕ)) a))
-  rw [show enc = fun a => ((Nat.Subtype.ofNat (Set.range (Encodable.encode : NONote → ℕ)) a :
-        Set.range (Encodable.encode : NONote → ℕ)) : ℕ) from funext key]
-  apply strictMono_nat_of_lt_succ
-  intro n
-  exact Subtype.coe_lt_coe.mpr (Nat.Subtype.lt_succ_self _)
+      (Equiv.apply_symm_apply (Encodable.equivRangeEncode NONote) (codeEnum a))
+  rw [show enc = fun a => ((codeEnum a : Set.range (Encodable.encode : NONote → ℕ)) : ℕ) from
+    funext key]
+  exact fun m n h => Subtype.coe_lt_coe.mpr (codeEnum_strictMono h)
 
 /-- Count of NF-codes strictly below `n`. -/
 def countNF (n : ℕ) : ℕ := ((List.range n).filter (fun k => Nfb k)).length
@@ -454,8 +446,15 @@ lemma rfind_nthNF (a : ℕ) :
     Nat.rfind (fun n => (Part.some (decide (a < countNF (n + 1))) : Part Bool)) =
       Part.some (nthNF a) := by
   convert Part.eq_some_iff.mpr _ using 1;
-  simp +zetaDelta at *;
-  exact ⟨Nat.find_spec (exists_count a), fun {m} hm => not_lt.1 fun contra => hm.not_ge <| Nat.find_min' _ contra⟩
+  -- mathlib 4.34: `simp` no longer unfolds `_ ∈ Nat.rfind _`; use `Nat.mem_rfind` explicitly.
+  refine Nat.mem_rfind.mpr ⟨?_, ?_⟩
+  · simp only [Part.mem_some_iff]
+    exact (decide_eq_true (show a < countNF (nthNF a + 1) from Nat.find_spec (exists_count a))).symm
+  · intro m hm
+    simp only [Part.mem_some_iff]
+    refine (decide_eq_false ?_).symm
+    exact not_lt.2 (not_lt.1 fun contra =>
+      (lt_of_lt_of_le hm (Nat.find_min' (exists_count a) contra)).false)
 
 lemma computable_nthNF : Computable nthNF := by
   have hp : Partrec₂ (fun (a m : ℕ) =>

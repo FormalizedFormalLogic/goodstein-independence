@@ -14,7 +14,7 @@ public import GoodsteinPA.Zinfty.Inversion
 
 namespace GoodsteinPA.Zinfty
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 open Derivation
 
 variable {Γ Δ : Finset (ArithmeticFormula ℕ)} {α β : Ordinal.{0}} {c : ℕ}
@@ -617,7 +617,7 @@ lemma cut_elim_principal {ξ : ArithmeticFormula ℕ}
       have hφn : (∼φ').complexity + 1 ≤ c := by
         rw [Semiformula.complexity_neg]; exact le_of_eq hξeq
       have hC' : Provable (ω₀ ^ α) c (insert (∃⁰ ∼(∼φ')) Γ) := by
-        rw [DeMorgan.neg]; exact hC
+        rw [TildeInvolutive.tilde_involutive]; exact hC
       refine ((Provable.cut_reduce_all (by exact_mod_cast hφn) hNC hC').mono_ordinalBound ?_)
       rw [max_comm α β]; exact Ordinal.opow_add_opow_add_one_le β α
 

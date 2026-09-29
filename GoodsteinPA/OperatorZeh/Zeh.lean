@@ -6,7 +6,7 @@ public import GoodsteinPA.OperatorZeh.Operator
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 /--

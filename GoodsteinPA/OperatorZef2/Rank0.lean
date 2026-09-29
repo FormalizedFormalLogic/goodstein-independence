@@ -7,12 +7,12 @@ import Std.Tactic.BVDecide.Normalize.Prop
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
 
-/-- The numeral term `nm n` (`LO.FirstOrder.ArithmeticTerm.nm`) evaluates to `n` under any standard-model
+/-- The numeral term `nm n` (`FFL.FirstOrder.ArithmeticTerm.nm`) evaluates to `n` under any standard-model
 assignment — the value of a closed numeral const is assignment-independent.  Local companion of
 `stdClosedVal_nm`, phrased with `valm ℕ` so it `rw`s inside `eval_substs` read-offs. -/
 @[simp] lemma valm_nm (n) (f) :
@@ -198,7 +198,7 @@ lemma readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
 The conclusion bound is `ewIter f α 0` (rather than `f 0`): the structurally achievable bound,
 since the splice consumes it at one definitional tower level.  The old `matrixTrue` form is
 deleted; `<BoundedInstance>` is discharged to the repo-native Foundation Δ₀ predicate
-`LO.FirstOrder.Arithmetic.DeltaZero` (= `Hierarchy 𝚺 0`) and the conclusion reads off the
+`FFL.FirstOrder.Arithmetic.DeltaZero` (= `Hierarchy 𝚺 0`) and the conclusion reads off the
 standard-model truth `atomTrue = Evalm ℕ` of the instance directly.
 
 Where `readoff_sigma1_Zef2` reads off an atomic matrix (`hφinst : φ/[nm n]` atomic), this reads off
@@ -215,7 +215,7 @@ true disjunct plus the Δ₀ bound to bound the load-bearing branches.
 - [Tow20, §17, Theorem 17.1]
 -/
 lemma readoff_delta0_Zef2 {φ : ArithmeticSemiformula ℕ 1}
-    (_hφbdd : ∀ n, LO.FirstOrder.Arithmetic.DeltaZero (φ/[nm n]))
+    (_hφbdd : ∀ n, FFL.FirstOrder.Arithmetic.DeltaZero (φ/[nm n]))
     (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
     ∃ n ≤ ewIter f α 0, atomTrue (φ/[nm n]) :=
   -- The conclusion holds via vacuity: the source `dd` cannot exist

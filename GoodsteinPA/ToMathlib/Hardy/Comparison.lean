@@ -13,7 +13,7 @@ namespace ONote
 
 open ONote Ordinal
 
-instance : WellFoundedLT ONote := ⟨InvImage.wf repr Ordinal.lt_wf⟩
+instance : WellFoundedLT ONote := InvImage.wf repr Ordinal.lt_wf
 
 /-- Leading exponent of a notation's Cantor normal form (`0` for `0`). Companion to
 `lastExp`; used to build a single `ω^Q` notation dominating a given `a`. -/

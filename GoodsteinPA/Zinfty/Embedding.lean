@@ -16,7 +16,7 @@ public import GoodsteinPA.ToFoundation.Subst
 
 namespace GoodsteinPA.Zinfty
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 
 variable {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
   (hval : ∀ i, Semiterm.gValm ℕ ![] id (w i) = Semiterm.gValm ℕ ![] id (w' i))

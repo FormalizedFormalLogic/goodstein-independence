@@ -2,7 +2,7 @@
 # Rank and order type of a well-founded relation
 
 For a well-founded relation `lt` on a type `α`:
-- `rk lt a = |a|_lt` (the `lt`-rank), via mathlib `IsWellFounded.rank`;
+- `rk lt a = |a|_lt` (the `lt`-rank), via mathlib `WellFounded.rank`;
 - `orderType lt = ‖lt‖ = sup{|a|_lt + 1 : a}` (the order type of `lt`).
 -/
 module
@@ -13,17 +13,17 @@ public import Mathlib.SetTheory.Ordinal.Rank
 
 namespace WellFoundedRank
 
-variable {α : Type*} (lt : α → α → Prop) [IsWellFounded α lt]
+variable {α : Type*} (lt : α → α → Prop) [WellFounded lt]
 
-/-- `|a|_lt` — the `lt`-rank, `sup{|b|_lt + 1 : b lt a}` (mathlib `IsWellFounded.rank`). -/
-noncomputable def rk (a : α) : Ordinal := IsWellFounded.rank lt a
+/-- `|a|_lt` — the `lt`-rank, `sup{|b|_lt + 1 : b lt a}` (mathlib `WellFounded.rank`). -/
+noncomputable def rk (a : α) : Ordinal := WellFounded.rank lt a
 
 lemma rk_lt_of_rel {a b : α} (h : lt a b) : rk lt a < rk lt b :=
-  IsWellFounded.rank_lt_of_rel h
+  WellFounded.rank_lt_of_rel h
 
 /-- `|a|_lt ≤ b` whenever every `lt`-predecessor has rank `< b` (the rank recursion `|a|_lt = sup{|c|_lt+1 : c lt a}`). -/
 lemma rk_le_of_forall {b : Ordinal} {a : α} (h : ∀ c, lt c a → rk lt c < b) : rk lt a ≤ b := by
-  rw [rk, IsWellFounded.rank_eq]
+  rw [rk, WellFounded.rank_eq]
   apply Ordinal.iSup_le
   intro ⟨c, hc⟩
   exact Order.succ_le_of_lt (h c hc)

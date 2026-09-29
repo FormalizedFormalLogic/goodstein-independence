@@ -39,7 +39,7 @@ public import GoodsteinPA.ToFoundation.Numeral
 
 namespace GoodsteinPA.OperatorZinfty
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 
 noncomputable def atomTrue (φ : ArithmeticFormula ℕ) : Prop :=
   Semiformula.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ

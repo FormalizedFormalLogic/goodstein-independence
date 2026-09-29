@@ -10,7 +10,7 @@ public import GoodsteinPA.ToFoundation.Compat
 
 @[expose] public section
 
-namespace LO.FirstOrder
+namespace FFL.FirstOrder
 
 namespace ArithmeticTerm
 
@@ -23,4 +23,4 @@ lemma valm_nm (m : ℕ) (f : ℕ → ℕ) : Semiterm.gValm ℕ ![] f (nm m) = m 
 
 end ArithmeticTerm
 
-end LO.FirstOrder
+end FFL.FirstOrder

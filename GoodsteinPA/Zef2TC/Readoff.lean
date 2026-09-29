@@ -7,7 +7,7 @@ public import GoodsteinPA.Zef2TC.Embedding
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ### Root-slot `EwLow` facts and tower inflationarity

@@ -14,7 +14,7 @@ public import GoodsteinPA.Zinfty.Basic
 
 namespace GoodsteinPA.Zinfty
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 open Derivation
 
 variable {α : Ordinal.{0}} {c : ℕ}

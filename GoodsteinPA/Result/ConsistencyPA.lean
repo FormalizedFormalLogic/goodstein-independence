@@ -13,7 +13,7 @@ public import GoodsteinPA.Zinfty.Embedding
 
 namespace GoodsteinPA.Zinfty
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 
 /-- A true formula in `insert φ Γ` is either `φ` itself or a true formula already in `Γ`. -/
 private lemma exists_litTrue_insert {φ : ArithmeticFormula ℕ} {Γ : Finset (ArithmeticFormula ℕ)}

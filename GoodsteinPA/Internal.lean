@@ -41,7 +41,8 @@ brick 2 will be base-`b` digit extraction, brick 3 the hereditary base-change `b
 -/
 section
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
+open scoped FFL.FirstOrder.Bounding
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -69,7 +70,7 @@ noncomputable def ipow (b x : V) : V := pow.construction.result ![b] x
 section
 
 /-- `𝚺₁`-definition of `ipow`, with the argument order `(output, b, x)`. -/
-def _root_.LO.FirstOrder.Arithmetic.ipowDef : 𝚺₁.Semisentence 3 :=
+def _root_.FFL.FirstOrder.Arithmetic.ipowDef : 𝚺₁.Semisentence 3 :=
   pow.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
 
 instance ipow_defined : 𝚺₁-Function₂ (ipow : V → V → V) via ipowDef := .mk
@@ -171,7 +172,8 @@ will assemble these into the base-`b` hereditary base-change.
 -/
 section
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
+open scoped FFL.FirstOrder.Bounding
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -188,7 +190,7 @@ lemma idigit_zero_exp (b n : V) : idigit b n 0 = n % b := by simp [idigit]
 recursion that lets digit facts be proved by induction on the position. -/
 lemma idigit_succ_exp (b n i : V) : idigit b n (i + 1) = idigit b (n / b) i := by
   unfold idigit
-  rw [ipow_succ, mul_comm, LO.FirstOrder.Arithmetic.div_mul]
+  rw [ipow_succ, mul_comm, FFL.FirstOrder.Arithmetic.div_mul]
 
 instance idigit_definable : 𝚺₁-Function₃ (idigit : V → V → V → V) := by
   unfold idigit; definability
@@ -212,7 +214,8 @@ hereditary base-change `bump` itself (brick 4).
 -/
 section
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
+open scoped FFL.FirstOrder.Bounding
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -243,7 +246,7 @@ lemma ilog_exists_unique (b n : V) :
     -- least `y` with `n < b^y`; the logarithm is its predecessor.
     have hP : 𝚺₁-Predicate (fun e => n < ipow b e) := by definability
     have hex : n < ipow b (n + 1) := lt_ipow_succ hb n
-    obtain ⟨y, hy, hmin⟩ := InductionOnHierarchy.least_number 𝚺 1 hP hex
+    obtain ⟨y, hy, hmin⟩ := InductionOnBroadHierarchy.least_number 𝚺 1 hP hex
     have hy0 : y ≠ 0 := by
       rintro rfl; simp only [ipow_zero] at hy
       exact absurd (lt_one_iff_eq_zero.mp hy) (pos_iff_ne_zero.mp hpos)
@@ -308,7 +311,7 @@ lemma ilog_graph {e b n : V} :
         ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0) :=
   Classical.choose!_eq_iff_right _
 
-def _root_.LO.FirstOrder.Arithmetic.ilogDef : 𝚺₁.Semisentence 3 := .mkSigma
+def _root_.FFL.FirstOrder.Arithmetic.ilogDef : 𝚺₁.Semisentence 3 := .mkSigma
   “e b n. (2 ≤ b ∧ 0 < n → (∃ pe, !ipowDef pe b e ∧ pe ≤ n) ∧ (∃ pf, !ipowDef pf b (e + 1) ∧ n < pf))
         ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0)”
 
@@ -342,7 +345,8 @@ references). Brick 4b will assemble the table itself via `PR.Construction`, bric
 -/
 section
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.FirstOrder.Arithmetic.HierarchySymbol
+open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic FFL.FirstOrder.Bounding.HierarchySymbol
+open scoped FFL.FirstOrder.Bounding
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -353,7 +357,7 @@ noncomputable def bumpNext (b M s : V) : V :=
   M / ipow b (ilog b M) * ipow (b + 1) (znth s (ilog b M)) + znth s (M % ipow b (ilog b M))
 
 /-- The `𝚺₁` graph-definition of `bumpNext`, composing `ilog`, `ipow`, `znth`, `div`, `rem`. -/
-def _root_.LO.FirstOrder.Arithmetic.bumpNextDef : 𝚺₁.Semisentence 4 := .mkSigma
+def _root_.FFL.FirstOrder.Arithmetic.bumpNextDef : 𝚺₁.Semisentence 4 := .mkSigma
   “y b M s.
     ∃ e, !ilogDef e b M ∧ ∃ pe, !ipowDef pe b e ∧ ∃ te, !znthDef te s e ∧
       ∃ pte, !ipowDef pte (b + 1) te ∧ ∃ q, !divDef q M pe ∧ ∃ r, !remDef r M pe ∧
@@ -396,7 +400,7 @@ noncomputable def ibump (b n : V) : V := znth (ibumpTable b n) n
 
 section
 
-def _root_.LO.FirstOrder.Arithmetic.ibumpTableDef : 𝚺₁.Semisentence 3 :=
+def _root_.FFL.FirstOrder.Arithmetic.ibumpTableDef : 𝚺₁.Semisentence 3 :=
   bumpTable.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
 
 instance ibumpTable_defined : 𝚺₁-Function₂ (ibumpTable : V → V → V) via ibumpTableDef := .mk
@@ -407,7 +411,7 @@ instance ibumpTable_definable : 𝚺₁-Function₂ (ibumpTable : V → V → V)
 instance ibumpTable_definable' (Γ) : Γ-[m + 1]-Function₂ (ibumpTable : V → V → V) :=
   ibumpTable_definable.of_sigmaOne
 
-def _root_.LO.FirstOrder.Arithmetic.ibumpDef : 𝚺₁.Semisentence 3 := .mkSigma
+def _root_.FFL.FirstOrder.Arithmetic.ibumpDef : 𝚺₁.Semisentence 3 := .mkSigma
   “y b n. ∃ t, !ibumpTableDef t b n ∧ !znthDef y t n”
 
 instance ibump_defined : 𝚺₁-Function₂ (ibump : V → V → V) via ibumpDef := .mk fun v ↦ by
@@ -466,7 +470,7 @@ lemma znth_ibumpTable_succ {b n k : V} (hk : k < n + 1) :
 lemma znth_ibumpTable_eq_ibump (b : V) : ∀ N, ∀ k ≤ N, znth (ibumpTable b N) k = ibump b k := by
   intro N
   induction N using ISigma1.sigma1_succ_induction
-  · refine Definable.ball_le (by definability) ?_
+  · refine Definable.arithmetic_ball_le (by definability) ?_
     exact Definable.comp₂
       (DefinableFunction₂.comp (F := znth) (def_ibumpTable b 1) (DefinableFunction.var 0))
       (def_ibump b 0)
@@ -802,7 +806,8 @@ predecessor), so it goes straight through `PR.Construction`:
 -/
 section
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
+open scoped FFL.FirstOrder.Bounding
 
 variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
 
@@ -830,7 +835,7 @@ noncomputable def igoodstein (m₀ k : V) : V := goodstein.construction.result !
 
 section
 
-def _root_.LO.FirstOrder.Arithmetic.igoodsteinDef : 𝚺₁.Semisentence 3 :=
+def _root_.FFL.FirstOrder.Arithmetic.igoodsteinDef : 𝚺₁.Semisentence 3 :=
   goodstein.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
 
 instance igoodstein_defined : 𝚺₁-Function₂ (igoodstein : V → V → V) via igoodsteinDef := .mk
@@ -862,7 +867,8 @@ so the `𝚺₁`-definable internal run is the genuine Goodstein process, not a 
 -/
 section
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
+open scoped FFL.FirstOrder.Bounding
 
 /-- Over `ℕ`, the internal power is `Nat.pow`. -/
 @[simp] lemma ipow_nat (b n : ℕ) : ipow b n = b ^ n := by
@@ -871,18 +877,18 @@ open LO LO.FirstOrder LO.FirstOrder.Arithmetic
   | succ n ih => rw [ipow_succ, ih, pow_succ]
 
 /-- Over `ℕ`, the internal logarithm is `Nat.log`. (Foundation's scoped `≤` on `ℕ` is `=∨<`, so we
-convert it to `Nat.le` via `LO.FirstOrder.Arithmetic.le_def`; the `<` underneath is already `Nat.lt`.) -/
+convert it to `Nat.le` via `FFL.FirstOrder.Arithmetic.le_def`; the `<` underneath is already `Nat.lt`.) -/
 @[simp] lemma ilog_nat (b n : ℕ) : ilog b n = Nat.log b n := by
   symm
   rw [ilog_graph]
   refine ⟨fun h => ?_, fun h => ?_⟩
   · obtain ⟨hb, hn⟩ := h
-    rw [LO.FirstOrder.Arithmetic.le_def] at hb
-    rw [ipow_nat, ipow_nat, LO.FirstOrder.Arithmetic.le_def]
+    rw [FFL.FirstOrder.Arithmetic.le_def] at hb
+    rw [ipow_nat, ipow_nat, FFL.FirstOrder.Arithmetic.le_def]
     exact ⟨Nat.eq_or_lt_of_le (Nat.pow_log_le_self b hn.ne'),
       Nat.lt_pow_succ_log_self (by omega) n⟩
   · rcases not_and_or.mp h with h1 | h1
-    · rw [LO.FirstOrder.Arithmetic.le_def] at h1
+    · rw [FFL.FirstOrder.Arithmetic.le_def] at h1
       push Not at h1
       exact Nat.log_of_left_le_one (by omega) n
     · have : n = 0 := by omega
@@ -898,12 +904,12 @@ already defeq, so only `/`,`%` need bridging), feeding the standard-model `ibump
 /-- Foundation division over `ℕ` is `Nat.div`. (Stated via `div_eq_of`, whose conclusion carries the
 Foundation `Div` instance; the RHS `x / d` is `Nat`'s.) -/
 lemma fdiv_nat (x d : ℕ) (hd : 0 < d) :
-    @HDiv.hDiv ℕ ℕ ℕ (@instHDiv ℕ (@LO.FirstOrder.Arithmetic.instDiv_foundation ℕ _ _)) x d
+    @HDiv.hDiv ℕ ℕ ℕ (@instHDiv ℕ (@FFL.FirstOrder.Arithmetic.instDiv_foundation ℕ _ _)) x d
       = x / d := by
   have hdm := Nat.div_add_mod x d
   have hml : x % d < d := Nat.mod_lt x hd
   refine div_eq_of (b := d) (c := x / d) ?_ ?_
-  · rw [LO.FirstOrder.Arithmetic.le_def]
+  · rw [FFL.FirstOrder.Arithmetic.le_def]
     rcases (show d * (x / d) ≤ x from by omega).lt_or_eq with h | h
     · exact Or.inr h
     · exact Or.inl h
@@ -912,25 +918,25 @@ lemma fdiv_nat (x d : ℕ) (hd : 0 < d) :
 
 /-- Foundation truncated subtraction over `ℕ` is `Nat.sub`. -/
 lemma fsub_nat (x y : ℕ) :
-    @HSub.hSub ℕ ℕ ℕ (@instHSub ℕ (@LO.FirstOrder.Arithmetic.instSub_foundation ℕ _ _)) x y
+    @HSub.hSub ℕ ℕ ℕ (@instHSub ℕ (@FFL.FirstOrder.Arithmetic.instSub_foundation ℕ _ _)) x y
       = x - y := by
   by_cases h : y ≤ x
-  · have hle : @LE.le ℕ (@LO.FirstOrder.Arithmetic.instLE_foundation ℕ _) y x :=
-      LO.FirstOrder.Arithmetic.le_def.mpr (Or.symm h.lt_or_eq)
-    have hf := LO.FirstOrder.Arithmetic.sub_spec_of_ge hle
+  · have hle : @LE.le ℕ (@FFL.FirstOrder.Arithmetic.instLE_foundation ℕ _) y x :=
+      FFL.FirstOrder.Arithmetic.le_def.mpr (Or.symm h.lt_or_eq)
+    have hf := FFL.FirstOrder.Arithmetic.sub_spec_of_ge hle
     omega
   · have h' : x ≤ y := le_of_lt (Nat.lt_of_not_le h)
-    have hle : @LE.le ℕ (@LO.FirstOrder.Arithmetic.instLE_foundation ℕ _) x y :=
-      LO.FirstOrder.Arithmetic.le_def.mpr (Or.symm h'.lt_or_eq)
-    rw [LO.FirstOrder.Arithmetic.sub_spec_of_le hle]
+    have hle : @LE.le ℕ (@FFL.FirstOrder.Arithmetic.instLE_foundation ℕ _) x y :=
+      FFL.FirstOrder.Arithmetic.le_def.mpr (Or.symm h'.lt_or_eq)
+    rw [FFL.FirstOrder.Arithmetic.sub_spec_of_le hle]
     omega
 
 /-- Foundation remainder over `ℕ` is `Nat.mod`. -/
 lemma fmod_nat (x d : ℕ) (hd : 0 < d) :
-    @HMod.hMod ℕ ℕ ℕ (@instHMod ℕ (@LO.FirstOrder.Arithmetic.instMod_foundation ℕ _ _)) x d
+    @HMod.hMod ℕ ℕ ℕ (@instHMod ℕ (@FFL.FirstOrder.Arithmetic.instMod_foundation ℕ _ _)) x d
       = x % d := by
   have hdm := Nat.div_add_mod x d
-  rw [LO.FirstOrder.Arithmetic.mod_def, fdiv_nat x d hd, fsub_nat]
+  rw [FFL.FirstOrder.Arithmetic.mod_def, fdiv_nat x d hd, fsub_nat]
   omega
 
 /-! ### The internal `bump`/`goodsteinSeq` are the audited ones over `ℕ` -/
@@ -943,8 +949,8 @@ theorem ibump_nat (b : ℕ) (hb : 2 ≤ b) (n : ℕ) : ibump b n = Goodstein.bum
     · simp
     · obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
       show ibump b (m + 1) = Goodstein.bump b (m + 1)
-      have hbF : @LE.le ℕ (@LO.FirstOrder.Arithmetic.instLE_foundation ℕ _) 2 b :=
-        LO.FirstOrder.Arithmetic.le_def.mpr (Or.symm hb.lt_or_eq)
+      have hbF : @LE.le ℕ (@FFL.FirstOrder.Arithmetic.instLE_foundation ℕ _) 2 b :=
+        FFL.FirstOrder.Arithmetic.le_def.mpr (Or.symm hb.lt_or_eq)
       have hb0 : 0 < b := by omega
       set e := Nat.log b (m + 1) with he
       have hpe : 0 < b ^ e := Nat.pow_pos hb0

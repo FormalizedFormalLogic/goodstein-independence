@@ -6,7 +6,7 @@ public import GoodsteinPA.Zef2TC.EmbedV3
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ### Bounded truth for ∃-free formulas (the `axm` engine)
@@ -204,8 +204,8 @@ slot's relativization (`rel1 · y`) — no structural tower needed. -/
 theorem budgetedEmbedsV3_addEqOfLt {Γ}
     (hΓ : (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt) : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
-  refine ⟨clog 11, 0, 0, 0, ONote.ofNat 5, ONote.NF.zero, ONote.nf_ofNat _,
-    le_trans (Nlog_ofNat_le 5) (clog_mono (by omega)), fun env => ?_⟩
+  refine ⟨clog 11, 0, 0, 0, ONote.ofNat 6, ONote.NF.zero, ONote.nf_ofNat _,
+    le_trans (Nlog_ofNat_le 6) (clog_mono (by omega)), fun env => ?_⟩
   set B : ℕ := clog 11 with hB
   set f : ℕ → ℕ := rel1 (ewRootSlot 0 B) (envSup env 0) with hf
   have hf1 := ewRootSlot_f1 (0 : ONote) B
@@ -217,24 +217,28 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
   have himg : asg env ▹ (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt)
         : ArithmeticFormula ℕ)
       = ∀⁰ ∀⁰ ((∼(Semiformula.rel Language.LT.lt ![#1, #0]))
-          ⋎ (∃⁰ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]))) := by
+          ⋎ (∃⁰ ((Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’])
+              ⋏ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1])))) := by
     rw [asg_emb_fix]
     simp only [Arithmetic.PeanoMinus.Axiom.addEqOfLt, Semiformula.Operator.eq_def,
-      Semiformula.Operator.lt_def, Semiformula.imp_eq]
+      Semiformula.Operator.lt_def, Semiformula.imp_eq, Semiformula.bexsLTSucc,
+      Semiformula.bexsLT, FFL.FirstOrder.bexs]
     simp [Function.comp_def]
     constructor <;> simp [Matrix.comp_vecCons]
   have hmem := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) hΓ
   rw [himg] at hmem
   set M : ArithmeticSemiformula ℕ 2 :=
     (∼(Semiformula.rel Language.LT.lt ![#1, #0]))
-      ⋎ (∃⁰ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1])) with hM
+      ⋎ (∃⁰ ((Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’])
+          ⋏ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]))) with hM
   set Γ' : Finset (ArithmeticFormula ℕ) := Γ.image (fun χ => asg env ▹ χ) with hΓ'
   have hlt12 : ONote.ofNat 1 < ONote.ofNat 2 := ofNat_lt_ofNat (by omega)
   have hlt23 : ONote.ofNat 2 < ONote.ofNat 3 := ofNat_lt_ofNat (by omega)
   have hlt34 : ONote.ofNat 3 < ONote.ofNat 4 := ofNat_lt_ofNat (by omega)
   have hlt45 : ONote.ofNat 4 < ONote.ofNat 5 := ofNat_lt_ofNat (by omega)
+  have hlt56 : ONote.ofNat 5 < ONote.ofNat 6 := ofNat_lt_ofNat (by omega)
   -- the OUTER ω-family
-  have famA : ∀ a, Zef2TC (ONote.ofNat 4) 0 (adjoin (fun _ : ONote => True) a) (rel1 f a) 0
+  have famA : ∀ a, Zef2TC (ONote.ofNat 5) 0 (adjoin (fun _ : ONote => True) a) (rel1 f a) 0
       (insert ((∀⁰ M)/[nm a]) Γ') := by
     intro a
     have hfa : f 0 ≤ rel1 f a 0 := by simpa [rel1] using hmono (Nat.zero_le (max a 0))
@@ -244,7 +248,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
       simp
     rw [hsubA]
     -- the INNER ω-family
-    have famB : ∀ b, Zef2TC (ONote.ofNat 3) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
+    have famB : ∀ b, Zef2TC (ONote.ofNat 4) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
         (rel1 (rel1 f a) b) 0
         (insert ((((Rew.subst ![nm a]).q ▹ M))/[nm b]) Γ') := by
       intro b
@@ -256,20 +260,37 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
       -- collapse the composed substitution to the cons vector
       have hsubB : (((Rew.subst ![nm a]).q ▹ M))/[nm b]
           = (∼(Semiformula.rel Language.LT.lt ![nm a, nm b]))
-            ⋎ (∃⁰ ((Rew.subst (nm b :> ![nm a])).q
-                ▹ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]))) := by
+            ⋎ (∃⁰ (((Rew.subst (nm b :> ![nm a])).q
+                  ▹ (Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’]))
+                ⋏ ((Rew.subst (nm b :> ![nm a])).q
+                  ▹ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1])))) := by
         rw [embedding_subst_q_cons_app]
         simp [hM, Matrix.comp_vecCons,
           Function.comp_def, Matrix.constant_eq_singleton]
       rw [hsubB]
       set A : ArithmeticFormula ℕ := ∼(Semiformula.rel Language.LT.lt ![nm a, nm b]) with hA
+      set Gb : ArithmeticSemiformula ℕ 1 := (Rew.subst (nm b :> ![nm a])).q
+        ▹ (Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’]) with hG
       set Eb : ArithmeticSemiformula ℕ 1 := (Rew.subst (nm b :> ![nm a])).q
         ▹ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]) with hE
-      set Δ : Finset (ArithmeticFormula ℕ) := insert A (insert (∃⁰ Eb) Γ') with hΔ
-      have hD : Zef2TC (ONote.ofNat 2) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
+      set Δ : Finset (ArithmeticFormula ℕ) := insert A (insert (∃⁰ (Gb ⋏ Eb)) Γ') with hΔ
+      have hD : Zef2TC (ONote.ofNat 3) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
           (rel1 (rel1 f a) b) 0 Δ := by
         by_cases hab : a < b
-        · -- exI at witness b - a, trueRel leaf
+        · -- exI at witness b - a; the (now BOUNDED) body is a conjunction, so `andI` over two
+          -- true-atom leaves: the guard `b - a < b + 1` and the equation `a + (b - a) = b`.
+          -- the guard leaf: `b - a < b + 1`.  We do not normalise the substituted guard to a
+          -- closed spelling (the `1`-constant's rewriting is painful); `rew_rel2` puts it in
+          -- `rel`-form, which is all `trueRel` needs, and the truth is read off by evaluation.
+          have hleafG : Zef2TC (ONote.ofNat 1) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
+              (rel1 (rel1 f a) b) 0 (insert (Gb/[nm (b - a)]) Δ) := by
+            rw [hG, embedding_subst_q_cons_app]
+            rw [Semiformula.rew_rel2]
+            refine Zef2TC.trueRel (hgb 1 (by omega)) Language.LT.lt _ ?_
+              (Finset.mem_insert_self _ _)
+            simp [atomTrue, Semiformula.eval_rel, Matrix.empty_eq,
+              Tarski.Structure.numeral_eq_numeral, Tarski.Structure.Add.add,
+              Matrix.fun_eq_vec_two, Function.comp_def]
           have hsubC : Eb/[nm (b - a)]
               = Semiformula.rel Language.Eq.eq
                   ![Semiterm.func Language.Add.add ![nm a, nm (b - a)], nm b] := by
@@ -281,40 +302,47 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
               ![Semiterm.func Language.Add.add ![nm a, nm (b - a)], nm b]) := by
             simp [atomTrue, Semiformula.eval_rel, Semiterm.val_func, Matrix.empty_eq, Function.comp_def]
             omega
-          have hleaf : Zef2TC (ONote.ofNat 1) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
+          have hleafE : Zef2TC (ONote.ofNat 1) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
               (rel1 (rel1 f a) b) 0 (insert (Eb/[nm (b - a)]) Δ) := by
             rw [hsubC]
             exact Zef2TC.trueRel (hgb 1 (by omega)) _ _ htrue (Finset.mem_insert_self _ _)
+          have hand : Zef2TC (ONote.ofNat 2) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
+              (rel1 (rel1 f a) b) 0 (insert ((Gb ⋏ Eb)/[nm (b - a)]) Δ) := by
+            have := Zef2TC.andI (α := ONote.ofNat 2) (hgb 2 (by omega))
+              (Gb/[nm (b - a)]) (Eb/[nm (b - a)]) hlt12 hlt12
+              (ONote.nf_ofNat _) (ONote.nf_ofNat _) (ONote.nf_ofNat _)
+              (Cl.ofNat _) (Cl.ofNat _) hleafG hleafE
+            simpa using this
           have hwit : b - a ≤ rel1 (rel1 f a) b 0 := by
             have h1 : (b : ℕ) ≤ rel1 (rel1 f a) b 0 := by
               simpa [rel1] using hinflA (max b 0)
             omega
-          have hexI := Zef2TC.exI (α := ONote.ofNat 2) (hgb 2 (by omega))
-            Eb (b - a) hlt12 (ONote.nf_ofNat _) (ONote.nf_ofNat _) (Cl.ofNat _) hwit hleaf
+          have hexI := Zef2TC.exI (α := ONote.ofNat 3) (hgb 3 (by omega))
+            (Gb ⋏ Eb) (b - a) hlt23 (ONote.nf_ofNat _) (ONote.nf_ofNat _) (Cl.ofNat _) hwit hand
           rwa [Finset.insert_eq_self.mpr
             (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))] at hexI
         · -- trueNrel leaf on ¬(a < b)
           have htrue : atomTrue (Semiformula.nrel Language.LT.lt ![nm a, nm b]) := by
             simp [atomTrue, Semiformula.eval_nrel, Matrix.empty_eq, Function.comp_def]
             omega
-          exact Zef2TC.trueNrel (hgb 2 (by omega)) _ _ htrue
+          exact Zef2TC.trueNrel (hgb 3 (by omega)) _ _ htrue
             (by
               show Semiformula.nrel Language.LT.lt ![nm a, nm b] ∈ Δ
               rw [hΔ, hA]
               exact Finset.mem_insert.mpr (Or.inl (by simp [Semiformula.neg_rel])))
-      have horI := Zef2TC.orI (α := ONote.ofNat 3) (hgb 3 (by omega))
-        A (∃⁰ Eb) hlt23 (ONote.nf_ofNat _) (ONote.nf_ofNat _) (Cl.ofNat _) hD
+      have horI := Zef2TC.orI (α := ONote.ofNat 4) (hgb 4 (by omega))
+        A (∃⁰ (Gb ⋏ Eb)) hlt34 (ONote.nf_ofNat _) (ONote.nf_ofNat _) (Cl.ofNat _) hD
       exact horI
-    have hallB := Zef2TC.allω (α := ONote.ofNat 4) (le_trans (Nlog_ofNat_le 4)
+    have hallB := Zef2TC.allω (α := ONote.ofNat 5) (le_trans (Nlog_ofNat_le 5)
         (le_trans (clog_mono (by omega)) (le_trans hgate hfa)))
-      ((Rew.subst ![nm a]).q ▹ M) (fun _ => ONote.ofNat 3) (fun _ => hlt34)
+      ((Rew.subst ![nm a]).q ▹ M) (fun _ => ONote.ofNat 4) (fun _ => hlt45)
       (fun _ => ONote.nf_ofNat _) (ONote.nf_ofNat _) (fun _ => Cl.ofNat _)
       famB
     exact hallB
   -- assemble the OUTER allω
-  have hallA := Zef2TC.allω (α := ONote.ofNat 5)
-    (le_trans (Nlog_ofNat_le 5) (le_trans (clog_mono (by omega)) hgate))
-    (∀⁰ M) (fun _ => ONote.ofNat 4) (fun _ => hlt45)
+  have hallA := Zef2TC.allω (α := ONote.ofNat 6)
+    (le_trans (Nlog_ofNat_le 6) (le_trans (clog_mono (by omega)) hgate))
+    (∀⁰ M) (fun _ => ONote.ofNat 5) (fun _ => hlt56)
     (fun _ => ONote.nf_ofNat _) (ONote.nf_ofNat _) (fun _ => Cl.ofNat _) famA
   rwa [Finset.insert_eq_self.mpr hmem] at hallA
 

@@ -11,6 +11,11 @@ namespace Goodstein.Dom
 
 open ONote Ordinal
 
+-- Lean 4.34 churn: `rw` now checks the target is type-correct at `implicit` transparency, and a
+-- bare anonymous constructor `⟨n, h⟩` in an `ℕ+` position elaborates to a `Subtype.mk` at
+-- `{n // 0 < n}` (`PNat` is a plain `def`), which fails that check.  `show ℕ+ from ⟨n, h⟩` keeps
+-- the head at `PNat` and the old spellings working.
+
 /-
 # The semantic bridge `toOrdinal` ↔ `ONote.repr`
 
@@ -203,7 +208,7 @@ lemma toONote_oadd {c e s : ℕ} (hc : 1 ≤ c) (hcb : c < b)
 
 /-- Single-digit notation: for `1 ≤ d < b`, `toONote b d = oadd 0 ⟨d,_⟩ 0` (the finite
 ordinal `d`). Special case of `toONote_oadd` with exponent and remainder zero. -/
-lemma toONote_single {d : ℕ} (hd1 : 1 ≤ d) (hdb : d < b) : toONote b d = oadd 0 ⟨d, hd1⟩ 0 := by
+lemma toONote_single {d : ℕ} (hd1 : 1 ≤ d) (hdb : d < b) : toONote b d = oadd 0 (show ℕ+ from ⟨d, hd1⟩) 0 := by
   simpa using toONote_oadd b hb hd1 hdb (show (0 : ℕ) < b ^ 0 by simp)
 
 end
@@ -224,15 +229,15 @@ lemma fundamentalSequence_oadd_zero_zero (C : ℕ+) :
 of `c − 1` in base `b+1`: `hstep (oadd 0 c 0) b = toONote (b+1) (c−1)`. `oadd 0 c 0` is a
 successor, so the step is a single decrement. -/
 lemma hstep_oadd_zero_zero (b : ℕ) (hb : 2 ≤ b) (c : ℕ) (hc1 : 1 ≤ c) (hcb : c < b) :
-    hstep (oadd 0 ⟨c, hc1⟩ 0) b = toONote (b + 1) (c - 1) := by
+    hstep (oadd 0 (show ℕ+ from ⟨c, hc1⟩) 0) b = toONote (b + 1) (c - 1) := by
   have hnp : PNat.natPred ⟨c, hc1⟩ = c - 1 := PNat.natPred_eq_pred hc1
   rcases eq_or_ne c 1 with rfl | hc2
   · rw [hstep_succ _ (by rw [fundamentalSequence_oadd_zero_zero, hnp]; rfl)]; simp
-  · have hfs : fundamentalSequence (oadd 0 ⟨c, hc1⟩ 0)
+  · have hfs : fundamentalSequence (oadd 0 (show ℕ+ from ⟨c, hc1⟩) 0)
         = Sum.inl (some (oadd 0 (c - 2).succPNat 0)) := by
       rw [fundamentalSequence_oadd_zero_zero, hnp, show c - 1 = (c - 2) + 1 from by omega]
     rw [hstep_succ _ hfs, toONote_single (b + 1) (by omega) (show 1 ≤ c - 1 by omega) (by omega)]
-    show oadd 0 (c - 2).succPNat 0 = oadd 0 ⟨c - 1, by omega⟩ 0
+    show oadd 0 (c - 2).succPNat 0 = oadd 0 (show ℕ+ from ⟨c - 1, by omega⟩) 0
     congr 1
     apply PNat.coe_injective
     change (c - 2) + 1 = c - 1
@@ -244,7 +249,7 @@ Read off the two non-`inl none` branches of `fundamentalSequence (oadd E · 0)` 
 `natPred` `0` resp. `k+1`). -/
 lemma fundSeq_oadd_coeff (E : ONote) (hE : E ≠ 0) (k : ℕ) :
     ∃ g, fundamentalSequence (oadd E 1 0) = Sum.inr g ∧
-      fundamentalSequence (oadd E ⟨k + 2, by omega⟩ 0)
+      fundamentalSequence (oadd E (show ℕ+ from ⟨k + 2, by omega⟩) 0)
         = Sum.inr (fun i => oadd E k.succPNat (g i)) := by
   rcases e : fundamentalSequence E with (_ | E') | f
   · exact absurd ((fundamentalSequenceProp_inl_none E).1 (e ▸ fundamentalSequence_has_prop E)) hE
@@ -264,7 +269,7 @@ limit `oadd E ⟨c⟩ 0` lands on `oadd E ⟨c-1⟩ (g b)`, whose nonzero tail `
 (`hstep_oadd_tail`) leaving exactly `hstep (oadd E 1 0) b = hstep (g b) b`. -/
 lemma hstep_oadd_coeff (b : ℕ) {E : ONote} (hE : E ≠ 0) {c : ℕ} (hc : 2 ≤ c)
     (hc1 : 1 ≤ c) :
-    hstep (oadd E ⟨c, hc1⟩ 0) b = oadd E ⟨c - 1, by omega⟩ (hstep (oadd E 1 0) b) := by
+    hstep (oadd E (show ℕ+ from ⟨c, hc1⟩) 0) b = oadd E (show ℕ+ from ⟨c - 1, by omega⟩) (hstep (oadd E 1 0) b) := by
   obtain ⟨k, rfl⟩ : ∃ k, c = k + 2 := ⟨c - 2, by omega⟩
   obtain ⟨g, h1, hc2⟩ := fundSeq_oadd_coeff E hE k
   have hgb : g b ≠ 0 := fundamentalSequence_inr_ne_zero h1 b
@@ -422,10 +427,10 @@ lemma evalNat_fundSeq (b : ℕ) {E : ONote} {f : ℕ → ONote}
 
 /-- Predecessor of a finite successor `oadd 0 ⟨c⟩ 0` (= the ordinal `c`) at any argument:
 for `c ≥ 2`, `hstep (oadd 0 ⟨c⟩ 0) n = oadd 0 ⟨c-1⟩ 0`. -/
-lemma hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) : hstep (oadd 0 ⟨c, by omega⟩ 0) n = oadd 0 ⟨c - 1, by omega⟩ 0 := by
+lemma hstep_finite_pred (c : ℕ) (hc : 2 ≤ c) (n : ℕ) : hstep (oadd 0 (show ℕ+ from ⟨c, by omega⟩) 0) n = oadd 0 (show ℕ+ from ⟨c - 1, by omega⟩) 0 := by
   obtain ⟨e, rfl⟩ : ∃ e, c = e + 2 := ⟨c - 2, by omega⟩
-  have hfs : fundamentalSequence (oadd 0 ⟨e + 2, by omega⟩ 0)
-      = Sum.inl (some (oadd 0 ⟨e + 1, by omega⟩ 0)) := by
+  have hfs : fundamentalSequence (oadd 0 (show ℕ+ from ⟨e + 2, by omega⟩) 0)
+      = Sum.inl (some (oadd 0 (show ℕ+ from ⟨e + 1, by omega⟩) 0)) := by
     rw [fundamentalSequence_oadd_zero_zero]; rfl
   rw [hstep_succ _ hfs]
   rfl
@@ -458,7 +463,7 @@ lemma hstep_oadd_one_of_limit {E : ONote} {f : ℕ → ONote}
 
 /-- Fundamental sequence of the finite ordinal `oadd 0 ⟨c⟩ 0` (`c ≥ 2`): the successor of `oadd 0 ⟨c-1⟩ 0`. -/
 lemma fundSeq_finite_succ (c : ℕ) (hc : 2 ≤ c) :
-    fundamentalSequence (oadd 0 ⟨c, by omega⟩ 0) = Sum.inl (some (oadd 0 ⟨c - 1, by omega⟩ 0)) := by
+    fundamentalSequence (oadd 0 (show ℕ+ from ⟨c, by omega⟩) 0) = Sum.inl (some (oadd 0 (show ℕ+ from ⟨c - 1, by omega⟩) 0)) := by
   obtain ⟨e, rfl⟩ : ∃ e, c = e + 2 := ⟨c - 2, by omega⟩
   rw [fundamentalSequence_oadd_zero_zero]; rfl
 

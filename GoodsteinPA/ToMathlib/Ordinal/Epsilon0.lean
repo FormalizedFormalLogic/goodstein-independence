@@ -107,13 +107,13 @@ variable (e : ℕ ≃ NONote)
 /-- The `NONote` order pulled back to `ℕ` along a coding `e`. -/
 def ltPull (a b : ℕ) : Prop := e a < e b
 
-instance ltPull_wf : IsWellFounded ℕ (ltPull e) :=
-  ⟨InvImage.wf e NONote.lt_wf⟩
+instance ltPull_wf : WellFounded (ltPull e) :=
+  InvImage.wf e NONote.lt_wf
 
 /-- The `≺`-rank of `n` in the pullback order is the ordinal `NONote.repr (e n)`. -/
 lemma rk_ltPull_eq_repr (n : ℕ) : rk (ltPull e) n = NONote.repr (e n) := by
-  refine IsWellFounded.induction
-    (motive := fun k => rk (ltPull e) k = NONote.repr (e k)) (ltPull e) n ?_
+  refine WellFounded.induction (r := ltPull e) inferInstance
+    (C := fun k => rk (ltPull e) k = NONote.repr (e k)) n ?_
   intro n IH
   refine le_antisymm (rk_le_of_forall (ltPull e) ?_) ?_
   · intro m hm
@@ -123,8 +123,8 @@ lemma rk_ltPull_eq_repr (n : ℕ) : rk (ltPull e) n = NONote.repr (e n) := by
     have hlt' : rk (ltPull e) n < ε₀ :=
       hlt.trans (repr_lt_epsilon0 (e n).1 (e n).2)
     obtain ⟨x, hxNF, hxo⟩ := exists_NF_repr_eq (rk (ltPull e) n) hlt'
-    -- `m₀ := e.symm ⟨x, hxNF⟩` has `repr (e m₀) = rk n`, and `e m₀ < e n` from `rk n < repr (e n)`.
-    set m₀ := e.symm ⟨x, hxNF⟩ with hm₀
+    -- `m₀ := e.symm (show NONote from ⟨x, hxNF⟩)` has `repr (e m₀) = rk n`, and `e m₀ < e n` from `rk n < repr (e n)`.
+    set m₀ := e.symm (show NONote from ⟨x, hxNF⟩) with hm₀
     have he : NONote.repr (e m₀) = rk (ltPull e) n := by
       rw [hm₀, Equiv.apply_symm_apply]; exact hxo
     have hrel : ltPull e m₀ n := by
@@ -141,7 +141,7 @@ theorem epsilon0_le_orderType_ltPull : ε₀ ≤ orderType (ltPull e) := by
   by_contra! hlt
   -- name `orderType` itself as some `repr (e n₀)`, then `succ` of it exceeds the sup — contradiction.
   obtain ⟨x, hxNF, hxo⟩ := exists_NF_repr_eq (orderType (ltPull e)) hlt
-  set n₀ := e.symm ⟨x, hxNF⟩ with hn₀
+  set n₀ := e.symm (show NONote from ⟨x, hxNF⟩) with hn₀
   have he : rk (ltPull e) n₀ = orderType (ltPull e) := by
     rw [rk_ltPull_eq_repr, hn₀, Equiv.apply_symm_apply]; exact hxo
   -- `succ (rk n₀) ≤ orderType` (a term of the sup), but `succ (rk n₀) = succ orderType > orderType`.
@@ -195,8 +195,47 @@ instance : Encodable NONote :=
 instance : Denumerable NONote :=
   Denumerable.ofEncodableOfInfinite NONote
 
-/-- A concrete **computable** coding of `ℕ` by CNF notations, built from the structural `Encodable ONote`. -/
-def natCode : ℕ ≃ NONote := (Denumerable.eqv NONote).symm
+/-! `natCode` used to be `(Denumerable.eqv NONote).symm`.  Since mathlib marked
+`Nat.Subtype.denumerable` `@[no_expose]`, that route can no longer be related to the *increasing*
+enumeration `Nat.Subtype.ofNat` of `Encodable.encode`'s range (which `ONote/Computability.lean`
+needs to see `natCode` as monotone in codes), so we build the equiv from that enumeration directly.
+Only `Equiv`-ness is used downstream. -/
+
+/-- The range of `Encodable.encode : NONote → ℕ` is decidable and infinite. -/
+instance decPredRangeEncode :
+    DecidablePred (· ∈ Set.range (Encodable.encode : NONote → ℕ)) :=
+  Encodable.decidableRangeEncode NONote
+
+instance infiniteRangeEncode :
+    Infinite (Set.range (Encodable.encode : NONote → ℕ)) :=
+  Infinite.of_injective _ (Equiv.ofInjective _ Encodable.encode_injective).injective
+
+/-- The increasing enumeration `ℕ → Set.range encode` of the `NONote` codes. -/
+def codeEnum (a : ℕ) : Set.range (Encodable.encode : NONote → ℕ) :=
+  Nat.Subtype.ofNat (Set.range (Encodable.encode : NONote → ℕ)) a
+
+lemma codeEnum_strictMono : StrictMono codeEnum :=
+  strictMono_nat_of_lt_succ fun n => by
+    show Nat.Subtype.ofNat _ n < Nat.Subtype.ofNat _ (n + 1)
+    rw [show Nat.Subtype.ofNat (Set.range (Encodable.encode : NONote → ℕ)) (n + 1)
+        = Nat.Subtype.succ (Nat.Subtype.ofNat _ n) from rfl]
+    exact Nat.Subtype.lt_succ_self _
+
+/-- A concrete coding of `ℕ` by CNF notations: the increasing enumeration of the range of
+`Encodable.encode`, transported along `Encodable.equivRangeEncode`. -/
+noncomputable def natCode : ℕ ≃ NONote :=
+  Equiv.ofBijective (fun a => (Encodable.equivRangeEncode NONote).symm (codeEnum a))
+    ⟨fun _ _ hab =>
+        codeEnum_strictMono.injective ((Encodable.equivRangeEncode NONote).symm.injective hab),
+     fun x => by
+        obtain ⟨a, ha⟩ :=
+          Nat.Subtype.ofNat_surjective (s := Set.range (Encodable.encode : NONote → ℕ))
+            (Encodable.equivRangeEncode NONote x)
+        exact ⟨a, by show (Encodable.equivRangeEncode NONote).symm (codeEnum a) = x
+                     rw [show codeEnum a = _ from ha]; simp⟩⟩
+
+@[simp] lemma natCode_apply (a : ℕ) :
+    natCode a = (Encodable.equivRangeEncode NONote).symm (codeEnum a) := rfl
 
 /-- **A concrete `ℕ`-order of order type ≥ ε₀.** -/
 theorem epsilon0_le_orderType_natCode : ε₀ ≤ orderType (ltPull natCode) :=

@@ -11,7 +11,7 @@ over `ℒₒᵣ`), Σ₁ arithmetization, and Gödel II.
 reaches 0"**. We do *not* hand-build the arithmetic formula for the (heavily recursive)
 Goodstein step. Foundation already did the hard representability work:
 
-* `LO.FirstOrder.Arithmetic.codeOfREPred (A : ℕ → Prop) : ArithmeticSemisentence 1` turns any
+* `FFL.FirstOrder.Arithmetic.codeOfREPred (A : ℕ → Prop) : ArithmeticSemisentence 1` turns any
   **r.e. predicate** `A` on ℕ into a Σ₁ semisentence with one free variable, and
 * `codeOfREPred_spec (hp : REPred A) : ℕ ⊧/![x] (codeOfREPred A) ↔ A x` certifies that the
   formula is true in the standard model at `x` **iff** `A x`.
@@ -49,7 +49,7 @@ public import GoodsteinPA.Internal
 
 namespace GoodsteinPA
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic
+open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
 open Goodstein
 
 /-- **Source predicate.** "The Goodstein sequence seeded at `m` reaches `0`." This is the genuine
@@ -96,10 +96,12 @@ theorem goodsteinSentence_faithful :
   rw [models_iff]
   simp only [Nat.reduceAdd, Nat.succ_eq_add_one, Fin.isValue, Semiformula.eval_all,
     Semiformula.eval_ex, Semiformula.eval_substs, InternalPow.igoodstein_defined.iff,
-    Matrix.cons_val_zero, Semiterm.val_operator₀, Structure.numeral_eq_numeral,
-    ORingStructure.zero_eq_zero, Fin.succ_zero_eq_one, Matrix.cons_val_one, Semiterm.val_bvar,
+    Matrix.cons_val_zero, Semiterm.val_operator₀,
+    Semiterm.Operator.val, Fin.succ_zero_eq_one, Matrix.cons_val_one, Semiterm.val_bvar,
     Fin.Fin1.eq_one, Matrix.cons_val_fin_one, Fin.succ_one_eq_two, Matrix.cons_app_two,
     Function.comp_def]
   simp only [InternalPow.igoodstein_nat, eq_comm]
+  -- upstream dropped `ORingStructure.zero_eq_zero`; the `0`-operator read-off is now `rfl`.
+  rfl
 
 end GoodsteinPA

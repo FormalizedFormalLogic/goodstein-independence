@@ -31,7 +31,7 @@ laws: budget monotonicity (`Gated_mono`) and the accessor lemmas the induction's
 
 namespace GoodsteinPA.ReadoffValueGate
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-- **The hereditary value gate.**  `Gated P V ψ` says: along any refutation descent through
@@ -128,14 +128,14 @@ theorem valm_mono : ∀ {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) {e e' : Fin m �
       | add =>
           show Semiterm.gValm ℕ e ε (Semiterm.func Language.Add.add v)
             ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.Add.add v)
-          simp only [Semiterm.val_func, Structure.add_eq_of_lang]
+          simp only [Semiterm.val_func, Tarski.Structure.add_eq_of_lang]
           have h0 := ih 0 he hε
           have h1 := ih 1 he hε
           exact Nat.add_le_add h0 h1
       | mul =>
           show Semiterm.gValm ℕ e ε (Semiterm.func Language.Mul.mul v)
             ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.Mul.mul v)
-          simp only [Semiterm.val_func, Structure.mul_eq_of_lang]
+          simp only [Semiterm.val_func, Tarski.Structure.mul_eq_of_lang]
           have h0 := ih 0 he hε
           have h1 := ih 1 he hε
           exact Nat.mul_le_mul h0 h1
@@ -378,10 +378,26 @@ theorem sigma1_all_inv {χ : ArithmeticSemiformula ℕ 1}
     ∃ (t : Semiterm ℒₒᵣ ℕ 1) (φ : ArithmeticSemiformula ℕ 1),
       t.Positive ∧ χ = ((“x. x < !!t” : ArithmeticSemiformula ℕ 1) 🡒 φ)
         ∧ Arithmetic.Hierarchy 𝚺 1 φ := by
+  -- Upstream now factors the hierarchy through a bounding-relation set `ℬ` with an extra
+  -- `bounded` (i.e. `ℬ.Closure`) constructor; for `ℬ[<, ℒₒᵣ]` any `R ∈ ℬ` is `<`.
+  have hR : ∀ {R : Semiformula.Operator ℒₒᵣ 2}, R ∈ ℬ[<, ℒₒᵣ] →
+      R = Semiformula.Operator.LT.lt := by
+    intro R h
+    have : R ∈ ({Semiformula.Operator.LT.lt} : Set (Semiformula.Operator ℒₒᵣ 2)) := h
+    simpa using this
   generalize hq : Semiformula.all χ = ψ at H
-  cases H <;> try simp [LO.FirstOrder.ball, LO.FirstOrder.bexs] at hq
-  case ball t hpos hp =>
-    exact ⟨t, _, hpos, Semiformula.all.inj hq, hp⟩
+  cases H <;> try simp [FFL.FirstOrder.ball, FFL.FirstOrder.bexs] at hq
+  case bounded hcl =>
+    cases hcl <;> try simp [FFL.FirstOrder.ball, FFL.FirstOrder.bexs] at hq
+    case ball R' hRm φ' t' hpos hp =>
+      refine ⟨t', φ', hpos, ?_, ?_⟩
+      · rw [hR hRm] at hq
+        exact Semiformula.all.inj hq
+      · exact .bounded _ _ _ hp
+  case ball R' hRm φ' t hpos hp =>
+    refine ⟨t, φ', hpos, ?_, hp⟩
+    rw [hR hRm] at hq
+    exact Semiformula.all.inj hq
 
 /-- **THE ROOT DISCHARGE** — `Hierarchy 𝚺 1` plus the coupled guard-value bound gives `Gated`.
 At the pipeline root instantiate `P := fun B => gvb φ_root (max V_root B)` (monotone by
@@ -413,7 +429,7 @@ theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
       rw [Gated]
       intro n
       have hχ : Arithmetic.Hierarchy 𝚺 1 χ := Arithmetic.Hierarchy.sigma_of_sigma_ex H
-      refine gated_of_sigma1 hP (χ/[nm n]) (hχ.rew _) (max V n) (fun B => ?_)
+      refine gated_of_sigma1 hP (χ/[nm n]) (Arithmetic.Hierarchy.rew _ hχ) (max V n) (fun B => ?_)
       calc gvb (χ/[nm n]) B ≤ gvb χ (max B n) := gvb_substs_le n B
         _ = gvb (Semiformula.exs χ) (max B n) := rfl
         _ ≤ P (max V (max B n)) := hgv (max B n)
@@ -442,7 +458,7 @@ theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
         have hχH : Arithmetic.Hierarchy 𝚺 1 χ := by
           rw [hχeq]
           simpa [Arithmetic.Hierarchy.imp_iff, Semiformula.Operator.lt_def] using hφ
-        refine gated_of_sigma1 hP (χ/[nm k]) (hχH.rew _) (max V k) (fun B => ?_)
+        refine gated_of_sigma1 hP (χ/[nm k]) (Arithmetic.Hierarchy.rew _ hχH) (max V k) (fun B => ?_)
         calc gvb (χ/[nm k]) B ≤ gvb χ (max B k) := gvb_substs_le k B
           _ = gvb (Semiformula.all χ) (max B k) := rfl
           _ ≤ P (max V (max B k)) := hgv (max B k)
@@ -496,19 +512,19 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
   | fvar x => exact ⟨0, fun B => by simp [tvB]⟩
   | func f v ih =>
       match f, v with
-      | LO.FirstOrder.Language.ORing.Func.zero, v =>
+      | FFL.FirstOrder.Language.ORing.Func.zero, v =>
           refine ⟨0, fun B => ?_⟩
-          have hv : tvB (Semiterm.func LO.FirstOrder.Language.ORing.Func.zero v) B = 0 := by
+          have hv : tvB (Semiterm.func FFL.FirstOrder.Language.ORing.Func.zero v) B = 0 := by
             simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
           simp [hv]
-      | LO.FirstOrder.Language.ORing.Func.one, v =>
+      | FFL.FirstOrder.Language.ORing.Func.one, v =>
           refine ⟨1, fun B => ?_⟩
-          have hv : tvB (Semiterm.func LO.FirstOrder.Language.ORing.Func.one v) B = 1 := by
+          have hv : tvB (Semiterm.func FFL.FirstOrder.Language.ORing.Func.one v) B = 1 := by
             simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
           have h := hG_succ B
           simp only [Function.iterate_one]
           omega
-      | LO.FirstOrder.Language.ORing.Func.add, v =>
+      | FFL.FirstOrder.Language.ORing.Func.add, v =>
           obtain ⟨c₀, h₀⟩ := ih 0
           obtain ⟨c₁, h₁⟩ := ih 1
           refine ⟨max c₀ c₁ + 1, fun B => ?_⟩
@@ -516,12 +532,12 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
             le_trans (h₀ B) (iter_le_iter_of_succ hG_mono hG_succ (le_max_left c₀ c₁) B)
           have hb₁ : tvB (v 1) B ≤ G^[max c₀ c₁] B :=
             le_trans (h₁ B) (iter_le_iter_of_succ hG_mono hG_succ (le_max_right c₀ c₁) B)
-          have hadd : tvB (Semiterm.func LO.FirstOrder.Language.ORing.Func.add v) B
+          have hadd : tvB (Semiterm.func FFL.FirstOrder.Language.ORing.Func.add v) B
               = tvB (v 0) B + tvB (v 1) B := by
             simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
           rw [hadd, Function.iterate_succ_apply']
           exact le_trans (hG_add _ _) (hG_mono (max_le hb₀ hb₁))
-      | LO.FirstOrder.Language.ORing.Func.mul, v =>
+      | FFL.FirstOrder.Language.ORing.Func.mul, v =>
           obtain ⟨c₀, h₀⟩ := ih 0
           obtain ⟨c₁, h₁⟩ := ih 1
           refine ⟨max c₀ c₁ + 1, fun B => ?_⟩
@@ -529,7 +545,7 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
             le_trans (h₀ B) (iter_le_iter_of_succ hG_mono hG_succ (le_max_left c₀ c₁) B)
           have hb₁ : tvB (v 1) B ≤ G^[max c₀ c₁] B :=
             le_trans (h₁ B) (iter_le_iter_of_succ hG_mono hG_succ (le_max_right c₀ c₁) B)
-          have hmul : tvB (Semiterm.func LO.FirstOrder.Language.ORing.Func.mul v) B
+          have hmul : tvB (Semiterm.func FFL.FirstOrder.Language.ORing.Func.mul v) B
               = tvB (v 0) B * tvB (v 1) B := by
             simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
           rw [hmul, Function.iterate_succ_apply']

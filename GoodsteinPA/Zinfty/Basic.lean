@@ -23,7 +23,7 @@ public import GoodsteinPA.ToFoundation.Numeral
 
 namespace GoodsteinPA.Zinfty
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 
 /-- A **signed atomic literal**: `signedLit true r v = rel r v`, `signedLit false r v = nrel r v`. The
 atomic-truth axiom `axTrue` ranges over *true closed literals* of either polarity (the ω-logic

@@ -6,7 +6,7 @@ public import GoodsteinPA.Zef2TC.Pass
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ### Rank descent (`rankToZero_TC`) and the rank-0 truth core (`sound0_TC`)

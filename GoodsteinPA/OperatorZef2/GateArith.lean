@@ -8,7 +8,7 @@ public import GoodsteinPA.OperatorZeh.Examples
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder ONote Ordinal
+open FFL FFL.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 variable {α γ βφ βψ : ONote} {f g : ℕ → ℕ}
