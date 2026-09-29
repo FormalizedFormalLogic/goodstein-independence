@@ -13,7 +13,6 @@ Both are `𝚺ᴬ₁`-definable and preserve `IsSemiterm`/`IsSemiformula`/`IsUFo
 -/
 module
 
-public import Foundation.FirstOrder.Arithmetic.HFS
 public import Foundation.FirstOrder.Arithmetic.Bootstrapping.Syntax.Formula.Functions
 
 @[expose] public section
