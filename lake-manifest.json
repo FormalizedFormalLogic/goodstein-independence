@@ -3,6 +3,18 @@
  "packagesDir": ".lake/packages",
  "packages": [
   {
+   "url": "https://github.com/FormalizedFormalLogic/AlphaCentauri.git",
+   "type": "git",
+   "subDir": null,
+   "scope": "",
+   "rev": "a633ba63cdebffabd00f793f6e19deb53adfad0a",
+   "name": "AlphaCentauri",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "main",
+   "inherited": false,
+   "configFile": "lakefile.toml"
+  },
+  {
    "url": "https://github.com/dupuisf/BibtexQuery",
    "type": "git",
    "subDir": null,

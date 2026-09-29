@@ -16,7 +16,7 @@ the value is recoverable from `(List.range n).map (f ·)`.
 module
 
 public import Mathlib.Computability.RE
-public import GoodsteinPA.ToMathlib.Goodstein.Defs
+public import AlphaCentauri.ToMathlib.Goodstein
 
 @[expose] public section
 
@@ -111,7 +111,7 @@ theorem primrec_bump : Primrec₂ bump := by
     intro b n
     simp only [List.length_map, List.length_range]
     by_cases hn : n = 0
-    · subst hn; simp; rw [bump.eq_def]; simp
+    · subst hn; simp
     · have hpos : 0 < n := Nat.pos_of_ne_zero hn
       have hlt : Nat.log b n < n := Nat.log_lt_self b hn
       have hbpos : 0 < b ^ Nat.log b n := by

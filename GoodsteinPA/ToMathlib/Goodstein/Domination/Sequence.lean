@@ -3,8 +3,7 @@
 -/
 module
 
-public import Mathlib.Tactic.Ring
-public import GoodsteinPA.ToMathlib.Goodstein.Defs
+public import AlphaCentauri.ToMathlib.Goodstein
 public import GoodsteinPA.ToMathlib.Hardy.Comparison
 
 @[expose] public section

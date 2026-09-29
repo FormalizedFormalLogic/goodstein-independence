@@ -8,3 +8,10 @@ name = "GoodsteinPA"
 name = "Foundation"
 git = "https://github.com/FormalizedFormalLogic/Foundation.git"
 rev = "33f9f6859650a440dad9fd14aaa300553ba65e44"
+
+# FFL's AlphaCentauri (Foundation-based results library).  Shared definitions live there; g-i
+# imports them rather than keeping its own copies.  Its Foundation pin and ours must agree.
+[[require]]
+name = "AlphaCentauri"
+git = "https://github.com/FormalizedFormalLogic/AlphaCentauri.git"
+rev = "main"

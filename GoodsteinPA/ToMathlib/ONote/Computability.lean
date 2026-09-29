@@ -14,9 +14,7 @@ appears in `cmpStep_spec`'s base case.
 -/
 module
 
-public import Mathlib.Computability.RE
-public import Mathlib.Tactic.Cases
-public import Mathlib.Tactic.Linarith
+public import AlphaCentauri.ToMathlib.ONote.Computability
 public import GoodsteinPA.ToMathlib.Ordinal.Epsilon0
 public meta import GoodsteinPA.ToMathlib.Ordinal.Epsilon0 -- shake: keep
 
@@ -47,21 +45,6 @@ lemma encodeONote_decodeONote (n : ℕ) : encodeONote (decodeONote n) = n := by
 lemma encode_decode_eq (n : ℕ) : Encodable.encode (Encodable.decode n : Option ONote) = n + 1 := by
   rw [decode_eq];
   simp +decide [Encodable.encode, encodeONote_decodeONote]
-
-/-- `encode ∘ decode` is `Nat.succ` up to the `+ 1` shift. -/
-lemma primrec_encode_decode : Nat.Primrec (fun n => Encodable.encode (Encodable.decode n : Option ONote)) := by
-  convert Nat.Primrec.succ using 1;
-  exact funext fun n => by simpa using encode_decode_eq n;
-
-/-- Structural `Primcodable ONote` instance. -/
-instance instPrimcodableONote : Primcodable ONote :=
-  { (inferInstance : Encodable ONote) with
-    prim := primrec_encode_decode }
-
-lemma computable_decodeONote : Computable decodeONote := by
-  have h_decodeONote_computable : Computable (fun n => (Encodable.decode n : Option ONote)) :=
-    Computable.decode (α := ONote)
-  exact Computable.option_getD h_decodeONote_computable (Computable.const ONote.zero)
 
 /-! ### Ordering encoded as `ℕ` (lt = 0, eq = 1, gt = 2) -/
 
@@ -476,22 +459,5 @@ lemma cmp_eq_lt_iff_lt (x y : NONote) : x.cmp y = Ordering.lt ↔ x < y := by
 lemma lt_iff_Cnat (a b : ℕ) : natCode a < natCode b ↔ Cnat (Nat.pair (enc a) (enc b)) = 0 := by
   rw [Cnat_pair_eq_zero, decodeONote_enc, decodeONote_enc]
   exact (cmp_eq_lt_iff_lt (natCode a) (natCode b)).symm
-
-/-- The order `natCode a < natCode b` on ℕ-codes is `REPred` (recursively enumerable). -/
-theorem rePred_ltPull_natCode : REPred fun v : List.Vector ℕ 2 ↦ natCode (v.get 0) < natCode (v.get 1) := by
-  apply ComputablePred.to_re
-  refine ⟨inferInstance, ?_⟩
-  have hidx0 : Computable (fun v : List.Vector ℕ 2 => v.get (0 : Fin 2)) :=
-    (Primrec.vector_get.comp Primrec.id (Primrec.const (0 : Fin 2))).to_comp
-  have hidx1 : Computable (fun v : List.Vector ℕ 2 => v.get (1 : Fin 2)) :=
-    (Primrec.vector_get.comp Primrec.id (Primrec.const (1 : Fin 2))).to_comp
-  have hpair : Computable (fun v : List.Vector ℕ 2 =>
-      Nat.pair (enc (v.get 0)) (enc (v.get 1))) :=
-    Primrec₂.natPair.to_comp.comp (computable_enc.comp hidx0) (computable_enc.comp hidx1)
-  have hmain : Computable (fun v : List.Vector ℕ 2 =>
-      decide (Cnat (Nat.pair (enc (v.get 0)) (enc (v.get 1))) = 0)) :=
-    ((Primrec.eq.comp Primrec.id (Primrec.const 0)).decide.to_comp).comp
-      (computable_Cnat.comp hpair)
-  exact hmain.of_eq (fun v => decide_eq_decide.mpr (lt_iff_Cnat (v.get 0) (v.get 1)).symm)
 
 end ONote

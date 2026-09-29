@@ -1,0 +1,7 @@
+# FFL's shared Lake artifact cache (read-only here): prebuilt Foundation and AlphaCentauri oleans,
+# published by those repos' own CI.  Same service AlphaCentauri's CI reads.
+[[cache.service]]
+name = "ffl"
+kind = "s3"
+artifactEndpoint = "https://cache.formalizedformallogic.org/artifacts"
+revisionEndpoint = "https://cache.formalizedformallogic.org/revisions"
