@@ -1,0 +1,13 @@
+# The axiom audit, read by `lake exe forgive GoodsteinPA` (`just axiom-audit`); the format is
+# documented in https://github.com/FormalizedFormalLogic/forgive.  Every declaration under
+# `GoodsteinPA` may use only the axioms below; an exception would be listed by name under
+# `declaration:`.
+
+version: v0
+
+accept:
+  - propext
+  - Classical.choice
+  - Quot.sound
+
+declaration: {}
