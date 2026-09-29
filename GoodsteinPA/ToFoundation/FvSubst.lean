@@ -13,11 +13,13 @@ Both are `𝚺₁`-definable and preserve `IsSemiterm`/`IsSemiformula`/`IsUFormu
 -/
 module
 
-public import Foundation.FirstOrder.Bootstrapping.Syntax.Formula.Functions
+public import GoodsteinPA.ToFoundation.Compat
+public import Foundation.FirstOrder.Arithmetic.Bootstrapping.Syntax.Formula.Functions
 
 @[expose] public section
 
-namespace LO.FirstOrder.Arithmetic.Bootstrapping
+open scoped FFL.FirstOrder.Bounding
+namespace FFL.FirstOrder.Arithmetic.Bootstrapping
 
 variable {V : Type*} [ORingStructure V] [V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁]
 
@@ -568,4 +570,4 @@ end fvSubst
 
 end
 
-end LO.FirstOrder.Arithmetic.Bootstrapping
+end FFL.FirstOrder.Arithmetic.Bootstrapping

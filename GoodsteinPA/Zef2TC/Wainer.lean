@@ -6,7 +6,7 @@ public import GoodsteinPA.Zef2TC.Readoff
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 open GoodsteinPA.ReadoffValueGate (Gated Gated_and_iff Gated_or_iff Gated_all_iff Gated_exs_iff
   Gated_mono)
@@ -21,16 +21,16 @@ lemma goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ 1
   rw [← hbody] at h
   have h' : atomTrue ((((Rew.subst (L := ℒₒᵣ) ![nm m]).q ▹
       ((Rew.emb : Rew ℒₒᵣ Empty 1 ℕ 1).q ▹
-        (((↑(LO.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
+        (((↑(FFL.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
           : ArithmeticSemisentence 2))) : ArithmeticSemiformula ℕ 1)/[nm n]) := h
   apply Goodstein.Dom.goodsteinLength_le (m := m) (N := n)
   rw [← GoodsteinPA.InternalPow.igoodstein_nat]
   simp only [atomTrue, Semiformula.eval_rew, Function.comp_def] at h'
   have hcast : ∀ (E : Fin 3 → ℕ) (ε₁ ε₂ : Empty → ℕ),
       Semiformula.gEval (Arithmetic.standardModel ℕ) E ε₁
-        (↑(LO.FirstOrder.Arithmetic.igoodsteinDef)) →
+        (↑(FFL.FirstOrder.Arithmetic.igoodsteinDef)) →
       Semiformula.gEval (Arithmetic.standardModel ℕ) E ε₂
-        (↑(LO.FirstOrder.Arithmetic.igoodsteinDef)) := by
+        (↑(FFL.FirstOrder.Arithmetic.igoodsteinDef)) := by
     intro E ε₁ ε₂ hh
     rwa [show ε₂ = ε₁ from funext fun a => a.elim]
   have h'' := hcast _ _ Empty.elim h'
@@ -175,7 +175,7 @@ theorem wainer_bound_witness
   obtain ⟨k, hk⟩ := Hcert (G := Gexp) Gexp_monotone succ_le_Gexp add_le_Gexp_max
     mul_le_Gexp_max
     ((Rew.emb : Rew ℒₒᵣ Empty 1 ℕ 1).q ▹
-      ((((↑(LO.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
+      ((((↑(FFL.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
         : ArithmeticSemisentence 2)))
   -- the fixed slot S° and its domination
   obtain ⟨E_S, c_S, hES, hES0, hSdom⟩ := HSdom e heNF B d k α hαNF
@@ -195,7 +195,7 @@ theorem wainer_bound_witness
   obtain ⟨χ, hχeq, hSig, hmain⟩ := hall m
   have hχB : χ = (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q ▹
       ((Rew.emb : Rew ℒₒᵣ Empty 1 ℕ 1).q ▹
-        ((((↑(LO.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
+        ((((↑(FFL.FirstOrder.Arithmetic.igoodsteinDef))/[(‘0’ : Semiterm ℒₒᵣ Empty 2), #1, #0])
           : ArithmeticSemisentence 2))) :=
     (Semiformula.exs.inj hχeq).symm
   obtain ⟨P, hPmono, hPgated, hPle⟩ := hk m 0 χ hχB hSig

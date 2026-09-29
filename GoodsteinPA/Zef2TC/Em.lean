@@ -6,7 +6,7 @@ public import GoodsteinPA.Zef2TC.Basic
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 variable {e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}

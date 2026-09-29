@@ -14,12 +14,6 @@ papers/**/*.ps
 /blueprint/print/
 /blueprint/src/*.paux
 
-# Assembled local site (docbuild/build-site.py output)
-/site/
-
-# docbuild sub-project build dir
-docbuild/.lake/
-
 # junk
 f.txt
 

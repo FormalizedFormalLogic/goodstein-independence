@@ -6,7 +6,7 @@ public import GoodsteinPA.Zef2TC.Axm
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ### `osuccs` closure and the ∀-closure peel -/

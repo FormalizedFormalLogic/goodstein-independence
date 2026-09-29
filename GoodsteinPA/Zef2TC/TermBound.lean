@@ -6,7 +6,7 @@ public import GoodsteinPA.Zef2TC.Basic
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ## `Gexp = hardy (ω²)` dominates ℒₒᵣ term values
@@ -64,35 +64,35 @@ lemma term_val_le_Gexp_iter (t : ArithmeticTerm ℕ) :
   | fvar x => exact ⟨0, x + 1, fun env => by simpa using le_envSup (Nat.lt_succ_self x)⟩
   | func f v ih =>
       match f, v with
-      | LO.FirstOrder.Language.ORing.Func.zero, v =>
+      | FFL.FirstOrder.Language.ORing.Func.zero, v =>
           refine ⟨0, 0, fun env => ?_⟩
           have hv : Semiterm.gValm ℕ ![] env (Semiterm.func
-              LO.FirstOrder.Language.ORing.Func.zero v) = 0 := by
+              FFL.FirstOrder.Language.ORing.Func.zero v) = 0 := by
             simp only [Semiterm.gValm, Semiterm.val_func]; rfl
           simp [hv]
-      | LO.FirstOrder.Language.ORing.Func.one, v =>
+      | FFL.FirstOrder.Language.ORing.Func.one, v =>
           refine ⟨1, 0, fun env => ?_⟩
           have h1 := iter_le_Gexp_iter 1 (envSup env 0)
           have hv : Semiterm.gValm ℕ ![] env (Semiterm.func
-              LO.FirstOrder.Language.ORing.Func.one v) = 1 := by
+              FFL.FirstOrder.Language.ORing.Func.one v) = 1 := by
             simp only [Semiterm.gValm, Semiterm.val_func]; rfl
           omega
-      | LO.FirstOrder.Language.ORing.Func.add, v =>
+      | FFL.FirstOrder.Language.ORing.Func.add, v =>
           obtain ⟨c₀, N₀, h₀⟩ := ih 0
           obtain ⟨c₁, N₁, h₁⟩ := ih 1
           refine ⟨max c₀ c₁ + 1, max N₀ N₁, fun env => ?_⟩
           have hadd : Semiterm.gValm ℕ ![] env (Semiterm.func
-              LO.FirstOrder.Language.ORing.Func.add v)
+              FFL.FirstOrder.Language.ORing.Func.add v)
               = Semiterm.gValm ℕ ![] env (v 0) + Semiterm.gValm ℕ ![] env (v 1) := by
             simp only [Semiterm.gValm, Semiterm.val_func]; rfl
           rw [hadd]
           exact func_bound add_le_Gexp_max env (h₀ env) (h₁ env)
-      | LO.FirstOrder.Language.ORing.Func.mul, v =>
+      | FFL.FirstOrder.Language.ORing.Func.mul, v =>
           obtain ⟨c₀, N₀, h₀⟩ := ih 0
           obtain ⟨c₁, N₁, h₁⟩ := ih 1
           refine ⟨max c₀ c₁ + 1, max N₀ N₁, fun env => ?_⟩
           have hmul : Semiterm.gValm ℕ ![] env (Semiterm.func
-              LO.FirstOrder.Language.ORing.Func.mul v)
+              FFL.FirstOrder.Language.ORing.Func.mul v)
               = Semiterm.gValm ℕ ![] env (v 0) * Semiterm.gValm ℕ ![] env (v 1) := by
             simp only [Semiterm.gValm, Semiterm.val_func]; rfl
           rw [hmul]

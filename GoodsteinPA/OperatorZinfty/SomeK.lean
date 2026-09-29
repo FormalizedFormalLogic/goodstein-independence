@@ -7,7 +7,7 @@ public import GoodsteinPA.OperatorZinfty.BoundedTruth
 
 namespace GoodsteinPA.OperatorZinfty
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 
 /-- A derivability wrapper where the witness index `K` is allowed to be chosen later, extracting
 some finite witness budget rather than fixing it in advance. -/

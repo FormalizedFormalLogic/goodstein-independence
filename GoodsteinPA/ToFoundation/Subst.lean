@@ -11,7 +11,7 @@ public import GoodsteinPA.ToFoundation.Numeral
 
 @[expose] public section
 
-namespace LO.FirstOrder
+namespace FFL.FirstOrder
 
 open ArithmeticTerm
 
@@ -90,4 +90,4 @@ lemma valm_subst_congr (w w' : Fin n → ArithmeticTerm ℕ)
   congr 1
   funext x; exact hval x
 
-end LO.FirstOrder
+end FFL.FirstOrder

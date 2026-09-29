@@ -6,7 +6,7 @@ public import GoodsteinPA.Zef2TC.Em
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-! ### The master predicate and the `Derivation2` case ladder -/

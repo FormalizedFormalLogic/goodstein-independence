@@ -7,7 +7,7 @@ public import GoodsteinPA.OperatorZeh.Zef
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 variable {e : ONote} {H : ONote → Prop} {m c : ℕ} {f : ℕ → ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
@@ -48,8 +48,8 @@ lemma norm_ball_not_add_closed (R : ℕ) (hR : 1 ≤ R) :
     ∃ α β : ONote, norm α ≤ R ∧ norm β ≤ R ∧ R < norm (α + β) := by
   refine ⟨wmul (R - 1), wmul (R - 1), by rw [norm_wmul]; omega, by rw [norm_wmul]; omega, ?_⟩
   rw [wmul_add_wmul, norm_oadd, norm_one, norm_zero]
-  have : ((R - 1).succPNat + (R - 1).succPNat : ℕ+) = (2 * R : ℕ) := by
-    simp [Nat.succPNat, PNat.add_coe]
+  have : (((R - 1).succPNat + (R - 1).succPNat : ℕ+) : ℕ) = 2 * R := by
+    simp [PNat.add_coe, Nat.succPNat_coe]
     omega
   omega
 

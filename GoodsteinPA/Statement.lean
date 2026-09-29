@@ -31,7 +31,7 @@ public import GoodsteinPA.ToMathlib.Hardy.Majorization
 
 namespace GoodsteinPA
 
-open LO LO.FirstOrder LO.FirstOrder.Arithmetic LO.Entailment
+open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic FFL.Entailment
 open ONote
 open Goodstein
 

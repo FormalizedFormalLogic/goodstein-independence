@@ -7,7 +7,7 @@ public import GoodsteinPA.Zef2TC.Inversion
 
 namespace GoodsteinPA.E1EmbeddingGrind
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 variable {Γ : Finset (ArithmeticFormula ℕ)}
@@ -17,7 +17,7 @@ variable {Γ : Finset (ArithmeticFormula ℕ)}
 /-- The goodstein Π₂ body: `∃ N, igoodsteinDef 0 x N`, so that `goodsteinSentence` is its
 `∀`-closure. -/
 noncomputable def goodsteinBody : ArithmeticSemisentence 1 :=
-  “∃ N, !LO.FirstOrder.Arithmetic.igoodsteinDef 0 #1 N”
+  “∃ N, !FFL.FirstOrder.Arithmetic.igoodsteinDef 0 #1 N”
 
 @[grind =]
 lemma goodsteinSentence_eq_all_body :

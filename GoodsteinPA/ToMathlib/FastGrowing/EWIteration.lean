@@ -938,8 +938,8 @@ lemma Nlog_ofNat_le (m : ℕ) : Nlog (ONote.ofNat m) ≤ clog m := by
   cases m with
   | zero => simp
   | succ k =>
-      rw [show ONote.ofNat (k + 1) = ONote.oadd 0 k.succPNat 0 from rfl]
-      simp [Nat.succPNat]
+      rw [show ONote.ofNat (k + 1) = ONote.oadd 0 k.succPNat 0 from rfl, Nlog_oadd]
+      simp [Nat.succPNat_coe]
 
 @[grind →]
 lemma clog_mono {a b : ℕ} (h : a ≤ b) : clog a ≤ clog b :=

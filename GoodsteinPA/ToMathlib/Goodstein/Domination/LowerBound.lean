@@ -89,14 +89,14 @@ theorem hardy_split (e : ONote) (c : ℕ+) (R : ONote) (hNF : (oadd e c R).NF) (
       exact ih (g n).repr hgnlt (g n) rfl hNFnew n
 
 /-- Finite Hardy values: `H_{j+1}(n) = n + (j+1)` (the notation `oadd 0 ⟨j+1⟩ 0`). -/
-lemma hardy_finite (j n : ℕ) : hardy (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0) n = n + (j + 1) := by
+lemma hardy_finite (j n : ℕ) : hardy (oadd 0 (show ℕ+ from ⟨j + 1, Nat.succ_pos j⟩) 0) n = n + (j + 1) := by
   induction j generalizing n with
   | zero =>
     show hardy (oadd 0 1 0) n = n + 1
     rw [show (oadd (0 : ONote) 1 0) = 1 from rfl, hardy_one]
   | succ j ih =>
-    have hfs : fundamentalSequence (oadd 0 ⟨j + 2, Nat.succ_pos _⟩ 0)
-        = Sum.inl (some (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0)) := by
+    have hfs : fundamentalSequence (oadd 0 (show ℕ+ from ⟨j + 2, Nat.succ_pos _⟩) 0)
+        = Sum.inl (some (oadd 0 (show ℕ+ from ⟨j + 1, Nat.succ_pos j⟩) 0)) := by
       rw [fundamentalSequence_oadd_zero_zero]; rfl
     simp only [hardy_succ _ hfs]
     rw [ih (n + 1)]; omega
@@ -106,8 +106,8 @@ lemma hardy_finite (j n : ℕ) : hardy (oadd 0 ⟨j + 1, Nat.succ_pos j⟩ 0) n 
 (`fundSeq_oadd_coeff`), then `hardy_split` separates the freshly-created lowest term, whose
 Hardy value is exactly `H_{ω^e}(n)` (it is the index-`n` fundamental term of `ω^e`). -/
 lemma hardy_oadd_coeff_step_ne (e : ONote) (he : e ≠ 0) (hNFe : e.NF) (k n : ℕ) :
-    hardy (oadd e ⟨k + 2, Nat.succ_pos _⟩ 0) n
-      = hardy (oadd e ⟨k + 1, Nat.succ_pos k⟩ 0) (hardy (oadd e 1 0) n) := by
+    hardy (oadd e (show ℕ+ from ⟨k + 2, Nat.succ_pos _⟩) 0) n
+      = hardy (oadd e (show ℕ+ from ⟨k + 1, Nat.succ_pos k⟩) 0) (hardy (oadd e 1 0) n) := by
   obtain ⟨g, hg1, hgk⟩ := fundSeq_oadd_coeff e he k
   have hNFe1 : (oadd e 1 0).NF := NF.oadd hNFe 1 NFBelow.zero
   have hprop := hg1 ▸ fundamentalSequence_has_prop (oadd e 1 0)
@@ -129,7 +129,7 @@ lemma hardy_oadd_coeff_step_ne (e : ONote) (he : e ≠ 0) (hNFe : e.NF) (k n : �
 `H_{k+1}(n) = n+(k+1) = (·+1)^[k+1] n`; for `e ≠ 0` it is induction on `k` via the coefficient
 step `hardy_oadd_coeff_step_ne`. The linchpin tying Hardy coefficients to iteration. -/
 theorem hardy_oadd_iter (e : ONote) (hNFe : e.NF) :
-    ∀ k n, hardy (oadd e ⟨k + 1, Nat.succ_pos k⟩ 0) n = (hardy (oadd e 1 0))^[k + 1] n := by
+    ∀ k n, hardy (oadd e (show ℕ+ from ⟨k + 1, Nat.succ_pos k⟩) 0) n = (hardy (oadd e 1 0))^[k + 1] n := by
   rcases eq_or_ne e 0 with rfl | he
   · -- e = 0
     have hg : hardy (oadd (0 : ONote) 1 0) = fun n => n + 1 := by

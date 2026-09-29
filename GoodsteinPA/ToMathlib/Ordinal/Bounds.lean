@@ -6,7 +6,6 @@ cut-elimination bounds but independent of that development.
 -/
 module
 
-public import Mathlib.SetTheory.Ordinal.Principal
 public import Mathlib.SetTheory.Ordinal.Veblen
 
 @[expose] public section

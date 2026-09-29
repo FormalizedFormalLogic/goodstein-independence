@@ -7,7 +7,7 @@ public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder ONote Ordinal
+open FFL FFL.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 variable {f : ℕ → ℕ} {e : ONote} {m : ℕ}

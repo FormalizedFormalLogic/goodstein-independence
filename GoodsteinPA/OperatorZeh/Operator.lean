@@ -31,7 +31,7 @@ public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder ONote Ordinal
+open FFL FFL.FirstOrder ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 /-! ## ONote/expTower transforms -/

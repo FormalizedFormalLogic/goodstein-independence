@@ -6,7 +6,7 @@ public import GoodsteinPA.OperatorZeh.Zeh
 
 namespace GoodsteinPA.OperatorZeh
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm ONote Ordinal
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZinfty
 
 /-! # The function-slot judgment `Zef`

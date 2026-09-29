@@ -13,8 +13,6 @@ built on top of these live in `GoodsteinPA.Zinfty.Cut`.
 module
 
 public import Foundation.FirstOrder.Incompleteness.Second
-public import Foundation.FirstOrder.Arithmetic.R0.Representation
-public import Mathlib.SetTheory.Ordinal.Principal
 public import Mathlib.SetTheory.Ordinal.Veblen
 public import Mathlib.Data.ENat.Lattice
 public import GoodsteinPA.ToFoundation.Numeral
@@ -23,7 +21,7 @@ public import GoodsteinPA.ToFoundation.Numeral
 
 namespace GoodsteinPA.Zinfty
 
-open LO LO.FirstOrder LO.FirstOrder.ArithmeticTerm
+open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 
 /-- A **signed atomic literal**: `signedLit true r v = rel r v`, `signedLit false r v = nrel r v`. The
 atomic-truth axiom `axTrue` ranges over *true closed literals* of either polarity (the ω-logic

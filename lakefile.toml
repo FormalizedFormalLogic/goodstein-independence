@@ -7,4 +7,4 @@ name = "GoodsteinPA"
 [[require]]
 name = "Foundation"
 git = "https://github.com/FormalizedFormalLogic/Foundation.git"
-rev = "master"
+rev = "33f9f6859650a440dad9fd14aaa300553ba65e44"

@@ -594,7 +594,12 @@ asymptotic statement "`goodsteinLength` eventually dominates `f_{ω^ω}`": `m �
 theorem goodsteinLength_dominates_fastGrowing_omega_pow_omega (hm : 2 ^ (2 ^ (2 ^ 16)) ≤ m) :
     fastGrowing (oadd (oadd 1 1 0) 1 0) m ≤ goodsteinLength m + 2 := by
   apply fastGrowing_omega_pow_omega_le_goodsteinLength
-  have h1 : 2 ^ (2 ^ 16) ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
+  -- Lean 4.34's kernel refuses to evaluate `Nat.pow` at an exponent exceeding 32 bits, and
+  -- typechecking these terms would force `2 ^ (2 ^ 2 ^ 16)`; keep the tower behind an opaque `k`.
+  obtain ⟨k, hk⟩ : ∃ k, k = 2 ^ (2 ^ 16) := ⟨_, rfl⟩
+  rw [← hk] at hm
+  have h1 : k ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
+  rw [hk] at h1
   exact Nat.le_log_of_pow_le Nat.one_lt_two h1
 
 /-- **Explicit-threshold form of the `o = ω^j` domination** (every finite `j ≥ 1`). For `m` with
@@ -604,7 +609,12 @@ theorem goodsteinLength_dominates_fastGrowing_omega_pow
     (hm : 2 ^ (2 ^ (2 ^ 16)) ≤ m) (hj1 : 1 ≤ j) (hjm : j < m) :
     fastGrowing (oadd (ONote.ofNat j) 1 0) m ≤ goodsteinLength m + 2 := by
   apply fastGrowing_omega_pow_le_goodsteinLength _ hj1 hjm
-  have h1 : 2 ^ (2 ^ 16) ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
+  -- Lean 4.34's kernel refuses to evaluate `Nat.pow` at an exponent exceeding 32 bits, and
+  -- typechecking these terms would force `2 ^ (2 ^ 2 ^ 16)`; keep the tower behind an opaque `k`.
+  obtain ⟨k, hk⟩ : ∃ k, k = 2 ^ (2 ^ 16) := ⟨_, rfl⟩
+  rw [← hk] at hm
+  have h1 : k ≤ Nat.log 2 m := Nat.le_log_of_pow_le Nat.one_lt_two hm
+  rw [hk] at h1
   exact Nat.le_log_of_pow_le Nat.one_lt_two h1
 
 /-- Anti-vacuity: `ω = oadd 1 1 0` really has `repr = ω`, and `oadd ω 1 0` has `repr = ω^ω` — so the
