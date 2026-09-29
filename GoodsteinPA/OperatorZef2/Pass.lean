@@ -207,9 +207,9 @@ lemma passAux (c) (heNF : e.NF) {f}
             have hread : (∼ψ).complexity ≤ ewIter f βφ 0 := by
               have h3 : (∼ψ).complexity ≤ f 0 := by omega
               exact le_trans h3 (ewIter_base_le hinfl βφ)
-            -- roles swap: the ψ-premise carries `∀⁰ ∼ψ` (= `∼(∃⁰ ψ)`, rfl); the φ-premise
-            -- carries `∃⁰ ψ = ∃⁰ ∼∼ψ`
-            have P₁' : Zef2Prov (collapse βφ) e H (ewIter f βφ) c (insert (∃⁰ ∼(∼ψ)) Γ) := by
+            -- roles swap: the ψ-premise carries `∀¹ ∼ψ` (= `∼(∃¹ ψ)`, rfl); the φ-premise
+            -- carries `∃¹ ψ = ∃¹ ∼∼ψ`
+            have P₁' : Zef2Prov (collapse βφ) e H (ewIter f βφ) c (insert (∃¹ ∼(∼ψ)) Γ) := by
               have hnn : (∼(∼ψ)) = ψ := by simp
               rw [hnn]
               exact P₁
@@ -240,7 +240,7 @@ lemma cutElimPass_exit_root_Zef2 {m}
     {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
-    (D : Zef2 α e H (ewRootSlot e m) (0 + 1) {(∃⁰ φ)}) :
+    (D : Zef2 α e H (ewRootSlot e m) (0 + 1) {(∃¹ φ)}) :
     ∃ n ≤ ewIter (ewRootSlot e m) α 0, atomTrue (φ/[nm n]) := by
   obtain ⟨α', _, _, _, _, D'⟩ :=
     cutElimPass_Zef2 (ewRootSlot e m) heNF hαNF hαH D

@@ -124,12 +124,12 @@ lemma false_nrel_erase (htrue : atomTrue (Semiformula.rel rr vv)) {α : ONote}
       simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
       tauto
   | @allω α' e' H' F' c' Γ' hαN φ β hβ hβNF hαNF hβH _ ih =>
-      rw [Finset.erase_insert_of_ne (by simp : (∀⁰ φ : ArithmeticFormula ℕ) ≠ Semiformula.nrel rr vv)]
+      rw [Finset.erase_insert_of_ne (by simp : (∀¹ φ : ArithmeticFormula ℕ) ≠ Semiformula.nrel rr vv)]
       refine Zef2TC.allω hαN φ β hβ hβNF hαNF hβH ?_
       intro n
       exact Zef2TC.wk (ih n).gate (hreshape _ Γ') (ih n)
   | @exI α' β' e' H' F' c' Γ' hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      rw [Finset.erase_insert_of_ne (by simp : (∃⁰ φ : ArithmeticFormula ℕ) ≠ Semiformula.nrel rr vv)]
+      rw [Finset.erase_insert_of_ne (by simp : (∃¹ φ : ArithmeticFormula ℕ) ≠ Semiformula.nrel rr vv)]
       refine Zef2TC.exI hαN φ n hβ hβNF hαNF hβH hbound ?_
       exact Zef2TC.wk ih.gate (hreshape _ Γ') ih
   | @cut α' βφ' βψ' e' H' F' c' Γ' hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
@@ -184,12 +184,12 @@ lemma false_rel_erase (htrue : atomTrue (Semiformula.nrel rr vv)) {α : ONote}
       simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢
       tauto
   | @allω α' e' H' F' c' Γ' hαN φ β hβ hβNF hαNF hβH _ ih =>
-      rw [Finset.erase_insert_of_ne (by simp : (∀⁰ φ : ArithmeticFormula ℕ) ≠ Semiformula.rel rr vv)]
+      rw [Finset.erase_insert_of_ne (by simp : (∀¹ φ : ArithmeticFormula ℕ) ≠ Semiformula.rel rr vv)]
       refine Zef2TC.allω hαN φ β hβ hβNF hαNF hβH ?_
       intro n
       exact Zef2TC.wk (ih n).gate (hreshape _ Γ') (ih n)
   | @exI α' β' e' H' F' c' Γ' hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      rw [Finset.erase_insert_of_ne (by simp : (∃⁰ φ : ArithmeticFormula ℕ) ≠ Semiformula.rel rr vv)]
+      rw [Finset.erase_insert_of_ne (by simp : (∃¹ φ : ArithmeticFormula ℕ) ≠ Semiformula.rel rr vv)]
       refine Zef2TC.exI hαN φ n hβ hβNF hαNF hβH hbound ?_
       exact Zef2TC.wk ih.gate (hreshape _ Γ') ih
   | @cut α' βφ' βψ' e' H' F' c' Γ' hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>

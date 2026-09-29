@@ -21,7 +21,7 @@ noncomputable def goodsteinBody : ArithmeticSemisentence 1 :=
 
 @[grind =]
 lemma goodsteinSentence_eq_all_body :
-    GoodsteinPA.goodsteinSentence = ∀⁰ goodsteinBody := rfl
+    GoodsteinPA.goodsteinSentence = ∀¹ goodsteinBody := rfl
 
 /-- The embedding of `goodsteinBody` into `ArithmeticSemiformula ℕ 1`. -/
 noncomputable def goodsteinBodyE : ArithmeticSemiformula ℕ 1 :=
@@ -48,9 +48,9 @@ lemma budgetedEmbedsV3_axm (σ : ArithmeticSentence) (hσ : σ ∈ (𝗣𝗔 : A
   · obtain ⟨φ, -, rfl⟩ := h
     exact budgetedEmbedsV3_succInd φ hΓ
 
-/-- Every `Derivation2` from 𝗣𝗔 is budgeted-embeddable into `Zef2TC` under the structural-budget
+/-- Every `LK2.Derivation` from 𝗣𝗔 is budgeted-embeddable into `Zef2TC` under the structural-budget
 predicate `BudgetedEmbedsV3`. -/
-lemma budgetedEmbeddingV3 (d : Derivation2 (𝗣𝗔 : ArithmeticTheory) Γ) : BudgetedEmbedsV3 Γ := by
+lemma budgetedEmbeddingV3 (d : LK2.Derivation (𝗣𝗔 : ArithmeticTheory) Γ) : BudgetedEmbedsV3 Γ := by
   induction d with
   | closed Γ φ hp hn => exact budgetedEmbedsV3_closed φ hp hn
   | axm φ hφ hΓ => exact budgetedEmbedsV3_axm φ hφ hΓ
@@ -68,7 +68,7 @@ lemma budgetedEmbeddingV3 (d : Derivation2 (𝗣𝗔 : ArithmeticTheory) Γ) : B
 /-- The embedded goodstein sentence is the ∀-closure of the embedded body. -/
 @[grind =]
 lemma coe_goodsteinSentence_eq :
-    (↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ) = ∀⁰ goodsteinBodyE := by
+    (↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ) = ∀¹ goodsteinBodyE := by
   rw [goodsteinSentence_eq_all_body]; simp [goodsteinBodyE, Rewriting.emb]
 
 /-- From a PA proof of the goodstein sentence: uniform structural budgets `B, d`, control `e`,
@@ -78,7 +78,7 @@ theorem embedding_Zef2TC_V3 (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) 
     ∃ B d : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ ∀ m : ℕ, ∃ K : ℕ,
       ∃ H : ONote → Prop, Cl H α ∧
         Zef2TC α e H (rel1 (ewRootSlot e B) K) d {(goodsteinBodyE/[nm m])} := by
-  -- upstream `𝗣𝗔 ⊢ σ` repackages as a `Derivation2 𝗣𝗔 {↑σ}` via `provable_iff_derivable2`
+  -- upstream `𝗣𝗔 ⊢ σ` repackages as a `LK2.Derivation 𝗣𝗔 {↑σ}` via `provable_iff_derivable2`
   have hV3 : BudgetedEmbedsV3 {(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} := by
     obtain ⟨d2⟩ := (provable_iff_derivable2 (L := ℒₒᵣ)).mp h
     exact budgetedEmbeddingV3 d2
@@ -98,8 +98,8 @@ theorem embedding_Zef2TC_V3 (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) 
   rw [rel1_rel1] at hinv
   refine ⟨max (envSup (fun _ => 0) N) m, fun _ => True, Cl_of_NF hαNF, ?_⟩
   have hctx : insert (goodsteinBodyE/[nm m])
-        (({(∀⁰ goodsteinBodyE : ArithmeticFormula ℕ)} :
-          Finset (ArithmeticFormula ℕ)).erase (∀⁰ goodsteinBodyE))
+        (({(∀¹ goodsteinBodyE : ArithmeticFormula ℕ)} :
+          Finset (ArithmeticFormula ℕ)).erase (∀¹ goodsteinBodyE))
       = {(goodsteinBodyE/[nm m])} := by
     rw [Finset.erase_singleton]
     rfl

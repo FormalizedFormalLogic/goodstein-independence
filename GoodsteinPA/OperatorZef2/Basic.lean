@@ -56,12 +56,12 @@ inductive Zef2 : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ 
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
       (hβH : ∀ n, relOp H n (β n))
       (dd : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
-      Zef2 α e H f c (insert (∀⁰ φ) Γ)
+      Zef2 α e H f c (insert (∀¹ φ) Γ)
   | exI {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0)
       (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ f 0)
-      (dd : Zef2 β e H f c (insert (φ/[nm n]) Γ)) : Zef2 α e H f c (insert (∃⁰ φ) Γ)
+      (dd : Zef2 β e H f c (insert (φ/[nm n]) Γ)) : Zef2 α e H f c (insert (∃¹ φ) Γ)
   | cut {α βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0)
       (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hcutRead : φ.complexity ≤ f 0)
@@ -193,7 +193,7 @@ lemma readoff_sigma1_Zef2 {φ : ArithmeticSemiformula ℕ 1}
 /-- **`headline_readoff_Zef2`** — the exit witness, discharged through `toZef`. -/
 lemma headline_readoff_Zef2 {φ : ArithmeticSemiformula ℕ 1}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
+    (dd : Zef2 α e H f 0 {(∃¹ φ)}) :
     ∃ n ≤ f 0, atomTrue (φ/[nm n]) :=
   headline_readoff_Zef hφinst dd.toZef
 

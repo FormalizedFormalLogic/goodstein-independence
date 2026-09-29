@@ -146,7 +146,7 @@ lemma provableOfBoundedTruth_probe (q : ℕ) {n : ℕ} (w : Fin n → Arithmetic
           have haq : a.complexity ≤ q := by
             simp only [Semiformula.complexity_all] at hψq
             omega
-          have hp' : (∀⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by
+          have hp' : (∀¹ ((Rew.subst w).q ▹ a)) ∈ Γ := by
             simpa using hmem
           have fam : ∀ m, Provable (ONote.ofNat (2 * q)) e (max K m) d c
               (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ) := by
@@ -156,7 +156,7 @@ lemma provableOfBoundedTruth_probe (q : ℕ) {n : ℕ} (w : Fin n → Arithmetic
               (nm m :> w) a haq (hBT m) (by omega)
               (by rw [← embedding_subst_q_cons_app]; simp)
           have hallω : Provable (ONote.ofNat (2 * (q + 1))) e K d c
-              (insert (∀⁰ ((Rew.subst w).q ▹ a)) Γ) :=
+              (insert (∀¹ ((Rew.subst w).q ▹ a)) Γ) :=
             Provable.allω ((Rew.subst w).q ▹ a) (fun _ => ONote.ofNat (2 * q))
               (fun _ => embedding_ofNat_lt_of_lt (by omega))
               (fun _ => inferInstance) inferInstance
@@ -166,7 +166,7 @@ lemma provableOfBoundedTruth_probe (q : ℕ) {n : ℕ} (w : Fin n → Arithmetic
           have haq : a.complexity ≤ q := by
             simp only [Semiformula.complexity_exs] at hψq
             omega
-          have hp' : (∃⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by
+          have hp' : (∃¹ ((Rew.subst w).q ▹ a)) ∈ Γ := by
             simpa using hmem
           rcases hBT with ⟨m, hbound, hBTm⟩
           have dA : Provable (ONote.ofNat (2 * q)) e K d c
@@ -176,7 +176,7 @@ lemma provableOfBoundedTruth_probe (q : ℕ) {n : ℕ} (w : Fin n → Arithmetic
               (nm m :> w) a haq hBTm (by omega)
               (by rw [← embedding_subst_q_cons_app]; simp)
           have hexI : Provable (ONote.ofNat (2 * (q + 1))) e K d c
-              (insert (∃⁰ ((Rew.subst w).q ▹ a)) Γ) :=
+              (insert (∃¹ ((Rew.subst w).q ▹ a)) Γ) :=
             Provable.exI ((Rew.subst w).q ▹ a) m
               (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
               (by rw [embedding_norm_ofNat]; omega) hbound dA
@@ -201,7 +201,7 @@ lemma embedding_closedTermExI_probe
     (hbudget : 2 * q < K + d)
     (hbound : stdClosedVal s ≤ hardy e (K + d))
     (dSrc : Provable βSrc e K d c (insert (ψ/[s]) Γ)) :
-    Provable αOut e K d c (insert (∃⁰ ψ) Γ) := by
+    Provable αOut e K d c (insert (∃¹ ψ) Γ) := by
   have hval : ∀ i, stdClosedVal ((![nm (stdClosedVal s)] : Fin 1 → ArithmeticTerm ℕ) i)
       = stdClosedVal ((![s] : Fin 1 → ArithmeticTerm ℕ) i) := by
     intro i
@@ -244,7 +244,7 @@ lemma embedding_closedTermExI_raiseK_probe
     (hτCut : norm αCut < K + d)
     (hbudget : 2 * q < K + d)
     (dSrc : Provable βSrc e K d c (insert (ψ/[s]) Γ)) :
-    Provable αOut e (max K (stdClosedVal s)) d c (insert (∃⁰ ψ) Γ) := by
+    Provable αOut e (max K (stdClosedVal s)) d c (insert (∃¹ ψ) Γ) := by
   refine embedding_closedTermExI_probe (K := max K (stdClosedVal s)) s hψq hψc
     hSrcLt hCongLt hCutLt hSrcNF hCutNF hOutNF ?_ ?_ ?_ ?_ ?_ ?_
   · exact lt_of_lt_of_le hτSrc (by omega)

@@ -35,7 +35,7 @@ def signedLit : Bool → {k : ℕ} → (ℒₒᵣ).Rel k → (Fin k → Arithmet
 standard ℒₒᵣ-model evaluation with no bound variables. For a closed literal the free-variable
 assignment is immaterial (fixed to `id`). -/
 @[grind =]
-def LitTrue (φ : ArithmeticFormula ℕ) : Prop := Semiformula.gEvalm ℕ ![] (id : ℕ → ℕ) φ
+def LitTrue (φ : ArithmeticFormula ℕ) : Prop := Semiformula.Eval (M := ℕ) ![] (id : ℕ → ℕ) φ
 
 /-- `∼`-duality: a closed formula is true iff its negation is false. -/
 @[simp, grind =]
@@ -65,7 +65,7 @@ literal is false. (The atomic-cut / false-literal-removal truth pivot.) -/
 
 /-- **The `Z_∞` calculus** over real `ℒₒᵣ` syntax. The `allω` (ω-rule) constructor stores one
 sub-derivation per numeral `n`: from `insert (φ/[nm n]) Γ` for every `n`, conclude
-`insert (∀⁰ φ) Γ`.
+`insert (∀¹ φ) Γ`.
 - [Tow20, §13] -/
 inductive Derivation : Finset (ArithmeticFormula ℕ) → Type
   | axL {Γ} {k} (r : (ℒₒᵣ).Rel k) (v)
@@ -82,9 +82,9 @@ inductive Derivation : Finset (ArithmeticFormula ℕ) → Type
     Derivation (insert (φ ⋏ ψ) Γ)
   | orI {Γ} (φ ψ) (D : Derivation (insert φ (insert ψ Γ))) : Derivation (insert (φ ⋎ ψ) Γ)
   | allω {Γ} (φₓ : ArithmeticSemiformula ℕ 1) (Dₓ : (n : ℕ) → Derivation (insert (φₓ/[nm n]) Γ))
-    : Derivation (insert (∀⁰ φₓ) Γ)
+    : Derivation (insert (∀¹ φₓ) Γ)
   | exI {Γ} (φₓ : ArithmeticSemiformula ℕ 1) (n : ℕ) (D : Derivation (insert (φₓ/[nm n]) Γ))
-    : Derivation (insert (∃⁰ φₓ) Γ)
+    : Derivation (insert (∃¹ φₓ) Γ)
   | cut {Γ} φ (D₁ : Derivation (insert φ Γ)) (D₂ : Derivation (insert (∼φ) Γ)) : Derivation Γ
 
 namespace Derivation
@@ -224,7 +224,7 @@ against the inverted ∀-family.
 - [Tow20, §13] -/
 @[grind →]
 lemma exI (n : ℕ) (h : Provable α c (insert (φₓ/[nm n]) Γ)) :
-  Provable (α + 1) c (insert (∃⁰ φₓ) Γ) := by
+  Provable (α + 1) c (insert (∃¹ φₓ) Γ) := by
   obtain ⟨D, ho, hcr⟩ := h;
   exact ⟨
     Derivation.exI φₓ n D,
@@ -237,7 +237,7 @@ lemma exI (n : ℕ) (h : Provable α c (insert (φₓ/[nm n]) Γ)) :
 - [Tow20, §13] -/
 lemma allω {βₓ : ℕ → Ordinal.{0}}
   (h : ∀ n, Provable (βₓ n) c (insert (φₓ/[nm n]) Γ)) :
-  Provable ((⨆ n, βₓ n) + 1) c (insert (∀⁰ φₓ) Γ) := by
+  Provable ((⨆ n, βₓ n) + 1) c (insert (∀¹ φₓ) Γ) := by
   choose Dₓ ho hcr using h;
   refine ⟨Derivation.allω φₓ Dₓ, ?_, ?_⟩
   · apply add_le_add ?_ le_rfl;
@@ -284,9 +284,9 @@ lemma em_binaryStep (hab : A ⋏ B ∈ Γ) (hcd : C ⋎ D ∈ Γ)
   exact ⟨_, hand.orI.insert_absorb hcd⟩
 
 /-- Auxiliary step shared by the `∀`/`∃` cases of the excluded-middle induction (`lemAux`): given
-`∀⁰ φₓ` and `∃⁰ ψₓ` both in `Γ`, derivability of every instance `ψₓ/[nm n]` alongside `φₓ/[nm n]` on
+`∀¹ φₓ` and `∃¹ ψₓ` both in `Γ`, derivability of every instance `ψₓ/[nm n]` alongside `φₓ/[nm n]` on
 the left collapses to derivability of `Γ` alone. -/
-lemma em_quantStep (hall' : (∀⁰ φₓ) ∈ Γ) (hexs' : (∃⁰ ψₓ) ∈ Γ)
+lemma em_quantStep (hall' : (∀¹ φₓ) ∈ Γ) (hexs' : (∃¹ ψₓ) ∈ Γ)
     (fam : ∀ n, ∃ a, Provable a 0 (insert (ψₓ/[nm n]) (insert (φₓ/[nm n]) Γ))) :
     ∃ a, Provable a 0 Γ := by
   choose β hβ using fam
@@ -322,7 +322,7 @@ lemma lemAux (φ  : ArithmeticFormula ℕ) (hk : φ.complexity ≤ k) (hp : φ �
       obtain ⟨α2, h2⟩ := ih ψ ‹_› (Γ := insert (∼ψ) (insert φ (insert ψ Γ))) (by grind) (by grind)
       exact Provable.em_binaryStep (show (∼φ ⋏ ∼ψ) ∈ Γ by simpa using hn) hp ⟨α1, h1⟩ ⟨α2, h2⟩
     | hall ψ =>
-      refine Provable.em_quantStep hp (show (∃⁰ ∼ψ) ∈ Γ by simpa using hn) fun n => ?_
+      refine Provable.em_quantStep hp (show (∃¹ ∼ψ) ∈ Γ by simpa using hn) fun n => ?_
       have hcomp : (ψ/[nm n]).complexity ≤ k := calc
         _ = ψ.complexity := by simp;
         _ ≤ k            := by grind;
@@ -330,7 +330,7 @@ lemma lemAux (φ  : ArithmeticFormula ℕ) (hk : φ.complexity ≤ k) (hp : φ �
       have heq : (∼ψ)/[nm n] = ∼(ψ/[nm n]) := by simp
       exact ⟨α, heq ▸ hα⟩
     | hexs ψ =>
-      refine Provable.em_quantStep (show (∀⁰ ∼ψ) ∈ Γ by simpa using hn) hp fun n => ?_
+      refine Provable.em_quantStep (show (∀¹ ∼ψ) ∈ Γ by simpa using hn) hp fun n => ?_
       have hcomp : (ψ/[nm n]).complexity ≤ k := calc
         _ = ψ.complexity := by simp
         _ ≤ k            := by grind;

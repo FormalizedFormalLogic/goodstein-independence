@@ -1,5 +1,5 @@
 /-
-The embedding `𝗣𝗔 ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}` via `Derivation2` (Finset-sequent variant, with no language
+The embedding `𝗣𝗔 ⊢ φ ⟹ Z_∞ ⊢^{α}_c {φ}` via `LK2.Derivation` (Finset-sequent variant, with no language
 translation). The main result `Provable.of_derivation2` carries a numeral assignment `asg e` that closes all
 free variables, enabling the ω-rule `allω` and ω-completeness `Provable.of_true` to handle non-structural
 cases (∃-intro via witness collapse, PA axioms via arithmetic truth). Axiom-clean.
@@ -19,7 +19,7 @@ namespace GoodsteinPA.Zinfty
 open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 
 variable {Γ : Finset (ArithmeticFormula ℕ)} {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
-  (hval : ∀ i, Semiterm.gValm ℕ ![] id (w i) = Semiterm.gValm ℕ ![] id (w' i))
+  (hval : ∀ i, Semiterm.val (M := ℕ) ![] id (w i) = Semiterm.val (M := ℕ) ![] id (w' i))
 
 /-! ## Closed-term existential introduction
 
@@ -27,12 +27,12 @@ Value-congruent excluded middle (`Provable.em_cong_gen`, `Provable.em_cong`) and
 (`Provable.exI_closed`). -/
 
 /-- Literal-truth congruence under value-equal substitutions. -/
-lemma litTrue_subst_congr (hval : ∀ i, Semiterm.gValm ℕ ![] id (w i) = Semiterm.gValm ℕ ![] id (w' i))
+lemma litTrue_subst_congr (hval : ∀ i, Semiterm.val (M := ℕ) ![] id (w i) = Semiterm.val (M := ℕ) ![] id (w' i))
     (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → ArithmeticSemiterm ℕ n) :
     LitTrue (signedLit b r (fun i => Rew.subst w (v i)))
       ↔ LitTrue (signedLit b r (fun i => Rew.subst w' (v i))) := by
-  have hv : (fun i => Semiterm.gValm ℕ ![] id (Rew.subst w (v i)))
-          = (fun i => Semiterm.gValm ℕ ![] id (Rew.subst w' (v i))) := by
+  have hv : (fun i => Semiterm.val (M := ℕ) ![] id (Rew.subst w (v i)))
+          = (fun i => Semiterm.val (M := ℕ) ![] id (Rew.subst w' (v i))) := by
     funext i; exact valm_subst_congr w w' hval (v i)
   cases b <;>
     simp only [signedLit, LitTrue, Semiformula.eval_rel, Semiformula.eval_nrel, hv, Function.comp_def]
@@ -42,8 +42,8 @@ namespace Provable
 /-- **Value-congruent excluded middle (arity-general).** -/
 theorem em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
     (ψ : ArithmeticSemiformula ℕ n), ψ.complexity ≤ k →
-    (∀ i, Semiterm.gValm ℕ ![] id (w i)
-        = Semiterm.gValm ℕ ![] id (w' i)) →
+    (∀ i, Semiterm.val (M := ℕ) ![] id (w i)
+        = Semiterm.val (M := ℕ) ![] id (w' i)) →
     ∀ {Γ : Finset (ArithmeticFormula ℕ)}, (Rew.subst w ▹ ψ) ∈ Γ → (∼(Rew.subst w' ▹ ψ)) ∈ Γ → ∃ a, Provable a 0 Γ := by
   intro k
   induction k with
@@ -107,8 +107,8 @@ theorem em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm �
       exact Provable.em_binaryStep hn' hp' ⟨a1, h1⟩ ⟨a2, h2⟩
     | hall a =>
       have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_all] at hk; omega
-      have hp' : (∀⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
-      have hn' : (∃⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
+      have hp' : (∀¹ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
+      have hn' : (∃¹ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
       have fam : ∀ m, ∃ x, Provable x 0
           (insert (((Rew.subst w').q ▹ ∼a)/[nm m]) (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ)) := by
         intro m
@@ -124,8 +124,8 @@ theorem em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm �
       exact Provable.em_quantStep hp' hn' fam
     | hexs a =>
       have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_exs] at hk; omega
-      have hp' : (∃⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
-      have hn' : (∀⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
+      have hp' : (∃¹ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
+      have hn' : (∀¹ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
       have fam : ∀ m, ∃ x, Provable x 0
           (insert (((Rew.subst w).q ▹ a)/[nm m]) (insert (((Rew.subst w').q ▹ ∼a)/[nm m]) Γ)) := by
         intro m
@@ -140,15 +140,15 @@ theorem em_cong_gen : ∀ (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm �
 where
   -- extending `w`/`w'` by the shared value `nm m` at the freed variable preserves value-congruence
   hvalm_cons {n} (w w' : Fin n → ArithmeticTerm ℕ)
-      (hval : ∀ i, Semiterm.gValm ℕ ![] id (w i) = Semiterm.gValm ℕ ![] id (w' i)) (m : ℕ) :
-      ∀ i, Semiterm.gValm ℕ ![] id ((nm m :> w) i)
-          = Semiterm.gValm ℕ ![] id ((nm m :> w') i) := by
+      (hval : ∀ i, Semiterm.val (M := ℕ) ![] id (w i) = Semiterm.val (M := ℕ) ![] id (w' i)) (m : ℕ) :
+      ∀ i, Semiterm.val (M := ℕ) ![] id ((nm m :> w) i)
+          = Semiterm.val (M := ℕ) ![] id ((nm m :> w') i) := by
     intro i; cases i using Fin.cases with
     | zero => rfl
     | succ j => simpa using hval j
   -- shared atomic closing step for both polarities `b : Bool` (`rel`/`nrel`)
   atomic_close {n} (w w' : Fin n → ArithmeticTerm ℕ)
-      (hval : ∀ i, Semiterm.gValm ℕ ![] id (w i) = Semiterm.gValm ℕ ![] id (w' i))
+      (hval : ∀ i, Semiterm.val (M := ℕ) ![] id (w i) = Semiterm.val (M := ℕ) ![] id (w' i))
       (b : Bool) {k} (r : (ℒₒᵣ).Rel k) (v : Fin k → ArithmeticSemiterm ℕ n)
       {Γ : Finset (ArithmeticFormula ℕ)} (hp : signedLit b r (fun i => Rew.subst w (v i)) ∈ Γ)
       (hn : signedLit (!b) r (fun i => Rew.subst w' (v i)) ∈ Γ) : ∃ a, Provable a 0 Γ := by
@@ -162,7 +162,7 @@ where
 /-- **Value-congruent excluded middle (single-term form).** For closed terms `s, s'` of equal
 standard value, a sequent containing `ψ/[s]` and `∼(ψ/[s'])` is `Z∞`-derivable cut-free. -/
 theorem em_cong (s s' : ArithmeticTerm ℕ)
-    (hval : Semiterm.gValm ℕ ![] id s = Semiterm.gValm ℕ ![] id s')
+    (hval : Semiterm.val (M := ℕ) ![] id s = Semiterm.val (M := ℕ) ![] id s')
     (ψ : ArithmeticSemiformula ℕ 1)
     (hp : (ψ/[s]) ∈ Γ) (hn : (∼(ψ/[s'])) ∈ Γ) : ∃ a, Provable a 0 Γ := by
   refine em_cong_gen ψ.complexity ![s] ![s'] ψ le_rfl ?_ hp hn
@@ -171,16 +171,16 @@ theorem em_cong (s s' : ArithmeticTerm ℕ)
   | succ j => exact j.elim0
 
 /-- **Closed-term existential introduction.** From a derivation of `insert (ψ/[s]) Γ` for ANY
-(closed) witness term `s` (not necessarily a numeral), conclude `insert (∃⁰ψ) Γ`, at the raised
+(closed) witness term `s` (not necessarily a numeral), conclude `insert (∃¹ψ) Γ`, at the raised
 cut-rank bound `max c (ψ.complexity + 1)`. -/
 theorem exI_closed {α : Ordinal.{0}} {c : ℕ}
     (ψ : ArithmeticSemiformula ℕ 1) (s : ArithmeticTerm ℕ)
     (h : Provable α c (insert (ψ/[s]) Γ)) :
-    ∃ β, Provable β (max c (ψ.complexity + 1)) (insert (∃⁰ ψ) Γ) := by
-  set m := Semiterm.gValm ℕ ![] id s
+    ∃ β, Provable β (max c (ψ.complexity + 1)) (insert (∃¹ ψ) Γ) := by
+  set m := Semiterm.val (M := ℕ) ![] id s
   set c' := max c (ψ.complexity + 1)
-  have hsval : Semiterm.gValm ℕ ![] id (nm m)
-             = Semiterm.gValm ℕ ![] id s := by rw [valm_nm]
+  have hsval : Semiterm.val (M := ℕ) ![] id (nm m)
+             = Semiterm.val (M := ℕ) ![] id s := by rw [valm_nm]
   have h₁ : Provable α c' (insert (ψ/[s]) (insert (ψ/[nm m]) Γ)) :=
     (h.weakening (Finset.insert_subset_insert _ (Finset.subset_insert _ _))).mono_cutRank
       (le_max_left _ _)
@@ -198,7 +198,7 @@ theorem exI_closed {α : Ordinal.{0}} {c : ℕ}
 
 The main theorem carries a numeral assignment `asg e` to close all free variables and sequents. -/
 
-/-- **The embedding, assignment-carrying form.** Every `Derivation2` from `𝗣𝗔` embeds into `Z_∞`
+/-- **The embedding, assignment-carrying form.** Every `LK2.Derivation` from `𝗣𝗔` embeds into `Z_∞`
 *at every numeral assignment of its free variables* (all sequents closed). -/
 theorem of_derivation2 (d : 𝗣𝗔 ⟹₂ Γ) : ∃ c, ∀ e : ℕ → ℕ, ∃ α, Provable α c (Γ.image (fun φ => asg e ▹ φ)) := by
   induction d with
@@ -208,7 +208,7 @@ theorem of_derivation2 (d : 𝗣𝗔 ⟹₂ Γ) : ∃ c, ∀ e : ℕ → ℕ, �
     -- ω-completeness: ↑φ is true under 𝗣𝗔, so derivable
     refine ⟨0, ?_⟩; intro _
     refine Provable.of_true ?_ (Finset.mem_image_of_mem _ hΓ)
-    have hmod : ℕ ⊧ₘ φ := Semantics.modelsSet_iff.mp inferInstance hφ
+    have hmod : ℕ↓[ℒₒᵣ] ⊧ φ := Semantics.modelsSet_iff.mp inferInstance hφ
     simp_all [LitTrue, asg, Semiformula.eval_emb, models_iff]
   | verum hΓ =>
     exact ⟨0, fun _ => ⟨0, Provable.verumR (by grind)⟩⟩
@@ -274,7 +274,7 @@ theorem of_derivation2 (d : 𝗣𝗔 ⟹₂ Γ) : ∃ c, ∀ e : ℕ → ℕ, �
       (by rw [Semiformula.complexity_rew]; exact_mod_cast Nat.le_max_left _ _)
       (h1.mono_cutRank (by omega)) (h2.mono_cutRank (by omega))⟩
 
-/-- **Cut-free embedding.** Every `Derivation2` from `𝗣𝗔` embeds into `Z_∞` *cut-free* at every
+/-- **Cut-free embedding.** Every `LK2.Derivation` from `𝗣𝗔` embeds into `Z_∞` *cut-free* at every
 numeral assignment of its free variables. -/
 theorem of_derivation2_cutFree (d : 𝗣𝗔 ⟹₂ Γ) (e : ℕ → ℕ) :
     ∃ α, Provable α 0 (Γ.image (fun φ => asg e ▹ φ)) := by

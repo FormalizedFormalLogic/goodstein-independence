@@ -19,7 +19,7 @@ Goodstein step. Foundation already did the hard representability work:
 So with the source predicate `goodsteinTerminates m := ∃ N, goodsteinSeq m N = 0` (the genuine
 hereditary-base process of `Defs.lean`), the faithful sentence is just its universal closure:
 
-  `γ := ∀⁰ (codeOfREPred goodsteinTerminates)`.
+  `γ := ∀¹ (codeOfREPred goodsteinTerminates)`.
 
 `codeOfREPred_spec` *is* the encoding-correctness half (E) of the faithfulness bridge
 (`goodsteinSentence_faithful`, below); the universal-closure eval lemma is the mechanical half (S).
@@ -71,13 +71,13 @@ theorem goodsteinTerminates_re : REPred goodsteinTerminates := by
   exact hproj.of_eq (fun m => by simp [goodsteinTerminates])
 
 /-- **The Goodstein sentence `γ` (transparent Σ₁/Π₂ form, lap 36).** The `ℒₒᵣ`-sentence "every
-Goodstein sequence terminates", built from the repo's **own** `𝚺₁`-definable internal Goodstein run
-`igoodstein` (`InternalGoodstein.lean`) via its defining formula `igoodsteinDef : 𝚺₁.Semisentence 3`
+Goodstein sequence terminates", built from the repo's **own** `𝚺ᴬ₁`-definable internal Goodstein run
+`igoodstein` (`InternalGoodstein.lean`) via its defining formula `igoodsteinDef : 𝚺ᴬ₁.Semisentence 3`
 (`!igoodsteinDef 0 m N` says `igoodstein m N = 0`):
 
   `γ := ∀ m, ∃ N, igoodstein m N = 0`.
 
-This **replaces** the earlier opaque `∀⁰ (codeOfREPred goodsteinTerminates)` form (Foundation's
+This **replaces** the earlier opaque `∀¹ (codeOfREPred goodsteinTerminates)` form (Foundation's
 `Classical.epsilon`-over-Kleene-normal-form r.e. blob). The refactor is **sanctioned** by the Phase-2+
 caveat above and gated only on `goodsteinSentence_faithful` (below) keeping the **identical** RHS
 `∀ m, ∃ N, goodsteinSeq m N = 0` (which it does, via `igoodstein_nat`) — so faithfulness cannot regress.
@@ -90,12 +90,12 @@ noncomputable def goodsteinSentence : ArithmeticSentence :=
 `goodsteinSentence` iff every Goodstein sequence — the genuine hereditary-base process of
 `ToMathlib.Goodstein.Defs` — reaches `0`. -/
 theorem goodsteinSentence_faithful :
-    (ℕ ⊧ₘ goodsteinSentence) ↔ ∀ m, ∃ N, goodsteinSeq m N = 0 := by
+    (ℕ↓[ℒₒᵣ] ⊧ goodsteinSentence) ↔ ∀ m, ∃ N, goodsteinSeq m N = 0 := by
   unfold goodsteinSentence
   rw [models_iff]
   simp only [Nat.reduceAdd, Nat.succ_eq_add_one, Fin.isValue, Semiformula.eval_all,
     Semiformula.eval_ex, Semiformula.eval_substs, InternalPow.igoodstein_defined.iff,
-    Matrix.cons_val_zero, Semiterm.val_operator₀,
+    Matrix.cons_val_zero, Semiterm.val_operator, Matrix.empty_eq,
     Semiterm.Operator.val, Fin.succ_zero_eq_one, Matrix.cons_val_one, Semiterm.val_bvar,
     Fin.Fin1.eq_one, Matrix.cons_val_fin_one, Fin.succ_one_eq_two, Matrix.cons_app_two,
     Function.comp_def]

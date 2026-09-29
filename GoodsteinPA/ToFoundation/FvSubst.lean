@@ -9,11 +9,10 @@ Foundation's `TermSubst`/`TermShift`/`Substs` `Language.TermRec`/`UformulaRec1` 
 * `termFvSubst a t u` — replace `^&a` by term `t` in coded term `u` (identity on `^&x`, `x ≠ a`).
 * `fvSubst a t p`     — the same on a coded formula `p` (rewrites the atom term-vectors).
 
-Both are `𝚺₁`-definable and preserve `IsSemiterm`/`IsSemiformula`/`IsUFormula`.
+Both are `𝚺ᴬ₁`-definable and preserve `IsSemiterm`/`IsSemiformula`/`IsUFormula`.
 -/
 module
 
-public import GoodsteinPA.ToFoundation.Compat
 public import Foundation.FirstOrder.Arithmetic.Bootstrapping.Syntax.Formula.Functions
 
 @[expose] public section
@@ -61,10 +60,10 @@ noncomputable def termFvSubst (a t u : V) : V := construction.result L ![a, t] u
 /-- The same on a coded term-vector. -/
 noncomputable def termFvSubstVec (a t k v : V) : V := construction.resultVec L ![a, t] k v
 
-noncomputable def termFvSubstGraph : 𝚺₁.Semisentence 4 :=
+noncomputable def termFvSubstGraph : 𝚺ᴬ₁.Semisentence 4 :=
   (blueprint.result L).rew <| Rew.subst ![#0, #3, #1, #2]
 
-noncomputable def termFvSubstVecGraph : 𝚺₁.Semisentence 5 :=
+noncomputable def termFvSubstVecGraph : 𝚺ᴬ₁.Semisentence 5 :=
   (blueprint.resultVec L).rew <| Rew.subst ![#0, #3, #4, #1, #2]
 
 variable {L}
@@ -86,23 +85,23 @@ variable {a t k w : V}
 
 section
 
-instance termFvSubst.defined : 𝚺₁-Function₃ termFvSubst (V := V) L via termFvSubstGraph L := .mk fun v ↦ by
+instance termFvSubst.defined : 𝚺ᴬ₁-Function₃ termFvSubst (V := V) L via termFvSubstGraph L := .mk fun v ↦ by
   simpa [termFvSubstGraph, termFvSubst, Matrix.constant_eq_singleton, Matrix.comp_vecCons']
     using construction.result_defined.defined ![v 0, v 3, v 1, v 2]
 
-instance termFvSubst.definable : 𝚺₁-Function₃ termFvSubst (V := V) L := termFvSubst.defined.to_definable
+instance termFvSubst.definable : 𝚺ᴬ₁-Function₃ termFvSubst (V := V) L := termFvSubst.defined.to_definable
 
-instance termFvSubst.definable' : Γ-[i + 1]-Function₃ termFvSubst (V := V) L :=
+instance termFvSubst.definable' : Γᴬ-[i + 1]-Function₃ termFvSubst (V := V) L :=
   termFvSubst.definable.of_sigmaOne
 
-instance termFvSubstVec.defined : 𝚺₁-Function₄ termFvSubstVec (V := V) L via termFvSubstVecGraph L := .mk fun v ↦ by
+instance termFvSubstVec.defined : 𝚺ᴬ₁-Function₄ termFvSubstVec (V := V) L via termFvSubstVecGraph L := .mk fun v ↦ by
   simpa [termFvSubstVecGraph, termFvSubstVec, Matrix.constant_eq_singleton, Matrix.comp_vecCons',
     Function.comp_def]
     using (construction.resultVec_defined (L := L)).defined ![v 0, v 3, v 4, v 1, v 2]
 
-instance termFvSubstVec.definable : 𝚺₁-Function₄ termFvSubstVec (V := V) L := termFvSubstVec.defined.to_definable
+instance termFvSubstVec.definable : 𝚺ᴬ₁-Function₄ termFvSubstVec (V := V) L := termFvSubstVec.defined.to_definable
 
-instance termFvSubstVec.definable' : Γ-[i + 1]-Function₄ termFvSubstVec (V := V) L :=
+instance termFvSubstVec.definable' : Γᴬ-[i + 1]-Function₄ termFvSubstVec (V := V) L :=
   termFvSubstVec.definable.of_sigmaOne
 
 end
@@ -347,19 +346,19 @@ variable (L)
 /-- Replace the free variable `^&a` by the coded term `t` throughout the coded formula `p`. -/
 noncomputable def fvSubst (a t p : V) : V := (construction L).result L ⟪a, t⟫ p
 
-noncomputable def fvSubstGraph : 𝚺₁.Semisentence 4 := .mkSigma
+noncomputable def fvSubstGraph : 𝚺ᴬ₁.Semisentence 4 := .mkSigma
   “y a t p. ∃ param, !pairDef param a t ∧ !((blueprint L).result L) y param p”
 
 variable {L}
 
 variable {a t : V}
 
-instance fvSubst.defined : 𝚺₁-Function₃[V] (fvSubst L) via fvSubstGraph L := .mk fun v ↦ by
+instance fvSubst.defined : 𝚺ᴬ₁-Function₃[V] (fvSubst L) via fvSubstGraph L := .mk fun v ↦ by
   simp [fvSubstGraph, fvSubst, (construction L).result_defined.iff]
 
-instance fvSubst.definable : 𝚺₁-Function₃[V] (fvSubst L) := fvSubst.defined.to_definable
+instance fvSubst.definable : 𝚺ᴬ₁-Function₃[V] (fvSubst L) := fvSubst.defined.to_definable
 
-instance fvSubst.definable' : Γ-[m + 1]-Function₃[V] (fvSubst L) := fvSubst.definable.of_sigmaOne
+instance fvSubst.definable' : Γᴬ-[m + 1]-Function₃[V] (fvSubst L) := fvSubst.definable.of_sigmaOne
 
 @[simp] lemma fvSubst_rel {k R v} (hR : L.IsRel k R) (hv : IsUTermVec L k v) :
     fvSubst L a t (^rel k R v) = ^rel k R (termFvSubstVec L a t k v) := by
@@ -393,7 +392,7 @@ instance fvSubst.definable' : Γ-[m + 1]-Function₃[V] (fvSubst L) := fvSubst.d
 lemma fvSubst_isSemiformula (ht : IsSemiterm L 0 t) {n p : V} (hp : IsSemiformula L n p) :
     IsSemiformula L n (fvSubst L a t p) := by
   let f : V → V → V := fun _ n ↦ n + 1
-  have hf : 𝚺₁-Function₂ f := by definability
+  have hf : 𝚺ᴬ₁-Function₂ f := by definability
   revert hp
   apply bounded_all_sigma1_order_induction hf
     (P := fun p n ↦ IsSemiformula L n p → IsSemiformula L n (fvSubst L a t p)) ?_ ?_ p n

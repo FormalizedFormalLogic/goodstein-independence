@@ -12,7 +12,7 @@ import Std.Tactic.BVDecide.Normalize.Prop
 Instead of threading a syntactic subformula-closure through the read-off's derivation
 induction, the invariant tracks a semantic hereditary predicate `Gated P V ψ` —
 
-* at a false `∀⁰ χ` member the trap descent needs a **value-gated false branch**
+* at a false `∀¹ χ` member the trap descent needs a **value-gated false branch**
   `∃ k ≤ P V, ¬ atomTrue (χ/[nm k])` (Eguchi–Weiermann's rule-side branch gate, reconstructed
   semantically, `[EW12]`);
 * every quantifier instance stays `Gated` at the bumped budget `max V k` (so the invariant
@@ -35,7 +35,7 @@ open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
 /-- **The hereditary value gate.**  `Gated P V ψ` says: along any refutation descent through
-`ψ`'s quantifier/connective structure, false `∀⁰`-heads admit a false branch of index `≤ P` of
+`ψ`'s quantifier/connective structure, false `∀¹`-heads admit a false branch of index `≤ P` of
 the running budget, where the budget starts at `V` and absorbs every instantiation index.
 Atoms/⊤/⊥ are vacuously gated (the read-off's leaf cases never descend). -/
 def Gated (P : ℕ → ℕ) : ℕ → ArithmeticFormula ℕ → Prop
@@ -63,13 +63,13 @@ theorem Gated_and_iff : Gated P V (χ₁ ⋏ χ₂) ↔ Gated P V χ₁ ∧ Gate
 theorem Gated_or_iff : Gated P V (χ₁ ⋎ χ₂) ↔ Gated P V χ₁ ∧ Gated P V χ₂ := by
   rw [show (χ₁ ⋎ χ₂) = Semiformula.or χ₁ χ₂ from rfl, Gated]
 
-theorem Gated_all_iff : Gated P V (∀⁰ φ₀) ↔
-  ((¬ atomTrue (∀⁰ φ₀) → ∃ k, k ≤ P V ∧ ¬ atomTrue (φ₀/[nm k])) ∧
+theorem Gated_all_iff : Gated P V (∀¹ φ₀) ↔
+  ((¬ atomTrue (∀¹ φ₀) → ∃ k, k ≤ P V ∧ ¬ atomTrue (φ₀/[nm k])) ∧
   ∀ k, Gated P (max V k) (φ₀/[nm k])) := by
-  rw [show (∀⁰ φ₀) = Semiformula.all φ₀ from rfl, Gated]
+  rw [show (∀¹ φ₀) = Semiformula.all φ₀ from rfl, Gated]
 
-theorem Gated_exs_iff : Gated P V (∃⁰ φ₀) ↔ ∀ n, Gated P (max V n) (φ₀/[nm n]) := by
-  rw [show (∃⁰ φ₀) = Semiformula.exs φ₀ from rfl, Gated]
+theorem Gated_exs_iff : Gated P V (∃¹ φ₀) ↔ ∀ n, Gated P (max V n) (φ₀/[nm n]) := by
+  rw [show (∃¹ φ₀) = Semiformula.exs φ₀ from rfl, Gated]
 
 /-! ## Budget monotonicity — old members stay gated when the budget bumps -/
 
@@ -109,7 +109,7 @@ value of every numeral instance of `t` whose numerals are `≤ B` (monotonicity 
 /-- Standard-model `ℒₒᵣ` term values are monotone in both environments (0/1/+/· are monotone). -/
 theorem valm_mono : ∀ {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) {e e' : Fin m → ℕ} {ε ε' : ℕ → ℕ},
     (∀ i, e i ≤ e' i) → (∀ x, ε x ≤ ε' x) →
-    Semiterm.gValm ℕ e ε t ≤ Semiterm.gValm ℕ e' ε' t := by
+    Semiterm.val (M := ℕ) e ε t ≤ Semiterm.val (M := ℕ) e' ε' t := by
   intro m t
   induction t with
   | bvar x => intro e e' ε ε' he _; simpa using he x
@@ -118,23 +118,23 @@ theorem valm_mono : ∀ {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) {e e' : Fin m �
       intro e e' ε ε' he hε
       cases f with
       | zero =>
-          show Semiterm.gValm ℕ e ε (Semiterm.func Language.Zero.zero v)
-            ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.Zero.zero v)
+          show Semiterm.val (M := ℕ) e ε (Semiterm.func Language.Zero.zero v)
+            ≤ Semiterm.val (M := ℕ) e' ε' (Semiterm.func Language.Zero.zero v)
           simp
       | one =>
-          show Semiterm.gValm ℕ e ε (Semiterm.func Language.One.one v)
-            ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.One.one v)
+          show Semiterm.val (M := ℕ) e ε (Semiterm.func Language.One.one v)
+            ≤ Semiterm.val (M := ℕ) e' ε' (Semiterm.func Language.One.one v)
           simp
       | add =>
-          show Semiterm.gValm ℕ e ε (Semiterm.func Language.Add.add v)
-            ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.Add.add v)
+          show Semiterm.val (M := ℕ) e ε (Semiterm.func Language.Add.add v)
+            ≤ Semiterm.val (M := ℕ) e' ε' (Semiterm.func Language.Add.add v)
           simp only [Semiterm.val_func, Tarski.Structure.add_eq_of_lang]
           have h0 := ih 0 he hε
           have h1 := ih 1 he hε
           exact Nat.add_le_add h0 h1
       | mul =>
-          show Semiterm.gValm ℕ e ε (Semiterm.func Language.Mul.mul v)
-            ≤ Semiterm.gValm ℕ e' ε' (Semiterm.func Language.Mul.mul v)
+          show Semiterm.val (M := ℕ) e ε (Semiterm.func Language.Mul.mul v)
+            ≤ Semiterm.val (M := ℕ) e' ε' (Semiterm.func Language.Mul.mul v)
           simp only [Semiterm.val_func, Tarski.Structure.mul_eq_of_lang]
           have h0 := ih 0 he hε
           have h1 := ih 1 he hε
@@ -142,7 +142,7 @@ theorem valm_mono : ∀ {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) {e e' : Fin m �
 
 /-- `tvB t B` — the value of `t` with every bounded variable at `B` and every free name at `0`. -/
 noncomputable def tvB {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) (B : ℕ) : ℕ :=
-  Semiterm.gValm ℕ (fun _ => B) (fun _ => 0) t
+  Semiterm.val (M := ℕ) (fun _ => B) (fun _ => 0) t
 
 theorem tvB_mono {m : ℕ} (t : Semiterm ℒₒᵣ ℕ m) : Monotone (tvB t) :=
   fun _ _ h => valm_mono t (fun _ => h) (fun _ => le_rfl)
@@ -187,7 +187,7 @@ theorem tvB_rew_le {K : ℕ} {n₁ n₂ : ℕ} (t : Semiterm ℒₒᵣ ℕ n₁)
     (hb : ∀ i B, tvB (ω #i) B ≤ max B K) (hf : ∀ x, ω &x = &x) (B : ℕ) :
     tvB (ω t) B ≤ tvB t (max B K) := by
   have h1 : tvB (ω t) B
-      = Semiterm.gValm ℕ (fun i => tvB (ω #i) B) (fun x => tvB (ω &x) B) t :=
+      = Semiterm.val (M := ℕ) (fun i => tvB (ω #i) B) (fun x => tvB (ω &x) B) t :=
     Semiterm.val_rew ω t
   rw [h1]
   apply valm_mono t
@@ -316,7 +316,7 @@ V-threaded read-off invariant needs at the pipeline root. -/
 environment. -/
 theorem valm_env_irrel_of_positive : ∀ (t : Semiterm ℒₒᵣ ℕ 1), t.Positive →
     ∀ (e e' : Fin 1 → ℕ) (ε : ℕ → ℕ),
-      Semiterm.gValm ℕ e ε t = Semiterm.gValm ℕ e' ε t := by
+      Semiterm.val (M := ℕ) e ε t = Semiterm.val (M := ℕ) e' ε t := by
   intro t
   induction t with
   | bvar x =>
@@ -345,7 +345,7 @@ theorem gate_extract {t : Semiterm ℒₒᵣ ℕ 1} (hpos : t.Positive)
       using h.2⟩
   have he : (fun _ => (0:ℕ) : Fin 0 → ℕ) = ![] := by funext i; exact i.elim0
   have h1 : Semiterm.val (fun _ => 0) (fun _ => 0)
-      ((Rew.subst ![nm k]) t) = Semiterm.gValm ℕ ![k] (fun _ => 0) t := by
+      ((Rew.subst ![nm k]) t) = Semiterm.val (M := ℕ) ![k] (fun _ => 0) t := by
     rw [Semiterm.val_rew]
     congr 1
     funext i
@@ -374,10 +374,10 @@ theorem tvB_le_gvb_ball (t : Semiterm ℒₒᵣ ℕ 1) (φ : ArithmeticSemiformu
 /-- **Σ₁ `all`-head inversion**: at `𝚺 1`, a `∀`-head can only be a ball
 (`all`/`pi` are 𝚷-constructors; `dummy_sigma` needs level ≥ 2). -/
 theorem sigma1_all_inv {χ : ArithmeticSemiformula ℕ 1}
-    (H : Arithmetic.Hierarchy 𝚺 1 (Semiformula.all χ)) :
+    (H : ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 (Semiformula.all χ)) :
     ∃ (t : Semiterm ℒₒᵣ ℕ 1) (φ : ArithmeticSemiformula ℕ 1),
       t.Positive ∧ χ = ((“x. x < !!t” : ArithmeticSemiformula ℕ 1) 🡒 φ)
-        ∧ Arithmetic.Hierarchy 𝚺 1 φ := by
+        ∧ ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 φ := by
   -- Upstream now factors the hierarchy through a bounding-relation set `ℬ` with an extra
   -- `bounded` (i.e. `ℬ.Closure`) constructor; for `ℬ[<, ℒₒᵣ]` any `R ∈ ℬ` is `<`.
   have hR : ∀ {R : Semiformula.Operator ℒₒᵣ 2}, R ∈ ℬ[<, ℒₒᵣ] →
@@ -403,7 +403,7 @@ theorem sigma1_all_inv {χ : ArithmeticSemiformula ℕ 1}
 At the pipeline root instantiate `P := fun B => gvb φ_root (max V_root B)` (monotone by
 `gvb_mono`, and the hypothesis is `gvb_mono` + max-algebra). -/
 theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
-    ∀ (ψ : ArithmeticFormula ℕ), Arithmetic.Hierarchy 𝚺 1 ψ →
+    ∀ (ψ : ArithmeticFormula ℕ), ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 ψ →
       ∀ V : ℕ, (∀ B, gvb ψ B ≤ P (max V B)) → Gated P V ψ
   | Semiformula.rel _ _, _, _, _ => by rw [Gated]; trivial
   | Semiformula.nrel _ _, _, _, _ => by rw [Gated]; trivial
@@ -412,7 +412,7 @@ theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
   | Semiformula.and χ₁ χ₂, H, V, hgv => by
       rw [show (Semiformula.and χ₁ χ₂) = (χ₁ ⋏ χ₂) from rfl] at H
       rw [Gated]
-      have h := Arithmetic.Hierarchy.and_iff.mp H
+      have h := Bounding.Hierarchy.and_iff.mp H
       exact ⟨gated_of_sigma1 hP χ₁ h.1 V
           (fun B => le_trans (le_max_left _ _) (hgv B)),
         gated_of_sigma1 hP χ₂ h.2 V
@@ -420,7 +420,7 @@ theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
   | Semiformula.or χ₁ χ₂, H, V, hgv => by
       rw [show (Semiformula.or χ₁ χ₂) = (χ₁ ⋎ χ₂) from rfl] at H
       rw [Gated]
-      have h := Arithmetic.Hierarchy.or_iff.mp H
+      have h := Bounding.Hierarchy.or_iff.mp H
       exact ⟨gated_of_sigma1 hP χ₁ h.1 V
           (fun B => le_trans (le_max_left _ _) (hgv B)),
         gated_of_sigma1 hP χ₂ h.2 V
@@ -428,8 +428,8 @@ theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
   | Semiformula.exs χ, H, V, hgv => by
       rw [Gated]
       intro n
-      have hχ : Arithmetic.Hierarchy 𝚺 1 χ := Arithmetic.Hierarchy.sigma_of_sigma_ex H
-      refine gated_of_sigma1 hP (χ/[nm n]) (Arithmetic.Hierarchy.rew _ hχ) (max V n) (fun B => ?_)
+      have hχ : ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 χ := Bounding.Hierarchy.sigma_of_sigma_ex H
+      refine gated_of_sigma1 hP (χ/[nm n]) (Bounding.Hierarchy.rew _ hχ) (max V n) (fun B => ?_)
       calc gvb (χ/[nm n]) B ≤ gvb χ (max B n) := gvb_substs_le n B
         _ = gvb (Semiformula.exs χ) (max B n) := rfl
         _ ≤ P (max V (max B n)) := hgv (max B n)
@@ -455,10 +455,10 @@ theorem gated_of_sigma1 {P : ℕ → ℕ} (hP : Monotone P) :
             _ = P V := by rw [Nat.max_zero]
         omega
       · intro k
-        have hχH : Arithmetic.Hierarchy 𝚺 1 χ := by
+        have hχH : ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 χ := by
           rw [hχeq]
-          simpa [Arithmetic.Hierarchy.imp_iff, Semiformula.Operator.lt_def] using hφ
-        refine gated_of_sigma1 hP (χ/[nm k]) (Arithmetic.Hierarchy.rew _ hχH) (max V k) (fun B => ?_)
+          simpa [Bounding.Hierarchy.imp_iff, Semiformula.Operator.lt_def] using hφ
+        refine gated_of_sigma1 hP (χ/[nm k]) (Bounding.Hierarchy.rew _ hχH) (max V k) (fun B => ?_)
         calc gvb (χ/[nm k]) B ≤ gvb χ (max B k) := gvb_substs_le k B
           _ = gvb (Semiformula.all χ) (max B k) := rfl
           _ ≤ P (max V (max B k)) := hgv (max B k)
@@ -469,7 +469,7 @@ decreasing_by
 
 /-- **The certificate-exists form** — at the pipeline root the coupled hypothesis is
 self-discharging with `P := fun B => gvb ψ (max V B)`. -/
-theorem gated_root_of_sigma1 (ψ : ArithmeticFormula ℕ) (h : Arithmetic.Hierarchy 𝚺 1 ψ) (V : ℕ) :
+theorem gated_root_of_sigma1 (ψ : ArithmeticFormula ℕ) (h : ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 ψ) (V : ℕ) :
     ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V ψ := by
   refine ⟨fun B => gvb ψ (max V B), fun _ _ hb => gvb_mono ψ (max_le_max le_rfl hb), ?_⟩
   refine gated_of_sigma1 (fun _ _ hb => gvb_mono ψ (max_le_max le_rfl hb)) ψ h V (fun B => ?_)
@@ -515,12 +515,12 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
       | FFL.FirstOrder.Language.ORing.Func.zero, v =>
           refine ⟨0, fun B => ?_⟩
           have hv : tvB (Semiterm.func FFL.FirstOrder.Language.ORing.Func.zero v) B = 0 := by
-            simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
+            simp only [tvB, Semiterm.val_func]; rfl
           simp [hv]
       | FFL.FirstOrder.Language.ORing.Func.one, v =>
           refine ⟨1, fun B => ?_⟩
           have hv : tvB (Semiterm.func FFL.FirstOrder.Language.ORing.Func.one v) B = 1 := by
-            simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
+            simp only [tvB, Semiterm.val_func]; rfl
           have h := hG_succ B
           simp only [Function.iterate_one]
           omega
@@ -534,7 +534,7 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
             le_trans (h₁ B) (iter_le_iter_of_succ hG_mono hG_succ (le_max_right c₀ c₁) B)
           have hadd : tvB (Semiterm.func FFL.FirstOrder.Language.ORing.Func.add v) B
               = tvB (v 0) B + tvB (v 1) B := by
-            simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
+            simp only [tvB, Semiterm.val_func]; rfl
           rw [hadd, Function.iterate_succ_apply']
           exact le_trans (hG_add _ _) (hG_mono (max_le hb₀ hb₁))
       | FFL.FirstOrder.Language.ORing.Func.mul, v =>
@@ -547,7 +547,7 @@ theorem tvB_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
             le_trans (h₁ B) (iter_le_iter_of_succ hG_mono hG_succ (le_max_right c₀ c₁) B)
           have hmul : tvB (Semiterm.func FFL.FirstOrder.Language.ORing.Func.mul v) B
               = tvB (v 0) B * tvB (v 1) B := by
-            simp only [tvB, Semiterm.gValm, Semiterm.val_func]; rfl
+            simp only [tvB, Semiterm.val_func]; rfl
           rw [hmul, Function.iterate_succ_apply']
           exact le_trans (hG_mul _ _) (hG_mono (max_le hb₀ hb₁))
 
@@ -603,7 +603,7 @@ theorem gvb_le_iter (hG_mono : Monotone G) (hG_succ : ∀ x, x + 1 ≤ G x)
         rw [show gvb (Semiformula.exs χ) B = gvb χ B from rfl]; exact h B⟩
 
 /-- **The uniform root certificate**: for the numeral family
-`ψ_m = ∃⁰((subst ![nm m]).q ▹ body)` over a FIXED matrix `body`, ONE iterate count `k` serves
+`ψ_m = ∃¹((subst ![nm m]).q ▹ body)` over a FIXED matrix `body`, ONE iterate count `k` serves
 every `m`: the canonical `P := gvb ψ_m (max V ·)` is monotone, `Gated`, and `G^[k]`-bounded at
 the `max (max V m)`-shifted argument (`gvb_substs_q_le` contracts the numeral out,
 `gvb_le_iter` bounds the fixed matrix). -/
@@ -613,19 +613,19 @@ theorem gated_certificate_uniform {G : ℕ → ℕ} (hG_mono : Monotone G)
     (body : ArithmeticSemiformula ℕ 2) :
     ∃ k : ℕ, ∀ (m V : ℕ) (χ : ArithmeticSemiformula ℕ 1),
       χ = (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q ▹ body →
-      Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) →
-      ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V (∃⁰ χ) ∧
+      ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 (∃¹ χ) →
+      ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V (∃¹ χ) ∧
         ∀ z, P z ≤ G^[k] (max (max V m) z) := by
   obtain ⟨k, hk⟩ := gvb_le_iter hG_mono hG_succ hG_add hG_mul body
   refine ⟨k, fun m V χ hχ hH => ?_⟩
-  refine ⟨fun B => gvb (∃⁰ χ) (max V B),
+  refine ⟨fun B => gvb (∃¹ χ) (max V B),
     fun _ _ hb => gvb_mono _ (max_le_max le_rfl hb), ?_, ?_⟩
   · refine gated_of_sigma1 (fun _ _ hb => gvb_mono _ (max_le_max le_rfl hb)) _ hH V
       (fun B => ?_)
     exact gvb_mono _ (le_trans (le_max_right V B) (le_max_right V (max V B)))
   · intro z
-    have h1 : gvb (∃⁰ χ) (max V z) = gvb χ (max V z) := rfl
-    show gvb (∃⁰ χ) (max V z) ≤ G^[k] (max (max V m) z)
+    have h1 : gvb (∃¹ χ) (max V z) = gvb χ (max V z) := rfl
+    show gvb (∃¹ χ) (max V z) ≤ G^[k] (max (max V m) z)
     rw [h1, hχ]
     refine le_trans (gvb_substs_q_le m (max V z)) ?_
     refine le_trans (hk (max (max V z) m)) ?_

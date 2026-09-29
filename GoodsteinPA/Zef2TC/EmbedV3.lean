@@ -123,8 +123,8 @@ lemma budgetedEmbedsV3_shift (ih : BudgetedEmbedsV3 Γ) : BudgetedEmbedsV3 (Γ.i
   rw [himg]
   exact D.mono_f (fun x => relSlot_mono (le_refl B) (envSup_shift_le env N) x)
 
-/-- **V3 `all`** — closes `BudgetedEmbedsV3` under the ω-rule for `∀⁰ φ`. -/
-lemma budgetedEmbedsV3_all {φ : ArithmeticSemiformula ℕ 1} (h : ∀⁰ φ ∈ Γ)
+/-- **V3 `all`** — closes `BudgetedEmbedsV3` under the ω-rule for `∀¹ φ`. -/
+lemma budgetedEmbedsV3_all {φ : ArithmeticSemiformula ℕ 1} (h : ∀¹ φ ∈ Γ)
     (ih : BudgetedEmbedsV3 (insert (Rewriting.free φ) (Γ.image Rewriting.shift))) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B, d, N, e, α, he, hαNF, hNlogB, ih⟩ := ih
@@ -186,9 +186,9 @@ lemma budgetedEmbedsV3_all {φ : ArithmeticSemiformula ℕ 1} (h : ∀⁰ φ ∈
       (f := rel1 (ewRootSlot e (B + 1)) (envSup env N)) hgate
       ((asg env).q ▹ φ) (fun _ => α)
       (fun _ => lt_osucc hαNF) (fun _ => hαNF) (osucc_NF hαNF) hrel hfam
-    have hmem : (asg env ▹ (∀⁰ φ))
+    have hmem : (asg env ▹ (∀¹ φ))
         ∈ Γ.image (fun ψ => asg env ▹ ψ) := Finset.mem_image_of_mem _ h
-    rw [show (asg env ▹ (∀⁰ φ)) = ∀⁰ ((asg env).q ▹ φ) by simp] at hmem
+    rw [show (asg env ▹ (∀¹ φ)) = ∀¹ ((asg env).q ▹ φ) by simp] at hmem
     rw [Finset.insert_eq_self.mpr hmem] at hall
     exact hall
 
@@ -303,9 +303,9 @@ lemma budgetedEmbedsV3_cut {φ : ArithmeticFormula ℕ}
       (lt_of_le_of_lt (le_add_left_NF hα₁NF hα₂NF) (lt_osucc haddNF))
       hα₁NF hα₂NF (osucc_NF haddNF) (clT α₁) (clT α₂) D₁' D₂'
 
-/-- **V3 `exs`** — closes `BudgetedEmbedsV3` under ∃-introduction for `∃⁰ φ` with a structural
+/-- **V3 `exs`** — closes `BudgetedEmbedsV3` under ∃-introduction for `∃¹ φ` with a structural
 witness budget. -/
-lemma budgetedEmbedsV3_exs {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
+lemma budgetedEmbedsV3_exs {φ : ArithmeticSemiformula ℕ 1} (h : ∃¹ φ ∈ Γ) (t : ArithmeticTerm ℕ)
     (ih : BudgetedEmbedsV3 (insert (φ/[t]) Γ)) :
     BudgetedEmbedsV3 Γ := by
   obtain ⟨B₁, d₁, N₁, e₁, α₁, he₁, hα₁NF, hN₁, ih₁⟩ := ih
@@ -419,7 +419,7 @@ lemma budgetedEmbedsV3_exs {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈
       hgout ψ' m
       (lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
       (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
-    have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => asg env ▹ χ) := by
+    have hmem : (∃¹ ψ') ∈ Γ.image (fun χ => asg env ▹ χ) := by
       have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h
       simpa [hψ'] using this
     rwa [Finset.insert_eq_self.mpr hmem] at hexI

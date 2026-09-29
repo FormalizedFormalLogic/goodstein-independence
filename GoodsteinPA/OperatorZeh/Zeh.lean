@@ -35,11 +35,11 @@ inductive Zeh : ONote → ONote → (H : ONote → Prop) → ℕ → ℕ → Fin
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
       (hβH : ∀ n, relOp H n (β n))
       (dd : ∀ n, Zeh (β n) e (adjoin H n) (max m n) c (insert (φ/[nm n]) Γ)) :
-      Zeh α e H m c (insert (∀⁰ φ) Γ)
+      Zeh α e H m c (insert (∀¹ φ) Γ)
   | exI {α β e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ hardy e m)
-      (dd : Zeh β e H m c (insert (φ/[nm n]) Γ)) : Zeh α e H m c (insert (∃⁰ φ) Γ)
+      (dd : Zeh β e H m c (insert (φ/[nm n]) Γ)) : Zeh α e H m c (insert (∃¹ φ) Γ)
   | cut {α βφ βψ e : ONote} {H : ONote → Prop} {m c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
@@ -170,7 +170,7 @@ Reused by the assembly to introduce existentials at the prov level. -/
 lemma ZehProv.exI
     (φ₀ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβNF : β.NF) (hβH : Cl H β)
     (hbound : n ≤ hardy e m) (D : ZehProv β e H m c (insert (φ₀/[nm n]) Γ)) :
-    ZehProv (osucc β) e H m c (insert (∃⁰ φ₀) Γ) := by
+    ZehProv (osucc β) e H m c (insert (∃¹ φ₀) Γ) := by
   obtain ⟨β', hle, hNF', hH', d⟩ := D
   exact ⟨osucc β, le_rfl, osucc_NF hβNF, Cl.osucc hβH,
     Zeh.exI φ₀ n (lt_of_le_of_lt hle (lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
@@ -182,7 +182,7 @@ assembly to rebuild ω-nodes over the branch family. -/
 lemma ZehProv.allω (φ₀ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
     (hβ : ∀ n, β n < α) (hαNF : α.NF) (hαH : Cl H α)
     (D : ∀ n, ZehProv (β n) e (adjoin H n) (max m n) c (insert (φ₀/[nm n]) Γ)) :
-    ZehProv α e H m c (insert (∀⁰ φ₀) Γ) :=
+    ZehProv α e H m c (insert (∀¹ φ₀) Γ) :=
   ⟨α, le_rfl, hαNF, hαH,
     Zeh.allω φ₀ (fun n => (D n).choose)
       (fun n => lt_of_le_of_lt (D n).choose_spec.1 (hβ n))

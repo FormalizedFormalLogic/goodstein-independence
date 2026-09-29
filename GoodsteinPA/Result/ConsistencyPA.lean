@@ -2,7 +2,7 @@
 # `𝗣𝗔` consistency as an integration check on `Zinfty.Embedding` / `Zinfty.Cut`
 
 Not new content: `Entailment.consistent_of_model` already gives `𝗣𝗔`'s consistency from
-`ℕ ⊧ₘ* 𝗣𝗔`. This chains `of_derivation2_cutFree` and `remove_falsum` end-to-end instead, as a
+`ℕ↓[ℒₒᵣ] ⊧* 𝗣𝗔`. This chains `of_derivation2_cutFree` and `remove_falsum` end-to-end instead, as a
 sanity check that the two connect correctly.
 -/
 module

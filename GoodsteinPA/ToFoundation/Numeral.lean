@@ -6,7 +6,7 @@ The shared numeral shorthand `nm n = (Semiterm.Operator.numeral ℒₒᵣ n).con
 -/
 module
 
-public import GoodsteinPA.ToFoundation.Compat
+public import Foundation.FirstOrder.Arithmetic.HFS
 
 @[expose] public section
 
@@ -19,7 +19,7 @@ noncomputable abbrev nm (n : ℕ) : ArithmeticTerm ℕ := (Semiterm.Operator.num
 
 /-- The numeral `nm m` evaluates to `m` in the standard ℕ-model (any free assignment). -/
 @[simp, grind .]
-lemma valm_nm (m : ℕ) (f : ℕ → ℕ) : Semiterm.gValm ℕ ![] f (nm m) = m := by simp [nm]
+lemma valm_nm (m : ℕ) (f : ℕ → ℕ) : Semiterm.val (M := ℕ) ![] f (nm m) = m := by simp [nm]
 
 end ArithmeticTerm
 

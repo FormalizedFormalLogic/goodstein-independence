@@ -51,15 +51,15 @@ private theorem inv_pull {a : ArithmeticFormula ℕ} (h : a ≠ (φ ⋎ ψ)) (s 
 Reusable `@[simp, grind]` facts that let `grind`/`simp` discharge the `head ≠ principal` side
 conditions arising in all three inversions (`orInvAux`, `allInvAux`, `andInvAux`). The cross-shape
 cases (different outer connective) follow from constructor injectivity (`simp`); the same-outer-shape
-subformula cases (`φ ≠ φ ⋏ ψ`, `φₓ/[nm n] ≠ ∀⁰ φₓ`, …) follow from `complexity`. -/
+subformula cases (`φ ≠ φ ⋏ ψ`, `φₓ/[nm n] ≠ ∀¹ φₓ`, …) follow from `complexity`. -/
 
 -- distinctness from a disjunction `φ ⋎ ψ`
 @[simp, grind .] lemma rel_ne_or : Semiformula.rel r v ≠ φ ⋎ ψ := by simp
 @[simp, grind .] lemma nrel_ne_or : Semiformula.nrel r v ≠ φ ⋎ ψ := by simp
 @[simp, grind .] lemma verum_ne_or : ⊤ ≠ φ ⋎ ψ := by simp
 @[simp, grind .] lemma and_ne_or : φ' ⋏ ψ' ≠ φ ⋎ ψ := by simp
-@[simp, grind .] lemma all_ne_or : ∀⁰ φₓ ≠ φ ⋎ ψ := by simp
-@[simp, grind .] lemma exs_ne_or : ∃⁰ φₓ ≠ φ ⋎ ψ := by simp
+@[simp, grind .] lemma all_ne_or : ∀¹ φₓ ≠ φ ⋎ ψ := by simp
+@[simp, grind .] lemma exs_ne_or : ∃¹ φₓ ≠ φ ⋎ ψ := by simp
 @[simp, grind .] lemma ne_or_left : φ ≠ φ ⋎ ψ := Semiformula.ne_of_ne_complexity (by simp)
 @[simp, grind .] lemma ne_or_right : ψ ≠ φ ⋎ ψ := Semiformula.ne_of_ne_complexity (by simp)
 
@@ -68,19 +68,19 @@ subformula cases (`φ ≠ φ ⋏ ψ`, `φₓ/[nm n] ≠ ∀⁰ φₓ`, …) foll
 @[simp, grind .] lemma nrel_ne_and : Semiformula.nrel r v ≠ φ ⋏ ψ := by simp
 @[simp, grind .] lemma verum_ne_and : ⊤ ≠ φ ⋏ ψ := by simp
 @[simp, grind .] lemma or_ne_and : φ' ⋎ ψ' ≠ φ ⋏ ψ := by simp
-@[simp, grind .] lemma all_ne_and : ∀⁰ φₓ ≠ φ ⋏ ψ := by simp
-@[simp, grind .] lemma exs_ne_and : ∃⁰ φₓ ≠ φ ⋏ ψ := by simp
+@[simp, grind .] lemma all_ne_and : ∀¹ φₓ ≠ φ ⋏ ψ := by simp
+@[simp, grind .] lemma exs_ne_and : ∃¹ φₓ ≠ φ ⋏ ψ := by simp
 @[simp, grind .] lemma ne_and_left : φ ≠ φ ⋏ ψ := Semiformula.ne_of_ne_complexity (by simp)
 @[simp, grind .] lemma ne_and_right : ψ ≠ φ ⋏ ψ := Semiformula.ne_of_ne_complexity (by simp)
 
--- distinctness from a universal `∀⁰ φₓ`
-@[simp, grind .] lemma rel_ne_all : Semiformula.rel r v ≠ ∀⁰ φₓ := by simp
-@[simp, grind .] lemma nrel_ne_all : Semiformula.nrel r v ≠ ∀⁰ φₓ := by simp
-@[simp, grind .] lemma verum_ne_all : ⊤ ≠ ∀⁰ φₓ := by simp
-@[simp, grind .] lemma and_ne_all : φ' ⋏ ψ' ≠ ∀⁰ φₓ := by simp
-@[simp, grind .] lemma or_ne_all : φ' ⋎ ψ' ≠ ∀⁰ φₓ := by simp
-@[simp, grind .] lemma exs_ne_all : ∃⁰ φ' ≠ ∀⁰ φₓ := by simp
-@[simp, grind .] lemma ne_all_inst : φₓ/[nm n] ≠ ∀⁰ φₓ := Semiformula.ne_of_ne_complexity (by simp)
+-- distinctness from a universal `∀¹ φₓ`
+@[simp, grind .] lemma rel_ne_all : Semiformula.rel r v ≠ ∀¹ φₓ := by simp
+@[simp, grind .] lemma nrel_ne_all : Semiformula.nrel r v ≠ ∀¹ φₓ := by simp
+@[simp, grind .] lemma verum_ne_all : ⊤ ≠ ∀¹ φₓ := by simp
+@[simp, grind .] lemma and_ne_all : φ' ⋏ ψ' ≠ ∀¹ φₓ := by simp
+@[simp, grind .] lemma or_ne_all : φ' ⋎ ψ' ≠ ∀¹ φₓ := by simp
+@[simp, grind .] lemma exs_ne_all : ∃¹ φ' ≠ ∀¹ φₓ := by simp
+@[simp, grind .] lemma ne_all_inst : φₓ/[nm n] ≠ ∀¹ φₓ := Semiformula.ne_of_ne_complexity (by simp)
 
 /-! ### Inversion lemmas (Towsner §19.2–19.4)
 
@@ -168,17 +168,17 @@ end InversionOr
 
 /-! ### ω-rule inversion (Towsner §19.4)
 
-The distinctive infinitary inversion: inverting a `∀⁰ χ` yields, for *each* numeral `n`, the
+The distinctive infinitary inversion: inverting a `∀¹ χ` yields, for *each* numeral `n`, the
 instance `χ/[nm n]`. The principal case `allω` supplies exactly the right instance from its
 ω-indexed premise family. Same structural-induction template as `orInvAux`. -/
 
 section InversionAll
 
-/-- **ω/∀-inversion.** If `∀⁰ χ` occurs in a `Z_∞`-derivable sequent, then for
+/-- **ω/∀-inversion.** If `∀¹ χ` occurs in a `Z_∞`-derivable sequent, then for
 every numeral `n` the instance `χ/[nm n]` is derivable at the *same* ordinal bound and cut rank.
 - [Tow20, §19.4] -/
-lemma allInvAux (n : ℕ) (D : Derivation Γ) (hcr : D.cutRank ≤ c) (hmem : (∀⁰ φₓ) ∈ Γ) :
-  Provable D.ordinalBound c (insert (φₓ/[nm n]) (Γ.erase (∀⁰ φₓ))) := by
+lemma allInvAux (n : ℕ) (D : Derivation Γ) (hcr : D.cutRank ≤ c) (hmem : (∀¹ φₓ) ∈ Γ) :
+  Provable D.ordinalBound c (insert (φₓ/[nm n]) (Γ.erase (∀¹ φₓ))) := by
   induction D with
   | @axL Γ k r v hp hn =>
     exact (Provable.axL r v (by grind) (by grind)).mono_cutRank (by omega)
@@ -187,7 +187,7 @@ lemma allInvAux (n : ℕ) (D : Derivation Γ) (hcr : D.cutRank ≤ c) (hmem : (�
     . cases b <;> . simp [signedLit]; grind;
   | @verumR Γ h => exact (Provable.verumR (by grind)).mono_cutRank (by omega)
   | @weak Δ Γ D' hsub ih =>
-    by_cases hd : (∀⁰ φₓ) ∈ Δ
+    by_cases hd : (∀¹ φₓ) ∈ Δ
     · apply (ih hcr hd).weakening;
       intro χ;
       simp only [Finset.mem_insert, Finset.mem_erase];
@@ -208,12 +208,12 @@ lemma allInvAux (n : ℕ) (D : Derivation Γ) (hcr : D.cutRank ≤ c) (hmem : (�
     simp only [Finset.mem_insert, Finset.mem_erase];
     grind;
   | @allω Γ₀ χ' Dₓ ih =>
-    by_cases hhd : (∀⁰ χ') = (∀⁰ φₓ);
+    by_cases hhd : (∀¹ χ') = (∀¹ φₓ);
     · obtain rfl := (Semiformula.all_inj _ _).mp hhd;
       have hcrn : (Dₓ n).cutRank ≤ c := le_trans (le_iSup (fun m => (Dₓ m).cutRank) n) hcr;
       have hbound : (Dₓ n).ordinalBound ≤ (⨆ m, (Dₓ m).ordinalBound) + 1 :=
         le_trans (Ordinal.le_iSup (fun m => (Dₓ m).ordinalBound) n) (le_of_lt (lt_add_of_pos_right _ one_pos));
-      by_cases hd : (∀⁰ χ') ∈ Γ₀;
+      by_cases hd : (∀¹ χ') ∈ Γ₀;
       · apply ((ih n hcrn (Finset.mem_insert_of_mem hd)).weakening ?_).mono_ordinalBound hbound;
         intro χ;
         simp only [Finset.mem_insert, Finset.mem_erase];
@@ -240,7 +240,7 @@ lemma allInvAux (n : ℕ) (D : Derivation Γ) (hcr : D.cutRank ≤ c) (hmem : (�
 
 /-- **ω-inversion at a relaxed bound** (the form used downstream).
 - [Tow20, §19.4] -/
-lemma all_inv (hmem : (∀⁰ φₓ) ∈ Γ) (n : ℕ) (h : Provable α c Γ) : Provable α c (insert (φₓ/[nm n]) (Γ.erase (∀⁰ φₓ))) := by
+lemma all_inv (hmem : (∀¹ φₓ) ∈ Γ) (n : ℕ) (h : Provable α c Γ) : Provable α c (insert (φₓ/[nm n]) (Γ.erase (∀¹ φₓ))) := by
   obtain ⟨D, ho, hcr⟩ := h;
   exact (allInvAux n D hcr hmem).mono_ordinalBound ho
 

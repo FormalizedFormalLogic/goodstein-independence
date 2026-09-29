@@ -60,12 +60,12 @@ inductive Zef2TC : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → �
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
       (hβH : ∀ n, relOp H n (β n))
       (dd : ∀ n, Zef2TC (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
-      Zef2TC α e H f c (insert (∀⁰ φ) Γ)
+      Zef2TC α e H f c (insert (∀¹ φ) Γ)
   | exI {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0)
       (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ f 0)
-      (dd : Zef2TC β e H f c (insert (φ/[nm n]) Γ)) : Zef2TC α e H f c (insert (∃⁰ φ) Γ)
+      (dd : Zef2TC β e H f c (insert (φ/[nm n]) Γ)) : Zef2TC α e H f c (insert (∃¹ φ) Γ)
   | cut {α βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (hαN : Nlog α ≤ f 0)
       (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hcutRead : φ.complexity ≤ f 0)
