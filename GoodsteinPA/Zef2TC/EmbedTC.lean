@@ -9,7 +9,7 @@ namespace GoodsteinPA.E1EmbeddingGrind
 open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote Ordinal
 open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 
-/-! ### The master predicate and the `Derivation2` case ladder -/
+/-! ### The master predicate and the `LK2.Derivation` case ladder -/
 
 variable {Γ : Finset (ArithmeticFormula ℕ)}
 
@@ -232,10 +232,10 @@ Mirror of `Provable.em_cong_gen`/`Provable.exI_closed` (`Embedding.lean`) with t
 budget bookkeeping of `em_Zef2TC`; the congruence kit
 (`stdClosedVal`/`atomTrue_rel_congr`/`embedding_subst_q_cons_app`) is banked in
 `OperatorZinfty`. -/
-/-- The `exs` case: `∃⁰ φ ∈ Γ` and `insert (φ/[t]) Γ` embeds implies `Γ` embeds, for any
+/-- The `exs` case: `∃¹ φ ∈ Γ` and `insert (φ/[t]) Γ` embeds implies `Γ` embeds, for any
 witness term `t`. -/
 theorem budgetedEmbedsTC_exs
-    {φ : ArithmeticSemiformula ℕ 1} (h : ∃⁰ φ ∈ Γ) (t : ArithmeticTerm ℕ)
+    {φ : ArithmeticSemiformula ℕ 1} (h : ∃¹ φ ∈ Γ) (t : ArithmeticTerm ℕ)
     (ih : BudgetedEmbedsTC (insert (φ/[t]) Γ)) :
     BudgetedEmbedsTC Γ := by
   obtain ⟨B₁, d₁, e₁, he₁, ih₁⟩ := ih
@@ -337,7 +337,7 @@ theorem budgetedEmbedsTC_exs
     hgout ψ' m
     (lt_osucc (osucc_NF haddNF)) (osucc_NF haddNF)
     (osucc_NF (osucc_NF haddNF)) (clT _) hwit Dnum
-  have hmem : (∃⁰ ψ') ∈ Γ.image (fun χ => asg env ▹ χ) := by
+  have hmem : (∃¹ ψ') ∈ Γ.image (fun χ => asg env ▹ χ) := by
     have := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) h
     simpa [hψ'] using this
   rwa [Finset.insert_eq_self.mpr hmem] at hexI

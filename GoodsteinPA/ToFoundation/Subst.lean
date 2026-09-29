@@ -81,12 +81,12 @@ lemma subst_q_cons_app (w : Fin n → ArithmeticTerm ℕ) (m : ℕ)
 
 /-- Value of a renamed term depends only on the values of the substituted terms. -/
 lemma valm_subst_congr (w w' : Fin n → ArithmeticTerm ℕ)
-    (hval : ∀ i, Semiterm.gValm ℕ ![] id (w i)
-                = Semiterm.gValm ℕ ![] id (w' i))
+    (hval : ∀ i, Semiterm.val (M := ℕ) ![] id (w i)
+                = Semiterm.val (M := ℕ) ![] id (w' i))
     (t : ArithmeticSemiterm ℕ n) :
-    Semiterm.gValm ℕ ![] id (Rew.subst w t)
-      = Semiterm.gValm ℕ ![] id (Rew.subst w' t) := by
-  simp only [Semiterm.gValm, Semiterm.val_substs]
+    Semiterm.val (M := ℕ) ![] id (Rew.subst w t)
+      = Semiterm.val (M := ℕ) ![] id (Rew.subst w' t) := by
+  simp only [Semiterm.val_substs]
   congr 1
   funext x; exact hval x
 

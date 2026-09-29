@@ -167,7 +167,7 @@ private lemma insert_erase_union_subset {a b : ArithmeticFormula ℕ} {s t : Fin
 /-- `cutReduceAllAux`, the `axL` case. -/
 private lemma cutReduceAllAux_axL {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
     (r : (ℒₒᵣ).Rel ar) (v) (hp : Semiformula.rel r v ∈ Δ) (hn : Semiformula.nrel r v ∈ Δ) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃¹ ∼φ) ∪ Γ) :=
   ⟨0, le_def.mpr (by simp), NF.zero, by simp only [norm_zero]; omega, Provable.axL r v
     (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hp⟩))
     (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hn⟩))⟩
@@ -175,7 +175,7 @@ private lemma cutReduceAllAux_axL {γ' : ONote} {Δ : Finset (ArithmeticFormula 
 /-- `cutReduceAllAux`, the `verumR` case. -/
 private lemma cutReduceAllAux_verumR {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)}
     (h : (⊤ : ArithmeticFormula ℕ) ∈ Δ) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃¹ ∼φ) ∪ Γ) :=
   ⟨0, le_def.mpr (by simp), NF.zero, by simp only [norm_zero]; omega, Provable.verumR
     (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), h⟩))⟩
 
@@ -184,7 +184,7 @@ include hαNF in
 private lemma cutReduceAllAux_trueRel {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
     (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (r : (ℒₒᵣ).Rel ar) (v)
     (htrue : atomTrue (Semiformula.rel r v)) (hmemA : Semiformula.rel r v ∈ Δ) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃¹ ∼φ) ∪ Γ) :=
   ⟨_, le_trans (le_add_left_NF hαNF hγNF) (le_of_lt (lt_osucc (ONote.add_nf α _))),
     hγNF, by omega, Provable.trueRel r v htrue (by omega) hγNF
       (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemA⟩))⟩
@@ -194,7 +194,7 @@ include hαNF in
 private lemma cutReduceAllAux_trueNrel {γ' : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar}
     (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (r : (ℒₒᵣ).Rel ar) (v)
     (htrue : atomTrue (Semiformula.nrel r v)) (hmemA : Semiformula.nrel r v ∈ Δ) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃⁰ ∼φ) ∪ Γ) :=
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δ.erase (∃¹ ∼φ) ∪ Γ) :=
   ⟨_, le_trans (le_add_left_NF hαNF hγNF) (le_of_lt (lt_osucc (ONote.add_nf α _))),
     hγNF, by omega, Provable.trueNrel r v htrue (by omega) hγNF
       (Finset.mem_union_left _ (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmemA⟩))⟩
@@ -204,11 +204,11 @@ include hαNF hφc heNF fam in
 private lemma cutReduceAllAux_wk {γ' : ONote} {Δsub Δsup : Finset (ArithmeticFormula ℕ)}
     (hsub : Δsub ⊆ Δsup) (D' : Provable γ' e' k' dd' c' Δsub)
     (ih : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      γ'.NF → norm γ' < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ Δsub →
-      ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δsub.erase (∃⁰ ∼φ) ∪ Γ))
-    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (_hmem : (∃⁰ ∼φ) ∈ Δsup) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δsup.erase (∃⁰ ∼φ) ∪ Γ) := by
-  by_cases hd : (∃⁰ ∼φ) ∈ Δsub
+      γ'.NF → norm γ' < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ Δsub →
+      ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δsub.erase (∃¹ ∼φ) ∪ Γ))
+    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (_hmem : (∃¹ ∼φ) ∈ Δsup) :
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δsup.erase (∃¹ ∼φ) ∪ Γ) := by
+  by_cases hd : (∃¹ ∼φ) ∈ Δsub
   · exact (ih hφc heNF fam hγNF hγb hk hdd hd).weakening (by
       intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
       rcases hx with ⟨hne, hxs⟩ | hxΓ
@@ -225,11 +225,11 @@ private lemma cutReduceAllAux_weak {γ' β : ONote} {Δsub Δsup : Finset (Arith
     (hβ : β < γ') (hβNF : β.NF) (hτ : norm β < k' + dd') (hsub : Δsub ⊆ Δsup)
     (D' : Provable β e' k' dd' c' Δsub)
     (ih : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      β.NF → norm β < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ Δsub →
-      ProvableSlack (osucc (α + β)) e' k' (dd' + norm α + 1) c' (Δsub.erase (∃⁰ ∼φ) ∪ Γ))
-    (hγNF : γ'.NF) (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (_hmem : (∃⁰ ∼φ) ∈ Δsup) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δsup.erase (∃⁰ ∼φ) ∪ Γ) := by
-  by_cases hd : (∃⁰ ∼φ) ∈ Δsub
+      β.NF → norm β < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ Δsub →
+      ProvableSlack (osucc (α + β)) e' k' (dd' + norm α + 1) c' (Δsub.erase (∃¹ ∼φ) ∪ Γ))
+    (hγNF : γ'.NF) (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (_hmem : (∃¹ ∼φ) ∈ Δsup) :
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Δsup.erase (∃¹ ∼φ) ∪ Γ) := by
+  by_cases hd : (∃¹ ∼φ) ∈ Δsub
   · exact ((ih hφc heNF fam hβNF (by omega) hk hdd hd).weakening (by
       intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
       rcases hx with ⟨hne, hxs⟩ | hxΓ
@@ -248,26 +248,26 @@ private lemma cutReduceAllAux_andI {γ' βφ βψ : ONote} {Γ₀ : Finset (Arit
     {ψ₁ ψ₂ : ArithmeticFormula ℕ} (hβφ : βφ < γ') (hβψ : βψ < γ') (hβφNF : βφ.NF) (hβψNF : βψ.NF)
     (hτφ : norm βφ < k' + dd') (hτψ : norm βψ < k' + dd')
     (ihφ : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      βφ.NF → norm βφ < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ insert ψ₁ Γ₀ →
-      ProvableSlack (osucc (α + βφ)) e' k' (dd' + norm α + 1) c' ((insert ψ₁ Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
+      βφ.NF → norm βφ < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ insert ψ₁ Γ₀ →
+      ProvableSlack (osucc (α + βφ)) e' k' (dd' + norm α + 1) c' ((insert ψ₁ Γ₀).erase (∃¹ ∼φ) ∪ Γ))
     (ihψ : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      βψ.NF → norm βψ < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ insert ψ₂ Γ₀ →
-      ProvableSlack (osucc (α + βψ)) e' k' (dd' + norm α + 1) c' ((insert ψ₂ Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
-    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃⁰ ∼φ) ∈ insert (ψ₁ ⋏ ψ₂) Γ₀) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' ((insert (ψ₁ ⋏ ψ₂) Γ₀).erase (∃⁰ ∼φ) ∪ Γ) := by
-  have hhead : (ψ₁ ⋏ ψ₂) ≠ (∃⁰ ∼φ) := by intro h; simp [Wedge.wedge, ExsQuantifier.exs] at h
-  have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      βψ.NF → norm βψ < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ insert ψ₂ Γ₀ →
+      ProvableSlack (osucc (α + βψ)) e' k' (dd' + norm α + 1) c' ((insert ψ₂ Γ₀).erase (∃¹ ∼φ) ∪ Γ))
+    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃¹ ∼φ) ∈ insert (ψ₁ ⋏ ψ₂) Γ₀) :
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' ((insert (ψ₁ ⋏ ψ₂) Γ₀).erase (∃¹ ∼φ) ∪ Γ) := by
+  have hhead : (ψ₁ ⋏ ψ₂) ≠ (∃¹ ∼φ) := by intro h; simp [Wedge.wedge, ExsQuantifier.exs] at h
+  have hmem0 : (∃¹ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
   obtain ⟨aφ, haφle, haφNF, haφnorm, Dφ⟩ := ihφ hφc heNF fam hβφNF (by omega) hk hdd
     (Finset.mem_insert_of_mem hmem0)
   obtain ⟨aψ, haψle, haψNF, haψnorm, Dψ⟩ := ihψ hφc heNF fam hβψNF (by omega) hk hdd
     (Finset.mem_insert_of_mem hmem0)
   have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
-  have Dφ' : Provable aφ e' k' (dd' + norm α + 1) c' (insert ψ₁ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+  have Dφ' : Provable aφ e' k' (dd' + norm α + 1) c' (insert ψ₁ (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     Dφ.wk erase_insert_union_subset
-  have Dψ' : Provable aψ e' k' (dd' + norm α + 1) c' (insert ψ₂ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+  have Dψ' : Provable aψ e' k' (dd' + norm α + 1) c' (insert ψ₂ (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     Dψ.wk erase_insert_union_subset
   have hAnd : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
-      (insert (ψ₁ ⋏ ψ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+      (insert (ψ₁ ⋏ ψ₂) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     Provable.andI ψ₁ ψ₂
       (lt_of_le_of_lt haφle (add_osucc_descent hαNF hβφNF hγNF hβφ))
       (lt_of_le_of_lt haψle (add_osucc_descent hαNF hβψNF hγNF hβψ))
@@ -281,22 +281,22 @@ include hαNF hφc heNF fam in
 private lemma cutReduceAllAux_orI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     {ψ₁ ψ₂ : ArithmeticFormula ℕ} (hβ : β < γ') (hβNF : β.NF) (hτ : norm β < k' + dd')
     (ih : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      β.NF → norm β < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ insert ψ₁ (insert ψ₂ Γ₀) →
-      ProvableSlack (osucc (α + β)) e' k' (dd' + norm α + 1) c' ((insert ψ₁ (insert ψ₂ Γ₀)).erase (∃⁰ ∼φ) ∪ Γ))
-    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃⁰ ∼φ) ∈ insert (ψ₁ ⋎ ψ₂) Γ₀) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' ((insert (ψ₁ ⋎ ψ₂) Γ₀).erase (∃⁰ ∼φ) ∪ Γ) := by
-  have hhead : (ψ₁ ⋎ ψ₂) ≠ (∃⁰ ∼φ) := by intro h; simp [Vee.vee, ExsQuantifier.exs] at h
-  have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      β.NF → norm β < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ insert ψ₁ (insert ψ₂ Γ₀) →
+      ProvableSlack (osucc (α + β)) e' k' (dd' + norm α + 1) c' ((insert ψ₁ (insert ψ₂ Γ₀)).erase (∃¹ ∼φ) ∪ Γ))
+    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃¹ ∼φ) ∈ insert (ψ₁ ⋎ ψ₂) Γ₀) :
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' ((insert (ψ₁ ⋎ ψ₂) Γ₀).erase (∃¹ ∼φ) ∪ Γ) := by
+  have hhead : (ψ₁ ⋎ ψ₂) ≠ (∃¹ ∼φ) := by intro h; simp [Vee.vee, ExsQuantifier.exs] at h
+  have hmem0 : (∃¹ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
   obtain ⟨a, hale, haNF, hanorm, Da⟩ := ih hφc heNF fam hβNF (by omega) hk hdd
     (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem0))
   have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
   have Da' : Provable a e' k' (dd' + norm α + 1) c'
-      (insert ψ₁ (insert ψ₂ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ))) :=
+      (insert ψ₁ (insert ψ₂ (Γ₀.erase (∃¹ ∼φ) ∪ Γ))) :=
     Da.wk (by
       intro x hx
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
   have hOr : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
-      (insert (ψ₁ ⋎ ψ₂) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+      (insert (ψ₁ ⋎ ψ₂) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     Provable.orI ψ₁ ψ₂ (lt_of_le_of_lt hale (add_osucc_descent hαNF hβNF hγNF hβ))
       haNF hsuccNF hanorm Da'
   refine ProvableSlack.of hsuccNF
@@ -314,16 +314,16 @@ private lemma cutReduceAllAux_allω {γ' : ONote} {Γ₀ : Finset (ArithmeticFor
     {χ : ArithmeticSemiformula ℕ 1} {β : ℕ → ONote}
     (hβ : ∀ n, β n < γ') (hβNF : ∀ n, (β n).NF) (hτ : ∀ n, norm (β n) < max k' n + dd')
     (ih : ∀ n, φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      (β n).NF → norm (β n) < max k' n + dd' → k₀ ≤ max k' n → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ insert (χ/[nm n]) Γ₀ →
+      (β n).NF → norm (β n) < max k' n + dd' → k₀ ≤ max k' n → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ insert (χ/[nm n]) Γ₀ →
       ProvableSlack (osucc (α + β n)) e' (max k' n) (dd' + norm α + 1) c'
-        ((insert (χ/[nm n]) Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
-    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃⁰ ∼φ) ∈ insert (∀⁰ χ) Γ₀) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' ((insert (∀⁰ χ) Γ₀).erase (∃⁰ ∼φ) ∪ Γ) := by
-  have hhead : (∀⁰ χ) ≠ (∃⁰ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
-  have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+        ((insert (χ/[nm n]) Γ₀).erase (∃¹ ∼φ) ∪ Γ))
+    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃¹ ∼φ) ∈ insert (∀¹ χ) Γ₀) :
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' ((insert (∀¹ χ) Γ₀).erase (∃¹ ∼φ) ∪ Γ) := by
+  have hhead : (∀¹ χ) ≠ (∃¹ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
+  have hmem0 : (∃¹ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
   have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
   have ihn : ∀ n, ProvableSlack (osucc (α + β n)) e' (max k' n) (dd' + norm α + 1) c'
-      (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
+      (insert (χ/[nm n]) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) := by
     intro n
     exact (ih n hφc heNF fam (hβNF n) (by have := hτ n; omega)
       (le_trans hk (le_max_left _ _)) hdd (Finset.mem_insert_of_mem hmem0)).weakening (by
@@ -331,7 +331,7 @@ private lemma cutReduceAllAux_allω {γ' : ONote} {Γ₀ : Finset (ArithmeticFor
         simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
   choose β' hβ'le hβ'NF hβ'norm Dβ' using ihn
   have hAll : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
-      (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+      (insert (∀¹ χ) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     Provable.allω χ β'
       (fun n => lt_of_le_of_lt (hβ'le n) (add_osucc_descent hαNF (hβNF n) hγNF (hβ n)))
       hβ'NF hsuccNF hβ'norm Dβ'
@@ -351,12 +351,12 @@ private lemma cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFo
     (hβ : β < γ') (hβNF : β.NF) (hτ : norm β < k' + dd') (hbound : n ≤ hardy e' (k' + dd'))
     (dχ : Provable β e' k' dd' c' (insert (χ/[nm n]) Γ₀))
     (ih : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      β.NF → norm β < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ insert (χ/[nm n]) Γ₀ →
-      ProvableSlack (osucc (α + β)) e' k' (dd' + norm α + 1) c' ((insert (χ/[nm n]) Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
-    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃⁰ ∼φ) ∈ insert (∃⁰ χ) Γ₀) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' ((insert (∃⁰ χ) Γ₀).erase (∃⁰ ∼φ) ∪ Γ) := by
+      β.NF → norm β < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ insert (χ/[nm n]) Γ₀ →
+      ProvableSlack (osucc (α + β)) e' k' (dd' + norm α + 1) c' ((insert (χ/[nm n]) Γ₀).erase (∃¹ ∼φ) ∪ Γ))
+    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃¹ ∼φ) ∈ insert (∃¹ χ) Γ₀) :
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' ((insert (∃¹ χ) Γ₀).erase (∃¹ ∼φ) ∪ Γ) := by
   have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
-  by_cases hhd : (∃⁰ χ) = (∃⁰ ∼φ)
+  by_cases hhd : (∃¹ χ) = (∃¹ ∼φ)
   · -- principal exI: χ = ∼φ; cut `fam n` against the ∃-premise at the cut formula `φ/[nm n]`.
     have hχ : χ = ∼φ := by have := hhd; simpa [ExsQuantifier.exs] using this
     subst hχ
@@ -366,26 +366,26 @@ private lemma cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFo
     have hαlt : α < osucc (α + γ') :=
       lt_of_le_of_lt (le_add_right_NF hαNF hγNF) (lt_osucc (ONote.add_nf α γ'))
     have famn : Provable α e' k' (dd' + norm α + 1) c'
-        (insert (φ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        (insert (φ/[nm n]) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
       (((fam n).mono_k hk).mono_d (by omega)).wk (by
         intro x hx
         simp only [Finset.mem_insert, Finset.mem_union] at hx ⊢; tauto)
-    by_cases hd : (∃⁰ ∼φ) ∈ Γ₀
+    by_cases hd : (∃¹ ∼φ) ∈ Γ₀
     · obtain ⟨a, hale, haNF, hanorm, Da⟩ := ih hφc heNF fam hβNF (by omega) hk hdd
         (Finset.mem_insert_of_mem hd)
       have Da' : Provable a e' k' (dd' + norm α + 1) c'
-          (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          (insert (∼(φ/[nm n])) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
         Da.wk (by
           intro x hx
           simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-      have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
+      have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃¹ ∼φ) ∪ Γ) :=
         Provable.cut (φ/[nm n]) hcompl hαlt
           (lt_of_le_of_lt hale (add_osucc_descent hαNF hβNF hγNF hβ))
           hαNF haNF hsuccNF (by omega) hanorm famn Da'
       exact ProvableSlack.of hsuccNF
         (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega)) hCut
     · have Dβ' : Provable β e' k' (dd' + norm α + 1) c'
-          (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          (insert (∼(φ/[nm n])) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
         (dχ.mono_d (by omega)).wk (by
           intro x hx
           simp only [hNeg, Finset.mem_insert] at hx
@@ -393,22 +393,22 @@ private lemma cutReduceAllAux_exI {γ' β : ONote} {Γ₀ : Finset (ArithmeticFo
           rcases hx with rfl | hxΓ₀
           · exact Or.inl rfl
           · exact Or.inr (Or.inl ⟨fun e0 => hd (e0 ▸ hxΓ₀), hxΓ₀⟩))
-      have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
+      have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃¹ ∼φ) ∪ Γ) :=
         Provable.cut (φ/[nm n]) hcompl hαlt
           (lt_of_lt_of_le hβ (le_trans (le_add_left_NF hαNF hγNF)
             (le_of_lt (lt_osucc (ONote.add_nf α γ')))))
           hαNF hβNF hsuccNF (by omega) (by omega) famn Dβ'
       exact ProvableSlack.of hsuccNF
         (lt_of_le_of_lt norm_osucc_le (by have := norm_add_le_of_nf hαNF hγNF; omega)) hCut
-  · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+  · have hmem0 : (∃¹ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
     obtain ⟨a, hale, haNF, hanorm, Da⟩ := ih hφc heNF fam hβNF (by omega) hk hdd
       (Finset.mem_insert_of_mem hmem0)
-    have Da' : Provable a e' k' (dd' + norm α + 1) c' (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+    have Da' : Provable a e' k' (dd' + norm α + 1) c' (insert (χ/[nm n]) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
       Da.wk (by
         intro x hx
         simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
     have hExI : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c'
-        (insert (∃⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+        (insert (∃¹ χ) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
       Provable.exI χ n (lt_of_le_of_lt hale (add_osucc_descent hαNF hβNF hγNF hβ))
         haNF hsuccNF hanorm (le_trans hbound (hardy_monotone _ (by omega))) Da'
     refine ProvableSlack.of hsuccNF
@@ -426,27 +426,27 @@ private lemma cutReduceAllAux_cut {γ' βφ βψ : ONote} {Γ₀ : Finset (Arith
     {χ : ArithmeticFormula ℕ} (hχc : χ.complexity < c') (hβφ : βφ < γ') (hβψ : βψ < γ')
     (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hτφ : norm βφ < k' + dd') (hτψ : norm βψ < k' + dd')
     (ih₁ : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      βφ.NF → norm βφ < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ insert χ Γ₀ →
-      ProvableSlack (osucc (α + βφ)) e' k' (dd' + norm α + 1) c' ((insert χ Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
+      βφ.NF → norm βφ < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ insert χ Γ₀ →
+      ProvableSlack (osucc (α + βφ)) e' k' (dd' + norm α + 1) c' ((insert χ Γ₀).erase (∃¹ ∼φ) ∪ Γ))
     (ih₂ : φ.complexity < c' → e'.NF → (∀ n, Provable α e' k₀ dd₀ c' (insert (φ/[nm n]) Γ)) →
-      βψ.NF → norm βψ < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃⁰ ∼φ) ∈ insert (∼χ) Γ₀ →
-      ProvableSlack (osucc (α + βψ)) e' k' (dd' + norm α + 1) c' ((insert (∼χ) Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
-    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃⁰ ∼φ) ∈ Γ₀) :
-    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) := by
+      βψ.NF → norm βψ < k' + dd' → k₀ ≤ k' → dd₀ ≤ dd' → (∃¹ ∼φ) ∈ insert (∼χ) Γ₀ →
+      ProvableSlack (osucc (α + βψ)) e' k' (dd' + norm α + 1) c' ((insert (∼χ) Γ₀).erase (∃¹ ∼φ) ∪ Γ))
+    (hγNF : γ'.NF) (hγb : norm γ' < k' + dd') (hk : k₀ ≤ k') (hdd : dd₀ ≤ dd') (hmem : (∃¹ ∼φ) ∈ Γ₀) :
+    ProvableSlack (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃¹ ∼φ) ∪ Γ) := by
   obtain ⟨a₁, ha₁le, ha₁NF, ha₁norm, D₁⟩ := ih₁ hφc heNF fam hβφNF (by omega) hk hdd
     (Finset.mem_insert_of_mem hmem)
   obtain ⟨a₂, ha₂le, ha₂NF, ha₂norm, D₂⟩ := ih₂ hφc heNF fam hβψNF (by omega) hk hdd
     (Finset.mem_insert_of_mem hmem)
   have hsuccNF : (osucc (α + γ')).NF := osucc_NF (ONote.add_nf α γ')
-  have D₁' : Provable a₁ e' k' (dd' + norm α + 1) c' (insert χ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+  have D₁' : Provable a₁ e' k' (dd' + norm α + 1) c' (insert χ (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     D₁.wk (by
       intro x hx
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-  have D₂' : Provable a₂ e' k' (dd' + norm α + 1) c' (insert (∼χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+  have D₂' : Provable a₂ e' k' (dd' + norm α + 1) c' (insert (∼χ) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     D₂.wk (by
       intro x hx
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-  have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) :=
+  have hCut : Provable (osucc (α + γ')) e' k' (dd' + norm α + 1) c' (Γ₀.erase (∃¹ ∼φ) ∪ Γ) :=
     Provable.cut χ hχc
       (lt_of_le_of_lt ha₁le (add_osucc_descent hαNF hβφNF hγNF hβφ))
       (lt_of_le_of_lt ha₂le (add_osucc_descent hαNF hβψNF hγNF hβψ))
@@ -458,8 +458,8 @@ lemma cutReduceAllAux {φ : ArithmeticSemiformula ℕ 1} {c k₀ dd₀ : ℕ} {�
     (hφc : φ.complexity < c) (hαNF : α.NF) (heNF : e.NF)
     (fam : ∀ n, Provable α e k₀ dd₀ c (insert (φ/[nm n]) Γ))
     {γ : ONote} {k dd : ℕ} {Δ : Finset (ArithmeticFormula ℕ)} (D : Provable γ e k dd c Δ) (hγNF : γ.NF)
-    (hγb : norm γ < k + dd) (hk : k₀ ≤ k) (hdd : dd₀ ≤ dd) (hmem : (∃⁰ ∼φ) ∈ Δ) :
-    ProvableSlack (osucc (α + γ)) e k (dd + norm α + 1) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
+    (hγb : norm γ < k + dd) (hk : k₀ ≤ k) (hdd : dd₀ ≤ dd) (hmem : (∃¹ ∼φ) ∈ Δ) :
+    ProvableSlack (osucc (α + γ)) e k (dd + norm α + 1) c (Δ.erase (∃¹ ∼φ) ∪ Γ) := by
   induction D with
   | axL r v hp hn => exact cutReduceAllAux_axL r v hp hn
   | verumR h => exact cutReduceAllAux_verumR h

@@ -11,11 +11,11 @@ open GoodsteinPA.OperatorZeh GoodsteinPA.OperatorZinfty
 open GoodsteinPA.ReadoffValueGate (Gated Gated_and_iff Gated_or_iff Gated_all_iff Gated_exs_iff
   Gated_mono)
 
-/-- If the read-off pipeline's instance body `goodsteinBodyE/[nm m]` unfolds to `∃⁰ χ` and
+/-- If the read-off pipeline's instance body `goodsteinBodyE/[nm m]` unfolds to `∃¹ χ` and
 `χ/[nm n]` is a true numeral instance, then `n` bounds the actual Goodstein sequence length
 `goodsteinLength m`. -/
 lemma goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ 1}
-    (hχ : goodsteinBodyE/[nm m] = (∃⁰ χ)) (h : atomTrue (χ/[nm n])) :
+    (hχ : goodsteinBodyE/[nm m] = (∃¹ χ)) (h : atomTrue (χ/[nm n])) :
     Goodstein.Dom.goodsteinLength m ≤ n := by
   have hbody := Semiformula.exs.inj hχ
   rw [← hbody] at h
@@ -27,9 +27,9 @@ lemma goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ 1
   rw [← GoodsteinPA.InternalPow.igoodstein_nat]
   simp only [atomTrue, Semiformula.eval_rew, Function.comp_def] at h'
   have hcast : ∀ (E : Fin 3 → ℕ) (ε₁ ε₂ : Empty → ℕ),
-      Semiformula.gEval (Arithmetic.standardModel ℕ) E ε₁
+      Semiformula.Eval (s := Arithmetic.standardModel ℕ) E ε₁
         (↑(FFL.FirstOrder.Arithmetic.igoodsteinDef)) →
-      Semiformula.gEval (Arithmetic.standardModel ℕ) E ε₂
+      Semiformula.Eval (s := Arithmetic.standardModel ℕ) E ε₂
         (↑(FFL.FirstOrder.Arithmetic.igoodsteinDef)) := by
     intro E ε₁ ε₂ hh
     rwa [show ε₂ = ε₁ from funext fun a => a.elim]
@@ -41,7 +41,7 @@ lemma goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ 1
     rw [Rew.q_bvar_succ]
     simp
   -- `hkey` (post-`simp`) carries a bare `Semiterm.val`; state `hval` in the same form (the ℕ-model's
-  -- `Structure ℒₒᵣ ℕ` instance IS `standardModel ℕ`) so the `rw` matches, not via the `gVal` shim.
+  -- `Structure ℒₒᵣ ℕ` instance IS `standardModel ℕ`) so the `rw` matches, not via a shim.
   have hval : Semiterm.val (L := ℒₒᵣ) (ξ := ℕ) (fun _ => n) (fun _ => 0)
       ((Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q #1) = m := by
     rw [hq1]
@@ -51,14 +51,14 @@ lemma goodsteinBodyE_semantic_link {m n : ℕ} {χ : ArithmeticSemiformula ℕ 1
   simpa using hkey.symm
 
 /-- `readoff_value_pipeline` strengthened with a `Nlog α'` certificate: the collapsed ordinal
-`α'` produced by a `Zef2TC` derivation of a singleton `{(∃⁰ φ)}` has `Nlog α'` bounded by the
+`α'` produced by a `Zef2TC` derivation of a singleton `{(∃¹ φ)}` has `Nlog α'` bounded by the
 tower value at `0`, together with the usual read-off witness `n`. -/
 lemma readoff_value_pipeline' {φ : ArithmeticSemiformula ℕ 1} {P : ℕ → ℕ}
     (hP_mono : Monotone P)
     {α e : ONote} {H : ONote → Prop} {B K d : ℕ}
     (heNF : e.NF) (hαNF : α.NF) (hαH : Cl H α)
-    (D : Zef2TC α e H (rel1 (ewRootSlot e B) K) d {(∃⁰ φ)})
-    (V : ℕ) (hroot : Gated P V (∃⁰ φ)) :
+    (D : Zef2TC α e H (rel1 (ewRootSlot e B) K) d {(∃¹ φ)})
+    (V : ℕ) (hroot : Gated P V (∃¹ φ)) :
     ∃ α', α' ≤ collapseIter d α ∧ α'.NF ∧
       Nlog α' ≤ ewIterTower (rel1 (ewRootSlot e B) K) d α 0 ∧
       ∃ n, n ≤ ewIter (Sslot (ewIterTower (rel1 (ewRootSlot e B) K) d α) P) α'
@@ -83,7 +83,7 @@ lemma embedding_Zef2TC_V3_linearK :
         ∃ H : ONote → Prop, Cl H α ∧
           Zef2TC α e H (rel1 (ewRootSlot e B) (max K₀ m)) d {(goodsteinBodyE/[nm m])} := by
   intro h
-  -- upstream `𝗣𝗔 ⊢ σ` repackages as a `Derivation2 𝗣𝗔 {↑σ}` via `provable_iff_derivable2`
+  -- upstream `𝗣𝗔 ⊢ σ` repackages as a `LK2.Derivation 𝗣𝗔 {↑σ}` via `provable_iff_derivable2`
   have hV3 : BudgetedEmbedsV3 {(↑GoodsteinPA.goodsteinSentence : ArithmeticFormula ℕ)} := by
     obtain ⟨d2⟩ := (provable_iff_derivable2 (L := ℒₒᵣ)).mp h
     exact budgetedEmbeddingV3 d2
@@ -104,8 +104,8 @@ lemma embedding_Zef2TC_V3_linearK :
   rw [rel1_rel1] at hinv
   use fun _ => True, Cl_of_NF hαNF
   have hctx : insert (goodsteinBodyE/[nm m])
-        (({(∀⁰ goodsteinBodyE : ArithmeticFormula ℕ)} :
-          Finset (ArithmeticFormula ℕ)).erase (∀⁰ goodsteinBodyE))
+        (({(∀¹ goodsteinBodyE : ArithmeticFormula ℕ)} :
+          Finset (ArithmeticFormula ℕ)).erase (∀¹ goodsteinBodyE))
       = {(goodsteinBodyE/[nm m])} := by
     rw [Finset.erase_singleton]
     rfl
@@ -118,8 +118,8 @@ lemma readoff_value_goodstein'
     (h : 𝗣𝗔 ⊢ ↑GoodsteinPA.goodsteinSentence) :
     ∃ B d K₀ : ℕ, ∃ e α : ONote, e.NF ∧ α.NF ∧ ∀ m : ℕ,
       ∃ χ : ArithmeticSemiformula ℕ 1,
-        goodsteinBodyE/[nm m] = (∃⁰ χ) ∧ Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) ∧
-        ∀ (P : ℕ → ℕ) (V : ℕ), Monotone P → Gated P V (∃⁰ χ) →
+        goodsteinBodyE/[nm m] = (∃¹ χ) ∧ ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 (∃¹ χ) ∧
+        ∀ (P : ℕ → ℕ) (V : ℕ), Monotone P → Gated P V (∃¹ χ) →
           ∃ α', α' ≤ collapseIter d α ∧ α'.NF ∧
             Nlog α' ≤ ewIterTower (rel1 (ewRootSlot e B) (max K₀ m)) d α 0 ∧
             ∃ n, n ≤ ewIter (Sslot (ewIterTower (rel1 (ewRootSlot e B) (max K₀ m)) d α) P)
@@ -151,8 +151,8 @@ theorem wainer_bound_witness
       ∀ (body : ArithmeticSemiformula ℕ 2), ∃ k : ℕ, ∀ (m V : ℕ)
         (χ : ArithmeticSemiformula ℕ 1),
         χ = (Rew.subst (L := ℒₒᵣ) (ξ := ℕ) ![nm m]).q ▹ body →
-        Arithmetic.Hierarchy 𝚺 1 (∃⁰ χ) →
-        ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V (∃⁰ χ) ∧
+        ℬ[<, ℒₒᵣ].Hierarchy 𝚺 1 (∃¹ χ) →
+        ∃ P : ℕ → ℕ, Monotone P ∧ Gated P V (∃¹ χ) ∧
           ∀ z, P z ≤ G^[k] (max (max V m) z))
     (HSdom : ∀ (e : ONote), e.NF → ∀ (Bb d k : ℕ) (α : ONote), α.NF →
       ∃ (E : ONote) (c : ℕ), E.NF ∧ E ≠ 0 ∧

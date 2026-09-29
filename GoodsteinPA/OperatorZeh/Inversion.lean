@@ -48,21 +48,21 @@ lemma princAllSub (A e : ArithmeticFormula ℕ) (s : Finset (ArithmeticFormula �
 - [Tow20, Theorem 19.4]
 -/
 lemma allInv_Zeh {φ₀} (n₀ : ℕ)
-    (dd : Zeh α e H m c Γ) (hmem : (∀⁰ φ₀) ∈ Γ) :
-    Zeh α e (adjoin H n₀) (max m n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
+    (dd : Zeh α e H m c Γ) (hmem : (∀¹ φ₀) ∈ Γ) :
+    Zeh α e (adjoin H n₀) (max m n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀¹ φ₀))) := by
   induction dd with
   | @axL α e H m c Γ ar r v hp hn =>
       refine Zeh.axL r v ?_ ?_ <;>
         exact Finset.mem_insert_of_mem
           (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), by assumption⟩)
   | @wk α e H m c Δ Γ hsub dd ih =>
-      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      by_cases hh : (∀¹ φ₀) ∈ Δ
       · exact Zeh.wk (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hh)
       · refine Zeh.wk ?_ (Zeh.mono_H dd (adjoin_le H n₀) (le_max_left m n₀))
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @weak α β e H m c Δ Γ hβ hβNF hαNF hβH hsub dd ih =>
-      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      by_cases hh : (∀¹ φ₀) ∈ Δ
       · exact Zeh.weak hβ hβNF hαNF (Cl_mono (adjoin_le H n₀) hβH)
           (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hh)
       · refine Zeh.weak hβ hβNF hαNF (Cl_mono (adjoin_le H n₀) hβH) ?_
@@ -70,40 +70,40 @@ lemma allInv_Zeh {φ₀} (n₀ : ℕ)
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @allω α e H m c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
-      by_cases hhd : (∀⁰ χ) = (∀⁰ φ₀)
+      by_cases hhd : (∀¹ χ) = (∀¹ φ₀)
       · -- PRINCIPAL: specialize branch n₀ (already at `adjoin H n₀`, `max m n₀`)
         obtain rfl := (Semiformula.all_inj _ _).mp hhd
         rw [Finset.erase_insert_eq_erase]
-        by_cases hh : (∀⁰ χ) ∈ Γ₀
-        · -- the tail still carries a ∀⁰χ: invert it out of branch n₀ recursively
+        by_cases hh : (∀¹ χ) ∈ Γ₀
+        · -- the tail still carries a ∀¹χ: invert it out of branch n₀ recursively
           have h := ih n₀ (Finset.mem_insert_of_mem hh)
           have h2 : Zeh (β n₀) e (adjoin H n₀) (max m n₀) c
-              (insert (χ/[nm n₀]) ((insert (χ/[nm n₀]) Γ₀).erase (∀⁰ χ))) :=
+              (insert (χ/[nm n₀]) ((insert (χ/[nm n₀]) Γ₀).erase (∀¹ χ))) :=
             Zeh.mono_H h (adjoin_idem H n₀) (le_of_eq (by omega))
-          exact Zeh.weak (hβ n₀) (hβNF n₀) hαNF (hβH n₀) (princAllSub (∀⁰ χ) _ Γ₀) h2
+          exact Zeh.weak (hβ n₀) (hβNF n₀) hαNF (hβH n₀) (princAllSub (∀¹ χ) _ Γ₀) h2
         · rw [Finset.erase_eq_of_notMem hh]
           exact Zeh.weak (hβ n₀) (hβNF n₀) hαNF (hβH n₀) (Finset.Subset.refl _) (dd n₀)
       · -- NON-PRINCIPAL: rebuild the `allω`, adjoining `n₀` on top of each branch relativization
-        have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+        have hmem0 : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
         have key : ∀ n, Zeh (β n) e (adjoin (adjoin H n₀) n) (max (max m n₀) n) c
-            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀⁰ φ₀)))) := by
+            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀¹ φ₀)))) := by
           intro n
           have h := ih n (Finset.mem_insert_of_mem hmem0)
-          exact Zeh.wk (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀)
+          exact Zeh.wk (inv1Push (∀¹ φ₀) _ (χ/[nm n]) Γ₀)
             (Zeh.mono_H h (adjoin_swap H n n₀) (le_of_eq (by omega)))
-        exact Zeh.wk (inv1Pull (∀⁰ φ₀) _ hhd Γ₀)
+        exact Zeh.wk (inv1Pull (∀¹ φ₀) _ hhd Γ₀)
           (Zeh.allω χ β hβ hβNF hαNF
             (fun n => Cl_mono (adjoin_base_mono n (adjoin_le H n₀)) (hβH n)) key)
   | @exI α β e H m c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (∀⁰ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
-      have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-      have P := Zeh.wk (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem0))
-      exact Zeh.wk (inv1Pull (∀⁰ φ₀) _ hhead Γ₀)
+      have hhead : (∃¹ χ) ≠ (∀¹ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
+      have hmem0 : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have P := Zeh.wk (inv1Push (∀¹ φ₀) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem0))
+      exact Zeh.wk (inv1Pull (∀¹ φ₀) _ hhead Γ₀)
         (Zeh.exI χ n hβ hβNF hαNF (Cl_mono (adjoin_le H n₀) hβH)
           (le_trans hbound (hardy_monotone _ (le_max_left m n₀))) P)
   | @cut α βφ βψ e H m c Γ₀ χ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH d₁ d₂ ih₁ ih₂ =>
-      have P₁ := Zeh.wk (inv1Push (∀⁰ φ₀) _ χ Γ₀) (ih₁ (Finset.mem_insert_of_mem hmem))
-      have P₂ := Zeh.wk (inv1Push (∀⁰ φ₀) _ (∼χ) Γ₀) (ih₂ (Finset.mem_insert_of_mem hmem))
+      have P₁ := Zeh.wk (inv1Push (∀¹ φ₀) _ χ Γ₀) (ih₁ (Finset.mem_insert_of_mem hmem))
+      have P₂ := Zeh.wk (inv1Push (∀¹ φ₀) _ (∼χ) Γ₀) (ih₂ (Finset.mem_insert_of_mem hmem))
       exact Zeh.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_mono (adjoin_le H n₀) hβφH) (Cl_mono (adjoin_le H n₀) hβψH) P₁ P₂
 
@@ -165,14 +165,14 @@ lemma orInv_Zeh {φ ψ}
         exact Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
           (Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩))
   | @allω α e H m c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [UnivQuantifier.all, Vee.vee] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋎ ψ) := by intro h; simp [UnivQuantifier.all, Vee.vee] at h
       have hmem0 : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have key : ∀ n, Zeh (β n) e (adjoin H n) (max m n) c
           (insert (χ/[nm n]) (insert φ (insert ψ (Γ₀.erase (φ ⋎ ψ))))) := fun n =>
         Zeh.wk (invPush (φ ⋎ ψ) (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem0))
       exact Zeh.wk (invPull (φ ⋎ ψ) hhead Γ₀) (Zeh.allω χ β hβ hβNF hαNF hβH key)
   | @exI α β e H m c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [ExsQuantifier.exs, Vee.vee] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋎ ψ) := by intro h; simp [ExsQuantifier.exs, Vee.vee] at h
       have hmem0 : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have P := Zeh.wk (invPush (φ ⋎ ψ) (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem0))
       exact Zeh.wk (invPull (φ ⋎ ψ) hhead Γ₀) (Zeh.exI χ n hβ hβNF hαNF hβH hbound P)
@@ -207,14 +207,14 @@ lemma andInvL_Zeh {φ ψ}
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @allω α e H m c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
       have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have key : ∀ n, Zeh (β n) e (adjoin H n) (max m n) c
           (insert (χ/[nm n]) (insert φ (Γ₀.erase (φ ⋏ ψ)))) := fun n =>
         Zeh.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem0))
       exact Zeh.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Zeh.allω χ β hβ hβNF hαNF hβH key)
   | @exI α β e H m c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
       have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have P := Zeh.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem0))
       exact Zeh.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Zeh.exI χ n hβ hβNF hαNF hβH hbound P)
@@ -249,14 +249,14 @@ lemma andInvR_Zeh {φ ψ}
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @allω α e H m c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
       have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have key : ∀ n, Zeh (β n) e (adjoin H n) (max m n) c
           (insert (χ/[nm n]) (insert ψ (Γ₀.erase (φ ⋏ ψ)))) := fun n =>
         Zeh.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem0))
       exact Zeh.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Zeh.allω χ β hβ hβNF hαNF hβH key)
   | @exI α β e H m c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
       have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have P := Zeh.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem0))
       exact Zeh.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Zeh.exI χ n hβ hβNF hαNF hβH hbound P)
@@ -275,57 +275,57 @@ The extracted instance runs at the relativization `adjoin H n₀` and the relati
 `rel1 f n₀`.  Needs `f` monotone (to raise `exI` bounds `n ≤ f 0 ≤ (rel1 f n₀) 0 = f n₀`).  The
 operator threading is FREE (`mono_Hf`/`change_H`, R1). -/
 lemma allInv_Zef {φ₀} (n₀ : ℕ) (dd : Zef α e H f c Γ)
-    (hmono : Monotone f) (hmem : (∀⁰ φ₀) ∈ Γ) :
-    Zef α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
+    (hmono : Monotone f) (hmem : (∀¹ φ₀) ∈ Γ) :
+    Zef α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀¹ φ₀))) := by
   induction dd with
   | @axL α e H f c Γ ar r v hp hn =>
       refine Zef.axL r v ?_ ?_ <;>
         exact Finset.mem_insert_of_mem
           (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), by assumption⟩)
   | @wk α e H f c Δ Γ hsub dd ih =>
-      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      by_cases hh : (∀¹ φ₀) ∈ Δ
       · exact Zef.wk (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono hh)
       · refine Zef.wk ?_ (dd.mono_Hf (f_le_rel1 hmono n₀))
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @weak α β e H f c Δ Γ hβ hβNF hαNF hβH hsub dd ih =>
-      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      by_cases hh : (∀¹ φ₀) ∈ Δ
       · exact Zef.weak hβ hβNF hαNF (Cl_of_NF hβNF)
           (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono hh)
       · refine Zef.weak hβ hβNF hαNF (Cl_of_NF hβNF) ?_ (dd.mono_Hf (f_le_rel1 hmono n₀))
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @allω α e H f c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
-      by_cases hhd : (∀⁰ χ) = (∀⁰ φ₀)
+      by_cases hhd : (∀¹ χ) = (∀¹ φ₀)
       · obtain rfl := (Semiformula.all_inj _ _).mp hhd
         rw [Finset.erase_insert_eq_erase]
-        by_cases hh : (∀⁰ χ) ∈ Γ₀
+        by_cases hh : (∀¹ χ) ∈ Γ₀
         · have h := ih n₀ (rel1_monotone hmono n₀) (Finset.mem_insert_of_mem hh)
           have h2 : Zef (β n₀) e (adjoin H n₀) (rel1 f n₀) c
-              (insert (χ/[nm n₀]) ((insert (χ/[nm n₀]) Γ₀).erase (∀⁰ χ))) :=
+              (insert (χ/[nm n₀]) ((insert (χ/[nm n₀]) Γ₀).erase (∀¹ χ))) :=
             h.mono_Hf (fun x => le_of_eq (by simp only [rel1]; congr 1; omega))
-          exact Zef.weak (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀)) (princAllSub (∀⁰ χ) _ Γ₀) h2
+          exact Zef.weak (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀)) (princAllSub (∀¹ χ) _ Γ₀) h2
         · rw [Finset.erase_eq_of_notMem hh]
           exact Zef.weak (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀)) (Finset.Subset.refl _) (dd n₀)
-      · have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+      · have hmem0 : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
         have key : ∀ n, Zef (β n) e (adjoin (adjoin H n₀) n) (rel1 (rel1 f n₀) n) c
-            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀⁰ φ₀)))) := by
+            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀¹ φ₀)))) := by
           intro n
           have h := ih n (rel1_monotone hmono n) (Finset.mem_insert_of_mem hmem0)
-          exact Zef.wk (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀)
+          exact Zef.wk (inv1Push (∀¹ φ₀) _ (χ/[nm n]) Γ₀)
             (h.mono_Hf (fun x => le_of_eq (by simp only [rel1]; congr 1; omega)))
-        exact Zef.wk (inv1Pull (∀⁰ φ₀) _ hhd Γ₀)
+        exact Zef.wk (inv1Pull (∀¹ φ₀) _ hhd Γ₀)
           (Zef.allω χ β hβ hβNF hαNF (fun n => Cl_of_NF (hβNF n)) key)
   | @exI α β e H f c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (∀⁰ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
-      have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
-      have P := Zef.wk (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀) (ih hmono (Finset.mem_insert_of_mem hmem0))
-      exact Zef.wk (inv1Pull (∀⁰ φ₀) _ hhead Γ₀)
+      have hhead : (∃¹ χ) ≠ (∀¹ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
+      have hmem0 : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have P := Zef.wk (inv1Push (∀¹ φ₀) _ (χ/[nm n]) Γ₀) (ih hmono (Finset.mem_insert_of_mem hmem0))
+      exact Zef.wk (inv1Pull (∀¹ φ₀) _ hhead Γ₀)
         (Zef.exI χ n hβ hβNF hαNF (Cl_of_NF hβNF)
           (le_trans hbound (hmono (Nat.zero_le _))) P)
   | @cut α βφ βψ e H f c Γ₀ χ hcompl hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH d₁ d₂ ih₁ ih₂ =>
-      have P₁ := Zef.wk (inv1Push (∀⁰ φ₀) _ χ Γ₀) (ih₁ hmono (Finset.mem_insert_of_mem hmem))
-      have P₂ := Zef.wk (inv1Push (∀⁰ φ₀) _ (∼χ) Γ₀) (ih₂ hmono (Finset.mem_insert_of_mem hmem))
+      have P₁ := Zef.wk (inv1Push (∀¹ φ₀) _ χ Γ₀) (ih₁ hmono (Finset.mem_insert_of_mem hmem))
+      have P₂ := Zef.wk (inv1Push (∀¹ φ₀) _ (∼χ) Γ₀) (ih₂ hmono (Finset.mem_insert_of_mem hmem))
       exact Zef.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
 
@@ -364,14 +364,14 @@ lemma orInv_Zef {φ ψ}
         exact Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
           (Finset.mem_erase.mpr ⟨fun e => hd (e ▸ hx), hsub hx⟩))
   | @allω α e H f c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [UnivQuantifier.all, Vee.vee] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋎ ψ) := by intro h; simp [UnivQuantifier.all, Vee.vee] at h
       have hmem0 : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have key : ∀ n, Zef (β n) e (adjoin H n) (rel1 f n) c
           (insert (χ/[nm n]) (insert φ (insert ψ (Γ₀.erase (φ ⋎ ψ))))) := fun n =>
         Zef.wk (invPush (φ ⋎ ψ) (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem0))
       exact Zef.wk (invPull (φ ⋎ ψ) hhead Γ₀) (Zef.allω χ β hβ hβNF hαNF hβH key)
   | @exI α β e H f c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [ExsQuantifier.exs, Vee.vee] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋎ ψ) := by intro h; simp [ExsQuantifier.exs, Vee.vee] at h
       have hmem0 : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have P := Zef.wk (invPush (φ ⋎ ψ) (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem0))
       exact Zef.wk (invPull (φ ⋎ ψ) hhead Γ₀) (Zef.exI χ n hβ hβNF hαNF hβH hbound P)
@@ -406,14 +406,14 @@ lemma andInvL_Zef {φ ψ}
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @allω α e H f c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
       have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have key : ∀ n, Zef (β n) e (adjoin H n) (rel1 f n) c
           (insert (χ/[nm n]) (insert φ (Γ₀.erase (φ ⋏ ψ)))) := fun n =>
         Zef.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem0))
       exact Zef.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Zef.allω χ β hβ hβNF hαNF hβH key)
   | @exI α β e H f c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
       have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have P := Zef.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem0))
       exact Zef.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Zef.exI χ n hβ hβNF hαNF hβH hbound P)
@@ -448,14 +448,14 @@ lemma andInvR_Zef {φ ψ}
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @allω α e H f c Γ₀ χ β hβ hβNF hαNF hβH dd ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
       have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have key : ∀ n, Zef (β n) e (adjoin H n) (rel1 f n) c
           (insert (χ/[nm n]) (insert ψ (Γ₀.erase (φ ⋏ ψ)))) := fun n =>
         Zef.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem0))
       exact Zef.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Zef.allω χ β hβ hβNF hαNF hβH key)
   | @exI α β e H f c Γ₀ χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
       have hmem0 : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have P := Zef.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem0))
       exact Zef.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Zef.exI χ n hβ hβNF hαNF hβH hbound P)

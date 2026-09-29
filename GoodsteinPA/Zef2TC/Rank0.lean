@@ -96,7 +96,7 @@ theorem sound0_TC {α e} {H} {f} {c} {Γ}
       rcases Classical.em (∃ n : ℕ, ∃ ψ ∈ Γ, atomTrue ψ) with hctx | hctx
       · obtain ⟨n, ψ, hψ, htrue⟩ := hctx
         exact ⟨ψ, Finset.mem_insert_of_mem hψ, htrue⟩
-      · refine ⟨∀⁰ φ, Finset.mem_insert_self _ _, ?_⟩
+      · refine ⟨∀¹ φ, Finset.mem_insert_self _ _, ?_⟩
         have hall : ∀ n, atomTrue (φ/[nm n]) := by
           intro n
           obtain ⟨ψ, hψ, htrue⟩ := ih n hc
@@ -107,7 +107,7 @@ theorem sound0_TC {α e} {H} {f} {c} {Γ}
   | @exI α β e H f c Γ hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
       obtain ⟨ψ, hψ, htrue⟩ := ih hc
       rcases Finset.mem_insert.mp hψ with rfl | hψΓ
-      · exact ⟨∃⁰ φ, Finset.mem_insert_self _ _, (atomTrue_ex_iff φ).mpr ⟨n, htrue⟩⟩
+      · exact ⟨∃¹ φ, Finset.mem_insert_self _ _, (atomTrue_ex_iff φ).mpr ⟨n, htrue⟩⟩
       · exact ⟨ψ, Finset.mem_insert_of_mem hψΓ, htrue⟩
   | @cut α βφ βψ e H f c Γ hαN φ hcompl hcutRead _ _ _ _ _ _ _ _ _ _ _ =>
       subst hc

@@ -16,12 +16,12 @@ variable {α e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : F
 assignment — the value of a closed numeral const is assignment-independent.  Local companion of
 `stdClosedVal_nm`, phrased with `valm ℕ` so it `rw`s inside `eval_substs` read-offs. -/
 @[simp] lemma valm_nm (n) (f) :
-    Semiterm.gValm ℕ ![] f (nm n) = n := by simp [nm]
+    Semiterm.val (M := ℕ) ![] f (nm n) = n := by simp [nm]
 
 /-- **Rank-0 `Zef2` soundness** (the reusable truth core of the Δ₀ read-off).  A cut-free
 derivation of `Γ` has a standard-model-true member.  The `allω` (Π) case combines: either some
 branch's true member is in the shared context `Γ` (done), or every branch is true at its own
-instance `φ/[nm n]` — whence `∀⁰ φ` is true (`atomTrue (∀⁰ φ) = ∀ k, atomTrue (φ/[nm k])`).
+instance `φ/[nm n]` — whence `∀¹ φ` is true (`atomTrue (∀¹ φ) = ∀ k, atomTrue (φ/[nm k])`).
 Slot-INDEPENDENT (truth does not see `f`). -/
 lemma sound0 (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ := by
   induction dd with
@@ -40,7 +40,7 @@ lemma sound0 (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ
       rcases Classical.em (∃ n : ℕ, ∃ ψ ∈ Γ, atomTrue ψ) with hctx | hctx
       · obtain ⟨n, ψ, hψ, htrue⟩ := hctx
         exact ⟨ψ, Finset.mem_insert_of_mem hψ, htrue⟩
-      · refine ⟨∀⁰ φ, Finset.mem_insert_self _ _, ?_⟩
+      · refine ⟨∀¹ φ, Finset.mem_insert_self _ _, ?_⟩
         have hall : ∀ n, atomTrue (φ/[nm n]) := by
           intro n
           obtain ⟨ψ, hψ, htrue⟩ := ih n hc
@@ -54,7 +54,7 @@ lemma sound0 (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ
   | @exI α β e H f c Γ hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
       obtain ⟨ψ, hψ, htrue⟩ := ih hc
       rcases Finset.mem_insert.mp hψ with rfl | hψΓ
-      · refine ⟨∃⁰ φ, Finset.mem_insert_self _ _, ?_⟩
+      · refine ⟨∃¹ φ, Finset.mem_insert_self _ _, ?_⟩
         simp only [atomTrue, Semiformula.eval_ex]
         exact ⟨n, by
           simpa [atomTrue, Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton] using htrue⟩
@@ -63,10 +63,10 @@ lemma sound0 (dd : Zef2 α e H f c Γ) (hc : c = 0) : ∃ ψ ∈ Γ, atomTrue ψ
       subst hc
       exact absurd hcompl (by omega)
 
-/-- `atomTrue (∀⁰ χ) ↔ ∀ k, atomTrue (χ/[nm k])` — a standard ω-universal is standard-model-true
-iff every numeral instance is true.  (`∀⁰` at the top of a Δ₀ read-off descends to its instances.) -/
+/-- `atomTrue (∀¹ χ) ↔ ∀ k, atomTrue (χ/[nm k])` — a standard ω-universal is standard-model-true
+iff every numeral instance is true.  (`∀¹` at the top of a Δ₀ read-off descends to its instances.) -/
 lemma atomTrue_all_iff (χ : ArithmeticSemiformula ℕ 1) :
-    atomTrue (∀⁰ χ) ↔ ∀ k, atomTrue (χ/[nm k]) := by
+    atomTrue (∀¹ χ) ↔ ∀ k, atomTrue (χ/[nm k]) := by
   simp only [atomTrue, Semiformula.eval_all]
   constructor
   · intro h k
@@ -76,9 +76,9 @@ lemma atomTrue_all_iff (χ : ArithmeticSemiformula ℕ 1) :
     have hx := h x
     simpa [Semiformula.eval_substs, valm_nm, Matrix.constant_eq_singleton] using hx
 
-/-- `atomTrue (∃⁰ χ) ↔ ∃ k, atomTrue (χ/[nm k])` — dual of `atomTrue_all_iff`. -/
+/-- `atomTrue (∃¹ χ) ↔ ∃ k, atomTrue (χ/[nm k])` — dual of `atomTrue_all_iff`. -/
 lemma atomTrue_ex_iff (χ : ArithmeticSemiformula ℕ 1) :
-    atomTrue (∃⁰ χ) ↔ ∃ k, atomTrue (χ/[nm k]) := by
+    atomTrue (∃¹ χ) ↔ ∃ k, atomTrue (χ/[nm k]) := by
   simp only [atomTrue, Semiformula.eval_ex]
   constructor
   · rintro ⟨x, hx⟩
@@ -106,10 +106,10 @@ lemma spineHead_rew {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : Ari
   | rel r v => simp [spineHead, Function.comp_def]
   | nrel r v => simp [spineHead, Function.comp_def]
   | all φ ih =>
-      rw [show (Semiformula.all φ) = ∀⁰ φ from rfl, Rewriting.app_all]
+      rw [show (Semiformula.all φ) = ∀¹ φ from rfl, Rewriting.app_all]
       simpa [spineHead] using ih om.q
   | exs φ ih =>
-      rw [show (Semiformula.exs φ) = ∃⁰ φ from rfl, Rewriting.app_exs]
+      rw [show (Semiformula.exs φ) = ∃¹ φ from rfl, Rewriting.app_exs]
       simpa [spineHead] using ih om.q
   | verum =>
       rw [show (Semiformula.verum : ArithmeticSemiformula ℕ _) = ⊤ from rfl]
@@ -124,9 +124,9 @@ lemma spineHead_rew {n₁ n₂} (om : Rew ℒₒᵣ ℕ n₁ ℕ n₂) (φ : Ari
       rw [show (Semiformula.or φ ψ) = φ ⋎ ψ from rfl]
       simp [spineHead]
 
-@[simp] lemma spineHead_all (φ : ArithmeticSemiformula ℕ 1) : spineHead (∀⁰ φ) = spineHead φ := rfl
+@[simp] lemma spineHead_all (φ : ArithmeticSemiformula ℕ 1) : spineHead (∀¹ φ) = spineHead φ := rfl
 
-@[simp] lemma spineHead_exs (φ : ArithmeticSemiformula ℕ 1) : spineHead (∃⁰ φ) = spineHead φ := rfl
+@[simp] lemma spineHead_exs (φ : ArithmeticSemiformula ℕ 1) : spineHead (∃¹ φ) = spineHead φ := rfl
 
 lemma spineHead_substs (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) :
     spineHead (φ/[nm n]) = spineHead φ :=
@@ -155,42 +155,42 @@ lemma zef2_rank0_uniform_spine_underivable {t : Option (Bool × ((k : ℕ) × (�
       intro ψ hψ
       rcases Finset.mem_insert.mp hψ with rfl | hψΓ
       · rw [spineHead_substs]
-        simpa using hyp (∀⁰ φ) (Finset.mem_insert_self _ _)
+        simpa using hyp (∀¹ φ) (Finset.mem_insert_self _ _)
       · exact hyp ψ (Finset.mem_insert_of_mem hψΓ)
   | @exI α β e H f c Γ hαN φ n hβ hβNF hαNF hβH hbound dd ih =>
       refine ih hc ?_
       intro ψ hψ
       rcases Finset.mem_insert.mp hψ with rfl | hψΓ
       · rw [spineHead_substs]
-        simpa using hyp (∃⁰ φ) (Finset.mem_insert_self _ _)
+        simpa using hyp (∃¹ φ) (Finset.mem_insert_self _ _)
       · exact hyp ψ (Finset.mem_insert_of_mem hψΓ)
   | cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ _ _ =>
       omega
 
-/-- **`Zef2` cannot derive `{∃⁰ φ}` at rank 0, for any `φ`.** -/
+/-- **`Zef2` cannot derive `{∃¹ φ}` at rank 0, for any `φ`.** -/
 lemma zef2_rank0_singleton_ex_underivable {φ : ArithmeticSemiformula ℕ 1} :
-    ¬ Zef2 α e H f 0 {(∃⁰ φ)} := by
+    ¬ Zef2 α e H f 0 {(∃¹ φ)} := by
   intro dd
-  refine zef2_rank0_uniform_spine_underivable (t := spineHead (∃⁰ φ)) dd rfl ?_
+  refine zef2_rank0_uniform_spine_underivable (t := spineHead (∃¹ φ)) dd rfl ?_
   intro ψ hψ
   rw [Finset.mem_singleton] at hψ
   rw [hψ]
 
 /-- **The residue under the local monotone-instance condition.**  The
 branch-0 mechanism (`rel1 f 0 = f`) already discharges every case where `χ/[nm 0]` is *false*; the
-only survivor is `χ/[nm 0]` TRUE while `∀⁰ χ` is false.  If the matrix `χ` satisfies the natural
-"`0`-instance is the easiest" condition `atomTrue (χ/[nm 0]) → atomTrue (∀⁰ χ)` (a downward-closed
+only survivor is `χ/[nm 0]` TRUE while `∀¹ χ` is false.  If the matrix `χ` satisfies the natural
+"`0`-instance is the easiest" condition `atomTrue (χ/[nm 0]) → atomTrue (∀¹ χ)` (a downward-closed
 guard, as for the Goodstein bounded-`∀` clauses), that survivor is contradictory: `h0` forces
-`atomTrue (∀⁰ χ)`, contradicting `hfalse`.  So under `hmono` the trap never fires.  A ready
+`atomTrue (∀¹ χ)`, contradicting `hfalse`.  So under `hmono` the trap never fires.  A ready
 building block for a monotone-guarded specialization of `readoff_delta0_Zef2`. -/
 lemma readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
     {Γ₀} {β : ℕ → ONote}
     (_hbranch : ∀ n, Zef2 (β n) e (adjoin H n) (rel1 f n) 0 (insert (χ/[nm n]) Γ₀))
-    (_htrap : (∃⁰ φ) ∈ Γ₀)
-    (hfalse : ¬ atomTrue (∀⁰ χ))
-    (_hΓ₀ : ∀ ψ ∈ Γ₀, ψ = (∃⁰ φ) ∨ ¬ atomTrue ψ)
+    (_htrap : (∃¹ φ) ∈ Γ₀)
+    (hfalse : ¬ atomTrue (∀¹ χ))
+    (_hΓ₀ : ∀ ψ ∈ Γ₀, ψ = (∃¹ φ) ∨ ¬ atomTrue ψ)
     (h0 : atomTrue (χ/[nm 0]))
-    (hmono : atomTrue (χ/[nm 0]) → atomTrue (∀⁰ χ)) :
+    (hmono : atomTrue (χ/[nm 0]) → atomTrue (∀¹ χ)) :
     ∃ n ≤ f 0, atomTrue (φ/[nm n]) :=
   absurd (hmono h0) hfalse
 
@@ -198,25 +198,25 @@ lemma readoffD_trapped_of_mono {φ χ : ArithmeticSemiformula ℕ 1}
 The conclusion bound is `ewIter f α 0` (rather than `f 0`): the structurally achievable bound,
 since the splice consumes it at one definitional tower level.  The old `matrixTrue` form is
 deleted; `<BoundedInstance>` is discharged to the repo-native Foundation Δ₀ predicate
-`FFL.FirstOrder.Arithmetic.DeltaZero` (= `Hierarchy 𝚺 0`) and the conclusion reads off the
+`ℬ[<, ℒₒᵣ].Hierarchy 𝚺 0` and the conclusion reads off the
 standard-model truth `atomTrue = Evalm ℕ` of the instance directly.
 
 Where `readoff_sigma1_Zef2` reads off an atomic matrix (`hφinst : φ/[nm n]` atomic), this reads off
-a Δ₀ instance: from a rank-0 `Zef2` derivation of the singleton `{∃⁰ φ}` whose instances
+a Δ₀ instance: from a rank-0 `Zef2` derivation of the singleton `{∃¹ φ}` whose instances
 `φ/[nm n]` are Δ₀, extract a witness `n ≤ ewIter f α 0` with `atomTrue (φ/[nm n])`.
 
-**`<BoundedInstance>` = `DeltaZero`:** the `Zeh`/`Zef2` core has only `axL`/`allω`/`exI`/`cut` (no
-`∧`/`∨` rule), so the read-off descends the instance through quantifiers/atoms only; `DeltaZero` is
+**`<BoundedInstance>` = Δ₀:** the `Zeh`/`Zef2` core has only `axL`/`allω`/`exI`/`cut` (no
+`∧`/`∨` rule), so the read-off descends the instance through quantifiers/atoms only; `ℬ[<, ℒₒᵣ].Hierarchy 𝚺 0` is
 the repo-native Δ₀ notion, and its `∧`/`∨` heads are dead branches for the singleton read-off (a
 singleton `{A ⋏ B}` is not `axL`-closable and has no ∧-rule ⇒ underivable).  The genuine content is
-the `allω` (Π) case — `atomTrue (∀⁰ χ) = ∀ k, Evalm (χ/[nm k])` needs every branch's matrix as its
+the `allω` (Π) case — `atomTrue (∀¹ χ) = ∀ k, Evalm (χ/[nm k])` needs every branch's matrix as its
 true disjunct plus the Δ₀ bound to bound the load-bearing branches.
 
 - [Tow20, §17, Theorem 17.1]
 -/
 lemma readoff_delta0_Zef2 {φ : ArithmeticSemiformula ℕ 1}
-    (_hφbdd : ∀ n, FFL.FirstOrder.Arithmetic.DeltaZero (φ/[nm n]))
-    (dd : Zef2 α e H f 0 {(∃⁰ φ)}) :
+    (_hφbdd : ∀ n, ℬ[<, ℒₒᵣ].Hierarchy 𝚺 0 (φ/[nm n]))
+    (dd : Zef2 α e H f 0 {(∃¹ φ)}) :
     ∃ n ≤ ewIter f α 0, atomTrue (φ/[nm n]) :=
   -- The conclusion holds via vacuity: the source `dd` cannot exist
   -- (`zef2_rank0_singleton_ex_underivable`: `Zef2` has no closure for a uniform-spine singleton).

@@ -17,7 +17,7 @@ no witness budget at all (`exI` never fires). `addEqOfLt` (witness `z = y - x �
 the branch slot) and the induction schema (cut-tower over `em_Zef2TC`) are the two bespoke
 residues. -/
 
-/-- No `∃⁰` anywhere (the Π-fragment over NNF).  Truth of such closed formulas needs no
+/-- No `∃¹` anywhere (the Π-fragment over NNF).  Truth of such closed formulas needs no
 witness data, so the bounded-truth derivation avoids `exI`'s slot gate entirely. -/
 def ExFree : ∀ {n : ℕ}, ArithmeticSemiformula ℕ n → Prop
   | _, Semiformula.verum => True
@@ -42,9 +42,9 @@ variable {n : ℕ}
 @[simp, grind =] lemma exFree_or {φ ψ : ArithmeticSemiformula ℕ n} :
     ExFree (φ ⋎ ψ) ↔ ExFree φ ∧ ExFree ψ := Iff.rfl
 @[simp, grind =] lemma exFree_all {φ : ArithmeticSemiformula ℕ (n + 1)} :
-    ExFree (∀⁰ φ) ↔ ExFree φ := Iff.rfl
+    ExFree (∀¹ φ) ↔ ExFree φ := Iff.rfl
 @[simp, grind =] lemma exFree_exs {φ : ArithmeticSemiformula ℕ (n + 1)} :
-    ExFree (∃⁰ φ) ↔ False := Iff.rfl
+    ExFree (∃¹ φ) ↔ False := Iff.rfl
 
 /-- `ExFree` is stable under every rewriting (rewriting preserves the connective tree). -/
 lemma ExFree.rew {n₁ : ℕ} (ψ : ArithmeticSemiformula ℕ n₁) : ExFree ψ →
@@ -138,7 +138,7 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
             omega
           have hsex : ExFree (a/[nm m]) := hex.rew a (Rew.subst ![nm m])
           have hstrue : atomTrue (a/[nm m]) := by
-            have hall : ∀ x : ℕ, Semiformula.gEvalm ℕ ![x] (fun _ => 0) a := by
+            have hall : ∀ x : ℕ, Semiformula.Eval (M := ℕ) ![x] (fun _ => 0) a := by
               simpa [atomTrue, Matrix.constant_eq_singleton, Matrix.empty_eq] using htrue
             simpa [atomTrue, Semiformula.eval_substs, ArithmeticTerm.valm_nm,
               Matrix.constant_eq_singleton, Matrix.empty_eq] using hall m
@@ -152,10 +152,10 @@ theorem truth_exFree_Zef2TC (k : ℕ) :
     | hexs a => exact absurd hex (by simp)
 
 @[simp, grind =] lemma exFree_allClosure : ∀ {φ : ArithmeticSemiformula ℕ n},
-    ExFree (∀⁰* φ) ↔ ExFree φ := by
+    ExFree (∀¹* φ) ↔ ExFree φ := by
   induction n with
   | zero => intro φ; rfl
-  | succ n ih => intro φ; rw [show (∀⁰* φ) = (∀⁰* (∀⁰ φ)) from rfl, ih]; exact exFree_all
+  | succ n ih => intro φ; rw [show (∀¹* φ) = (∀¹* (∀¹ φ)) from rfl, ih]; exact exFree_all
 
 /-- The closing assignment fixes embedded sentences (no fvars to rewrite). -/
 lemma asg_emb_fix (env : ℕ → ℕ) (σ : ArithmeticSentence) :
@@ -169,7 +169,7 @@ lemma asg_emb_fix (env : ℕ → ℕ) (σ : ArithmeticSentence) :
 
 /-- Truth transfer: a sentence true in `ℕ` stays `atomTrue` after embedding + any closing
 assignment (`asg env` fixes the fvar-free embed; mirrors `embedC`'s `axm` truth step). -/
-lemma atomTrue_asg_emb {σ : ArithmeticSentence} (h : ℕ ⊧ₘ σ) (env : ℕ → ℕ) :
+lemma atomTrue_asg_emb {σ : ArithmeticSentence} (h : ℕ↓[ℒₒᵣ] ⊧ σ) (env : ℕ → ℕ) :
     atomTrue (asg env ▹ (↑σ : ArithmeticFormula ℕ)) := by
   simp only [atomTrue, asg, Semiformula.eval_rewrite, Semiformula.eval_emb]
   rw [models_iff] at h
@@ -178,7 +178,7 @@ lemma atomTrue_asg_emb {σ : ArithmeticSentence} (h : ℕ ⊧ₘ σ) (env : ℕ 
 /-- **The ∃-free `axm` wrapper**: a TRUE ∃-free PA-axiom sentence in `Γ` is budgeted-embeddable
 outright — `truth_exFree_Zef2TC` at the V3 structural budget of the `closed` case. -/
 theorem budgetedEmbedsV3_of_exFree_true {Γ}
-    (σ : ArithmeticSentence) (hex : ExFree (↑σ : ArithmeticFormula ℕ)) (htrue : ℕ ⊧ₘ σ)
+    (σ : ArithmeticSentence) (hex : ExFree (↑σ : ArithmeticFormula ℕ)) (htrue : ℕ↓[ℒₒᵣ] ⊧ σ)
     (hΓ : (↑σ : ArithmeticFormula ℕ) ∈ Γ) : BudgetedEmbedsV3 Γ := by
   set k : ℕ := (↑σ : ArithmeticFormula ℕ).complexity with hk
   refine ⟨clog (2 * k + 1), 0, 0, 0, ONote.ofNat (2 * k + 1),
@@ -216,8 +216,8 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
   -- normalize the image formula to constructor form
   have himg : asg env ▹ (↑(Arithmetic.PeanoMinus.Axiom.addEqOfLt)
         : ArithmeticFormula ℕ)
-      = ∀⁰ ∀⁰ ((∼(Semiformula.rel Language.LT.lt ![#1, #0]))
-          ⋎ (∃⁰ ((Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’])
+      = ∀¹ ∀¹ ((∼(Semiformula.rel Language.LT.lt ![#1, #0]))
+          ⋎ (∃¹ ((Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’])
               ⋏ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1])))) := by
     rw [asg_emb_fix]
     simp only [Arithmetic.PeanoMinus.Axiom.addEqOfLt, Semiformula.Operator.eq_def,
@@ -229,7 +229,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
   rw [himg] at hmem
   set M : ArithmeticSemiformula ℕ 2 :=
     (∼(Semiformula.rel Language.LT.lt ![#1, #0]))
-      ⋎ (∃⁰ ((Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’])
+      ⋎ (∃¹ ((Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’])
           ⋏ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]))) with hM
   set Γ' : Finset (ArithmeticFormula ℕ) := Γ.image (fun χ => asg env ▹ χ) with hΓ'
   have hlt12 : ONote.ofNat 1 < ONote.ofNat 2 := ofNat_lt_ofNat (by omega)
@@ -239,12 +239,12 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
   have hlt56 : ONote.ofNat 5 < ONote.ofNat 6 := ofNat_lt_ofNat (by omega)
   -- the OUTER ω-family
   have famA : ∀ a, Zef2TC (ONote.ofNat 5) 0 (adjoin (fun _ : ONote => True) a) (rel1 f a) 0
-      (insert ((∀⁰ M)/[nm a]) Γ') := by
+      (insert ((∀¹ M)/[nm a]) Γ') := by
     intro a
     have hfa : f 0 ≤ rel1 f a 0 := by simpa [rel1] using hmono (Nat.zero_le (max a 0))
     have hmonoA : Monotone (rel1 f a) := rel1_monotone hmono a
     have hinflA : ∀ m, m ≤ rel1 f a m := rel1_infl hinfl a
-    have hsubA : ((∀⁰ M)/[nm a]) = ∀⁰ ((Rew.subst ![nm a]).q ▹ M) := by
+    have hsubA : ((∀¹ M)/[nm a]) = ∀¹ ((Rew.subst ![nm a]).q ▹ M) := by
       simp
     rw [hsubA]
     -- the INNER ω-family
@@ -260,7 +260,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
       -- collapse the composed substitution to the cons vector
       have hsubB : (((Rew.subst ![nm a]).q ▹ M))/[nm b]
           = (∼(Semiformula.rel Language.LT.lt ![nm a, nm b]))
-            ⋎ (∃⁰ (((Rew.subst (nm b :> ![nm a])).q
+            ⋎ (∃¹ (((Rew.subst (nm b :> ![nm a])).q
                   ▹ (Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’]))
                 ⋏ ((Rew.subst (nm b :> ![nm a])).q
                   ▹ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1])))) := by
@@ -273,7 +273,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
         ▹ (Semiformula.rel Language.LT.lt ![#0, ‘(#1 + 1)’]) with hG
       set Eb : ArithmeticSemiformula ℕ 1 := (Rew.subst (nm b :> ![nm a])).q
         ▹ (Semiformula.rel Language.Eq.eq ![‘(#2 + #0)’, #1]) with hE
-      set Δ : Finset (ArithmeticFormula ℕ) := insert A (insert (∃⁰ (Gb ⋏ Eb)) Γ') with hΔ
+      set Δ : Finset (ArithmeticFormula ℕ) := insert A (insert (∃¹ (Gb ⋏ Eb)) Γ') with hΔ
       have hD : Zef2TC (ONote.ofNat 3) 0 (adjoin (adjoin (fun _ : ONote => True) a) b)
           (rel1 (rel1 f a) b) 0 Δ := by
         by_cases hab : a < b
@@ -331,7 +331,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
               rw [hΔ, hA]
               exact Finset.mem_insert.mpr (Or.inl (by simp [Semiformula.neg_rel])))
       have horI := Zef2TC.orI (α := ONote.ofNat 4) (hgb 4 (by omega))
-        A (∃⁰ (Gb ⋏ Eb)) hlt34 (ONote.nf_ofNat _) (ONote.nf_ofNat _) (Cl.ofNat _) hD
+        A (∃¹ (Gb ⋏ Eb)) hlt34 (ONote.nf_ofNat _) (ONote.nf_ofNat _) (Cl.ofNat _) hD
       exact horI
     have hallB := Zef2TC.allω (α := ONote.ofNat 5) (le_trans (Nlog_ofNat_le 5)
         (le_trans (clog_mono (by omega)) (le_trans hgate hfa)))
@@ -342,7 +342,7 @@ theorem budgetedEmbedsV3_addEqOfLt {Γ}
   -- assemble the OUTER allω
   have hallA := Zef2TC.allω (α := ONote.ofNat 6)
     (le_trans (Nlog_ofNat_le 6) (le_trans (clog_mono (by omega)) hgate))
-    (∀⁰ M) (fun _ => ONote.ofNat 5) (fun _ => hlt56)
+    (∀¹ M) (fun _ => ONote.ofNat 5) (fun _ => hlt56)
     (fun _ => ONote.nf_ofNat _) (ONote.nf_ofNat _) (fun _ => Cl.ofNat _) famA
   rwa [Finset.insert_eq_self.mpr hmem] at hallA
 
@@ -352,7 +352,7 @@ except `addEqOfLt` are TRUE ∃-free sentences — `budgetedEmbedsV3_of_exFree_t
 theorem budgetedEmbedsV3_axm_PAminus {Γ}
     (σ : ArithmeticSentence) (hσ : σ ∈ 𝗣𝗔⁻) (hΓ : (↑σ : ArithmeticFormula ℕ) ∈ Γ) :
     BudgetedEmbedsV3 Γ := by
-  have hmod : ℕ ⊧ₘ σ := Semantics.modelsSet_iff.mp inferInstance hσ
+  have hmod : ℕ↓[ℒₒᵣ] ⊧ σ := Semantics.modelsSet_iff.mp inferInstance hσ
   cases hσ with
   | equal φ hφ =>
       cases hφ with

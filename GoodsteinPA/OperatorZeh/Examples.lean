@@ -59,7 +59,7 @@ lemma norm_ball_not_add_closed (R : ℕ) (hR : 1 ≤ R) :
 lemma concrete_readoff_instance {ar} (r : (ℒₒᵣ).Rel ar)
     (v : Fin ar → ArithmeticTerm ℕ) (φ : ArithmeticSemiformula ℕ 1) :
     Zeh (osucc 0) ONote.omega H 1 0
-      (insert (∃⁰ φ) (insert (Semiformula.rel r v) {Semiformula.nrel r v})) := by
+      (insert (∃¹ φ) (insert (Semiformula.rel r v) {Semiformula.nrel r v})) := by
   refine Zeh.exI φ 3 (lt_osucc NF.zero) NF.zero (osucc_NF NF.zero)
     (Cl.ofNat 0) (by rw [show ONote.omega = oadd 1 1 0 from rfl, hardy_omega]) ?_
   exact Zeh.axL r v
@@ -112,14 +112,14 @@ per-branch closure tree.  This is the inhabitedness witness the seam-2 reversal 
 lemma two_level_config_Zeh {ar} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (χ ψ : ArithmeticSemiformula ℕ 1)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
-    Zeh (expTower ONote.omega) e H m ((∀⁰ χ).complexity + 1) (insert (∀⁰ ψ) Γ) := by
+    Zeh (expTower ONote.omega) e H m ((∀¹ χ).complexity + 1) (insert (∀¹ ψ) Γ) := by
   refine Zeh.allω ψ (fun n => osucc (wmul n))
     (fun n => osucc_wmul_lt_expTower_omega n)
     (fun n => osucc_NF (wmul_NF n))
     (expTower_NF omegaO_NF)
     (fun n => Cl.osucc (wmul_mem _ n))
     (fun n => ?_)
-  refine Zeh.cut (∀⁰ χ) (Nat.lt_succ_self _)
+  refine Zeh.cut (∀¹ χ) (Nat.lt_succ_self _)
     (lt_osucc (wmul_NF n)) (lt_osucc (wmul_NF n))
     (wmul_NF n) (wmul_NF n) (osucc_NF (wmul_NF n))
     (wmul_mem _ n) (wmul_mem _ n) ?_ ?_
@@ -136,7 +136,7 @@ lemma probe_allomega_reassembly_Zf
     {χ} (hf : NormControlled f e m)
     (dd : ∀ n, Zeh (osucc (wmul n + wmul n)) e (adjoin H n) (max m n) c
       (insert (χ/[nm n]) Γ)) :
-    Zeh (expTower ONote.omega) e H m c (insert (∀⁰ χ) Γ) ∧
+    Zeh (expTower ONote.omega) e H m c (insert (∀¹ χ) Γ) ∧
       (∀ n, NormControlled (rel1 f n) e (max m n)) := by
   refine ⟨?_, fun n => normControlled_rel1 hf n⟩
   refine Zeh.allω χ (fun n => osucc (wmul n + wmul n))
@@ -161,14 +161,14 @@ derivation at an arbitrary slot `f`. -/
 lemma two_level_config_Zef {ar} (r : (ℒₒᵣ).Rel ar) (v : Fin ar → ArithmeticTerm ℕ)
     (χ ψ : ArithmeticSemiformula ℕ 1)
     (hp : Semiformula.rel r v ∈ Γ) (hn : Semiformula.nrel r v ∈ Γ) :
-    Zef (expTower ONote.omega) e H f ((∀⁰ χ).complexity + 1) (insert (∀⁰ ψ) Γ) := by
+    Zef (expTower ONote.omega) e H f ((∀¹ χ).complexity + 1) (insert (∀¹ ψ) Γ) := by
   refine Zef.allω ψ (fun n => osucc (wmul n))
     (fun n => osucc_wmul_lt_expTower_omega n)
     (fun n => osucc_NF (wmul_NF n))
     (expTower_NF omegaO_NF)
     (fun n => Cl.osucc (wmul_mem _ n))
     (fun n => ?_)
-  refine Zef.cut (∀⁰ χ) (Nat.lt_succ_self _)
+  refine Zef.cut (∀¹ χ) (Nat.lt_succ_self _)
     (lt_osucc (wmul_NF n)) (lt_osucc (wmul_NF n))
     (wmul_NF n) (wmul_NF n) (osucc_NF (wmul_NF n))
     (wmul_mem _ n) (wmul_mem _ n) ?_ ?_
@@ -185,7 +185,7 @@ lemma probe_allomega_reassembly_Zef
     {χ}
     (dd : ∀ n, Zef (osucc (wmul n + wmul n)) e (adjoin H n) (rel1 f n) c
       (insert (χ/[nm n]) Γ)) :
-    Zef (expTower ONote.omega) e H f c (insert (∀⁰ χ) Γ) := by
+    Zef (expTower ONote.omega) e H f c (insert (∀¹ χ) Γ) := by
   refine Zef.allω χ (fun n => osucc (wmul n + wmul n))
     (fun n => ?_) (fun n => ?_) (expTower_NF omegaO_NF)
     (fun n => Cl.osucc (Cl.add (wmul_mem (adjoin H n) n) (wmul_mem (adjoin H n) n))) dd

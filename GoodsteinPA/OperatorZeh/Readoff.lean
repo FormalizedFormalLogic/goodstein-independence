@@ -17,10 +17,10 @@ The witness read-off exit follows the restricted-cut deduction of [Tow20, §17, 
 the predicate shapes below (`ReadoffShape`/`ReadoffGoal` and their slot-form counterparts) are
 specific to this formalization. -/
 
-/-- Sequent shape for the read-off: every member is the target `∃⁰ φ`, an already-bounded
+/-- Sequent shape for the read-off: every member is the target `∃¹ φ`, an already-bounded
 instance of `φ`, or a literal (∀-free). -/
 def ReadoffShape (φ : ArithmeticSemiformula ℕ 1) (e : ONote) (m : ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
-  ∀ ψ ∈ Γ, ψ = (∃⁰ φ) ∨ (∃ n ≤ hardy e m, ψ = φ/[nm n]) ∨
+  ∀ ψ ∈ Γ, ψ = (∃¹ φ) ∨ (∃ n ≤ hardy e m, ψ = φ/[nm n]) ∨
     (∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, ψ = Semiformula.rel r v ∨ ψ = Semiformula.nrel r v)
 
 /-- Read-off conclusion: a bounded true instance of the target, or a true literal
@@ -55,7 +55,7 @@ lemma readoff_sigma1 {φ}
       · exact Or.inl h
       · exact Or.inr ⟨ψ, hsub hψ, hrest⟩
   | @allω α e H m c Γ χ β hβ hβNF hαNF hβH _ _ =>
-      rcases hshape (∀⁰ χ) (Finset.mem_insert_self _ _) with h | ⟨n, _, h⟩ | ⟨ar, r, v, h | h⟩
+      rcases hshape (∀¹ χ) (Finset.mem_insert_self _ _) with h | ⟨n, _, h⟩ | ⟨ar, r, v, h | h⟩
       · exact absurd h (by simp [UnivQuantifier.all, ExsQuantifier.exs])
       · obtain ⟨ar, r, v, hrel⟩ := hφinst n
         rw [hrel] at h
@@ -64,7 +64,7 @@ lemma readoff_sigma1 {φ}
       · exact absurd h (by simp [UnivQuantifier.all])
   | @exI α β e H m c Γ χ n hβ hβNF hαNF hβH hbound _ ih =>
       have hχφ : χ = φ := by
-        rcases hshape (∃⁰ χ) (Finset.mem_insert_self _ _) with h | ⟨n', _, h⟩ | ⟨ar, r, v, h | h⟩
+        rcases hshape (∃¹ χ) (Finset.mem_insert_self _ _) with h | ⟨n', _, h⟩ | ⟨ar, r, v, h | h⟩
         · simpa [ExsQuantifier.exs] using h
         · obtain ⟨ar, r, v, hrel⟩ := hφinst n'
           rw [hrel] at h
@@ -87,12 +87,12 @@ lemma readoff_sigma1 {φ}
       exact absurd hcompl (by omega)
 
 /-- **The headline-instantiation read-off**: a rank-0 `Zeh` root deriving the single
-per-instance Σ₁ sequent `{∃⁰ φ}` (atomic matrix) yields a numeric witness `≤ hardy e m`. -/
+per-instance Σ₁ sequent `{∃¹ φ}` (atomic matrix) yields a numeric witness `≤ hardy e m`. -/
 lemma headline_readoff {φ}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    (dd : Zeh α e H m 0 {(∃⁰ φ)}) :
+    (dd : Zeh α e H m 0 {(∃¹ φ)}) :
     ∃ n ≤ hardy e m, atomTrue (φ/[nm n]) := by
-  have hshape : ReadoffShape φ e m {(∃⁰ φ)} := by
+  have hshape : ReadoffShape φ e m {(∃¹ φ)} := by
     intro ψ hψ
     rw [Finset.mem_singleton] at hψ
     exact Or.inl hψ
@@ -113,7 +113,7 @@ canonical slot at 0).  Independent of cut-elimination (operates on any rank-0 de
 
 /-- Slot-form read-off sequent shape (`hardy e m ⤳ f 0`). -/
 def ReadoffShapeF (φ : ArithmeticSemiformula ℕ 1) (f : ℕ → ℕ) (Γ : Finset (ArithmeticFormula ℕ)) : Prop :=
-  ∀ ψ ∈ Γ, ψ = (∃⁰ φ) ∨ (∃ n ≤ f 0, ψ = φ/[nm n]) ∨
+  ∀ ψ ∈ Γ, ψ = (∃¹ φ) ∨ (∃ n ≤ f 0, ψ = φ/[nm n]) ∨
     (∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, ψ = Semiformula.rel r v ∨ ψ = Semiformula.nrel r v)
 
 /-- Slot-form read-off conclusion. -/
@@ -144,7 +144,7 @@ lemma readoff_sigma1_Zef {φ}
       · exact Or.inl h
       · exact Or.inr ⟨ψ, hsub hψ, hrest⟩
   | @allω α e H f c Γ χ β hβ hβNF hαNF hβH _ _ =>
-      rcases hshape (∀⁰ χ) (Finset.mem_insert_self _ _) with h | ⟨n, _, h⟩ | ⟨ar, r, v, h | h⟩
+      rcases hshape (∀¹ χ) (Finset.mem_insert_self _ _) with h | ⟨n, _, h⟩ | ⟨ar, r, v, h | h⟩
       · exact absurd h (by simp [UnivQuantifier.all, ExsQuantifier.exs])
       · obtain ⟨ar, r, v, hrel⟩ := hφinst n
         rw [hrel] at h
@@ -153,7 +153,7 @@ lemma readoff_sigma1_Zef {φ}
       · exact absurd h (by simp [UnivQuantifier.all])
   | @exI α β e H f c Γ χ n hβ hβNF hαNF hβH hbound _ ih =>
       have hχφ : χ = φ := by
-        rcases hshape (∃⁰ χ) (Finset.mem_insert_self _ _) with h | ⟨n', _, h⟩ | ⟨ar, r, v, h | h⟩
+        rcases hshape (∃¹ χ) (Finset.mem_insert_self _ _) with h | ⟨n', _, h⟩ | ⟨ar, r, v, h | h⟩
         · simpa [ExsQuantifier.exs] using h
         · obtain ⟨ar, r, v, hrel⟩ := hφinst n'
           rw [hrel] at h
@@ -175,14 +175,14 @@ lemma readoff_sigma1_Zef {φ}
   | @cut α βφ βψ e H f c Γ χ hcompl _ _ _ _ _ _ _ _ _ _ _ =>
       exact absurd hcompl (by omega)
 
-/-- **`headline_readoff_Zef`** — the slot-calculus exit: a rank-0 `Zef` root deriving `{∃⁰ φ}`
+/-- **`headline_readoff_Zef`** — the slot-calculus exit: a rank-0 `Zef` root deriving `{∃¹ φ}`
 yields a numeric witness `≤ f 0`.  The slot-form of `headline_readoff`; the numeric content of
 the whole derivation is carried in `f 0`. -/
 lemma headline_readoff_Zef {φ}
     (hφinst : ∀ n, ∃ ar, ∃ r : (ℒₒᵣ).Rel ar, ∃ v, φ/[nm n] = Semiformula.rel r v)
-    (dd : Zef α e H f 0 {(∃⁰ φ)}) :
+    (dd : Zef α e H f 0 {(∃¹ φ)}) :
     ∃ n ≤ f 0, atomTrue (φ/[nm n]) := by
-  have hshape : ReadoffShapeF φ f {(∃⁰ φ)} := by
+  have hshape : ReadoffShapeF φ f {(∃¹ φ)} := by
     intro ψ hψ
     rw [Finset.mem_singleton] at hψ
     exact Or.inl hψ

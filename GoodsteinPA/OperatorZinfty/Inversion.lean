@@ -89,14 +89,14 @@ lemma orInv (dd : Provable α e k d c Γ) (hmem0 : (φ ⋎ ψ) ∈ Γ) :
           (ih (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem)))
         exact Provable.wk (invPull (φ ⋎ ψ) hhd Γ₀) (Provable.orI φ' ψ' hβ hβNF hαNF hτ P)
   | @allω α e k d c Γ₀ χ β hβ hβNF hαNF hτ _ ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [Vee.vee] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋎ ψ) := by intro h; simp [Vee.vee] at h
       have hmem : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
       have key : ∀ n, Provable (β n) e (max k n) d c
           (insert (χ/[nm n]) (insert φ (insert ψ (Γ₀.erase (φ ⋎ ψ))))) := fun n =>
         Provable.wk (invPush (φ ⋎ ψ) (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem))
       exact Provable.wk (invPull (φ ⋎ ψ) hhead Γ₀) (Provable.allω χ β hβ hβNF hαNF hτ key)
   | @exI α β e k d c Γ₀ χ n hβ hβNF hαNF hτ hbound _ ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋎ ψ) := by intro h; simp [Vee.vee] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋎ ψ) := by intro h; simp [Vee.vee] at h
       have hmem : (φ ⋎ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
       have P := Provable.wk (invPush (φ ⋎ ψ) (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem))
       exact Provable.wk (invPull (φ ⋎ ψ) hhead Γ₀) (Provable.exI χ n hβ hβNF hαNF hτ hbound P)
@@ -180,13 +180,13 @@ lemma andInvL (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
         (ih (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem)))
       exact Provable.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Provable.orI φ' ψ' hβ hβNF hαNF hτ P)
   | @allω α e k d c Γ₀ χ β hβ hβNF hαNF hτ _ ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
       have hmem : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
       have key : ∀ n, Provable (β n) e (max k n) d c (insert (χ/[nm n]) (insert φ (Γ₀.erase (φ ⋏ ψ)))) :=
         fun n => Provable.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem))
       exact Provable.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Provable.allω χ β hβ hβNF hαNF hτ key)
   | @exI α β e k d c Γ₀ χ n hβ hβNF hαNF hτ hbound _ ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
       have hmem : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
       have P := Provable.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem))
       exact Provable.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Provable.exI χ n hβ hβNF hαNF hτ hbound P)
@@ -248,13 +248,13 @@ lemma andInvR (dd : Provable α e k d c Γ) (hmem0 : (φ ⋏ ψ) ∈ Γ) :
         (ih (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem)))
       exact Provable.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Provable.orI φ' ψ' hβ hβNF hαNF hτ P)
   | @allω α e k d c Γ₀ χ β hβ hβNF hαNF hτ _ ih =>
-      have hhead : (∀⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
+      have hhead : (∀¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [UnivQuantifier.all, Wedge.wedge] at h
       have hmem : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
       have key : ∀ n, Provable (β n) e (max k n) d c (insert (χ/[nm n]) (insert ψ (Γ₀.erase (φ ⋏ ψ)))) :=
         fun n => Provable.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem))
       exact Provable.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Provable.allω χ β hβ hβNF hαNF hτ key)
   | @exI α β e k d c Γ₀ χ n hβ hβNF hαNF hτ hbound _ ih =>
-      have hhead : (∃⁰ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
+      have hhead : (∃¹ χ) ≠ (φ ⋏ ψ) := by intro h; simp [ExsQuantifier.exs, Wedge.wedge] at h
       have hmem : (φ ⋏ ψ) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
       have P := Provable.wk (inv1Push (φ ⋏ ψ) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem))
       exact Provable.wk (inv1Pull (φ ⋏ ψ) _ hhead Γ₀) (Provable.exI χ n hβ hβNF hαNF hτ hbound P)
@@ -269,8 +269,8 @@ Result raises the **`k`-part** to `max k n₀` (`d` inert): the principal case's
 
 - [Tow20, §19.4] -/
 lemma allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Provable α e k d c Γ)
-  (hmem0 : (∀⁰ φ₀) ∈ Γ) : Provable α e (max k n₀) d c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
-  have hI0 : (φ₀/[nm n₀]) ≠ (∀⁰ φ₀) := Semiformula.ne_of_ne_complexity (by simp)
+  (hmem0 : (∀¹ φ₀) ∈ Γ) : Provable α e (max k n₀) d c (insert (φ₀/[nm n₀]) (Γ.erase (∀¹ φ₀))) := by
+  have hI0 : (φ₀/[nm n₀]) ≠ (∀¹ φ₀) := Semiformula.ne_of_ne_complexity (by simp)
   induction dd with
   | @axL α e k d c Γ ar r v hp hn =>
       refine Provable.axL r v ?_ ?_ <;>
@@ -288,13 +288,13 @@ lemma allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Provable �
         (Finset.mem_insert_of_mem
           (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), hmem⟩))
   | @wk α e k d c Δ Γ hsub _ ih =>
-      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      by_cases hh : (∀¹ φ₀) ∈ Δ
       · exact Provable.wk (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hh)
       · refine Provable.wk ?_ (Provable.mono_k (by assumption) (le_max_left _ _))
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @weak α β e k d c Δ Γ hβ hβNF hαNF hτ hsub _ ih =>
-      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      by_cases hh : (∀¹ φ₀) ∈ Δ
       · exact Provable.weak hβ hβNF hαNF (lt_of_lt_of_le hτ (Nat.add_le_add_right (le_max_left _ _) d))
           (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hh)
       · refine Provable.weak hβ hβNF hαNF (lt_of_lt_of_le hτ (Nat.add_le_add_right (le_max_left _ _) d)) ?_
@@ -302,50 +302,50 @@ lemma allInv {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ) (dd : Provable �
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @andI α βφ' βψ' e k d c Γ₀ φ' ψ' hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ihφ ihψ =>
-      have hhead : (φ' ⋏ ψ') ≠ (∀⁰ φ₀) := by intro h; simp [Wedge.wedge, UnivQuantifier.all] at h
-      have hmem : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
-      have Pφ := Provable.wk (inv1Push (∀⁰ φ₀) _ φ' Γ₀) (ihφ (Finset.mem_insert_of_mem hmem))
-      have Pψ := Provable.wk (inv1Push (∀⁰ φ₀) _ ψ' Γ₀) (ihψ (Finset.mem_insert_of_mem hmem))
-      exact Provable.wk (inv1Pull (∀⁰ φ₀) _ hhead Γ₀)
+      have hhead : (φ' ⋏ ψ') ≠ (∀¹ φ₀) := by intro h; simp [Wedge.wedge, UnivQuantifier.all] at h
+      have hmem : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
+      have Pφ := Provable.wk (inv1Push (∀¹ φ₀) _ φ' Γ₀) (ihφ (Finset.mem_insert_of_mem hmem))
+      have Pψ := Provable.wk (inv1Push (∀¹ φ₀) _ ψ' Γ₀) (ihψ (Finset.mem_insert_of_mem hmem))
+      exact Provable.wk (inv1Pull (∀¹ φ₀) _ hhead Γ₀)
         (Provable.andI φ' ψ' hβφ hβψ hβφNF hβψNF hαNF
           (lt_of_lt_of_le hτφ (Nat.add_le_add_right (le_max_left _ _) d))
           (lt_of_lt_of_le hτψ (Nat.add_le_add_right (le_max_left _ _) d)) Pφ Pψ)
   | @orI α β e k d c Γ₀ φ' ψ' hβ hβNF hαNF hτ _ ih =>
-      have hhead : (φ' ⋎ ψ') ≠ (∀⁰ φ₀) := by intro h; simp [Vee.vee, UnivQuantifier.all] at h
-      have hmem : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
-      have P := Provable.wk (inv1Push2 (∀⁰ φ₀) _ φ' ψ' Γ₀)
+      have hhead : (φ' ⋎ ψ') ≠ (∀¹ φ₀) := by intro h; simp [Vee.vee, UnivQuantifier.all] at h
+      have hmem : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
+      have P := Provable.wk (inv1Push2 (∀¹ φ₀) _ φ' ψ' Γ₀)
         (ih (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem hmem)))
-      exact Provable.wk (inv1Pull (∀⁰ φ₀) _ hhead Γ₀)
+      exact Provable.wk (inv1Pull (∀¹ φ₀) _ hhead Γ₀)
         (Provable.orI φ' ψ' hβ hβNF hαNF (lt_of_lt_of_le hτ (Nat.add_le_add_right (le_max_left _ _) d)) P)
   | @allω α e k d c Γ₀ χ β hβ hβNF hαNF hτ dd ih =>
-      by_cases hhd : (∀⁰ χ) = (∀⁰ φ₀)
+      by_cases hhd : (∀¹ χ) = (∀¹ φ₀)
       · obtain rfl := (Semiformula.all_inj _ _).mp hhd
         rw [Finset.erase_insert_eq_erase]
-        by_cases hh : (∀⁰ χ) ∈ Γ₀
+        by_cases hh : (∀¹ χ) ∈ Γ₀
         · have h := ih n₀ (Finset.mem_insert_of_mem hh)
           rw [max_eq_left (le_max_right k n₀)] at h
-          exact Provable.weak (hβ n₀) (hβNF n₀) hαNF (hτ n₀) (princAllSub (∀⁰ χ) _ Γ₀) h
+          exact Provable.weak (hβ n₀) (hβNF n₀) hαNF (hτ n₀) (princAllSub (∀¹ χ) _ Γ₀) h
         · rw [Finset.erase_eq_of_notMem hh]
           exact Provable.weak (hβ n₀) (hβNF n₀) hαNF (hτ n₀) (Finset.Subset.refl _) (dd n₀)
-      · have hmem : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhd e.symm
+      · have hmem : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhd e.symm
         have key : ∀ n, Provable (β n) e (max (max k n₀) n) d c
-            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀⁰ φ₀)))) := by
+            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀¹ φ₀)))) := by
           intro n
-          have h := Provable.wk (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem))
+          have h := Provable.wk (inv1Push (∀¹ φ₀) _ (χ/[nm n]) Γ₀) (ih n (Finset.mem_insert_of_mem hmem))
           rw [show max (max k n₀) n = max (max k n) n₀ from by omega]
           exact h
-        exact Provable.wk (inv1Pull (∀⁰ φ₀) _ hhd Γ₀)
+        exact Provable.wk (inv1Pull (∀¹ φ₀) _ hhd Γ₀)
           (Provable.allω χ β hβ hβNF hαNF (fun n => lt_of_lt_of_le (hτ n) (by omega)) key)
   | @exI α β e k d c Γ₀ χ n hβ hβNF hαNF hτ hbound _ ih =>
-      have hhead : (∃⁰ χ) ≠ (∀⁰ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
-      have hmem : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
-      have P := Provable.wk (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem))
-      exact Provable.wk (inv1Pull (∀⁰ φ₀) _ hhead Γ₀)
+      have hhead : (∃¹ χ) ≠ (∀¹ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
+      have hmem : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem0).resolve_left fun e => hhead e.symm
+      have P := Provable.wk (inv1Push (∀¹ φ₀) _ (χ/[nm n]) Γ₀) (ih (Finset.mem_insert_of_mem hmem))
+      exact Provable.wk (inv1Pull (∀¹ φ₀) _ hhead Γ₀)
         (Provable.exI χ n hβ hβNF hαNF (lt_of_lt_of_le hτ (Nat.add_le_add_right (le_max_left _ _) d))
           (le_trans hbound (hardy_monotone _ (Nat.add_le_add_right (le_max_left _ _) d))) P)
   | @cut α βφ' βψ' e k d c Γ₀ χ hcompl hβφ hβψ hβφNF hβψNF hαNF hτφ hτψ _ _ ih₁ ih₂ =>
-      have P₁ := Provable.wk (inv1Push (∀⁰ φ₀) _ χ Γ₀) (ih₁ (Finset.mem_insert_of_mem hmem0))
-      have P₂ := Provable.wk (inv1Push (∀⁰ φ₀) _ (∼χ) Γ₀) (ih₂ (Finset.mem_insert_of_mem hmem0))
+      have P₁ := Provable.wk (inv1Push (∀¹ φ₀) _ χ Γ₀) (ih₁ (Finset.mem_insert_of_mem hmem0))
+      have P₂ := Provable.wk (inv1Push (∀¹ φ₀) _ (∼χ) Γ₀) (ih₂ (Finset.mem_insert_of_mem hmem0))
       exact Provable.cut χ hcompl hβφ hβψ hβφNF hβψNF hαNF
         (lt_of_lt_of_le hτφ (Nat.add_le_add_right (le_max_left _ _) d))
         (lt_of_lt_of_le hτψ (Nat.add_le_add_right (le_max_left _ _) d)) P₁ P₂

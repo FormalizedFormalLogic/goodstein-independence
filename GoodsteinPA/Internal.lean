@@ -12,7 +12,7 @@ file is one section below.
 -/
 module
 
-public import GoodsteinPA.ToFoundation.Compat
+public import Foundation.FirstOrder.Arithmetic.HFS
 public import GoodsteinPA.ToMathlib.Goodstein.Domination
 
 @[expose] public section
@@ -21,12 +21,12 @@ namespace GoodsteinPA.InternalPow
 
 /-! ## InternalPow -/
 /-
-# `InternalPow.lean` — E-core(b) brick 1: internalized base-`b` power as a `𝚺₁`-function in `V`
+# `InternalPow.lean` — E-core(b) brick 1: internalized base-`b` power as a `𝚺ᴬ₁`-function in `V`
 
 The deep wall of the descent **E** is **E-core(b)** (`DESCENT-PLAN.md §3`): re-expressing Rathjen §3
 *inside* PA. Its kernel — inequality (6) — is arithmetized over **base-`b` numerals** (the digit /
-hereditary-base-change view), so the very first prerequisite is a `𝚺₁`-definable variable-base power
-`b ^ x` inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁`.
+hereditary-base-change view), so the very first prerequisite is a `𝚺ᴬ₁`-definable variable-base power
+`b ^ x` inside an arbitrary `V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁`.
 
 Foundation's `Exponential`/`exp`/`bexp` machinery is **base-2 only** (`Arithmetic/Exponential/`); there
 is no general variable-base power. We build one here from the generic primitive-recursion engine
@@ -35,7 +35,7 @@ is no general variable-base power. We build one here from the generic primitive-
 * `ipow b 0     = 1`
 * `ipow b (x+1) = ipow b x * b`
 
-and the engine certifies `ipow` is a genuine **`𝚺₁`-function** of `(b, x)` — the form the inequality-(6)
+and the engine certifies `ipow` is a genuine **`𝚺ᴬ₁`-function** of `(b, x)` — the form the inequality-(6)
 internal induction (`DescentArith.ineq6_internal`) consumes. This is brick 1 of the multi-lap wall;
 brick 2 will be base-`b` digit extraction, brick 3 the hereditary base-change `bump`.
 -/
@@ -44,7 +44,7 @@ section
 open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
 open scoped FFL.FirstOrder.Bounding
 
-variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+variable {V : Type*} [ORingStructure V] [V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁]
 
 /-- Primitive-recursion blueprint for variable-base power: one parameter (the base `x = b`),
 `zero ↦ 1`, `succ : ih ↦ ih * b`. -/
@@ -53,7 +53,7 @@ def pow.blueprint : PR.Blueprint 1 where
   succ := .mkSigma “y ih n x. y = ih * x”
 
 /-- The model-side construction realizing `pow.blueprint`: `zero v = 1`, `succ v i ih = ih * b`. Both
-component functions are `𝚺₀` (hence `𝚺₁`) so the engine yields a `𝚺₁`-definable result. -/
+component functions are `𝚺ᴬ₀` (hence `𝚺ᴬ₁`) so the engine yields a `𝚺ᴬ₁`-definable result. -/
 noncomputable def pow.construction : PR.Construction V pow.blueprint where
   zero := fun _ ↦ 1
   succ := fun x _ ih ↦ ih * x 0
@@ -69,16 +69,16 @@ noncomputable def ipow (b x : V) : V := pow.construction.result ![b] x
 
 section
 
-/-- `𝚺₁`-definition of `ipow`, with the argument order `(output, b, x)`. -/
-def _root_.FFL.FirstOrder.Arithmetic.ipowDef : 𝚺₁.Semisentence 3 :=
+/-- `𝚺ᴬ₁`-definition of `ipow`, with the argument order `(output, b, x)`. -/
+def _root_.FFL.FirstOrder.Arithmetic.ipowDef : 𝚺ᴬ₁.Semisentence 3 :=
   pow.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
 
-instance ipow_defined : 𝚺₁-Function₂ (ipow : V → V → V) via ipowDef := .mk
+instance ipow_defined : 𝚺ᴬ₁-Function₂ (ipow : V → V → V) via ipowDef := .mk
   fun v ↦ by simp [pow.construction.result_defined_iff, ipowDef]; rfl
 
-instance ipow_definable : 𝚺₁-Function₂ (ipow : V → V → V) := ipow_defined.to_definable
+instance ipow_definable : 𝚺ᴬ₁-Function₂ (ipow : V → V → V) := ipow_defined.to_definable
 
-instance ipow_definable' (Γ) : Γ-[m + 1]-Function₂ (ipow : V → V → V) := ipow_definable.of_sigmaOne
+instance ipow_definable' (Γ) : Γᴬ-[m + 1]-Function₂ (ipow : V → V → V) := ipow_definable.of_sigmaOne
 
 end
 
@@ -163,11 +163,11 @@ end
 Brick 2 of the arithmetization wall (`DESCENT-PLAN.md §3`, after `InternalPow.ipow`). The PA-side
 proof of Rathjen's inequality (6) is phrased over **base-`b` numerals**: the order comparison and the
 hereditary base-change `bump` (`S^b_{b+1}`) are operations on the base-`b` digits of a number. This
-file gives the digit accessor and its basic laws inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁`:
+file gives the digit accessor and its basic laws inside an arbitrary `V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁`:
 
 * `idigit b n i = (n / b^i) % b` — the `i`-th base-`b` digit of `n`.
 
-with `idigit b n i < b` (for `0 < b`) and the `𝚺₁`-definability needed for internal induction. Brick 3
+with `idigit b n i < b` (for `0 < b`) and the `𝚺ᴬ₁`-definability needed for internal induction. Brick 3
 will assemble these into the base-`b` hereditary base-change.
 -/
 section
@@ -175,7 +175,7 @@ section
 open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
 open scoped FFL.FirstOrder.Bounding
 
-variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+variable {V : Type*} [ORingStructure V] [V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁]
 
 /-- **`i`-th base-`b` digit of `n`**: `(n / b^i) % b`. -/
 noncomputable def idigit (b n i : V) : V := (n / ipow b i) % b
@@ -192,7 +192,7 @@ lemma idigit_succ_exp (b n i : V) : idigit b n (i + 1) = idigit b (n / b) i := b
   unfold idigit
   rw [ipow_succ, mul_comm, FFL.FirstOrder.Arithmetic.div_mul]
 
-instance idigit_definable : 𝚺₁-Function₃ (idigit : V → V → V → V) := by
+instance idigit_definable : 𝚺ᴬ₁-Function₃ (idigit : V → V → V → V) := by
   unfold idigit; definability
 
 end
@@ -204,7 +204,7 @@ end
 Brick 3 of the arithmetization wall (`DESCENT-PLAN.md §3`). Rathjen's hereditary base-change `bump`
 (`Defs.bump`) peels the **top** base-`b` power off `n`, i.e. it needs the top exponent
 `e = log_b n` (`Nat.log b n`). Foundation ships base-2 `log` only, so we build the variable-base
-`ilog b n` inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁`, characterized (for `2 ≤ b`, `0 < n`) by
+`ilog b n` inside an arbitrary `V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁`, characterized (for `2 ≤ b`, `0 < n`) by
 
   `b ^ (ilog b n) ≤ n < b ^ (ilog b n + 1)`.
 
@@ -217,7 +217,7 @@ section
 open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
 open scoped FFL.FirstOrder.Bounding
 
-variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+variable {V : Type*} [ORingStructure V] [V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁]
 
 /-- `x + 1 ≤ b ^ (x+1)` for `2 ≤ b`: the base bound that makes the log search terminate. -/
 lemma succ_le_ipow_succ {b : V} (hb : 2 ≤ b) (x : V) : x + 1 ≤ ipow b (x + 1) := by
@@ -244,7 +244,7 @@ lemma ilog_exists_unique (b n : V) :
   · obtain ⟨hb, hpos⟩ := hmain
     have hb1 : (1 : V) ≤ b := le_trans (by simp) hb
     -- least `y` with `n < b^y`; the logarithm is its predecessor.
-    have hP : 𝚺₁-Predicate (fun e => n < ipow b e) := by definability
+    have hP : 𝚺ᴬ₁-Predicate (fun e => n < ipow b e) := by definability
     have hex : n < ipow b (n + 1) := lt_ipow_succ hb n
     obtain ⟨y, hy, hmin⟩ := InductionOnBroadHierarchy.least_number 𝚺 1 hP hex
     have hy0 : y ≠ 0 := by
@@ -305,26 +305,26 @@ lemma ilog_mono {b n n' : V} (hb : 2 ≤ b) (hn : 0 < n) (hle : n ≤ n') : ilog
   have h3 : ipow b (ilog b n) ≤ n := ipow_ilog_le hb hn
   exact absurd (lt_of_lt_of_le (lt_of_lt_of_le (lt_of_le_of_lt hle h1) h2) h3) (_root_.lt_irrefl n)
 
-/-- Graph of `ilog`, for the `𝚺₁`-definability instance below. -/
+/-- Graph of `ilog`, for the `𝚺ᴬ₁`-definability instance below. -/
 lemma ilog_graph {e b n : V} :
     e = ilog b n ↔ ((2 ≤ b ∧ 0 < n) → ipow b e ≤ n ∧ n < ipow b (e + 1))
         ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0) :=
   Classical.choose!_eq_iff_right _
 
-def _root_.FFL.FirstOrder.Arithmetic.ilogDef : 𝚺₁.Semisentence 3 := .mkSigma
+def _root_.FFL.FirstOrder.Arithmetic.ilogDef : 𝚺ᴬ₁.Semisentence 3 := .mkSigma
   “e b n. (2 ≤ b ∧ 0 < n → (∃ pe, !ipowDef pe b e ∧ pe ≤ n) ∧ (∃ pf, !ipowDef pf b (e + 1) ∧ n < pf))
         ∧ (¬(2 ≤ b ∧ 0 < n) → e = 0)”
 
-instance ilog_defined : 𝚺₁-Function₂ (ilog : V → V → V) via ilogDef := .mk fun v ↦ by
+instance ilog_defined : 𝚺ᴬ₁-Function₂ (ilog : V → V → V) via ilogDef := .mk fun v ↦ by
   simp [ilogDef, ilog_graph, ipow_defined.iff]
   refine fun _ => ⟨fun h hyp => h ?_, fun h hyp => h (fun h2 => hyp.resolve_left (not_lt.mpr h2))⟩
   by_cases h2 : 2 ≤ v 1
   · exact Or.inr (hyp h2)
   · exact Or.inl (not_le.mp h2)
 
-instance ilog_definable : 𝚺₁-Function₂ (ilog : V → V → V) := ilog_defined.to_definable
+instance ilog_definable : 𝚺ᴬ₁-Function₂ (ilog : V → V → V) := ilog_defined.to_definable
 
-instance ilog_definable' (Γ) : Γ-[m + 1]-Function₂ (ilog : V → V → V) := ilog_definable.of_sigmaOne
+instance ilog_definable' (Γ) : Γᴬ-[m + 1]-Function₂ (ilog : V → V → V) := ilog_definable.of_sigmaOne
 
 end
 
@@ -333,13 +333,13 @@ end
 # `InternalBump.lean` — E-core(b) brick 4: the hereditary base-change `bump` inside `V`
 
 Brick 4 (`DESCENT-PLAN.md §3`). `Defs.bump b n` is course-of-values recursion (it recurses at
-`e = log_b n` and `r = n mod b^e`, both `< n`). To realize it inside `V ⊧ₘ* 𝗜𝚺₁` we use the standard
+`e = log_b n` and `r = n mod b^e`, both `< n`). To realize it inside `V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁` we use the standard
 table reduction of strong recursion to primitive recursion (`HFS/PRF.lean`'s `PR.Construction`):
 
 * `bumpNext b M s` — the value `bump b M` computed from the **table** `s = ⟨bump b 0,…,bump b (M-1)⟩`
   (length `M`): peel the top base-`b` power of `M` and read the two recursive sub-results out of `s`.
 
-This file establishes `bumpNext` and its `𝚺₁`-definability (the artifact the table's `PR.Blueprint`
+This file establishes `bumpNext` and its `𝚺ᴬ₁`-definability (the artifact the table's `PR.Blueprint`
 references). Brick 4b will assemble the table itself via `PR.Construction`, brick 4c will read off
 `ibump b n := (table b n).[n]` and prove it satisfies `Defs.bump`'s recursion.
 -/
@@ -348,7 +348,7 @@ section
 open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic FFL.FirstOrder.Bounding.HierarchySymbol
 open scoped FFL.FirstOrder.Bounding
 
-variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+variable {V : Type*} [ORingStructure V] [V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁]
 
 /-- **Table step of `bump`.** Given the table `s = ⟨bump b 0,…,bump b (M-1)⟩`, compute `bump b M` by
 peeling the top base-`b` power: `e = ilog b M`, top coefficient `M / b^e`, exponent result `s.[e]`,
@@ -356,18 +356,18 @@ remainder result `s.[M % b^e]`. (For `M ≥ 1` with a correct table this equals 
 noncomputable def bumpNext (b M s : V) : V :=
   M / ipow b (ilog b M) * ipow (b + 1) (znth s (ilog b M)) + znth s (M % ipow b (ilog b M))
 
-/-- The `𝚺₁` graph-definition of `bumpNext`, composing `ilog`, `ipow`, `znth`, `div`, `rem`. -/
-def _root_.FFL.FirstOrder.Arithmetic.bumpNextDef : 𝚺₁.Semisentence 4 := .mkSigma
+/-- The `𝚺ᴬ₁` graph-definition of `bumpNext`, composing `ilog`, `ipow`, `znth`, `div`, `rem`. -/
+def _root_.FFL.FirstOrder.Arithmetic.bumpNextDef : 𝚺ᴬ₁.Semisentence 4 := .mkSigma
   “y b M s.
     ∃ e, !ilogDef e b M ∧ ∃ pe, !ipowDef pe b e ∧ ∃ te, !znthDef te s e ∧
       ∃ pte, !ipowDef pte (b + 1) te ∧ ∃ q, !divDef q M pe ∧ ∃ r, !remDef r M pe ∧
         ∃ tr, !znthDef tr s r ∧ y = q * pte + tr”
 
-instance bumpNext_defined : 𝚺₁-Function₃ (bumpNext : V → V → V → V) via bumpNextDef := .mk fun v ↦ by
+instance bumpNext_defined : 𝚺ᴬ₁-Function₃ (bumpNext : V → V → V → V) via bumpNextDef := .mk fun v ↦ by
   simp [bumpNextDef, bumpNext, ilog_defined.iff, ipow_defined.iff, znth_defined.iff,
     div_defined.iff, rem_defined.iff]
 
-instance bumpNext_definable : 𝚺₁-Function₃ (bumpNext : V → V → V → V) := bumpNext_defined.to_definable
+instance bumpNext_definable : 𝚺ᴬ₁-Function₃ (bumpNext : V → V → V → V) := bumpNext_defined.to_definable
 
 /-! ### The `bump` table via primitive recursion -/
 
@@ -400,26 +400,26 @@ noncomputable def ibump (b n : V) : V := znth (ibumpTable b n) n
 
 section
 
-def _root_.FFL.FirstOrder.Arithmetic.ibumpTableDef : 𝚺₁.Semisentence 3 :=
+def _root_.FFL.FirstOrder.Arithmetic.ibumpTableDef : 𝚺ᴬ₁.Semisentence 3 :=
   bumpTable.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
 
-instance ibumpTable_defined : 𝚺₁-Function₂ (ibumpTable : V → V → V) via ibumpTableDef := .mk
+instance ibumpTable_defined : 𝚺ᴬ₁-Function₂ (ibumpTable : V → V → V) via ibumpTableDef := .mk
   fun v ↦ by simp [bumpTable.construction.result_defined_iff, ibumpTableDef]; rfl
 
-instance ibumpTable_definable : 𝚺₁-Function₂ (ibumpTable : V → V → V) := ibumpTable_defined.to_definable
+instance ibumpTable_definable : 𝚺ᴬ₁-Function₂ (ibumpTable : V → V → V) := ibumpTable_defined.to_definable
 
-instance ibumpTable_definable' (Γ) : Γ-[m + 1]-Function₂ (ibumpTable : V → V → V) :=
+instance ibumpTable_definable' (Γ) : Γᴬ-[m + 1]-Function₂ (ibumpTable : V → V → V) :=
   ibumpTable_definable.of_sigmaOne
 
-def _root_.FFL.FirstOrder.Arithmetic.ibumpDef : 𝚺₁.Semisentence 3 := .mkSigma
+def _root_.FFL.FirstOrder.Arithmetic.ibumpDef : 𝚺ᴬ₁.Semisentence 3 := .mkSigma
   “y b n. ∃ t, !ibumpTableDef t b n ∧ !znthDef y t n”
 
-instance ibump_defined : 𝚺₁-Function₂ (ibump : V → V → V) via ibumpDef := .mk fun v ↦ by
+instance ibump_defined : 𝚺ᴬ₁-Function₂ (ibump : V → V → V) via ibumpDef := .mk fun v ↦ by
   simp [ibumpDef, ibump, ibumpTable_defined.iff, znth_defined.iff]
 
-instance ibump_definable : 𝚺₁-Function₂ (ibump : V → V → V) := ibump_defined.to_definable
+instance ibump_definable : 𝚺ᴬ₁-Function₂ (ibump : V → V → V) := ibump_defined.to_definable
 
-instance ibump_definable' (Γ) : Γ-[m + 1]-Function₂ (ibump : V → V → V) :=
+instance ibump_definable' (Γ) : Γᴬ-[m + 1]-Function₂ (ibump : V → V → V) :=
   ibump_definable.of_sigmaOne
 
 end
@@ -427,16 +427,16 @@ end
 /-! ### Structural correctness of the table
 
 `definability`/aesop cannot discharge predicates over `ibumpTable` (its `PR.result` definability
-leaf makes the `isDefEq` search blow up), so the `𝚺₁`-predicate side conditions of the inductions
+leaf makes the `isDefEq` search blow up), so the `𝚺ᴬ₁`-predicate side conditions of the inductions
 below are supplied as **explicit composition terms** via the helpers here. -/
 
-/-- `fun v ↦ ibumpTable b (v i)` is `𝚺₁`-definable (explicit composition, no search). -/
+/-- `fun v ↦ ibumpTable b (v i)` is `𝚺ᴬ₁`-definable (explicit composition, no search). -/
 private lemma def_ibumpTable {k} (b : V) (i : Fin k) :
-    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ ibumpTable b (v i)) :=
+    𝚺ᴬ-[1].DefinableFunction (fun v : Fin k → V ↦ ibumpTable b (v i)) :=
   DefinableFunction₂.comp (F := ibumpTable) (DefinableFunction.const b) (DefinableFunction.var i)
 
 private lemma def_ibump {k} (b : V) (i : Fin k) :
-    𝚺-[1].DefinableFunction (fun v : Fin k → V ↦ ibump b (v i)) :=
+    𝚺ᴬ-[1].DefinableFunction (fun v : Fin k → V ↦ ibump b (v i)) :=
   DefinableFunction₂.comp (F := ibump) (DefinableFunction.const b) (DefinableFunction.var i)
 
 @[simp] lemma ibumpTable_seq (b n : V) : Seq (ibumpTable b n) := by
@@ -539,7 +539,7 @@ lemma ibump_pos {b : V} (hb : 2 ≤ b) {n : V} (hn : 0 < n) :
 
 /-- **`n ≤ ibump b n`** (internal analogue of `Domination.le_bump`). The hereditary base-change never
 shrinks its argument: each digit-block grows (`b^e ≤ (b+1)^(ibump b e)`) and the remainder dominates
-its own bump by the strong IH. Proved by `𝚺₁` order-induction on `n`, peeling via `ibump_pos`. -/
+its own bump by the strong IH. Proved by `𝚺ᴬ₁` order-induction on `n`, peeling via `ibump_pos`. -/
 theorem le_ibump {b : V} (hb : 2 ≤ b) : ∀ n, n ≤ ibump b n := by
   have hb0 : (0 : V) < b := lt_of_lt_of_le (by simp) hb
   intro n
@@ -800,7 +800,7 @@ predecessor), so it goes straight through `PR.Construction`:
 
   `Defs.goodsteinSeq m 0 = m`,   `Defs.goodsteinSeq m (k+1) = bump (k+2) (goodsteinSeq m k) - 1`.
 
-`igoodstein m₀ k` is the `𝚺₁`-definable run `k ↦ mₖ` inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁` — the concrete
+`igoodstein m₀ k` is the `𝚺ᴬ₁`-definable run `k ↦ mₖ` inside an arbitrary `V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁` — the concrete
 `m : V → V` that `DescentArith.ineq6_internal` abstracts over. Brick 6 will be the `b`-side bound
 `T̂^{k+2}∘β` and the internal `ineq6_step`.
 -/
@@ -809,7 +809,7 @@ section
 open FFL FFL.FirstOrder FFL.FirstOrder.Arithmetic
 open scoped FFL.FirstOrder.Bounding
 
-variable {V : Type*} [ORingStructure V] [V ⊧ₘ* 𝗜𝚺₁]
+variable {V : Type*} [ORingStructure V] [V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁]
 
 /-- Blueprint for the Goodstein run: `zero ↦ m₀`, `succ : (k, v) ↦ ibump (k+2) v - 1`. -/
 def goodstein.blueprint : PR.Blueprint 1 where
@@ -835,15 +835,15 @@ noncomputable def igoodstein (m₀ k : V) : V := goodstein.construction.result !
 
 section
 
-def _root_.FFL.FirstOrder.Arithmetic.igoodsteinDef : 𝚺₁.Semisentence 3 :=
+def _root_.FFL.FirstOrder.Arithmetic.igoodsteinDef : 𝚺ᴬ₁.Semisentence 3 :=
   goodstein.blueprint.resultDef.rew (Rew.subst ![#0, #2, #1])
 
-instance igoodstein_defined : 𝚺₁-Function₂ (igoodstein : V → V → V) via igoodsteinDef := .mk
+instance igoodstein_defined : 𝚺ᴬ₁-Function₂ (igoodstein : V → V → V) via igoodsteinDef := .mk
   fun v ↦ by simp [goodstein.construction.result_defined_iff, igoodsteinDef]; rfl
 
-instance igoodstein_definable : 𝚺₁-Function₂ (igoodstein : V → V → V) := igoodstein_defined.to_definable
+instance igoodstein_definable : 𝚺ᴬ₁-Function₂ (igoodstein : V → V → V) := igoodstein_defined.to_definable
 
-instance igoodstein_definable' (Γ) : Γ-[m + 1]-Function₂ (igoodstein : V → V → V) :=
+instance igoodstein_definable' (Γ) : Γᴬ-[m + 1]-Function₂ (igoodstein : V → V → V) :=
   igoodstein_definable.of_sigmaOne
 
 end
@@ -854,7 +854,7 @@ end
 /-
 # `InternalBridge.lean` — E-core(b) brick 6: the standard-model bridge (faithfulness)
 
-The internal `ipow`/`ilog`/`ibump`/`igoodstein` were built inside an arbitrary `V ⊧ₘ* 𝗜𝚺₁`. For the
+The internal `ipow`/`ilog`/`ibump`/`igoodstein` were built inside an arbitrary `V↓[ℒₒᵣ] ⊧* 𝗜𝚺₁`. For the
 expedition's **anti-fraud** guarantee they must agree with the *audited* `Defs.bump`/`Defs.goodsteinSeq`
 on the standard model `ℕ` (itself a model of `𝗜𝚺₁`). This file establishes that absoluteness:
 
@@ -863,7 +863,7 @@ on the standard model `ℕ` (itself a model of `𝗜𝚺₁`). This file establi
 * `ibump b n = Defs.bump b n`     (over `ℕ`, base `2 ≤ b` — the only case Goodstein uses)
 * `igoodstein m k = goodsteinSeq m k`
 
-so the `𝚺₁`-definable internal run is the genuine Goodstein process, not a look-alike.
+so the `𝚺ᴬ₁`-definable internal run is the genuine Goodstein process, not a look-alike.
 -/
 section
 

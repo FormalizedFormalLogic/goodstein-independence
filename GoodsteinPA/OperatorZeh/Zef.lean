@@ -40,11 +40,11 @@ inductive Zef : ONote → ONote → (ONote → Prop) → (ℕ → ℕ) → ℕ �
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
       (hβH : ∀ n, relOp H n (β n))
       (dd : ∀ n, Zef (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
-      Zef α e H f c (insert (∀⁰ φ) Γ)
+      Zef α e H f c (insert (∀¹ φ) Γ)
   | exI {α β e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hβH : Cl H β) (hbound : n ≤ f 0)
-      (dd : Zef β e H f c (insert (φ/[nm n]) Γ)) : Zef α e H f c (insert (∃⁰ φ) Γ)
+      (dd : Zef β e H f c (insert (φ/[nm n]) Γ)) : Zef α e H f c (insert (∃¹ φ) Γ)
   | cut {α βφ βψ e : ONote} {H : ONote → Prop} {f : ℕ → ℕ} {c : ℕ} {Γ : Finset (ArithmeticFormula ℕ)}
       (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF)
@@ -194,7 +194,7 @@ Reused by the assembly to introduce existentials at the prov level. -/
 lemma ZefProv.exI {β}
     (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβNF : β.NF) (hβH : Cl H β)
     (hbound : n ≤ f 0) (D : ZefProv β e H f c (insert (φ/[nm n]) Γ)) :
-    ZefProv (osucc β) e H f c (insert (∃⁰ φ) Γ) := by
+    ZefProv (osucc β) e H f c (insert (∃¹ φ) Γ) := by
   obtain ⟨β', hle, hNF', hH', d⟩ := D
   exact ⟨osucc β, le_rfl, osucc_NF hβNF, Cl.osucc hβH,
     Zef.exI φ n (lt_of_le_of_lt hle (lt_osucc hβNF)) hNF' (osucc_NF hβNF) hH' hbound d⟩
@@ -206,7 +206,7 @@ assembly to rebuild ω-nodes over the branch family. -/
 lemma ZefProv.allω (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
     (hβ : ∀ n, β n < α) (hαNF : α.NF) (hαH : Cl H α)
     (D : ∀ n, ZefProv (β n) e (adjoin H n) (rel1 f n) c (insert (φ/[nm n]) Γ)) :
-    ZefProv α e H f c (insert (∀⁰ φ) Γ) :=
+    ZefProv α e H f c (insert (∀¹ φ) Γ) :=
   ⟨α, le_rfl, hαNF, hαH,
     Zef.allω φ (fun n => (D n).choose)
       (fun n => lt_of_le_of_lt (D n).choose_spec.1 (hβ n))

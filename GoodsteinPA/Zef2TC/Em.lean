@@ -82,7 +82,7 @@ theorem em_Zef2TC (k : ℕ) (φ : ArithmeticFormula ℕ) (hk : φ.complexity ≤
         rwa [Finset.insert_eq_self.mpr (show (φ ⋎ ψ) ∈ Γ by simp [hp])] at hor
     | hall ψ =>
         have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_all] at hk; omega
-        have hex : (∃⁰ ∼ψ) ∈ Γ := by simpa using hn
+        have hex : (∃¹ ∼ψ) ∈ Γ := by simpa using hn
         have fam : ∀ n, Zef2TC (ONote.ofNat (2 * k + 2)) e (adjoin H n) (rel1 f n) 0
             (insert (ψ/[nm n]) Γ) := by
           intro n
@@ -108,7 +108,7 @@ theorem em_Zef2TC (k : ℕ) (φ : ArithmeticFormula ℕ) (hk : φ.complexity ≤
         rwa [Finset.insert_eq_self.mpr hp] at hall
     | hexs ψ =>
         have hψk : ψ.complexity ≤ k := by simp only [Semiformula.complexity_exs] at hk; omega
-        have hall' : (∀⁰ ∼ψ) ∈ Γ := by simpa using hn
+        have hall' : (∀¹ ∼ψ) ∈ Γ := by simpa using hn
         have fam : ∀ n, Zef2TC (ONote.ofNat (2 * k + 2)) e (adjoin H n) (rel1 f n) 0
             (insert ((∼ψ)/[nm n]) Γ) := by
           intro n
@@ -272,8 +272,8 @@ theorem em_cong_Zef2TC (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
           by simp [hp'])] at hor
     | hall a =>
         have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_all] at hk; omega
-        have hp' : (∀⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
-        have hn' : (∃⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
+        have hp' : (∀¹ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
+        have hn' : (∃¹ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
         have fam : ∀ m, Zef2TC (ONote.ofNat (2 * k + 2)) e (adjoin H m) (rel1 f m) 0
             (insert ((((Rew.subst w).q ▹ a))/[nm m]) Γ) := by
           intro m
@@ -305,8 +305,8 @@ theorem em_cong_Zef2TC (k : ℕ) {n : ℕ} (w w' : Fin n → ArithmeticTerm ℕ)
         rwa [Finset.insert_eq_self.mpr hp'] at hall
     | hexs a =>
         have hak : a.complexity ≤ k := by simp only [Semiformula.complexity_exs] at hk; omega
-        have hp' : (∃⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
-        have hn' : (∀⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
+        have hp' : (∃¹ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
+        have hn' : (∀¹ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
         have fam : ∀ m, Zef2TC (ONote.ofNat (2 * k + 2)) e (adjoin H m) (rel1 f m) 0
             (insert ((((Rew.subst w').q ▹ ∼a))/[nm m]) Γ) := by
           intro m

@@ -48,7 +48,7 @@ private lemma f_le_rel1 (hf : Monotone f) (m x : ℕ) : f x ≤ rel1 f m x := hf
 
 /-! ### `allω`-inversion
 
-Replays a `Zef2TC` derivation at branch slot `rel1 f m`, replacing `∀⁰ φ` by its `m`-th numeral
+Replays a `Zef2TC` derivation at branch slot `rel1 f m`, replacing `∀¹ φ` by its `m`-th numeral
 instance throughout the context.  Every gate `≤ f 0` lifts to `≤ rel1 f m 0` by monotonicity of
 `f`, and nested ω-branches commute via `rel1_rel1` + `max_comm`.
 
@@ -56,7 +56,7 @@ instance throughout the context.  Every gate `≤ f 0` lifts to `≤ rel1 f m 0`
 -/
 lemma allω_inversion {φ : ArithmeticSemiformula ℕ 1} (m : ℕ)
     (dd : Zef2TC α e H f c Γ) (hmono : Monotone f) :
-    Zef2TC α e H (rel1 f m) c (insert (φ/[nm m]) (Γ.erase (∀⁰ φ))) := by
+    Zef2TC α e H (rel1 f m) c (insert (φ/[nm m]) (Γ.erase (∀¹ φ))) := by
   induction dd with
   | axL hαN r v hp hn =>
       refine Zef2TC.axL (le_trans hαN (f_le_rel1 hmono m 0)) r v ?_ ?_
@@ -78,18 +78,18 @@ lemma allω_inversion {φ : ArithmeticSemiformula ℕ 1} (m : ℕ)
       exact Zef2TC.weak (le_trans hαN (f_le_rel1 hmono m 0)) hβ hβNF hαNF hβH
         (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono)
   | @andI α' βφ' βψ' e' H' F' c' Γ' hαN χ₁ χ₂ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
-      have hne : χ₁ ⋏ χ₂ ≠ ∀⁰ φ := by simp
+      have hne : χ₁ ⋏ χ₂ ≠ ∀¹ φ := by simp
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       refine Zef2TC.andI (le_trans hαN (f_le_rel1 hmono m 0)) χ₁ χ₂ hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH ?_ ?_
       · exact Zef2TC.wk (ih₁ hmono).gate (inv1_push _ _ _ Γ') (ih₁ hmono)
       · exact Zef2TC.wk (ih₂ hmono).gate (inv1_push _ _ _ Γ') (ih₂ hmono)
   | @orI α' β' e' H' F' c' Γ' hαN χ₁ χ₂ hβ hβNF hαNF hβH _ ih =>
-      have hne : χ₁ ⋎ χ₂ ≠ ∀⁰ φ := by simp
+      have hne : χ₁ ⋎ χ₂ ≠ ∀¹ φ := by simp
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       exact Zef2TC.orI (le_trans hαN (f_le_rel1 hmono m 0)) χ₁ χ₂ hβ hβNF hαNF hβH
         (Zef2TC.wk (ih hmono).gate (inv1_push' _ _ _ _ Γ') (ih hmono))
   | @allω α' e' H' F' c' Γ' hαN χ β hβ hβNF hαNF hβH dd ih =>
-      by_cases hchi : (∀⁰ χ : ArithmeticFormula ℕ) = ∀⁰ φ
+      by_cases hchi : (∀¹ χ : ArithmeticFormula ℕ) = ∀¹ φ
       · -- PRINCIPAL: take branch m, re-invert it, drop the duplicate instance
         have hφχ : χ = φ := by simpa using hchi
         subst hφχ
@@ -108,7 +108,7 @@ lemma allω_inversion {φ : ArithmeticSemiformula ℕ 1} (m : ℕ)
         exact Zef2TC.wk (h.change_H (H' := adjoin H' n)).gate (inv1_push _ _ _ Γ')
           (h.change_H (H' := adjoin H' n))
   | @exI α' β' e' H' F' c' Γ' hαN χ n hβ hβNF hαNF hβH hbound _ ih =>
-      have hne : (∃⁰ χ : ArithmeticFormula ℕ) ≠ ∀⁰ φ := by simp
+      have hne : (∃¹ χ : ArithmeticFormula ℕ) ≠ ∀¹ φ := by simp
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       exact Zef2TC.exI (le_trans hαN (f_le_rel1 hmono m 0)) χ n hβ hβNF hαNF hβH
         (le_trans hbound (f_le_rel1 hmono m 0)) (Zef2TC.wk (ih hmono).gate (inv1_push _ _ _ Γ') (ih hmono))
@@ -169,12 +169,12 @@ lemma and_inversion_left (dd : Zef2TC α e H f c Γ) :
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       exact Zef2TC.orI hαN φ ψ hβ hβNF hαNF hβH (Zef2TC.wk ih.gate (inv1_push' _ _ _ _ Γ') ih)
   | @allω α' e' H' F' c' Γ' hαN φ β hβ hβNF hαNF hβH _ ih =>
-      have hne : (∀⁰ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋏ χ₂ := by simp
+      have hne : (∀¹ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋏ χ₂ := by simp
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       refine Zef2TC.allω hαN φ β hβ hβNF hαNF hβH ?_
       intro n; exact Zef2TC.wk (ih n).gate (inv1_push _ _ _ Γ') (ih n)
   | @exI α' β' e' H' F' c' Γ' hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      have hne : (∃⁰ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋏ χ₂ := by simp
+      have hne : (∃¹ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋏ χ₂ := by simp
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       exact Zef2TC.exI hαN φ n hβ hβNF hαNF hβH hbound (Zef2TC.wk ih.gate (inv1_push _ _ _ Γ') ih)
   | @cut α' βφ' βψ' e' H' F' c' Γ' hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
@@ -224,12 +224,12 @@ lemma and_inversion_right (dd : Zef2TC α e H f c Γ) :
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       exact Zef2TC.orI hαN φ ψ hβ hβNF hαNF hβH (Zef2TC.wk ih.gate (inv1_push' _ _ _ _ Γ') ih)
   | @allω α' e' H' F' c' Γ' hαN φ β hβ hβNF hαNF hβH _ ih =>
-      have hne : (∀⁰ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋏ χ₂ := by simp
+      have hne : (∀¹ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋏ χ₂ := by simp
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       refine Zef2TC.allω hαN φ β hβ hβNF hαNF hβH ?_
       intro n; exact Zef2TC.wk (ih n).gate (inv1_push _ _ _ Γ') (ih n)
   | @exI α' β' e' H' F' c' Γ' hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      have hne : (∃⁰ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋏ χ₂ := by simp
+      have hne : (∃¹ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋏ χ₂ := by simp
       rw [Finset.erase_insert_of_ne hne, Finset.insert_comm]
       exact Zef2TC.exI hαN φ n hβ hβNF hαNF hβH hbound (Zef2TC.wk ih.gate (inv1_push _ _ _ Γ') ih)
   | @cut α' βφ' βψ' e' H' F' c' Γ' hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
@@ -299,18 +299,18 @@ lemma or_inversion (dd : Zef2TC α e H f c Γ) :
         refine Zef2TC.orI hαN φ ψ hβ hβNF hαNF hβH (Zef2TC.wk ih.gate ?_ ih)
         intro x hx; simp only [Finset.mem_insert, Finset.mem_erase] at hx ⊢; tauto
   | @allω α' e' H' F' c' Γ' hαN φ β hβ hβNF hαNF hβH _ ih =>
-      have hne : (∀⁰ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋎ χ₂ := by simp
+      have hne : (∀¹ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋎ χ₂ := by simp
       rw [Finset.erase_insert_of_ne hne,
-        show insert (χ₁ : ArithmeticFormula ℕ) (insert χ₂ (insert (∀⁰ φ) (Γ'.erase (χ₁ ⋎ χ₂))))
-          = insert (∀⁰ φ) (insert χ₁ (insert χ₂ (Γ'.erase (χ₁ ⋎ χ₂)))) from by
+        show insert (χ₁ : ArithmeticFormula ℕ) (insert χ₂ (insert (∀¹ φ) (Γ'.erase (χ₁ ⋎ χ₂))))
+          = insert (∀¹ φ) (insert χ₁ (insert χ₂ (Γ'.erase (χ₁ ⋎ χ₂)))) from by
           rw [Finset.insert_comm χ₂, Finset.insert_comm χ₁]]
       refine Zef2TC.allω hαN φ β hβ hβNF hαNF hβH ?_
       intro n; exact Zef2TC.wk (ih n).gate (inv2_push _ _ _ _ Γ') (ih n)
   | @exI α' β' e' H' F' c' Γ' hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      have hne : (∃⁰ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋎ χ₂ := by simp
+      have hne : (∃¹ φ : ArithmeticFormula ℕ) ≠ χ₁ ⋎ χ₂ := by simp
       rw [Finset.erase_insert_of_ne hne,
-        show insert (χ₁ : ArithmeticFormula ℕ) (insert χ₂ (insert (∃⁰ φ) (Γ'.erase (χ₁ ⋎ χ₂))))
-          = insert (∃⁰ φ) (insert χ₁ (insert χ₂ (Γ'.erase (χ₁ ⋎ χ₂)))) from by
+        show insert (χ₁ : ArithmeticFormula ℕ) (insert χ₂ (insert (∃¹ φ) (Γ'.erase (χ₁ ⋎ χ₂))))
+          = insert (∃¹ φ) (insert χ₁ (insert χ₂ (Γ'.erase (χ₁ ⋎ χ₂)))) from by
           rw [Finset.insert_comm χ₂, Finset.insert_comm χ₁]]
       exact Zef2TC.exI hαN φ n hβ hβNF hαNF hβH hbound (Zef2TC.wk ih.gate (inv2_push _ _ _ _ Γ') ih)
   | @cut α' βφ' βψ' e' H' F' c' Γ' hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
@@ -345,11 +345,11 @@ lemma falsum_erase (dd : Zef2TC α e H f c Γ) :
       rw [Finset.erase_insert_of_ne (by simp : (φ ⋎ ψ : ArithmeticFormula ℕ) ≠ ⊥)]
       exact Zef2TC.orI hαN φ ψ hβ hβNF hαNF hβH (Zef2TC.wk ih.gate (erase_insert_subset' _ φ ψ Γ') ih)
   | @allω α' e' H' F' c' Γ' hαN φ β hβ hβNF hαNF hβH _ ih =>
-      rw [Finset.erase_insert_of_ne (by simp : (∀⁰ φ : ArithmeticFormula ℕ) ≠ ⊥)]
+      rw [Finset.erase_insert_of_ne (by simp : (∀¹ φ : ArithmeticFormula ℕ) ≠ ⊥)]
       refine Zef2TC.allω hαN φ β hβ hβNF hαNF hβH ?_
       intro n; exact Zef2TC.wk (ih n).gate (erase_insert_subset _ _ Γ') (ih n)
   | @exI α' β' e' H' F' c' Γ' hαN φ n hβ hβNF hαNF hβH hbound _ ih =>
-      rw [Finset.erase_insert_of_ne (by simp : (∃⁰ φ : ArithmeticFormula ℕ) ≠ ⊥)]
+      rw [Finset.erase_insert_of_ne (by simp : (∃¹ φ : ArithmeticFormula ℕ) ≠ ⊥)]
       exact Zef2TC.exI hαN φ n hβ hβNF hαNF hβH hbound (Zef2TC.wk ih.gate (erase_insert_subset _ _ Γ') ih)
   | @cut α' βφ' βψ' e' H' F' c' Γ' hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH _ _ ih₁ ih₂ =>
       refine Zef2TC.cut hαN φ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH ?_ ?_

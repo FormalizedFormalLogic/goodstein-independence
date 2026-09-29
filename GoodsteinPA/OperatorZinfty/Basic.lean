@@ -41,7 +41,7 @@ namespace GoodsteinPA.OperatorZinfty
 open FFL FFL.FirstOrder FFL.FirstOrder.ArithmeticTerm ONote
 
 noncomputable def atomTrue (φ : ArithmeticFormula ℕ) : Prop :=
-  Semiformula.gEvalm ℕ (fun _ => 0) (fun _ => 0) φ
+  Semiformula.Eval (M := ℕ) (fun _ => 0) (fun _ => 0) φ
 
 /-- **The witness-bounded `Z_∞` refinement** `Provable ⊢^{α,e}_{k,d,c} Γ`.
 Derivation ordinal `α`; **control ordinal `e`** (governs the witness bound, raised by cut-elim);
@@ -75,10 +75,10 @@ inductive Provable : (α : ONote) → (e : ONote) → (k : ℕ) → (d : ℕ) �
   | allω {α e k d c Γ} (φ : ArithmeticSemiformula ℕ 1) (β : ℕ → ONote)
       (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF) (hτ : ∀ n, norm (β n) < max k n + d)
       (dd : ∀ n, Provable (β n) e (max k n) d c (insert (φ/[nm n]) Γ)) :
-      Provable α e k d c (insert (∀⁰ φ) Γ)
+      Provable α e k d c (insert (∀¹ φ) Γ)
   | exI {α β e k d c Γ} (φ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < α)
       (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < k + d) (hbound : n ≤ hardy e (k + d))
-      (dd : Provable β e k d c (insert (φ/[nm n]) Γ)) : Provable α e k d c (insert (∃⁰ φ) Γ)
+      (dd : Provable β e k d c (insert (φ/[nm n]) Γ)) : Provable α e k d c (insert (∃¹ φ) Γ)
   | cut {α βφ βψ e k d c Γ} (φ : ArithmeticFormula ℕ) (hcompl : φ.complexity < c) (hβφ : βφ < α) (hβψ : βψ < α)
       (hβφNF : βφ.NF) (hβψNF : βψ.NF) (hαNF : α.NF) (hτφ : norm βφ < k + d) (hτψ : norm βψ < k + d)
       (d₁ : Provable βφ e k d c (insert φ Γ)) (d₂ : Provable βψ e k d c (insert (∼φ) Γ)) :

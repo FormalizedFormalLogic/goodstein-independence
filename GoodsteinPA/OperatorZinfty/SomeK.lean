@@ -157,7 +157,7 @@ lemma allω
     (hβ : ∀ n, β n < α) (hβNF : ∀ n, (β n).NF) (hαNF : α.NF)
     (hτ : ∀ n, norm (β n) < max K n + d)
     (dd : ∀ n, Provable (β n) e (max K n) d c (insert (φ/[nm n]) Γ)) :
-    ProvableSomeK α e d c (insert (∀⁰ φ) Γ) :=
+    ProvableSomeK α e d c (insert (∀¹ φ) Γ) :=
   ⟨K, Provable.allω φ β hβ hβNF hαNF hτ dd⟩
 
 /-- `exI` for the existential-budget wrapper.  The wrapper chooses a finite
@@ -166,7 +166,7 @@ lemma exI
     (φ : ArithmeticSemiformula ℕ 1) (n : ℕ)
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF)
     (dd : ProvableSomeK β e d c (insert (φ/[nm n]) Γ)) :
-    ProvableSomeK α e d c (insert (∃⁰ φ) Γ) := by
+    ProvableSomeK α e d c (insert (∃¹ φ) Γ) := by
   rcases dd with ⟨K0, D0⟩
   let K := max K0 (max (norm β + 1) n);
   use K;
@@ -211,8 +211,8 @@ lemma andInvR (dd : ProvableSomeK α e d c Γ) (hmem : (φ ⋏ ψ) ∈ Γ) :
 
 /-- Universal inversion for the existential-budget wrapper.  The extracted witness
 index is the raw derivation index raised to `max K n₀`, matching `Provable.allInv`. -/
-lemma allInv (n₀ : ℕ) (dd : ProvableSomeK α e d c Γ) (hmem : (∀⁰ φ₀) ∈ Γ) :
-  ProvableSomeK α e d c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
+lemma allInv (n₀ : ℕ) (dd : ProvableSomeK α e d c Γ) (hmem : (∀¹ φ₀) ∈ Γ) :
+  ProvableSomeK α e d c (insert (φ₀/[nm n₀]) (Γ.erase (∀¹ φ₀))) := by
   rcases dd with ⟨K, D⟩
   exact ⟨max K n₀, D.allInv n₀ hmem⟩
 
@@ -260,8 +260,8 @@ lemma cutReduceAllAux
     (hφc : φ₀.complexity < c) (hαNF : α.NF) (hγNF : γ.NF) (heNF : e.NF)
     (hd₀ : d₀ ≤ d)
     (fam : ∀ n, Provable α e k₀ d₀ c (insert (φ₀/[nm n]) Γ))
-    (D : ProvableSomeK γ e d c Δ) (hmem : (∃⁰ ∼φ₀) ∈ Δ) :
-    ProvableSomeK (osucc (α + γ)) e (d + norm α + 1) c (Δ.erase (∃⁰ ∼φ₀) ∪ Γ) := by
+    (D : ProvableSomeK γ e d c Δ) (hmem : (∃¹ ∼φ₀) ∈ Δ) :
+    ProvableSomeK (osucc (α + γ)) e (d + norm α + 1) c (Δ.erase (∃¹ ∼φ₀) ∪ Γ) := by
   rcases D with ⟨Kγ, Dγ⟩
   apply ofProv (K := max Kγ (max k₀ (norm γ + 1))) (osucc_NF (ONote.add_nf α γ));
   apply GoodsteinPA.OperatorZinfty.cutReduceAllAux hφc hαNF heNF fam (Dγ.mono_k ?_) hγNF ?_ ?_ hd₀ hmem;
@@ -277,8 +277,8 @@ lemma cutReduceAllAux_control {k₀ d₀} {γ e'}
     (heNF : e.NF) (he'NF : e'.NF) (helt : e < e')
     (hd₀ : d₀ ≤ d)
     (fam : ∀ n, Provable α e k₀ d₀ c (insert (φ₀/[nm n]) Γ))
-    (D : ProvableSomeK γ e d c Δ) (hmem : (∃⁰ ∼φ₀) ∈ Δ) :
-    ProvableSomeK (osucc (α + γ)) e' (d + norm α + 1) c (Δ.erase (∃⁰ ∼φ₀) ∪ Γ) :=
+    (D : ProvableSomeK γ e d c Δ) (hmem : (∃¹ ∼φ₀) ∈ Δ) :
+    ProvableSomeK (osucc (α + γ)) e' (d + norm α + 1) c (Δ.erase (∃¹ ∼φ₀) ∪ Γ) :=
   mono_e heNF he'NF helt (cutReduceAllAux hφc hαNF hγNF heNF hd₀ fam D hmem)
 
 end ProvableSomeK

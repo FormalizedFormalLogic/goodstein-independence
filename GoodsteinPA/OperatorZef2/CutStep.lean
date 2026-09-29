@@ -38,8 +38,8 @@ private lemma cutRun_axL {γ : ONote} {Δ : Finset (ArithmeticFormula ℕ)} {ar 
     (hp : Semiformula.rel r v ∈ Δ) (hn : Semiformula.nrel r v ∈ Δ)
     (hγNF : γ.NF) (_hmono : Monotone f) (_hinfl : ∀ x, x ≤ f x)
     (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) (_hφread : φ.complexity ≤ f 0)
-    (_hmem : (∃⁰ ∼φ) ∈ Δ) :
-    Zef2Prov (α + γ) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
+    (_hmem : (∃¹ ∼φ) ∈ Δ) :
+    Zef2Prov (α + γ) e H (g ∘ f) c (Δ.erase (∃¹ ∼φ) ∪ Γ) := by
   refine Zef2Prov.of (ONote.add_nf α γ) (Cl_of_NF (ONote.add_nf α γ))
     (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
   exact Zef2.axL (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) r v
@@ -50,12 +50,12 @@ private lemma cutRun_wk {γ : ONote} {Δsub Δsup : Finset (ArithmeticFormula �
     (hαNF : α.NF) (hg_infl : ∀ x, x ≤ g x)
     (hαN : Nlog γ ≤ f 0) (hsub : Δsub ⊆ Δsup) (D' : Zef2 γ e H f c Δsub)
     (ih : γ.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
-      φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δsub → Zef2Prov (α + γ) e H (g ∘ f) c (Δsub.erase (∃⁰ ∼φ) ∪ Γ))
+      φ.complexity ≤ f 0 → (∃¹ ∼φ) ∈ Δsub → Zef2Prov (α + γ) e H (g ∘ f) c (Δsub.erase (∃¹ ∼φ) ∪ Γ))
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x)
     (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) (hφread : φ.complexity ≤ f 0)
-    (_hmem : (∃⁰ ∼φ) ∈ Δsup) :
-    Zef2Prov (α + γ) e H (g ∘ f) c (Δsup.erase (∃⁰ ∼φ) ∪ Γ) := by
-  by_cases hd : (∃⁰ ∼φ) ∈ Δsub
+    (_hmem : (∃¹ ∼φ) ∈ Δsup) :
+    Zef2Prov (α + γ) e H (g ∘ f) c (Δsup.erase (∃¹ ∼φ) ∪ Γ) := by
+  by_cases hd : (∃¹ ∼φ) ∈ Δsub
   · exact (ih hγNF hmono hinfl hsl hφread hd).weakening (by
       intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
       rcases hx with ⟨hne, hxs⟩ | hxΓ
@@ -71,12 +71,12 @@ private lemma cutRun_weak {γ β : ONote} {Δsub Δsup : Finset (ArithmeticFormu
     (hαNF : α.NF) (hg_infl : ∀ x, x ≤ g x)
     (hβ : β < γ) (hβNF : β.NF) (hsub : Δsub ⊆ Δsup) (D' : Zef2 β e H f c Δsub)
     (ih : β.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
-      φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ Δsub → Zef2Prov (α + β) e H (g ∘ f) c (Δsub.erase (∃⁰ ∼φ) ∪ Γ))
+      φ.complexity ≤ f 0 → (∃¹ ∼φ) ∈ Δsub → Zef2Prov (α + β) e H (g ∘ f) c (Δsub.erase (∃¹ ∼φ) ∪ Γ))
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x)
     (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) (hφread : φ.complexity ≤ f 0)
-    (_hmem : (∃⁰ ∼φ) ∈ Δsup) :
-    Zef2Prov (α + γ) e H (g ∘ f) c (Δsup.erase (∃⁰ ∼φ) ∪ Γ) := by
-  by_cases hd : (∃⁰ ∼φ) ∈ Δsub
+    (_hmem : (∃¹ ∼φ) ∈ Δsup) :
+    Zef2Prov (α + γ) e H (g ∘ f) c (Δsup.erase (∃¹ ∼φ) ∪ Γ) := by
+  by_cases hd : (∃¹ ∼φ) ∈ Δsub
   · exact ((ih hβNF hmono hinfl hsl hφread hd).weakening (by
       intro x hx; simp only [Finset.mem_union, Finset.mem_erase] at hx ⊢
       rcases hx with ⟨hne, hxs⟩ | hxΓ
@@ -95,18 +95,18 @@ private lemma cutRun_allω {γ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
     (hβ : ∀ n, β n < γ) (hβNF : ∀ n, (β n).NF)
     (ih : ∀ n, (β n).NF → Monotone (rel1 f n) → (∀ x, x ≤ rel1 f n x) →
       (∀ k, rel1 f n 0 ≤ k → max (g 0) k + 1 ≤ g k) → φ.complexity ≤ rel1 f n 0 →
-      (∃⁰ ∼φ) ∈ insert (χ/[nm n]) Γ₀ →
+      (∃¹ ∼φ) ∈ insert (χ/[nm n]) Γ₀ →
       Zef2Prov (α + β n) e (adjoin H n) (g ∘ rel1 f n) c
-        ((insert (χ/[nm n]) Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
+        ((insert (χ/[nm n]) Γ₀).erase (∃¹ ∼φ) ∪ Γ))
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x)
     (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) (hφread : φ.complexity ≤ f 0)
-    (hmem : (∃⁰ ∼φ) ∈ insert (∀⁰ χ) Γ₀) :
-    Zef2Prov (α + γ) e H (g ∘ f) c ((insert (∀⁰ χ) Γ₀).erase (∃⁰ ∼φ) ∪ Γ) := by
-  have hhead : (∀⁰ χ) ≠ (∃⁰ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
-  have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+    (hmem : (∃¹ ∼φ) ∈ insert (∀¹ χ) Γ₀) :
+    Zef2Prov (α + γ) e H (g ∘ f) c ((insert (∀¹ χ) Γ₀).erase (∃¹ ∼φ) ∪ Γ) := by
+  have hhead : (∀¹ χ) ≠ (∃¹ ∼φ) := by intro h; simp [UnivQuantifier.all, ExsQuantifier.exs] at h
+  have hmem0 : (∃¹ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
   have haddNF : (α + γ).NF := ONote.add_nf α γ
   have ihn : ∀ n, Zef2Prov (α + β n) e (adjoin H n) (g ∘ rel1 f n) c
-      (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
+      (insert (χ/[nm n]) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) := by
     intro n
     have hread : φ.complexity ≤ (rel1 f n) 0 := by
       simp only [rel1]; exact le_trans hφread (hmono (Nat.zero_le _))
@@ -118,7 +118,7 @@ private lemma cutRun_allω {γ : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)}
         simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
   refine Zef2Prov.of haddNF (Cl_of_NF haddNF) (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
   have hAll : Zef2 (α + γ) e H (g ∘ f) c
-      (insert (∀⁰ χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) := by
+      (insert (∀¹ χ) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) := by
     exact Zef2.allω (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) χ (fun n => (ihn n).choose)
       (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
         (add_lt_add_left_NF hαNF (hβNF n) hγNF (hβ n)))
@@ -138,14 +138,14 @@ private lemma cutRun_exI {γ β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)
     (hαN : Nlog γ ≤ f 0) (hφc : φ.complexity < c) (χ : ArithmeticSemiformula ℕ 1) (n : ℕ) (hβ : β < γ)
     (hβNF : β.NF) (hbound : n ≤ f 0) (dχ : Zef2 β e H f c (insert (χ/[nm n]) Γ₀))
     (ih : β.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
-      φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ insert (χ/[nm n]) Γ₀ →
-      Zef2Prov (α + β) e H (g ∘ f) c ((insert (χ/[nm n]) Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
+      φ.complexity ≤ f 0 → (∃¹ ∼φ) ∈ insert (χ/[nm n]) Γ₀ →
+      Zef2Prov (α + β) e H (g ∘ f) c ((insert (χ/[nm n]) Γ₀).erase (∃¹ ∼φ) ∪ Γ))
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x)
     (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) (hφread : φ.complexity ≤ f 0)
-    (hmem : (∃⁰ ∼φ) ∈ insert (∃⁰ χ) Γ₀) :
-    Zef2Prov (α + γ) e H (g ∘ f) c ((insert (∃⁰ χ) Γ₀).erase (∃⁰ ∼φ) ∪ Γ) := by
+    (hmem : (∃¹ ∼φ) ∈ insert (∃¹ χ) Γ₀) :
+    Zef2Prov (α + γ) e H (g ∘ f) c ((insert (∃¹ χ) Γ₀).erase (∃¹ ∼φ) ∪ Γ) := by
   have haddNF : (α + γ).NF := ONote.add_nf α γ
-  by_cases hhd : (∃⁰ χ) = (∃⁰ ∼φ)
+  by_cases hhd : (∃¹ χ) = (∃¹ ∼φ)
   · have hχ : χ = ∼φ := by simpa [ExsQuantifier.exs] using hhd
     subst hχ
     rw [Finset.erase_insert_eq_erase]
@@ -155,15 +155,15 @@ private lemma cutRun_exI {γ β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)
       have he : (φ/[nm n]).complexity = φ.complexity := by simp
       rw [he]; exact le_trans hφread (hg_infl (f 0))
     have hg0comp : Nlog α ≤ (g ∘ f) 0 := le_trans hg0 (hg_mono (Nat.zero_le _))
-    have famn : Zef2 α e H (g ∘ f) c (insert (φ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+    have famn : Zef2 α e H (g ∘ f) c (insert (φ/[nm n]) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
       ((fam n H).mono_f (reslot_family hg_mono hinfl hmono hbound)).wk hg0comp (by
         intro x hx; simp only [Finset.mem_insert, Finset.mem_union] at hx ⊢; tauto)
     have hαlt : α < α + γ := lt_add_of_inner_lt hαNF hγNF hβ
-    by_cases hd : (∃⁰ ∼φ) ∈ Γ₀
+    by_cases hd : (∃¹ ∼φ) ∈ Γ₀
     · obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hβNF hmono hinfl hsl hφread
         (Finset.mem_insert_of_mem hd)
       have Da' : Zef2 a e H (g ∘ f) c
-          (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          (insert (∼(φ/[nm n])) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
         Da.wk hag (by
           intro x hx
           simp only [hNeg, Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
@@ -172,7 +172,7 @@ private lemma cutRun_exI {γ β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)
         (lt_of_le_of_lt hale (add_lt_add_left_NF hαNF hβNF hγNF hβ))
         hαNF haNF haddNF (Cl_of_NF hαNF) haH famn Da'
     · have Dβ' : Zef2 β e H (g ∘ f) c
-          (insert (∼(φ/[nm n])) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+          (insert (∼(φ/[nm n])) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
         (dχ.mono_f (reslot_exside hg_infl)).wk
           (le_trans (Zef2.gate dχ) (reslot_exside hg_infl 0)) (by
           intro x hx
@@ -185,10 +185,10 @@ private lemma cutRun_exI {γ β : ONote} {Γ₀ : Finset (ArithmeticFormula ℕ)
       exact Zef2.cut (Nlog_add_le_comp hαNF hγNF hg0 hαN (hsl _ le_rfl)) (φ/[nm n]) hcompl hcutRead hαlt
         (lt_of_lt_of_le hβ (le_add_left_NF hαNF hγNF))
         hαNF hβNF haddNF (Cl_of_NF hαNF) (Cl_of_NF hβNF) famn Dβ'
-  · have hmem0 : (∃⁰ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+  · have hmem0 : (∃¹ ∼φ) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
     obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hβNF hmono hinfl hsl hφread
       (Finset.mem_insert_of_mem hmem0)
-    have Da' : Zef2 a e H (g ∘ f) c (insert (χ/[nm n]) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+    have Da' : Zef2 a e H (g ∘ f) c (insert (χ/[nm n]) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
       Da.wk hag (by
         intro x hx
         simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
@@ -209,25 +209,25 @@ private lemma cutRun_cut {γ βφ βψ : ONote} {Γ₀ : Finset (ArithmeticFormu
     (hαN : Nlog γ ≤ f 0) (χ : ArithmeticFormula ℕ) (hχc : χ.complexity < c)
     (hcutRead' : χ.complexity ≤ f 0) (hβφ : βφ < γ) (hβψ : βψ < γ) (hβφNF : βφ.NF) (hβψNF : βψ.NF)
     (ih₁ : βφ.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
-      φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ insert χ Γ₀ →
-      Zef2Prov (α + βφ) e H (g ∘ f) c ((insert χ Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
+      φ.complexity ≤ f 0 → (∃¹ ∼φ) ∈ insert χ Γ₀ →
+      Zef2Prov (α + βφ) e H (g ∘ f) c ((insert χ Γ₀).erase (∃¹ ∼φ) ∪ Γ))
     (ih₂ : βψ.NF → Monotone f → (∀ x, x ≤ f x) → (∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) →
-      φ.complexity ≤ f 0 → (∃⁰ ∼φ) ∈ insert (∼χ) Γ₀ →
-      Zef2Prov (α + βψ) e H (g ∘ f) c ((insert (∼χ) Γ₀).erase (∃⁰ ∼φ) ∪ Γ))
+      φ.complexity ≤ f 0 → (∃¹ ∼φ) ∈ insert (∼χ) Γ₀ →
+      Zef2Prov (α + βψ) e H (g ∘ f) c ((insert (∼χ) Γ₀).erase (∃¹ ∼φ) ∪ Γ))
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x)
     (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) (hφread : φ.complexity ≤ f 0)
-    (hmem : (∃⁰ ∼φ) ∈ Γ₀) :
-    Zef2Prov (α + γ) e H (g ∘ f) c (Γ₀.erase (∃⁰ ∼φ) ∪ Γ) := by
+    (hmem : (∃¹ ∼φ) ∈ Γ₀) :
+    Zef2Prov (α + γ) e H (g ∘ f) c (Γ₀.erase (∃¹ ∼φ) ∪ Γ) := by
   obtain ⟨a₁, ha₁le, ha₁NF, ha₁H, ha₁g, D₁⟩ := ih₁ hβφNF hmono hinfl hsl hφread
     (Finset.mem_insert_of_mem hmem)
   obtain ⟨a₂, ha₂le, ha₂NF, ha₂H, ha₂g, D₂⟩ := ih₂ hβψNF hmono hinfl hsl hφread
     (Finset.mem_insert_of_mem hmem)
   have haddNF : (α + γ).NF := ONote.add_nf α γ
-  have D₁' : Zef2 a₁ e H (g ∘ f) c (insert χ (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+  have D₁' : Zef2 a₁ e H (g ∘ f) c (insert χ (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     D₁.wk ha₁g (by
       intro x hx
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
-  have D₂' : Zef2 a₂ e H (g ∘ f) c (insert (∼χ) (Γ₀.erase (∃⁰ ∼φ) ∪ Γ)) :=
+  have D₂' : Zef2 a₂ e H (g ∘ f) c (insert (∼χ) (Γ₀.erase (∃¹ ∼φ) ∪ Γ)) :=
     D₂.wk ha₂g (by
       intro x hx
       simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
@@ -256,8 +256,8 @@ lemma cutReduceAllAuxRunning_Zf2 {γ : ONote} {Δ : Finset (ArithmeticFormula �
     (fam : ∀ n (H' : ONote → Prop), Zef2 α e H' (rel1 g n) c (insert (φ/[nm n]) Γ))
     (D : Zef2 γ e H f c Δ) (hγNF : γ.NF)
     (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x) (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k)
-    (hφread : φ.complexity ≤ f 0) (hmem : (∃⁰ ∼φ) ∈ Δ) :
-    Zef2Prov (α + γ) e H (g ∘ f) c (Δ.erase (∃⁰ ∼φ) ∪ Γ) := by
+    (hφread : φ.complexity ≤ f 0) (hmem : (∃¹ ∼φ) ∈ Δ) :
+    Zef2Prov (α + γ) e H (g ∘ f) c (Δ.erase (∃¹ ∼φ) ∪ Γ) := by
   have hg0 : Nlog α ≤ g 0 := by
     have h := Zef2.gate (fam 0 (fun _ => True)); simpa [rel1] using h
   induction D with
@@ -291,22 +291,22 @@ inversion, so every rebuilt node's gate re-threads from its input gate through t
 slot `rel1 f n₀` (`gate_rel1`, `f` monotone). -/
 lemma allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
     (dd : Zef2 α e H f c Γ) (hmono : Monotone f)
-    (hmem : (∀⁰ φ₀) ∈ Γ) :
-    Zef2 α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀⁰ φ₀))) := by
+    (hmem : (∀¹ φ₀) ∈ Γ) :
+    Zef2 α e (adjoin H n₀) (rel1 f n₀) c (insert (φ₀/[nm n₀]) (Γ.erase (∀¹ φ₀))) := by
   induction dd with
   | @axL α e H f c Γ ar hαN r v hp hn =>
       refine Zef2.axL (gate_rel1 hmono n₀ hαN) r v ?_ ?_ <;>
         exact Finset.mem_insert_of_mem
           (Finset.mem_erase.mpr ⟨Semiformula.ne_of_ne_complexity (by simp), by assumption⟩)
   | @wk α e H f c Δ Γ hαN hsub dd ih =>
-      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      by_cases hh : (∀¹ φ₀) ∈ Δ
       · exact Zef2.wk (gate_rel1 hmono n₀ hαN)
           (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono hh)
       · refine Zef2.wk (gate_rel1 hmono n₀ hαN) ?_ (dd.mono_Hf (f_le_rel1_2 hmono n₀))
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @weak α β e H f c Δ Γ hαN hβ hβNF hαNF hβH hsub dd ih =>
-      by_cases hh : (∀⁰ φ₀) ∈ Δ
+      by_cases hh : (∀¹ φ₀) ∈ Δ
       · exact Zef2.weak (gate_rel1 hmono n₀ hαN) hβ hβNF hαNF (Cl_of_NF hβNF)
           (Finset.insert_subset_insert _ (Finset.erase_subset_erase _ hsub)) (ih hmono hh)
       · refine Zef2.weak (gate_rel1 hmono n₀ hαN) hβ hβNF hαNF (Cl_of_NF hβNF) ?_
@@ -314,46 +314,46 @@ lemma allInv_Zef2 {φ₀ : ArithmeticSemiformula ℕ 1} (n₀ : ℕ)
         intro x hx
         exact Finset.mem_insert_of_mem (Finset.mem_erase.mpr ⟨fun e => hh (e ▸ hx), hsub hx⟩)
   | @allω α e H f c Γ₀ hαN χ β hβ hβNF hαNF hβH dd ih =>
-      by_cases hhd : (∀⁰ χ) = (∀⁰ φ₀)
+      by_cases hhd : (∀¹ χ) = (∀¹ φ₀)
       · obtain rfl := (Semiformula.all_inj _ _).mp hhd
         rw [Finset.erase_insert_eq_erase]
-        by_cases hh : (∀⁰ χ) ∈ Γ₀
+        by_cases hh : (∀¹ χ) ∈ Γ₀
         · have h := ih n₀ (rel1_monotone hmono n₀) (Finset.mem_insert_of_mem hh)
           have h2 : Zef2 (β n₀) e (adjoin H n₀) (rel1 f n₀) c
-              (insert (χ/[nm n₀]) ((insert (χ/[nm n₀]) Γ₀).erase (∀⁰ χ))) :=
+              (insert (χ/[nm n₀]) ((insert (χ/[nm n₀]) Γ₀).erase (∀¹ χ))) :=
             h.mono_Hf (fun x => le_of_eq (by simp only [rel1]; congr 1; omega))
           exact Zef2.weak (gate_rel1 hmono n₀ hαN) (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀))
-            (princAllSub (∀⁰ χ) _ Γ₀) h2
+            (princAllSub (∀¹ χ) _ Γ₀) h2
         · rw [Finset.erase_eq_of_notMem hh]
           exact Zef2.weak (gate_rel1 hmono n₀ hαN) (hβ n₀) (hβNF n₀) hαNF (Cl_of_NF (hβNF n₀))
             (Finset.Subset.refl _) (dd n₀)
-      · have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
+      · have hmem0 : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhd e.symm
         have key : ∀ n, Zef2 (β n) e (adjoin (adjoin H n₀) n) (rel1 (rel1 f n₀) n) c
-            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀⁰ φ₀)))) := by
+            (insert (χ/[nm n]) (insert (φ₀/[nm n₀]) (Γ₀.erase (∀¹ φ₀)))) := by
           intro n
           have h := ih n (rel1_monotone hmono n) (Finset.mem_insert_of_mem hmem0)
           have hg : Nlog (β n) ≤ rel1 (rel1 f n₀) n 0 := by
             have hgn := Zef2.gate (dd n)
             simp only [rel1] at hgn ⊢
             exact le_trans hgn (hmono (le_max_right n₀ (max n 0)))
-          exact Zef2.wk hg (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀)
+          exact Zef2.wk hg (inv1Push (∀¹ φ₀) _ (χ/[nm n]) Γ₀)
             (h.mono_Hf (fun x => le_of_eq (by simp only [rel1]; congr 1; omega)))
-        refine Zef2.wk (gate_rel1 hmono n₀ hαN) (inv1Pull (∀⁰ φ₀) _ hhd Γ₀) ?_
+        refine Zef2.wk (gate_rel1 hmono n₀ hαN) (inv1Pull (∀¹ φ₀) _ hhd Γ₀) ?_
         exact Zef2.allω (gate_rel1 hmono n₀ hαN) χ β hβ hβNF hαNF
           (fun n => Cl_of_NF (hβNF n)) key
   | @exI α β e H f c Γ₀ hαN χ n hβ hβNF hαNF hβH hbound dd ih =>
-      have hhead : (∃⁰ χ) ≠ (∀⁰ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
-      have hmem0 : (∀⁰ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
+      have hhead : (∃¹ χ) ≠ (∀¹ φ₀) := by intro h; simp [ExsQuantifier.exs, UnivQuantifier.all] at h
+      have hmem0 : (∀¹ φ₀) ∈ Γ₀ := (Finset.mem_insert.mp hmem).resolve_left fun e => hhead e.symm
       have P := Zef2.wk (Zef2.gate (ih hmono (Finset.mem_insert_of_mem hmem0)))
-        (inv1Push (∀⁰ φ₀) _ (χ/[nm n]) Γ₀) (ih hmono (Finset.mem_insert_of_mem hmem0))
-      refine Zef2.wk (gate_rel1 hmono n₀ hαN) (inv1Pull (∀⁰ φ₀) _ hhead Γ₀) ?_
+        (inv1Push (∀¹ φ₀) _ (χ/[nm n]) Γ₀) (ih hmono (Finset.mem_insert_of_mem hmem0))
+      refine Zef2.wk (gate_rel1 hmono n₀ hαN) (inv1Pull (∀¹ φ₀) _ hhead Γ₀) ?_
       exact Zef2.exI (gate_rel1 hmono n₀ hαN) χ n hβ hβNF hαNF (Cl_of_NF hβNF)
         (le_trans hbound (by simp only [rel1]; exact hmono (Nat.zero_le _))) P
   | @cut α βφ βψ e H f c Γ₀ hαN χ hcompl hcutRead hβφ hβψ hβφNF hβψNF hαNF hβφH hβψH d₁ d₂ ih₁ ih₂ =>
       have P₁ := Zef2.wk (Zef2.gate (ih₁ hmono (Finset.mem_insert_of_mem hmem)))
-        (inv1Push (∀⁰ φ₀) _ χ Γ₀) (ih₁ hmono (Finset.mem_insert_of_mem hmem))
+        (inv1Push (∀¹ φ₀) _ χ Γ₀) (ih₁ hmono (Finset.mem_insert_of_mem hmem))
       have P₂ := Zef2.wk (Zef2.gate (ih₂ hmono (Finset.mem_insert_of_mem hmem)))
-        (inv1Push (∀⁰ φ₀) _ (∼χ) Γ₀) (ih₂ hmono (Finset.mem_insert_of_mem hmem))
+        (inv1Push (∀¹ φ₀) _ (∼χ) Γ₀) (ih₂ hmono (Finset.mem_insert_of_mem hmem))
       exact Zef2.cut (gate_rel1 hmono n₀ hαN) χ hcompl (le_trans hcutRead
         (by simp only [rel1]; exact hmono (Nat.zero_le _))) hβφ hβψ hβφNF hβψNF hαNF
         (Cl_of_NF hβφNF) (Cl_of_NF hβψNF) P₁ P₂
@@ -368,8 +368,8 @@ lemma stepAllω_Zf2 {βφ βψ : ONote}
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hg_slack : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k)
     (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x) (hχRead : χ.complexity ≤ f 0)
-    (D₁ : Zef2Prov (expTower βφ) E H g c (insert (∀⁰ χ) Γ))
-    (D₂ : Zef2Prov (expTower βψ) E H f c (insert (∃⁰ ∼χ) Γ)) :
+    (D₁ : Zef2Prov (expTower βφ) E H g c (insert (∀¹ χ) Γ))
+    (D₂ : Zef2Prov (expTower βψ) E H f c (insert (∃¹ ∼χ) Γ)) :
     ∃ δ : ONote, δ.NF ∧ Cl H δ ∧ Zef2Prov δ E H (g ∘ f) c Γ := by
   obtain ⟨α₁, _, hNF₁, _, _, d₁⟩ := D₁
   obtain ⟨γ₁, _, hNF₂, _, _, d₂⟩ := D₂
@@ -395,8 +395,8 @@ lemma stepAllω_Zf2_bnd {P₁ P₂ : ONote}
     (hg_mono : Monotone g) (hg_infl : ∀ x, x ≤ g x)
     (hg_slack : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k)
     (hf_mono : Monotone f) (hf_infl : ∀ x, x ≤ f x) (hχRead : χ.complexity ≤ f 0)
-    (D₁ : Zef2Prov P₁ E H g c (insert (∀⁰ χ) Γ))
-    (D₂ : Zef2Prov P₂ E H f c (insert (∃⁰ ∼χ) Γ)) :
+    (D₁ : Zef2Prov P₁ E H g c (insert (∀¹ χ) Γ))
+    (D₂ : Zef2Prov P₂ E H f c (insert (∃¹ ∼χ) Γ)) :
     Zef2Prov (P₁ + P₂) E H (g ∘ f) c Γ := by
   obtain ⟨α₁, hα₁le, hNF₁, _, _, d₁⟩ := D₁
   obtain ⟨γ₁, hγ₁le, hNF₂, _, _, d₂⟩ := D₂
@@ -426,7 +426,7 @@ reduction).  The two quantifier shapes are `stepAllω_Zf2_bnd`. -/
 def InertForm (A : ArithmeticFormula ℕ) : Prop :=
   (∀ (ar : ℕ) (r : (ℒₒᵣ).Rel ar) (v : Fin ar → Semiterm ℒₒᵣ ℕ 0),
       A ≠ Semiformula.rel r v ∧ A ≠ Semiformula.nrel r v) ∧
-  ∀ (χ : ArithmeticSemiformula ℕ 1), A ≠ (∀⁰ χ) ∧ A ≠ (∃⁰ χ)
+  ∀ (χ : ArithmeticSemiformula ℕ 1), A ≠ (∀¹ χ) ∧ A ≠ (∃¹ χ)
 
 lemma inertForm_verum : InertForm ⊤ :=
   ⟨fun _ _ _ => ⟨nofun, nofun⟩, fun _ => ⟨nofun, nofun⟩⟩
@@ -455,8 +455,8 @@ lemma Zef2.erase_inert {A : ArithmeticFormula ℕ} (hA : InertForm A)
   | @weak α β e H f c Δ Γ hαN hβ hβNF hαNF hβH hsub _ ih =>
       exact Zef2.weak hαN hβ hβNF hαNF hβH (Finset.erase_subset_erase A hsub) ih
   | @allω α e H f c Γ₀ hαN χ β hβ hβNF hαNF hβH dd ih =>
-      have hne : (∀⁰ χ) ≠ A := Ne.symm (hA.2 χ).1
-      have hgoal : (insert (∀⁰ χ) Γ₀).erase A = insert (∀⁰ χ) (Γ₀.erase A) := by
+      have hne : (∀¹ χ) ≠ A := Ne.symm (hA.2 χ).1
+      have hgoal : (insert (∀¹ χ) Γ₀).erase A = insert (∀¹ χ) (Γ₀.erase A) := by
         ext x
         simp only [Finset.mem_erase, Finset.mem_insert]
         constructor
@@ -472,8 +472,8 @@ lemma Zef2.erase_inert {A : ArithmeticFormula ℕ} (hA : InertForm A)
         intro x hx
         simp only [Finset.mem_erase, Finset.mem_insert] at hx ⊢; tauto)
   | @exI α β e H f c Γ₀ hαN χ n hβ hβNF hαNF hβH hbound _ ih =>
-      have hne : (∃⁰ χ) ≠ A := Ne.symm (hA.2 χ).2
-      have hgoal : (insert (∃⁰ χ) Γ₀).erase A = insert (∃⁰ χ) (Γ₀.erase A) := by
+      have hne : (∃¹ χ) ≠ A := Ne.symm (hA.2 χ).2
+      have hgoal : (insert (∃¹ χ) Γ₀).erase A = insert (∃¹ χ) (Γ₀.erase A) := by
         ext x
         simp only [Finset.mem_erase, Finset.mem_insert]
         constructor
@@ -566,8 +566,8 @@ private lemma atomRun_allω {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar �
         ((insert (χ/[nm n]) Γ₀).erase (Semiformula.rel rr vv) ∪ Γ))
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x)
     (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) :
-    Zef2Prov (βψ + γ) e H (g ∘ f) c ((insert (∀⁰ χ) Γ₀).erase (Semiformula.rel rr vv) ∪ Γ) := by
-  have hhead : (∀⁰ χ) ≠ Semiformula.rel rr vv := (fun h => by cases h)
+    Zef2Prov (βψ + γ) e H (g ∘ f) c ((insert (∀¹ χ) Γ₀).erase (Semiformula.rel rr vv) ∪ Γ) := by
+  have hhead : (∀¹ χ) ≠ Semiformula.rel rr vv := (fun h => by cases h)
   have haddNF : (βψ + γ).NF := ONote.add_nf βψ γ
   have ihn : ∀ n, Zef2Prov (βψ + β n) e (adjoin H n) (g ∘ rel1 f n) c
       (insert (χ/[nm n]) (Γ₀.erase (Semiformula.rel rr vv) ∪ Γ)) := by
@@ -581,7 +581,7 @@ private lemma atomRun_allω {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar �
   refine Zef2Prov.of haddNF (Cl_of_NF haddNF)
     (Nlog_add_le_comp hβψNF hγNF hg0 hαN (hsl _ le_rfl)) ?_
   have hAll : Zef2 (βψ + γ) e H (g ∘ f) c
-      (insert (∀⁰ χ) (Γ₀.erase (Semiformula.rel rr vv) ∪ Γ)) := by
+      (insert (∀¹ χ) (Γ₀.erase (Semiformula.rel rr vv) ∪ Γ)) := by
     exact Zef2.allω (Nlog_add_le_comp hβψNF hγNF hg0 hαN (hsl _ le_rfl)) χ
       (fun n => (ihn n).choose)
       (fun n => lt_of_le_of_lt (ihn n).choose_spec.1
@@ -604,8 +604,8 @@ private lemma atomRun_exI {ar : ℕ} {rr : (ℒₒᵣ).Rel ar} {vv : Fin ar → 
       Zef2Prov (βψ + β) e H (g ∘ f) c ((insert (χ/[nm n]) Γ₀).erase (Semiformula.rel rr vv) ∪ Γ))
     (hγNF : γ.NF) (hmono : Monotone f) (hinfl : ∀ x, x ≤ f x)
     (hsl : ∀ k, f 0 ≤ k → max (g 0) k + 1 ≤ g k) :
-    Zef2Prov (βψ + γ) e H (g ∘ f) c ((insert (∃⁰ χ) Γ₀).erase (Semiformula.rel rr vv) ∪ Γ) := by
-  have hhead : (∃⁰ χ) ≠ Semiformula.rel rr vv := (fun h => by cases h)
+    Zef2Prov (βψ + γ) e H (g ∘ f) c ((insert (∃¹ χ) Γ₀).erase (Semiformula.rel rr vv) ∪ Γ) := by
+  have hhead : (∃¹ χ) ≠ Semiformula.rel rr vv := (fun h => by cases h)
   have haddNF : (βψ + γ).NF := ONote.add_nf βψ γ
   obtain ⟨a, hale, haNF, haH, hag, Da⟩ := ih hβNF hmono hinfl hsl
   have Da' : Zef2 a e H (g ∘ f) c

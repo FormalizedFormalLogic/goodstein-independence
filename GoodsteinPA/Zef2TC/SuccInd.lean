@@ -26,7 +26,7 @@ lemma allClosure_peel {e} {d} {f₀ : ℕ → ℕ} (ℓ : ℕ) (α : ONote) (hNF
     (hg : ∀ k, k ≤ ℓ → Nlog (osuccs α k) ≤ f₀ 0)
     (H : ONote → Prop) (f : ℕ → ℕ) (hmono : Monotone f) (hinfl : ∀ m, m ≤ f m)
     (hf0 : f₀ 0 ≤ f 0) :
-    Zef2TC (osuccs α ℓ) e H f d (insert (∀⁰* χ) Γ) := by
+    Zef2TC (osuccs α ℓ) e H f d (insert (∀¹* χ) Γ) := by
   induction ℓ generalizing α hNF hCl with
   | zero =>
       have h := hinst ![] H f hmono hinfl hf0
@@ -40,10 +40,10 @@ lemma allClosure_peel {e} {d} {f₀ : ℕ → ℕ} (ℓ : ℕ) (α : ONote) (hNF
       have step : ∀ (w : Fin n → ℕ) (H' : ONote → Prop) (f' : ℕ → ℕ), Monotone f' →
           (∀ m, m ≤ f' m) → f₀ 0 ≤ f' 0 →
           Zef2TC (osucc α) e H' f' d
-            (insert (Rew.subst (fun i => nm (w i)) ▹ (∀⁰ χ)) Γ) := by
+            (insert (Rew.subst (fun i => nm (w i)) ▹ (∀¹ χ)) Γ) := by
         intro w H' f' hmono' hinfl' hf0'
-        have hsub : Rew.subst (fun i => nm (w i)) ▹ (∀⁰ χ)
-            = ∀⁰ ((Rew.subst (fun i => nm (w i))).q ▹ χ) := by simp
+        have hsub : Rew.subst (fun i => nm (w i)) ▹ (∀¹ χ)
+            = ∀¹ ((Rew.subst (fun i => nm (w i))).q ▹ χ) := by simp
         rw [hsub]
         have fam : ∀ m, Zef2TC α e (adjoin H' m) (rel1 f' m) d
             (insert ((((Rew.subst (fun i => nm (w i))).q ▹ χ))/[nm m]) Γ) := by
@@ -60,7 +60,7 @@ lemma allClosure_peel {e} {d} {f₀ : ℕ → ℕ} (ℓ : ℕ) (α : ONote) (hNF
         have hgd : Nlog (osucc α) ≤ f' 0 := le_trans (hg 1 (by omega)) hf0'
         exact Zef2TC.allω hgd _ (fun _ => α) (fun _ => lt_osucc hNF) (fun _ => hNF)
           (osucc_NF hNF) (fun m => hCl (adjoin H' m)) fam
-      have h := ih (osucc α) (osucc_NF hNF) (fun S => Cl.osucc (hCl S)) (∀⁰ χ) step
+      have h := ih (osucc α) (osucc_NF hNF) (fun S => Cl.osucc (hCl S)) (∀¹ χ) step
         (fun k hk => by
           rw [osuccs_succ_shift]
           exact hg (k + 1) (by omega))
@@ -131,8 +131,8 @@ lemma rew_succInd' (g : SyntacticRew ℒₒᵣ 0 0) (ψ : Semiformula ℒₒᵣ 
 @[grind =]
 lemma succInd_nnf' (ψ : Semiformula ℒₒᵣ ℕ 1) :
     Arithmetic.succInd ψ = (∼ψ/[(↑(0 : ℕ) : Semiterm ℒₒᵣ ℕ 0)]) ⋎
-      ((∃⁰ ∼((∼ψ/[(#0 : Semiterm ℒₒᵣ ℕ 1)]) ⋎ ψ/[(‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1)])) ⋎
-        (∀⁰ ψ/[(#0 : Semiterm ℒₒᵣ ℕ 1)])) := by
+      ((∃¹ ∼((∼ψ/[(#0 : Semiterm ℒₒᵣ ℕ 1)]) ⋎ ψ/[(‘(#0 + 1)’ : Semiterm ℒₒᵣ ℕ 1)])) ⋎
+        (∀¹ ψ/[(#0 : Semiterm ℒₒᵣ ℕ 1)])) := by
   conv_lhs => unfold Arithmetic.succInd
   simp only [Semiformula.imp_eq, Semiformula.neg_all]
 
@@ -150,10 +150,10 @@ lemma metaInduction_Zef2TC (ψ step : ArithmeticSemiformula ℕ 1)
     (hg1 : 2 * clog (2 * ψ.complexity + 4) + 12 ≤ f 0)
     (hg2 : ψ.complexity ≤ f 0) :
     Zef2TC ONote.omega e H f (ψ.complexity + 1)
-      (insert (∀⁰ ψ) (insert (∼(ψ/[t0])) (insert (∃⁰ (∼step)) Γ))) := by
+      (insert (∀¹ ψ) (insert (∼(ψ/[t0])) (insert (∃¹ (∼step)) Γ))) := by
   set c : ℕ := ψ.complexity + 1 with hc
   set a : ℕ := 2 * ψ.complexity + 4 with ha
-  set Δ : Finset (ArithmeticFormula ℕ) := insert (∼(ψ/[t0])) (insert (∃⁰ (∼step)) Γ) with hΔ
+  set Δ : Finset (ArithmeticFormula ℕ) := insert (∼(ψ/[t0])) (insert (∃¹ (∼step)) Γ) with hΔ
   have hNF : ∀ m : ℕ, (ONote.ofNat m).NF := fun m => ONote.nf_ofNat m
   -- per numeral branch `n`, a `≤ n`-long chain of cuts climbs the linear `ofNat` ladder
   -- `a·(k+1)`: the base case is the value-congruent EM at `(nm 0, t0)`, and the step cuts
@@ -290,19 +290,19 @@ lemma succInd_shape_Zef2TC (ψw : ArithmeticSemiformula ℕ 1)
     have := Nlog_osucc_le (osucc_NF omega_NF); omega
   -- reorder for the inner orI
   have hre : Zef2TC ONote.omega e H f (ψw.complexity + 1)
-      (insert (∃⁰ (∼stepw)) (insert (∀⁰ ψw)
+      (insert (∃¹ (∼stepw)) (insert (∀¹ ψw)
         (insert (∼(ψw/[t0])) Γ))) :=
     ht.wk ht.gate (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto)
   have horI₂ := Zef2TC.orI (α := osucc ONote.omega)
     (le_trans hNs (le_trans (by omega : (3:ℕ) ≤ 12) (le_trans (by omega) hg1)))
-    (∃⁰ (∼stepw)) (∀⁰ ψw) (lt_osucc omega_NF) omega_NF (osucc_NF omega_NF)
+    (∃¹ (∼stepw)) (∀¹ ψw) (lt_osucc omega_NF) omega_NF (osucc_NF omega_NF)
     (Cl_omega H) hre
   have hre₂ : Zef2TC (osucc ONote.omega) e H f (ψw.complexity + 1)
-      (insert (∼(ψw/[t0])) (insert ((∃⁰ (∼stepw)) ⋎ (∀⁰ ψw)) Γ)) :=
+      (insert (∼(ψw/[t0])) (insert ((∃¹ (∼stepw)) ⋎ (∀¹ ψw)) Γ)) :=
     horI₂.wk horI₂.gate (by intro x hx; simp only [Finset.mem_insert] at hx ⊢; tauto)
   have horI₁ := Zef2TC.orI (α := osucc (osucc ONote.omega))
     (le_trans hNss (le_trans (by omega : (4:ℕ) ≤ 12) (le_trans (by omega) hg1)))
-    (∼(ψw/[t0])) ((∃⁰ (∼stepw)) ⋎ (∀⁰ ψw)) (lt_osucc (osucc_NF omega_NF))
+    (∼(ψw/[t0])) ((∃¹ (∼stepw)) ⋎ (∀¹ ψw)) (lt_osucc (osucc_NF omega_NF))
     (osucc_NF omega_NF) (osucc_NF (osucc_NF omega_NF)) (Cl.osucc (Cl_omega H)) hre₂
   rw [hb]
   exact horI₁
@@ -330,7 +330,7 @@ theorem budgetedEmbedsV3_succInd {Γ}
   · have hmem := Finset.mem_image_of_mem (fun χ => asg env ▹ χ) hΓ
     rw [asg_emb_fix] at hmem
     have hcoe : (↑(Semiformula.univCl (Arithmetic.succInd φ)) : ArithmeticFormula ℕ)
-        = ∀⁰* (Rew.fixitr 0 ℓ ▹ (Arithmetic.succInd φ)) := by
+        = ∀¹* (Rew.fixitr 0 ℓ ▹ (Arithmetic.succInd φ)) := by
       rw [Semiformula.coe_univCl_eq_univCl']; rfl
     rw [hcoe] at hmem
     have hf1 := ewRootSlot_f1 (0 : ONote) B

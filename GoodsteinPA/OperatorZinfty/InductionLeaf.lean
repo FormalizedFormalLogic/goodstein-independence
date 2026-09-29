@@ -26,7 +26,7 @@ lemma embedding_closedTermExI_someK_probe
     (hCutLt : αCut < αOut)
     (hSrcNF : βSrc.NF) (hCutNF : αCut.NF) (hOutNF : αOut.NF)
     (dSrc : ProvableSomeK βSrc e d c (insert (ψ/[s]) Γ)) :
-    ProvableSomeK αOut e d c (insert (∃⁰ ψ) Γ) := by
+    ProvableSomeK αOut e d c (insert (∃¹ ψ) Γ) := by
   rcases dSrc with ⟨K0, d0⟩
   let K1 :=
     max K0
@@ -58,7 +58,7 @@ lemma inductionLeaf_cutTowerStep_probe
     {βIH βA βB βAnd βEx α : ONote} {n : ℕ}
     {ψ step : ArithmeticSemiformula ℕ 1}
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[nm (n + 1)]))
-    (hmemEx : (∃⁰ ∼step) ∈ Δ)
+    (hmemEx : (∃¹ ∼step) ∈ Δ)
     (hψc : (ψ/[nm n]).complexity < c)
     (hIHlt : βIH < α) (hExlt : βEx < α)
     (hAlt : βA < βAnd) (hBlt : βB < βAnd) (hAndlt : βAnd < βEx)
@@ -84,7 +84,7 @@ lemma inductionLeaf_cutTowerStep_probe
     rw [hstep]
     exact hAnd
   have hEx : Provable βEx e (max k n) d c
-      (insert (∃⁰ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ))) :=
+      (insert (∃¹ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ))) :=
     Provable.exI (∼step) n hAndlt hAndNF hExNF hτAnd
       (inductionLeaf_runningIndex_witnessBound e k d n) hBadStep
   have hEx' : Provable βEx e (max k n) d c
@@ -126,7 +126,7 @@ lemma inductionLeaf_cutTowerStepWithTerm_probe
     {βIH βA βB βAnd βEx βCong αStep α : ONote} {n : ℕ}
     {ψ step : ArithmeticSemiformula ℕ 1} (succT : ArithmeticTerm ℕ)
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
-    (hmemEx : (∃⁰ ∼step) ∈ Δ)
+    (hmemEx : (∃¹ ∼step) ∈ Δ)
     (hψc : (ψ/[nm n]).complexity < c) (hsuccc : (ψ/[succT]).complexity < c)
     (hIHlt : βIH < αStep) (hExlt : βEx < αStep)
     (hAlt : βA < βAnd) (hBlt : βB < βAnd) (hAndlt : βAnd < βEx)
@@ -157,7 +157,7 @@ lemma inductionLeaf_cutTowerStepWithTerm_probe
     rw [hstep]
     exact hAnd
   have hEx : Provable βEx e (max k n) d c
-      (insert (∃⁰ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
+      (insert (∃¹ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
     Provable.exI (∼step) n hAndlt hAndNF hExNF hτAnd
       (inductionLeaf_runningIndex_witnessBound e k d n) hBadStep
   have hEx' : Provable βEx e (max k n) d c
@@ -184,7 +184,7 @@ lemma inductionLeaf_cutTowerStepWithTerm_someK_probe
     {βIH βA βB βAnd βEx βCong αStep α : ONote} {n : ℕ}
     {ψ step : ArithmeticSemiformula ℕ 1} (succT : ArithmeticTerm ℕ)
     (hstep : (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT]))
-    (hmemEx : (∃⁰ ∼step) ∈ Δ)
+    (hmemEx : (∃¹ ∼step) ∈ Δ)
     (hψc : (ψ/[nm n]).complexity < c) (hsuccc : (ψ/[succT]).complexity < c)
     (hIHlt : βIH < αStep) (hExlt : βEx < αStep)
     (hAlt : βA < βAnd) (hBlt : βB < βAnd) (hAndlt : βAnd < βEx)
@@ -211,7 +211,7 @@ lemma inductionLeaf_cutTowerStepWithTerm_someK_probe
     rw [hstep]
     exact hAnd
   have hEx : ProvableSomeK βEx e d c
-      (insert (∃⁰ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
+      (insert (∃¹ ∼step) (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ))) :=
     ProvableSomeK.exI (∼step) n hAndlt hAndNF hExNF hBadStep
   have hEx' : ProvableSomeK βEx e d c
       (insert (∼(ψ/[nm n])) (insert (ψ/[succT]) Δ)) := by
@@ -245,7 +245,7 @@ lemma inductionLeaf_allOmegaFromStep_probe
     (hnext : ∀ n,
       Provable (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) →
       Provable (β (n + 1)) e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ)) :
-    Provable αAll e k d c (insert (∀⁰ ψ) Δ) := by
+    Provable αAll e k d c (insert (∀¹ ψ) Δ) := by
   have chain : ∀ n, Provable (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) := by
     intro n
     induction n with
@@ -271,7 +271,7 @@ lemma inductionLeaf_allOmegaFromStep_someK_probe
       (∀ n,
         Provable (β n) e (max k n) d c (insert (ψ/[nm n]) Δ) →
         Provable (β (n + 1)) e (max k n) d c (insert (ψ/[nm (n + 1)]) Δ))) :
-    ProvableSomeK αAll e d c (insert (∀⁰ ψ) Δ) := by
+    ProvableSomeK αAll e d c (insert (∀¹ ψ) Δ) := by
   rcases hpack with ⟨k, hβlt, hβNF, hαAllNF, hβτ, hbase, hnext⟩
   exact ⟨k, inductionLeaf_allOmegaFromStep_probe β hβlt hβNF hαAllNF hβτ hbase hnext⟩
 
@@ -298,14 +298,14 @@ lemma inductionLeaf_allOmegaCutTowerNumeral_probe
     (hAndτ : ∀ n, norm (βAnd n) < max k n + d)
     (hExτ : ∀ n, norm (βEx n) < max k n + d)
     (hstep : ∀ n, (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[nm (n + 1)]))
-    (hmemEx : (∃⁰ ∼step) ∈ Δ)
+    (hmemEx : (∃¹ ∼step) ∈ Δ)
     (hψc : ∀ n, (ψ/[nm n]).complexity < c)
     (hbase : Provable (β 0) e k d c (insert (ψ/[nm 0]) Δ))
     (dA : ∀ n, Provable (βA n) e (max k n) d c
       (insert (ψ/[nm n]) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ))))
     (dB : ∀ n, Provable (βB n) e (max k n) d c
       (insert (∼(ψ/[nm (n + 1)])) (insert (∼(ψ/[nm n])) (insert (ψ/[nm (n + 1)]) Δ)))) :
-    Provable αAll e k d c (insert (∀⁰ ψ) Δ) :=
+    Provable αAll e k d c (insert (∀¹ ψ) Δ) :=
   inductionLeaf_allOmegaFromStep_probe β hβAllLt hβNF hαAllNF hβτ hbase
     (fun n dIH =>
       inductionLeaf_cutTowerStep_probe (hstep n) hmemEx (hψc n)
@@ -343,7 +343,7 @@ lemma inductionLeaf_allOmegaCutTowerWithTerm_probe
     (hStepτ : ∀ n, norm (βStep n) < max k n + d)
     (hCongτ : ∀ n, norm (βCong n) < max k n + d)
     (hstep : ∀ n, (∼step)/[nm n] = (ψ/[nm n]) ⋏ ∼(ψ/[succT n]))
-    (hmemEx : (∃⁰ ∼step) ∈ Δ)
+    (hmemEx : (∃¹ ∼step) ∈ Δ)
     (hψc : ∀ n, (ψ/[nm n]).complexity < c)
     (hsuccc : ∀ n, (ψ/[succT n]).complexity < c)
     (hbase : Provable (β 0) e k d c (insert (ψ/[nm 0]) Δ))
@@ -353,7 +353,7 @@ lemma inductionLeaf_allOmegaCutTowerWithTerm_probe
       (insert (∼(ψ/[succT n])) (insert (∼(ψ/[nm n])) (insert (ψ/[succT n]) Δ))))
     (dCong : ∀ n, Provable (βCong n) e (max k n) d c
       (insert (∼(ψ/[succT n])) (insert (ψ/[nm (n + 1)]) Δ))) :
-    Provable αAll e k d c (insert (∀⁰ ψ) Δ) :=
+    Provable αAll e k d c (insert (∀¹ ψ) Δ) :=
   inductionLeaf_allOmegaFromStep_probe β hβAllLt hβNF hαAllNF hβτ hbase
     (fun n dIH =>
       inductionLeaf_cutTowerStepWithTerm_probe (succT n) (hstep n) hmemEx (hψc n) (hsuccc n)

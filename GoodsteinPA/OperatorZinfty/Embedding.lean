@@ -38,14 +38,14 @@ lemma inductionLeaf_exI_runningIndex_probe {α β e} {k d c n} {Γ}
     {φ : ArithmeticSemiformula ℕ 1}
     (hβ : β < α) (hβNF : β.NF) (hαNF : α.NF) (hτ : norm β < max k n + d)
     (D : Provable β e (max k n) d c (insert (φ/[nm n]) Γ)) :
-    Provable α e (max k n) d c (insert (∃⁰ φ) Γ) :=
+    Provable α e (max k n) d c (insert (∃¹ φ) Γ) :=
   Provable.exI φ n hβ hβNF hαNF hτ (inductionLeaf_runningIndex_witnessBound e k d n) D
 
 /-! #### Bounded embedding leaves: value-congruent atomic closure -/
 
 /-- The standard value of a closed arithmetic term, in the evaluator used by `atomTrue`. -/
 noncomputable abbrev stdClosedVal (t : ArithmeticTerm ℕ) : ℕ :=
-  Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) t
+  Semiterm.val (s := Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) t
 
 /-- The standard value of the numeral term `nm m` is `m`. -/
 @[simp] lemma stdClosedVal_nm (m : ℕ) : stdClosedVal (nm m) = m := by simp [stdClosedVal, nm]
@@ -89,8 +89,8 @@ lemma atomTrue_rel_congr {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
     (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i)) :
     atomTrue (Semiformula.rel r v) ↔ atomTrue (Semiformula.rel r v') := by
-  have hv : (fun i => Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v i))
-      = (fun i => Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v' i)) := by
+  have hv : (fun i => Semiterm.val (s := Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v i))
+      = (fun i => Semiterm.val (s := Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v' i)) := by
     funext i; exact hval i
   simp only [atomTrue, Semiformula.eval_rel, hv, Function.comp_def]
 
@@ -99,8 +99,8 @@ lemma atomTrue_nrel_congr {ar : ℕ} (r : (ℒₒᵣ).Rel ar)
     (v v' : Fin ar → ArithmeticTerm ℕ)
     (hval : ∀ i, stdClosedVal (v i) = stdClosedVal (v' i)) :
     atomTrue (Semiformula.nrel r v) ↔ atomTrue (Semiformula.nrel r v') := by
-  have hv : (fun i => Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v i))
-      = (fun i => Semiterm.gVal (Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v' i)) := by
+  have hv : (fun i => Semiterm.val (s := Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v i))
+      = (fun i => Semiterm.val (s := Arithmetic.standardModel ℕ) (fun _ => 0) (fun _ => 0) (v' i)) := by
     funext i; exact hval i
   simp only [atomTrue, Semiformula.eval_nrel, hv, Function.comp_def]
 
@@ -257,7 +257,7 @@ lemma embedding_closedTermExI_of_valueCongruentEM_probe
     (dSrc : Provable βSrc e k d c (insert (ψ/[s]) Γ))
     (dCong : Provable βCong e k d c
       (insert (∼(ψ/[s])) (insert (ψ/[nm (stdClosedVal s)]) Γ))) :
-    Provable αOut e k d c (insert (∃⁰ ψ) Γ) := by
+    Provable αOut e k d c (insert (∃¹ ψ) Γ) := by
   have dSrc' : Provable βSrc e k d c
       (insert (ψ/[s]) (insert (ψ/[nm (stdClosedVal s)]) Γ)) :=
     Provable.wk (Finset.insert_subset_insert _ (Finset.subset_insert _ _)) dSrc
@@ -415,9 +415,9 @@ def QFreeForm {ξ n} : Semiformula ℒₒᵣ ξ n → Prop :=
 @[simp] lemma qFreeForm_or {ξ n} (φ ψ : Semiformula ℒₒᵣ ξ n) :
     QFreeForm (φ ⋎ ψ) ↔ QFreeForm φ ∧ QFreeForm ψ := Iff.rfl
 @[simp] lemma qFreeForm_all {ξ n} (φ : Semiformula ℒₒᵣ ξ (n + 1)) :
-    QFreeForm (∀⁰ φ) ↔ False := Iff.rfl
+    QFreeForm (∀¹ φ) ↔ False := Iff.rfl
 @[simp] lemma qFreeForm_exs {ξ n} (φ : Semiformula ℒₒᵣ ξ (n + 1)) :
-    QFreeForm (∃⁰ φ) ↔ False := Iff.rfl
+    QFreeForm (∃¹ φ) ↔ False := Iff.rfl
 
 lemma embedding_ofNat_lt_of_lt {m n : ℕ} (h : m < n) : ONote.ofNat m < ONote.ofNat n := by
   rw [ONote.lt_def, ONote.repr_ofNat, ONote.repr_ofNat]
@@ -659,8 +659,8 @@ lemma embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → Ari
           have haq : a.complexity ≤ q := by
             simp only [Semiformula.complexity_all] at hψq
             omega
-          have hp' : (∀⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
-          have hn' : (∃⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
+          have hp' : (∀¹ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
+          have hn' : (∃¹ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
           have fam : ∀ m, Provable (ONote.ofNat (2 * q + 1)) e (max K m) d c
               (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ) := by
             intro m
@@ -681,7 +681,7 @@ lemma embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → Ari
               rw [heq, Finset.insert_comm]
               exact hx
             have hexI : Provable (ONote.ofNat (2 * q + 1)) e (max K m) d c
-                (insert (∃⁰ ((Rew.subst w').q ▹ ∼a))
+                (insert (∃¹ ((Rew.subst w').q ▹ ∼a))
                   (insert (((Rew.subst w).q ▹ a)/[nm m]) Γ)) :=
               Provable.exI ((Rew.subst w').q ▹ ∼a) m
                 (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
@@ -690,7 +690,7 @@ lemma embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → Ari
             rw [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hn')] at hexI
             exact hexI
           have hallω : Provable (ONote.ofNat (2 * (q + 1))) e K d c
-              (insert (∀⁰ ((Rew.subst w).q ▹ a)) Γ) :=
+              (insert (∀¹ ((Rew.subst w).q ▹ a)) Γ) :=
             Provable.allω ((Rew.subst w).q ▹ a) (fun _ => ONote.ofNat (2 * q + 1))
               (fun _ => embedding_ofNat_lt_of_lt (by omega))
               (fun _ => inferInstance) inferInstance
@@ -700,8 +700,8 @@ lemma embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → Ari
           have haq : a.complexity ≤ q := by
             simp only [Semiformula.complexity_exs] at hψq
             omega
-          have hp' : (∃⁰ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
-          have hn' : (∀⁰ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
+          have hp' : (∃¹ ((Rew.subst w).q ▹ a)) ∈ Γ := by simpa using hp
+          have hn' : (∀¹ ((Rew.subst w').q ▹ ∼a)) ∈ Γ := by simpa using hn
           have fam : ∀ m, Provable (ONote.ofNat (2 * q + 1)) e (max K m) d c
               (insert (((Rew.subst w').q ▹ ∼a)/[nm m]) Γ) := by
             intro m
@@ -722,7 +722,7 @@ lemma embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → Ari
               rw [heq]
               exact hx
             have hexI : Provable (ONote.ofNat (2 * q + 1)) e (max K m) d c
-                (insert (∃⁰ ((Rew.subst w).q ▹ a))
+                (insert (∃¹ ((Rew.subst w).q ▹ a))
                   (insert (((Rew.subst w').q ▹ ∼a)/[nm m]) Γ)) :=
               Provable.exI ((Rew.subst w).q ▹ a) m
                 (embedding_ofNat_lt_of_lt (by omega)) inferInstance inferInstance
@@ -731,7 +731,7 @@ lemma embedding_valueCongruentEM_probe (q : ℕ) {n : ℕ} (w w' : Fin n → Ari
             rw [Finset.insert_eq_self.mpr (Finset.mem_insert_of_mem hp')] at hexI
             exact hexI
           have hallω : Provable (ONote.ofNat (2 * (q + 1))) e K d c
-              (insert (∀⁰ ((Rew.subst w').q ▹ ∼a)) Γ) :=
+              (insert (∀¹ ((Rew.subst w').q ▹ ∼a)) Γ) :=
             Provable.allω ((Rew.subst w').q ▹ ∼a) (fun _ => ONote.ofNat (2 * q + 1))
               (fun _ => embedding_ofNat_lt_of_lt (by omega))
               (fun _ => inferInstance) inferInstance
