@@ -9,5 +9,3 @@ accept:
   - propext
   - Classical.choice
   - Quot.sound
-
-declaration: {}
