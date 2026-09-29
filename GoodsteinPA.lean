@@ -2,6 +2,7 @@ module  -- shake: keep-all --deprecated_module: ignore
 
 public import GoodsteinPA.Encoding
 public import GoodsteinPA.Internal
+public import GoodsteinPA.Kreisel.Statement
 public import GoodsteinPA.OperatorZef2.Basic
 public import GoodsteinPA.OperatorZef2.CutStep
 public import GoodsteinPA.OperatorZef2.GateArith
