@@ -41,7 +41,6 @@ transparent, hand-built Π₂ form; if so, that refactor is gated by *matching t
 module
 
 public import Foundation.FirstOrder.Incompleteness.Second
-public import Foundation.FirstOrder.Arithmetic.R0.Representation
 public import GoodsteinPA.ToMathlib.Goodstein.Computability
 public import GoodsteinPA.Internal
 

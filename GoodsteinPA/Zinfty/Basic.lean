@@ -13,8 +13,6 @@ built on top of these live in `GoodsteinPA.Zinfty.Cut`.
 module
 
 public import Foundation.FirstOrder.Incompleteness.Second
-public import Foundation.FirstOrder.Arithmetic.R0.Representation
-public import Mathlib.SetTheory.Ordinal.Principal
 public import Mathlib.SetTheory.Ordinal.Veblen
 public import Mathlib.Data.ENat.Lattice
 public import GoodsteinPA.ToFoundation.Numeral

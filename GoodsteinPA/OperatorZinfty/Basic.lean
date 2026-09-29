@@ -31,7 +31,6 @@ reductions in `GoodsteinPA.OperatorZinfty.Cut`.
 module
 
 public import Foundation.FirstOrder.Incompleteness.Second
-public import Foundation.FirstOrder.Arithmetic.R0.Representation
 public import GoodsteinPA.ToMathlib.Hardy.Comparison
 public import GoodsteinPA.ToFoundation.Numeral
 
