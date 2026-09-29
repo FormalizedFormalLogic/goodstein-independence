@@ -37,20 +37,6 @@ large enough that the fundamental-sequence descent of `o` actually passes throug
 right "size of `d`" is its **CNF norm**: the largest finite number (coefficient or finite
 tail) appearing anywhere in `d`'s Cantor normal form. -/
 
-/-- **CNF norm** of a notation: the maximum finite coefficient appearing anywhere in its
-Cantor normal form (recursively through exponents and tails). `norm 0 = 0`,
-`norm (ω^e·n + a) = max (norm e) (max n (norm a))`. This is the budget threshold: if
-`norm d ≤ x` then the standard fundamental-sequence descent of any `o > d` reaches `d` with
-budget `x` (`reaches_of_lt`). -/
-def norm : ONote → ℕ
-  | 0 => 0
-  | oadd e n a => max (norm e) (max (n : ℕ) (norm a))
-
-@[simp] theorem norm_zero : norm 0 = 0 := rfl
-
-@[simp] theorem norm_oadd (e : ONote) (n : ℕ+) (a : ONote) :
-    norm (oadd e n a) = max (norm e) (max (n : ℕ) (norm a)) := rfl
-
 /-- **Trichotomy decomposition of `<` on `oadd`.** For normal-form notations,
 `oadd ea na ba < oadd e m b` splits into the three lexicographic cases on
 (exponent, coefficient, tail). -/
@@ -225,32 +211,6 @@ theorem lt_fundamentalSequence_of_norm_le (o : ONote) (ho : o.NF) (g : ℕ → O
             rw [norm_oadd] at hnorm; exact (le_max_of_le_right (le_max_right _ _)).trans hnorm
           exact oadd_lt_oadd_3 (ihb ho.snd hbf hb ba hd.snd hbalt hnorm_ba)
 
-/-- **General Bachmann reachability:** for normal-form `d < o` with budget `x ≥ norm d`,
-the standard fundamental-sequence descent of `o` reaches `d`. -/
-theorem reaches_of_lt (o : ONote) (ho : o.NF) (d : ONote) (hd : d.NF) (hdo : d < o) (hnorm : norm d ≤ x) :
-    Reaches x o d := by
-  rcases e : fundamentalSequence o with (_ | c) | g
-  · exfalso
-    have ho0 : o = 0 := by have hp := fundamentalSequence_has_prop o; rwa [e] at hp
-    rw [ho0] at hdo
-    have hr : d.repr < 0 := by rw [← repr_zero]; exact lt_def.1 hdo
-    exact absurd hr not_lt_zero
-  · have hp := fundamentalSequence_has_prop o; rw [e] at hp
-    have hcNF : c.NF := hp.2 ho
-    have hco : c < o := lt_def.2 (by rw [hp.1]; exact Order.lt_succ _)
-    have hdr : d.repr ≤ c.repr := Order.lt_succ_iff.1 (by rw [← hp.1]; exact lt_def.1 hdo)
-    rcases eq_or_lt_of_le hdr with heq | hlt
-    · have hdc : d = c := (@repr_inj d c hd hcNF).1 heq
-      subst hdc; exact Reaches.succ e (Reaches.refl _)
-    · exact Reaches.succ e (reaches_of_lt c hcNF d hd (lt_def.2 hlt) hnorm)
-  · have hp := fundamentalSequence_has_prop o; rw [e] at hp
-    have hgxNF : (g x).NF := (hp.2.1 x).2.2 ho
-    have hgxlt : g x < o := (hp.2.1 x).2.1
-    have hdgx : d < g x := lt_fundamentalSequence_of_norm_le o ho g e d hd hdo hnorm
-    exact Reaches.limit e (reaches_of_lt (g x) hgxNF d hd hdgx hnorm)
-termination_by o
-decreasing_by all_goals assumption
-
 /-- **Strict successor index step:** at a notation-successor `o` (predecessor `a`), for `n ≥ 2`, `f_a(n) < f_o(n)`. -/
 lemma fastGrowing_lt_succ_index (h : fundamentalSequence o = Sum.inl (some a)) {n : ℕ} (hn : 2 ≤ n) :
     fastGrowing a n < fastGrowing o n := by
@@ -268,12 +228,6 @@ lemma fastGrowing_lt_succ_index (h : fundamentalSequence o = Sum.inl (some a)) {
     _ = (fastGrowing a)^[2] n := h2eq.symm
     _ ≤ (fastGrowing a)^[n] n := hstep2
 
-/-- **General index monotonicity of the fast-growing hierarchy:** for normal-form `d < o`
-with `1 ≤ x ≥ norm d`, `f_d(x) ≤ f_o(x)`. -/
-theorem fastGrowing_le_of_lt (hx : 1 ≤ x) (hd : d.NF) (ho : o.NF) (hdo : d < o) (hnorm : norm d ≤ x) :
-    fastGrowing d x ≤ fastGrowing o x :=
-  fastGrowing_le_of_reaches hx (reaches_of_lt o ho d hd hdo hnorm)
-
 /-- A normal-form `oadd 0 n a` (leading exponent `0`) has a zero tail: `NF` forces `a.repr < ω^0 = 1`, hence `a = 0`. -/
 lemma tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF) : a = 0 := by
   have hlt : a.repr < ω ^ (0 : ONote).repr := h.snd'.repr_lt
@@ -285,81 +239,6 @@ lemma tail_eq_zero_of_zero_exponent {n : ℕ+} {a : ONote} (h : (oadd 0 n a).NF)
 Uses structural fundamental-sequence descent to achieve `Reaches n (tower n) (osucc o)`.
 -/
 
-/-- The **notation successor** `osucc o`: a structural definition giving `repr (osucc o) = repr o + 1`
-and `fundamentalSequence (osucc o) = inl (some o)` on normal forms. -/
-def osucc : ONote → ONote
-  | 0 => oadd 0 1 0
-  | oadd 0 n _ => oadd 0 (n + 1) 0
-  | oadd (oadd e' n' a') m b => oadd (oadd e' n' a') m (osucc b)
-
-@[grind =]
-lemma repr_osucc {o : ONote} (h : o.NF) : (osucc o).repr = o.repr + 1 :=
-  match o, h with
-  | 0, _ => by simp [osucc]
-  | oadd 0 n a, h => by
-      have ha0 := tail_eq_zero_of_zero_exponent h
-      subst ha0
-      show (oadd 0 (n + 1) 0).repr = (oadd 0 n 0).repr + 1
-      simp only [ONote.repr, opow_zero, one_mul, add_zero, PNat.add_coe,
-        PNat.one_coe, Nat.cast_add, Nat.cast_one]
-  | oadd (oadd e' n' a') m b, h => by
-      show (oadd (oadd e' n' a') m (osucc b)).repr = (oadd (oadd e' n' a') m b).repr + 1
-      simp only [ONote.repr]
-      rw [repr_osucc h.snd, ← add_assoc]
-
-@[grind →]
-lemma osucc_NF {o : ONote} (h : o.NF) : (osucc o).NF :=
-  match o, h with
-  | 0, _ => NF.oadd_zero 0 1
-  | oadd 0 n _, _ => NF.oadd_zero 0 (n + 1)
-  | oadd (oadd e' n' a') m b, h => by
-      refine NF.oadd h.fst m (NF.below_of_lt' ?_ (osucc_NF h.snd))
-      rw [repr_osucc h.snd, ← Order.succ_eq_add_one]
-      have hElim : Order.IsSuccLimit (ω ^ (oadd e' n' a').repr) := by
-        refine isSuccLimit_opow_left isSuccLimit_omega0 ?_
-        have hpos : (0 : Ordinal) < (oadd e' n' a').repr := by
-          rw [← repr_zero]; exact lt_def.1 (oadd_pos e' n' a')
-        exact hpos.ne'
-      exact hElim.succ_lt h.snd'.repr_lt
-
-@[grind =]
-lemma fundamentalSequence_osucc {o : ONote} (h : o.NF) : fundamentalSequence (osucc o) = Sum.inl (some o) :=
-  match o, h with
-  | 0, _ => rfl
-  | oadd 0 n a, h => by
-      have ha0 := tail_eq_zero_of_zero_exponent h
-      subst ha0
-      obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k.succPNat := ⟨n.natPred, (PNat.succPNat_natPred n).symm⟩
-      rfl
-  | oadd (oadd e' n' a') m b, h =>
-      fundamentalSequence_oadd_succ (fundamentalSequence_osucc h.snd)
-
--- No `grind` attribute: `@[grind →]` needs a propositional hypothesis (there is none here),
--- and `@[grind =]` needs an equality conclusion (this is a `≤`).
-lemma norm_osucc_le {o : ONote} : norm (osucc o) ≤ norm o + 1 :=
-  match o with
-  | 0 => by simp [osucc, norm]
-  | oadd 0 n _ => by
-      simp only [osucc, norm_oadd, norm_zero, PNat.add_coe, PNat.one_coe]; omega
-  | oadd (oadd e' n' a') m b => by
-      have ih : norm (osucc b) ≤ norm b + 1 := norm_osucc_le
-      simp only [osucc, norm_oadd]; omega
-
-/-- The **diagonal tower** `0, 1, ω, ω^ω, …` underlying `fastGrowingε₀`. -/
-def tower (i : ℕ) : ONote := (fun a => oadd a 1 0)^[i] 0
-
-@[simp] theorem tower_zero : tower 0 = 0 := rfl
-
-/-- `tower (i+1) = ω^{tower i}`. -/
-lemma tower_succ (i : ℕ) : tower (i + 1) = oadd (tower i) 1 0 := by
-  rw [tower, tower, Function.iterate_succ_apply']
-
-/-- Every tower level is a normal-form notation. -/
-lemma tower_NF (i : ℕ) : (tower i).NF :=
-  match i with
-  | 0 => by rw [tower_zero]; exact NF.zero
-  | i + 1 => by rw [tower_succ]; haveI := tower_NF i; exact NF.oadd_zero _ _
-
 /-- The tower is **strictly increasing:** `tower i < tower (i+1) = ω^{tower i}`. -/
 lemma tower_lt_succ (i : ℕ) : tower i < tower (i + 1) := by
   rw [tower_succ, lt_def]
@@ -367,31 +246,6 @@ lemma tower_lt_succ (i : ℕ) : tower i < tower (i + 1) := by
     simp only [ONote.repr, PNat.one_coe, Nat.cast_one, mul_one, add_zero]
   rw [hrepr]
   exact repr_lt_opow_repr _ (tower_NF i)
-
-/-- The tower is monotone in its index. -/
-lemma tower_strictMono : StrictMono tower :=
-  strictMono_nat_of_lt_succ tower_lt_succ
-
-/-- `repr (tower (i+1)) = ω ^ repr (tower i)`. -/
-lemma repr_tower_succ (i : ℕ) : (tower (i + 1)).repr = ω ^ (tower i).repr := by
-  rw [tower_succ]
-  simp only [ONote.repr, PNat.one_coe, Nat.cast_one, mul_one, add_zero]
-
-/-- **Cofinality of the tower in `ε₀`:** every normal-form notation is below some tower level. -/
-theorem tower_cofinal (o : ONote) (h : o.NF) : ∃ k, o < tower k :=
-  match o, h with
-  | 0, _ => ⟨1, by rw [lt_def]; simp [tower_succ]⟩
-  | oadd e n a, h => by
-      obtain ⟨j, hj⟩ := tower_cofinal e h.fst
-      refine ⟨j + 1, ?_⟩
-      rw [lt_def, repr_tower_succ]
-      have hej : e.repr < (tower j).repr := (lt_def).mp hj
-      have hbelow : NFBelow (oadd e n a) (e.repr + 1) :=
-        NFBelow.oadd h.fst h.snd' (Order.lt_succ _)
-      have h1 : (oadd e n a).repr < ω ^ (e.repr + 1) := hbelow.repr_lt
-      have h2 : ω ^ (e.repr + 1) ≤ ω ^ (tower j).repr :=
-        opow_le_opow_right omega0_pos (Order.succ_le_of_lt hej)
-      exact lt_of_lt_of_le h1 h2
 
 /-! ### `osucc` strict order facts -/
 

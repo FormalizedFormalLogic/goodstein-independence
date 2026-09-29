@@ -25,8 +25,8 @@ public import GoodsteinPA.OperatorZinfty.SomeK
 public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Result.ConsistencyPA
 public import GoodsteinPA.Statement
-public import GoodsteinPA.ToFoundation.FvSubst
 public import GoodsteinPA.ToFoundation.Numeral
+public import GoodsteinPA.ToFoundation.SemitermAux
 public import GoodsteinPA.ToFoundation.Subst
 public import GoodsteinPA.ToMathlib.FastGrowing.Basic
 public import GoodsteinPA.ToMathlib.FastGrowing.EWIteration
@@ -34,7 +34,6 @@ public import GoodsteinPA.ToMathlib.FastGrowing.Epsilon0
 public import GoodsteinPA.ToMathlib.FastGrowing.Norm
 public import GoodsteinPA.ToMathlib.Goodstein.CichonCaicedo
 public import GoodsteinPA.ToMathlib.Goodstein.Computability
-public import GoodsteinPA.ToMathlib.Goodstein.Defs
 public import GoodsteinPA.ToMathlib.Goodstein.Domination
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.Anchors
 public import GoodsteinPA.ToMathlib.Goodstein.Domination.BaseCases
@@ -49,7 +48,6 @@ public import GoodsteinPA.ToMathlib.Hardy.Gexp
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 public import GoodsteinPA.ToMathlib.Hardy.Structure
 public import GoodsteinPA.ToMathlib.ONote.Computability
-public import GoodsteinPA.ToMathlib.OmegaTower
 public import GoodsteinPA.ToMathlib.Ordinal.Bounds
 public import GoodsteinPA.ToMathlib.Ordinal.Epsilon0
 public import GoodsteinPA.ToMathlib.Ordinal.WellFoundedRank
