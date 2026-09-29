@@ -1,6 +1,10 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
 public import GoodsteinPA.Encoding
+public import GoodsteinPA.HydraComputable
+public import GoodsteinPA.HydraEscape
+public import GoodsteinPA.HydraIndependence
+public import GoodsteinPA.HydraLowerBound
 public import GoodsteinPA.Internal
 public import GoodsteinPA.Kreisel.Statement
 public import GoodsteinPA.OperatorZef2.Basic
@@ -23,6 +27,19 @@ public import GoodsteinPA.OperatorZinfty.Embedding
 public import GoodsteinPA.OperatorZinfty.InductionLeaf
 public import GoodsteinPA.OperatorZinfty.Inversion
 public import GoodsteinPA.OperatorZinfty.SomeK
+public import GoodsteinPA.PH.Computable
+public import GoodsteinPA.PH.Independence
+public import GoodsteinPA.PH.LB.Bad
+public import GoodsteinPA.PH.LB.Cnf
+public import GoodsteinPA.PH.LB.Colour
+public import GoodsteinPA.PH.LB.Descent
+public import GoodsteinPA.PH.LB.Escape
+public import GoodsteinPA.PH.LowerBound
+public import GoodsteinPA.PH.Main
+public import GoodsteinPA.PH.Norm
+public import GoodsteinPA.PH.Ramsey
+public import GoodsteinPA.PH.Statement
+public import GoodsteinPA.PH.Truth
 public import GoodsteinPA.ReadoffValueGate
 public import GoodsteinPA.Result.ConsistencyPA
 public import GoodsteinPA.Statement
@@ -48,10 +65,16 @@ public import GoodsteinPA.ToMathlib.Hardy.Comparison
 public import GoodsteinPA.ToMathlib.Hardy.Gexp
 public import GoodsteinPA.ToMathlib.Hardy.Majorization
 public import GoodsteinPA.ToMathlib.Hardy.Structure
+public import GoodsteinPA.ToMathlib.Hydra.Basic
+public import GoodsteinPA.ToMathlib.Hydra.Canonical
+public import GoodsteinPA.ToMathlib.Hydra.Engine
+public import GoodsteinPA.ToMathlib.Hydra.Ordinal
+public import GoodsteinPA.ToMathlib.Hydra.Statement
 public import GoodsteinPA.ToMathlib.ONote.Computability
 public import GoodsteinPA.ToMathlib.Ordinal.Bounds
 public import GoodsteinPA.ToMathlib.Ordinal.Epsilon0
 public import GoodsteinPA.ToMathlib.Ordinal.WellFoundedRank
+public import GoodsteinPA.WainerGeneral
 public import GoodsteinPA.Zef2TC.Axm
 public import GoodsteinPA.Zef2TC.Basic
 public import GoodsteinPA.Zef2TC.CutStep
