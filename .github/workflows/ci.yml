@@ -67,9 +67,9 @@ jobs:
           path: .lake/GoodsteinPA-x86_64-unknown-linux-gnu.tar.gz
           key: ${{ steps.project-cache.outputs.cache-primary-key }}
 
-      # Axiom-clean gate: `#guard_msgs`-pinned axiom sets for the headline theorems (silent == clean).
-      # - name: Axiom-clean gate (guarded #print axioms)
-      #   run: lake env lean scripts/AxiomCheck.lean
+      # Every declaration may use only the axioms `forgive.yml` accepts.
+      - name: Audit axioms
+        run: lake exe forgive GoodsteinPA
 
       # Blueprint status gate: reconcile each `@[goodstein_blueprint]` claim against its real footprint.
       # - name: Blueprint status gate (collectAxioms vs claim)
