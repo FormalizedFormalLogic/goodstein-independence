@@ -9,8 +9,8 @@ structurally, and proves the order pulled back to `ℕ` via the structural codin
 
 The construction proceeds via structural strong recursion on `ONote.encodeONote`'s pairing codes:
 `Cnat` computes `ordCode ∘ ONote.cmp` (via `cmpStep_spec`), `Nfb` computes the `ONote.NF` predicate
-(via `nfStep_spec`), and `enc` enumerates normal-form codes in order. One `native_decide` call
-appears in `cmpStep_spec`'s base case.
+(via `nfStep_spec`), and `enc` enumerates normal-form codes in order.  The step `cmpStep` is
+itself primitive recursive, so `Cnat` is too (`primrec_Cnat`).
 -/
 module
 
@@ -166,12 +166,14 @@ lemma computable_cmpStep : Computable cmpStep := by
     (Primrec.ite c2 (Primrec.const (some 1)) (Primrec.const (some 0)))
     (Primrec.ite c2 (Primrec.const (some 2)) helse)
 
+theorem decodeONote_zero : decodeONote 0 = 0 := by unfold decodeONote; simp
+
 lemma cmpStep_spec (m : ℕ) : cmpStep ((List.range m).map Cnat) = some (Cnat m) := by
   unfold cmpStep;
   simp +decide [cmpIdxE, cmpIdxA, cmpNV];
   rcases n : Nat.unpair m with ⟨x, y⟩; rcases x with (_ | x) <;> rcases y with (_ | y) <;> simp +decide;
   · rw [show m = 0 by rw [← Nat.pair_unpair m, n]; rfl]; simp +decide [Cnat];
-    native_decide;
+    rw [decodeONote_zero]; simp [ONote.cmp, ordCode]
   · unfold Cnat; simp +decide [n];
     unfold decodeONote; simp +decide [ONote.cmp];
   · unfold Cnat; simp +decide [n];
@@ -198,6 +200,40 @@ theorem computable_Cnat : Computable Cnat := by
   exact (Computable.nat_strong_rec (fun (_ : Unit) n => Cnat n)
     (computable_cmpStep.comp Computable.snd |> Computable.to₂)
     (fun _ n => h_step_spec n)).comp (Computable.const ()) Computable.id
+
+/-- The strong-recursion step of `Cnat` is primitive recursive. -/
+theorem primrec_cmpStep : Primrec cmpStep := by
+  have c1 : PrimrecPred (fun L : List ℕ => (Nat.unpair L.length).1 = 0) :=
+    Primrec.eq.comp (Primrec.fst.comp (Primrec.unpair.comp Primrec.list_length)) (Primrec.const 0)
+  have c2 : PrimrecPred (fun L : List ℕ => (Nat.unpair L.length).2 = 0) :=
+    Primrec.eq.comp (Primrec.snd.comp (Primrec.unpair.comp Primrec.list_length)) (Primrec.const 0)
+  have f1 : Primrec (fun L : List ℕ => L[cmpIdxE L.length]?) :=
+    Primrec.list_getElem?.comp Primrec.id (primrec_cmpIdxE.comp Primrec.list_length)
+  have g2 : Primrec₂ (fun (p : List ℕ × ℕ) (ra : ℕ) =>
+      thenNat p.2 (thenNat (cmpNV p.1.length) ra)) :=
+    primrec_thenNat.comp (Primrec.snd.comp Primrec.fst)
+      (primrec_thenNat.comp
+        (primrec_cmpNV.comp (Primrec.list_length.comp (Primrec.fst.comp Primrec.fst)))
+        Primrec.snd)
+  have f2 : Primrec (fun p : List ℕ × ℕ => p.1[cmpIdxA p.1.length]?) :=
+    Primrec.list_getElem?.comp Primrec.fst
+      (primrec_cmpIdxA.comp (Primrec.list_length.comp Primrec.fst))
+  have g1 : Primrec₂ (fun (L : List ℕ) (re : ℕ) =>
+      (L[cmpIdxA L.length]?).map fun ra => thenNat re (thenNat (cmpNV L.length) ra)) :=
+    Primrec.option_map f2 g2
+  have helse : Primrec (fun L : List ℕ =>
+      (L[cmpIdxE L.length]?).bind fun re =>
+        (L[cmpIdxA L.length]?).map fun ra => thenNat re (thenNat (cmpNV L.length) ra)) :=
+    Primrec.option_bind f1 g1
+  exact Primrec.ite c1
+    (Primrec.ite c2 (Primrec.const (some 1)) (Primrec.const (some 0)))
+    (Primrec.ite c2 (Primrec.const (some 2)) helse)
+
+/-- `Cnat` is in fact primitive recursive (the strong recursion's step is). -/
+theorem primrec_Cnat : Primrec Cnat := by
+  have := Primrec.nat_strong_rec (fun (_ : Unit) n => Cnat n)
+    (primrec_cmpStep.comp Primrec.snd).to₂ (fun _ n => cmpStep_spec n)
+  exact this.comp (Primrec.const ()) Primrec.id
 
 /-! ### Computability of the `NF` predicate -/
 
