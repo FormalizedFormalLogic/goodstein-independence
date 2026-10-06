@@ -28,3 +28,7 @@ import_graph.png
 
 # references
 .references
+
+# local scratch (never tracked)
+/scratch/
+/scratchpad/
