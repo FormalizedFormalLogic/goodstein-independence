@@ -13,9 +13,8 @@ via the growth route:
       (`Goodstein.cichon_caicedo_not_eventually_bounded_by_fixed_fastGrowing`)
     → contradiction.
 
-Footprint: `[propext, Classical.choice, Quot.sound]` (no `sorry`, no blueprint axiom, no
-`native_decide`/`ofReduceBool`) — pinned by the guarded `#print axioms` in
-`scripts/AxiomCheck.lean`, the enforced point of truth.
+Footprint: `[propext, Classical.choice, Quot.sound]`, enforced for every declaration by the axiom
+audit in CI (`forgive.yml`).
 
 ⚠️ Anti-vacuity: this headline is only meaningful because `goodsteinSentence` (`Encoding.lean`)
 is the faithful encoding AND the bridge `(ℕ ⊨ goodsteinSentence) ↔ Goodstein-terminates` is

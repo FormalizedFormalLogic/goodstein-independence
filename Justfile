@@ -12,3 +12,7 @@ mk-all:
 
 shake:
     lake shake GoodsteinPA --keep-public --fix
+
+# Axiom audit of every GoodsteinPA declaration against forgive.yml (run after `lake build`)
+axiom-audit:
+    lake exe forgive GoodsteinPA --json .lake/audit.json
